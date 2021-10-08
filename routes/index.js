@@ -8,18 +8,11 @@
 module.exports = (app) => {
 
     async function router(req, res, next) {
-        let controller;
         let controllerResponse;
-        try {
-            /* Dynamically loaded requested controller */
-            // and required here to minimize space complexity so that the memory to controller will only get allocated when request is made and then it gets destroyed when response is sent
-            controller = require(`../controllers/${req.params.version}/${req.params.controller}`)
-        } catch (error) { // if module not get found, say some one requested unsupported version or controller
-            return next();
-        }
 
         try {
-            controllerResponse = await controller[req.params.method](req);
+            let controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+            controllerResponse = await new controller()[req.params.method](req);
         } catch (error) { // if requested resource not found, i.e method does not exists
             return next();
         }
