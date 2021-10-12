@@ -1,4 +1,4 @@
-# Mentoring Service APIs
+# Mentoring User Service APIs
 
 ## Environment variables:
 

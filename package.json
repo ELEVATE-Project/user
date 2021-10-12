@@ -1,7 +1,7 @@
 {
-  "name": "com.shikshalokam.projectelevate.mentoringservice",
+  "name": "com.shikshalokam.mentoring.userservice",
   "version": "1.0.0",
-  "description": "A mentoring service for Project-Elevate",
+  "description": "A user service for mentoring capability",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -13,7 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.21.4",
-    "bcryptjs": "^2.4.3",
+    "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -22,7 +22,10 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.1",
     "mongodb": "^4.1.2",
-    "mongoose": "^6.0.8",
+    "mongoose": "^5.0.17",
+    "mongoose-autopopulate": "^0.16.0",
+    "mongoose-delete": "^0.5.4",
+    "mongoose-timestamp": "^0.6.0",
     "require-all": "^3.0.0",
     "uuid": "^8.3.2"
   },
