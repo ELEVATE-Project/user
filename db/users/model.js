@@ -19,6 +19,7 @@ let userSchema = new Schema({
       default: false
     }
   },
+  password: String,
   userName: String,
   firstName: String,
   lastName: String,
@@ -30,7 +31,12 @@ let userSchema = new Schema({
   areasOfExpertise: String,
   dateOfBirth: Date,
   photo: String,
-  status: String
+  status: String,
+  signedUpAt: Date,
+  lastLoggedInAt: Date,
+  isAMentor: Boolean,
+  resetPasswordLink: String,
+  resetPasswordLinkExpiresIn: Date
 });
 
 const Users = db.model("users",userSchema);

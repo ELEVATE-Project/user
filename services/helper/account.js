@@ -45,6 +45,18 @@ module.exports = class AccountHelper {
         })
     } 
 
+    static login(bodyData) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                 /**
+                 * Your business logic here
+                 */
+            } catch(error) {
+                return reject(error);
+            }
+        })
+    } 
+
     static validateEmail(email) {
         let validation = {
             success: true

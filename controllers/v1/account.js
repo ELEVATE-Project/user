@@ -20,4 +20,15 @@ module.exports = class Account {
             }
         })
     }
+
+    login(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const loginInformation = await accountHelper.login(req.body);
+                return resolve(loginInformation);
+            } catch(error) {
+                return reject(error);
+            }
+        })
+    }
 }
