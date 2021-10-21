@@ -5,13 +5,30 @@
  * Description : Routes for available service
  */
 
+const validator = require('../middlewares/validator');
+const authenticator = require('../middlewares/authenticator');
+const expressValidator = require('express-validator');
+
 module.exports = (app) => {
+
+    app.use(authenticator);
+    app.use(expressValidator());
 
     async function router(req, res, next) {
         let controllerResponse;
 
+        /* Check for input validation error */
+        const validationError = req.validationErrors();
+
+        if (validationError.length) {
+          const error = new Error('Validation failed, Entered data is incorrect!');
+          error.statusCode = 422;
+          error.data = validationError;
+          next(error);
+        }
+
         try {
-            let controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+            const controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
             controllerResponse = await new controller()[req.params.method](req);
         } catch (error) { // if requested resource not found, i.e method does not exists
             return next();
@@ -24,8 +41,8 @@ module.exports = (app) => {
         res.status(controllerResponse.statusCode).json(controllerResponse);
     }
 
-    app.all("/:version/:controller/:method", router);
-    app.all("/:version/:controller/:method/:id", router);
+    app.all("/:version/:controller/:method", validator, router);
+    app.all("/:version/:controller/:method/:id", validator, router);
 
     app.use((req, res, next) => {
         res.status(404).send('Requested resource not found!');

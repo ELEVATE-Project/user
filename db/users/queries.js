@@ -12,11 +12,22 @@ module.exports = class UsersData {
     static findUserByEmail(email) {
         return new Promise(async (resolve,reject) => {
             try { 
-                let userData = await Users.findOne({"email.address": email});
-                return resolve(userData);
+                const userData = await Users.findOne({"email.address": email});
+                resolve(userData);
             } catch(error) {
-                console.log(error);
+                reject(error);
             }
         })
+    }
+
+    static createUser(data) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await (new Users(data)).save();
+                resolve(true)
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 }

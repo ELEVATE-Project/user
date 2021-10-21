@@ -1,80 +1,72 @@
+const bcryptJs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
+const common = require('../../constants/common');
 const usersData = require("../../db/users/queries");
 
+global.refreshTokens = {};
+
 module.exports = class AccountHelper {
-    
-    static create(bodyData) {
-        return new Promise(async (resolve,reject) => {
-            try {
 
-                if (!bodyData.email) {
-                    return resolve({
-                        status: httpStatusCode.bad_request,
-                        message: apiResponses.EMAIL_REQUIRED
-                    });
-                }
-        
-                if (!utilsHelper.validEmail(bodyData.email)) {
-                    return resolve({
-                        status: httpStatusCode.bad_request,
-                        message: apiResponses.EMAIL_INVALID
-                    });
-                }
-
-                if (!bodyData.password) {
-                    return resolve({
-                        status: httpStatusCode.bad_request,
-                        message: apiResponses.PASSWORD_REQUIRED
-                    });
-                }
-
-                let user = await usersData.findUserByEmail(bodyData.email);
-
-                if (user) {
-                    return resolve({
-                        status: httpStatusCode.bad_request,
-                        message: apiResponses.USER_ALREADY_EXISTS
-                    });
-                }
-
-            } catch(error) {
-                return reject(error);
+    static async create(bodyData) {
+        try {
+            const email = bodyData.email;
+            const user = await usersData.findUserByEmail(email);
+            if (user) {
+                return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable });
             }
-        })
-    } 
-
-    static login(bodyData) {
-        return new Promise(async (resolve,reject) => {
-            try {
-                 /**
-                 * Your business logic here
-                 */
-            } catch(error) {
-                return reject(error);
-            }
-        })
-    } 
-
-    static validateEmail(email) {
-        let validation = {
-            success: true
+            const salt = bcryptJs.genSaltSync(10);
+            bodyData.password = bcryptJs.hashSync(bodyData.password, salt);
+            bodyData.email = { address: email, verified: false };
+            await usersData.createUser(bodyData);
+            return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY});
+        } catch (error) {
+            throw error;
         }
-
-        if (!email) {
-            success = false;
-            validation["message"] = apiResponses.EMAIL_REQUIRED;
-            return validation;
-        }
-
-        if (!utilsHelper.validEmail(bodyData.email)) {
-            success = false;
-            validation["message"] = apiResponses.EMAIL_INVALID;
-            return validation;
-        }
-
-        return validation;
     }
 
+    static async login(bodyData) {
+        try {
+            const user = await usersData.findUserByEmail(bodyData.email);
+            if (!user) {
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request });
+            }
+            const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
+            if (!isPasswordCorrect) {
+                return common.failureResponse({ message: apiResponses.PASSWORD_INVALID, statusCode: httpStatusCode.bad_request });
+            }
+
+            const tokenDetail = {
+                data: {
+                    _id: user._id,
+                    email: user.email.address,
+                    isAMentor: user.isAMentor
+                }
+            };
+
+            const accessToken = jwt.sign(tokenDetail, common.accessTokenSecret, { expiresIn: '1d' });
+            const refreshToken = jwt.sign(tokenDetail, common.refreshTokenSecret, { expiresIn: '183d' });
+            global.refreshTokens[user.email.address] = refreshToken;
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.LOGGED_IN_SUCCESSFULLY, accessToken, refreshToken, data: user });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async logout(bodyData) {
+        try {
+            const user = await usersData.findUserByEmail(bodyData.email);
+            if (!user) {
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request });
+            }
+            delete global.refreshTokens[bodyData.email];
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.LOGGED_OUT_SUCCESSFULLY });
+        } catch (error) {
+            throw error;
+        }
+    }
 }

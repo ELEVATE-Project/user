@@ -1,17 +1,24 @@
-//dependencies
-let mongoose = require("mongoose");
+/**
+ * name : configs/mongodb
+ * author : Aman
+ * Date : 07-Oct-2021
+ * Description : Mongodb connections configurations
+*/
+
+const mongoose = require("mongoose");
 const mongoose_delete = require("mongoose-delete");
 const mongoose_autopopulate = require("mongoose-autopopulate");
 const mongoose_timestamp = require("mongoose-timestamp");
+const mongoose_paginate = require('mongoose-paginate-v2');
 
-module.exports = function() {
-  
+module.exports = function () {
+
   // Added to remove depreciation warnings from logs.
   mongoose.set('useCreateIndex', true)
   mongoose.set('useFindAndModify', false)
   mongoose.set('useUnifiedTopology', true)
-  
-  var db = mongoose.createConnection(
+
+  const db = mongoose.createConnection(
     process.env.MONGODB_URL,
     {
       useNewUrlParser: true
@@ -19,19 +26,20 @@ module.exports = function() {
   );
 
   db.on("error", function () {
-    console.log("connection error:")
+    console.log("Database connection error:")
   });
 
-  db.once("open", function() {
+  db.once("open", function () {
     console.log("Connected to DB");
   });
 
   mongoose.plugin(mongoose_timestamp, {
-      createdAt: "createdAt",
-      updatedAt: "updatedAt"
+    createdAt: "createdAt",
+    updatedAt: "updatedAt"
   });
-  
+
   mongoose.plugin(mongoose_autopopulate);
   mongoose.plugin(mongoose_delete, { overrideMethods: true, deletedAt: true });
+  mongoose.plugin(mongoose_paginate);
   global.db = db;
 };

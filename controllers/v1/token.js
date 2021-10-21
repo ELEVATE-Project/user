@@ -10,14 +10,43 @@ const tokenHelper = require("../../services/helper/token");
 
 module.exports = class Token {
     
-    generateToken(req) {
-        return new Promise(async (resolve,reject) => {
-            try {
-                const tokenGenerated = await tokenHelper.generateToken(req.body);
-                return resolve(tokenGenerated);
-            } catch(error) {
-                return reject(error);
-            }
-        })
+    /**
+    * @api {post} /user/api/v1/token/regenerate
+    * @apiVersion 1.0.0
+    * @apiName Regenerate access token
+    * @apiGroup Token
+    * @apiParamExample {json} Request-Body:
+    * {
+    *   "email" : "mentee@gmail.com",
+    *   "refreshToken" : "asdxbebiuqeiu1273bahdxuy9813xbahjahDahiux7yiqhlaY74HDKA3y47yahdgcHDqcgkhggdfy",
+    * }
+    * @apiSampleRequest /user/api/v1/token/regenerate
+    * @apiParamExample {json} Response:
+    * {
+    *   "statusCode": 200,
+    *   "message": "Access token generated successfully",
+    *   "data": [],
+    *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTcxMWU2YzUwY2RmMjEzZTc5NzFjMmIiL"
+    * }
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
+    * regenerate access token
+    * @method
+    * @name regenerate
+    * @param {Object} req -request data.
+    * @returns {JSON} - access token info
+    */
+
+    regenerate(req) {
+        const params = req.body;
+        try {
+            const createdToken = tokenHelper.generateToken(params);
+            return createdToken;
+        } catch (error) {
+            return error;
+        }
     }
 }

@@ -8,7 +8,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-let userSchema = new Schema({
+const userSchema = new Schema({
   email: {
     address: {
       type: String,
@@ -20,24 +20,26 @@ let userSchema = new Schema({
     }
   },
   password: String,
-  userName: String,
-  firstName: String,
-  lastName: String,
+  name: String,
   gender: String,
-  designation: String,
+  designation: [String],
   location: String,
   languagePreferences: String,
   about: String,
-  areasOfExpertise: String,
+  areasOfExpertise: [{ value: Number, label: String }],
   dateOfBirth: Date,
   photo: String,
   status: String,
   signedUpAt: Date,
   lastLoggedInAt: Date,
-  isAMentor: Boolean,
+  isAMentor: {
+    type: Boolean,
+    default: false
+  },
   resetPasswordLink: String,
   resetPasswordLinkExpiresIn: Date
 });
 
-const Users = db.model("users",userSchema);
+const Users = db.model("users", userSchema);
+
 module.exports = Users;
