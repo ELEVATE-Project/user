@@ -11,7 +11,7 @@ const accountHelper = require("../../services/helper/account");
 module.exports = class Account {
 
     /**
-    * @api {post} /user/api/v1/account/create
+    * @api {post} /user/v1/account/create
     * @apiVersion 1.0.0
     * @apiName Creates User Account
     * @apiGroup Accounts
@@ -51,7 +51,7 @@ module.exports = class Account {
     }
 
     /**
-    * @api {post} /user/api/v1/account/login
+    * @api {post} /user/v1/account/login
     * @apiVersion 1.0.0
     * @apiName Login User Account
     * @apiGroup Accounts
@@ -109,7 +109,7 @@ module.exports = class Account {
     }
 
     /**
-    * @api {post} /user/api/v1/account/logout
+    * @api {post} /user/v1/account/logout
     * @apiVersion 1.0.0
     * @apiName Logouts User Account
     * @apiGroup Accounts

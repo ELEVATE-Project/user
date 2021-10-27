@@ -13,7 +13,7 @@ const common = require('../constants/common');
 
 module.exports = (req, res, next) => {
     
-    if (req.url !== '/v1/account/login' && req.url !== '/v1/account/create' && req.url !== '/v1/token/regenerate') {
+    if (req.url !== '/user/v1/account/login' && req.url !== '/user/v1/account/create' && req.url !== '/user/v1/token/regenerate') {
         const authHeader = req.get('X-auth-token');
         if (!authHeader) {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });

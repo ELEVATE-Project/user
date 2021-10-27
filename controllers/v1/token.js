@@ -11,7 +11,7 @@ const tokenHelper = require("../../services/helper/token");
 module.exports = class Token {
     
     /**
-    * @api {post} /user/api/v1/token/regenerate
+    * @api {post} /user/v1/token/regenerate
     * @apiVersion 1.0.0
     * @apiName Regenerate access token
     * @apiGroup Token
