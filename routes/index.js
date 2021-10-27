@@ -46,8 +46,8 @@ module.exports = (app) => {
         });
     }
 
-    app.all("/:version/:controller/:method", validator, router);
-    app.all("/:version/:controller/:method/:id", validator, router);
+    app.all("/user/:version/:controller/:method", validator, router);
+    app.all("/user/:version/:controller/:method/:id", validator, router);
 
     app.use((req, res, next) => {
         res.status(404).send('Requested resource not found!');
