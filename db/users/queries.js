@@ -9,10 +9,10 @@ const Users = require("./model");
 
 module.exports = class UsersData {
     
-    static findUserByEmail(email) {
+    static findUserByEmail(email, projection = {}) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const userData = await Users.findOne({"email.address": email});
+                const userData = await Users.findOne({"email.address": email}, projection);
                 resolve(userData);
             } catch(error) {
                 reject(error);

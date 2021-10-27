@@ -21,10 +21,11 @@ module.exports = (app) => {
         const validationError = req.validationErrors();
 
         if (validationError.length) {
-          const error = new Error('Validation failed, Entered data is incorrect!');
-          error.statusCode = 422;
-          error.data = validationError;
-          next(error);
+            const error = new Error('Validation failed, Entered data is incorrect!');
+            error.statusCode = 422;
+            error.responseCode = 'CLIENT_ERROR';
+            error.data = validationError;
+            next(error);
         }
 
         try {
@@ -38,7 +39,11 @@ module.exports = (app) => {
             /* If error obtained then global error handler gets executed */
             return next(controllerResponse);
         }
-        res.status(controllerResponse.statusCode).json(controllerResponse);
+        res.status(controllerResponse.statusCode).json({
+            responseCode: controllerResponse.responseCode,
+            message: controllerResponse.message,
+            result: controllerResponse.result
+        });
     }
 
     app.all("/:version/:controller/:method", validator, router);
@@ -51,6 +56,7 @@ module.exports = (app) => {
     // Global error handling middleware, should be present in last in the stack of a middleware's
     app.use((error, req, res, next) => {
         const status = error.statusCode || 500;
+        const responseCode = error.responseCode || 'SERVER_ERROR';
         const message = error.message || '';
         let errorData = [];
 
@@ -58,9 +64,8 @@ module.exports = (app) => {
             errorData = error.data;
         }
         res.status(status).json({
-            message: message,
-            status: 'failure',
-            statusCode: status,
+            message,
+            responseCode,
             error: errorData
         });
     });

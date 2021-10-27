@@ -1,5 +1,4 @@
 const bcryptJs = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
@@ -16,7 +15,7 @@ module.exports = class AccountHelper {
             const email = bodyData.email;
             const user = await usersData.findUserByEmail(email);
             if (user) {
-                return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable });
+                return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
             }
             const salt = bcryptJs.genSaltSync(10);
             bodyData.password = bcryptJs.hashSync(bodyData.password, salt);
@@ -29,14 +28,15 @@ module.exports = class AccountHelper {
     }
 
     static async login(bodyData) {
+        const projection = { refreshTokens: 0 };
         try {
-            const user = await usersData.findUserByEmail(bodyData.email);
+            let user = await usersData.findUserByEmail(bodyData.email, projection);
             if (!user) {
-                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request });
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
             const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
             if (!isPasswordCorrect) {
-                return common.failureResponse({ message: apiResponses.PASSWORD_INVALID, statusCode: httpStatusCode.bad_request });
+                return common.failureResponse({ message: apiResponses.PASSWORD_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
             const tokenDetail = {
@@ -47,11 +47,17 @@ module.exports = class AccountHelper {
                 }
             };
 
-            const accessToken = jwt.sign(tokenDetail, common.accessTokenSecret, { expiresIn: '1d' });
-            const refreshToken = jwt.sign(tokenDetail, common.refreshTokenSecret, { expiresIn: '183d' });
+            const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d');
+            const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d');
+        
             global.refreshTokens[user.email.address] = refreshToken;
 
-            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.LOGGED_IN_SUCCESSFULLY, accessToken, refreshToken, data: user });
+            /* Mongoose schema is in strict mode, so can not delete password directly */
+            user = { ...user._doc };
+            delete user.password;
+            const result = { access_token: accessToken, refresh_token: refreshToken, user };
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.LOGGED_IN_SUCCESSFULLY, result });
         } catch (error) {
             throw error;
         }
@@ -61,7 +67,7 @@ module.exports = class AccountHelper {
         try {
             const user = await usersData.findUserByEmail(bodyData.email);
             if (!user) {
-                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request });
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
             delete global.refreshTokens[bodyData.email];
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.LOGGED_OUT_SUCCESSFULLY });

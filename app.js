@@ -8,7 +8,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config({ path: './.env.sample' });
+require('dotenv').config({ path: './.env' });
 require('./configs');
 
 const app = express();

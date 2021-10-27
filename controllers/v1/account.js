@@ -24,9 +24,9 @@ module.exports = class Account {
     * @apiSampleRequest /user/api/v1/account/create
     * @apiParamExample {json} Response:
     * {
-    *   "statusCode": 201,
+    *   "responseCode": 'OK',
     *   "message": "User created successfully",
-    *   "data": []
+    *   "result": []
     * }
     * @apiUse successBody
     * @apiUse errorBody
@@ -63,26 +63,28 @@ module.exports = class Account {
     * @apiSampleRequest /user/api/v1/account/login
     * @apiParamExample {json} Response:
     * {
-    *   "statusCode": 200,
+    *   "responseCode": 'OK',
     *   "message": "User logged in successfully",
-    *   "data": {
-    *       "email": {
-    *           "verified": false,
-    *           "address": "aman@gmail.com"
-    *       },
-    *       "designation": [],
-    *       "isAMentor": false,
-    *       "deleted": false,
-    *       "_id": "61711e6c50cdf213e7971c2b",
-    *       "name": "Aman",
-    *       "password": "$2a$10$Z23WbUoimCVM32fwXtinXuvyxq4n4xvR0AwNJ4IjJtYJtuBn02ylu",
-    *       "areasOfExpertise": [],
-    *       "updatedAt": "2021-10-21T08:01:48.203Z",
-    *       "createdAt": "2021-10-21T08:01:48.203Z",
-    *       "__v": 0
-    *   },
-    *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYxNzExZTZjNTBjZGYyMTNlNzk3MWMyYiIsImVtYWlsIjoiYW1hbkBnbWFpbC5jb20iLCJpc0FNZW50b3IiOmZhbHNlfSwiaWF0IjoxNjM0ODE1MjU5LCJleHAiOjE2MzQ5MDE2NTl9.jkiotUxYbOZkZ3PLkOj-PdPoEbWfEI0gMfPqyfgzB5w",
-    *   "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYxNzExZTZjNTBjZGYyMTNlNzk3MWMyYiIsImVtYWlsIjoiYW1hbkBnbWFpbC5jb20iLCJpc0FNZW50b3IiOmZhbHNlfSwiaWF0IjoxNjM0ODE1MjU5LCJleHAiOjE2NTA2MjY0NTl9.CjNSk6xPuHlPOcdTW9FflIlL9q-1MegE-GwpkBkbwZA"
+    *   "result": {
+    *       user: {
+    *           "email": {
+    *               "verified": false,
+    *               "address": "aman@gmail.com"
+    *           },
+    *           "designation": [],
+    *           "isAMentor": false,
+    *           "hasAcceptedTAndC": false,
+    *           "deleted": false,
+    *           "_id": "61711e6c50cdf213e7971c2b",
+    *           "name": "Aman",
+    *           "areasOfExpertise": [],
+    *           "updatedAt": "2021-10-21T08:01:48.203Z",
+    *           "createdAt": "2021-10-21T08:01:48.203Z",
+    *           "__v": 0,
+    *       }
+    *       "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYxNzExZTZjNTBjZGYyMTNlNzk3MWMyYiIsImVtYWlsIjoiYW1hbkBnbWFpbC5jb20iLCJpc0FNZW50b3IiOmZhbHNlfSwiaWF0IjoxNjM0ODE1MjU5LCJleHAiOjE2MzQ5MDE2NTl9.jkiotUxYbOZkZ3PLkOj-PdPoEbWfEI0gMfPqyfgzB5w",
+    *       "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYxNzExZTZjNTBjZGYyMTNlNzk3MWMyYiIsImVtYWlsIjoiYW1hbkBnbWFpbC5jb20iLCJpc0FNZW50b3IiOmZhbHNlfSwiaWF0IjoxNjM0ODE1MjU5LCJleHAiOjE2NTA2MjY0NTl9.CjNSk6xPuHlPOcdTW9FflIlL9q-1MegE-GwpkBkbwZA"
+    *   }
     * }
     * @apiUse successBody
     * @apiUse errorBody
@@ -118,9 +120,9 @@ module.exports = class Account {
     * @apiSampleRequest /user/api/v1/account/logout
     * @apiParamExample {json} Response:
     * {
-    *   "statusCode": 200,
+    *   "responseCode": 'OK',
     *   "message": "User logged out successfully",
-    *   "data": []
+    *   "result": []
     * }
     * @apiUse successBody
     * @apiUse errorBody

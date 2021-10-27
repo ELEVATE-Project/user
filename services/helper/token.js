@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
+const utilsHelper = require("../../generics/utils");
 
 module.exports = class TokenHelper {
 
@@ -22,14 +23,15 @@ module.exports = class TokenHelper {
             }
 
             if (!decodedToken) {
-                return common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized });
+                return common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
             }
 
             /* Generate new access token */
-            const accessToken = jwt.sign(decodedToken.data, common.accessTokenSecret, { expiresIn: '1d' });
-            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY, accessToken });
+            const accessToken = utilsHelper.generateToken({data: decodedToken.data}, process.env.ACCESS_TOKEN_SECRET, '1d');
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY, result: { access_token: accessToken } });
         }
-        return common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized });
+        return common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
     }
 
 }

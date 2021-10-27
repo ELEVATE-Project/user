@@ -23,10 +23,11 @@ module.exports = class Token {
     * @apiSampleRequest /user/api/v1/token/regenerate
     * @apiParamExample {json} Response:
     * {
-    *   "statusCode": 200,
+    *   "responseCode": 'OK',
     *   "message": "Access token generated successfully",
-    *   "data": [],
-    *   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTcxMWU2YzUwY2RmMjEzZTc5NzFjMmIiL"
+    *   "result": {
+    *       "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTcxMWU2YzUwY2RmMjEzZTc5NzFjMmIiL"    
+    *   }
     * }
     * @apiUse successBody
     * @apiUse errorBody

@@ -12,32 +12,43 @@ const userSchema = new Schema({
   email: {
     address: {
       type: String,
-      index: true
+      index: true,
+      required: true
     },
     verified: {
       type: Boolean,
       default: false
     }
   },
-  password: String,
-  name: String,
+  password: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
   gender: String,
-  designation: [String],
+  designation: [{ value: String, label: String }],
   location: String,
-  languagePreferences: String,
   about: String,
-  areasOfExpertise: [{ value: Number, label: String }],
-  dateOfBirth: Date,
-  photo: String,
-  status: String,
-  signedUpAt: Date,
+  areasOfExpertise: [{ value: String, label: String }],
+  image: String,
+  experience: String,
   lastLoggedInAt: Date,
   isAMentor: {
     type: Boolean,
     default: false
   },
-  resetPasswordLink: String,
-  resetPasswordLinkExpiresIn: Date
+  hasAcceptedTAndC: {
+    type: Boolean,
+    default: false
+  },
+  refreshTokens: [{ token: String, exp: Number }],
+  otpInfo: {
+    otp: Number,
+    exp: Number
+  }
 });
 
 const Users = db.model("users", userSchema);

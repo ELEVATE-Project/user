@@ -5,20 +5,19 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({statusCode = 500, message, data = [], totalCounts = undefined, accessToken = undefined, refreshToken = undefined}) => {
+const successResponse = ({statusCode = 500, responseCode = 'OK', message, result = []}) => {
     return {
         statusCode,
+        responseCode,
         message,
-        data,
-        totalCounts,
-        accessToken,
-        refreshToken
+        result
     }
 };
 
-const failureResponse = ({ message = "Oops! Something Went Wrong.", statusCode = 500 }) => {
+const failureResponse = ({ message = "Oops! Something Went Wrong.", statusCode = 500, responseCode }) => {
     const error = new Error(message);
     error.statusCode = statusCode;
+    error.responseCode = responseCode;
     return error;
 };
 

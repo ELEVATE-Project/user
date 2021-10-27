@@ -16,24 +16,25 @@ module.exports = (req, res, next) => {
     if (req.url !== '/v1/account/login' && req.url !== '/v1/account/create' && req.url !== '/v1/token/regenerate') {
         const authHeader = req.get('X-auth-token');
         if (!authHeader) {
-            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized });
+            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
         const authHeaderArray = authHeader.split(' ');
         if (authHeaderArray[0] !== 'bearer') {
-            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized });
+            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
         try {
             decodedToken = jwt.verify(authHeaderArray[1], common.accessTokenSecret);
         } catch (err) {
             err.statusCode = httpStatusCode.unauthorized;
-            error.message = apiResponses.ACCESS_TOKEN_EXPIRED;
+            err.responseCode = 'UNAUTHORIZED';
+            err.message = apiResponses.ACCESS_TOKEN_EXPIRED;
             throw err;
         }
     
         if (!decodedToken) {
-            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized });
+            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
-    
+
         res.locals.userData = {
             _id: decodedToken.data._id,
             email: decodedToken.data.email
