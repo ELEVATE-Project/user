@@ -28,7 +28,7 @@ module.exports = class AccountHelper {
     }
 
     static async login(bodyData) {
-        const projection = { refreshTokens: 0 };
+        const projection = { refreshTokens: 0, otpInfo: 0 };
         try {
             let user = await usersData.findUserByEmail(bodyData.email, projection);
             if (!user) {
