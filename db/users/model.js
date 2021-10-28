@@ -12,7 +12,9 @@ const userSchema = new Schema({
   email: {
     address: {
       type: String,
-      index: true,
+      index: {
+        unique: true
+      },
       required: true
     },
     verified: {

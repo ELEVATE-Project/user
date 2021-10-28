@@ -9,10 +9,10 @@ const Users = require("./model");
 
 module.exports = class UsersData {
     
-    static findUserByEmail(email, projection = {}) {
+    static findOne(filter, projection = {}) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const userData = await Users.findOne({"email.address": email}, projection);
+                const userData = await Users.findOne(filter, projection);
                 resolve(userData);
             } catch(error) {
                 reject(error);
@@ -25,6 +25,21 @@ module.exports = class UsersData {
             try {
                 await (new Users(data)).save();
                 resolve(true)
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    static updateOneUser(filter, update, options = {}) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const res = await Users.updateOne(filter, update);
+                if (res.ok === 1 && res.nModified === 1) {
+                    resolve(true)
+                } else {
+                    resolve(false)
+                }
             } catch (error) {
                 reject(error);
             }

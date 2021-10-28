@@ -44,6 +44,12 @@ module.exports = {
     },
 
     logout: (req) => {
+        req.checkBody('refreshToken')
+            .notEmpty()
+            .withMessage('refreshToken field is empty');
+    },
+
+    generateToken: (req) => {
         req.checkBody('email')
             .trim()
             .notEmpty()
@@ -51,5 +57,9 @@ module.exports = {
             .isEmail()
             .withMessage('email is invalid')
             .normalizeEmail();
+
+        req.checkBody('refreshToken')
+            .notEmpty()
+            .withMessage('refreshToken field is empty');
     }
 };

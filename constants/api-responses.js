@@ -10,4 +10,6 @@ module.exports = {
     "REFRESH_TOKEN_EXPIRED": "Refresh token expired",
     "ACCESS_TOKEN_EXPIRED": "Access token expired",
     "ACCESS_TOKEN_GENERATED_SUCCESSFULLY": "Access token generated successfully",
+    "INVALID_REFRESH_TOKEN": "Invalid refresh token",
+    "REFRESH_TOKEN_NOT_FOUND": "Refresh token not found"
 };

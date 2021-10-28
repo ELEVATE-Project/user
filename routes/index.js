@@ -50,7 +50,10 @@ module.exports = (app) => {
     app.all("/user/:version/:controller/:method/:id", validator, router);
 
     app.use((req, res, next) => {
-        res.status(404).send('Requested resource not found!');
+        res.status(404).json({
+            responseCode: 'RESOURCE_ERROR',
+            message: 'Requested resource not found!',
+        });
     });
 
     // Global error handling middleware, should be present in last in the stack of a middleware's
@@ -64,8 +67,8 @@ module.exports = (app) => {
             errorData = error.data;
         }
         res.status(status).json({
-            message,
             responseCode,
+            message,
             error: errorData
         });
     });

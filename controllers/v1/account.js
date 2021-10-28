@@ -115,7 +115,7 @@ module.exports = class Account {
     * @apiGroup Accounts
     * @apiParamExample {json} Request-Body:
     * {
-    *   "email" : "mentee@gmail.com"
+    *   "refreshToken" : "adbxqhdbhquwjHQWEXY182XIQH1823Yhgsd27y4bqhe72y4b..."
     * }
     * @apiSampleRequest /user/api/v1/account/logout
     * @apiParamExample {json} Response:
@@ -138,9 +138,51 @@ module.exports = class Account {
 
     async logout(req) {
         const params = req.body;
+        params.loggedInId = req.decodedToken._id;
         try {
             const loggedOutAccount = await accountHelper.logout(params);
             return loggedOutAccount;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    /**
+    * @api {post} /user/v1/account/generateToken
+    * @apiVersion 1.0.0
+    * @apiName Regenerate access token
+    * @apiGroup Token
+    * @apiParamExample {json} Request-Body:
+    * {
+    *   "email" : "mentee@gmail.com",
+    *   "refreshToken" : "asdxbebiuqeiu1273bahdxuy9813xbahjahDahiux7yiqhlaY74HDKA3y47yahdgcHDqcgkhggdfy",
+    * }
+    * @apiSampleRequest /user/api/v1/token/regenerate
+    * @apiParamExample {json} Response:
+    * {
+    *   "responseCode": 'OK',
+    *   "message": "Access token generated successfully",
+    *   "result": {
+    *       "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTcxMWU2YzUwY2RmMjEzZTc5NzFjMmIiL"    
+    *   }
+    * }
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
+    * regenerate access token
+    * @method
+    * @name regenerate
+    * @param {Object} req -request data.
+    * @returns {JSON} - access token info
+    */
+
+     async generateToken(req) {
+        const params = req.body;
+        try {
+            const createdToken = await accountHelper.generateToken(params);
+            return createdToken;
         } catch (error) {
             return error;
         }

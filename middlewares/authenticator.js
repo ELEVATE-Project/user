@@ -13,7 +13,7 @@ const common = require('../constants/common');
 
 module.exports = (req, res, next) => {
     
-    if (req.url !== '/user/v1/account/login' && req.url !== '/user/v1/account/create' && req.url !== '/user/v1/token/regenerate') {
+    if (!common.guestUrls.includes(req.url)) {
         const authHeader = req.get('X-auth-token');
         if (!authHeader) {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
@@ -35,9 +35,10 @@ module.exports = (req, res, next) => {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
 
-        res.locals.userData = {
+        req.decodedToken = {
             _id: decodedToken.data._id,
-            email: decodedToken.data.email
+            email: decodedToken.data.email,
+            isAMentor: decodedToken.data.isAMentor
         };
     }
     next();
