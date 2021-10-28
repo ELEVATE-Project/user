@@ -81,4 +81,14 @@ module.exports = class Sessions {
             }
         })
     }
+
+    meetingCompleted(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                console.log("I am here");
+            } catch(error) {
+                return reject(error);
+            }
+        })
+    }
 }
