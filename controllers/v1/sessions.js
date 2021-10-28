@@ -86,6 +86,7 @@ module.exports = class Sessions {
         return new Promise(async (resolve,reject) => {
             try {
                 console.log("I am here");
+                return resolve("True")
             } catch(error) {
                 return reject(error);
             }
