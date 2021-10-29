@@ -50,14 +50,6 @@ module.exports = {
     },
 
     generateToken: (req) => {
-        req.checkBody('email')
-            .trim()
-            .notEmpty()
-            .withMessage('email field is empty')
-            .isEmail()
-            .withMessage('email is invalid')
-            .normalizeEmail();
-
         req.checkBody('refreshToken')
             .notEmpty()
             .withMessage('refreshToken field is empty');

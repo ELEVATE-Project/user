@@ -74,7 +74,7 @@ module.exports = class AccountHelper {
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
-            
+
             const update = {
                 $pull: {
                     refreshTokens: { 'token': bodyData.refreshToken }
@@ -95,14 +95,24 @@ module.exports = class AccountHelper {
     }
 
     static async generateToken(bodyData) {
-    
-        const user = await usersData.findOne({ 'email.address': bodyData.email });
+
+        let decodedToken;
+        try {
+            decodedToken = jwt.verify(bodyData.refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        } catch (error) {
+            /* If refresh token is expired */
+            error.statusCode = httpStatusCode.unauthorized;
+            error.message = apiResponses.REFRESH_TOKEN_EXPIRED;
+            throw error;
+        }
+
+        const user = await usersData.findOne({ _id: ObjectId(decodedToken.data._id) });
 
         /* Check valid user */
         if (!user) {
             return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
         }
-    
+
         /* Check valid refresh token stored in db */
         if (user.refreshTokens.length) {
             const token = user.refreshTokens.find(tokenData => tokenData.token === bodyData.refreshToken);
@@ -110,18 +120,8 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.REFRESH_TOKEN_NOT_FOUND, statusCode: httpStatusCode.internal_server_error, responseCode: 'CLIENT_ERROR' });
             }
 
-            let decodedToken;
-            try {
-                decodedToken = jwt.verify(bodyData.refreshToken, process.env.REFRESH_TOKEN_SECRET);
-            } catch (error) {
-                /* If refresh token is expired */
-                error.statusCode = httpStatusCode.unauthorized;
-                error.message = apiResponses.REFRESH_TOKEN_EXPIRED;
-                throw error;
-            }
-            
             /* Generate new access token */
-            const accessToken = utilsHelper.generateToken({data: decodedToken.data}, process.env.ACCESS_TOKEN_SECRET, '1d');
+            const accessToken = utilsHelper.generateToken({ data: decodedToken.data }, process.env.ACCESS_TOKEN_SECRET, '1d');
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY, result: { access_token: accessToken } });
         }

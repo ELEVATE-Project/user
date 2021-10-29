@@ -154,7 +154,6 @@ module.exports = class Account {
     * @apiGroup Token
     * @apiParamExample {json} Request-Body:
     * {
-    *   "email" : "mentee@gmail.com",
     *   "refreshToken" : "asdxbebiuqeiu1273bahdxuy9813xbahjahDahiux7yiqhlaY74HDKA3y47yahdgcHDqcgkhggdfy",
     * }
     * @apiSampleRequest /user/api/v1/token/regenerate
