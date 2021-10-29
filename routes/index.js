@@ -21,7 +21,10 @@ module.exports = (app) => {
             /* If error obtained then global error handler gets executed */
             return next(controllerResponse);
         }
-        res.status(controllerResponse.statusCode).json(controllerResponse);
+        res.status(controllerResponse.statusCode).json({
+            message: controllerResponse.message,
+            result: controllerResponse.result
+        });
     }
 
     app.all("/:version/:controller/:method", router);
@@ -40,7 +43,7 @@ module.exports = (app) => {
         if (error.data) {
             errorData = error.data;
         }
-        res.status(status).json({
+        res.status(status).send({
             message: message,
             status: 'failure',
             statusCode: status,

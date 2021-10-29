@@ -7,6 +7,7 @@
 
 // Dependencies
 const sessionsHelper = require("../../services/helper/sessions");
+const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class Sessions {
     
@@ -86,7 +87,10 @@ module.exports = class Sessions {
         return new Promise(async (resolve,reject) => {
             try {
                 console.log("I am here");
-                return resolve("True")
+                return resolve({
+                    statusCode: httpStatusCode.ok,
+                    message: "I am here"
+                })
             } catch(error) {
                 return reject(error);
             }
