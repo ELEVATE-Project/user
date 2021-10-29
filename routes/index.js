@@ -27,8 +27,8 @@ module.exports = (app) => {
         });
     }
 
-    app.all("/:version/:controller/:method", router);
-    app.all("/:version/:controller/:method/:id", router);
+    app.all(process.env.APPLICATION_BASE_URL + ":version/:controller/:method", router);
+    app.all(process.env.APPLICATION_BASE_URL + ":version/:controller/:method/:id", router);
 
     app.use((req, res, next) => {
         res.status(404).send('Requested resource not found!');
