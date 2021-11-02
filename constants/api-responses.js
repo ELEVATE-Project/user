@@ -11,5 +11,7 @@ module.exports = {
     "ACCESS_TOKEN_EXPIRED": "Access token expired",
     "ACCESS_TOKEN_GENERATED_SUCCESSFULLY": "Access token generated successfully",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token",
-    "REFRESH_TOKEN_NOT_FOUND": "Refresh token not found"
+    "REFRESH_TOKEN_NOT_FOUND": "Refresh token not found",
+    "PROFILE_UPDATED_SUCCESSFULLY": "Profile updated successfully",
+    "PROFILE_FETCHED_SUCCESSFULLY": "Profile fetched successfully",
 };

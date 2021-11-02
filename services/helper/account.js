@@ -53,7 +53,8 @@ module.exports = class AccountHelper {
             const update = {
                 $push: {
                     refreshTokens: { token: refreshToken, exp: new Date().getTime() }
-                }
+                },
+                lastLoggedInAt: new Date().getTime()
             };
             await usersData.updateOneUser({ _id: ObjectId(user._id) }, update);
 
