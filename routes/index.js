@@ -16,23 +16,30 @@ module.exports = (app) => {
 
     async function router(req, res, next) {
         let controllerResponse;
+        let validationError;
 
         /* Check for input validation error */
-        const validationError = req.validationErrors();
+        try {
+            validationError = req.validationErrors();
+        } catch (error) {
+            error.statusCode = 422;
+            error.responseCode = 'CLIENT_ERROR';
+            return next(error);
+        }
 
         if (validationError.length) {
             const error = new Error('Validation failed, Entered data is incorrect!');
             error.statusCode = 422;
             error.responseCode = 'CLIENT_ERROR';
             error.data = validationError;
-            next(error);
+            return next(error);
         }
 
         try {
             const controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
             controllerResponse = await new controller()[req.params.method](req);
-        } catch (error) { // if requested resource not found, i.e method does not exists
-            return next();
+        } catch (error) { // If controller or service throws some random error
+            return next(error);
         }
 
         if (controllerResponse.statusCode !== 200 && controllerResponse.statusCode !== 201 && controllerResponse.statusCode !== 202) {

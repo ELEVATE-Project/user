@@ -12,6 +12,7 @@ module.exports = (req, res, next) => {
     } catch (error) {
         error.message = 'Requested resource not found';
         error.statusCode = 404;
+        error.responseCode = 'RESOURCE_ERROR';
         next(error);
     }
 };

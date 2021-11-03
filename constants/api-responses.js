@@ -14,4 +14,9 @@ module.exports = {
     "REFRESH_TOKEN_NOT_FOUND": "Refresh token not found",
     "PROFILE_UPDATED_SUCCESSFULLY": "Profile updated successfully",
     "PROFILE_FETCHED_SUCCESSFULLY": "Profile fetched successfully",
+    "FORM_ALREADY_EXISTS": "Form already exists",
+    "FORM_CREATED_SUCCESSFULLY": "Form created successfully",
+    "FORM_UPDATED_SUCCESSFULLY": "Form updated successfully",
+    "FORM_FETCHED_SUCCESSFULLY": "Form fetched successfully",
+    "FORM_NOT_FOUND": "Form not found",
 };

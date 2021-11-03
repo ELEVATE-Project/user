@@ -1,8 +1,8 @@
 /**
- * name : models/account/schema
+ * name : db/users/model
  * author : Aman Karki
  * Date : 07-Oct-2021
- * Description : Account schema data
+ * Description : User schema data
  */
 
 const mongoose = require('mongoose');
