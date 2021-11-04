@@ -17,13 +17,14 @@ module.exports = class Profile {
     * @apiGroup Profiles
     * @apiParamExample {json} Request-Body:
     * {
+    *   "name": "Aman",
     *   "designation": [{ "value": "1", "label": "Teacher" }, { "value": "2", "label": "District Official" }],
-    *   "location": "Bangalore",
+    *   "location": [{ "value": "1", "label": "Bangalore" }],
     *   "about": "This is test about of mentee",
     *   "areasOfExpertise": [{ "value": "1", "label": "Educational Leadership" }, { "value": "2", "label": "SQAA" }],
     *   "experience": 4.2,
-    *   "hasAcceptedTAndC": true,
-    *   "gender": "MALE"
+    *   "hasAcceptedTAndC": true, [Optional]
+    *   "gender": "MALE" [Optional]
     * }
     * @apiSampleRequest /user/v1/profile/update
     * @apiParamExample {json} Response:
@@ -104,7 +105,12 @@ module.exports = class Profile {
     *            "lastLoggedInAt": "2021-11-02T08:41:43.410Z",
     *            "about": "This is test about of mentee",
     *            "experience": "4.2",
-    *            "location": "Bangalore",
+    *            "location": [
+    *                {
+    *                    "value": "1",
+    *                    "label": "Bangalore"
+    *                }
+    *            ],
     *            "gender": "MALE"
     *        }
     *   ]

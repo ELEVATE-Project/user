@@ -46,6 +46,11 @@ const userSchema = new Schema({
     type: Boolean,
     default: false
   },
+  deleted: {
+    type: Boolean,
+    default: false,
+    required: true
+  },
   refreshTokens: [{ token: String, exp: Number }],
   otpInfo: {
     otp: Number,

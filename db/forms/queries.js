@@ -23,8 +23,8 @@ module.exports = class FormsData {
     static findOneForm(filter, projection = {}) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const userData = await Forms.findOne(filter, projection);
-                resolve(userData);
+                const formData = await Forms.findOne(filter, projection);
+                resolve(formData);
             } catch(error) {
                 reject(error);
             }

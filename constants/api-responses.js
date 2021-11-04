@@ -19,4 +19,11 @@ module.exports = {
     "FORM_UPDATED_SUCCESSFULLY": "Form updated successfully",
     "FORM_FETCHED_SUCCESSFULLY": "Form fetched successfully",
     "FORM_NOT_FOUND": "Form not found",
+    "USER_ENTITY_NOT_FOUND": "User entity not found",
+    "USER_ENTITY_ALREADY_EXISTS": "User entity already exists",
+    "USER_ENTITY_ALREADY_DELETED": "User entity already deleted",
+    "USER_ENTITY_CREATED_SUCCESSFULLY": "User entity created successfully",
+    "USER_ENTITY_UPDATED_SUCCESSFULLY": "User entity updated successfully",
+    "USER_ENTITY_DELETED_SUCCESSFULLY": "User entity deleted successfully",
+    "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully"
 };
