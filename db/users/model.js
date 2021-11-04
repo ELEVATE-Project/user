@@ -32,7 +32,7 @@ const userSchema = new Schema({
   },
   gender: String,
   designation: [{ value: String, label: String }],
-  location: String,
+  location: [{ value: String, label: String }],
   about: String,
   areasOfExpertise: [{ value: String, label: String }],
   image: String,

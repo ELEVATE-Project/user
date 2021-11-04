@@ -26,10 +26,10 @@ module.exports = class ProfileHelper {
     }
 
     static async details(_id) {
-        const projection = { password: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, refreshTokens: 0}
+        const projection = { password: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, refreshTokens: 0}
         try {
             const user = await usersData.findOne({ _id: ObjectId(_id) }, projection);
-            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PROFILE_FETCHED_SUCCESSFULLY, result: [user] });
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PROFILE_FETCHED_SUCCESSFULLY, result: user ? user : {}});
         } catch (error) {
             throw error;
         }

@@ -13,6 +13,13 @@ module.exports = {
             .isIn(['MALE', 'FEMALE', 'OTHER'])
             .withMessage('gender is invalid, must be either MALE, FEMALE or OTHER');
 
+        req.checkBody('name')
+            .trim()
+            .notEmpty()
+            .withMessage('name field is empty')
+            .matches(/^[A-Za-z ]+$/)
+            .withMessage('name is invalid');
+
         req.checkBody('designation')
             .notEmpty()
             .withMessage('designation field is empty')
@@ -20,11 +27,10 @@ module.exports = {
             .withMessage('designation is invalid')
 
         req.checkBody('location')
-            .trim()
             .notEmpty()
             .withMessage('location field is empty')
-            .matches(/^[A-Za-z ]+$/)
-            .withMessage('location must contains characters only');
+            .isArray()
+            .withMessage('location is invalid')
 
         req.checkBody('about')
             .notEmpty()
