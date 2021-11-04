@@ -5,9 +5,10 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js",
-    "prod": "node app.js",
-    "stage": "node app.js"
+    "start": "NODE_ENV=development nodemon app.js",
+    "prod": "NODE_ENV=production node app.js",
+    "stage": "NODE_ENV=stage node app.js",
+    "qa": "NODE_ENV=qa node app.js"
   },
   "author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
   "license": "ISC",

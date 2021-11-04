@@ -23,7 +23,7 @@ module.exports = (req, res, next) => {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
         try {
-            decodedToken = jwt.verify(authHeaderArray[1], common.accessTokenSecret);
+            decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET);
         } catch (err) {
             err.statusCode = httpStatusCode.unauthorized;
             err.responseCode = 'UNAUTHORIZED';

@@ -1,5 +1,5 @@
 /**
- * name : validators/v1/entity.js
+ * name : validators/v1/userentity.js
  * author : Aman Gupta
  * Date : 04-Nov-2021
  * Description : Validations of user entities controller

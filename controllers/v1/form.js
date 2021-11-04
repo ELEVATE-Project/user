@@ -206,7 +206,6 @@ module.exports = class Form {
     *                ]
     *            }
     *        },
-    *        "deleted": false,
     *        "_id": "618270f757db5c85408af777",
     *        "type": "profile",
     *        "subType": "profileForm",
