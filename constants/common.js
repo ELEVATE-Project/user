@@ -1,23 +1,23 @@
 /**
  * name : constants/common.js
  * author : Aman Kumar Gupta
- * Date : 29-Sep-2021
+ * Date : 04-Nov-2021
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = (statusCode = 500, message, data = [], totalCounts = undefined, token = undefined) => {
+const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] }) => {
     return {
         statusCode,
+        responseCode,
         message,
-        data,
-        totalCounts,
-        token
+        result
     }
 };
 
-const failureResponse = ({ message = "Oops! Something Went Wrong.", statusCode = 500 }) => {
+const failureResponse = ({ message = "Oops! Something Went Wrong.", statusCode = 500, responseCode }) => {
     const error = new Error(message);
     error.statusCode = statusCode;
+    error.responseCode = responseCode;
     return error;
 };
 
@@ -27,5 +27,6 @@ module.exports = {
         DEFAULT_PAGE_SIZE: 100,
     },
     successResponse,
-    failureResponse
+    failureResponse,
+    guestUrls: []
 };

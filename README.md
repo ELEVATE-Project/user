@@ -11,13 +11,13 @@ HOST = localhost
 ### Port number
 
 ```
-POST = 3000
+PORT = 3000
 ```
 
 ### Mongo DB connecting string
 
 ```
-MONGODB_URL = mongodb://localhost:27017
+MONGODB_URL = mongodb://localhost:27017/{DB}
 ```
 
 ### Database name
@@ -44,7 +44,7 @@ LOG = debug
 ### port Define environment
 
 ```
-NODE_ENV = development
+NODE_ENV=development
 ```
 
 ## Environment:

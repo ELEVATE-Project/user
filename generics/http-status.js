@@ -1,11 +1,11 @@
 /**
  * name : constants/http-status-codes.js
  * author : Aman Kumar Gupta
- * Date : 29-Sep-2021
+ * Date : 04-Nov-2021
  * Description : All http status code's and there message.
  */
 
-module.exports = {
+ module.exports = {
   'ok': 200,
   'created': 201,
   'accepted': 202,

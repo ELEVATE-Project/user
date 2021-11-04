@@ -1,8 +1,15 @@
+/**
+ * name : configs/mongodb
+ * author : Aman
+ * Date : 04-Nov-2021
+ * Description : Mongodb connections configurations
+*/
+
 //dependencies
 let mongoose = require("mongoose");
-const mongoose_delete = require("mongoose-delete");
 const mongoose_autopopulate = require("mongoose-autopopulate");
 const mongoose_timestamp = require("mongoose-timestamp");
+const mongoose_paginate = require('mongoose-paginate-v2');
 
 module.exports = function() {
   
@@ -32,6 +39,6 @@ module.exports = function() {
   });
   
   mongoose.plugin(mongoose_autopopulate);
-  mongoose.plugin(mongoose_delete, { overrideMethods: true, deletedAt: true });
+  mongoose.plugin(mongoose_paginate);
   global.db = db;
 };
