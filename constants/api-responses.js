@@ -25,5 +25,8 @@ module.exports = {
     "USER_ENTITY_CREATED_SUCCESSFULLY": "User entity created successfully",
     "USER_ENTITY_UPDATED_SUCCESSFULLY": "User entity updated successfully",
     "USER_ENTITY_DELETED_SUCCESSFULLY": "User entity deleted successfully",
-    "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully"
+    "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
+    "OTP_SENT_SUCCESSFULLY": "Otp sent successfully",
+    "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
+    "OTP_INVALID": "Invalid otp"
 };

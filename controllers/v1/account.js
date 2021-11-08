@@ -151,12 +151,12 @@ module.exports = class Account {
     * @api {post} /user/v1/account/generateToken
     * @apiVersion 1.0.0
     * @apiName Regenerate access token
-    * @apiGroup Token
+    * @apiGroup Account
     * @apiParamExample {json} Request-Body:
     * {
     *   "refreshToken" : "asdxbebiuqeiu1273bahdxuy9813xbahjahDahiux7yiqhlaY74HDKA3y47yahdgcHDqcgkhggdfy",
     * }
-    * @apiSampleRequest /user/api/v1/token/regenerate
+    * @apiSampleRequest /user/v1/account/generateToken
     * @apiParamExample {json} Response:
     * {
     *   "responseCode": 'OK',
@@ -182,6 +182,84 @@ module.exports = class Account {
         try {
             const createdToken = await accountHelper.generateToken(params);
             return createdToken;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    /**
+    * @api {post} /user/v1/account/generateOtp
+    * @apiVersion 1.0.0
+    * @apiName Generate otp 
+    * @apiGroup Account
+    * @apiParamExample {json} Request-Body:
+    * {
+    *   "email" : "testuser@gmail.com",
+    * }
+    * @apiSampleRequest /user/v1/account/generateOtp
+    * @apiParamExample {json} Response:
+    * {
+    *   "responseCode": 'OK',
+    *   "message": "Otp generated successfully",
+    *   "result": []
+    * }
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
+    * generate otp
+    * @method
+    * @name generateOtp
+    * @param {Object} req -request data.
+    * @returns {JSON} - otp success response
+    */
+
+    async generateOtp(req) {
+        const params = req.body;
+        try {
+            const result = await accountHelper.generateOtp(params);
+            return result;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    /**
+    * @api {post} /user/v1/account/resetPassword
+    * @apiVersion 1.0.0
+    * @apiName Reset user password
+    * @apiGroup Account
+    * @apiParamExample {json} Request-Body:
+    * {
+    *   "email" : "testuser@gmail.com",
+    *   "password": "testpassword",
+    *   "otp": "246813"
+    * }
+    * @apiSampleRequest /user/v1/account/resetPassword
+    * @apiParamExample {json} Response:
+    * {
+    *   "responseCode": 'OK',
+    *   "message": "Password updated successfully",
+    *   "result": []
+    * }
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
+    * Reset password
+    * @method
+    * @name generateOtp
+    * @param {Object} req -request data.
+    * @returns {JSON} - password reset response
+    */
+
+    async resetPassword(req) {
+        const params = req.body;
+        try {
+            const result = await accountHelper.resetPassword(params);
+            return result;
         } catch (error) {
             return error;
         }

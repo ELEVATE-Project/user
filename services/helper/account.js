@@ -7,6 +7,7 @@ const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
 const usersData = require("../../db/users/queries");
+const kafkaCommunication = require('../../generics/kafka-communication');
 
 module.exports = class AccountHelper {
 
@@ -127,5 +128,66 @@ module.exports = class AccountHelper {
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY, result: { access_token: accessToken } });
         }
         return common.failureResponse({ message: apiResponses.REFRESH_TOKEN_NOT_FOUND, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+    }
+
+    static async generateOtp(bodyData) {
+        try {
+            let otp;
+            let expiresIn
+            let isValidOtpExist = true;
+            const user = await usersData.findOne({ 'email.address': bodyData.email });
+            if (!user) {
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            if (!user.otpInfo.otp || new Date().getTime() > user.otpInfo.exp) {
+                isValidOtpExist = false;
+            } else {
+                otp = user.otpInfo.otp // If valid then get previuosly generated otp
+            }
+
+            if (!isValidOtpExist) {
+                otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
+                expiresIn = new Date().getTime() + (24 * 60 * 60 * 1000); // 1 day expiration time
+                await usersData.updateOneUser({ _id: user._id }, { otpInfo: { otp, exp: expiresIn } });
+            }
+
+            // Push otp to kafka
+            const payload = {
+                type: 'email',
+                email: {
+                    to: bodyData.email,
+                    subject: 'Reset Password',
+                    body: `Dear ${user.name}, Your OTP to reset your password is ${otp}. Please enter the OTP to reset your password. For your security, please do not share this OTP with anyone.`
+                }
+            };
+
+            await kafkaCommunication.sendOtpEmailToKafka(payload);
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.OTP_SENT_SUCCESSFULLY });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async resetPassword(bodyData) {
+        try {
+            const user = await usersData.findOne({ 'email.address': bodyData.email });
+            if (!user) {
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            if (user.otpInfo.otp != bodyData.otp || new Date().getTime() > user.otpInfo.exp) {
+                return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            const salt = bcryptJs.genSaltSync(10);
+            bodyData.password = bcryptJs.hashSync(bodyData.password, salt);
+            await usersData.updateOneUser({ _id: user._id }, { password: bodyData.password });
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PASSWORD_RESET_SUCCESSFULLY });
+        } catch (error) {
+            throw error;
+        }
     }
 }

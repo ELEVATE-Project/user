@@ -31,6 +31,8 @@ module.exports = {
     guestUrls: [
         '/user/v1/account/login',
         '/user/v1/account/create',
-        '/user/v1/account/generateToken'
+        '/user/v1/account/generateToken',
+        '/user/v1/account/generateOtp',
+        '/user/v1/account/resetPassword'
     ]
 };

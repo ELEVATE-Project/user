@@ -46,6 +46,7 @@ module.exports = (app) => {
             /* If error obtained then global error handler gets executed */
             return next(controllerResponse);
         }
+        
         res.status(controllerResponse.statusCode).json({
             responseCode: controllerResponse.responseCode,
             message: controllerResponse.message,
