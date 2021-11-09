@@ -54,39 +54,38 @@ module.exports = {
 
     update: (req) => {
 
-        req.checkParams('id')
-            .notEmpty()
-            .withMessage('id param is empty')
-            .isMongoId()
-            .withMessage('id is invalid');
-
         req.checkBody('type')
-            .optional()
+            .notEmpty()
+            .withMessage('type field is empty')
             .matches(/^[A-Za-z]+$/)
             .withMessage('type is invalid');
 
         req.checkBody('subType')
-            .optional()
+            .notEmpty()
+            .withMessage('subType field is empty')
             .matches(/^[A-Za-z]+$/)
             .withMessage('subType is invalid');
 
         req.checkBody('action')
-            .optional()
+            .notEmpty()
+            .withMessage('action field is empty')
             .matches(/^[A-Za-z]+$/)
             .withMessage('action is invalid');
 
         req.checkBody('ver')
-            .optional()
+            .notEmpty()
+            .withMessage('ver field is empty')
             .isString()
             .withMessage('ver is invalid');
 
         req.checkBody('data.templateName')
-            .optional()
+            .notEmpty()
+            .withMessage('data.templateName field is empty')
             .matches(/^[A-Za-z]+$/)
             .withMessage('templateName is invalid')
             .custom((value) => {
                 if (!req.body.data.fields) {
-                    throw new Error('fields key is not passed while updating data.templateName');
+                    throw new Error('fields key is not passed while passing data.templateName');
                 }
                 return true;
             });

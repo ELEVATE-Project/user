@@ -84,7 +84,7 @@ module.exports = class Form {
     }
 
     /**
-    * @api {post} /mentoring/v1/form/update/:id
+    * @api {post} /mentoring/v1/form/update
     * @apiVersion 1.0.0
     * @apiName Updates Mentoring Form
     * @apiGroup Form
@@ -127,7 +127,7 @@ module.exports = class Form {
     *        }
     *    }
     * }
-    * @apiSampleRequest /mentoring/v1/form/update/618270f757db5c85408af777
+    * @apiSampleRequest /mentoring/v1/form/update
     * @apiParamExample {json} Response:
     * {
     *   "responseCode": 'OK',
@@ -148,9 +148,8 @@ module.exports = class Form {
 
     async update(req) {
         const params = req.body;
-        const _id = req.params.id
         try {
-            const updatedForm = await formsHelper.update(params, _id);
+            const updatedForm = await formsHelper.update(params);
             return updatedForm;
         } catch (error) {
             return error;
