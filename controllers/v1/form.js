@@ -83,7 +83,7 @@ module.exports = class Form {
     }
 
     /**
-    * @api {post} /user/v1/form/update/:id
+    * @api {post} /user/v1/form/update
     * @apiVersion 1.0.0
     * @apiName Updates User Form
     * @apiGroup Form
@@ -125,7 +125,7 @@ module.exports = class Form {
     *        }
     *    }
     * }
-    * @apiSampleRequest /user/v1/form/update/618270f757db5c85408af777
+    * @apiSampleRequest /user/v1/form/update
     * @apiParamExample {json} Response:
     * {
     *   "responseCode": 'OK',
@@ -146,9 +146,8 @@ module.exports = class Form {
 
     async update(req) {
         const params = req.body;
-        const _id = req.params.id
         try {
-            const updatedForm = await formsHelper.update(params, _id);
+            const updatedForm = await formsHelper.update(params);
             return updatedForm;
         } catch (error) {
             return error;

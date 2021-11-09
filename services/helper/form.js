@@ -22,9 +22,10 @@ module.exports = class FormsHelper {
         }
     }
 
-    static async update(bodyData, _id) {
+    static async update(bodyData) {
         try {
-            const result = await formsData.updateOneForm({ _id: ObjectId(_id) }, bodyData);
+            const filter = { type: bodyData.type, subType: bodyData.subType, action: bodyData.action, ver: bodyData.ver, 'data.templateName': bodyData.data.templateName };
+            const result = await formsData.updateOneForm(filter, bodyData);
             if (result === 'ENTITY_ALREADY_EXISTS') {
                 return common.failureResponse({ message: apiResponses.FORM_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             } else if (result === 'ENTITY_NOT_FOUND') {
