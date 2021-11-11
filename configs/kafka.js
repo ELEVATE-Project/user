@@ -1,7 +1,7 @@
 /**
  * name : kafka.js
  * author : Rakesh Kumar
- * Date : 03-Nov-2022
+ * Date : 03-Nov-2021
  * Description : Contains kafk connection
  */
 const kafka = require('kafka-node');
@@ -39,15 +39,10 @@ module.exports = function (config) {
     process.env.KAFKA_TOPIC
   );
 
-  consumer.on('message', async function (message) {
-    
-    // { "type":"email", "email" : {  "to":"rakesh.doddmane@gmail.com","body":"hi","subject":"hi" } }
-   
-    
+  consumer.on('message', async function (message) {    
     try {
       let notificationData = JSON.parse(message.value);
       if(notificationData.type=="email" && notificationData.email){
-        console.log("kafka email ----- ", notificationData.email);
         emailNotifications.sendEmail(notificationData.email);
       }
       
