@@ -57,10 +57,9 @@ module.exports = class Gcp {
                     imageUrl = response.Location;
                 } else if (process.env.CLOUD_STORAGE === 'AZURE') {
                     response = await filesHelpers.uploadFileInAzure(filePath, destFileName);
-                    imageUrl = `AMAN AZURE`;
+                    imageUrl = `https://${response.accountName}.blob.core.windows.net/${response.containerName}/${destFileName}`;
                 }
                 utils.clearFile(filePath);
-                // https://storage.googleapis.com/mentoring-images/1636468525356cursor.png
                 return common.successResponse({ message: apiResponses.FILE_UPLOADED_SUCCESSFULLY, statusCode: httpStatusCode.ok, responseCode: 'OK', result: { fileName: destFileName, fileLocation: imageUrl } });
             } else {
                 return common.failureResponse({ message: apiResponses.FILE_NOT_PROVIDED, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
