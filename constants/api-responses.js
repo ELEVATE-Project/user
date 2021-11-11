@@ -28,5 +28,7 @@ module.exports = {
     "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
     "OTP_SENT_SUCCESSFULLY": "Otp sent successfully",
     "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
-    "OTP_INVALID": "Invalid otp"
+    "OTP_INVALID": "Invalid otp",
+    "FILE_NOT_PROVIDED": "File not provided",
+    "FILE_UPLOADED_SUCCESSFULLY": "File uploaded successfully",
 };

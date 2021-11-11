@@ -12,6 +12,7 @@ const expressValidator = require('express-validator');
 module.exports = (app) => {
 
     app.use(authenticator);
+
     app.use(expressValidator());
 
     async function router(req, res, next) {
@@ -36,7 +37,12 @@ module.exports = (app) => {
         }
 
         try {
-            const controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+            let controller;
+            if (req.params.file) {
+                controller = require(`../controllers/${req.params.version}/${req.params.controller}/${req.params.file}`);
+            } else {
+                controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+            }
             controllerResponse = await new controller()[req.params.method](req);
         } catch (error) { // If controller or service throws some random error
             return next(error);
@@ -46,7 +52,7 @@ module.exports = (app) => {
             /* If error obtained then global error handler gets executed */
             return next(controllerResponse);
         }
-        
+
         res.status(controllerResponse.statusCode).json({
             responseCode: controllerResponse.responseCode,
             message: controllerResponse.message,
@@ -54,6 +60,8 @@ module.exports = (app) => {
         });
     }
 
+    app.all("/user/:version/:controller/:file/:method", router);
+    app.all("/user/:version/:controller/:file/:method/:id", router);
     app.all("/user/:version/:controller/:method", validator, router);
     app.all("/user/:version/:controller/:method/:id", validator, router);
 
