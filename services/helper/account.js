@@ -171,8 +171,9 @@ module.exports = class AccountHelper {
     }
 
     static async resetPassword(bodyData) {
+        const projection = { refreshTokens: 0, password: 0 };
         try {
-            const user = await usersData.findOne({ 'email.address': bodyData.email });
+            const user = await usersData.findOne({ 'email.address': bodyData.email }, projection);
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
@@ -183,9 +184,33 @@ module.exports = class AccountHelper {
 
             const salt = bcryptJs.genSaltSync(10);
             bodyData.password = bcryptJs.hashSync(bodyData.password, salt);
-            await usersData.updateOneUser({ _id: user._id }, { password: bodyData.password });
 
-            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PASSWORD_RESET_SUCCESSFULLY });
+            const tokenDetail = {
+                data: {
+                    _id: user._id,
+                    email: user.email.address,
+                    isAMentor: user.isAMentor
+                }
+            };
+
+            const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d');
+            const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d');
+
+            const updateParams = {
+                $push: {
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() }
+                },
+                lastLoggedInAt: new Date().getTime(),
+                password: bodyData.password
+            };
+            await usersData.updateOneUser({ _id: user._id }, updateParams);
+
+            /* Mongoose schema is in strict mode, so can not delete otpInfo directly */
+            user = { ...user._doc };
+            delete user.otpInfo;
+            const result = { access_token: accessToken, refresh_token: refreshToken, user };
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PASSWORD_RESET_SUCCESSFULLY, result });
         } catch (error) {
             throw error;
         }
