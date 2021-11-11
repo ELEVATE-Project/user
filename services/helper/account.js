@@ -173,7 +173,7 @@ module.exports = class AccountHelper {
     static async resetPassword(bodyData) {
         const projection = { refreshTokens: 0, password: 0 };
         try {
-            const user = await usersData.findOne({ 'email.address': bodyData.email }, projection);
+            let user = await usersData.findOne({ 'email.address': bodyData.email }, projection);
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
