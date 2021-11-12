@@ -6,6 +6,7 @@
  */
 
 const bcryptJs = require('bcryptjs');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
@@ -22,8 +23,15 @@ const comparePassword = (password1,password2) => {
     return bcryptJs.compareSync(password1, password2);
 }
 
+const clearFile = (filePath) => {
+    fs.unlink(filePath, err => {
+        if (err) console.log(err);
+    })
+};
+
 module.exports = {
     generateToken,
     hashPassword,
-    comparePassword
+    comparePassword,
+    clearFile
 }

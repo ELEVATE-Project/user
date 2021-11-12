@@ -31,5 +31,7 @@ module.exports = {
     "OTP_INVALID": "Invalid otp",
     "SYSTEM_USER_ALREADY_EXISTS": "System User already exists",
     "NOT_AN_ADMIN": "Not an admin",
-    "MENTOR_LIST": "Mentor list fetched successfully"
+    "MENTOR_LIST": "Mentor list fetched successfully",
+    "FILE_NOT_PROVIDED": "File not provided",
+    "FILE_UPLOADED_SUCCESSFULLY": "File uploaded successfully",
 };

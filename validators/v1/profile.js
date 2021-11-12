@@ -52,6 +52,11 @@ module.exports = {
             .optional()
             .isBoolean()
             .withMessage('hasAcceptedTAndC field is invalid')
+
+        req.checkBody('image')
+            .optional()
+            .isString()
+            .withMessage('image field must be string only')
     },
 
     details: (req) => {
