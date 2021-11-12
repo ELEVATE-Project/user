@@ -61,6 +61,9 @@ module.exports = class UsersData {
                         },
                     },
                     {
+                        $sort: {"name": 1}
+                    },
+                    {
                         $project: {
                             name: 1,
                             image: 1,
