@@ -45,7 +45,7 @@ module.exports = (app) => {
             } else {
                 controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
             }
-            controllerResponse = await new controller()[req.params.method](req);
+            controllerResponse = await new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
         } catch (error) { // If controller or service throws some random error
             return next(error);
         }
@@ -84,6 +84,13 @@ module.exports = (app) => {
     app.all("/user/:version/:controller/:method", validator, router);
     app.all("/user/:version/:controller/:method/:id", validator, router);
 
+    app.use((req, res, next) => {
+        res.status(404).json({
+            responseCode: 'RESOURCE_ERROR',
+            message: 'Requested resource not found!',
+        });
+    });
+    
     // Global error handling middleware, should be present in last in the stack of a middleware's
     app.use((error, req, res, next) => {
         const status = error.statusCode || 500;

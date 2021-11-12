@@ -16,13 +16,15 @@ const httpStatusCode = require("../../generics/http-status");
          try {
              const mentors = await usersData.searchMentors(page,limit,search);
 
-             if (mentors.length < 1 ) {
-                 return {
-                     result: {
-                         data: [],
-                         count: 0
+             if (mentors[0].data.length < 1 ) {
+                 return common.successResponse({
+                    "statusCode": httpStatusCode.ok,
+                    "message": apiResponses.MENTOR_LIST,
+                    "result": {
+                        "data": [],
+                        "count": 0
                      }
-                 }
+                 })
              }
 
              let foundKeys = {};
