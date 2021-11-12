@@ -28,5 +28,8 @@ module.exports = {
     "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
     "OTP_SENT_SUCCESSFULLY": "Otp sent successfully",
     "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
-    "OTP_INVALID": "Invalid otp"
+    "OTP_INVALID": "Invalid otp",
+    "SYSTEM_USER_ALREADY_EXISTS": "System User already exists",
+    "NOT_AN_ADMIN": "Not an admin",
+    "MENTOR_LIST": "Mentor list fetched successfully"
 };

@@ -45,4 +45,52 @@ module.exports = class UsersData {
             }
         });
     }
+
+    static searchMentors(page,limit,search) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                
+                let users = await Users.aggregate([
+                    {
+                        $match: { 
+                            deleted: false,
+                            isAMentor: true,
+                            $or: [
+                                { name: new RegExp(search, 'i') }
+                            ] 
+                        },
+                    },
+                    {
+                        $project: {
+                            name: 1,
+                            image: 1,
+                            designation: 1
+                        }
+                    },
+                    {
+                        $facet: {
+                            "totalCount": [
+                                { "$count": "count" }
+                            ],
+                            "data": [
+                                { $skip: limit * (page - 1) },
+                                { $limit: limit }
+                            ],
+                        }
+                    }, {
+                        $project: {
+                            "data": 1,
+                            "count": {
+                                $arrayElemAt: ["$totalCount.count", 0]
+                            }
+                        }
+                    }
+                ]);
+
+                return resolve(users);
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
 }

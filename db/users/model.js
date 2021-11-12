@@ -40,7 +40,8 @@ const userSchema = new Schema({
   lastLoggedInAt: Date,
   isAMentor: {
     type: Boolean,
-    default: false
+    default: false,
+    index: true
   },
   hasAcceptedTAndC: {
     type: Boolean,

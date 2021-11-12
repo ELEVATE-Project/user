@@ -8,6 +8,8 @@ const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
 const usersData = require("../../db/users/queries");
 const kafkaCommunication = require('../../generics/kafka-communication');
+const systemUserData = require("../../db/systemUsers/queries");
+const FILESTREAM = require("../../generics/file-stream");
 
 module.exports = class AccountHelper {
 
@@ -189,5 +191,44 @@ module.exports = class AccountHelper {
         } catch (error) {
             throw error;
         }
+    }
+
+    static async bulkCreateMentors(mentors,tokenInformation) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email);
+            
+                if (!systemUser) {
+                    return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                }
+    
+                if (systemUser.role !== "admin") {
+                    return common.failureResponse({ message: apiResponses.NOT_AN_ADMIN, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                }
+                
+                const fileName = `mentors-creation`;
+                let fileStream = new FILESTREAM(fileName);
+                let input = fileStream.initStream();
+          
+                (async function () {
+                    await fileStream.getProcessorPromise();
+                    return resolve({
+                        isResponseAStream: true,
+                        fileNameWithPath: fileStream.fileNameWithPath()
+                    });
+                })();
+    
+                for (const mentor of mentors) {
+                    mentor.isAMentor = true;
+                    const data = await this.create(mentor);
+                    mentor.status = data.message;
+                    input.push(mentor);
+                }
+    
+                input.push(null);
+            } catch(error) {
+                throw error;
+            }
+        })
     }
 }

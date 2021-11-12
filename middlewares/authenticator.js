@@ -18,6 +18,13 @@ module.exports = (req, res, next) => {
         if (!authHeader) {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
+
+        if (common.uploadUrls.includes(req.url)) {
+            if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
+                throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+            }
+        }
+
         const authHeaderArray = authHeader.split(' ');
         if (authHeaderArray[0] !== 'bearer') {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
@@ -35,11 +42,7 @@ module.exports = (req, res, next) => {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
 
-        req.decodedToken = {
-            _id: decodedToken.data._id,
-            email: decodedToken.data.email,
-            isAMentor: decodedToken.data.isAMentor
-        };
+        req.decodedToken = decodedToken.data;
     }
     next();
 };
