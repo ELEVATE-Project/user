@@ -5,14 +5,23 @@
  * Description : Utils helper function.
  */
 
+const bcryptJs = require('bcryptjs');
 const fs = require('fs');
-
-
 const jwt = require('jsonwebtoken');
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
     return jwt.sign(tokenData, secretKey, { expiresIn });
 };
+
+const hashPassword = (password) => {
+    const salt = bcryptJs.genSaltSync(10);
+    let hashPassword = bcryptJs.hashSync(password, salt);
+    return hashPassword;
+}
+
+const comparePassword = (password1,password2) => {
+    return bcryptJs.compareSync(password1, password2);
+}
 
 const clearFile = (filePath) => {
     fs.unlink(filePath, err => {
@@ -22,5 +31,7 @@ const clearFile = (filePath) => {
 
 module.exports = {
     generateToken,
+    hashPassword,
+    comparePassword,
     clearFile
 }

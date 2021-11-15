@@ -4,15 +4,13 @@
  * Date : 20-Oct-2021
  * Description : Contains logic to call required validator from validators directory to validate request data
  */
+const fs = require("fs");
 
 module.exports = (req, res, next) => {
-    try {
+    
+    if(fs.existsSync(`validators/${req.params.version}/${req.params.controller}`)) {
         require(`../validators/${req.params.version}/${req.params.controller}`)[req.params.method](req);
-        next();
-    } catch (error) {
-        error.message = 'Requested resource not found';
-        error.statusCode = 404;
-        error.responseCode = 'RESOURCE_ERROR';
-        next(error);
     }
+
+    next();  
 };
