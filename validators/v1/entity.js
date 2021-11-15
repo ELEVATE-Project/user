@@ -7,19 +7,19 @@
 
 module.exports = {
     create: (req) => {
-        req.checkBody('code')
+        req.checkBody('value')
             .trim()
             .notEmpty()
-            .withMessage('code field is empty')
+            .withMessage('value field is empty')
             .matches(/^[A-Za-z]+$/)
-            .withMessage('code is invalid, must not contain spaces');
+            .withMessage('value is invalid, must not contain spaces');
 
-        req.checkBody('name')
+        req.checkBody('label')
             .trim()
             .notEmpty()
-            .withMessage('name field is empty')
+            .withMessage('label field is empty')
             .matches(/^[A-Za-z0-9 ]+$/)
-            .withMessage('name is invalid');
+            .withMessage('label is invalid');
 
         req.checkBody('type')
             .trim()
@@ -37,15 +37,15 @@ module.exports = {
             .isMongoId()
             .withMessage('id is invalid');
 
-        req.checkBody('code')
+        req.checkBody('value')
             .optional()
             .matches(/^[A-Za-z]+$/)
-            .withMessage('code is invalid, must not contain spaces');
+            .withMessage('value is invalid, must not contain spaces');
 
-        req.checkBody('name')
+        req.checkBody('label')
             .optional()
             .matches(/^[A-Za-z0-9 ]+$/)
-            .withMessage('name is invalid');
+            .withMessage('label is invalid');
 
         req.checkBody('status')
             .optional()
