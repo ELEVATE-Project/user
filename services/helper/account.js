@@ -29,7 +29,7 @@ module.exports = class AccountHelper {
     }
 
     static async login(bodyData) {
-        const projection = { refreshTokens: 0, otpInfo: 0 };
+        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0};
         try {
             let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
             if (!user) {
@@ -171,7 +171,7 @@ module.exports = class AccountHelper {
     }
 
     static async resetPassword(bodyData) {
-        const projection = { refreshTokens: 0, password: 0 };
+        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, password: 0};
         try {
             let user = await usersData.findOne({ 'email.address': bodyData.email }, projection);
             if (!user) {

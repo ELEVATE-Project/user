@@ -8,11 +8,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userEntitySchema = new Schema({
-    code: {
+    value: {
         type: String,
         required: true
     },
-    name: {
+    label: {
         type: String,
         required: true
     },

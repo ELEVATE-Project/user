@@ -18,10 +18,10 @@ module.exports = class FilesHelper {
       * Upload file to GCP 
       * @method
       * @name uploadFileInGcp
-      * @param  {filePath} filePath - Stored file path in file system.
-      * @param  {destFileName} destFileName - fileName to be saved in gc
-      * @param  {bucketName} bucketName - cloud storage location in which file gets saved
-      * @returns {JSON} - Upload result.
+      * @param  {string} filePath - Stored file path in file system.
+      * @param  {string} destFileName - fileName to be saved in gc
+      * @param  {string} bucketName - cloud storage location in which file gets saved
+      * @returns {Promise<JSON>} Uploaded json result.
     */
     static async uploadFileInGcp(filePath, destFileName, bucketName) {
         const storage = new Storage({
@@ -47,10 +47,10 @@ module.exports = class FilesHelper {
       * Upload file to AWS
       * @method
       * @name uploadFileInAws
-      * @param  {filePath} filePath - Stored file path in file system.
-      * @param  {destFileName} destFileName - fileName to be saved in aws
-      * @param  {bucketName} bucketName - cloud storage location in which file gets saved
-      * @returns {JSON} - Upload result.
+      * @param  {string} filePath - Stored file path in file system.
+      * @param  {string} destFileName - fileName to be saved in aws
+      * @param  {string} bucketName - cloud storage location in which file gets saved
+      * @returns {Promise<JSON>} - Upload result.
     */
     static async uploadFileInAws(filePath, destFileName, bucketName) {
         const s3 = new S3({
@@ -81,10 +81,10 @@ module.exports = class FilesHelper {
       * Upload file to AZURE
       * @method
       * @name uploadFileInAzure
-      * @param  {filePath} filePath - Stored file path in directory (project).
-      * @param  {destFileName} destFileName - fileName to be saved in azure
-      * @param  {containerName} containerName - cloud storage container in which file gets saved
-      * @returns {JSON} - uploadedBlobResponse 
+      * @param  {string} filePath - Stored file path in directory (project).
+      * @param  {string} destFileName - fileName to be saved in azure
+      * @param  {string} containerName - cloud storage container in which file gets saved
+      * @returns {Promise<JSON>} - uploadedBlobResponse 
     */
     static async uploadFileInAzure(filePath, destFileName, containerName) {
         containerName = containerName || process.env.DEFAULT_AZURE_CONTAINER_NAME;

@@ -17,8 +17,8 @@ module.exports = class UserEntity {
     * @apiGroup userentity
     * @apiParamExample {json} Request-Body:
     * {
-    *    "code": "DO",
-    *    "name": "District Official",
+    *    "value": "DO",
+    *    "label": "District Official",
     *    "type": "roles"
     * }
     * @apiSampleRequest /user/v1/form/create

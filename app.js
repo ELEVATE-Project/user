@@ -18,8 +18,7 @@ app.use(cors());
 
 app.use(expressFileUpload({
     useTempFiles: true,
-    tempFileDir: 'tmp',
-    debug: true
+    tempFileDir: 'public/tmp'
 }));
 
 app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }));

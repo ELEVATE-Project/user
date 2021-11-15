@@ -41,11 +41,12 @@ module.exports = class UserEntityHelper {
     }
 
     static async read(bodyData) {
+        const projection = { value: 1, label: 1, _id: 0 };
         if (!bodyData.deleted) {
             bodyData.deleted = false;
         }
         try {
-            const entities = await userEntitiesData.findAllEntities(bodyData);
+            const entities = await userEntitiesData.findAllEntities(bodyData, projection);
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_ENTITY_FETCHED_SUCCESSFULLY, result: entities });
         } catch (error) {
             throw error;
