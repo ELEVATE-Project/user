@@ -10,5 +10,10 @@ module.exports = {
     "ENTITY_CREATED_SUCCESSFULLY": "Entity created successfully",
     "ENTITY_UPDATED_SUCCESSFULLY": "Entity updated successfully",
     "ENTITY_DELETED_SUCCESSFULLY": "Entity deleted successfully",
-    "ENTITY_FETCHED_SUCCESSFULLY": "Entity fetched successfully"
+    "ENTITY_FETCHED_SUCCESSFULLY": "Entity fetched successfully",
+    "SESSION_CREATED_SUCCESSFULLY": "Session Created successfully",
+    "SESSION_NOT_FOUND": "Session not found",
+    "SESSION_ALREADY_EXISTS": "Session already exists",
+    "SESSION_UPDATED_SUCCESSFULLY": "Session updated successfully",
+    "SESSION_FETCHED_SUCCESSFULLY":"Session fetched successfully"
 };

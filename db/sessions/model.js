@@ -14,9 +14,9 @@ let sessionsSchema = new Schema({
   startDate: Date,
   endDate: Date,
   recommendedFor: Array,
-  category: Array,
-  medium: String,
-  image: String,
+  categories: Array,
+  medium: Array,
+  image: Array,
   userId: {
     type: String,
     index: true
