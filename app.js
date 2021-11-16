@@ -8,6 +8,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const expressFileUpload = require('express-fileupload');
+
 require('dotenv').config({ path: './.env' });
 require('./configs');
 
@@ -15,9 +17,11 @@ const app = express();
 
 app.use(cors());
 
+app.use(expressFileUpload({
+    useTempFiles: true,
+    tempFileDir: 'public/tmp'
+}));
 
-const fileUpload = require("express-fileupload");
-app.use(fileUpload());
 app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }));
 app.use(bodyParser.json({ limit: '50MB' }));
 

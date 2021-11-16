@@ -11,6 +11,28 @@ const userEntityHelper = require("../../services/helper/userentity");
 module.exports = class UserEntity {
 
     /**
+    * @api {post} /user/v1/userentity/create
+    * @apiVersion 1.0.0
+    * @apiName Creates User Entity
+    * @apiGroup userentity
+    * @apiParamExample {json} Request-Body:
+    * {
+    *    "value": "DO",
+    *    "label": "District Official",
+    *    "type": "roles"
+    * }
+    * @apiSampleRequest /user/v1/form/create
+    * @apiParamExample {json} Response:
+    * {
+    *   "responseCode": 'OK',
+    *   "message": "User entity created successfully",
+    *   "result": []
+    * }
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
     * create user entity
     * @method
     * @name create
