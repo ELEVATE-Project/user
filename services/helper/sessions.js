@@ -1,3 +1,7 @@
+const sessionsData = require("../../db/sessions/query");
+const common = require('../../constants/common');
+const sessionAttendes = require("../../db/sessionAttendes/query");
+
 module.exports = class SessionsHelper {
     
     static form(bodyData) {
@@ -41,9 +45,21 @@ module.exports = class SessionsHelper {
     static enroll(sessionId) {
         return new Promise(async (resolve,reject) => {
             try {
-                 /**
-                 * Your business logic here
-                 */
+                const session = await sessionsData.findSessionById(sessionId);
+
+                if (!session) {
+                    return common.failureResponse({ message: apiResponses.SESSION_NOT_FOUND, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                }
+
+                const attendee = {
+                    sessionId: session,
+                    enrolledOn: new Date(),
+                    userId: userId
+                }
+
+                await sessionAttendes.create(attendee);
+
+                return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_ENROLLED_SUCCESSFULLY });
             } catch(error) {
                 return reject(error);
             }
@@ -60,5 +76,17 @@ module.exports = class SessionsHelper {
                 return reject(error);
             }
         })
-    } 
+    }
+    
+    static publishedSessions(page,limit,search) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                let publishedSessions = 
+                await sessionsData.searchAndPagination(page,limit,search);
+                
+            } catch(error) {
+                return reject(error);
+            }
+        })
+    }
 }

@@ -8,4 +8,14 @@
 const SessionAttendes = require("./model");
 
 module.exports = class SessionsData {
+    static create(data) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                await (new SessionAttendes(data)).save();
+                resolve(true)
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
 }
