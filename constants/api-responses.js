@@ -34,4 +34,5 @@ module.exports = {
     "MENTOR_LIST": "Mentor list fetched successfully",
     "FILE_NOT_PROVIDED": "File not provided",
     "FILE_UPLOADED_SUCCESSFULLY": "File uploaded successfully",
+    "INCORRECT_INTERNAL_ACCESS_TOKEN": "Invalid internal access token"
 };

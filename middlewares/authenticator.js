@@ -19,9 +19,11 @@ module.exports = (req, res, next) => {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
 
-        if (common.uploadUrls.includes(req.url)) {
+        let splittedUrl = req.url.split('/');
+
+        if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
             if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
-                throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+                throw common.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
             }
         }
 
