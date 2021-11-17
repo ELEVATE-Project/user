@@ -7,10 +7,11 @@
 const fs = require("fs");
 
 module.exports = (req, res, next) => {
-    
-    if(fs.existsSync(`validators/${req.params.version}/${req.params.controller}`)) {
-        require(`../validators/${req.params.version}/${req.params.controller}`)[req.params.method](req);
-    }
 
-    next();  
+    try {
+        require(`../validators/${req.params.version}/${req.params.controller}`)[req.params.method](req);
+    } catch (error) {
+        
+    }
+    next();
 };

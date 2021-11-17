@@ -45,12 +45,12 @@ module.exports = (app) => {
             } else {
                 controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
             }
-            controllerResponse = await new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
+            controllerResponse = new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
         } catch (error) { // If controller or service throws some random error
             return next(error);
         }
 
-        if (controllerResponse.isResponseAStream == true) {
+        if (controllerResponse.isResponseAStream && controllerResponse.isResponseAStream == true) {
             fs.exists(controllerResponse.fileNameWithPath, function (exists) {
   
               if (exists) {
@@ -79,7 +79,7 @@ module.exports = (app) => {
 
     }
 
-    app.all("/user/:version/:controller/:file/:method", router);
+    app.all("/user/:version/:controller/:file/:method", validator, router);
     app.all("/user/:version/:controller/:file/:method/:id", router);
     app.all("/user/:version/:controller/:method", validator, router);
     app.all("/user/:version/:controller/:method/:id", validator, router);

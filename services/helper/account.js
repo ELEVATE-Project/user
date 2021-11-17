@@ -227,7 +227,7 @@ module.exports = class AccountHelper {
                     return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
     
-                if (systemUser.role !== "admin") {
+                if (systemUser.role.toLowerCase() !== "admin") {
                     return common.failureResponse({ message: apiResponses.NOT_AN_ADMIN, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
                 

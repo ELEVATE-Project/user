@@ -34,4 +34,5 @@ module.exports = {
     "MENTOR_LIST": "Mentor list fetched successfully",
     "FILE_NOT_PROVIDED": "File not provided",
     "FILE_UPLOADED_SUCCESSFULLY": "File uploaded successfully",
+    "SIGNED_URL_GENERATED_SUCCESSFULLY": "Signed Url Generated Successfully",
 };

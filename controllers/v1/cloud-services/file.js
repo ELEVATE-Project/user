@@ -12,27 +12,7 @@ const common = require('../../../constants/common');
 const filesHelpers = require('../../../generics/files-helper');
 const utils = require('../../../generics/utils');
 
-module.exports = class Gcp {
-
-    /**
-     * @api {post} /user/api/v1/cloud-services/gcp/uploadFile - Upload file
-     * @apiVersion 1.0.0
-     * @apiGroup Gcp
-     * @apiHeader {String} X-auth-token
-     * @apiParamExample {fromData} Request:
-     * {}
-     * @apiSampleRequest /user/api/v1/cloud-services/gcp/uploadFile
-     * @apiUse successBody
-     * @apiUse errorBody
-     * @apiParamExample {json} Response:
-     * {
-     *   "responseCode": "OK",
-     *   "message": "File uploaded successfully",
-     *   "result": {
-     *       "imageUrl": "https://storage.googleapis.com/mentoring-images/1636469203975logo.png"
-     *   }
-     * }
-     */
+module.exports = class File {
 
     /**
       * Upload file
@@ -64,6 +44,31 @@ module.exports = class Gcp {
             } else {
                 return common.failureResponse({ message: apiResponses.FILE_NOT_PROVIDED, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
+        } catch (error) {
+            return error;
+        }
+    }
+
+    /**
+      * Get Signed Url
+      * @method
+      * @name getSignedUrl
+      * @param {JSON} req  request body.
+      * @returns {JSON} Response with status message and result.
+    */
+    async getSignedUrl(req) {
+        try {
+            const destFilePath = `users/${req.decodedToken._id}-${new Date().getTime()}-${req.query.fileName}`;
+            let response;
+            if (process.env.CLOUD_STORAGE === 'GCP') {
+                response = await filesHelpers.getGcpSignedUrl(destFilePath);
+            } else if (process.env.CLOUD_STORAGE === 'AWS') {
+                response = await filesHelpers.getAwsSignedUrl(destFilePath);
+            } else if (process.env.CLOUD_STORAGE === 'AZURE') {
+                response = await filesHelpers.getAzureSignedUrl(destFilePath);
+            }
+            response.destFilePath = destFilePath
+            return common.successResponse({ message: apiResponses.SIGNED_URL_GENERATED_SUCCESSFULLY, statusCode: httpStatusCode.ok, responseCode: 'OK', result: response });
         } catch (error) {
             return error;
         }

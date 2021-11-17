@@ -67,7 +67,6 @@ module.exports = class UsersData {
                         $project: {
                             name: 1,
                             image: 1,
-                            designation: 1,
                             areasOfExpertise: 1
                         }
                     },
