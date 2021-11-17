@@ -246,6 +246,7 @@ module.exports = class AccountHelper {
                 for (const mentor of mentors) {
                     mentor.isAMentor = true;
                     const data = await this.create(mentor);
+                    mentor.email = mentor.email.address;
                     mentor.status = data.message;
                     input.push(mentor);
                 }
