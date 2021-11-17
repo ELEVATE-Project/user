@@ -3,8 +3,14 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
+const apiEndpoints = require("../../constants/endpoints");
 const common = require('../../constants/common');
 const sessionData = require("../../db/sessions/queries");
+const apiBaseUrl =
+    process.env.USER_SERIVCE_HOST +
+    process.env.USER_SERIVCE_BASE_URL;
+const request = require('request');
+
 
 module.exports = class SessionsHelper {
 
@@ -25,43 +31,64 @@ module.exports = class SessionsHelper {
     static async create(bodyData, loggedInUserId) {
         bodyData.userId = ObjectId(loggedInUserId);
         try {
+            if (!await this.varifyMentor(loggedInUserId)) {
+                return common.failureResponse({
+                    message: apiResponses.INVALID_PERMISSION,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+
             let data = await sessionData.createSession(bodyData);
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_CREATED_SUCCESSFULLY,
                 result: data
             });
+        
         } catch (error) {
             throw error;
         }
     }
 
-    static async update(sessionId, bodyData) {
+    static async update(sessionId, bodyData, userId) {
         bodyData.updatedAt = new Date().getTime();
         try {
-            const result = await sessionData.updateOneSession({
-                _id: ObjectId(sessionId)
-            }, bodyData);
-            if (result === 'SESSION_ALREADY_EXISTS') {
+
+            // console.log("")
+
+            if (!await this.varifyMentor(userId)) {
                 return common.failureResponse({
-                    message: apiResponses.SESSION_ALREADY_EXISTS,
-                    statusCode: httpStatusCode.bad_request,
-                    responseCode: 'CLIENT_ERROR'
-                });
-            } else if (result === 'SESSION_NOT_FOUND') {
-                return common.failureResponse({
-                    message: apiResponses.SESSION_NOT_FOUND,
+                    message: apiResponses.INVALID_PERMISSION,
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR'
                 });
             }
-            return common.successResponse({
-                statusCode: httpStatusCode.accepted,
-                message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
-            });
+                const result = await sessionData.updateOneSession({
+                    _id: ObjectId(sessionId)
+                }, bodyData);
+                if (result === 'SESSION_ALREADY_EXISTS') {
+                    return common.failureResponse({
+                        message: apiResponses.SESSION_ALREADY_EXISTS,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    });
+                } else if (result === 'SESSION_NOT_FOUND') {
+                    return common.failureResponse({
+                        message: apiResponses.SESSION_NOT_FOUND,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    });
+                }
+                return common.successResponse({
+                    statusCode: httpStatusCode.accepted,
+                    message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
+                });
+            
         } catch (error) {
             throw error;
         }
+
     }
 
     static async details(sessionId) {
@@ -143,6 +170,45 @@ module.exports = class SessionsHelper {
                  */
             } catch (error) {
                 return reject(error);
+            }
+        })
+    }
+
+    static async varifyMentor(id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let options = {
+                    "headers": {
+                        'Content-Type': "application/json",
+                        "internal_access_token": process.env.INTERNAL_ACCESS_TOKEN
+                    }
+                };
+
+                let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR+"?userId=" + id;
+                try {
+                    request.post(apiUrl, options, callback);
+
+                    function callback(err, data) {
+                        if (err) {
+                            return reject({
+                                message: apiResponses.USER_SERVICE_DOWN
+                            });
+                        } else {
+                            data.body = JSON.parse(data.body);
+                            if(data.body.result && data.body.result.isAMentor){
+                                return resolve(true);
+                            } else {
+                                return resolve(false);
+                                
+                            }
+                        }
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+
+            } catch (error) {
+                reject(error);
             }
         })
     }

@@ -61,7 +61,7 @@ module.exports = class Sessions {
                     const sessionUpdated = 
                     await sessionsHelper.update(
                         req.params.id,
-                        req.body
+                        req.body,req.decodedToken._id
                     );
 
                     return resolve(sessionUpdated);
