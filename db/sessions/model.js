@@ -25,6 +25,10 @@ let sessionsSchema = new Schema({
   status : {
     type: String,
     index: true
+  },
+  deleted: {
+    type:Boolean,
+    default:false
   }
 });
 

@@ -7,11 +7,13 @@
 
 const validator = require('../middlewares/validator');
 const authenticator = require('../middlewares/authenticator');
+const pagination = require('../middlewares/pagination');
 const expressValidator = require('express-validator');
 
 module.exports = (app) => {
 
     app.use(authenticator);
+    app.use(pagination);
     app.use(expressValidator());
 
     async function router(req, res, next) {

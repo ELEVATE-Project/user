@@ -61,8 +61,7 @@ module.exports = class Sessions {
                     const sessionUpdated = 
                     await sessionsHelper.update(
                         req.params.id,
-                        req.body,
-                        req.decodedToken._id
+                        req.body
                     );
 
                     return resolve(sessionUpdated);
@@ -151,6 +150,81 @@ module.exports = class Sessions {
             }
         })
     }
+
+        /**
+    * @api {get} /mentoring/v1/sessions/list
+    * @apiVersion 1.0.0
+    * @apiName Get list of sessions
+    * @apiGroup Sessions
+    * @apiParamExample {json} Request-Body: 
+    * {}
+    * @apiSampleRequest /mentoring/v1/sessions/list
+    * @apiParamExample {json} Response:
+    * 
+    * {
+        "responseCode": "OK",
+        "message": "Sessions fetched successfully",
+        "result":[{
+            "recommendedFor": [
+                {
+                    "label": "HM",
+                    "value": 1
+                }
+            ],
+            "categories": [
+                {
+                    "label": "label",
+                    "value": "value"
+                }
+            ],
+            "medium": [
+                {
+                    "label": "Hindi",
+                    "value": 2
+                }
+            ],
+            "image": [
+                {
+                    "type": "png"
+                }
+            ],
+            "_id": "61924cff584a8f8176fa435f",
+            "title": "1",
+            "description": "Training in leadership and skills improvement",
+            "updatedAt": "2021-11-16T06:34:44.224Z",
+            "createdAt": "2021-11-15T12:05:19.490Z",
+            "__v": 0
+        }]
+    }
+    * @apiUse successBody
+    * @apiUse errorBody
+    */
+
+    /**
+    * session list
+    * @method
+    * @name list
+    * @param {Object} req - request data.
+    * @returns {JSON} - entities deletion response.
+    */
+     list(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const sessionDetails = 
+                await sessionsHelper.list(
+                    req.decodedToken._id,
+                    req.pageNo,
+                    req.pageSize,
+                    req.searchText,
+                    req.query.status
+                );
+                return resolve(sessionDetails);
+            } catch(error) {
+                return reject(error);
+            }
+        })
+    }
+
 
     enroll(req) {
         return new Promise(async (resolve,reject) => {
