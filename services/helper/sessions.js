@@ -42,7 +42,7 @@ module.exports = class SessionsHelper {
         })
     } 
 
-    static enroll(sessionId) {
+    static enroll(sessionId,userId) {
         return new Promise(async (resolve,reject) => {
             try {
                 const session = await sessionsData.findSessionById(sessionId);

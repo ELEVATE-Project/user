@@ -58,7 +58,8 @@ module.exports = class Sessions {
             try {
                 const enrolledSession = 
                 await sessionsHelper.enroll(
-                    req.params._id
+                    req.params._id,
+                    req.decodedToken._id
                 );
 
                 return resolve(enrolledSession);
