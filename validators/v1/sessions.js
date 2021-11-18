@@ -43,9 +43,6 @@ module.exports = {
                 .notEmpty()
                 .withMessage('medium field is empty');
 
-                req.checkBody('image')
-                .notEmpty()
-                .withMessage('image field is empty');
         } else {
             req.checkBody('title')
             .optional()
