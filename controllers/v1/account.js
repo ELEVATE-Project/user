@@ -137,4 +137,25 @@ module.exports = class Account {
             return error;
         }
     }
+
+    /**
+    * Reset password
+    * @method
+    * @name verifyMentor
+    * @param {Object} req -request data.
+    * @returns {JSON} - verifies user is mentor or not
+    */
+   
+
+         async verifyMentor(req) {
+            try {
+                console.log("req.query",req.query);
+                const result = await accountHelper.verifyMentor(req.query.userId);
+                return result;
+            } catch (error) {
+                return error;
+            }
+        }
+
+    
 }
