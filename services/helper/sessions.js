@@ -11,7 +11,7 @@ const apiBaseUrl =
     process.env.USER_SERIVCE_BASE_URL;
 const request = require('request');
 
-const sessionAttendes = require("../../db/sessionAttendes/query");
+const sessionAttendes = require("../../db/sessionAttendees/queries");
 
 module.exports = class SessionsHelper {
 
