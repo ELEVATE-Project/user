@@ -11,8 +11,9 @@ const Schema = mongoose.Schema;
 let sessionsSchema = new Schema({
   title: String,
   description: String,
-  startDate: Date,
-  endDate: Date,
+  date: String,
+  time: String,
+  duration: Number,
   recommendedFor: Array,
   categories: Array,
   medium: Array,
@@ -21,10 +22,15 @@ let sessionsSchema = new Schema({
     type: String,
     index: true
   },
+  mentorName: String,
   sessionReschedule: Number,
   status : {
     type: String,
     index: true
+  },
+  deleted: {
+    type: Boolean,
+    default: false
   }
 });
 

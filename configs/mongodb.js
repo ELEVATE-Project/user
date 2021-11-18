@@ -9,7 +9,7 @@
 let mongoose = require("mongoose");
 const mongoose_autopopulate = require("mongoose-autopopulate");
 const mongoose_timestamp = require("mongoose-timestamp");
-const mongoose_paginate = require('mongoose-paginate-v2');
+// const mongoose_paginate = require('mongoose-paginate-v2');
 
 module.exports = function() {
   
@@ -39,6 +39,6 @@ module.exports = function() {
   });
   
   mongoose.plugin(mongoose_autopopulate);
-  mongoose.plugin(mongoose_paginate);
+  // mongoose.plugin(mongoose_paginate);
   global.db = db;
 };

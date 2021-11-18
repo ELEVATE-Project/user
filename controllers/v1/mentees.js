@@ -39,4 +39,19 @@ module.exports = class Mentors {
             }
         })
     }
+
+    homefeed(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const homefeed = 
+                await menteesHelper.homefeed(
+                    req.userInformation.userId
+                );
+                
+                return resolve(homefeed);
+            } catch(error) {
+                return reject(error);
+            }
+        })
+    }
 }

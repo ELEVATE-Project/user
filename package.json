@@ -27,7 +27,6 @@
     "mongoose": "^5.0.17",
     "mongoose-autopopulate": "^0.16.0",
     "mongoose-delete": "^0.5.4",
-    "mongoose-paginate-v2": "^1.4.2",
     "mongoose-timestamp": "^0.6.0",
     "require-all": "^3.0.0",
     "uuid": "^8.3.2"
