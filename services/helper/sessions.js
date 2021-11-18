@@ -3,10 +3,14 @@ const ObjectId = require('mongoose').Types.ObjectId;
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
+const apiEndpoints = require("../../constants/endpoints");
 const common = require('../../constants/common');
 const sessionData = require("../../db/sessions/queries");
-const sessionsData = require("../../db/sessions/query");
-const common = require('../../constants/common');
+const apiBaseUrl =
+    process.env.USER_SERIVCE_HOST +
+    process.env.USER_SERIVCE_BASE_URL;
+const request = require('request');
+
 const sessionAttendes = require("../../db/sessionAttendes/query");
 
 module.exports = class SessionsHelper {
@@ -26,24 +30,41 @@ module.exports = class SessionsHelper {
     }
 
     static async create(bodyData, loggedInUserId) {
-        bodyData.createdBy = ObjectId(loggedInUserId);
-        bodyData.updatedBy = ObjectId(loggedInUserId);
+        bodyData.userId = ObjectId(loggedInUserId);
         try {
+            if (!await this.varifyMentor(loggedInUserId)) {
+                return common.failureResponse({
+                    message: apiResponses.INVALID_PERMISSION,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+
             let data = await sessionData.createSession(bodyData);
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_CREATED_SUCCESSFULLY,
                 result: data
             });
+
         } catch (error) {
             throw error;
         }
     }
 
-    static async update(sessionId, bodyData, loggedInUserId) {
-        bodyData.updatedBy = ObjectId(loggedInUserId);
+    static async update(sessionId, bodyData, userId) {
         bodyData.updatedAt = new Date().getTime();
         try {
+
+            // console.log("")
+
+            if (!await this.varifyMentor(userId)) {
+                return common.failureResponse({
+                    message: apiResponses.INVALID_PERMISSION,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
             const result = await sessionData.updateOneSession({
                 _id: ObjectId(sessionId)
             }, bodyData);
@@ -64,9 +85,11 @@ module.exports = class SessionsHelper {
                 statusCode: httpStatusCode.accepted,
                 message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
             });
+
         } catch (error) {
             throw error;
         }
+
     }
 
     static async details(sessionId) {
@@ -93,12 +116,23 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async list(sessionId) {
+    static async list(loggedInUserId, page, limit, search, status) {
         try {
-            const filter = {
-                _id: sessionId
+
+            let arrayOfStatus = [];
+            if (status && status != "") {
+                arrayOfStatus = status.split(",");
             }
-            const sessionDetails = await sessionData.findOneSession(filter);
+
+            let filters = {
+                userId: loggedInUserId
+            };
+            if (arrayOfStatus.length > 0) {
+                filters['status'] = {
+                    $in: arrayOfStatus
+                }
+            }
+            const sessionDetails = await sessionData.findAllSessions(loggedInUserId, page, limit, search, filters);
             if (!sessionDetails) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
@@ -160,6 +194,44 @@ module.exports = class SessionsHelper {
         })
     }
 
+    static async varifyMentor(id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let options = {
+                    "headers": {
+                        'Content-Type': "application/json",
+                        "internal_access_token": process.env.INTERNAL_ACCESS_TOKEN
+                    }
+                };
+
+                let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR + "?userId=" + id;
+                try {
+                    request.post(apiUrl, options, callback);
+
+                    function callback(err, data) {
+                        if (err) {
+                            return reject({
+                                message: apiResponses.USER_SERVICE_DOWN
+                            });
+                        } else {
+                            data.body = JSON.parse(data.body);
+                            if (data.body.result && data.body.result.isAMentor) {
+                                return resolve(true);
+                            } else {
+                                return resolve(false);
+
+                            }
+                        }
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
     static publishedSessions(page, limit, search) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -171,4 +243,5 @@ module.exports = class SessionsHelper {
             }
         })
     }
+
 }

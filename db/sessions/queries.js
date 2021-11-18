@@ -15,7 +15,6 @@ module.exports = class SessionsData {
                let response = await (new Sessions(data)).save();
                 resolve(response)
             } catch (error) {
-                console.log("err",error);
                 reject(error);
             }
         });
@@ -110,6 +109,66 @@ module.exports = class SessionsData {
             }
         })
     }
+    static findAllSessions(userId,page,limit,search,filters) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let sessionData = await Sessions.aggregate([
+                    {
+                        $match: { 
+                        
+                            $and : [
+                                filters,
+                                { deleted: false }
+                            ],
+                            $or: [
+                                { title: new RegExp(search, 'i') },
+                                { description: new RegExp(search, 'i') }
+                            ] 
+                        },
+                    },
+                    {
+                        $sort: {"title": 1}
+                    },
+                    {
+                        $project: {
+                            title: 1,
+                            description: 1,
+                            startDateTime: 1,
+                            endDateTime: 1,
+                            categories:1,
+                            medium:1,
+                            status:1
+                        }
+                    },
+                    {
+                        $facet: {
+                            "totalCount": [
+                                { "$count": "count" }
+                            ],
+                            "data": [
+                                { $skip: limit * (page - 1) },
+                                { $limit: limit }
+                            ],
+                        }
+                    }, {
+                        $project: {
+                            "data": 1,
+                            "count": {
+                                $arrayElemAt: ["$totalCount.count", 0]
+                            }
+                        }
+                    }
+                ]);
+
+                resolve(sessionData);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    
 }
 
 
