@@ -12,7 +12,7 @@ module.exports = class EntityHelper {
         bodyData.createdBy = ObjectId(_id);
         bodyData.updatedBy = ObjectId(_id);
         try {
-            const filter = { type: bodyData.type, code: bodyData.code };
+            const filter = { type: bodyData.type, value: bodyData.value };
             const entity = await entitiesData.findOneEntity(filter);
             if (entity) {
                 return common.failureResponse({ message: apiResponses.ENTITY_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
@@ -41,11 +41,12 @@ module.exports = class EntityHelper {
     }
 
     static async read(bodyData) {
+        const projection = { value: 1, label: 1, _id: 0 };
         if (!bodyData.deleted) {
             bodyData.deleted = false;
         }
         try {
-            const entities = await entitiesData.findAllEntities(bodyData);
+            const entities = await entitiesData.findAllEntities(bodyData, projection);
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ENTITY_FETCHED_SUCCESSFULLY, result: entities });
         } catch (error) {
             throw error;

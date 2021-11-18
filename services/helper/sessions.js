@@ -11,6 +11,7 @@ const apiBaseUrl =
     process.env.USER_SERIVCE_BASE_URL;
 const request = require('request');
 
+const sessionAttendes = require("../../db/sessionAttendes/query");
 
 module.exports = class SessionsHelper {
 
@@ -45,7 +46,7 @@ module.exports = class SessionsHelper {
                 message: apiResponses.SESSION_CREATED_SUCCESSFULLY,
                 result: data
             });
-        
+
         } catch (error) {
             throw error;
         }
@@ -64,27 +65,27 @@ module.exports = class SessionsHelper {
                     responseCode: 'CLIENT_ERROR'
                 });
             }
-                const result = await sessionData.updateOneSession({
-                    _id: ObjectId(sessionId)
-                }, bodyData);
-                if (result === 'SESSION_ALREADY_EXISTS') {
-                    return common.failureResponse({
-                        message: apiResponses.SESSION_ALREADY_EXISTS,
-                        statusCode: httpStatusCode.bad_request,
-                        responseCode: 'CLIENT_ERROR'
-                    });
-                } else if (result === 'SESSION_NOT_FOUND') {
-                    return common.failureResponse({
-                        message: apiResponses.SESSION_NOT_FOUND,
-                        statusCode: httpStatusCode.bad_request,
-                        responseCode: 'CLIENT_ERROR'
-                    });
-                }
-                return common.successResponse({
-                    statusCode: httpStatusCode.accepted,
-                    message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
+            const result = await sessionData.updateOneSession({
+                _id: ObjectId(sessionId)
+            }, bodyData);
+            if (result === 'SESSION_ALREADY_EXISTS') {
+                return common.failureResponse({
+                    message: apiResponses.SESSION_ALREADY_EXISTS,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
                 });
-            
+            } else if (result === 'SESSION_NOT_FOUND') {
+                return common.failureResponse({
+                    message: apiResponses.SESSION_NOT_FOUND,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+            return common.successResponse({
+                statusCode: httpStatusCode.accepted,
+                message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
+            });
+
         } catch (error) {
             throw error;
         }
@@ -150,12 +151,31 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static enroll(sessionId) {
+    static enroll(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
-                /**
-                 * Your business logic here
-                 */
+                const session = await sessionsData.findSessionById(sessionId);
+
+                if (!session) {
+                    return common.failureResponse({
+                        message: apiResponses.SESSION_NOT_FOUND,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    });
+                }
+
+                const attendee = {
+                    sessionId: session,
+                    enrolledOn: new Date(),
+                    userId: userId
+                }
+
+                await sessionAttendes.create(attendee);
+
+                return common.successResponse({
+                    statusCode: httpStatusCode.created,
+                    message: apiResponses.USER_ENROLLED_SUCCESSFULLY
+                });
             } catch (error) {
                 return reject(error);
             }
@@ -184,7 +204,7 @@ module.exports = class SessionsHelper {
                     }
                 };
 
-                let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR+"?userId=" + id;
+                let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR + "?userId=" + id;
                 try {
                     request.post(apiUrl, options, callback);
 
@@ -195,11 +215,11 @@ module.exports = class SessionsHelper {
                             });
                         } else {
                             data.body = JSON.parse(data.body);
-                            if(data.body.result && data.body.result.isAMentor){
+                            if (data.body.result && data.body.result.isAMentor) {
                                 return resolve(true);
                             } else {
                                 return resolve(false);
-                                
+
                             }
                         }
                     }
@@ -210,6 +230,18 @@ module.exports = class SessionsHelper {
             } catch (error) {
                 reject(error);
             }
+        });
+    }
+    static publishedSessions(page, limit, search) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                let publishedSessions =
+                    await sessionsData.searchAndPagination(page, limit, search);
+
+            } catch (error) {
+                return reject(error);
+            }
         })
     }
+
 }
