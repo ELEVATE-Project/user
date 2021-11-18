@@ -79,10 +79,11 @@ module.exports = (app) => {
 
     }
 
-    app.all("/user/:version/:controller/:file/:method", validator, router);
-    app.all("/user/:version/:controller/:file/:method/:id", router);
+
     app.all("/user/:version/:controller/:method", validator, router);
     app.all("/user/:version/:controller/:method/:id", validator, router);
+    app.all("/user/:version/:controller/:file/:method", validator, router);
+    app.all("/user/:version/:controller/:file/:method/:id", router);
 
     app.use((req, res, next) => {
         res.status(404).json({
