@@ -12,7 +12,7 @@ module.exports = class EntityHelper {
         bodyData.createdBy = ObjectId(_id);
         bodyData.updatedBy = ObjectId(_id);
         try {
-            const filter = { type: bodyData.type, code: bodyData.code };
+            const filter = { type: bodyData.type, value: bodyData.value };
             const entity = await entitiesData.findOneEntity(filter);
             if (entity) {
                 return common.failureResponse({ message: apiResponses.ENTITY_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
