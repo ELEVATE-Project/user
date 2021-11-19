@@ -13,13 +13,14 @@ module.exports = {
     "ENTITY_FETCHED_SUCCESSFULLY": "Entity fetched successfully",
     "SESSION_CREATED_SUCCESSFULLY": "Session Created successfully",
     "SESSION_NOT_FOUND": "Session not found",
-    "SESSION_ALREADY_EXISTS": "Session already exists",
+    "SESSION_ALREADY_UPDATED": "Session already updated",
     "SESSION_UPDATED_SUCCESSFULLY": "Session updated successfully",
     "SESSION_FETCHED_SUCCESSFULLY":"Session fetched successfully",
     "FILE_NOT_PROVIDED": "File not provided",
     "FILE_UPLOADED_SUCCESSFULLY": "File uploaded successfully",
     "SIGNED_URL_GENERATED_SUCCESSFULLY": "Signed Url Generated Successfully",
     "USER_SERVICE_DOWN" : "User service is down",
-    "INVALID_PERMISSION" : "User does't have the permission"
+    "INVALID_PERMISSION" : "User does't have the permission",
+    "SESSION_DELETED_SUCCESSFULLY": "Session deleted successfully"
 
 };
