@@ -35,7 +35,7 @@ module.exports = class SessionsHelper {
     static async create(bodyData, loggedInUserId) {
         bodyData.userId = ObjectId(loggedInUserId);
         try {
-            if (!await this.varifyMentor(loggedInUserId)) {
+            if (!await this.verifyMentor(loggedInUserId)) {
                 return common.failureResponse({
                     message: apiResponses.INVALID_PERMISSION,
                     statusCode: httpStatusCode.bad_request,
@@ -59,9 +59,7 @@ module.exports = class SessionsHelper {
         bodyData.updatedAt = new Date().getTime();
         try {
 
-            // console.log("")
-
-            if (!await this.varifyMentor(userId)) {
+            if (!await this.verifyMentor(userId)) {
                 return common.failureResponse({
                     message: apiResponses.INVALID_PERMISSION,
                     statusCode: httpStatusCode.bad_request,
@@ -140,9 +138,8 @@ module.exports = class SessionsHelper {
                     $in: arrayOfStatus
                 }
             }
-
             const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters);
-            if (!sessionDetails) {
+            if (sessionDetails[0] && sessionDetails[0].data.length==0) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
@@ -152,7 +149,7 @@ module.exports = class SessionsHelper {
             return common.successResponse({
                 statusCode: httpStatusCode.ok,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
-                result: sessionDetails ? sessionDetails : {}
+                result: sessionDetails[0] ? sessionDetails[0] : {}
             });
 
         } catch (error) {
@@ -211,7 +208,7 @@ module.exports = class SessionsHelper {
         })
     }
 
-    static async varifyMentor(id) {
+    static async verifyMentor(id) {
         return new Promise(async (resolve, reject) => {
             try {
                 let options = {
