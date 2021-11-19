@@ -1,17 +1,20 @@
 const ObjectId = require('mongoose').Types.ObjectId;
+const bcyptJs = require('bcryptjs');
 
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const apiEndpoints = require("../../constants/endpoints");
 const common = require('../../constants/common');
+
 const sessionData = require("../../db/sessions/queries");
+const sessionAttendesData = require("../../db/sessionAttendees/queries");
+
 const apiBaseUrl =
     process.env.USER_SERIVCE_HOST +
     process.env.USER_SERIVCE_BASE_URL;
 const request = require('request');
 
-const sessionAttendes = require("../../db/sessionAttendees/queries");
 
 module.exports = class SessionsHelper {
 
@@ -92,12 +95,17 @@ module.exports = class SessionsHelper {
 
     }
 
-    static async details(sessionId) {
+    static async details(id) {
         try {
-            const filter = {
-                _id: sessionId
+            const filter = {};
+
+            if (ObjectId.isValid(id)) {
+                filter._id = id;
+            } else {
+                filter.shareLink = id;
             }
-            const sessionDetails = await sessionData.findOneSession(filter);
+
+            const sessionDetails = await sessionData.findOneSession(filter, { shareLink: 0 });
             if (!sessionDetails) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
@@ -132,7 +140,8 @@ module.exports = class SessionsHelper {
                     $in: arrayOfStatus
                 }
             }
-            const sessionDetails = await sessionData.findAllSessions(loggedInUserId, page, limit, search, filters);
+
+            const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters);
             if (!sessionDetails) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
@@ -141,7 +150,7 @@ module.exports = class SessionsHelper {
                 });
             }
             return common.successResponse({
-                statusCode: httpStatusCode.created,
+                statusCode: httpStatusCode.ok,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
                 result: sessionDetails ? sessionDetails : {}
             });
@@ -151,35 +160,43 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static enroll(sessionId, userId) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const session = await sessionsData.findSessionById(sessionId);
-
-                if (!session) {
-                    return common.failureResponse({
-                        message: apiResponses.SESSION_NOT_FOUND,
-                        statusCode: httpStatusCode.bad_request,
-                        responseCode: 'CLIENT_ERROR'
-                    });
-                }
-
-                const attendee = {
-                    sessionId: session,
-                    enrolledOn: new Date(),
-                    userId: userId
-                }
-
-                await sessionAttendes.create(attendee);
-
-                return common.successResponse({
-                    statusCode: httpStatusCode.created,
-                    message: apiResponses.USER_ENROLLED_SUCCESSFULLY
+    static async enroll(sessionId, userId) {
+        try {
+            const session = await sessionData.findSessionById(sessionId);
+            if (!session) {
+                return common.failureResponse({
+                    message: apiResponses.SESSION_NOT_FOUND,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
                 });
-            } catch (error) {
-                return reject(error);
             }
-        })
+
+            const sessionAttendeeExist = sessionAttendesData.findOneSessionAttendee(sessionId, userId);
+            if (sessionAttendeeExist) {
+                return common.failureResponse({
+                    message: apiResponses.USER_ALREADY_ENROLLED,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+
+            const attendee = {
+                userId,
+                sessionId,
+                sessionTitle: session.title,
+                sessionDescription: session.description,
+                mentorName: session.mentorName
+            };
+
+            await sessionAttendesData.create(attendee);
+
+            return common.successResponse({
+                statusCode: httpStatusCode.created,
+                message: apiResponses.USER_ENROLLED_SUCCESSFULLY,
+            });
+        } catch (error) {
+            throw error;
+        }
     }
 
     static unEnroll(sessionId) {
@@ -232,6 +249,28 @@ module.exports = class SessionsHelper {
             }
         });
     }
+
+    static async share(sessionId) {
+        try {
+            const session = await sessionData.findSessionById(sessionId);
+            if (!session) {
+                return common.failureResponse({
+                    message: apiResponses.SESSION_NOT_FOUND,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+            let shareLink = session.shareLink;
+            if (!shareLink) {
+                shareLink = bcyptJs.hashSync(sessionId, bcyptJs.genSaltSync(10));
+                await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink });
+            }
+            return common.successResponse({ message: apiResponses.SESSION_LINK_GENERATED_SUCCESSFULLY, statusCode: httpStatusCode.ok, result: { shareLink } });
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static publishedSessions(page, limit, search) {
         return new Promise(async (resolve, reject) => {
             try {

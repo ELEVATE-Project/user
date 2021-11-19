@@ -10,22 +10,46 @@ const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
 let sessionAttendeesSchema = new Schema({
+  userId: {
+    type: ObjectId,
+    index: true,
+    required: true
+  },
   sessionId: {
     type: ObjectId,
-    index: true
+    index: true,
+    required: true
   },
-  status : {
+  sessionTitle: {
     type: String,
-    index: true
+    required: true
   },
-  enrolledOn: Date,
+  sessionDescription: {
+    type: String,
+    required: true
+  },
+  mentorName: {
+    type: String,
+    required: true
+  },
+  isSessionAttended: {
+    type: Boolean,
+    default: false
+  },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
   joinedAt: Date,
   leftAt: Date,
-  userId: {
-    type: String,
-    index: true
-  }
+  ratings: [
+    {
+      qid: ObjectId,
+      rating: Number,
+      label: String
+    }
+  ]
 });
 
-const SessionAttendes = db.model("sessionAttendees",sessionAttendeesSchema);
+const SessionAttendes = db.model("sessionAttendees", sessionAttendeesSchema);
 module.exports = SessionAttendes;

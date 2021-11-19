@@ -35,7 +35,7 @@ let sessionsSchema = new Schema({
   },
   startDateTime: String,
   endDateTime: String,
-
+  shareLink: String
 });
 
 const Sessions = db.model("sessions",sessionsSchema);

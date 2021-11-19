@@ -20,6 +20,8 @@ module.exports = {
     "FILE_UPLOADED_SUCCESSFULLY": "File uploaded successfully",
     "SIGNED_URL_GENERATED_SUCCESSFULLY": "Signed Url Generated Successfully",
     "USER_SERVICE_DOWN" : "User service is down",
-    "INVALID_PERMISSION" : "User does't have the permission"
-
+    "INVALID_PERMISSION" : "User does't have the permission",
+    "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully",
+    "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
+    "USER_ALREADY_ENROLLED": "User already enrolled",
 };
