@@ -66,7 +66,12 @@ module.exports = class Sessions {
 
                     return resolve(sessionUpdated);
                 }else {
-                    const sessionCreated = 
+
+                   if(req.decodedToken.name){
+                       req.body.mentorName = req.decodedToken.name;
+                   }
+                   
+                   const sessionCreated = 
                     await sessionsHelper.create(
                         req.body,req.decodedToken._id
                     );

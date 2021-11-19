@@ -26,12 +26,16 @@ let sessionsSchema = new Schema({
   sessionReschedule: Number,
   status : {
     type: String,
-    index: true
+    index: true,
+    default: "published"
   },
   deleted: {
     type: Boolean,
     default: false
-  }
+  },
+  startDateTime: String,
+  endDateTime: String,
+
 });
 
 const Sessions = db.model("sessions",sessionsSchema);

@@ -138,7 +138,9 @@ module.exports = class SessionsData {
                             endDateTime: 1,
                             categories:1,
                             medium:1,
-                            status:1
+                            status:1,
+                            startDateTime:1,
+                            endDateTime:1
                         }
                     },
                     {
