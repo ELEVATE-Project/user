@@ -46,6 +46,7 @@ module.exports = class AccountHelper {
                 data: {
                     _id: user._id,
                     email: user.email.address,
+                    name: user.name,
                     isAMentor: user.isAMentor
                 }
             };
@@ -191,6 +192,7 @@ module.exports = class AccountHelper {
                 data: {
                     _id: user._id,
                     email: user.email.address,
+                    name: user.name,
                     isAMentor: user.isAMentor
                 }
             };

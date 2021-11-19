@@ -149,7 +149,6 @@ module.exports = class Account {
 
          async verifyMentor(req) {
             try {
-                console.log("req.query",req.query);
                 const result = await accountHelper.verifyMentor(req.query.userId);
                 return result;
             } catch (error) {
