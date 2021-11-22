@@ -43,8 +43,11 @@ module.exports = class SessionsData {
 
                 let sessions = await Sessions.aggregate([
                     {
-                        $match: { status: "published" },
+                        $match: { status: 'published' },
                         isDeleted: false,
+                        startDateTime: {
+                            $gte: new Date()
+                        },
                         $or: [
                             { mentorName: new RegExp(search, 'i') },
                             { title: new RegExp(search, 'i') }
@@ -55,10 +58,14 @@ module.exports = class SessionsData {
                             title: 1,
                             mentorName: 1,
                             description: 1,
-                            date: 1,
-                            time: 1,
-                            duration: 1,
+                            startDateTime: 1,
+                            endDateTime: 1,
                             status: 1
+                        }
+                    },
+                    {
+                        $sort: {
+                            startDateTime: 1
                         }
                     },
                     {
@@ -71,7 +78,8 @@ module.exports = class SessionsData {
                                 { $limit: limit }
                             ],
                         }
-                    }, {
+                    },
+                    {
                         $project: {
                             "data": 1,
                             "count": {

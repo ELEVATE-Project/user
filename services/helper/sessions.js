@@ -268,14 +268,13 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static publishedSessions(page, limit, search) {
+    static upcomingPublishedSessions(page, limit, search) {
         return new Promise(async (resolve, reject) => {
             try {
-                let publishedSessions =
-                    await sessionsData.searchAndPagination(page, limit, search);
-
+                const publishedSessions = await sessionData.searchAndPagination(page, limit, search);
+                resolve(publishedSessions);
             } catch (error) {
-                return reject(error);
+                reject(error);
             }
         })
     }
