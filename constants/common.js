@@ -28,5 +28,7 @@ module.exports = {
     },
     successResponse,
     failureResponse,
-    guestUrls: []
+    guestUrls: [
+        "/sessions/completed"
+    ]
 };

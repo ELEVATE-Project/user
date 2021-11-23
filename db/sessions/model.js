@@ -11,9 +11,6 @@ const Schema = mongoose.Schema;
 let sessionsSchema = new Schema({
   title: String,
   description: String,
-  date: String,
-  time: String,
-  duration: Number,
   recommendedFor: Array,
   categories: Array,
   medium: Array,
@@ -35,7 +32,11 @@ let sessionsSchema = new Schema({
   },
   startDateTime: String,
   endDateTime: String,
-
+  startSessionTime: Date,
+  completeSessionTime: Date,
+  link: String,
+  menteePassword: String,
+  mentorPassword: String 
 });
 
 const Sessions = db.model("sessions",sessionsSchema);

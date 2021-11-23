@@ -102,7 +102,7 @@ module.exports = class SessionsData {
     static findSessionById(id) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const session = await Sessions.findOne({'_id': id,deleted: false,status: "published"}).lean();
+                const session = await Sessions.findOne({'_id': id,deleted: false,status: {$ne: "cancelled"}}).lean();
                 resolve(session);
             } catch(error) {
                 reject(error);
@@ -168,9 +168,7 @@ module.exports = class SessionsData {
                 reject(error);
             }
         })
-    }
-
-    
+    } 
 }
 
 

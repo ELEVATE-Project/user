@@ -5,14 +5,36 @@
  * Description : Session Attendes database operations
  */
 
-const SessionAttendes = require("./model");
+const SessionAttendees = require("./model");
 
-module.exports = class SessionsData {
+module.exports = class SessionsAttendees {
     static create(data) {
         return new Promise(async (resolve, reject) => {
             try {
-                await (new SessionAttendes(data)).save();
+                await (new SessionAttendees(data)).save();
                 resolve(true)
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    static findLinkBySessionAndUserId(id,sessionId) {
+        return new Promise(async (resolve,reject) => {
+            try { 
+                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,status: "enrolled",deleted:false}).lean();
+                resolve(session);
+            } catch(error) {
+                reject(error);
+            }
+        })
+    }
+
+    static updateOne(filter, update) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const updateResponse = await SessionAttendees.updateOne(filter, update);
+                return resolve(updateResponse);
             } catch (error) {
                 reject(error);
             }

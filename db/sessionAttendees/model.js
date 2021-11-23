@@ -24,7 +24,8 @@ let sessionAttendeesSchema = new Schema({
   userId: {
     type: String,
     index: true
-  }
+  },
+  link: String
 });
 
 const SessionAttendes = db.model("sessionAttendees",sessionAttendeesSchema);
