@@ -35,6 +35,8 @@ let sessionsSchema = new Schema({
   },
   startDateTime: String,
   endDateTime: String,
+  startSessionTime: String,
+  endSessionTime: String,
   shareLink: String
 });
 

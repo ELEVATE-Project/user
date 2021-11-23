@@ -114,7 +114,7 @@ module.exports = class SessionsHelper {
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
-                result: sessionDetails ? sessionDetails : {}
+                result: sessionDetails
             });
 
         } catch (error) {
@@ -139,7 +139,7 @@ module.exports = class SessionsHelper {
                 }
             }
             const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters);
-            if (sessionDetails[0] && sessionDetails[0].data.length==0) {
+            if (sessionDetails[0] && sessionDetails[0].data.length == 0) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
@@ -168,7 +168,7 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            const sessionAttendeeExist = sessionAttendesData.findOneSessionAttendee(sessionId, userId);
+            const sessionAttendeeExist = await sessionAttendesData.findOneSessionAttendee(sessionId, userId);
             if (sessionAttendeeExist) {
                 return common.failureResponse({
                     message: apiResponses.USER_ALREADY_ENROLLED,
@@ -179,10 +179,7 @@ module.exports = class SessionsHelper {
 
             const attendee = {
                 userId,
-                sessionId,
-                sessionTitle: session.title,
-                sessionDescription: session.description,
-                mentorName: session.mentorName
+                sessionId
             };
 
             await sessionAttendesData.create(attendee);
@@ -196,16 +193,33 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static unEnroll(sessionId) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                /**
-                 * Your business logic here
-                 */
-            } catch (error) {
-                return reject(error);
+    static async unEnroll(sessionId, userId) {
+        try {
+            const session = await sessionData.findSessionById(sessionId);
+            if (!session) {
+                return common.failureResponse({
+                    message: apiResponses.SESSION_NOT_FOUND,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
             }
-        })
+            const response = await sessionAttendesData.unEnrollFromSession(sessionId, userId);
+
+            if (response === 'USER_NOT_ENROLLED') {
+                return common.failureResponse({
+                    message: apiResponses.USER_NOT_ENROLLED,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+
+            return common.successResponse({
+                statusCode: httpStatusCode.accepted,
+                message: apiResponses.USER_UNENROLLED_SUCCESSFULLY,
+            });
+        } catch (error) {
+            throw error;
+        }
     }
 
     static async verifyMentor(id) {

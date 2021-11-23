@@ -20,18 +20,6 @@ let sessionAttendeesSchema = new Schema({
     index: true,
     required: true
   },
-  sessionTitle: {
-    type: String,
-    required: true
-  },
-  sessionDescription: {
-    type: String,
-    required: true
-  },
-  mentorName: {
-    type: String,
-    required: true
-  },
   isSessionAttended: {
     type: Boolean,
     default: false

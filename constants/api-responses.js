@@ -24,4 +24,6 @@ module.exports = {
     "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully",
     "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
     "USER_ALREADY_ENROLLED": "User already enrolled",
+    "USER_UNENROLLED_SUCCESSFULLY": "User unenrolled successfully",
+    "USER_NOT_ENROLLED": "User not enrolled",
 };

@@ -10,9 +10,16 @@ const menteesHelper = require("../../services/helper/mentees");
 
 module.exports = class Mentors {
 
+    /**
+    * mentees sessions
+    * @method
+    * @name sessions
+    * @param {Object} req - request data.
+    * @returns {JSON} - sessions
+    */
     async sessions(req) {
         try {
-            const sessions = await menteesHelper.sessions(req.query.upComing ? true : false);
+            const sessions = await menteesHelper.sessions(req.decodedToken._id, req.query.enrolled, req.pageNo, req.pageSize, req.searchText);
             return sessions;
         } catch (error) {
             return error;

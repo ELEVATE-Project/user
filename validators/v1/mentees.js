@@ -6,7 +6,17 @@
  */
 
 module.exports = {
+
+    sessions: (req) => {
+        req.checkQuery('enrolled')
+            .notEmpty()
+            .withMessage('enrolled query is empty')
+            .isBoolean()
+            .withMessage('enrolled is invalid')
+            .toBoolean();
+    },
+
     homefeed: (req) => {
-        
+
     }
 };

@@ -256,19 +256,13 @@ module.exports = class Sessions {
         }
     }
 
-    unEnroll(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const unEnrolledSession =
-                    await sessionsHelper.unEnroll(
-                        req.params._id
-                    );
-
-                return resolve(unEnrolledSession);
-            } catch (error) {
-                return reject(error);
-            }
-        })
+    async unEnroll(req) {
+        try {
+            const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken._id);
+            return unEnrolledSession;
+        } catch (error) {
+            return error;
+        }
     }
 
     meetingCompleted(req) {

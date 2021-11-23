@@ -1,22 +1,63 @@
+const ObjectId = require('mongoose').Types.ObjectId;
+
 const sessions = require('./sessions');
+const sessionData = require('../../db/sessions/queries');
+const sessionAttendeesData = require('../../db/sessionAttendees/queries');
+
+const utilsHelper = require("../../generics/utils");
+const httpStatusCode = require("../../generics/http-status");
+const apiResponses = require("../../constants/api-responses");
+const common = require('../../constants/common');
+const SessionsAttendeesData = require('../../db/sessionAttendees/queries');
 
 module.exports = class MenteesHelper {
 
-    static async sessions(upComingSessions) {
+    static async sessions(userId, enrolledSessions, page, limit, search = '') {
         try {
+            let sessions = [];
+            let filters;
 
-            if (upComingSessions) {
-                /** Upcoming sessions */
+            if (!enrolledSessions) {
+                /** Upcoming unenrolled sessions */
+                filters = {
+                    status: 'published',
+                    startDateTime: {
+                        $gte: new Date().toISOString()
+                    },
+                    userId: {
+                        $ne: userId
+                    }
+                };
+                sessions = await sessionData.findAllSessions(page, limit, search, filters);
             } else {
-                /** Enrolled sessions */
+                /** Upcoming user's enrolled sessions */
+                /* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
+                delays in starting session then status will remain published for that particular interval so fetch that also */
+
+                /* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
+
+                filters = {
+                    $or: [
+                        {
+                            'sessionDetail.startDateTime': {
+                                $gte: new Date().toISOString()
+                            }
+                        },
+                        {
+                            'sessionDetail.status': 'published'
+                        },
+                        {
+                            'sessionDetail.status': 'live'
+                        }
+                    ],
+                    userId: ObjectId(userId)
+                };
+                sessions = await SessionsAttendeesData.findAllUpcomingMenteesSession(page, limit, search, filters);
             }
-
-            /**
-             * Your business logic here
-             */
-
+            
+            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: sessions});
         } catch (error) {
-            return reject(error);
+            throw error;
         }
     }
 
@@ -28,20 +69,28 @@ module.exports = class MenteesHelper {
              */
 
         } catch (error) {
-            return reject(error);
+            throw error;
         }
     }
 
     static async homeFeed(userId) {
         try {
-            let page = 1;
+            /* All Sessions */
+            const page = 1;
             let limit = 4;
-            let allSessions = await sessions.upcomingPublishedSessions(page, limit);
-            limit = 2;
-            let mySessions = await this.getMySessions(userId);
+            let allSessions = await this.sessions(userId, false, page, limit);
 
+            /* My Sessions */
+            limit = 2;
+            let mySessions = await this.sessions(userId, true, page, limit);
+
+            const result = {
+                allSessions: allSessions.result[0].data,
+                mySessions: mySessions.result[0].data,
+            }
+            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: result});
         } catch (error) {
-            return reject(error);
+            throw error;
         }
     }
 }
