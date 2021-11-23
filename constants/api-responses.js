@@ -28,6 +28,10 @@ module.exports = {
     "CANNOT_START_OTHER_MENTOR_SESSION": "You cannot start other mentor session",
     "USER_NOT_FOUND": "User is not found",
     "JOIN_ONLY_STARTED_SESSION": "Mentee can only join started session",
-    "USER_NOT_ENROLLED": "User has not enrolled for the session"
-
+    "USER_NOT_ENROLLED": "User has not enrolled for the session",
+    "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully",
+    "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
+    "USER_ALREADY_ENROLLED": "User already enrolled",
+    "USER_UNENROLLED_SUCCESSFULLY": "User unenrolled successfully",
+    "USER_NOT_ENROLLED": "User not enrolled"
 };

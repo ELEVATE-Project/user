@@ -38,9 +38,15 @@ module.exports = (app) => {
         }
 
         try {
-            const controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
-            controllerResponse = await new controller()[req.params.method](req);
+            let controller;
+            if (req.params.file) {
+                controller = require(`../controllers/${req.params.version}/${req.params.controller}/${req.params.file}`);
+            } else {
+                controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+            }
+            controllerResponse = new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
         } catch (error) { // If controller or service throws some random error
+            console.log(error);
             return next(error);
         }
 
@@ -57,6 +63,8 @@ module.exports = (app) => {
 
     app.all(process.env.APPLICATION_BASE_URL + ":version/:controller/:method", validator, router);
     app.all(process.env.APPLICATION_BASE_URL + ":version/:controller/:method/:id", validator, router);
+    app.all(process.env.APPLICATION_BASE_URL + ":version/:controller/:file/:method", validator, router);
+    app.all(process.env.APPLICATION_BASE_URL + ":version/:controller/:file/:method/:id", validator, router);
 
     app.use((req, res, next) => {
         res.status(404).json({

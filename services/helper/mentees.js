@@ -7,54 +7,87 @@ const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
 module.exports = class MenteesHelper {
-    
-    static sessions(upComingSessions) {
-        return new Promise(async (resolve,reject) => {
-            try {
 
-                if (upComingSessions) {
-                    /** Upcoming sessions */
-                } else {
-                    /** Enrolled sessions */
-                }
+    static async sessions(userId, enrolledSessions, page, limit, search = '') {
+        try {
+            let sessions = [];
+            let filters;
 
-                /**
-                 * Your business logic here
-                 */
+            if (!enrolledSessions) {
+                /** Upcoming unenrolled sessions */
+                filters = {
+                    status: 'published',
+                    startDateTime: {
+                        $gte: new Date().toISOString()
+                    },
+                    userId: {
+                        $ne: userId
+                    }
+                };
+                sessions = await sessionData.findAllSessions(page, limit, search, filters);
+            } else {
+                /** Upcoming user's enrolled sessions */
+                /* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
+                delays in starting session then status will remain published for that particular interval so fetch that also */
 
-            } catch(error) {
-                return reject(error);
+                /* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
+
+                filters = {
+                    $or: [
+                        {
+                            'sessionDetail.startDateTime': {
+                                $gte: new Date().toISOString()
+                            }
+                        },
+                        {
+                            'sessionDetail.status': 'published'
+                        },
+                        {
+                            'sessionDetail.status': 'live'
+                        }
+                    ],
+                    userId: ObjectId(userId)
+                };
+                sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
             }
-        })
+            
+            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: sessions});
+        } catch (error) {
+            throw error;
+        }
     }
 
-    static reports(userId) {
-        return new Promise(async (resolve,reject) => {
-            try {
+    static async reports(userId) {
+        try {
 
-                /**
-                 * Your business logic here
-                 */
+            /**
+             * Your business logic here
+             */
 
-            } catch(error) {
-                return reject(error);
-            }
-        })
+        } catch (error) {
+            throw error;
+        }
     }
 
-    static homefeed(userId) {
-        return new Promise(async (resolve,reject) => {
-            try {
-                let page = 1;
-                let limit = 4;
-                let allSessions = await sessions.publishedSessions(page,limit);
-                
-                let mySessions = await this.getMySessions(userId);
+    static async homeFeed(userId) {
+        try {
+            /* All Sessions */
+            const page = 1;
+            let limit = 4;
+            let allSessions = await this.sessions(userId, false, page, limit);
 
-            } catch(error) {
-                return reject(error);
+            /* My Sessions */
+            limit = 2;
+            let mySessions = await this.sessions(userId, true, page, limit);
+
+            const result = {
+                allSessions: allSessions.result[0].data,
+                mySessions: mySessions.result[0].data,
             }
-        })
+            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: result});
+        } catch (error) {
+            throw error;
+        }
     }
 
     static joinSession(sessionId,token) {

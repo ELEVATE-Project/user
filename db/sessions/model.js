@@ -36,7 +36,10 @@ let sessionsSchema = new Schema({
   completeSessionTime: Date,
   link: String,
   menteePassword: String,
-  mentorPassword: String 
+  mentorPassword: String ,
+  startSessionTime: String,
+  endSessionTime: String,
+  shareLink: String
 });
 
 const Sessions = db.model("sessions",sessionsSchema);
