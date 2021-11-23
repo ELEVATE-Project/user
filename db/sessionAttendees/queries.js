@@ -7,8 +7,7 @@
 
 const SessionAttendees = require("./model");
 
-module.exports = class SessionsAttendeesData {
-
+module.exports = class SessionsAttendees {
     static create(data) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -20,6 +19,17 @@ module.exports = class SessionsAttendeesData {
         });
     }
 
+    static findLinkBySessionAndUserId(id,sessionId) {
+        return new Promise(async (resolve,reject) => {
+            try { 
+                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,status: "enrolled",deleted:false}).lean();
+                resolve(session);
+            } catch(error) {
+                reject(error);
+            }
+        });
+    }
+    
     static findOneSessionAttendee(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -31,6 +41,17 @@ module.exports = class SessionsAttendeesData {
         })
     }
 
+    static updateOne(filter, update) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const updateResponse = await SessionAttendees.updateOne(filter, update);
+                return resolve(updateResponse);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    
     static unEnrollFromSession(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {

@@ -1,7 +1,5 @@
 const ObjectId = require('mongoose').Types.ObjectId;
 const bcyptJs = require('bcryptjs');
-
-const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const apiEndpoints = require("../../constants/endpoints");
@@ -15,6 +13,9 @@ const apiBaseUrl =
     process.env.USER_SERIVCE_BASE_URL;
 const request = require('request');
 
+const bigBlueButton = require("./bigBlueButton");
+const userProfile = require("./userProfile");
+const utils = require('../../generics/utils');
 
 module.exports = class SessionsHelper {
 
@@ -44,6 +45,10 @@ module.exports = class SessionsHelper {
             }
 
             let data = await sessionData.createSession(bodyData);
+
+            await this.setMentorPassword(data._id,data.userId);
+            await this.setMenteePassword(data._id,data.createdAt);
+
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_CREATED_SUCCESSFULLY,
@@ -289,6 +294,152 @@ module.exports = class SessionsHelper {
                 resolve(publishedSessions);
             } catch (error) {
                 reject(error);
+            }
+        })
+    }
+
+    static start(sessionId,token) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const mentor = await userProfile.details(token);
+
+                if (mentor.data.responseCode !== "OK") {
+                    return common.failureResponse({
+                        message: apiResponses.MENTORS_NOT_FOUND,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    }); 
+                }
+
+                const mentorDetails = mentor.data.result;
+
+                if (!mentorDetails.isAMentor) {
+                    return common.failureResponse({
+                        message: apiResponses.NOT_A_MENTOR,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    }); 
+                }
+
+                const session = await sessionData.findSessionById(sessionId);
+
+                if (!session) {
+                    return resolve(common.failureResponse({
+                        message: apiResponses.SESSION_NOT_FOUND,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    }));
+                }
+
+                if (session.userId !== mentor.data.result._id) {
+                    return resolve(common.failureResponse({
+                        message: apiResponses.CANNOT_START_OTHER_MENTOR_SESSION,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    }));
+                }
+
+                let link = "";
+                if (session.link) {
+                    link = session.link;
+                } else {
+                    const meetingDetails = await bigBlueButton.createMeeting(
+                        session._id,
+                        session.title,
+                        session.menteePassword,
+                        session.mentorPassword
+                    );
+    
+                    if (!meetingDetails) {
+                        return resolve(common.failureResponse({
+                            message: apiResponses.MEETING_NOT_CREATED,
+                            statusCode: httpStatusCode.internal_server_error,
+                            responseCode: 'SERVER_ERROR'
+                        }));
+                    }
+    
+                    const moderatorMeetingLink = await bigBlueButton.joinMeetingAsModerator(
+                        session._id,
+                        mentorDetails.name,
+                        session.mentorPassword
+                    );
+
+                    await sessionData.updateOneSession({
+                        _id: session._id
+                    },{
+                        link: moderatorMeetingLink,
+                        status: "started"
+                    })
+
+                    link = moderatorMeetingLink;
+                }
+
+                return resolve(common.successResponse({
+                    statusCode: httpStatusCode.ok,
+                    message: apiResponses.SESSION_START_LINK,
+                    result: {
+                        link: link
+                    }
+                }));
+
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    static setMentorPassword(sessionId,userId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let hashPassword = utils.hash(sessionId + userId);
+                const result = await sessionData.updateOneSession({
+                    _id: sessionId
+                }, {
+                    mentorPassword: hashPassword
+                });
+
+                return resolve(result);
+
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    static setMenteePassword(sessionId,createdAt) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let hashPassword = utils.hash(sessionId + createdAt);
+                const result = await sessionData.updateOneSession({
+                    _id: sessionId
+                }, {
+                    menteePassword: hashPassword
+                });
+
+                return resolve(result);
+
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    static completed(sessionId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                const result = await sessionData.updateOneSession({
+                    _id: sessionId
+                }, {
+                    status: "completed"
+                });
+
+                return resolve(result);
+
+            } catch (error) {
+                return reject(error);
             }
         })
     }

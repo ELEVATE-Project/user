@@ -52,6 +52,7 @@ module.exports = class Sessions {
     * @param {Object} req - request data.
     * @returns {JSON} - entities deletion response.
     */
+   
     update(req) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -142,6 +143,7 @@ module.exports = class Sessions {
     * @param {Object} req - request data.
     * @returns {JSON} - entities deletion response.
     */
+   
     details(req) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -277,5 +279,35 @@ module.exports = class Sessions {
                 return reject(error);
             }
         })
+    }
+
+    start(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const sessionsStarted = 
+                await sessionsHelper.start(
+                    req.params.id,
+                    req.decodedToken.token
+                );
+                return resolve(sessionsStarted);
+            } catch(error) {
+                return reject(error);
+            }  
+        }) 
+    }
+
+    completed(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const sessionsCompleted = 
+                await sessionsHelper.completed(
+                    req.params.id
+                );
+                
+                return resolve(sessionsCompleted);
+            } catch(error) {
+                return reject(error);
+            }  
+        }) 
     }
 }

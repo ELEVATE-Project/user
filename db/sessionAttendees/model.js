@@ -30,6 +30,11 @@ let sessionAttendeesSchema = new Schema({
   },
   joinedAt: Date,
   leftAt: Date,
+  userId: {
+    type: String,
+    index: true
+  },
+  link: String,
   ratings: [
     {
       qid: ObjectId,

@@ -13,33 +13,39 @@ const common = require('../constants/common');
 
 module.exports = (req, res, next) => {
 
-    if (!common.guestUrls.includes(req.url)) {
-        const authHeader = req.get('X-auth-token');
-        if (!authHeader) {
-            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+    common.guestUrls.map(function (path) {
+        if (req.path.includes(path)) {
+            next();
+            return;
         }
-        const authHeaderArray = authHeader.split(' ');
-        if (authHeaderArray[0] !== 'bearer') {
-            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
-        }
-        try {
-            decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET);
-        } catch (err) {
-            err.statusCode = httpStatusCode.unauthorized;
-            err.responseCode = 'UNAUTHORIZED';
-            err.message = apiResponses.ACCESS_TOKEN_EXPIRED;
-            throw err;
-        }
+    });
 
-        if (!decodedToken) {
-            throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
-        }
-
-        req.decodedToken = {
-            _id: decodedToken.data._id,
-            email: decodedToken.data.email,
-            isAMentor: decodedToken.data.isAMentor
-        };
+    const authHeader = req.get('X-auth-token');
+    if (!authHeader) {
+        throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
     }
+    const authHeaderArray = authHeader.split(' ');
+    if (authHeaderArray[0] !== 'bearer') {
+        throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+    }
+    try {
+        decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET);
+    } catch (err) {
+        err.statusCode = httpStatusCode.unauthorized;
+        err.responseCode = 'UNAUTHORIZED';
+        err.message = apiResponses.ACCESS_TOKEN_EXPIRED;
+        throw err;
+    }
+    
+    if (!decodedToken) {
+        throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+    }
+    
+    req.decodedToken = {
+        _id: decodedToken.data._id,
+        email: decodedToken.data.email,
+        isAMentor: decodedToken.data.isAMentor,
+        token: authHeader
+    };
     next();
 };
