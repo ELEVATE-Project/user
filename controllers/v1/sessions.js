@@ -214,14 +214,8 @@ module.exports = class Sessions {
     * @param {Object} req - request data.
     * @returns {JSON} - entities deletion response.
     */
-<<<<<<< HEAD
-
-     list(req) {
-        return new Promise(async (resolve,reject) => {
-=======
     list(req) {
         return new Promise(async (resolve, reject) => {
->>>>>>> f65f11e29c09c40e15ba69751d8dbcb057c5ae2e
             try {
                 const sessionDetails =
                     await sessionsHelper.list(

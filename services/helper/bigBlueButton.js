@@ -8,7 +8,7 @@ module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
 
-            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&meta_endCallbackUrl=" + process.env.BIG_BLUE_BUTTON_CALLBACK_EVENTS + "%3D" + meetingId + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
+            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&meta_endCallbackUrl=" + process.env.BIG_BLUE_BUTTON_CALLBACK_EVENTS + "%2F" + meetingId + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             let sha = shasum.update(checkSumGeneration);
