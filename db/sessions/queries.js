@@ -27,7 +27,7 @@ module.exports = class SessionsData {
                 if (updateResponse.n === 1 && updateResponse.nModified === 1) {
                     resolve('SESSION_UPDATED')
                 } else if (updateResponse.n === 1 && updateResponse.nModified === 0) {
-                    resolve('SESSION_ALREADY_EXISTS')
+                    resolve('SESSION_ALREADY_UPDATED')
                 } else {
                     resolve('SESSION_NOT_FOUND');
                 }
