@@ -8,7 +8,7 @@ module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
 
-            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&meta_endCallbackUrl=" + process.env.BIG_BLUE_BUTTON_CALLBACK_EVENTS + "%2F" + meetingId + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
+            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&meta_endCallbackUrl=" + process.env.BIG_BLUE_BUTTON_CALLBACK_EVENTS + "%2F" + meetingId + "%3F" + "mentorPw" + "%3D" + moderatorPW + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             let sha = shasum.update(checkSumGeneration);
@@ -51,6 +51,24 @@ module.exports = class SessionsHelper {
 
             const joinUrl = bigBlueButtonUrl + endpoints.JOIN_MEETING + "?" + query + "&checksum=" + checksum;
             return joinUrl;
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getMeetingInfo(meetingId,mentorPW) {
+        try {
+
+            let query = "meetingID=" + meetingId + "&password=" + mentorPW;
+            let checkSumGeneration = "getMeetingInfo" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
+            var shasum = crypto.createHash('sha1');
+            shasum.update(checkSumGeneration);
+            const checksum = shasum.digest('hex');
+
+            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_MEETING_INFO + "?" + query + "&checksum=" + checksum;
+            let response = await request.get(meetingInfoUrl);
+            return response;
 
         } catch (error) {
             throw error;

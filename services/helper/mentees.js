@@ -151,7 +151,8 @@ module.exports = class MenteesHelper {
                         _id: sessionAttendee
                     },{
                         link: attendeeLink,
-                        joinedAt: new Date()
+                        joinedAt: new Date(),
+                        isSessionAttended: true
                     })
 
                     link = attendeeLink;

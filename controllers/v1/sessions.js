@@ -57,13 +57,15 @@ module.exports = class Sessions {
         return new Promise(async (resolve, reject) => {
             try {
 
-                if (req.params.id) {
-
-                    const sessionUpdated =
-                        await sessionsHelper.update(
-                            req.params.id,
-                            req.body, req.decodedToken._id
-                        );
+                if(req.params.id){
+                    
+                    const sessionUpdated = 
+                    await sessionsHelper.update(
+                        req.params.id,
+                        req.body,
+                        req.decodedToken._id,
+                        req.method
+                    );
 
                     return resolve(sessionUpdated);
                 } else {
@@ -301,7 +303,8 @@ module.exports = class Sessions {
             try {
                 const sessionsCompleted = 
                 await sessionsHelper.completed(
-                    req.params.id
+                    req.params.id,
+                    req.query.mentorPw
                 );
                 
                 return resolve(sessionsCompleted);
