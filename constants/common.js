@@ -30,5 +30,6 @@ module.exports = {
     failureResponse,
     guestUrls: [
         "/sessions/completed"
-    ]
+    ],
+    DELETE_METHOD:"DELETE"
 };
