@@ -28,5 +28,6 @@ module.exports = {
     },
     successResponse,
     failureResponse,
-    guestUrls: []
+    guestUrls: [],
+    DELETE_METHOD:"DELETE"
 };

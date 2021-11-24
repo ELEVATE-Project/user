@@ -149,13 +149,14 @@ module.exports = class SessionsHelper {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
-                    responseCode: 'CLIENT_ERROR'
+                    responseCode: 'CLIENT_ERROR',
+                    result:[]
                 });
             }
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
-                result: sessionDetails[0] ? sessionDetails[0] : {}
+                result: sessionDetails[0] ? sessionDetails[0] : []
             });
 
         } catch (error) {
