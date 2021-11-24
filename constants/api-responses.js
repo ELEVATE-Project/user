@@ -21,6 +21,18 @@ module.exports = {
     "SIGNED_URL_GENERATED_SUCCESSFULLY": "Signed Url Generated Successfully",
     "USER_SERVICE_DOWN" : "User service is down",
     "INVALID_PERMISSION" : "User does't have the permission",
-    "SESSION_DELETED_SUCCESSFULLY": "Session deleted successfully"
-
+    "SESSION_DELETED_SUCCESSFULLY": "Session deleted successfully",
+    "MEETING_NOT_CREATED" : "Could not create meeting",
+    "MENTORS_NOT_FOUND": "Could not found mentor",
+    "NOT_A_MENTOR": "User is not a mentor",
+    "SESSION_START_LINK": "Successfully fetched session start link",
+    "CANNOT_START_OTHER_MENTOR_SESSION": "You cannot start other mentor session",
+    "USER_NOT_FOUND": "User is not found",
+    "JOIN_ONLY_STARTED_SESSION": "Mentee can only join started session",
+    "USER_NOT_ENROLLED": "User has not enrolled for the session",
+    "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully",
+    "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
+    "USER_ALREADY_ENROLLED": "User already enrolled",
+    "USER_UNENROLLED_SUCCESSFULLY": "User unenrolled successfully",
+    "USER_NOT_ENROLLED": "User not enrolled"
 };

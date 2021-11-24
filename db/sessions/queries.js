@@ -12,13 +12,14 @@ module.exports = class SessionsData {
     static createSession(data) {
         return new Promise(async (resolve, reject) => {
             try {
-               let response = await (new Sessions(data)).save();
+                let response = await (new Sessions(data)).save();
                 resolve(response)
             } catch (error) {
                 reject(error);
             }
         });
     }
+
     static updateOneSession(filter, update, options = {}) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -36,57 +37,6 @@ module.exports = class SessionsData {
         });
     }
 
-    
-    static searchAndPagination(page,limit,search) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                
-                let sessions = await Sessions.aggregate([
-                    {
-                        $match: { status: "published" },
-                        isDeleted: false,
-                        $or: [
-                            { mentorName: new RegExp(search, 'i') },
-                            { title: new RegExp(search, 'i') }
-                        ]
-                    },
-                    {
-                        $project: {
-                            title: 1,
-                            mentorName: 1,
-                            description: 1,
-                            date: 1,
-                            time: 1,
-                            duration: 1,
-                            status: 1
-                        }
-                    },
-                    {
-                        $facet: {
-                            "totalCount": [
-                                { "$count": "count" }
-                            ],
-                            "data": [
-                                { $skip: limit * (page - 1) },
-                                { $limit: limit }
-                            ],
-                        }
-                    }, {
-                        $project: {
-                            "data": 1,
-                            "count": {
-                                $arrayElemAt: ["$totalCount.count", 0]
-                            }
-                        }
-                    }
-                ]);
-
-                return resolve(sessions);
-            } catch (error) {
-                return reject(error);
-            }
-        })
-    }
     static findOneSession(filter, projection = {}) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -97,50 +47,48 @@ module.exports = class SessionsData {
                 return reject(error);
             }
         })
-    } 
+    }
 
     static findSessionById(id) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const session = await Sessions.findOne({'_id': id,deleted: false,status: "published"}).lean();
+                const session = await Sessions.findOne({'_id': id,deleted: false,status: {$ne: "cancelled"}}).lean();
                 resolve(session);
-            } catch(error) {
+            } catch (error) {
                 reject(error);
             }
         })
     }
-    static findAllSessions(userId,page,limit,search,filters) {
+
+    static findAllSessions(page, limit, search, filters) {
         return new Promise(async (resolve, reject) => {
             try {
 
                 let sessionData = await Sessions.aggregate([
                     {
-                        $match: { 
-                        
-                            $and : [
+                        $match: {
+                            $and: [
                                 filters,
                                 { deleted: false }
                             ],
                             $or: [
                                 { title: new RegExp(search, 'i') },
-                                { description: new RegExp(search, 'i') }
-                            ] 
+                                { mentorName: new RegExp(search, 'i') }
+                            ]
                         },
                     },
                     {
-                        $sort: {"title": 1}
+                        $sort: { startDateTime: 1 }
                     },
                     {
                         $project: {
                             title: 1,
+                            mentorName: 1,
                             description: 1,
                             startDateTime: 1,
                             endDateTime: 1,
-                            categories:1,
-                            medium:1,
-                            status:1,
-                            startDateTime:1,
-                            endDateTime:1
+                            status: 1,
+                            image: 1
                         }
                     },
                     {
@@ -162,15 +110,12 @@ module.exports = class SessionsData {
                         }
                     }
                 ]);
-
                 resolve(sessionData);
             } catch (error) {
                 reject(error);
             }
         })
-    }
-
-    
+    } 
 }
 
 

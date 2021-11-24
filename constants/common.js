@@ -28,6 +28,8 @@ module.exports = {
     },
     successResponse,
     failureResponse,
-    guestUrls: [],
+    guestUrls: [
+        "/sessions/completed"
+    ],
     DELETE_METHOD:"DELETE"
 };
