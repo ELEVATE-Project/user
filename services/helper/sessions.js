@@ -60,8 +60,7 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async update(sessionId, bodyData, userId) {
-        bodyData.updatedAt = new Date().getTime();
+    static async update(sessionId, bodyData, userId,method) {
         try {
 
             if (!await this.verifyMentor(userId)) {
@@ -71,12 +70,27 @@ module.exports = class SessionsHelper {
                     responseCode: 'CLIENT_ERROR'
                 });
             }
+
+            let message;
+            let updateData;
+            if(method==common.DELETE_METHOD){
+                updateData = { deleted:true };
+                message = apiResponses.SESSION_DELETED_SUCCESSFULLY;
+
+            } else {
+                
+                updateData = bodyData;
+                message = apiResponses.SESSION_UPDATED_SUCCESSFULLY;
+            }
+               
+            updateData.updatedAt = new Date().getTime();
             const result = await sessionData.updateOneSession({
                 _id: ObjectId(sessionId)
-            }, bodyData);
-            if (result === 'SESSION_ALREADY_EXISTS') {
+            }, updateData);
+            
+            if (result === 'SESSION_ALREADY_UPDATED') {
                 return common.failureResponse({
-                    message: apiResponses.SESSION_ALREADY_EXISTS,
+                    message: apiResponses.SESSION_ALREADY_UPDATED,
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR'
                 });
@@ -89,11 +103,11 @@ module.exports = class SessionsHelper {
             }
             return common.successResponse({
                 statusCode: httpStatusCode.accepted,
-                message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
+                message: message
             });
 
         } catch (error) {
-            throw error;
+            throw error;    
         }
 
     }
@@ -148,13 +162,14 @@ module.exports = class SessionsHelper {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
-                    responseCode: 'CLIENT_ERROR'
+                    responseCode: 'CLIENT_ERROR',
+                    result:[]
                 });
             }
             return common.successResponse({
                 statusCode: httpStatusCode.ok,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
-                result: sessionDetails[0] ? sessionDetails[0] : {}
+                result: sessionDetails[0] ? sessionDetails[0] : []
             });
 
         } catch (error) {
@@ -368,7 +383,8 @@ module.exports = class SessionsHelper {
                         _id: session._id
                     },{
                         link: moderatorMeetingLink,
-                        status: "started"
+                        status: "started",
+                        startedAt: new Date()
                     })
 
                     link = moderatorMeetingLink;
@@ -426,14 +442,20 @@ module.exports = class SessionsHelper {
         })
     }
 
-    static completed(sessionId) {
+    static completed(sessionId,mentorPw) {
         return new Promise(async (resolve, reject) => {
             try {
 
+                const meetingInfo = await bigBlueButton.getMeetingInfo(sessionId,mentorPw);
+
+                console.log("--- meeting information ---",meetingInfo);
+                
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
-                    status: "completed"
+                    status: "completed",
+                    bigBlueButtonMeetingInfo: meetingInfo.data,
+                    completedAt: new Date()
                 });
 
                 return resolve(result);
