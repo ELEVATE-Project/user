@@ -301,7 +301,8 @@ module.exports = class Sessions {
             try {
                 const sessionsCompleted = 
                 await sessionsHelper.completed(
-                    req.params.id
+                    req.params.id,
+                    req.query.mentorPw
                 );
                 
                 return resolve(sessionsCompleted);

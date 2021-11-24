@@ -368,7 +368,8 @@ module.exports = class SessionsHelper {
                         _id: session._id
                     },{
                         link: moderatorMeetingLink,
-                        status: "started"
+                        status: "started",
+                        startedAt: new Date()
                     })
 
                     link = moderatorMeetingLink;
@@ -426,14 +427,20 @@ module.exports = class SessionsHelper {
         })
     }
 
-    static completed(sessionId) {
+    static completed(sessionId,mentorPw) {
         return new Promise(async (resolve, reject) => {
             try {
 
+                const meetingInfo = await bigBlueButton.getMeetingInfo(sessionId,mentorPw);
+
+                console.log("--- meeting information ---",meetingInfo);
+                
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
-                    status: "completed"
+                    status: "completed",
+                    bigBlueButtonMeetingInfo: meetingInfo.data,
+                    completedAt: new Date()
                 });
 
                 return resolve(result);
