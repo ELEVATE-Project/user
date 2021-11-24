@@ -22,7 +22,7 @@ module.exports = class SessionsAttendees {
     static findLinkBySessionAndUserId(id,sessionId) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,status: "enrolled",deleted:false}).lean();
+                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,deleted:false}).lean();
                 resolve(session);
             } catch(error) {
                 reject(error);
