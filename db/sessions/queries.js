@@ -27,7 +27,7 @@ module.exports = class SessionsData {
                 if (updateResponse.n === 1 && updateResponse.nModified === 1) {
                     resolve('SESSION_UPDATED')
                 } else if (updateResponse.n === 1 && updateResponse.nModified === 0) {
-                    resolve('SESSION_ALREADY_EXISTS')
+                    resolve('SESSION_ALREADY_UPDATED')
                 } else {
                     resolve('SESSION_NOT_FOUND');
                 }
@@ -78,15 +78,15 @@ module.exports = class SessionsData {
                         },
                     },
                     {
-                        $sort: { startDateTime: 1 }
+                        $sort: { startDate: 1 }
                     },
                     {
                         $project: {
                             title: 1,
                             mentorName: 1,
                             description: 1,
-                            startDateTime: 1,
-                            endDateTime: 1,
+                            startDate: 1,
+                            endDate: 1,
                             status: 1,
                             image: 1
                         }

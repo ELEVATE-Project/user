@@ -22,7 +22,7 @@ module.exports = class SessionsAttendees {
     static findLinkBySessionAndUserId(id,sessionId) {
         return new Promise(async (resolve,reject) => {
             try { 
-                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,status: "enrolled",deleted:false}).lean();
+                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,deleted:false}).lean();
                 resolve(session);
             } catch(error) {
                 reject(error);
@@ -93,7 +93,7 @@ module.exports = class SessionsAttendees {
                         },
                     },
                     {
-                        $sort: { 'sessionDetail.startDateTime': 1 }
+                        $sort: { 'sessionDetail.startDate': 1 }
                     },
                     {
                         $project: {
@@ -104,8 +104,8 @@ module.exports = class SessionsAttendees {
                             'sessionDetail.status': 1,
                             'sessionDetail.title': 1,
                             'sessionDetail.description': 1,
-                            'sessionDetail.startDateTime': 1,
-                            'sessionDetail.endDateTime': 1,
+                            'sessionDetail.startDate': 1,
+                            'sessionDetail.endDate': 1,
                         }
                     },
                     {

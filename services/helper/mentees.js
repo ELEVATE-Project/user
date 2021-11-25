@@ -1,3 +1,5 @@
+const ObjectId = require('mongoose').Types.ObjectId;
+
 const sessions = require("./sessions");
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
@@ -6,6 +8,7 @@ const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
+
 module.exports = class MenteesHelper {
 
     static async sessions(userId, enrolledSessions, page, limit, search = '') {
@@ -17,7 +20,7 @@ module.exports = class MenteesHelper {
                 /** Upcoming unenrolled sessions */
                 filters = {
                     status: 'published',
-                    startDateTime: {
+                    startDate: {
                         $gte: new Date().toISOString()
                     },
                     userId: {
@@ -35,7 +38,7 @@ module.exports = class MenteesHelper {
                 filters = {
                     $or: [
                         {
-                            'sessionDetail.startDateTime': {
+                            'sessionDetail.startDate': {
                                 $gte: new Date().toISOString()
                             }
                         },
@@ -151,7 +154,8 @@ module.exports = class MenteesHelper {
                         _id: sessionAttendee
                     },{
                         link: attendeeLink,
-                        joinedAt: new Date()
+                        joinedAt: new Date(),
+                        isSessionAttended: true
                     })
 
                     link = attendeeLink;

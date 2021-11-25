@@ -30,16 +30,15 @@ let sessionsSchema = new Schema({
     type: Boolean,
     default: false
   },
-  startDateTime: String,
-  endDateTime: String,
-  startSessionTime: Date,
-  completeSessionTime: Date,
+  startDate: String,
+  endDate: String,
   link: String,
   menteePassword: String,
   mentorPassword: String ,
-  startSessionTime: String,
-  endSessionTime: String,
-  shareLink: String
+  startedAt: String,
+  shareLink: String,
+  bigBlueButtonMeetingInfo: Object,
+  completedAt: Date
 });
 
 const Sessions = db.model("sessions",sessionsSchema);
