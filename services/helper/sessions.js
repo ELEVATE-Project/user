@@ -447,15 +447,15 @@ module.exports = class SessionsHelper {
         return new Promise(async (resolve, reject) => {
             try {
 
-                const meetingInfo = await bigBlueButton.getMeetings();
+                // const meetingInfo = await bigBlueButton.getMeetings();
 
-                console.log("--- meeting information ---",meetingInfo);
+                // console.log("--- meeting information ---",meetingInfo);
                 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
                     status: "completed",
-                    bigBlueButtonMeetingInfo: meetingInfo.data,
+                    // bigBlueButtonMeetingInfo: meetingInfo.data,
                     completedAt: new Date()
                 });
 
