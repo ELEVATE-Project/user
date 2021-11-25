@@ -2,7 +2,6 @@ const bigBlueButtonUrl = process.env.BIG_BLUE_BUTTON_URL + process.env.BIB_BLUE_
 const crypto = require("crypto");
 const request = require("../../generics/requests");
 const endpoints = require('../../constants/endpoints');
-const utils = require('../../generics/utils');
 
 module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
@@ -57,16 +56,15 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async getMeetingInfo(meetingId,mentorPW) {
+    static async getMeetings(meetingId,mentorPW) {
         try {
 
-            let query = "meetingID=" + meetingId + "&password=" + mentorPW;
-            let checkSumGeneration = "getMeetingInfo" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
+            let checkSumGeneration = "getMeetings" + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             shasum.update(checkSumGeneration);
             const checksum = shasum.digest('hex');
 
-            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_MEETING_INFO + "?" + query + "&checksum=" + checksum;
+            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_MEETINGS + "?checksum=" + checksum;
             let response = await request.get(meetingInfoUrl);
             return response;
 
