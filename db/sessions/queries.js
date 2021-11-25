@@ -78,15 +78,15 @@ module.exports = class SessionsData {
                         },
                     },
                     {
-                        $sort: { startDateTime: 1 }
+                        $sort: { startDate: 1 }
                     },
                     {
                         $project: {
                             title: 1,
                             mentorName: 1,
                             description: 1,
-                            startDateTime: 1,
-                            endDateTime: 1,
+                            startDate: 1,
+                            endDate: 1,
                             status: 1,
                             image: 1
                         }

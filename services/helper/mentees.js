@@ -17,7 +17,7 @@ module.exports = class MenteesHelper {
                 /** Upcoming unenrolled sessions */
                 filters = {
                     status: 'published',
-                    startDateTime: {
+                    startDate: {
                         $gte: new Date().toISOString()
                     },
                     userId: {
@@ -35,7 +35,7 @@ module.exports = class MenteesHelper {
                 filters = {
                     $or: [
                         {
-                            'sessionDetail.startDateTime': {
+                            'sessionDetail.startDate': {
                                 $gte: new Date().toISOString()
                             }
                         },

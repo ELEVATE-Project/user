@@ -30,8 +30,8 @@ let sessionsSchema = new Schema({
     type: Boolean,
     default: false
   },
-  startDateTime: String,
-  endDateTime: String,
+  startDate: String,
+  endDate: String,
   link: String,
   menteePassword: String,
   mentorPassword: String ,
