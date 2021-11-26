@@ -11,24 +11,10 @@ const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class Sessions {
 
-    form() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const sessionsForm = await sessionsHelper.form();
-                return resolve(sessionsForm);
-            } catch (error) {
-                return reject(error);
-            }
-        })
-    }
-   
-    update(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-
-                if(req.params.id){
-                    
-                    const sessionUpdated = 
+    async update(req) {
+        try {
+            if (req.params.id) {
+                const sessionUpdated =
                     await sessionsHelper.update(
                         req.params.id,
                         req.body,
@@ -36,58 +22,51 @@ module.exports = class Sessions {
                         req.method
                     );
 
-                    return resolve(sessionUpdated);
-                } else {
-
-                    if (req.decodedToken.name) {
-                        req.body.mentorName = req.decodedToken.name;
-                    }
-
-                    const sessionCreated =
-                        await sessionsHelper.create(
-                            req.body, req.decodedToken._id
-                        );
-
-                    return resolve(sessionCreated);
-
+                return sessionUpdated;
+            } else {
+                if (req.decodedToken.name) {
+                    req.body.mentorName = req.decodedToken.name;
                 }
 
-            } catch (error) {
-                return reject(error);
-            }
-        })
-    }
-   
-    details(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const sessionDetails =
-                    await sessionsHelper.details(
-                        req.params.id
+                const sessionCreated =
+                    await sessionsHelper.create(
+                        req.body, req.decodedToken._id
                     );
-                return resolve(sessionDetails);
-            } catch (error) {
-                return reject(error);
+
+                return sessionCreated;
+
             }
-        })
+        } catch (error) {
+            return error;
+        }
     }
 
-    list(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const sessionDetails =
-                    await sessionsHelper.list(
-                        req.decodedToken._id,
-                        req.pageNo,
-                        req.pageSize,
-                        req.searchText,
-                        req.query.status
-                    );
-                return resolve(sessionDetails);
-            } catch (error) {
-                return reject(error);
-            }
-        })
+    async details(req) {
+        try {
+            const sessionDetails =
+                await sessionsHelper.details(
+                    req.params.id
+                );
+            return sessionDetails;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    async list(req) {
+        try {
+            const sessionDetails =
+                await sessionsHelper.list(
+                    req.decodedToken._id,
+                    req.pageNo,
+                    req.pageSize,
+                    req.searchText,
+                    req.query.status
+                );
+            return sessionDetails;
+        } catch (error) {
+            return error;
+        }
     }
 
     async share(req) {
@@ -117,47 +96,31 @@ module.exports = class Sessions {
         }
     }
 
-    meetingCompleted(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                console.log("I am here");
-                return resolve({
-                    statusCode: httpStatusCode.ok,
-                    message: "I am here"
-                })
-            } catch (error) {
-                return reject(error);
-            }
-        })
+    async meetingCompleted(req) {
+        try {
+            /**
+             * Your Service Call here
+             */
+        } catch (error) {
+            return error;
+        }
     }
 
-    start(req) {
-        return new Promise(async (resolve,reject) => {
-            try {
-                const sessionsStarted = 
-                await sessionsHelper.start(
-                    req.params.id,
-                    req.decodedToken.token
-                );
-                return resolve(sessionsStarted);
-            } catch(error) {
-                return reject(error);
-            }  
-        }) 
+    async start(req) {
+        try {
+            const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token);
+            return sessionsStarted;
+        } catch (error) {
+            return error;
+        }
     }
 
-    completed(req) {
-        return new Promise(async (resolve,reject) => {
-            try {
-                const sessionsCompleted = 
-                await sessionsHelper.completed(
-                    req.params.id
-                );
-                
-                return resolve(sessionsCompleted);
-            } catch(error) {
-                return reject(error);
-            }  
-        }) 
+    async completed(req) {
+        try {
+            const sessionsCompleted = await sessionsHelper.completed(req.params.id);
+            return sessionsCompleted;
+        } catch (error) {
+            return error;
+        }
     }
 }
