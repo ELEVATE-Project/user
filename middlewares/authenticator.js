@@ -11,21 +11,39 @@ const httpStatusCode = require('../generics/http-status');
 const apiResponses = require('../constants/api-responses');
 const common = require('../constants/common');
 
-module.exports = (req, res, next) => {
+module.exports = async function (req, res, next) {
+
     
-    if (!common.guestUrls.includes(req.url)) {
+
+    let internalAccess = false;
+    await Promise.all(common.uploadUrls.map(async function (path) {
+        if (req.path.includes(path)) {
+            if (req.headers.internal_access_token && process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token) {
+                internalAccess =true;
+            }     
+        }
+    }));
+    if (internalAccess == true) {
+        next();
+        return;
+    }
+    else if (!common.guestUrls.includes(req.url)) {
+
+
+        
         const authHeader = req.get('X-auth-token');
         if (!authHeader) {
             throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
         }
 
-        let splittedUrl = req.url.split('/');
-
-        if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
-            if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
-                throw common.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
-            }
-        }
+     
+        // let splittedUrl = req.url.split('/');
+        // if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
+        //     if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
+        //         throw common.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+        //     }
+        // } 
+      
 
         const authHeaderArray = authHeader.split(' ');
         if (authHeaderArray[0] !== 'bearer') {
@@ -45,6 +63,7 @@ module.exports = (req, res, next) => {
         }
 
         req.decodedToken = decodedToken.data;
-    }
+      }
+    
     next();
 };
