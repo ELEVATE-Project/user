@@ -1,3 +1,5 @@
+const ObjectId = require('mongoose').Types.ObjectId;
+
 const sessions = require("./sessions");
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
@@ -6,6 +8,7 @@ const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
+
 module.exports = class MenteesHelper {
 
     static async sessions(userId, enrolledSessions, page, limit, search = '') {
