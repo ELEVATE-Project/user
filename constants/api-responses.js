@@ -28,7 +28,7 @@ module.exports = {
     "SESSION_START_LINK": "Successfully fetched session start link",
     "CANNOT_START_OTHER_MENTOR_SESSION": "You cannot start other mentor session",
     "USER_NOT_FOUND": "User is not found",
-    "JOIN_ONLY_STARTED_SESSION": "Mentee can only join started session",
+    "JOIN_ONLY_LIVE_SESSION": "Mentee can only join live session",
     "USER_NOT_ENROLLED": "User has not enrolled for the session",
     "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully",
     "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",

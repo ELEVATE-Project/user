@@ -44,19 +44,12 @@ module.exports = class Mentors {
         }
     }
 
-    joinSession(req) {
-        return new Promise(async (resolve,reject) => {
-            try {
-                const session = 
-                await menteesHelper.joinSession(
-                    req.params.id,
-                    req.decodedToken.token
-                );
-                
-                return resolve(session);
-            } catch(error) {
-                return reject(error);
-            }
-        })
+    async joinSession(req) {
+        try {
+            const session = await menteesHelper.joinSession(req.params.id, req.decodedToken.token);
+            return session;
+        } catch (error) {
+            return error;
+        }
     }
 }
