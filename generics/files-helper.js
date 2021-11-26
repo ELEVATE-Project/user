@@ -66,6 +66,31 @@ module.exports = class FilesHelper {
     }
 
     /**
+     * Get downloadable url.
+     * @method
+     * @name getGcpDownloadableUrl
+     * @param {string} destFilePath
+     * @param {string} bucketName
+     * @returns {Promise<string>} Get downloadable url link
+    */
+    static async getGcpDownloadableUrl(destFilePath, bucketName = undefined) {
+        const storage = new Storage({
+            projectId: process.env.GCP_PROJECT_ID,
+            keyFilename: path.join(__dirname, '../', process.env.GCP_PATH)
+        });
+        bucketName = bucketName ? bucketName : process.env.DEFAULT_GCP_BUCKET_NAME;
+        const gcpBucket = storage.bucket(bucketName);
+        try {
+            const fileMetaData = await gcpBucket.file(destFilePath).getMetadata();
+            const url = new URL(fileMetaData[0].mediaLink);
+            const urlParams = url.searchParams;
+            return `${url.origin}${url.pathname}?alt=${urlParams.get('alt')}`;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
       * Upload file to AWS
       * @method
       * @name uploadFileInAws
@@ -116,6 +141,24 @@ module.exports = class FilesHelper {
                 Expires: expiry
             });
             return { signedUrl };
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+     * Get downloadable url.
+     * @method
+     * @name getAwsDownloadableUrl
+     * @param {string} destFilePath
+     * @param {string} bucketName
+     * @returns {Promise<string>} Get downloadable url link
+    */
+    static async getAwsDownloadableUrl(destFilePath, bucketName = undefined) {
+        try {
+            const bucket = bucketName ? bucketName : process.env.DEFAULT_AWS_BUCKET_NAME;
+            const downloadableUrl = `https://${bucket}.${process.env.AWS_BUCKET_ENDPOINT}/${destFilePath}`;
+            return downloadableUrl;
         } catch (error) {
             throw error;
         }
@@ -187,6 +230,44 @@ module.exports = class FilesHelper {
 
         const signedUrl = containerClient.url + "/" + destFilePath + "?" + sasToken;
         return { signedUrl }
+    }
+
+    /**
+     * Get downloadable url.
+     * @method
+     * @name getAzureDownloadableUrl
+     * @param {string} destFilePath
+     * @param {string} containerName
+     * @returns {Promise<JSON>} Get downloadable url link
+    */
+    static async getAzureDownloadableUrl(destFilePath, containerName = undefined) {
+        containerName = containerName || process.env.DEFAULT_AZURE_CONTAINER_NAME;
+        const sharedKeyCredential = new StorageSharedKeyCredential(process.env.AZURE_ACCOUNT_NAME, process.env.AZURE_ACCOUNT_KEY);
+        const blobServiceClient = new BlobServiceClient(
+            `https://${process.env.AZURE_ACCOUNT_NAME}.blob.core.windows.net`,
+            sharedKeyCredential
+        );
+
+        const containerClient = blobServiceClient.getContainerClient(containerName);
+
+        const startDate = new Date();
+
+        const expiryDate = new Date(startDate);
+        expiryDate.setSeconds(startDate.getSeconds() + 31536600);
+
+        try {
+            const sasToken = generateBlobSASQueryParameters({
+                containerName: containerName,
+                blobName: destFilePath,
+                permissions: BlobSASPermissions.parse("rw"),
+                startsOn: startDate,
+                expiresOn: expiryDate
+            }, sharedKeyCredential).toString();
+
+            return containerClient.url + "/" + destFilePath + "?" + sasToken;
+        } catch (error) {
+            throw error;
+        }
     }
 
 }
