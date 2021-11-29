@@ -434,14 +434,12 @@ module.exports = class SessionsHelper {
             try {
 
                  const recordingInfo = await bigBlueButton.getRecordings(sessionId);
-
-                 console.log("--- recording information ---",recordingInfo);
                 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
                     status: "completed",
-                    // bigBlueButtonMeetingInfo: meetingInfo.data,
+                    bigBlueButtonMeetingInfo: recordingInfo.data.recordings,
                     completedAt: new Date()
                 });
 
