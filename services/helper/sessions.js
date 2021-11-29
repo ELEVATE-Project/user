@@ -101,6 +101,11 @@ module.exports = class SessionsHelper {
     static async details(id) {
         try {
             const filter = {};
+            const projection = {
+                shareLink: 0,
+                menteePassword: 0,
+                mentorPassword: 0
+            };
 
             if (ObjectId.isValid(id)) {
                 filter._id = id;
@@ -108,7 +113,7 @@ module.exports = class SessionsHelper {
                 filter.shareLink = id;
             }
 
-            const sessionDetails = await sessionData.findOneSession(filter, { shareLink: 0 });
+            const sessionDetails = await sessionData.findOneSession(filter, projection);
             if (!sessionDetails) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
@@ -433,15 +438,14 @@ module.exports = class SessionsHelper {
         return new Promise(async (resolve, reject) => {
             try {
 
-                 const meetingInfo = await bigBlueButton.getMeetings();
-
-                 console.log("--- meeting information ---",meetingInfo);
+                const recordingInfo = await bigBlueButton.getRecordings(sessionId);
+                //  console.log("---recordings info ----",recordingInfo.data.response.recordings);
                 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
                     status: "completed",
-                    // bigBlueButtonMeetingInfo: meetingInfo.data,
+                    recordings: recordingInfo.data.response.recordings,
                     completedAt: new Date()
                 });
 

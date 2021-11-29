@@ -7,7 +7,10 @@ module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
 
-            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&meta_endCallbackUrl=" + process.env.BIG_BLUE_BUTTON_CALLBACK_EVENTS + "%2F" + meetingId + "%3F" + "mentorPw" + "%3D" + moderatorPW + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
+            // let recordingCallBackUrl = process.env.RECORDING_READY_CALLBACK_URL + "%2F" + meetingId;
+            let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + "%2F" + meetingId;
+
+            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&meta_bbb-recording-ready-url=" + process.env.RECORDING_READY_CALLBACK_URL + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             let sha = shasum.update(checkSumGeneration);
@@ -56,15 +59,15 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async getMeetings(meetingId,mentorPW) {
+    static async getRecordings(meetingId) {
         try {
 
-            let checkSumGeneration = "getMeetings" + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
+            let checkSumGeneration = "getRecordingsmeetingID=" + meetingId + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             shasum.update(checkSumGeneration);
             const checksum = shasum.digest('hex');
 
-            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_MEETINGS + "?checksum=" + checksum;
+            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "&checksum=" + checksum;
             let response = await request.get(meetingInfoUrl);
             return response;
 

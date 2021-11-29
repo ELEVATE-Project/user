@@ -18,5 +18,13 @@ module.exports = {
 
     homefeed: (req) => {
 
+    },
+
+    reports: (req) => {
+        req.checkQuery('filterType')
+            .notEmpty()
+            .withMessage('filterType query is empty')
+            .isIn(['MONTHLY', 'WEEKLY', 'QUARTERLY'])
+            .withMessage('filterType is invalid')
     }
 };

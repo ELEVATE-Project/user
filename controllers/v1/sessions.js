@@ -7,7 +7,6 @@
 
 // Dependencies
 const sessionsHelper = require("../../services/helper/sessions");
-const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class Sessions {
 
@@ -96,31 +95,38 @@ module.exports = class Sessions {
         }
     }
 
-    async meetingCompleted(req) {
-        try {
-            /**
-             * Your Service Call here
-             */
-        } catch (error) {
-            return error;
-        }
-    }
-
-    async start(req) {
-        try {
-            const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token);
-            return sessionsStarted;
-        } catch (error) {
-            return error;
-        }
+    start(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const sessionsStarted = 
+                await sessionsHelper.start(
+                    req.params.id,
+                    req.decodedToken.token
+                );
+                return resolve(sessionsStarted);
+            } catch(error) {
+                return reject(error);
+            }  
+        }) 
     }
 
     async completed(req) {
         try {
+            console.log("--- In completed ----");
             const sessionsCompleted = await sessionsHelper.completed(req.params.id);
             return sessionsCompleted;
         } catch (error) {
             return error;
         }
+    }
+
+    recordingStats(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                console.log(" -- I am in recordings --");
+            } catch(error) {
+                return reject(error);
+            }  
+        }) 
     }
 }
