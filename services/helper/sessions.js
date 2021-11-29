@@ -433,14 +433,14 @@ module.exports = class SessionsHelper {
         return new Promise(async (resolve, reject) => {
             try {
 
-                //  const recordingInfo = await bigBlueButton.getRecordings(sessionId);
+                const recordingInfo = await bigBlueButton.getRecordings(sessionId);
                 //  console.log("---recordings info ----",recordingInfo.data.response.recordings);
                 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
                     status: "completed",
-                    // recordings: recordingInfo.data.response.recordings,
+                    recordings: recordingInfo.data.response.recordings,
                     completedAt: new Date()
                 });
 
