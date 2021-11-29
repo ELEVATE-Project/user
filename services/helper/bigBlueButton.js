@@ -7,10 +7,10 @@ module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
 
-            let recordingCallBackUrl = process.env.RECORDING_READY_CALLBACK_URL + "%2F" + meetingId;
+            // let recordingCallBackUrl = process.env.RECORDING_READY_CALLBACK_URL + "%2F" + meetingId;
             let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + "%2F" + meetingId;
 
-            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_bbb-recording-ready-url=" + recordingCallBackUrl + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
+            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             let sha = shasum.update(checkSumGeneration);
@@ -67,7 +67,7 @@ module.exports = class SessionsHelper {
             shasum.update(checkSumGeneration);
             const checksum = shasum.digest('hex');
 
-            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "&checksum=" + checksum;
+            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "checksum=" + checksum;
             let response = await request.get(meetingInfoUrl);
             return response;
 

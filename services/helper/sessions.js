@@ -439,7 +439,7 @@ module.exports = class SessionsHelper {
                     _id: sessionId
                 }, {
                     status: "completed",
-                    bigBlueButtonMeetingInfo: recordingInfo.data.recordings,
+                    recordings: recordingInfo.data.recordings,
                     completedAt: new Date()
                 });
 
