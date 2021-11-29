@@ -118,7 +118,7 @@ module.exports = class MenteesHelper {
 
                 if (session.status !== "live") {
                     return common.failureResponse({
-                        message: apiResponses.JOIN_ONLY_STARTED_SESSION,
+                        message: apiResponses.JOIN_ONLY_LIVE_SESSION,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
                     });
