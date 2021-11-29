@@ -67,7 +67,7 @@ module.exports = class SessionsHelper {
             shasum.update(checkSumGeneration);
             const checksum = shasum.digest('hex');
 
-            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "checksum=" + checksum;
+            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "&checksum=" + checksum;
             let response = await request.get(meetingInfoUrl);
             return response;
 
