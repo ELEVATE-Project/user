@@ -434,6 +434,7 @@ module.exports = class SessionsHelper {
             try {
 
                  const recordingInfo = await bigBlueButton.getRecordings(sessionId);
+                 console.log("---recordings info ----",recordingInfo.data.recordings);
                 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
