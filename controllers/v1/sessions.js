@@ -112,6 +112,7 @@ module.exports = class Sessions {
 
     async completed(req) {
         try {
+            console.log("--- In completed ----");
             const sessionsCompleted = await sessionsHelper.completed(req.params.id);
             return sessionsCompleted;
         } catch (error) {

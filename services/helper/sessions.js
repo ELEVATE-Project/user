@@ -433,9 +433,9 @@ module.exports = class SessionsHelper {
         return new Promise(async (resolve, reject) => {
             try {
 
-                 const meetingInfo = await bigBlueButton.getMeetings();
+                 const recordingInfo = await bigBlueButton.getRecordings(sessionId);
 
-                 console.log("--- meeting information ---",meetingInfo);
+                 console.log("--- recording information ---",recordingInfo);
                 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
