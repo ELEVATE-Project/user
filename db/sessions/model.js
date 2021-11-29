@@ -39,7 +39,7 @@ let sessionsSchema = new Schema({
   shareLink: String,
   bigBlueButtonMeetingInfo: Object,
   completedAt: Date,
-  recordings: Array
+  recordings: Object
 });
 
 const Sessions = db.model("sessions",sessionsSchema);
