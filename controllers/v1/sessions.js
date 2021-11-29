@@ -7,7 +7,6 @@
 
 // Dependencies
 const sessionsHelper = require("../../services/helper/sessions");
-const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class Sessions {
 
@@ -117,20 +116,6 @@ module.exports = class Sessions {
         }
     }
 
-    meetingCompleted(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                console.log("I am here");
-                return resolve({
-                    statusCode: httpStatusCode.ok,
-                    message: "I am here"
-                })
-            } catch (error) {
-                return reject(error);
-            }
-        })
-    }
-
     start(req) {
         return new Promise(async (resolve,reject) => {
             try {
@@ -155,6 +140,16 @@ module.exports = class Sessions {
                 );
                 
                 return resolve(sessionsCompleted);
+            } catch(error) {
+                return reject(error);
+            }  
+        }) 
+    }
+
+    recordingStats(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                console.log(" -- I am in recordings --");
             } catch(error) {
                 return reject(error);
             }  

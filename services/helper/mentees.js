@@ -116,7 +116,7 @@ module.exports = class MenteesHelper {
                     });
                 }
 
-                if (session.status !== "started") {
+                if (session.status !== "live") {
                     return common.failureResponse({
                         message: apiResponses.JOIN_ONLY_STARTED_SESSION,
                         statusCode: httpStatusCode.bad_request,
