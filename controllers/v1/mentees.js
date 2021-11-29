@@ -28,7 +28,7 @@ module.exports = class Mentors {
 
     async reports(req) {
         try {
-            const reports = await menteesHelper.reports(req.decodedToken._id);
+            const reports = await menteesHelper.reports(req.decodedToken._id, req.query.filterType);
             return reports;
         } catch (error) {
             return error;

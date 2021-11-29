@@ -34,5 +34,7 @@ module.exports = {
     "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
     "USER_ALREADY_ENROLLED": "User already enrolled",
     "USER_UNENROLLED_SUCCESSFULLY": "User unenrolled successfully",
-    "USER_NOT_ENROLLED": "User not enrolled"
+    "USER_NOT_ENROLLED": "User not enrolled",
+    "MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully",
+    "MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully",
 };
