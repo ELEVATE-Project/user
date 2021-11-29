@@ -440,7 +440,7 @@ module.exports = class SessionsHelper {
                     _id: sessionId
                 }, {
                     status: "completed",
-                    recordings: recordingInfo.data.recordings,
+                    recordings: recordingInfo.data.response.recordings,
                     completedAt: new Date()
                 });
 
