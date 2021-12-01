@@ -277,4 +277,24 @@ module.exports = class AccountHelper {
                 throw error;
             }
     }
+
+    static async updateTermsAndCondition(userId) {
+        try {
+            const user = await usersData.findOne({_id: userId},{_id: 1});
+            
+            if(!user){
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            await usersData.updateOneUser({
+                _id: userId
+            },{
+                hasAcceptedTAndC: true
+            });
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_UPDATED_SUCCESSFULLY });
+        } catch(error) {
+            throw error;
+        }
+    }
 }

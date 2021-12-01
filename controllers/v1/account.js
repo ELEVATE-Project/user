@@ -156,5 +156,20 @@ module.exports = class Account {
             }
         }
 
-    
+    /**
+     * Update Terms and conditions
+     * @method
+     * @name updateTermsAndCondition
+     * @param {Object} req -request data.
+     * @returns {JSON} - Update terms and condition
+    */
+   
+    async updateTermsAndCondition(req) {
+        try {
+            const result = await accountHelper.updateTermsAndCondition(req.decodedToken._id);
+            return result;
+        } catch (error) {
+            return error;
+        }
+    }
 }
