@@ -278,7 +278,7 @@ module.exports = class AccountHelper {
             }
     }
 
-    static async updateTermsAndCondition(userId) {
+    static async acceptTermsAndCondition(userId) {
         try {
             const user = await usersData.findOne({_id: userId},{_id: 1});
             
