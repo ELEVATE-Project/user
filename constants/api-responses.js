@@ -37,5 +37,6 @@ module.exports = {
     "SIGNED_URL_GENERATED_SUCCESSFULLY": "Signed Url Generated Successfully",
     "INCORRECT_INTERNAL_ACCESS_TOKEN": "Invalid internal access token",
     "USER_IS_A_MENTOR":"User has mentor access",
-    "USER_IS_NOT_A_MENTOR":"User does't have mentor access"
+    "USER_IS_NOT_A_MENTOR":"User does't have mentor access",
+    "USER_UPDATED_SUCCESSFULLY": "User successfully updated"
 };

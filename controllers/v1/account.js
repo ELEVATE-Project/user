@@ -155,6 +155,13 @@ module.exports = class Account {
                 return error;
             }
         }
-
-    
+   
+    async acceptTermsAndCondition(req) {
+        try {
+            const result = await accountHelper.acceptTermsAndCondition(req.decodedToken._id);
+            return result;
+        } catch (error) {
+            return error;
+        }
+    }
 }
