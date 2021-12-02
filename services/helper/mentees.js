@@ -1,6 +1,4 @@
 const ObjectId = require('mongoose').Types.ObjectId;
-
-const sessions = require("./sessions");
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
 const sessionData = require("../../db/sessions/queries");

@@ -361,7 +361,7 @@ module.exports = class SessionsHelper {
 
                     let currentDate = new Date();
                     session.startDate = new Date(session.startDate);
-                    let elapsedMinutes = Math.floor(utils.elapsedMinutes(currentDate,session.startDate));
+                    let elapsedMinutes = Math.abs(Math.floor(utils.elapsedMinutes(currentDate,session.startDate)));
                     
                     if (elapsedMinutes > 10) {
                         return resolve(common.failureResponse({
