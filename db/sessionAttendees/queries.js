@@ -33,7 +33,7 @@ module.exports = class SessionsAttendees {
     static findOneSessionAttendee(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
-                const session = await SessionAttendees.findOne({ sessionId, userId, deleted: false }).lean();
+                const session = await SessionAttendees.findOne({ sessionId: sessionId, userId: userId, deleted: false }).lean();
                 resolve(session);
             } catch (error) {
                 reject(error);

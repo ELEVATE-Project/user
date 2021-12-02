@@ -34,5 +34,6 @@ module.exports = {
     "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
     "USER_ALREADY_ENROLLED": "User already enrolled",
     "USER_UNENROLLED_SUCCESSFULLY": "User unenrolled successfully",
-    "USER_NOT_ENROLLED": "User not enrolled"
+    "USER_NOT_ENROLLED": "User not enrolled",
+    "SESSION_ESTIMATED_TIME": "Session can start session only before 10 minutes"
 };

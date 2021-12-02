@@ -13,6 +13,13 @@ const hash = (str) => {
     return hashstr;
 }
 
+const elapsedMinutes = (date1,date2) => {
+    var difference = (date1 - date2);
+    let result = (difference / 60000);
+    return result;
+}
+
  module.exports = {
-    hash: hash
+    hash: hash,
+    elapsedMinutes: elapsedMinutes
  }

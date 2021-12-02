@@ -98,7 +98,7 @@ module.exports = class SessionsHelper {
 
     }
 
-    static async details(id) {
+    static async details(id,userId) {
         try {
             const filter = {};
 
@@ -116,6 +116,14 @@ module.exports = class SessionsHelper {
                     responseCode: 'CLIENT_ERROR'
                 });
             }
+
+            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(id,userId);
+
+            sessionDetails.isEnrolled = false;
+            if (sessionAttendee) {
+                sessionDetails.isEnrolled = true;
+            }
+
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
@@ -345,6 +353,19 @@ module.exports = class SessionsHelper {
                 if (session.link) {
                     link = session.link;
                 } else {
+
+                    let currentDate = new Date();
+                    session.startDate = new Date(session.startDate);
+                    let elapsedMinutes = Math.floor(utils.elapsedMinutes(currentDate,session.startDate));
+                    
+                    if (elapsedMinutes > 10) {
+                        return resolve(common.failureResponse({
+                            message: apiResponses.SESSION_ESTIMATED_TIME,
+                            statusCode: httpStatusCode.bad_request,
+                            responseCode: 'CLIENT_ERROR'
+                        }));
+                    }
+
                     const meetingDetails = await bigBlueButton.createMeeting(
                         session._id,
                         session.title,
@@ -445,6 +466,35 @@ module.exports = class SessionsHelper {
                 });
 
                 return resolve(result);
+
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
+    static getRecording(sessionId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                const session = await sessionData.findSessionById(sessionId);
+                if (!session) {
+                    return common.failureResponse({
+                        message: apiResponses.SESSION_NOT_FOUND,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    });
+                }
+
+                const recordingInfo = await bigBlueButton.getRecordings(sessionId);
+
+                // let response = await requestUtil.get("https://dev.mentoring.shikshalokam.org/playback/presentation/2.3/6af6737c986d83e8d5ce2ff77af1171e397c739e-1638254682349");
+                // console.log(response);
+                
+                return resolve(common.successResponse({
+                    statusCode: httpStatusCode.ok,
+                    result: recordingInfo.data.response.recordings
+                }));
 
             } catch (error) {
                 return reject(error);

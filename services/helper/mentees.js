@@ -19,7 +19,7 @@ module.exports = class MenteesHelper {
             if (!enrolledSessions) {
                 /** Upcoming unenrolled sessions */
                 filters = {
-                    status: 'published',
+                    status: {$in: ['published','live']},
                     startDate: {
                         $gte: new Date().toISOString()
                     },
@@ -27,7 +27,21 @@ module.exports = class MenteesHelper {
                         $ne: userId
                     }
                 };
+                
                 sessions = await sessionData.findAllSessions(page, limit, search, filters);
+
+                if (sessions[0].data.length > 0) {
+                    
+                    await Promise.all(sessions[0].data.map(async session => {
+                        let attendee = await sessionAttendees.findOneSessionAttendee(session._id,userId);
+    
+                        session.isEnrolled = false;
+                        if (attendee) {
+                            session.isEnrolled = true;
+                        }
+                    }));
+                }
+
             } else {
                 /** Upcoming user's enrolled sessions */
                 /* Fetch sessions if it is not expired or if expired then either status is live or if mentor 

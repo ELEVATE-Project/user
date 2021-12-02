@@ -44,7 +44,8 @@ module.exports = class Sessions {
         try {
             const sessionDetails =
                 await sessionsHelper.details(
-                    req.params.id
+                    req.params.id,
+                    req.decodedToken._id
                 );
             return sessionDetails;
         } catch (error) {
@@ -120,10 +121,11 @@ module.exports = class Sessions {
         }
     }
 
-    recordingStats(req) {
+    getRecording(req) {
         return new Promise(async (resolve,reject) => {
             try {
-                console.log(" -- I am in recordings --");
+                const recording = await sessionsHelper.getRecording(req.params.id);
+                return resolve(recording);
             } catch(error) {
                 return reject(error);
             }  
