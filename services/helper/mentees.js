@@ -8,6 +8,7 @@ const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
+const utils = require('../../generics/utils');
 
 module.exports = class MenteesHelper {
 
@@ -17,7 +18,7 @@ module.exports = class MenteesHelper {
             let filters;
 
             if (!enrolledSessions) {
-                /** Upcoming unenrolled sessions */
+                /** Upcoming unenrolled sessions {All sessions}*/
                 filters = {
                     status: {$in: ['published','live']},
                     startDate: {
@@ -43,7 +44,7 @@ module.exports = class MenteesHelper {
                 }
 
             } else {
-                /** Upcoming user's enrolled sessions */
+                /** Upcoming user's enrolled sessions {My sessions}*/
                 /* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
                 delays in starting session then status will remain published for that particular interval so fetch that also */
 
@@ -74,12 +75,46 @@ module.exports = class MenteesHelper {
         }
     }
 
-    static async reports(userId) {
+    static async reports(userId, filterType) {
+        let filterStartDate;
+        let filterEndDate;
+        let totalSessionEnrolled;
+        let totalsessionsAttended;
+        let filters;
         try {
+            if (filterType === 'MONTHLY') {
+                [filterStartDate, filterEndDate] = utils.getCurrentMonthRange();
+            } else if (filterType === 'WEEKLY') {
+                [filterStartDate, filterEndDate] = utils.getCurrentWeekRange();
+            } else if (filterType === 'QUARTERLY') {
+                [filterStartDate, filterEndDate] = utils.getCurrentQuarterRange();
+            }
 
-            /**
-             * Your business logic here
-             */
+            /* totalSessionEnrolled */ 
+            filters = {
+                createdAt: {
+                    $gte: filterStartDate.toISOString(),
+                    $lte: filterEndDate.toISOString()
+                },
+                userId: ObjectId(userId),
+                deleted: false
+            };
+
+            totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filters);
+
+            /* totalSessionAttended */ 
+            filters = {
+                'sessionDetail.startDate': {
+                    $gte: filterStartDate.toISOString(),
+                    $lte: filterEndDate.toISOString()
+                },
+                userId: ObjectId(userId),
+                deleted: false,
+                isSessionAttended: true
+            };
+
+            totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filters);
+            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: {totalSessionEnrolled, totalsessionsAttended}});
 
         } catch (error) {
             throw error;

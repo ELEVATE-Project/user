@@ -35,5 +35,7 @@ module.exports = {
     "USER_ALREADY_ENROLLED": "User already enrolled",
     "USER_UNENROLLED_SUCCESSFULLY": "User unenrolled successfully",
     "USER_NOT_ENROLLED": "User not enrolled",
-    "SESSION_ESTIMATED_TIME": "Session can start session only before 10 minutes"
+    "SESSION_ESTIMATED_TIME": "Session can start session only before 10 minutes",
+    "MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully",
+    "MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully",
 };

@@ -43,8 +43,7 @@ module.exports = class SessionsData {
                 const sessionData = await Sessions.findOne(filter, projection).lean();
                 resolve(sessionData);
             } catch (error) {
-
-                return reject(error);
+                reject(error);
             }
         })
     }
@@ -82,6 +81,7 @@ module.exports = class SessionsData {
                     },
                     {
                         $project: {
+                            _id: 1,
                             title: 1,
                             mentorName: 1,
                             description: 1,
@@ -116,6 +116,17 @@ module.exports = class SessionsData {
             }
         })
     } 
+
+    static countSessions(filter) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const count = await Sessions.countDocuments(filter);
+                resolve(count);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
 }
 
 
