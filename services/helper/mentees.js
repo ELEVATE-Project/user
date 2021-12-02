@@ -6,6 +6,8 @@ const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
+
+const feedbackHelper = require("./feedback")
 module.exports = class MenteesHelper {
 
     static async sessions(userId, enrolledSessions, page, limit, search = '') {
@@ -69,7 +71,7 @@ module.exports = class MenteesHelper {
         }
     }
 
-    static async homeFeed(userId) {
+    static async homeFeed(userId,isAMentor) {
         try {
             /* All Sessions */
             const page = 1;
@@ -84,7 +86,18 @@ module.exports = class MenteesHelper {
                 allSessions: allSessions.result[0].data,
                 mySessions: mySessions.result[0].data,
             }
-            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: result});
+
+            const feedbackData = await feedbackHelper.pending(userId,isAMentor)  
+            
+            return common.successResponse({ 
+                statusCode: httpStatusCode.ok,
+                message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, 
+                result: result,
+                meta:  { 
+                    type:"feedback",
+                    data: feedbackData.result
+                }
+            });
         } catch (error) {
             throw error;
         }

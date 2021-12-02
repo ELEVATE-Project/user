@@ -38,7 +38,26 @@ let sessionsSchema = new Schema({
   startedAt: String,
   shareLink: String,
   bigBlueButtonMeetingInfo: Object,
-  completedAt: Date
+  completedAt: Date,
+  feedbacks: [
+    {
+      questionId: mongoose.Types.ObjectId,
+      value: String,
+      label: String
+    }
+  ],
+  skippedFeedback:{
+    type: Boolean,
+    default: false
+  },
+  menteeFeedbackForm:{
+    type: String,
+    default: "menteeQS1"
+  },
+  mentorFeedbackForm:{
+    type: String,
+    default: "mentorQS2"
+  }
 });
 
 const Sessions = db.model("sessions",sessionsSchema);
