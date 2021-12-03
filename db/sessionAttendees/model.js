@@ -31,13 +31,17 @@ let sessionAttendeesSchema = new Schema({
   joinedAt: Date,
   leftAt: Date,
   link: String,
-  ratings: [
+  feedbacks: [
     {
-      qid: ObjectId,
-      rating: Number,
+      questionId: mongoose.Types.ObjectId,
+      value: String,
       label: String
     }
-  ]
+  ],
+  skippedFeedback:{
+    type: Boolean,
+    default: false
+  }
 });
 
 const SessionAttendes = db.model("sessionAttendees", sessionAttendeesSchema);

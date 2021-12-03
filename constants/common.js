@@ -5,12 +5,13 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] }) => {
+const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] ,meta={} }) => {
     return {
         statusCode,
         responseCode,
         message,
-        result
+        result,
+        meta
     }
 };
 
