@@ -360,7 +360,7 @@ module.exports = class SessionsHelper {
                     link = session.link;
                 } else {
 
-                    let currentDate = new Date(moment.tz("Asia/Kolkata"));
+                    let currentDate = utils.getIstDate();
                     session.startDate = new Date(session.startDate);
                     let elapsedMinutes = Math.abs(Math.floor(utils.elapsedMinutes(currentDate,session.startDate)));
                     

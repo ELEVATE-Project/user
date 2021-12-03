@@ -19,6 +19,10 @@ const elapsedMinutes = (date1,date2) => {
     return result;
 }
 
+const getIstDate = () => {
+    return new Date(new Date().getTime() + (5*60+30)*60000);
+}
+
 const getCurrentMonthRange = () => {
     const monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     let month = new Date().getMonth()
@@ -53,5 +57,6 @@ module.exports = {
     getCurrentMonthRange: getCurrentMonthRange,
     getCurrentWeekRange: getCurrentWeekRange,
     getCurrentQuarterRange: getCurrentQuarterRange,
-    elapsedMinutes: elapsedMinutes
+    elapsedMinutes: elapsedMinutes,
+    getIstDate: getIstDate
 }
