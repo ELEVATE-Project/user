@@ -19,26 +19,64 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static findLinkBySessionAndUserId(id,sessionId) {
-        return new Promise(async (resolve,reject) => {
-            try { 
-                const session = await SessionAttendees.findOne({userId:id,sessionId:sessionId,status: "enrolled",deleted:false}).lean();
+    static findLinkBySessionAndUserId(id, sessionId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const session = await SessionAttendees.findOne({ userId: id, sessionId: sessionId, deleted: false }).lean();
                 resolve(session);
-            } catch(error) {
+            } catch (error) {
                 reject(error);
             }
         });
     }
-    
-    static findOneSessionAttendee(sessionId, userId) {
+
+    static (sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
-                const session = await SessionAttendees.findOne({ sessionId, userId, deleted: false }).lean();
+                const session = await SessionAttendees.findOne({ sessionId: sessionId, userId: userId, deleted: false }).lean();
                 resolve(session);
             } catch (error) {
                 reject(error);
             }
         })
+    }
+
+    static countSessionAttendees(filter) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const count = await SessionAttendees.countDocuments(filter);
+                resolve(count);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    static countSessionAttendeesThroughStartDate(filter) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await SessionAttendees.aggregate([
+                    {
+                        $lookup: {
+                            from: 'sessions',
+                            localField: 'sessionId',
+                            foreignField: '_id',
+                            as: 'sessionDetail'
+                        }
+                    },
+                    {
+                        $match: filter
+                    },
+                    {
+                      $count: 'count'
+                    }
+                ]);
+                console.log(result);
+                resolve(result.length ? result[0].count : 0);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 
     static updateOne(filter, update) {
@@ -57,7 +95,7 @@ module.exports = class SessionsAttendees {
             }
         });
     }
-    
+
     static unEnrollFromSession(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -99,19 +137,28 @@ module.exports = class SessionsAttendees {
                         },
                     },
                     {
-                        $sort: { 'sessionDetail.startDateTime': 1 }
+                        $sort: { 'sessionDetail.startDate': 1 }
                     },
                     {
                         $project: {
-                            sessionId: 1,
                             _id: 1,
-                            'sessionDetail._id': 1,
-                            'sessionDetail.mentorName': 1,
-                            'sessionDetail.status': 1,
-                            'sessionDetail.title': 1,
-                            'sessionDetail.description': 1,
-                            'sessionDetail.startDateTime': 1,
-                            'sessionDetail.endDateTime': 1,
+                            sessionId: 1,
+                            sessionDetail: {
+                                $arrayElemAt: ['$sessionDetail', 0]
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            sessionId: 1,
+                            title: '$sessionDetail.title',
+                            mentorName: '$sessionDetail.mentorName',
+                            description: '$sessionDetail.description',
+                            startDate: '$sessionDetail.startDate',
+                            endDate: '$sessionDetail.endDate',
+                            status: '$sessionDetail.status',
+                            image: '$sessionDetail.image'
                         }
                     },
                     {

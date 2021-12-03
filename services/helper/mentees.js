@@ -1,4 +1,4 @@
-const sessions = require("./sessions");
+const ObjectId = require('mongoose').Types.ObjectId;
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
 const sessionData = require("../../db/sessions/queries");
@@ -8,6 +8,8 @@ const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
 
 const feedbackHelper = require("./feedback")
+const utils = require('../../generics/utils');
+
 module.exports = class MenteesHelper {
 
     static async sessions(userId, enrolledSessions, page, limit, search = '') {
@@ -16,19 +18,33 @@ module.exports = class MenteesHelper {
             let filters;
 
             if (!enrolledSessions) {
-                /** Upcoming unenrolled sessions */
+                /** Upcoming unenrolled sessions {All sessions}*/
                 filters = {
-                    status: 'published',
-                    startDateTime: {
+                    status: {$in: ['published','live']},
+                    startDate: {
                         $gte: new Date().toISOString()
                     },
                     userId: {
                         $ne: userId
                     }
                 };
+                
                 sessions = await sessionData.findAllSessions(page, limit, search, filters);
+
+                if (sessions[0].data.length > 0) {
+                    
+                    await Promise.all(sessions[0].data.map(async session => {
+                        let attendee = await sessionAttendees.findOneSessionAttendee(session._id,userId);
+    
+                        session.isEnrolled = false;
+                        if (attendee) {
+                            session.isEnrolled = true;
+                        }
+                    }));
+                }
+
             } else {
-                /** Upcoming user's enrolled sessions */
+                /** Upcoming user's enrolled sessions {My sessions}*/
                 /* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
                 delays in starting session then status will remain published for that particular interval so fetch that also */
 
@@ -37,7 +53,7 @@ module.exports = class MenteesHelper {
                 filters = {
                     $or: [
                         {
-                            'sessionDetail.startDateTime': {
+                            'sessionDetail.startDate': {
                                 $gte: new Date().toISOString()
                             }
                         },
@@ -59,12 +75,46 @@ module.exports = class MenteesHelper {
         }
     }
 
-    static async reports(userId) {
+    static async reports(userId, filterType) {
+        let filterStartDate;
+        let filterEndDate;
+        let totalSessionEnrolled;
+        let totalsessionsAttended;
+        let filters;
         try {
+            if (filterType === 'MONTHLY') {
+                [filterStartDate, filterEndDate] = utils.getCurrentMonthRange();
+            } else if (filterType === 'WEEKLY') {
+                [filterStartDate, filterEndDate] = utils.getCurrentWeekRange();
+            } else if (filterType === 'QUARTERLY') {
+                [filterStartDate, filterEndDate] = utils.getCurrentQuarterRange();
+            }
 
-            /**
-             * Your business logic here
-             */
+            /* totalSessionEnrolled */ 
+            filters = {
+                createdAt: {
+                    $gte: filterStartDate.toISOString(),
+                    $lte: filterEndDate.toISOString()
+                },
+                userId: ObjectId(userId),
+                deleted: false
+            };
+
+            totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filters);
+
+            /* totalSessionAttended */ 
+            filters = {
+                'sessionDetail.startDate': {
+                    $gte: filterStartDate.toISOString(),
+                    $lte: filterEndDate.toISOString()
+                },
+                userId: ObjectId(userId),
+                deleted: false,
+                isSessionAttended: true
+            };
+
+            totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filters);
+            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: {totalSessionEnrolled, totalsessionsAttended}});
 
         } catch (error) {
             throw error;
@@ -126,9 +176,9 @@ module.exports = class MenteesHelper {
                     });
                 }
 
-                if (session.status !== "started") {
+                if (session.status !== "live") {
                     return common.failureResponse({
-                        message: apiResponses.JOIN_ONLY_STARTED_SESSION,
+                        message: apiResponses.JOIN_ONLY_LIVE_SESSION,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
                     });

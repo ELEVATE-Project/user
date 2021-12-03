@@ -40,11 +40,10 @@ module.exports = class SessionsData {
     static findOneSession(filter, projection = {}) {
         return new Promise(async (resolve, reject) => {
             try {
-                const sessionData = await Sessions.findOne(filter, projection);
+                const sessionData = await Sessions.findOne(filter, projection).lean();
                 resolve(sessionData);
             } catch (error) {
-
-                return reject(error);
+                reject(error);
             }
         })
     }
@@ -78,15 +77,16 @@ module.exports = class SessionsData {
                         },
                     },
                     {
-                        $sort: { startDateTime: 1 }
+                        $sort: { startDate: 1 }
                     },
                     {
                         $project: {
+                            _id: 1,
                             title: 1,
                             mentorName: 1,
                             description: 1,
-                            startDateTime: 1,
-                            endDateTime: 1,
+                            startDate: 1,
+                            endDate: 1,
                             status: 1,
                             image: 1
                         }
@@ -128,6 +128,16 @@ module.exports = class SessionsData {
                 reject(error);
             }
         })
+    }
+    static countSessions(filter) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const count = await Sessions.countDocuments(filter);
+                resolve(count);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 }
 

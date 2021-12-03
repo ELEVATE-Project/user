@@ -15,21 +15,19 @@ module.exports = {
                 .matches(/^[A-Za-z0-9 ]+$/)
                 .withMessage('title is invalid');
 
-
             req.checkBody('description')
                 .notEmpty()
                 .withMessage('description field is empty')
                 .matches(/^[A-Za-z0-9 ]+$/)
                 .withMessage('description is invalid');
 
-            req.checkBody('startDateTime')
+            req.checkBody('startDate')
                 .notEmpty()
-                .withMessage('startDateTime field is empty');
+                .withMessage('startDate field is empty');
 
-            req.checkBody('endDateTime')
+            req.checkBody('endDate')
                 .notEmpty()
-                .withMessage('endDateTime field is empty');
-
+                .withMessage('endDate field is empty');
 
             req.checkBody('recommendedFor')
                 .notEmpty()

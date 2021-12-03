@@ -28,7 +28,7 @@ module.exports = {
     "SESSION_START_LINK": "Successfully fetched session start link",
     "CANNOT_START_OTHER_MENTOR_SESSION": "You cannot start other mentor session",
     "USER_NOT_FOUND": "User is not found",
-    "JOIN_ONLY_STARTED_SESSION": "Mentee can only join started session",
+    "JOIN_ONLY_LIVE_SESSION": "Mentee can only join live session",
     "USER_NOT_ENROLLED": "User has not enrolled for the session",
     "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully",
     "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully",
@@ -49,6 +49,8 @@ module.exports = {
     "QUESTION_ALREADY_BEEN_USED" : "Questions already been used in question set",
     "PENDING_FEEDBACK_FETCHED_SUCCESSFULLY":"Pending feedbacks fetched successfully",
     "FEEDBACKFORM_MESSAGE":"Thank you for hosting the session, please rate us   on the following to help us improve",
-    "FEEDBACK_ALREADY_SUBMITTED":"Feedback form has already been submitted"
-    
+    "FEEDBACK_ALREADY_SUBMITTED":"Feedback form has already been submitted",
+    "SESSION_ESTIMATED_TIME": "Mentor can start session only before 10 minutes",
+    "MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully",
+    "MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully",
 };

@@ -30,10 +30,6 @@ let sessionAttendeesSchema = new Schema({
   },
   joinedAt: Date,
   leftAt: Date,
-  userId: {
-    type: String,
-    index: true
-  },
   link: String,
   feedbacks: [
     {
@@ -48,5 +44,5 @@ let sessionAttendeesSchema = new Schema({
   }
 });
 
-const SessionAttendes = db.model("sessionAttendees", sessionAttendeesSchema,"sessionAttendees");
+const SessionAttendes = db.model("sessionAttendees", sessionAttendeesSchema);
 module.exports = SessionAttendes;

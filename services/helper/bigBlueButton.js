@@ -2,13 +2,16 @@ const bigBlueButtonUrl = process.env.BIG_BLUE_BUTTON_URL + process.env.BIB_BLUE_
 const crypto = require("crypto");
 const request = require("../../generics/requests");
 const endpoints = require('../../constants/endpoints');
-const utils = require('../../generics/utils');
 
 module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
 
-            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&meta_endCallbackUrl=" + process.env.BIG_BLUE_BUTTON_CALLBACK_EVENTS + "%2F" + meetingId + "%3F" + "mentorPw" + "%3D" + moderatorPW + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
+            // let recordingCallBackUrl = encodeURI(process.env.RECORDING_READY_CALLBACK_URL);
+            // "&meta_bbb-recording-ready-url=" + recordingCallBackUrl;
+            let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + "%2F" + meetingId;
+
+            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             let sha = shasum.update(checkSumGeneration);
@@ -57,16 +60,15 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async getMeetingInfo(meetingId,mentorPW) {
+    static async getRecordings(meetingId) {
         try {
 
-            let query = "meetingID=" + meetingId + "&password=" + mentorPW;
-            let checkSumGeneration = "getMeetingInfo" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
+            let checkSumGeneration = "getRecordingsmeetingID=" + meetingId + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             shasum.update(checkSumGeneration);
             const checksum = shasum.digest('hex');
 
-            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_MEETING_INFO + "?" + query + "&checksum=" + checksum;
+            const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "&checksum=" + checksum;
             let response = await request.get(meetingInfoUrl);
             return response;
 
