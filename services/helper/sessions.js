@@ -1,4 +1,5 @@
 const ObjectId = require('mongoose').Types.ObjectId;
+const moment=require("moment-timezone");
 const bcyptJs = require('bcryptjs');
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
@@ -359,7 +360,7 @@ module.exports = class SessionsHelper {
                     link = session.link;
                 } else {
 
-                    let currentDate = new Date();
+                    let currentDate = new Date(moment.tz("Asia/Kolkata"));
                     session.startDate = new Date(session.startDate);
                     let elapsedMinutes = Math.abs(Math.floor(utils.elapsedMinutes(currentDate,session.startDate)));
                     
