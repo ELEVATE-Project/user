@@ -131,4 +131,21 @@ module.exports = class Sessions {
             }  
         }) 
     }
+
+    feedback(req) {
+        return new Promise(async (resolve,reject) => {
+            try {
+                const sessionsFeedBack = 
+                await sessionsHelper.feedback(
+                    req.params.id,
+                    req.body
+                );
+                
+                return resolve(sessionsFeedBack);
+            } catch(error) {
+                return reject(error);
+            }  
+        }) 
+    }
+
 }

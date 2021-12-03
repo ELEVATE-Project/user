@@ -117,6 +117,18 @@ module.exports = class SessionsData {
         })
     } 
 
+    static findSessions(filter, projection = {}){
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let sessionData = await Sessions.find(filter,projection);
+                resolve(sessionData);
+
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
     static countSessions(filter) {
         return new Promise(async (resolve, reject) => {
             try {
