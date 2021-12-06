@@ -13,6 +13,11 @@ module.exports = class Sessions {
     async update(req) {
         try {
             if (req.params.id) {
+
+                if(req.headers.timeZone){
+                    req.body['timeZone'] = req.headers.timeZone;
+                }
+
                 const sessionUpdated =
                     await sessionsHelper.update(
                         req.params.id,
@@ -26,8 +31,9 @@ module.exports = class Sessions {
                 if (req.decodedToken.name) {
                     req.body.mentorName = req.decodedToken.name;
                 }
+                
                 if(req.headers.timeZone){
-                    req.body.timeZone = req.headers.timeZone;
+                    req.body['timeZone'] = req.headers.timeZone;
                 }
 
                 const sessionCreated =
