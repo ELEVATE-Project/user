@@ -32,10 +32,18 @@ module.exports = class SessionsHelper {
             }
 
             if(bodyData.startDate){
-                bodyData.startDate = moment.unix(bodyData.startDate).format()
+                bodyData.startDate = moment.unix(bodyData.startDate);
+                if(bodyData.timeZone){
+                    bodyData.startDate.tz(bodyData.timeZone);
+                }
+                bodyData.startDate  = moment(bodyData.startDate).format();
             }
             if(bodyData.endDate){
-                bodyData.endDate = moment.unix(bodyData.endDate).format()
+                bodyData.endDate = moment.unix(bodyData.endDate);
+                if(bodyData.timeZone){
+                    bodyData.endDate.tz(bodyData.timeZone);
+                }
+                bodyData.endDate  = moment(bodyData.endDate).format();
             }
            
             let data = await sessionData.createSession(bodyData);
@@ -67,10 +75,18 @@ module.exports = class SessionsHelper {
 
 
             if(bodyData.startDate){
-                bodyData.startDate = moment.unix(bodyData.startDate).format()
+                bodyData.startDate = moment.unix(bodyData.startDate);
+                if(bodyData.timeZone){
+                    bodyData.startDate.tz(bodyData.timeZone);
+                }
+                bodyData.startDate  = moment(bodyData.startDate).format();
             }
             if(bodyData.endDate){
-                bodyData.endDate = moment.unix(bodyData.endDate).format()
+                bodyData.endDate = moment.unix(bodyData.endDate);
+                if(bodyData.timeZone){
+                    bodyData.endDate.tz(bodyData.timeZone);
+                }
+                bodyData.endDate  = moment(bodyData.endDate).format();
             }
             
 
