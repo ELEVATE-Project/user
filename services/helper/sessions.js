@@ -150,7 +150,7 @@ module.exports = class SessionsHelper {
                 sessionDetails.isEnrolled = true;
             }
 
-            sessionDetails.image = sessionDetails.image.map(imgPath => {
+            sessionDetails.image = sessionDetails.image.map(async imgPath => {
                 if (process.env.CLOUD_STORAGE === 'GCP') {
                     const options = {
                         destFilePath: imgPath,
