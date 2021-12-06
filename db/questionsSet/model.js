@@ -24,7 +24,8 @@ const { feedback } = require('../../services/helper/sessions');
         default: false
      },
      status:{
-
+      type: String,
+      default:"published"
      }
  });
  

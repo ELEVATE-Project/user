@@ -55,6 +55,10 @@ const questionsSchema = new Schema({
    },
    floating:{
       type: String
+   },
+   status:{
+      type: String,
+      default:"published"
    }
 });
 
