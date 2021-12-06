@@ -77,7 +77,7 @@ module.exports = class SessionsHelper {
             let message;
             let updateData;
             if(method==common.DELETE_METHOD){
-                updateData = { deleted:true };3
+                updateData = { deleted:true };
                 message = apiResponses.SESSION_DELETED_SUCCESSFULLY;
 
             } else {
