@@ -423,16 +423,17 @@ module.exports = class SessionsHelper {
                 }
 
                 let link = "";
-                session.link = "";
                 if (session.link) {
                     link = session.link;
                 } else {
 
-                    let currentDate = moment().format("YYYY-MM-DD h:mm:ss");
+                    let currentDate = moment();
                     if(session.timeZone){
-                        currentDate = moment(currentDate).tz(session.timeZone,true);
+                        currentDate.tz(session.timeZone);
+                        currentDate = moment(currentDate).format();
                     }
-                    let elapsedMinutes = moment(currentDate).diff( moment(session.startDate).format("YYYY-MM-DD h:mm:ss"), 'minutes');
+                    let elapsedMinutes = moment(currentDate).diff(session.startDate, 'minutes');
+                    
                     if (elapsedMinutes < -10) {
                         return resolve(common.failureResponse({
                             message: apiResponses.SESSION_ESTIMATED_TIME,
@@ -447,7 +448,7 @@ module.exports = class SessionsHelper {
                         session.menteePassword,
                         session.mentorPassword
                     );
-    
+                  
                     if (!meetingDetails) {
                         return resolve(common.failureResponse({
                             message: apiResponses.MEETING_NOT_CREATED,

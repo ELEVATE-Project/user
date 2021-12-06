@@ -14,8 +14,8 @@ module.exports = class Sessions {
         try {
             if (req.params.id) {
 
-                if(req.headers.timeZone){
-                    req.body['timeZone'] = req.headers.timeZone;
+                if(req.headers.timezone){
+                    req.body['timeZone'] = req.headers.timezone;
                 }
 
                 const sessionUpdated =
@@ -32,8 +32,8 @@ module.exports = class Sessions {
                     req.body.mentorName = req.decodedToken.name;
                 }
                 
-                if(req.headers.timeZone){
-                    req.body['timeZone'] = req.headers.timeZone;
+                if(req.headers.timezone){
+                    req.body['timeZone'] = req.headers.timezone;
                 }
 
                 const sessionCreated =
