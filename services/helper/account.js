@@ -7,25 +7,49 @@ const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
 const usersData = require("../../db/users/queries");
+const notificationTemplateData = require("../../db/notification-template/query");
 const kafkaCommunication = require('../../generics/kafka-communication');
 const systemUserData = require("../../db/systemUsers/queries");
 const FILESTREAM = require("../../generics/file-stream");
 
 module.exports = class AccountHelper {
 
-    static async create(bodyData) {
+    static async create(bodyData, isAMentor) {
         try {
             const email = bodyData.email;
             const user = await usersData.findOne({ 'email.address': email });
             if (user) {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
             }
+
+            if (isAMentor) {
+                bodyData.password = '4567';
+            }
             const salt = bcryptJs.genSaltSync(10);
             bodyData.password = bcryptJs.hashSync(bodyData.password, salt);
             bodyData.email = { address: email, verified: false };
             await usersData.createUser(bodyData);
+            
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
+
+            if (templateData) {
+                // Push successfull registration email to kafka
+                const payload = {
+                    type: 'email',
+                    email: {
+                        to: email,
+                        subject: templateData.subject,
+                        body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, appName: process.env.APP_NAME })
+                    }
+                };
+                
+                await kafkaCommunication.pushRegistrationEmailToKafka(payload);
+            }
+            
+
             return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY });
         } catch (error) {
+            console.log(error);
             throw error;
         }
     }
@@ -34,12 +58,9 @@ module.exports = class AccountHelper {
         const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0};
         try {
             let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
-            if (!user) {
-                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
-            }
             const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
-            if (!isPasswordCorrect) {
-                return common.failureResponse({ message: apiResponses.PASSWORD_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            if (!user || !isPasswordCorrect) {
+                return common.failureResponse({ message: apiResponses.USERNAME_OR_PASSWORD_IS_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
             const tokenDetail = {

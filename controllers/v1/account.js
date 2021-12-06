@@ -21,8 +21,9 @@ module.exports = class Account {
 
     async create(req) {
         const params = req.body;
+        const isAMentor = params.isAMentor ? true : false;
         try {
-            const createdAccount = await accountHelper.create(params);
+            const createdAccount = await accountHelper.create(params, isAMentor);
             return createdAccount;
         } catch (error) {
             return error;

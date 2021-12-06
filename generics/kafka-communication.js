@@ -14,6 +14,15 @@ const sendOtpEmailToKafka = async message => {
     }
 };
 
+const pushRegistrationEmailToKafka = async message => {
+    try {
+        const payload = [{ topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: JSON.stringify(message) }];
+        return await pushPayloadToKafka(payload)
+    } catch (error) {
+        throw error;
+    }
+};
+
 const pushPayloadToKafka = (payload) => {
     return new Promise((resolve, reject) => {
         kafkaProducer.send(payload, (error, data) => {
@@ -26,5 +35,6 @@ const pushPayloadToKafka = (payload) => {
 };
 
 module.exports = { 
-    sendOtpEmailToKafka
+    sendOtpEmailToKafka,
+    pushRegistrationEmailToKafka
  };

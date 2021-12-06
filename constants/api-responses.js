@@ -3,6 +3,7 @@ module.exports = {
     "PASSWORD_INVALID": "Password is invalid",
     "USER_ALREADY_EXISTS": "User already exists",
     "USER_DOESNOT_EXISTS": "User doesnot exists",
+    "USERNAME_OR_PASSWORD_IS_INVALID": "Username or password is invalid",
     "USER_CREATED_SUCCESSFULLY": "User created successfully",
     "LOGGED_IN_SUCCESSFULLY": "User logged in successfully",
     "LOGGED_OUT_SUCCESSFULLY": "User logged out successfully",

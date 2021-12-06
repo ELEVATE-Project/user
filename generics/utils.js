@@ -17,11 +17,11 @@ const hashPassword = (password) => {
     const salt = bcryptJs.genSaltSync(10);
     let hashPassword = bcryptJs.hashSync(password, salt);
     return hashPassword;
-}
+};
 
-const comparePassword = (password1,password2) => {
+const comparePassword = (password1, password2) => {
     return bcryptJs.compareSync(password1, password2);
-}
+};
 
 const clearFile = (filePath) => {
     fs.unlink(filePath, err => {
@@ -29,9 +29,17 @@ const clearFile = (filePath) => {
     })
 };
 
+const composeEmailBody = (body, params) => {
+    return body.replace(/{([^{}]*)}/g, (a, b) => {
+        var r = params[b];
+        return typeof r === 'string' || typeof r === 'number' ? r : a;
+    });
+};
+
 module.exports = {
     generateToken,
     hashPassword,
     comparePassword,
-    clearFile
+    clearFile,
+    composeEmailBody
 }
