@@ -31,6 +31,13 @@ module.exports = class SessionsHelper {
                 });
             }
 
+            if(bodyData.startDate){
+                bodyData.startDate = moment.unix(bodyData.startDate).format()
+            }
+            if(bodyData.endDate){
+                bodyData.endDate = moment.unix(bodyData.endDate).format()
+            }
+           
             let data = await sessionData.createSession(bodyData);
 
             await this.setMentorPassword(data._id,data.userId);
@@ -58,10 +65,19 @@ module.exports = class SessionsHelper {
                 });
             }
 
+
+            if(bodyData.startDate){
+                bodyData.startDate = moment.unix(bodyData.startDate).format()
+            }
+            if(bodyData.endDate){
+                bodyData.endDate = moment.unix(bodyData.endDate).format()
+            }
+            
+
             let message;
             let updateData;
             if(method==common.DELETE_METHOD){
-                updateData = { deleted:true };
+                updateData = { deleted:true };3
                 message = apiResponses.SESSION_DELETED_SUCCESSFULLY;
 
             } else {
@@ -177,7 +193,7 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async enroll(sessionId, userId) {
+    static async enroll(sessionId, userId,timeZone) {
         try {
             const session = await sessionData.findSessionById(sessionId);
             if (!session) {
@@ -199,7 +215,8 @@ module.exports = class SessionsHelper {
 
             const attendee = {
                 userId,
-                sessionId
+                sessionId,
+                timeZone
             };
 
             await sessionAttendesData.create(attendee);
@@ -356,15 +373,17 @@ module.exports = class SessionsHelper {
                 }
 
                 let link = "";
+                session.link = "";
                 if (session.link) {
                     link = session.link;
                 } else {
 
-                    let currentDate = utils.getIstDate();
-                    session.startDate = new Date(session.startDate);
-                    let elapsedMinutes = Math.abs(Math.floor(utils.elapsedMinutes(currentDate,session.startDate)));
-                    
-                    if (elapsedMinutes > 10) {
+                    let currentDate = moment().format("YYYY-MM-DD h:mm:ss");
+                    if(session.timeZone){
+                        currentDate = moment(currentDate).tz(session.timeZone,true);
+                    }
+                    let elapsedMinutes = moment(currentDate).diff( moment(session.startDate).format("YYYY-MM-DD h:mm:ss"), 'minutes');
+                    if (elapsedMinutes < -10) {
                         return resolve(common.failureResponse({
                             message: apiResponses.SESSION_ESTIMATED_TIME,
                             statusCode: httpStatusCode.bad_request,
