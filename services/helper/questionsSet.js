@@ -51,7 +51,6 @@ module.exports = class questionsSetHelper {
     static async update(questionSetId, bodyData) {
         try {
             
-            
             if(bodyData.questions) {
                 let update = true;
                 let questionInfo = await questionData.find({
@@ -82,30 +81,10 @@ module.exports = class questionsSetHelper {
                     });
                 }
             }
-
-         
-
             const filter = {
-                _id: questionId
+                _id: questionSetId
             };
             const result = await questionsSetData.updateOneQuestionsSet(filter, bodyData);
-
-            if(bodyData.questions){
-
-                // await questionData.updateData(
-                //    {
-                //     "questionsSetId": questionSetId
-                // } ,{ questionsSetId: "" });
-
-                await questionData.updateData({
-                    _id: {
-                        $in: bodyData.questions
-                    }
-                }, {
-                    "questionsSetId": questionSetId
-                });
-            }
-
 
             if (result === 'QUESTIONS_SET_ALREADY_EXISTS') {
                 return common.failureResponse({
@@ -119,6 +98,22 @@ module.exports = class questionsSetHelper {
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR'
                 });
+            } else {
+                if(bodyData.questions ){
+
+                    await questionData.updateData(
+                       {
+                        "questionsSetId": questionSetId
+                    } ,{ $unset: { questionsSetId: 1 } });
+    
+                    await questionData.updateData({
+                        _id: {
+                            $in: bodyData.questions
+                        }
+                    }, {
+                        "questionsSetId": questionSetId
+                    });
+                }
             }
             return common.successResponse({
                 statusCode: httpStatusCode.accepted,
