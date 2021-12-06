@@ -26,6 +26,9 @@ module.exports = class Sessions {
                 if (req.decodedToken.name) {
                     req.body.mentorName = req.decodedToken.name;
                 }
+                if(req.headers.timeZone){
+                    req.body.timeZone = req.headers.timeZone;
+                }
 
                 const sessionCreated =
                     await sessionsHelper.create(
@@ -80,7 +83,7 @@ module.exports = class Sessions {
 
     async enroll(req) {
         try {
-            const enrolledSession = await sessionsHelper.enroll(req.params.id, req.decodedToken._id);
+            const enrolledSession = await sessionsHelper.enroll(req.params.id, req.decodedToken._id,req.headers['timeZone']);
             return enrolledSession;
         } catch (error) {
             return error;

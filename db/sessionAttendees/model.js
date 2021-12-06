@@ -28,6 +28,7 @@ let sessionAttendeesSchema = new Schema({
     type: Boolean,
     default: false
   },
+  timeZone:String,
   joinedAt: Date,
   leftAt: Date,
   link: String,

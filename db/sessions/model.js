@@ -30,6 +30,7 @@ let sessionsSchema = new Schema({
     type: Boolean,
     default: false
   },
+  timeZone:String,
   startDate: String,
   endDate: String,
   link: String,
