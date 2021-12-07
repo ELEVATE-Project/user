@@ -29,7 +29,7 @@ module.exports = class SessionsHelper {
     static async joinMeetingAsModerator(meetingId,mentorName,moderatorPW) {
         try {
 
-            let query = "meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName;
+            let query = encodeURI("meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName);
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             shasum.update(checkSumGeneration);
