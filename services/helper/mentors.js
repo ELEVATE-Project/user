@@ -33,13 +33,16 @@ module.exports = class MentorsHelper {
 
             for (let mentor of mentors[0].data) {
                 /* Assigned image url from the stored location */
-                if (process.env.CLOUD_STORAGE === 'GCP') {
-                    mentor.image = await fileHelper.getGcpDownloadableUrl(mentor.image);
-                } else if (process.env.CLOUD_STORAGE === 'AWS') {
-                    mentor.image = await fileHelper.getAwsDownloadableUrl(mentor.image);
-                } else if (process.env.CLOUD_STORAGE === 'AZURE') {
-                    mentor.image = await fileHelper.getAzureDownloadableUrl(mentor.image);
+                if (mentor.image) {
+                    if (process.env.CLOUD_STORAGE === 'GCP') {
+                        mentor.image = await fileHelper.getGcpDownloadableUrl(mentor.image);
+                    } else if (process.env.CLOUD_STORAGE === 'AWS') {
+                        mentor.image = await fileHelper.getAwsDownloadableUrl(mentor.image);
+                    } else if (process.env.CLOUD_STORAGE === 'AZURE') {
+                        mentor.image = await fileHelper.getAzureDownloadableUrl(mentor.image);
+                    }
                 }
+                
                 let firstChar = mentor.name.charAt(0);
                 firstChar = firstChar.toUpperCase();
 
