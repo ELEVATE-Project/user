@@ -33,6 +33,8 @@ let sessionsSchema = new Schema({
   timeZone:String,
   startDate: String,
   endDate: String,
+  startDateUTC: String,
+  endDateUTC: String,
   link: String,
   menteePassword: String,
   mentorPassword: String ,
