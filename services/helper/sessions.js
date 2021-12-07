@@ -389,7 +389,6 @@ module.exports = class SessionsHelper {
                 }
 
                 let link = "";
-                session.link ="";
                 if (session.link) {
                     link = session.link;
                 } else {
