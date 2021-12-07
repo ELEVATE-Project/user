@@ -98,7 +98,7 @@ module.exports = class Sessions {
 
     async unEnroll(req) {
         try {
-            const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken._id);
+            const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken);
             return unEnrolledSession;
         } catch (error) {
             return error;

@@ -32,5 +32,7 @@ module.exports = {
     guestUrls: [
         "/sessions/completed"
     ],
-    DELETE_METHOD:"DELETE"
+    DELETE_METHOD:"DELETE",
+    dateFormat: 'dddd, Do MMMM YYYY',
+    timeFormat: 'hh:mm A',
 };

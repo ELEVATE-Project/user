@@ -1,4 +1,7 @@
 const ObjectId = require('mongoose').Types.ObjectId;
+
+const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
+
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
 const sessionData = require("../../db/sessions/queries");
@@ -20,26 +23,32 @@ module.exports = class MenteesHelper {
             if (!enrolledSessions) {
                 /** Upcoming unenrolled sessions {All sessions}*/
                 filters = {
-                    status: {$in: ['published','live']},
-                    startDate: {
+                    status: { $in: ['published', 'live'] },
+                    startDateUtc: {
                         $gte: new Date().toISOString()
                     },
                     userId: {
                         $ne: userId
                     }
                 };
-                
+
                 sessions = await sessionData.findAllSessions(page, limit, search, filters);
+                console.log(sessions);
 
                 if (sessions[0].data.length > 0) {
-                    
+
                     await Promise.all(sessions[0].data.map(async session => {
-                        let attendee = await sessionAttendees.findOneSessionAttendee(session._id,userId);
-    
+                        let attendee = await sessionAttendees.findOneSessionAttendee(session._id, userId);
+
                         session.isEnrolled = false;
                         if (attendee) {
                             session.isEnrolled = true;
                         }
+
+                        session.image = session.image.map(async imgPath => {
+                            return utils.getDownloadableUrl(imgPath);
+                        });
+                        session.image = await Promise.all(session.image);
                     }));
                 }
 
@@ -67,9 +76,17 @@ module.exports = class MenteesHelper {
                     userId: ObjectId(userId)
                 };
                 sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
+                sessions[0].data = sessions[0].data.map(async session => {
+                    session.image = session.image.map(async imgPath => {
+                        return utils.getDownloadableUrl(imgPath);
+                    });
+                    session.image = await Promise.all(session.image);
+                    return session;
+                });
+                sessions[0].data = await Promise.all(sessions[0].data);
             }
-            
-            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: sessions});
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: sessions });
         } catch (error) {
             throw error;
         }
@@ -90,7 +107,7 @@ module.exports = class MenteesHelper {
                 [filterStartDate, filterEndDate] = utils.getCurrentQuarterRange();
             }
 
-            /* totalSessionEnrolled */ 
+            /* totalSessionEnrolled */
             filters = {
                 createdAt: {
                     $gte: filterStartDate.toISOString(),
@@ -102,7 +119,7 @@ module.exports = class MenteesHelper {
 
             totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filters);
 
-            /* totalSessionAttended */ 
+            /* totalSessionAttended */
             filters = {
                 'sessionDetail.startDate': {
                     $gte: filterStartDate.toISOString(),
@@ -114,14 +131,14 @@ module.exports = class MenteesHelper {
             };
 
             totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filters);
-            return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: {totalSessionEnrolled, totalsessionsAttended}});
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: { totalSessionEnrolled, totalsessionsAttended } });
 
         } catch (error) {
             throw error;
         }
     }
 
-    static async homeFeed(userId,isAMentor) {
+    static async homeFeed(userId, isAMentor) {
         try {
             /* All Sessions */
             const page = 1;
@@ -137,14 +154,14 @@ module.exports = class MenteesHelper {
                 mySessions: mySessions.result[0].data,
             }
 
-            const feedbackData = await feedbackHelper.pending(userId,isAMentor)  
-            
-            return common.successResponse({ 
+            const feedbackData = await feedbackHelper.pending(userId, isAMentor)
+
+            return common.successResponse({
                 statusCode: httpStatusCode.ok,
-                message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, 
+                message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
                 result: result,
-                meta:  { 
-                    type:"feedback",
+                meta: {
+                    type: "feedback",
                     data: feedbackData.result
                 }
             });
@@ -153,8 +170,8 @@ module.exports = class MenteesHelper {
         }
     }
 
-    static joinSession(sessionId,token) {
-        return new Promise(async (resolve,reject) => {
+    static joinSession(sessionId, token) {
+        return new Promise(async (resolve, reject) => {
             try {
                 const mentee = await userProfile.details(token);
 
@@ -163,7 +180,7 @@ module.exports = class MenteesHelper {
                         message: apiResponses.USER_NOT_FOUND,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    }); 
+                    });
                 }
 
                 const session = await sessionData.findSessionById(sessionId);
@@ -186,11 +203,11 @@ module.exports = class MenteesHelper {
 
                 let menteeDetails = mentee.data.result;
 
-                const sessionAttendee = 
-                await sessionAttendees.findLinkBySessionAndUserId(
-                    menteeDetails._id,
-                    sessionId
-                );
+                const sessionAttendee =
+                    await sessionAttendees.findLinkBySessionAndUserId(
+                        menteeDetails._id,
+                        sessionId
+                    );
 
                 if (!sessionAttendee) {
                     return resolve(common.failureResponse({
@@ -212,7 +229,7 @@ module.exports = class MenteesHelper {
 
                     await sessionAttendees.updateOne({
                         _id: sessionAttendee
-                    },{
+                    }, {
                         link: attendeeLink,
                         joinedAt: new Date(),
                         isSessionAttended: true
@@ -228,7 +245,7 @@ module.exports = class MenteesHelper {
                         link: link
                     }
                 }));
-            } catch(error) {
+            } catch (error) {
                 return reject(error);
             }
         })

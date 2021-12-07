@@ -6,6 +6,7 @@
  */
 
 const bcryptJs = require('bcryptjs');
+const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
 
 const hash = (str) => {
     const salt = bcryptJs.genSaltSync(10);
@@ -59,6 +60,36 @@ const composeEmailBody = (body, params) => {
     });
 };
 
+const getDownloadableUrl = async imgPath => {
+    if (process.env.CLOUD_STORAGE === 'GCP') {
+        const options = {
+            destFilePath: imgPath,
+            bucketName: process.env.DEFAULT_GCP_BUCKET_NAME,
+            gcpProjectId: process.env.GCP_PROJECT_ID,
+            gcpJsonFilePath: path.join(__dirname, '../', '../', process.env.GCP_PATH)
+        };
+        imgPath = await GcpFileHelper.getDownloadableUrl(options);
+    } else if (process.env.CLOUD_STORAGE === 'AWS') {
+        const options = {
+            destFilePath: imgPath,
+            bucketName: process.env.DEFAULT_AWS_BUCKET_NAME,
+            bucketRegion: process.env.AWS_BUCKET_REGION
+        }
+        imgPath = await AwsFileHelper.getDownloadableUrl(options.destFilePath, options.bucketName, options.bucketRegion);
+    } else if (process.env.CLOUD_STORAGE === 'AZURE') {
+        const options = {
+            destFilePath: imgPath,
+            containerName: process.env.DEFAULT_AZURE_CONTAINER_NAME,
+            expiry: 30,
+            actionType: "rw",
+            accountName: process.env.AZURE_ACCOUNT_NAME,
+            accountKey: process.env.AZURE_ACCOUNT_KEY,
+        };
+        imgPath = await AzureFileHelper.getDownloadableUrl(options);
+    }
+    return imgPath;
+};
+
 module.exports = {
     hash: hash,
     getCurrentMonthRange: getCurrentMonthRange,
@@ -66,5 +97,6 @@ module.exports = {
     getCurrentQuarterRange: getCurrentQuarterRange,
     elapsedMinutes: elapsedMinutes,
     getIstDate: getIstDate,
-    composeEmailBody: composeEmailBody
+    composeEmailBody: composeEmailBody,
+    getDownloadableUrl: getDownloadableUrl
 }

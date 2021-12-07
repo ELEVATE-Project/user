@@ -45,6 +45,7 @@ module.exports = (req, res, next) => {
         _id: decodedToken.data._id,
         email: decodedToken.data.email,
         isAMentor: decodedToken.data.isAMentor,
+        name: decodedToken.data.name,
         token: authHeader
     };
     next();

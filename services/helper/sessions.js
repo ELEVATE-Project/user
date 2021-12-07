@@ -39,18 +39,18 @@ module.exports = class SessionsHelper {
             }
 
             if (bodyData.startDate) {
-                bodyData.startDate = moment.unix(bodyData.startDate);
+                bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
                 if (bodyData.timeZone) {
-                    bodyData.startDate.tz(bodyData.timeZone);
+                    bodyData['startDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.startDate = moment(bodyData.startDate).format();
+                bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
             }
             if (bodyData.endDate) {
-                bodyData.endDate = moment.unix(bodyData.endDate);
+                bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if (bodyData.timeZone) {
-                    bodyData.endDate.tz(bodyData.timeZone);
+                    bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.endDate = moment(bodyData.endDate).format();
+                bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
             }
 
             let data = await sessionData.createSession(bodyData);
@@ -82,18 +82,18 @@ module.exports = class SessionsHelper {
 
 
             if (bodyData.startDate) {
-                bodyData.startDate = moment.unix(bodyData.startDate);
+                bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
                 if (bodyData.timeZone) {
-                    bodyData.startDate.tz(bodyData.timeZone);
+                    bodyData['startDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.startDate = moment(bodyData.startDate).format();
+                bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
             }
             if (bodyData.endDate) {
-                bodyData.endDate = moment.unix(bodyData.endDate);
+                bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if (bodyData.timeZone) {
-                    bodyData.endDate.tz(bodyData.timeZone);
+                    bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.endDate = moment(bodyData.endDate).format();
+                bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
             }
 
 
@@ -251,6 +251,7 @@ module.exports = class SessionsHelper {
         const userId = userTokenData._id;
         const email = userTokenData.email;
         const name = userTokenData.name;
+
         try {
             const session = await sessionData.findSessionById(sessionId);
             if (!session) {
@@ -278,10 +279,10 @@ module.exports = class SessionsHelper {
 
             await sessionAttendesData.create(attendee);
 
-            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.SESSION_ENROLLMENT_EMAIL_TEMPLATE);
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE);
 
             if (templateData) {
-                // Push successfull registration email to kafka
+                // Push successfull enrollment to session in kafka
                 const payload = {
                     type: 'email',
                     email: {
@@ -291,8 +292,8 @@ module.exports = class SessionsHelper {
                             name,
                             sessionTitle: session.title,
                             mentorName: session.mentorName,
-                            startDate,
-                            startTime
+                            startDate: moment(session.startDateUtc ? session.startDateUtc : session.startDate).format(common.dateFormat),
+                            startTime: moment(session.startDateUtc ? session.startDateUtc : session.startDate).format(common.timeFormat)
                         })
                     }
                 };
@@ -309,7 +310,11 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async unEnroll(sessionId, userId) {
+    static async unEnroll(sessionId, userTokenData) {
+        const userId = userTokenData._id;
+        const name = userTokenData.name;
+        const email = userTokenData.email;
+
         try {
             const session = await sessionData.findSessionById(sessionId);
             if (!session) {
@@ -327,6 +332,26 @@ module.exports = class SessionsHelper {
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR'
                 });
+            }
+
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE);
+
+            if (templateData) {
+                // Push successfull unenrollment to session in kafka
+                const payload = {
+                    type: 'email',
+                    email: {
+                        to: email,
+                        subject: templateData.subject,
+                        body: utils.composeEmailBody(templateData.body, {
+                            name,
+                            sessionTitle: session.title,
+                            mentorName: session.mentorName
+                        })
+                    }
+                };
+
+                await kafkaCommunication.pushEmailToKafka(payload);
             }
 
             return common.successResponse({
@@ -461,7 +486,7 @@ module.exports = class SessionsHelper {
                         currentDate.tz(session.timeZone);
                         currentDate = moment(currentDate).format();
                     }
-                    let elapsedMinutes = moment(currentDate).diff(session.startDate, 'minutes');
+                    let elapsedMinutes = moment(currentDate).diff(session.startDateUtc, 'minutes');
 
                     if (elapsedMinutes < -10) {
                         return resolve(common.failureResponse({
