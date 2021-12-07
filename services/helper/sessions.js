@@ -43,14 +43,14 @@ module.exports = class SessionsHelper {
                 if (bodyData.timeZone) {
                     bodyData['startDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
+                bodyData['startDateUtc']  = moment(bodyData['startDateUtc']).format("YYYY-MM-DDTHH:mm:ssZ");
             }
             if (bodyData.endDate) {
                 bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if (bodyData.timeZone) {
                     bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
+                bodyData['endDateUtc']  = moment(bodyData['endDateUtc']).format("YYYY-MM-DDTHH:mm:ssZ");
             }
 
             let data = await sessionData.createSession(bodyData);
@@ -86,14 +86,14 @@ module.exports = class SessionsHelper {
                 if (bodyData.timeZone) {
                     bodyData['startDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
+                bodyData['startDateUtc']  = moment(bodyData['startDateUtc']).format("YYYY-MM-DDTHH:mm:ssZ");
             }
             if (bodyData.endDate) {
                 bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if (bodyData.timeZone) {
                     bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
+                bodyData['endDateUtc']  = moment(bodyData['endDateUtc']).format("YYYY-MM-DDTHH:mm:ssZ");
             }
 
 
@@ -440,6 +440,7 @@ module.exports = class SessionsHelper {
             try {
                 const mentor = await userProfile.details(token);
 
+                console.log("new",mentor);
                 if (mentor.data.responseCode !== "OK") {
                     return common.failureResponse({
                         message: apiResponses.MENTORS_NOT_FOUND,
@@ -460,6 +461,7 @@ module.exports = class SessionsHelper {
 
                 const session = await sessionData.findSessionById(sessionId);
 
+                
                 if (!session) {
                     return resolve(common.failureResponse({
                         message: apiResponses.SESSION_NOT_FOUND,
@@ -482,13 +484,14 @@ module.exports = class SessionsHelper {
                 } else {
 
                     let currentDate = moment();
-                    if (session.timeZone) {
-                        currentDate.tz(session.timeZone);
-                        currentDate = moment(currentDate).format();
+                    if(session.timeZone){
+                        currentDate  = currentDate.tz(session.timeZone).format("YYYY-MM-DDTHH:mm:ssZ");
+                    } else {
+                        currentDate  = currentDate.format("YYYY-MM-DDTHH:mm:ssZ");
                     }
-                    let elapsedMinutes = moment(currentDate).diff(session.startDateUtc, 'minutes');
-
-                    if (elapsedMinutes < -10) {
+                    let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes');
+                    
+                    if (elapsedMinutes > 10) {
                         return resolve(common.failureResponse({
                             message: apiResponses.SESSION_ESTIMATED_TIME,
                             statusCode: httpStatusCode.bad_request,
