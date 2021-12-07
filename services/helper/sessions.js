@@ -1,5 +1,5 @@
 const ObjectId = require('mongoose').Types.ObjectId;
-const moment=require("moment-timezone");
+const moment = require("moment-timezone");
 const bcyptJs = require('bcryptjs');
 const path = require('path');
 
@@ -12,6 +12,9 @@ const common = require('../../constants/common');
 
 const sessionData = require("../../db/sessions/queries");
 const sessionAttendesData = require("../../db/sessionAttendees/queries");
+const notificationTemplateData = require("../../db/notification-template/query");
+
+const kafkaCommunication = require('../../generics/kafka-communication');
 
 const apiBaseUrl =
     process.env.USER_SERIVCE_HOST +
@@ -35,25 +38,25 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            if(bodyData.startDate){
+            if (bodyData.startDate) {
                 bodyData.startDate = moment.unix(bodyData.startDate);
-                if(bodyData.timeZone){
+                if (bodyData.timeZone) {
                     bodyData.startDate.tz(bodyData.timeZone);
                 }
-                bodyData.startDate  = moment(bodyData.startDate).format();
+                bodyData.startDate = moment(bodyData.startDate).format();
             }
-            if(bodyData.endDate){
+            if (bodyData.endDate) {
                 bodyData.endDate = moment.unix(bodyData.endDate);
-                if(bodyData.timeZone){
+                if (bodyData.timeZone) {
                     bodyData.endDate.tz(bodyData.timeZone);
                 }
-                bodyData.endDate  = moment(bodyData.endDate).format();
+                bodyData.endDate = moment(bodyData.endDate).format();
             }
-           
+
             let data = await sessionData.createSession(bodyData);
 
-            await this.setMentorPassword(data._id,data.userId);
-            await this.setMenteePassword(data._id,data.createdAt);
+            await this.setMentorPassword(data._id, data.userId);
+            await this.setMenteePassword(data._id, data.createdAt);
 
             return common.successResponse({
                 statusCode: httpStatusCode.created,
@@ -66,7 +69,7 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async update(sessionId, bodyData, userId,method) {
+    static async update(sessionId, bodyData, userId, method) {
         try {
 
             if (!await this.verifyMentor(userId)) {
@@ -78,39 +81,39 @@ module.exports = class SessionsHelper {
             }
 
 
-            if(bodyData.startDate){
+            if (bodyData.startDate) {
                 bodyData.startDate = moment.unix(bodyData.startDate);
-                if(bodyData.timeZone){
+                if (bodyData.timeZone) {
                     bodyData.startDate.tz(bodyData.timeZone);
                 }
-                bodyData.startDate  = moment(bodyData.startDate).format();
+                bodyData.startDate = moment(bodyData.startDate).format();
             }
-            if(bodyData.endDate){
+            if (bodyData.endDate) {
                 bodyData.endDate = moment.unix(bodyData.endDate);
-                if(bodyData.timeZone){
+                if (bodyData.timeZone) {
                     bodyData.endDate.tz(bodyData.timeZone);
                 }
-                bodyData.endDate  = moment(bodyData.endDate).format();
+                bodyData.endDate = moment(bodyData.endDate).format();
             }
-            
+
 
             let message;
             let updateData;
-            if(method==common.DELETE_METHOD){
-                updateData = { deleted:true };
+            if (method == common.DELETE_METHOD) {
+                updateData = { deleted: true };
                 message = apiResponses.SESSION_DELETED_SUCCESSFULLY;
 
             } else {
-                
+
                 updateData = bodyData;
                 message = apiResponses.SESSION_UPDATED_SUCCESSFULLY;
             }
-               
+
             updateData.updatedAt = new Date().getTime();
             const result = await sessionData.updateOneSession({
                 _id: ObjectId(sessionId)
             }, updateData);
-            
+
             if (result === 'SESSION_ALREADY_UPDATED') {
                 return common.failureResponse({
                     message: apiResponses.SESSION_ALREADY_UPDATED,
@@ -130,12 +133,12 @@ module.exports = class SessionsHelper {
             });
 
         } catch (error) {
-            throw error;    
+            throw error;
         }
 
     }
 
-    static async details(id,userId) {
+    static async details(id, userId) {
         try {
             const filter = {};
             const projection = {
@@ -159,7 +162,7 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id,userId);
+            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id, userId);
 
             sessionDetails.isEnrolled = false;
             if (sessionAttendee) {
@@ -230,7 +233,7 @@ module.exports = class SessionsHelper {
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR',
-                    result:[]
+                    result: []
                 });
             }
             return common.successResponse({
@@ -244,7 +247,10 @@ module.exports = class SessionsHelper {
         }
     }
 
-    static async enroll(sessionId, userId,timeZone) {
+    static async enroll(sessionId, userTokenData, timeZone) {
+        const userId = userTokenData._id;
+        const email = userTokenData.email;
+        const name = userTokenData.name;
         try {
             const session = await sessionData.findSessionById(sessionId);
             if (!session) {
@@ -271,6 +277,28 @@ module.exports = class SessionsHelper {
             };
 
             await sessionAttendesData.create(attendee);
+
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.SESSION_ENROLLMENT_EMAIL_TEMPLATE);
+
+            if (templateData) {
+                // Push successfull registration email to kafka
+                const payload = {
+                    type: 'email',
+                    email: {
+                        to: email,
+                        subject: templateData.subject,
+                        body: utils.composeEmailBody(templateData.body, {
+                            name,
+                            sessionTitle: session.title,
+                            mentorName: session.mentorName,
+                            startDate,
+                            startTime
+                        })
+                    }
+                };
+
+                await kafkaCommunication.pushEmailToKafka(payload);
+            }
 
             return common.successResponse({
                 statusCode: httpStatusCode.created,
@@ -362,7 +390,7 @@ module.exports = class SessionsHelper {
             let shareLink = session.shareLink;
             if (!shareLink) {
                 shareLink = bcyptJs.hashSync(sessionId, bcyptJs.genSaltSync(10));
-                shareLink = shareLink.replace('/','');
+                shareLink = shareLink.replace('/', '');
                 await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink });
             }
             return common.successResponse({ message: apiResponses.SESSION_LINK_GENERATED_SUCCESSFULLY, statusCode: httpStatusCode.ok, result: { shareLink } });
@@ -382,7 +410,7 @@ module.exports = class SessionsHelper {
         })
     }
 
-    static start(sessionId,token) {
+    static start(sessionId, token) {
         return new Promise(async (resolve, reject) => {
             try {
                 const mentor = await userProfile.details(token);
@@ -392,7 +420,7 @@ module.exports = class SessionsHelper {
                         message: apiResponses.MENTORS_NOT_FOUND,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    }); 
+                    });
                 }
 
                 const mentorDetails = mentor.data.result;
@@ -402,7 +430,7 @@ module.exports = class SessionsHelper {
                         message: apiResponses.NOT_A_MENTOR,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    }); 
+                    });
                 }
 
                 const session = await sessionData.findSessionById(sessionId);
@@ -429,12 +457,12 @@ module.exports = class SessionsHelper {
                 } else {
 
                     let currentDate = moment();
-                    if(session.timeZone){
+                    if (session.timeZone) {
                         currentDate.tz(session.timeZone);
                         currentDate = moment(currentDate).format();
                     }
                     let elapsedMinutes = moment(currentDate).diff(session.startDate, 'minutes');
-                    
+
                     if (elapsedMinutes < -10) {
                         return resolve(common.failureResponse({
                             message: apiResponses.SESSION_ESTIMATED_TIME,
@@ -449,7 +477,7 @@ module.exports = class SessionsHelper {
                         session.menteePassword,
                         session.mentorPassword
                     );
-                  
+
                     if (!meetingDetails) {
                         return resolve(common.failureResponse({
                             message: apiResponses.MEETING_NOT_CREATED,
@@ -457,7 +485,7 @@ module.exports = class SessionsHelper {
                             responseCode: 'SERVER_ERROR'
                         }));
                     }
-    
+
                     const moderatorMeetingLink = await bigBlueButton.joinMeetingAsModerator(
                         session._id,
                         mentorDetails.name,
@@ -466,7 +494,7 @@ module.exports = class SessionsHelper {
 
                     await sessionData.updateOneSession({
                         _id: session._id
-                    },{
+                    }, {
                         link: moderatorMeetingLink,
                         status: "live",
                         startedAt: new Date()
@@ -489,7 +517,7 @@ module.exports = class SessionsHelper {
         })
     }
 
-    static setMentorPassword(sessionId,userId) {
+    static setMentorPassword(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
 
@@ -508,7 +536,7 @@ module.exports = class SessionsHelper {
         })
     }
 
-    static setMenteePassword(sessionId,createdAt) {
+    static setMenteePassword(sessionId, createdAt) {
         return new Promise(async (resolve, reject) => {
             try {
 
@@ -533,7 +561,7 @@ module.exports = class SessionsHelper {
 
                 const recordingInfo = await bigBlueButton.getRecordings(sessionId);
                 //  console.log("---recordings info ----",recordingInfo.data.response.recordings);
-                
+
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
@@ -567,7 +595,7 @@ module.exports = class SessionsHelper {
 
                 // let response = await requestUtil.get("https://dev.mentoring.shikshalokam.org/playback/presentation/2.3/6af6737c986d83e8d5ce2ff77af1171e397c739e-1638254682349");
                 // console.log(response);
-                
+
                 return resolve(common.successResponse({
                     statusCode: httpStatusCode.ok,
                     result: recordingInfo.data.response.recordings

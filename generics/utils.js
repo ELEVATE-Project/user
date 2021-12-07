@@ -52,11 +52,19 @@ const getCurrentQuarterRange = () => {
     return [startFullQuarter, endFullQuarter];
 };
 
+const composeEmailBody = (body, params) => {
+    return body.replace(/{([^{}]*)}/g, (a, b) => {
+        var r = params[b];
+        return typeof r === 'string' || typeof r === 'number' ? r : a;
+    });
+};
+
 module.exports = {
     hash: hash,
     getCurrentMonthRange: getCurrentMonthRange,
     getCurrentWeekRange: getCurrentWeekRange,
     getCurrentQuarterRange: getCurrentQuarterRange,
     elapsedMinutes: elapsedMinutes,
-    getIstDate: getIstDate
+    getIstDate: getIstDate,
+    composeEmailBody: composeEmailBody
 }
