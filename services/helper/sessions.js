@@ -159,7 +159,7 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(id,userId);
+            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id,userId);
 
             sessionDetails.isEnrolled = false;
             if (sessionAttendee) {
@@ -174,14 +174,14 @@ module.exports = class SessionsHelper {
                         gcpProjectId: process.env.GCP_PROJECT_ID,
                         gcpJsonFilePath: path.join(__dirname, '../', '../', process.env.GCP_PATH)
                     };
-                    img = await GcpFileHelper.getDownloadableUrl(options);
+                    imgPath = await GcpFileHelper.getDownloadableUrl(options);
                 } else if (process.env.CLOUD_STORAGE === 'AWS') {
                     const options = {
                         destFilePath: imgPath,
                         bucketName: process.env.DEFAULT_AWS_BUCKET_NAME,
                         bucketRegion: process.env.AWS_BUCKET_REGION
                     }
-                    img = await AwsFileHelper.getDownloadableUrl(options);
+                    imgPath = await AwsFileHelper.getDownloadableUrl(options.destFilePath, options.bucketName, options.bucketRegion);
                 } else if (process.env.CLOUD_STORAGE === 'AZURE') {
                     const options = {
                         destFilePath: imgPath,
@@ -191,11 +191,12 @@ module.exports = class SessionsHelper {
                         accountName: process.env.AZURE_ACCOUNT_NAME,
                         accountKey: process.env.AZURE_ACCOUNT_KEY,
                     };
-                    img = await AzureFileHelper.getDownloadableUrl(options);
+                    imgPath = await AzureFileHelper.getDownloadableUrl(options);
                 }
-                return img;
+                return imgPath;
             });
 
+            sessionDetails.image = await Promise.all(sessionDetails.image);
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
