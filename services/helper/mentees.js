@@ -21,7 +21,7 @@ module.exports = class MenteesHelper {
                 /** Upcoming unenrolled sessions {All sessions}*/
                 filters = {
                     status: {$in: ['published','live']},
-                    startDate: {
+                    startDateUtc: {
                         $gte: new Date().toISOString()
                     },
                     userId: {
@@ -112,7 +112,7 @@ module.exports = class MenteesHelper {
                 deleted: false,
                 isSessionAttended: true
             };
-
+            
             totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filters);
             return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: {totalSessionEnrolled, totalsessionsAttended}});
 

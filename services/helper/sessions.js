@@ -36,18 +36,18 @@ module.exports = class SessionsHelper {
             }
 
             if(bodyData.startDate){
-                bodyData.startDate = moment.unix(bodyData.startDate);
+                bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
                 if(bodyData.timeZone){
-                    bodyData.startDate.tz(bodyData.timeZone);
+                    bodyData['startDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.startDate  = moment(bodyData.startDate).format();
+                bodyData['startDateUtc']  = moment(bodyData['startDateUtc']).format();
             }
             if(bodyData.endDate){
-                bodyData.endDate = moment.unix(bodyData.endDate);
+                bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if(bodyData.timeZone){
-                    bodyData.endDate.tz(bodyData.timeZone);
+                    bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.endDate  = moment(bodyData.endDate).format();
+                bodyData['endDateUtc']  = moment(bodyData['endDateUtc']).format();
             }
            
             let data = await sessionData.createSession(bodyData);
@@ -79,18 +79,18 @@ module.exports = class SessionsHelper {
 
 
             if(bodyData.startDate){
-                bodyData.startDate = moment.unix(bodyData.startDate);
+                bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
                 if(bodyData.timeZone){
-                    bodyData.startDate.tz(bodyData.timeZone);
+                    bodyData['startDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.startDate  = moment(bodyData.startDate).format();
+                bodyData['startDateUtc']  = moment(bodyData['startDateUtc']).format();
             }
             if(bodyData.endDate){
-                bodyData.endDate = moment.unix(bodyData.endDate);
+                bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if(bodyData.timeZone){
-                    bodyData.endDate.tz(bodyData.timeZone);
+                    bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
-                bodyData.endDate  = moment(bodyData.endDate).format();
+                bodyData['endDateUtc']  = moment(bodyData['endDateUtc']).format();
             }
             
 
@@ -433,7 +433,7 @@ module.exports = class SessionsHelper {
                         currentDate.tz(session.timeZone);
                         currentDate = moment(currentDate).format();
                     }
-                    let elapsedMinutes = moment(currentDate).diff(session.startDate, 'minutes');
+                    let elapsedMinutes = moment(currentDate).diff(session.startDateUtc, 'minutes');
                     
                     if (elapsedMinutes < -10) {
                         return resolve(common.failureResponse({
