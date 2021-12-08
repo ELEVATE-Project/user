@@ -176,29 +176,29 @@ module.exports = class MenteesHelper {
                 const mentee = await userProfile.details(token);
 
                 if (mentee.data.responseCode !== "OK") {
-                    return common.failureResponse({
+                    return resolve(common.failureResponse({
                         message: apiResponses.USER_NOT_FOUND,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    });
+                    }));
                 }
 
                 const session = await sessionData.findSessionById(sessionId);
 
                 if (!session) {
-                    return common.failureResponse({
+                    return resolve(common.failureResponse({
                         message: apiResponses.SESSION_NOT_FOUND,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    });
+                    }));
                 }
 
                 if (session.status !== "live") {
-                    return common.failureResponse({
+                    return resolve(common.failureResponse({
                         message: apiResponses.JOIN_ONLY_LIVE_SESSION,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    });
+                    }));
                 }
 
                 let menteeDetails = mentee.data.result;
