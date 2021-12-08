@@ -11,6 +11,7 @@ module.exports = class SessionsHelper {
             // "&meta_bbb-recording-ready-url=" + recordingCallBackUrl;
             let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + "%2F" + meetingId;
 
+            meetingName = encodeURI(meetingName);
             let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
@@ -29,7 +30,8 @@ module.exports = class SessionsHelper {
     static async joinMeetingAsModerator(meetingId,mentorName,moderatorPW) {
         try {
 
-            let query = encodeURI("meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName);
+            mentorName = encodeURI(mentorName);
+            let query = "meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             shasum.update(checkSumGeneration);
@@ -46,6 +48,7 @@ module.exports = class SessionsHelper {
     static async joinMeetingAsAttendee(meetingId,menteeName,menteePW) {
         try {
 
+            menteeName = encodeURI(menteeName);
             let query = "meetingID=" + meetingId + "&password=" + menteePW + "&fullName=" + menteeName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
