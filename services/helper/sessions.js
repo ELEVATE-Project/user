@@ -266,7 +266,7 @@ module.exports = class SessionsHelper {
                 }
             }
             const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters);
-            if (sessionDetails[0] && sessionDetails[0].data.length == 0) {
+            if (sessionDetails[0] && sessionDetails[0].data.length == 0 && search !== '') {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
