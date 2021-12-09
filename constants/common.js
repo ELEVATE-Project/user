@@ -37,6 +37,9 @@ module.exports = {
     timeFormat: 'hh:mm A',
     MENTOR_15MINS_REMAINDER_EMAIL_CODE:"mentor_session_enrollment",
     MENTOR_24HOUR_REMAINDER_EMAIL_CODE:"mentor_session_remainder",
-    UTC_DATE_TIME_FORMAT:"YYYY-MM-DDTHH:mm:ss"
+    UTC_DATE_TIME_FORMAT:"YYYY-MM-DDTHH:mm:ss",
+    internalAccessUrs:[
+        "/notifications/emailCronJob"
+    ]
 };
 
