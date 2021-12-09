@@ -1,6 +1,7 @@
 const ObjectId = require('mongoose').Types.ObjectId;
 
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
+const moment = require("moment-timezone");
 
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
@@ -25,16 +26,18 @@ module.exports = class MenteesHelper {
                 filters = {
                     status: { $in: ['published', 'live'] },
                     startDateUtc: {
-                        $gte: new Date().toISOString()
+                        $gte:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+                    },
+                    endDateUtc: {
+                        $gt:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                     },
                     userId: {
                         $ne: userId
                     }
                 };
-
+              
                 sessions = await sessionData.findAllSessions(page, limit, search, filters);
-                console.log(sessions);
-
+              
                 if (sessions[0].data.length > 0) {
 
                     await Promise.all(sessions[0].data.map(async session => {
@@ -62,8 +65,8 @@ module.exports = class MenteesHelper {
                 filters = {
                     $or: [
                         {
-                            'sessionDetail.startDate': {
-                                $gte: new Date().toISOString()
+                            'sessionDetail.startDateUtc': {
+                                $gte: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                             }
                         },
                         {
@@ -121,7 +124,7 @@ module.exports = class MenteesHelper {
 
             /* totalSessionAttended */
             filters = {
-                'sessionDetail.startDate': {
+                'sessionDetail.startDateUtc': {
                     $gte: filterStartDate.toISOString(),
                     $lte: filterEndDate.toISOString()
                 },

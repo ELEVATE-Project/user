@@ -137,7 +137,7 @@ module.exports = class SessionsAttendees {
                         },
                     },
                     {
-                        $sort: { 'sessionDetail.startDate': 1 }
+                        $sort: { 'sessionDetail.startDateUtc': 1 }
                     },
                     {
                         $project: {
