@@ -30,7 +30,7 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static (sessionId, userId) {
+    static(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
                 const session = await SessionAttendees.findOne({ sessionId: sessionId, userId: userId, deleted: false }).lean();
@@ -68,7 +68,7 @@ module.exports = class SessionsAttendees {
                         $match: filter
                     },
                     {
-                      $count: 'count'
+                        $count: 'count'
                     }
                 ]);
                 console.log(result);
@@ -187,7 +187,7 @@ module.exports = class SessionsAttendees {
         })
     }
 
-    static findPendingFeedbackSessions(filters){
+    static findPendingFeedbackSessions(filters) {
         return new Promise(async (resolve, reject) => {
             try {
 
@@ -216,8 +216,8 @@ module.exports = class SessionsAttendees {
                             'sessionDetail.description': 1,
                         }
                     },
-                    { $unwind : "$sessionDetail" }
-                   
+                    { $unwind: "$sessionDetail" }
+
                 ]);
                 resolve(sessionAttendeesData);
 
@@ -226,11 +226,29 @@ module.exports = class SessionsAttendees {
             }
         })
     }
+
     static findOneSessionAttendee(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
                 const session = await SessionAttendees.findOne({ sessionId, userId, deleted: false }).lean();
                 resolve(session);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    static findAllSessionAttendees(filters) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let sessionAttendeesData = await SessionAttendees.find(
+                    {
+                        ...filters,
+                        deleted: false
+                    }
+                ).lean();
+                resolve(sessionAttendeesData);
             } catch (error) {
                 reject(error);
             }

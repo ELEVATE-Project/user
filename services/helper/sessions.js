@@ -68,18 +68,31 @@ module.exports = class SessionsHelper {
     }
 
     static async update(sessionId, bodyData, userId, method) {
+        let isSessionReschedule = false;
         try {
 
-            if (!await this.verifyMentor(userId)) {
+            // if (!await this.verifyMentor(userId)) {
+            //     return common.failureResponse({
+            //         message: apiResponses.INVALID_PERMISSION,
+            //         statusCode: httpStatusCode.bad_request,
+            //         responseCode: 'CLIENT_ERROR'
+            //     });
+            // }
+
+            const sessionDetail = await sessionData.findSessionById(ObjectId(sessionId));
+
+            console.log(sessionDetail);
+
+            if (!sessionDetail) {
                 return common.failureResponse({
-                    message: apiResponses.INVALID_PERMISSION,
+                    message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR'
                 });
             }
 
-
             if (bodyData.startDate) {
+                isSessionReschedule = true;
                 bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
                 if (bodyData.timeZone) {
                     bodyData['startDateUtc'].tz(bodyData.timeZone);
@@ -87,13 +100,13 @@ module.exports = class SessionsHelper {
                 bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
             }
             if (bodyData.endDate) {
+                isSessionReschedule = true;
                 bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
                 if (bodyData.timeZone) {
                     bodyData['endDateUtc'].tz(bodyData.timeZone);
                 }
                 bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
             }
-
 
             let message;
             let updateData;
@@ -118,13 +131,79 @@ module.exports = class SessionsHelper {
                     statusCode: httpStatusCode.bad_request,
                     responseCode: 'CLIENT_ERROR'
                 });
-            } else if (result === 'SESSION_NOT_FOUND') {
-                return common.failureResponse({
-                    message: apiResponses.SESSION_NOT_FOUND,
-                    statusCode: httpStatusCode.bad_request,
-                    responseCode: 'CLIENT_ERROR'
-                });
             }
+
+            if (method == common.DELETE_METHOD || isSessionReschedule) {
+                const sessionAttendees = await sessionAttendesData.findAllSessionAttendees({ sessionId: ObjectId(sessionId) });
+                const sessionAttendeesIds = [];
+                sessionAttendees.forEach(attendee => {
+                    sessionAttendeesIds.push(attendee.userId.toString());
+                });
+                const attendeesAccounts = await this.getAllAccountsDetail(sessionAttendeesIds);
+
+                sessionAttendees.map(attendee => {
+                    for (let index = 0; index < attendeesAccounts.result.length; index++) {
+                        const element = attendeesAccounts.result[index];
+                        if (element._id == attendee.userId) {
+                            attendee.attendeeEmail = element.email.address;
+                            attendee.attendeeName = element.name;
+                            break;
+                        }
+                    }
+                });
+
+                let templateData;
+                sessionAttendees.forEach(async attendee => {
+                    if (method == common.DELETE_METHOD) {
+                        templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE);
+                        const payload = {
+                            type: 'email',
+                            email: {
+                                to: attendee.attendeeEmail,
+                                subject: templateData.subject,
+                                body: utils.composeEmailBody(templateData.body, {
+                                    name: attendee.attendeeName,
+                                    sessionTitle: sessionDetail.title
+                                })
+                            }
+                        };
+
+                        console.log(payload);
+
+                        // await kafkaCommunication.pushEmailToKafka(payload);
+
+                    } else if (isSessionReschedule) {
+                        templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE);
+                        const payload = {
+                            type: 'email',
+                            email: {
+                                to: attendee.attendeeEmail,
+                                subject: templateData.subject,
+                                body: utils.composeEmailBody(templateData.body, {
+                                    name: attendee.attendeeName,
+                                    sessionTitle: sessionDetail.title,
+                                    oldStartDate: moment(sessionDetail.startDateUtc ? sessionDetail.startDateUtc : sessionDetail.startDate).format(common.dateFormat),
+                                    oldStartTime: moment(sessionDetail.startDateUtc ? sessionDetail.startDateUtc : sessionDetail.startDate).format(common.timeFormat),
+                                    oldEndDate: moment(sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate).format(common.dateFormat),
+                                    oldEndTime: moment(sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate).format(common.timeFormat),
+                                    newStartDate: moment(bodyData['startDateUtc'] ? bodyData['startDateUtc'] : sessionDetail.startDateUtc).format(common.dateFormat),
+                                    newStartTime: moment(bodyData['startDateUtc'] ? bodyData['startDateUtc'] : sessionDetail.startDateUtc).format(common.timeFormat),
+                                    newEndDate: moment(bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc).format(common.dateFormat),
+                                    newEndTime: moment(bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc).format(common.timeFormat)
+                                })
+                            }
+                        };
+                        console.log(payload);
+
+                        // await kafkaCommunication.pushEmailToKafka(payload);
+                    }
+
+                });
+
+
+
+            }
+
             return common.successResponse({
                 statusCode: httpStatusCode.accepted,
                 message: message
@@ -368,6 +447,38 @@ module.exports = class SessionsHelper {
                     reject(error);
                 }
 
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    static getAllAccountsDetail(userIds) {
+        return new Promise((resolve, reject) => {
+            let options = {
+                "headers": {
+                    'Content-Type': "application/json",
+                    "internal_access_token": process.env.INTERNAL_ACCESS_TOKEN
+                },
+                "form": {
+                    userIds
+                }
+            };
+
+            let apiUrl = apiBaseUrl + apiEndpoints.LIST_ACCOUNTS;
+            try {
+                request.post(apiUrl, options, callback);
+
+                function callback(err, data) {
+                    if (err) {
+                        reject({
+                            message: apiResponses.USER_SERVICE_DOWN
+                        });
+                    } else {
+                        data.body = JSON.parse(data.body);
+                        resolve(data.body);
+                    }
+                }
             } catch (error) {
                 reject(error);
             }
