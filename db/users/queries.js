@@ -20,6 +20,17 @@ module.exports = class UsersData {
         })
     }
 
+    static findAllUsers(filter, projection = {}) {
+        return new Promise(async (resolve,reject) => {
+            try { 
+                const usersData = await Users.find(filter, projection);
+                resolve(usersData);
+            } catch(error) {
+                reject(error);
+            }
+        })
+    }
+
     static createUser(data) {
         return new Promise(async (resolve, reject) => {
             try {

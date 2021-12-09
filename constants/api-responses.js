@@ -39,5 +39,6 @@ module.exports = {
     "INCORRECT_INTERNAL_ACCESS_TOKEN": "Invalid internal access token",
     "USER_IS_A_MENTOR":"User has mentor access",
     "USER_IS_NOT_A_MENTOR":"User does't have mentor access",
-    "USER_UPDATED_SUCCESSFULLY": "User successfully updated"
+    "USER_UPDATED_SUCCESSFULLY": "User successfully updated",
+    "USERS_FETCHED_SUCCESSFULLY": "Users fetched successfully"
 };

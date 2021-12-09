@@ -14,7 +14,7 @@ const FILESTREAM = require("../../generics/file-stream");
 
 module.exports = class AccountHelper {
 
-    static async create(bodyData, isAMentor) {
+    static async create(bodyData) {
         try {
             const email = bodyData.email;
             const user = await usersData.findOne({ 'email.address': email });
@@ -22,14 +22,11 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
             }
 
-            if (isAMentor) {
-                bodyData.password = '4567';
-            }
             const salt = bcryptJs.genSaltSync(10);
             bodyData.password = bcryptJs.hashSync(bodyData.password, salt);
             bodyData.email = { address: email, verified: false };
             await usersData.createUser(bodyData);
-            
+
             const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
 
             if (templateData) {
@@ -42,10 +39,10 @@ module.exports = class AccountHelper {
                         body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, appName: process.env.APP_NAME })
                     }
                 };
-                
+
                 await kafkaCommunication.pushRegistrationEmailToKafka(payload);
             }
-            
+
 
             return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY });
         } catch (error) {
@@ -55,7 +52,7 @@ module.exports = class AccountHelper {
     }
 
     static async login(bodyData) {
-        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0};
+        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
         try {
             let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
             const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
@@ -195,7 +192,7 @@ module.exports = class AccountHelper {
     }
 
     static async resetPassword(bodyData) {
-        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, password: 0};
+        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, password: 0 };
         try {
             let user = await usersData.findOne({ 'email.address': bodyData.email }, projection);
             if (!user) {
@@ -241,23 +238,23 @@ module.exports = class AccountHelper {
         }
     }
 
-    static async bulkCreateMentors(mentors,tokenInformation) {
+    static async bulkCreateMentors(mentors, tokenInformation) {
         return new Promise(async (resolve, reject) => {
             try {
                 const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email);
-            
+
                 if (!systemUser) {
                     return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
-    
+
                 if (systemUser.role.toLowerCase() !== "admin") {
                     return common.failureResponse({ message: apiResponses.NOT_AN_ADMIN, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
-                
+
                 const fileName = `mentors-creation`;
                 let fileStream = new FILESTREAM(fileName);
                 let input = fileStream.initStream();
-          
+
                 (async function () {
                     await fileStream.getProcessorPromise();
                     return resolve({
@@ -265,7 +262,7 @@ module.exports = class AccountHelper {
                         fileNameWithPath: fileStream.fileNameWithPath()
                     });
                 })();
-    
+
                 for (const mentor of mentors) {
                     mentor.isAMentor = true;
                     const data = await this.create(mentor);
@@ -273,9 +270,9 @@ module.exports = class AccountHelper {
                     mentor.status = data.message;
                     input.push(mentor);
                 }
-    
+
                 input.push(null);
-            } catch(error) {
+            } catch (error) {
                 throw error;
             }
         })
@@ -283,38 +280,50 @@ module.exports = class AccountHelper {
 
 
     static async verifyMentor(userId) {
-            try {
+        try {
 
-                let user = await usersData.findOne({ '_id': userId },{ "isAMentor":1 });
-                if(!user){
-                    return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
-                } else if(user && user.isAMentor==true){
-                    return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_A_MENTOR, result:user });
-                } else {
-                    return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_NOT_A_MENTOR, result:user });
-                }
-                
-            } catch(error) {
-                throw error;
+            let user = await usersData.findOne({ '_id': userId }, { "isAMentor": 1 });
+            if (!user) {
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            } else if (user && user.isAMentor == true) {
+                return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_A_MENTOR, result: user });
+            } else {
+                return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_NOT_A_MENTOR, result: user });
             }
+
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async list(userIds) {
+        try {
+
+            const users = await usersData.findAllUsers({ '_id': { $in: userIds } }, { 'password': 0, 'refreshTokens': 0, 'otpInfo': 0 });
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USERS_FETCHED_SUCCESSFULLY, result: users });
+
+        } catch (error) {
+            throw error;
+        }
     }
 
     static async acceptTermsAndCondition(userId) {
         try {
-            const user = await usersData.findOne({_id: userId},{_id: 1});
-            
-            if(!user){
+            const user = await usersData.findOne({ _id: userId }, { _id: 1 });
+
+            if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
             await usersData.updateOneUser({
                 _id: userId
-            },{
+            }, {
                 hasAcceptedTAndC: true
             });
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_UPDATED_SUCCESSFULLY });
-        } catch(error) {
+        } catch (error) {
             throw error;
         }
     }
