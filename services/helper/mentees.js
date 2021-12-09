@@ -1,6 +1,7 @@
 const ObjectId = require('mongoose').Types.ObjectId;
 
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
+const moment = require("moment-timezone");
 
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
@@ -25,16 +26,18 @@ module.exports = class MenteesHelper {
                 filters = {
                     status: { $in: ['published', 'live'] },
                     startDateUtc: {
-                        $gte: new Date().toISOString()
+                        $gte:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+                    },
+                    endDateUtc: {
+                        $gt:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                     },
                     userId: {
                         $ne: userId
                     }
                 };
-
+              
                 sessions = await sessionData.findAllSessions(page, limit, search, filters);
-                console.log(sessions);
-
+              
                 if (sessions[0].data.length > 0) {
 
                     await Promise.all(sessions[0].data.map(async session => {
@@ -62,8 +65,8 @@ module.exports = class MenteesHelper {
                 filters = {
                     $or: [
                         {
-                            'sessionDetail.startDate': {
-                                $gte: new Date().toISOString()
+                            'sessionDetail.startDateUtc': {
+                                $gte: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                             }
                         },
                         {
@@ -121,7 +124,7 @@ module.exports = class MenteesHelper {
 
             /* totalSessionAttended */
             filters = {
-                'sessionDetail.startDate': {
+                'sessionDetail.startDateUtc': {
                     $gte: filterStartDate.toISOString(),
                     $lte: filterEndDate.toISOString()
                 },
@@ -176,29 +179,29 @@ module.exports = class MenteesHelper {
                 const mentee = await userProfile.details(token);
 
                 if (mentee.data.responseCode !== "OK") {
-                    return common.failureResponse({
+                    return resolve(common.failureResponse({
                         message: apiResponses.USER_NOT_FOUND,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    });
+                    }));
                 }
 
                 const session = await sessionData.findSessionById(sessionId);
 
                 if (!session) {
-                    return common.failureResponse({
+                    return resolve(common.failureResponse({
                         message: apiResponses.SESSION_NOT_FOUND,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    });
+                    }));
                 }
 
                 if (session.status !== "live") {
-                    return common.failureResponse({
+                    return resolve(common.failureResponse({
                         message: apiResponses.JOIN_ONLY_LIVE_SESSION,
                         statusCode: httpStatusCode.bad_request,
                         responseCode: 'CLIENT_ERROR'
-                    });
+                    }));
                 }
 
                 let menteeDetails = mentee.data.result;

@@ -7,6 +7,7 @@
 
 const bcryptJs = require('bcryptjs');
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
+const moment = require('moment');
 
 const hash = (str) => {
     const salt = bcryptJs.genSaltSync(10);
@@ -14,14 +15,14 @@ const hash = (str) => {
     return hashstr;
 }
 
-const elapsedMinutes = (date1,date2) => {
+const elapsedMinutes = (date1, date2) => {
     var difference = (date1 - date2);
     let result = (difference / 60000);
     return result;
 }
 
 const getIstDate = () => {
-    return new Date(new Date().getTime() + (5*60+30)*60000);
+    return new Date(new Date().getTime() + (5 * 60 + 30) * 60000);
 }
 
 const getCurrentMonthRange = () => {
@@ -90,6 +91,15 @@ const getDownloadableUrl = async imgPath => {
     return imgPath;
 };
 
+const getTimeZone = (date, format, tz = null) => {
+    let timeZone = moment(date);
+    if (tz) {
+        timeZone.tz(tz);
+    }
+    timeZone = moment(timeZone).format(format);
+    return timeZone;
+}
+
 module.exports = {
     hash: hash,
     getCurrentMonthRange: getCurrentMonthRange,
@@ -98,5 +108,6 @@ module.exports = {
     elapsedMinutes: elapsedMinutes,
     getIstDate: getIstDate,
     composeEmailBody: composeEmailBody,
-    getDownloadableUrl: getDownloadableUrl
+    getDownloadableUrl: getDownloadableUrl,
+    getTimeZone
 }

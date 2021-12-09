@@ -41,6 +41,12 @@ module.exports = {
                 .notEmpty()
                 .withMessage('medium field is empty');
 
+            req.checkBody('timeZone')
+                .notEmpty()
+                .withMessage('timeZone field is empty')
+                .isString()
+                .withMessage('timeZone must be string only');
+
         } else {
             req.checkBody('title')
                 .optional()
@@ -53,7 +59,7 @@ module.exports = {
                 .withMessage('description field is empty')
                 .matches(/^[A-Za-z0-9 ]+$/)
                 .withMessage('description is invalid');
-            
+
         }
     },
     details: (req) => {

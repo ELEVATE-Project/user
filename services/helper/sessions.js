@@ -37,18 +37,10 @@ module.exports = class SessionsHelper {
             }
 
             if (bodyData.startDate) {
-                bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
-                if (bodyData.timeZone) {
-                    bodyData['startDateUtc'].tz(bodyData.timeZone);
-                }
-                bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
+                bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT);
             }
             if (bodyData.endDate) {
-                bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
-                if (bodyData.timeZone) {
-                    bodyData['endDateUtc'].tz(bodyData.timeZone);
-                }
-                bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
+                bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT);
             }
 
             let data = await sessionData.createSession(bodyData);
@@ -71,13 +63,13 @@ module.exports = class SessionsHelper {
         let isSessionReschedule = false;
         try {
 
-            // if (!await this.verifyMentor(userId)) {
-            //     return common.failureResponse({
-            //         message: apiResponses.INVALID_PERMISSION,
-            //         statusCode: httpStatusCode.bad_request,
-            //         responseCode: 'CLIENT_ERROR'
-            //     });
-            // }
+            if (!await this.verifyMentor(userId)) {
+                return common.failureResponse({
+                    message: apiResponses.INVALID_PERMISSION,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
 
             const sessionDetail = await sessionData.findSessionById(ObjectId(sessionId));
 
@@ -92,20 +84,12 @@ module.exports = class SessionsHelper {
             }
 
             if (bodyData.startDate) {
+                bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT);
                 isSessionReschedule = true;
-                bodyData['startDateUtc'] = moment.unix(bodyData.startDate);
-                if (bodyData.timeZone) {
-                    bodyData['startDateUtc'].tz(bodyData.timeZone);
-                }
-                bodyData['startDateUtc'] = moment(bodyData['startDateUtc']).format();
             }
             if (bodyData.endDate) {
+                bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT);
                 isSessionReschedule = true;
-                bodyData['endDateUtc'] = moment.unix(bodyData.endDate);
-                if (bodyData.timeZone) {
-                    bodyData['endDateUtc'].tz(bodyData.timeZone);
-                }
-                bodyData['endDateUtc'] = moment(bodyData['endDateUtc']).format();
             }
 
             let message;
@@ -152,10 +136,16 @@ module.exports = class SessionsHelper {
                     }
                 });
 
+                /* Find email template according to request type */
                 let templateData;
+                if (method == common.DELETE_METHOD) {
+                    templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE);
+                } else if (isSessionReschedule) {
+                    templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE);
+                }
+
                 sessionAttendees.forEach(async attendee => {
                     if (method == common.DELETE_METHOD) {
-                        templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE);
                         const payload = {
                             type: 'email',
                             email: {
@@ -168,12 +158,9 @@ module.exports = class SessionsHelper {
                             }
                         };
 
-                        console.log(payload);
-
-                        // await kafkaCommunication.pushEmailToKafka(payload);
+                        await kafkaCommunication.pushEmailToKafka(payload);
 
                     } else if (isSessionReschedule) {
-                        templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE);
                         const payload = {
                             type: 'email',
                             email: {
@@ -182,25 +169,22 @@ module.exports = class SessionsHelper {
                                 body: utils.composeEmailBody(templateData.body, {
                                     name: attendee.attendeeName,
                                     sessionTitle: sessionDetail.title,
-                                    oldStartDate: moment(sessionDetail.startDateUtc ? sessionDetail.startDateUtc : sessionDetail.startDate).format(common.dateFormat),
-                                    oldStartTime: moment(sessionDetail.startDateUtc ? sessionDetail.startDateUtc : sessionDetail.startDate).format(common.timeFormat),
-                                    oldEndDate: moment(sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate).format(common.dateFormat),
-                                    oldEndTime: moment(sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate).format(common.timeFormat),
-                                    newStartDate: moment(bodyData['startDateUtc'] ? bodyData['startDateUtc'] : sessionDetail.startDateUtc).format(common.dateFormat),
-                                    newStartTime: moment(bodyData['startDateUtc'] ? bodyData['startDateUtc'] : sessionDetail.startDateUtc).format(common.timeFormat),
-                                    newEndDate: moment(bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc).format(common.dateFormat),
-                                    newEndTime: moment(bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc).format(common.timeFormat)
+                                    oldStartDate: utils.getTimeZone(sessionDetail.startDateUtc ? sessionDetail.startDateUtc : sessionDetail.startDate, common.dateFormat, sessionDetail.timeZone),
+                                    oldStartTime: utils.getTimeZone(sessionDetail.startDateUtc ? sessionDetail.startDateUtc : sessionDetail.startDate, common.timeFormat, sessionDetail.timeZone),
+                                    oldEndDate: utils.getTimeZone(sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate, common.dateFormat, sessionDetail.timeZone),
+                                    oldEndTime: utils.getTimeZone(sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate, common.timeFormat, sessionDetail.timeZone),
+                                    newStartDate: utils.getTimeZone(bodyData['startDateUtc'] ? bodyData['startDateUtc'] : sessionDetail.startDateUtc, common.dateFormat, sessionDetail.timeZone),
+                                    newStartTime: utils.getTimeZone(bodyData['startDateUtc'] ? bodyData['startDateUtc'] : sessionDetail.startDateUtc, common.timeFormat, sessionDetail.timeZone),
+                                    newEndDate: utils.getTimeZone(bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc, common.dateFormat, sessionDetail.timeZone),
+                                    newEndTime: utils.getTimeZone(bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc, common.timeFormat, sessionDetail.timeZone)
                                 })
                             }
                         };
-                        console.log(payload);
 
-                        // await kafkaCommunication.pushEmailToKafka(payload);
+                        await kafkaCommunication.pushEmailToKafka(payload);
                     }
 
                 });
-
-
 
             }
 
@@ -271,7 +255,10 @@ module.exports = class SessionsHelper {
             }
 
             let filters = {
-                userId: loggedInUserId
+                userId: loggedInUserId,
+                endDateUtc: {
+                    $gt: moment().utc().format()
+                }
             };
             if (arrayOfStatus.length > 0) {
                 filters['status'] = {
@@ -343,8 +330,8 @@ module.exports = class SessionsHelper {
                             name,
                             sessionTitle: session.title,
                             mentorName: session.mentorName,
-                            startDate: moment(session.startDateUtc ? session.startDateUtc : session.startDate).format(common.dateFormat),
-                            startTime: moment(session.startDateUtc ? session.startDateUtc : session.startDate).format(common.timeFormat)
+                            startDate: utils.getTimeZone(session.startDateUtc ? session.startDateUtc : session.startDate, common.dateFormat, session.timeZone),
+                            startTime: utils.getTimeZone(session.startDateUtc ? session.startDateUtc : session.startDate, common.timeFormat, session.timeZone)
                         })
                     }
                 };
@@ -543,6 +530,7 @@ module.exports = class SessionsHelper {
 
                 const session = await sessionData.findSessionById(sessionId);
 
+
                 if (!session) {
                     return resolve(common.failureResponse({
                         message: apiResponses.SESSION_NOT_FOUND,
@@ -560,18 +548,15 @@ module.exports = class SessionsHelper {
                 }
 
                 let link = "";
+                session.link = "";
                 if (session.link) {
                     link = session.link;
                 } else {
 
-                    let currentDate = moment();
-                    if (session.timeZone) {
-                        currentDate.tz(session.timeZone);
-                        currentDate = moment(currentDate).format();
-                    }
-                    let elapsedMinutes = moment(currentDate).diff(session.startDateUtc, 'minutes');
+                    let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
+                    let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes');
 
-                    if (elapsedMinutes < -10) {
+                    if (elapsedMinutes > 10) {
                         return resolve(common.failureResponse({
                             message: apiResponses.SESSION_ESTIMATED_TIME,
                             statusCode: httpStatusCode.bad_request,
