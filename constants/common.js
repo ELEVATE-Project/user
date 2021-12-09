@@ -39,6 +39,7 @@ module.exports = {
     ],
     uploadUrls: [
         'bulkCreateMentors',
-        '/user/v1/account/verifyMentor'
+        '/user/v1/account/verifyMentor',
+        'profile/details'
     ]
 };
