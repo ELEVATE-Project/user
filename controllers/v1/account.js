@@ -23,7 +23,7 @@ module.exports = class Account {
         const params = req.body;
         const isAMentor = params.isAMentor ? true : false;
         try {
-            const createdAccount = await accountHelper.create(params, isAMentor);
+            const createdAccount = await accountHelper.create(params);
             return createdAccount;
         } catch (error) {
             return error;
@@ -75,7 +75,7 @@ module.exports = class Account {
     * @returns {JSON} - access token info
     */
 
-     async generateToken(req) {
+    async generateToken(req) {
         const params = req.body;
         try {
             const createdToken = await accountHelper.generateToken(params);
@@ -129,10 +129,10 @@ module.exports = class Account {
     * @returns {CSV} - created mentors.
     */
 
-     async bulkCreateMentors(req) {
+    async bulkCreateMentors(req) {
         try {
             const mentors = await csv().fromString(req.files.mentors.data.toString());
-            const createdMentors = await accountHelper.bulkCreateMentors(mentors,req.decodedToken);
+            const createdMentors = await accountHelper.bulkCreateMentors(mentors, req.decodedToken);
             return createdMentors;
         } catch (error) {
             return error;
@@ -146,20 +146,37 @@ module.exports = class Account {
     * @param {Object} req -request data.
     * @returns {JSON} - verifies user is mentor or not
     */
-   
 
-         async verifyMentor(req) {
-            try {
-                const result = await accountHelper.verifyMentor(req.query.userId);
-                return result;
-            } catch (error) {
-                return error;
-            }
+
+    async verifyMentor(req) {
+        try {
+            const result = await accountHelper.verifyMentor(req.query.userId);
+            return result;
+        } catch (error) {
+            return error;
         }
-   
+    }
+
     async acceptTermsAndCondition(req) {
         try {
             const result = await accountHelper.acceptTermsAndCondition(req.decodedToken._id);
+            return result;
+        } catch (error) {
+            return error;
+        }
+    }
+
+    /**
+    * Account List
+    * @method
+    * @name list
+    * @param {Object} req -request data.
+    * @returns {JSON} - all accounts data
+    */
+
+    async list(req) {
+        try {
+            const result = await accountHelper.list(req.body.userIds);
             return result;
         } catch (error) {
             return error;
