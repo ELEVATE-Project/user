@@ -41,11 +41,6 @@ module.exports = {
                 .notEmpty()
                 .withMessage('medium field is empty');
 
-            req.checkBody('timeZone')
-                .notEmpty()
-                .withMessage('timeZone field is empty')
-                .isString()
-                .withMessage('timeZone must be string only');
 
         } else {
             req.checkBody('title')
