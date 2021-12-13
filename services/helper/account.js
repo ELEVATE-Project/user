@@ -55,8 +55,11 @@ module.exports = class AccountHelper {
         const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
         try {
             let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
+            if (!user) {
+                return common.failureResponse({ message: apiResponses.USERNAME_OR_PASSWORD_IS_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
             const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
-            if (!user || !isPasswordCorrect) {
+            if (!isPasswordCorrect) {
                 return common.failureResponse({ message: apiResponses.USERNAME_OR_PASSWORD_IS_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
@@ -87,6 +90,7 @@ module.exports = class AccountHelper {
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.LOGGED_IN_SUCCESSFULLY, result });
         } catch (error) {
+            console.log(error);
             throw error;
         }
     }
