@@ -20,6 +20,10 @@ module.exports = function (config) {
     console.error.bind(console, "kafka connection error!")
   });
 
+  client.on('connect', () => {
+    console.log('Connected to kafka client');
+  });
+
   producer = new Producer(client)
 
   producer.on('ready', function () {
@@ -31,32 +35,30 @@ module.exports = function (config) {
   })
 
 
-  let consumer = new kafka.ConsumerGroup({
-      kafkaHost: process.env.KAFKA_HOST,
-      // groupId : process.env.KAFKA_GROUP_ID,
-      autoCommit: true
-    },
-    process.env.KAFKA_TOPIC
-  );
+  // let consumer = new kafka.ConsumerGroup({
+  //   kafkaHost: process.env.KAFKA_HOST,
+  //   autoCommit: true
+  // },
+  //   process.env.KAFKA_TOPIC
+  // );
 
-  consumer.on('message', async function (message) {    
+  const consumer = new kafka.Consumer(client, [{ topic: process.env.KAFKA_TOPIC }], { autoCommit: true });
+
+  consumer.on('message', async function (message) {
     try {
       let notificationData = JSON.parse(message.value);
-      if(notificationData.type=="email" && notificationData.email){
+      if (notificationData.type == "email" && notificationData.email) {
         emailNotifications.sendEmail(notificationData.email);
       }
-      
+
     } catch (error) {
       console.log("failed", error);
     }
-  
-
   });
 
   consumer.on('error', async function (error) {
-    console.log("kafka incoming error", error);
+    console.log("kafka consumer intialization error", error);
   });
-
 
   global.kafkaClient = {
     kafkaProducer: producer,

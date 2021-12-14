@@ -35,11 +35,7 @@
              throw common.failureResponse({ message: apiResponses.UNAUTHORIZED_REQUEST, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
          }
  
-         req.decodedToken = {
-             _id: decodedToken.data._id,
-             email: decodedToken.data.email,
-             isAMentor: decodedToken.data.isAMentor
-         };
+         req.decodedToken = decodedToken.data;
      }
      next();
  };

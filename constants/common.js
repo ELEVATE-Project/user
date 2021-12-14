@@ -5,7 +5,7 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({statusCode = 500, responseCode = 'OK', message, result = []}) => {
+const successResponse = ({statusCode = 200, responseCode = 'OK', message, result = []}) => {
     return {
         statusCode,
         responseCode,
@@ -30,9 +30,5 @@ module.exports = {
     refreshTokenSecret: '371hkjkjady2y3ihdkajshdkiq23iuekw71yekhaskdvkvegavy23t78veqwexqvxveit6ttxyeeytt62tx236vv',
     successResponse,
     failureResponse,
-    guestUrls: [
-        '/user/v1/account/login',
-        '/user/v1/account/create',
-        '/user/v1/account/generateToken'
-    ]
+    guestUrls: []
 };
