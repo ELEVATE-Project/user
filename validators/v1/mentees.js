@@ -15,7 +15,6 @@ module.exports = {
             .withMessage('enrolled is invalid')
             .toBoolean();
     },
-
     homefeed: (req) => {
 
     },

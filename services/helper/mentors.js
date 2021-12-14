@@ -56,7 +56,7 @@ module.exports = class MentorsHelper {
 
             /* totalsessionHosted */ 
             filters = {
-                startDate: {
+                startDateUtc: {
                     $gte: filterStartDate.toISOString(),
                     $lte: filterEndDate.toISOString()
                 },
@@ -64,7 +64,7 @@ module.exports = class MentorsHelper {
                 status: 'completed',
                 deleted: false
             };
-
+          
             totalsessionHosted = await sessionsData.countSessions(filters);
             return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.MENTORS_REPORT_FETCHED_SUCCESSFULLY, result: {totalSessionCreated, totalsessionHosted}});
 

@@ -57,7 +57,8 @@ module.exports = (app) => {
         res.status(controllerResponse.statusCode).json({
             responseCode: controllerResponse.responseCode,
             message: controllerResponse.message,
-            result: controllerResponse.result
+            result: controllerResponse.result,
+            meta: controllerResponse.meta
         });
     }
 

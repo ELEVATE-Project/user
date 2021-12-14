@@ -40,7 +40,7 @@ module.exports = class SessionsData {
     static findOneSession(filter, projection = {}) {
         return new Promise(async (resolve, reject) => {
             try {
-                const sessionData = await Sessions.findOne(filter, projection);
+                const sessionData = await Sessions.findOne(filter, projection).lean();
                 resolve(sessionData);
             } catch (error) {
                 reject(error);
@@ -77,7 +77,7 @@ module.exports = class SessionsData {
                         },
                     },
                     {
-                        $sort: { startDate: 1 }
+                        $sort: { startDateUtc: 1 }
                     },
                     {
                         $project: {
@@ -117,6 +117,18 @@ module.exports = class SessionsData {
         })
     } 
 
+    static findSessions(filter, projection = {}){
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let sessionData = await Sessions.find(filter,projection);
+                resolve(sessionData);
+
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
     static countSessions(filter) {
         return new Promise(async (resolve, reject) => {
             try {

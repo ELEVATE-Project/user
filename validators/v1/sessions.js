@@ -41,6 +41,7 @@ module.exports = {
                 .notEmpty()
                 .withMessage('medium field is empty');
 
+
         } else {
             req.checkBody('title')
                 .optional()
@@ -53,6 +54,7 @@ module.exports = {
                 .withMessage('description field is empty')
                 .matches(/^[A-Za-z0-9 ]+$/)
                 .withMessage('description is invalid');
+
         }
     },
     details: (req) => {
@@ -68,6 +70,8 @@ module.exports = {
             .withMessage('id param is empty')
             .isMongoId()
             .withMessage('id is invalid');
+
+
     },
 
     unEnroll: (req) => {

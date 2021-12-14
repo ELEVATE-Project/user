@@ -5,12 +5,13 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] }) => {
+const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] ,meta={} }) => {
     return {
         statusCode,
         responseCode,
         message,
-        result
+        result,
+        meta
     }
 };
 
@@ -31,5 +32,14 @@ module.exports = {
     guestUrls: [
         "/sessions/completed"
     ],
-    DELETE_METHOD:"DELETE"
+    DELETE_METHOD:"DELETE",
+    dateFormat: 'dddd, Do MMMM YYYY',
+    timeFormat: 'hh:mm A',
+    MENTEE_SESSION_REMAINDER_EMAIL_CODE:"mentee_session_enrollment",
+    MENTOR_SESSION_REMAINDER_EMAIL_CODE:"mentor_session_reminder",
+    UTC_DATE_TIME_FORMAT:"YYYY-MM-DDTHH:mm:ss",
+    internalAccessUrs:[
+        "/notifications/emailCronJob"
+    ]
 };
+

@@ -8,7 +8,7 @@
 // Dependencies
 const menteesHelper = require("../../services/helper/mentees");
 
-module.exports = class Mentors {
+module.exports = class Mentees {
 
     /**
     * mentees sessions
@@ -37,7 +37,7 @@ module.exports = class Mentors {
 
     async homeFeed(req) {
         try {
-            const homefeed = await menteesHelper.homeFeed(req.decodedToken._id);
+            const homefeed = await menteesHelper.homeFeed(req.decodedToken._id, req.decodedToken.isAMentor);
             return homefeed;
         } catch (error) {
             return error;

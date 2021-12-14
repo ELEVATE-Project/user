@@ -7,10 +7,12 @@ module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
 
-            // let recordingCallBackUrl = process.env.RECORDING_READY_CALLBACK_URL + "%2F" + meetingId;
+            // let recordingCallBackUrl = encodeURI(process.env.RECORDING_READY_CALLBACK_URL);
+            // "&meta_bbb-recording-ready-url=" + recordingCallBackUrl;
             let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + "%2F" + meetingId;
 
-            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&meta_bbb-recording-ready-url=" + process.env.RECORDING_READY_CALLBACK_URL + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
+            meetingName = encodeURI(meetingName);
+            let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
             let sha = shasum.update(checkSumGeneration);
@@ -28,6 +30,7 @@ module.exports = class SessionsHelper {
     static async joinMeetingAsModerator(meetingId,mentorName,moderatorPW) {
         try {
 
+            mentorName = encodeURI(mentorName);
             let query = "meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');
@@ -45,6 +48,7 @@ module.exports = class SessionsHelper {
     static async joinMeetingAsAttendee(meetingId,menteeName,menteePW) {
         try {
 
+            menteeName = encodeURI(menteeName);
             let query = "meetingID=" + meetingId + "&password=" + menteePW + "&fullName=" + menteeName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
             var shasum = crypto.createHash('sha1');

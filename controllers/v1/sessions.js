@@ -13,6 +13,11 @@ module.exports = class Sessions {
     async update(req) {
         try {
             if (req.params.id) {
+
+                if (req.headers.timezone) {
+                    req.body['timeZone'] = req.headers.timezone;
+                }
+
                 const sessionUpdated =
                     await sessionsHelper.update(
                         req.params.id,
@@ -25,6 +30,10 @@ module.exports = class Sessions {
             } else {
                 if (req.decodedToken.name) {
                     req.body.mentorName = req.decodedToken.name;
+                }
+
+                if (req.headers.timezone) {
+                    req.body['timeZone'] = req.headers.timezone;
                 }
 
                 const sessionCreated =
@@ -44,7 +53,8 @@ module.exports = class Sessions {
         try {
             const sessionDetails =
                 await sessionsHelper.details(
-                    req.params.id
+                    req.params.id,
+                    req.decodedToken._id
                 );
             return sessionDetails;
         } catch (error) {
@@ -79,7 +89,7 @@ module.exports = class Sessions {
 
     async enroll(req) {
         try {
-            const enrolledSession = await sessionsHelper.enroll(req.params.id, req.decodedToken._id);
+            const enrolledSession = await sessionsHelper.enroll(req.params.id, req.decodedToken, req.headers['timeZone']);
             return enrolledSession;
         } catch (error) {
             return error;
@@ -88,7 +98,7 @@ module.exports = class Sessions {
 
     async unEnroll(req) {
         try {
-            const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken._id);
+            const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken);
             return unEnrolledSession;
         } catch (error) {
             return error;
@@ -96,18 +106,18 @@ module.exports = class Sessions {
     }
 
     start(req) {
-        return new Promise(async (resolve,reject) => {
+        return new Promise(async (resolve, reject) => {
             try {
-                const sessionsStarted = 
-                await sessionsHelper.start(
-                    req.params.id,
-                    req.decodedToken.token
-                );
+                const sessionsStarted =
+                    await sessionsHelper.start(
+                        req.params.id,
+                        req.decodedToken.token
+                    );
                 return resolve(sessionsStarted);
-            } catch(error) {
+            } catch (error) {
                 return reject(error);
-            }  
-        }) 
+            }
+        })
     }
 
     async completed(req) {
@@ -120,13 +130,31 @@ module.exports = class Sessions {
         }
     }
 
-    recordingStats(req) {
-        return new Promise(async (resolve,reject) => {
+    getRecording(req) {
+        return new Promise(async (resolve, reject) => {
             try {
-                console.log(" -- I am in recordings --");
-            } catch(error) {
+                const recording = await sessionsHelper.getRecording(req.params.id);
+                return resolve(recording);
+            } catch (error) {
                 return reject(error);
-            }  
-        }) 
+            }
+        })
     }
+
+    feedback(req) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const sessionsFeedBack =
+                    await sessionsHelper.feedback(
+                        req.params.id,
+                        req.body
+                    );
+
+                return resolve(sessionsFeedBack);
+            } catch (error) {
+                return reject(error);
+            }
+        })
+    }
+
 }
