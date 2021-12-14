@@ -43,7 +43,7 @@ module.exports = class Notifications {
                         const payload = {
                             type: 'email',
                             email: {
-                                to: userData.data.result.email,
+                                to: userData.data.result.email.address,
                                 subject: emailTemplate.subject,
                                 body: emailTemplate.body
                             }
