@@ -50,7 +50,7 @@ module.exports = {
     "PENDING_FEEDBACK_FETCHED_SUCCESSFULLY":"Pending feedbacks fetched successfully",
     "FEEDBACKFORM_MESSAGE":"Thank you for hosting the session, please rate us   on the following to help us improve",
     "FEEDBACK_ALREADY_SUBMITTED":"Feedback form has already been submitted",
-    "SESSION_ESTIMATED_TIME": "Mentor can start session only before 10 minutes",
+    "SESSION_ESTIMATED_TIME": "Session cannot be started ! Please check the scheduled date and time of the session",
     "MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully",
     "MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully",
 };
