@@ -6,17 +6,13 @@ const endpoints = require('../../constants/endpoints');
 module.exports = class SessionsHelper {
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
-
-            // let recordingCallBackUrl = encodeURI(process.env.RECORDING_READY_CALLBACK_URL);
-            // "&meta_bbb-recording-ready-url=" + recordingCallBackUrl;
+            
             let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + "%2F" + meetingId;
 
             meetingName = encodeURI(meetingName);
             let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
-            var shasum = crypto.createHash('sha1');
-            let sha = shasum.update(checkSumGeneration);
-            const checksum = sha.digest('hex');
+            const checksum = this.generateCheckSum(checkSumGeneration);
 
             const createUrl = bigBlueButtonUrl + endpoints.CREATE_MEETING + "?" + query + "&checksum=" + checksum;
             let response = await request.get(createUrl);
@@ -33,9 +29,7 @@ module.exports = class SessionsHelper {
             mentorName = encodeURI(mentorName);
             let query = "meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
-            var shasum = crypto.createHash('sha1');
-            shasum.update(checkSumGeneration);
-            const checksum = shasum.digest('hex');
+            const checksum = this.generateCheckSum(checkSumGeneration);
 
             const joinUrl = bigBlueButtonUrl + endpoints.JOIN_MEETING + "?" + query + "&checksum=" + checksum;
             return joinUrl;
@@ -51,9 +45,7 @@ module.exports = class SessionsHelper {
             menteeName = encodeURI(menteeName);
             let query = "meetingID=" + meetingId + "&password=" + menteePW + "&fullName=" + menteeName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
-            var shasum = crypto.createHash('sha1');
-            shasum.update(checkSumGeneration);
-            const checksum = shasum.digest('hex');
+            const checksum = this.generateCheckSum(checkSumGeneration);
 
             const joinUrl = bigBlueButtonUrl + endpoints.JOIN_MEETING + "?" + query + "&checksum=" + checksum;
             return joinUrl;
@@ -67,9 +59,7 @@ module.exports = class SessionsHelper {
         try {
 
             let checkSumGeneration = "getRecordingsmeetingID=" + meetingId + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
-            var shasum = crypto.createHash('sha1');
-            shasum.update(checkSumGeneration);
-            const checksum = shasum.digest('hex');
+            const checksum = this.generateCheckSum(checkSumGeneration);
 
             const meetingInfoUrl = bigBlueButtonUrl + endpoints.GET_RECORDINGS + "?meetingID=" + meetingId + "&checksum=" + checksum;
             let response = await request.get(meetingInfoUrl);
@@ -78,5 +68,12 @@ module.exports = class SessionsHelper {
         } catch (error) {
             throw error;
         }
+    }
+
+    static generateCheckSum(queryHash) {
+        var shasum = crypto.createHash('sha1');
+        shasum.update(queryHash);
+        const checksum = shasum.digest('hex');
+        return checksum;
     }
 }

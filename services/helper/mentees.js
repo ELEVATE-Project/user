@@ -207,7 +207,7 @@ module.exports = class MenteesHelper {
                 let menteeDetails = mentee.data.result;
 
                 const sessionAttendee =
-                    await sessionAttendees.findLinkBySessionAndUserId(
+                    await sessionAttendees.findAttendeeBySessionAndUserId(
                         menteeDetails._id,
                         sessionId
                     );
@@ -231,10 +231,10 @@ module.exports = class MenteesHelper {
                     );
 
                     await sessionAttendees.updateOne({
-                        _id: sessionAttendee
+                        _id: sessionAttendee._id
                     }, {
                         link: attendeeLink,
-                        joinedAt: new Date(),
+                        joinedAt: utils.utcFormat(),
                         isSessionAttended: true
                     })
 

@@ -19,7 +19,7 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static findLinkBySessionAndUserId(id, sessionId) {
+    static findAttendeeBySessionAndUserId(id, sessionId) {
         return new Promise(async (resolve, reject) => {
             try {
                 const session = await SessionAttendees.findOne({ userId: id, sessionId: sessionId, deleted: false }).lean();
@@ -28,17 +28,6 @@ module.exports = class SessionsAttendees {
                 reject(error);
             }
         });
-    }
-
-    static(sessionId, userId) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const session = await SessionAttendees.findOne({ sessionId: sessionId, userId: userId, deleted: false }).lean();
-                resolve(session);
-            } catch (error) {
-                reject(error);
-            }
-        })
     }
 
     static countSessionAttendees(filter) {

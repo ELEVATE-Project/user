@@ -530,7 +530,6 @@ module.exports = class SessionsHelper {
 
                 const session = await sessionData.findSessionById(sessionId);
 
-
                 if (!session) {
                     return resolve(common.failureResponse({
                         message: apiResponses.SESSION_NOT_FOUND,
@@ -548,7 +547,6 @@ module.exports = class SessionsHelper {
                 }
 
                 let link = "";
-                session.link = "";
                 if (session.link) {
                     link = session.link;
                 } else {
@@ -590,7 +588,7 @@ module.exports = class SessionsHelper {
                     }, {
                         link: moderatorMeetingLink,
                         status: "live",
-                        startedAt: new Date()
+                        startedAt: utils.utcFormat()
                     })
 
                     link = moderatorMeetingLink;
@@ -653,14 +651,13 @@ module.exports = class SessionsHelper {
             try {
 
                 const recordingInfo = await bigBlueButton.getRecordings(sessionId);
-                //  console.log("---recordings info ----",recordingInfo.data.response.recordings);
 
                 const result = await sessionData.updateOneSession({
                     _id: sessionId
                 }, {
                     status: "completed",
                     recordings: recordingInfo.data.response.recordings,
-                    completedAt: new Date()
+                    completedAt: utils.utcFormat()
                 });
 
                 return resolve(result);

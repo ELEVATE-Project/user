@@ -100,6 +100,10 @@ const getTimeZone = (date, format, tz = null) => {
     return timeZone;
 }
 
+const utcFormat = () => {
+    return moment().utc().format("YYYY-MM-DDTHH:mm:ss");
+}
+
 module.exports = {
     hash: hash,
     getCurrentMonthRange: getCurrentMonthRange,
@@ -109,5 +113,6 @@ module.exports = {
     getIstDate: getIstDate,
     composeEmailBody: composeEmailBody,
     getDownloadableUrl: getDownloadableUrl,
-    getTimeZone
+    getTimeZone,
+    utcFormat: utcFormat
 }
