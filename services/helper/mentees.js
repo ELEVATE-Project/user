@@ -25,9 +25,6 @@ module.exports = class MenteesHelper {
                 /** Upcoming unenrolled sessions {All sessions}*/
                 filters = {
                     status: { $in: ['published', 'live'] },
-                    startDateUtc: {
-                        $gte:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-                    },
                     endDateUtc: {
                         $gt:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                     },
@@ -65,8 +62,8 @@ module.exports = class MenteesHelper {
                 filters = {
                     $or: [
                         {
-                            'sessionDetail.startDateUtc': {
-                                $gte: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+                            'sessionDetail.endDateUtc': {
+                                $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                             }
                         },
                         {

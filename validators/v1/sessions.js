@@ -12,13 +12,13 @@ module.exports = {
             req.checkBody('title')
                 .notEmpty()
                 .withMessage('title field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('title is invalid');
 
             req.checkBody('description')
                 .notEmpty()
                 .withMessage('description field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('description is invalid');
 
             req.checkBody('startDate')
@@ -46,13 +46,13 @@ module.exports = {
             req.checkBody('title')
                 .optional()
                 .withMessage('title field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('title is invalid');
 
             req.checkBody('description')
                 .optional()
                 .withMessage('description field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('description is invalid');
 
         }
