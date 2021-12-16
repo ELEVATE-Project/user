@@ -42,5 +42,8 @@ module.exports = {
         '/user/v1/account/verifyMentor',
         'profile/details',
         '/user/v1/account/list'
-    ]
+    ],
+    notificationEmailType: 'email',
+    accessTokenExpiry: '1d',
+    refreshTokenExpiry: '183d',
 };

@@ -36,11 +36,11 @@ module.exports = class FormsData {
             try {
                 const res = await Forms.updateOne(filter, update, options);
                 if (res.n === 1 && res.nModified === 1) {
-                    resolve('ENTITY_UPDATED')
+                    resolve('FORM_UPDATED')
                 } else if (res.n === 1 && res.nModified === 0){
-                    resolve('ENTITY_ALREADY_EXISTS')
+                    resolve('FORM_ALREADY_EXISTS')
                 } else {
-                    resolve('ENTITY_NOT_FOUND');
+                    resolve('FORM_NOT_FOUND');
                 }
             } catch (error) {
                 reject(error);

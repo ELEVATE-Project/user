@@ -26,9 +26,9 @@ module.exports = class FormsHelper {
         try {
             const filter = { type: bodyData.type, subType: bodyData.subType, action: bodyData.action, ver: bodyData.ver, 'data.templateName': bodyData.data.templateName };
             const result = await formsData.updateOneForm(filter, bodyData);
-            if (result === 'ENTITY_ALREADY_EXISTS') {
+            if (result === 'FORM_ALREADY_EXISTS') {
                 return common.failureResponse({ message: apiResponses.FORM_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
-            } else if (result === 'ENTITY_NOT_FOUND') {
+            } else if (result === 'FORM_NOT_FOUND') {
                 return common.failureResponse({ message: apiResponses.FORM_NOT_FOUND, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
             return common.successResponse({ statusCode: httpStatusCode.accepted, message: apiResponses.FORM_UPDATED_SUCCESSFULLY });

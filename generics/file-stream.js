@@ -61,7 +61,6 @@ let FileStream = class FileStream {
     try {
       fs.mkdirSync(filePath, { recursive: true });
     } catch (err) {
-      console.log(err)
       if (err.code !== 'EEXIST') throw err
     }
   }

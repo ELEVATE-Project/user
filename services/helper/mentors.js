@@ -9,7 +9,8 @@ const usersData = require("../../db/users/queries");
 const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
 const httpStatusCode = require("../../generics/http-status");
-const fileHelper = require('../../generics/files-helper');
+const cloudServices = require('../../generics/cloud-services');
+const utilsHelper = require('../../generics/utils');
 
 module.exports = class MentorsHelper {
 
@@ -34,13 +35,7 @@ module.exports = class MentorsHelper {
             for (let mentor of mentors[0].data) {
                 /* Assigned image url from the stored location */
                 if (mentor.image) {
-                    if (process.env.CLOUD_STORAGE === 'GCP') {
-                        mentor.image = await fileHelper.getGcpDownloadableUrl(mentor.image);
-                    } else if (process.env.CLOUD_STORAGE === 'AWS') {
-                        mentor.image = await fileHelper.getAwsDownloadableUrl(mentor.image);
-                    } else if (process.env.CLOUD_STORAGE === 'AZURE') {
-                        mentor.image = await fileHelper.getAzureDownloadableUrl(mentor.image);
-                    }
+                    mentor.image = utilsHelper.getDownloadableUrl(mentor.image);
                 }
                 
                 let firstChar = mentor.name.charAt(0);
