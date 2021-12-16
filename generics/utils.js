@@ -7,6 +7,7 @@
 
 const bcryptJs = require('bcryptjs');
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
+const momentTimeZone = require("moment-timezone");
 const moment = require('moment');
 const path = require('path');
 
@@ -102,7 +103,7 @@ const getTimeZone = (date, format, tz = null) => {
 }
 
 const utcFormat = () => {
-    return moment().utc().format("YYYY-MM-DDTHH:mm:ss");
+    return momentTimeZone().utc().format("YYYY-MM-DDTHH:mm:ss");
 }
 
 module.exports = {

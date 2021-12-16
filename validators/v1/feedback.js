@@ -18,9 +18,6 @@
             .withMessage('id param is empty')
             .isMongoId()
             .withMessage('id is invalid');
-        
-        req.checkBody('feedbacks')
-            .notEmpty()
-            .withMessage('feedbacks field is empty');
+    
     }
 };
