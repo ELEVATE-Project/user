@@ -7,7 +7,7 @@
 
 const bcryptJs = require('bcryptjs');
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
-const moment = require('moment');
+const moment = require("moment-timezone");
 
 const hash = (str) => {
     const salt = bcryptJs.genSaltSync(10);
