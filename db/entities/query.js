@@ -5,6 +5,7 @@
  * Description : Users entities database operations
  */
 
+const ObjectId = require('mongoose').Types.ObjectId;
 const Entities = require("./model");
 
 module.exports = class UserEntityData {
@@ -20,18 +21,20 @@ module.exports = class UserEntityData {
         });
     }
 
-    static findOneEntity(filter, projection = {}) {
+    static findOneEntity(type, value) {
+        const filter = { type, value };
         return new Promise(async (resolve, reject) => {
             try {
-                const userEntityData = await Entities.findOne(filter, projection);
+                const userEntityData = await Entities.findOne(filter);
                 resolve(userEntityData);
             } catch (error) {
                 reject(error);
             }
-        })
+        });
     }
 
-    static findAllEntities(filter, projection = {}) {
+    static findAllEntities(filter) {
+        const projection = { value: 1, label: 1, _id: 0 };
         return new Promise(async (resolve, reject) => {
             try {
                 const userEntitiesData = await Entities.find(filter, projection);
@@ -42,10 +45,35 @@ module.exports = class UserEntityData {
         })
     }
 
-    static updateOneEntity(filter, update, options = {}) {
+    static updateOneEntity(_id, update, options = {}) {
+        update.updatedBy = ObjectId(update.updatedBy);
+        const filter = {
+            _id: ObjectId(_id)
+        };
         return new Promise(async (resolve, reject) => {
             try {
                 const res = await Entities.updateOne(filter, update, options);
+                if (res.n === 1 && res.nModified === 1) {
+                    resolve('ENTITY_UPDATED')
+                } else if (res.n === 1 && res.nModified === 0) {
+                    resolve('ENTITY_ALREADY_EXISTS')
+                } else {
+                    resolve('ENTITY_NOT_FOUND');
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    static deleteOneEntity(_id) {
+        const update = { deleted: true };
+        const filter = {
+            _id: ObjectId(_id)
+        };
+        return new Promise(async (resolve, reject) => {
+            try {
+                const res = await Entities.updateOne(filter, update);
                 if (res.n === 1 && res.nModified === 1) {
                     resolve('ENTITY_UPDATED')
                 } else if (res.n === 1 && res.nModified === 0) {
