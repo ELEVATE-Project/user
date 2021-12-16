@@ -107,15 +107,10 @@ module.exports = class Sessions {
 
     async start(req) {
         try {
-            const sessionsStarted =
-            await sessionsHelper.start(
-                req.params.id,
-                req.decodedToken.token
-            );
-            
-            return resolve(sessionsStarted);
+            const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token);
+            return sessionsStarted;
         } catch (error) {
-            return reject(error);
+            return error;
         }
     }
 
