@@ -105,24 +105,22 @@ module.exports = class Sessions {
         }
     }
 
-    start(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const sessionsStarted =
-                    await sessionsHelper.start(
-                        req.params.id,
-                        req.decodedToken.token
-                    );
-                return resolve(sessionsStarted);
-            } catch (error) {
-                return reject(error);
-            }
-        })
+    async start(req) {
+        try {
+            const sessionsStarted =
+            await sessionsHelper.start(
+                req.params.id,
+                req.decodedToken.token
+            );
+            
+            return resolve(sessionsStarted);
+        } catch (error) {
+            return reject(error);
+        }
     }
 
     async completed(req) {
         try {
-            console.log("--- In completed ----");
             const sessionsCompleted = await sessionsHelper.completed(req.params.id);
             return sessionsCompleted;
         } catch (error) {
@@ -130,31 +128,26 @@ module.exports = class Sessions {
         }
     }
 
-    getRecording(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const recording = await sessionsHelper.getRecording(req.params.id);
-                return resolve(recording);
-            } catch (error) {
-                return reject(error);
-            }
-        })
+    async getRecording(req) {
+        try {
+            const recording = await sessionsHelper.getRecording(req.params.id);
+            return resolve(recording);
+        } catch (error) {
+            return reject(error);
+        }
     }
 
-    feedback(req) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const sessionsFeedBack =
-                    await sessionsHelper.feedback(
-                        req.params.id,
-                        req.body
-                    );
-
-                return resolve(sessionsFeedBack);
-            } catch (error) {
-                return reject(error);
-            }
-        })
+    async feedback(req) {
+        try {
+            const sessionsFeedBack =
+            await sessionsHelper.feedback(
+                req.params.id,
+                req.body
+            );
+            
+            return resolve(sessionsFeedBack);
+        } catch (error) {
+            return reject(error);
+        } 
     }
-
 }

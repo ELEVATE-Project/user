@@ -4,23 +4,14 @@
  * created-date : 09-Nov-2021
  * Description : Google cloud services methods.
  */
- const path = require('path');
+const httpStatusCode = require("../../generics/http-status");
+const apiResponses = require("../../constants/api-responses");
+const common = require('../../constants/common');
+const filesHelpers = require('../../generics/files-helper');
 
- const httpStatusCode = require("../../generics/http-status");
- const apiResponses = require("../../constants/api-responses");
- const common = require('../../constants/common');
- const filesHelpers = require('../../generics/files-helper');
- const utils = require('../../generics/utils');
- 
- module.exports = class CloudServices {
-      /**
-       * Get Signed Url
-       * @method
-       * @name getSignedUrl
-       * @param {JSON} req  request body.
-       * @returns {JSON} Response with status message and result.
-     */
-       async getSignedUrl(req) {
+module.exports = class CloudServices {
+
+    async getSignedUrl(req) {
         try {
             const destFilePath = `session/${req.decodedToken._id}-${new Date().getTime()}-${req.query.fileName}`;
             let response;
@@ -38,6 +29,4 @@
             return error;
         }
     }
-
- 
- }
+}
