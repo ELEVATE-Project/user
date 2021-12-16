@@ -19,7 +19,7 @@ module.exports = class MenteesHelper {
                     status: 'completed',
                     skippedFeedback: false,
                     feedbacks: {
-                        $exists: false
+                        $size: 0
                     },
                     userId: userId
                 };
@@ -35,7 +35,7 @@ module.exports = class MenteesHelper {
                 status: 'completed',
                 skippedFeedback: false,
                 feedbacks: {
-                    $exists: false
+                    $size: 0
                 },
                 userId: userId
             };
