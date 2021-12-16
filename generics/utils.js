@@ -8,6 +8,7 @@
 const bcryptJs = require('bcryptjs');
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
 const moment = require('moment');
+const path = require('path');
 
 const hash = (str) => {
     const salt = bcryptJs.genSaltSync(10);
@@ -67,7 +68,7 @@ const getDownloadableUrl = async imgPath => {
             destFilePath: imgPath,
             bucketName: process.env.DEFAULT_GCP_BUCKET_NAME,
             gcpProjectId: process.env.GCP_PROJECT_ID,
-            gcpJsonFilePath: path.join(__dirname, '../', '../', process.env.GCP_PATH)
+            gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH)
         };
         imgPath = await GcpFileHelper.getDownloadableUrl(options);
     } else if (process.env.CLOUD_STORAGE === 'AWS') {
