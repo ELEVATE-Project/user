@@ -6,6 +6,7 @@ const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const questionsSetData = require("../../db/questionsSet/queries");
 const questionsData = require("../../db/questions/queries");
+const ObjectId = require('mongoose').Types.ObjectId;
 
 
 module.exports = class MenteesHelper {
@@ -31,7 +32,7 @@ module.exports = class MenteesHelper {
                     feedbacks: {
                         $size: 0
                     },
-                    userId: userId
+                    userId: ObjectId(userId)
                 };
                 let mentorSessions = await sessionData.findSessions(filters, {
                     _id: 1,
@@ -47,7 +48,7 @@ module.exports = class MenteesHelper {
                 feedbacks: {
                     $size: 0
                 },
-                userId: userId
+                userId: ObjectId(userId)
             };
             let menteeSessionAttendence = await sessionAttendees.findPendingFeedbackSessions(sessionAttendeesFilter);
 
