@@ -42,7 +42,7 @@ module.exports = class MenteesHelper {
             }
 
             let sessionAttendeesFilter = {
-                status: 'completed',
+                'sessionDetail.status': 'completed',
                 skippedFeedback: false,
                 feedbacks: {
                     $size: 0
