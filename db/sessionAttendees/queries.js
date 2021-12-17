@@ -5,7 +5,10 @@
  * Description : Session Attendes database operations
  */
 
+const ObjectId = require('mongoose').Types.ObjectId;
+
 const SessionAttendees = require("./model");
+
 
 module.exports = class SessionsAttendees {
     static create(data) {
@@ -30,7 +33,16 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static countSessionAttendees(filter) {
+    static countSessionAttendees(filterStartDate, filterEndDate, userId) {
+        const filter = {
+            createdAt: {
+                $gte: filterStartDate.toISOString(),
+                $lte: filterEndDate.toISOString()
+            },
+            userId: ObjectId(userId),
+            deleted: false
+        };
+    
         return new Promise(async (resolve, reject) => {
             try {
                 const count = await SessionAttendees.countDocuments(filter);
@@ -41,7 +53,16 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static countSessionAttendeesThroughStartDate(filter) {
+    static countSessionAttendeesThroughStartDate(filterStartDate, filterEndDate, userId) {
+        const filter = {
+            'sessionDetail.startDateUtc': {
+                $gte: filterStartDate.toISOString(),
+                $lte: filterEndDate.toISOString()
+            },
+            userId: ObjectId(userId),
+            deleted: false,
+            isSessionAttended: true
+        };
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await SessionAttendees.aggregate([
@@ -101,6 +122,7 @@ module.exports = class SessionsAttendees {
     }
 
     static findAllUpcomingMenteesSession(page, limit, search, filters) {
+        filters.userId = ObjectId(filters.userId);
         return new Promise(async (resolve, reject) => {
             try {
 

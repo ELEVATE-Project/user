@@ -1,7 +1,6 @@
 // Dependencies
-const ObjectId = require('mongoose').Types.ObjectId;
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
 const moment = require("moment-timezone");
+
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
 const sessionData = require("../../db/sessions/queries");
@@ -62,7 +61,6 @@ module.exports = class MenteesHelper {
         let filterEndDate;
         let totalSessionEnrolled;
         let totalsessionsAttended;
-        let filters;
         try {
             if (filterType === 'MONTHLY') {
                 [filterStartDate, filterEndDate] = utils.getCurrentMonthRange();
@@ -72,30 +70,10 @@ module.exports = class MenteesHelper {
                 [filterStartDate, filterEndDate] = utils.getCurrentQuarterRange();
             }
 
-            /* totalSessionEnrolled */
-            filters = {
-                createdAt: {
-                    $gte: filterStartDate.toISOString(),
-                    $lte: filterEndDate.toISOString()
-                },
-                userId: ObjectId(userId),
-                deleted: false
-            };
+            totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filterStartDate, filterEndDate, userId);
 
-            totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filters);
+            totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filterStartDate, filterEndDate, userId);
 
-            /* totalSessionAttended */
-            filters = {
-                'sessionDetail.startDateUtc': {
-                    $gte: filterStartDate.toISOString(),
-                    $lte: filterEndDate.toISOString()
-                },
-                userId: ObjectId(userId),
-                deleted: false,
-                isSessionAttended: true
-            };
-
-            totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filters);
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: { totalSessionEnrolled, totalsessionsAttended } });
 
         } catch (error) {
@@ -247,7 +225,9 @@ module.exports = class MenteesHelper {
     */
    
     static async getAllSessions(page, limit, search, userId) {
-        const filters = {
+        const sessionIds = [];
+
+        let filters = {
             status: { $in: ['published', 'live'] },
             endDateUtc: {
                 $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
@@ -258,12 +238,23 @@ module.exports = class MenteesHelper {
         };
 
         const sessions = await sessionData.findAllSessions(page, limit, search, filters);
-
+        
         if (sessions[0].data.length > 0) {
+            sessions[0].data.forEach(session => {
+                sessionIds.push(session._id);
+            });
+    
+            filters = {
+                sessionId: {
+                    $in: sessionIds
+                },
+                userId
+            };
+    
+            const attendees = await sessionAttendees.findAllSessionAttendees(filters);
 
             await Promise.all(sessions[0].data.map(async session => {
-                let attendee = await sessionAttendees.findOneSessionAttendee(session._id, userId);
-
+                const attendee = attendees.find(attendee => attendee.sessionId.toString() === session._id.toString());
                 session.isEnrolled = false;
                 if (attendee) {
                     session.isEnrolled = true;
@@ -304,7 +295,7 @@ module.exports = class MenteesHelper {
                     'sessionDetail.status': 'live'
                 }
             ],
-            userId: ObjectId(userId)
+            userId
         };
         const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
         sessions[0].data = sessions[0].data.map(async session => {
