@@ -14,7 +14,7 @@ require("./configs");
 const app = express();
 
 // Health check
-require("./healthCheck")(app);
+require("./health-checks")(app);
 
 app.use(cors());
 
