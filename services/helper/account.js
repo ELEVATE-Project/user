@@ -89,7 +89,7 @@ module.exports = class AccountHelper {
         try {
             let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
             if (!user) {
-                return common.failureResponse({ message: apiResponses.USERNAME_OR_PASSWORD_IS_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                return common.failureResponse({ message: apiResponses.EMAIL_ID_NOT_REGISTERED, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
             const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
             if (!isPasswordCorrect) {
@@ -386,7 +386,7 @@ module.exports = class AccountHelper {
             let user = await usersData.findOne({ '_id': userId }, { "isAMentor": 1 });
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
-            } else if (user && user.isAMentor == true) {
+            } else if (user.isAMentor == true) {
                 return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_A_MENTOR, result: user });
             } else {
                 return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_NOT_A_MENTOR, result: user });
