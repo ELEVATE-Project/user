@@ -1,3 +1,12 @@
+/**
+ * name : account.js
+ * author : Aman Gupta
+ * created-date : 03-Nov-2021
+ * Description : account helper.
+ */
+
+
+// Dependencies
 const bcryptJs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -13,6 +22,19 @@ const systemUserData = require("../../db/systemUsers/queries");
 const FILESTREAM = require("../../generics/file-stream");
 
 module.exports = class AccountHelper {
+
+    /**
+        * create account
+        * @method
+        * @name create
+        * @param {Object} bodyData -request body contains user creation deatils.
+        * @param {String} bodyData.secretCode - secrate code to create mentor.
+        * @param {String} bodyData.name - name of the user.
+        * @param {Boolean} bodyData.isAMentor - is a mentor or not .
+        * @param {String} bodyData.email - user email.
+        * @param {String} bodyData.password - user password.
+        * @returns {JSON} - returns account creation details.
+    */
 
     static async create(bodyData) {
         try {
@@ -49,6 +71,18 @@ module.exports = class AccountHelper {
             throw error;
         }
     }
+
+
+
+    /**
+        * login user account
+        * @method
+        * @name login
+        * @param {Object} bodyData -request body contains user login deatils.
+        * @param {String} bodyData.email - user email.
+        * @param {String} bodyData.password - user password.
+        * @returns {JSON} - returns susccess or failure of login details.
+    */
 
     static async login(bodyData) {
         const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
@@ -93,6 +127,19 @@ module.exports = class AccountHelper {
         }
     }
 
+
+
+    /**
+        * logout user account
+        * @method
+        * @name logout
+        * @param {Object} req -request data.
+        * @param {string} bodyData.loggedInId - user id.
+        * @param {string} bodyData.refreshToken - refresh token.
+        * @returns {JSON} - returns accounts loggedout information.
+    */
+
+
     static async logout(bodyData) {
         try {
             const user = await usersData.findOne({ _id: ObjectId(bodyData.loggedInId) });
@@ -118,6 +165,16 @@ module.exports = class AccountHelper {
             throw error;
         }
     }
+
+
+    /**
+        * generate token
+        * @method
+        * @name generateToken
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.refreshToken - refresh token.
+        * @returns {JSON} - returns access token info
+    */
 
     static async generateToken(bodyData) {
 
@@ -152,6 +209,17 @@ module.exports = class AccountHelper {
         }
         return common.failureResponse({ message: apiResponses.REFRESH_TOKEN_NOT_FOUND, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
     }
+
+
+
+    /**
+        * generate otp
+        * @method
+        * @name generateOtp
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.email - user email.
+        * @returns {JSON} - returns otp success response
+    */
 
     static async generateOtp(bodyData) {
         try {
@@ -197,6 +265,18 @@ module.exports = class AccountHelper {
             throw error;
         }
     }
+
+
+    /**
+        * Reset password
+        * @method
+        * @name resetPassword
+        * @param {Object} req -request data.
+        * @param {string} bodyData.email - user email.
+        * @param {string} bodyData.otp - user otp.
+        * @param {string} bodyData.password - user password.
+        * @returns {JSON} - returns password reset response
+    */
 
     static async resetPassword(bodyData) {
         const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, password: 0 };
@@ -245,6 +325,14 @@ module.exports = class AccountHelper {
         }
     }
 
+    /**
+        * Bulk create mentors
+        * @method
+        * @name bulkCreateMentors
+        * @param {Array} mentors - mentor details.
+        * @param {Object} tokenInformation - token details.
+        * @returns {CSV} - created mentors.
+    */
     static async bulkCreateMentors(mentors, tokenInformation) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -285,7 +373,13 @@ module.exports = class AccountHelper {
         })
     }
 
-
+    /**
+        * Verify the mentor or not
+        * @method
+        * @name verifyMentor
+        * @param {Object} userId - userId.
+        * @returns {JSON} - verifies user is mentor or not
+    */
     static async verifyMentor(userId) {
         try {
 
@@ -303,6 +397,14 @@ module.exports = class AccountHelper {
         }
     }
 
+    /**
+        * Account List
+        * @method
+        * @name list
+        * @param {Object} req -request data.
+        * @param {Array} userIds -contains userIds.
+        * @returns {JSON} - all accounts data
+    */
     static async list(userIds) {
         try {
 
@@ -315,6 +417,13 @@ module.exports = class AccountHelper {
         }
     }
 
+    /**
+        * Accept term and condition
+        * @method
+        * @name acceptTermsAndCondition
+        * @param {string} userId - userId.
+        * @returns {JSON} - returns accept the term success response
+    */
     static async acceptTermsAndCondition(userId) {
         try {
             const user = await usersData.findOne({ _id: userId }, { _id: 1 });

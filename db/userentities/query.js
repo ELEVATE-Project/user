@@ -5,6 +5,7 @@
  * Description : Users entities database operations
  */
 
+// Dependencies
 const UserEntities = require("./model");
 
 module.exports = class UserEntityData {

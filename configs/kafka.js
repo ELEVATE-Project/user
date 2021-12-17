@@ -5,6 +5,7 @@
  * Description : Kafka connection configurations
 */
 
+//Dependencies
 const Kafka = require('kafka-node');
 
 module.exports = () => {

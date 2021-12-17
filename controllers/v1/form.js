@@ -11,11 +11,16 @@ const formsHelper = require("../../services/helper/form");
 module.exports = class Form {
 
     /**
-    * create users form
-    * @method
-    * @name create
-    * @param {Object} req -request data.
-    * @returns {JSON} - forms creation object.
+        * create form data
+        * @method
+        * @name create
+        * @param {Object} req -request data.
+        * @param {string} req.body.type - form type.
+        * @param {string} req.body.subType -subtype of the form.
+        * @param {string} req.body.action -form action.
+        * @param {string} req.body.data -form data.
+        * @param {string} req.body.data.templateName -name of the template
+        * @returns {JSON} - returns the form data
     */
 
     async create(req) {
@@ -29,11 +34,16 @@ module.exports = class Form {
     }
 
     /**
-    * update users form
-    * @method
-    * @name update
-    * @param {Object} req - request data.
-    * @returns {JSON} - forms updation response.
+        * update form data
+        * @method
+        * @name update
+        * @param {Object} req -request data.
+        * @param {string} req.body.type - form type.
+        * @param {string} req.body.subType -subtype of the form.
+        * @param {string} req.body.action -form action.
+        * @param {string} req.body.data -form data.
+        * @param {string} req.body.data.templateName -name of the template
+        * @returns {JSON} - returns the form data
     */
 
     async update(req) {
@@ -47,11 +57,16 @@ module.exports = class Form {
     }
 
     /**
-    * reads user form
-    * @method
-    * @name read
-    * @param {Object} req -request data.
-    * @returns {JSON} - form object.
+        * read form
+        * @method
+        * @name read
+        * @param {Object} req -request data.
+        * @param {string} req.body.type - form type.
+        * @param {string} req.body.subType -subtype of the form.
+        * @param {string} req.body.action -form action.
+        * @param {string} req.body.data -form data.
+        * @param {string} req.body.data.templateName -name of the template
+        * @returns {JSON} - returns the form data
     */
 
     async read(req) {

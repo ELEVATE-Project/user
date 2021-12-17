@@ -5,6 +5,7 @@
  * Description : User Profile Service Helper.
  */
 
+// Dependencies
 const usersData = require("../../db/users/queries");
 const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
@@ -14,6 +15,15 @@ const utilsHelper = require('../../generics/utils');
 
 module.exports = class MentorsHelper {
 
+    /**
+        * List of mentors
+        * @method
+        * @name list
+        * @param {string} pageNo -page number.
+        * @param {string} pageSize -request data.
+        * @param {string} searchText - search text.
+        * @returns {Array} - Mentors list 
+    */
     static async list(page, limit, search) {
         try {
             const mentors = await usersData.searchMentors(page, limit, search);

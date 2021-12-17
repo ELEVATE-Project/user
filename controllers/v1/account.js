@@ -19,7 +19,13 @@ module.exports = class Account {
     * @method
     * @name create
     * @param {Object} req -request data.
-    * @returns {JSON} - accounts creation.
+    * @param {Object} req.body -request body contains user creation deatils.
+    * @param {String} req.body.secretCode - secrate code to create mentor.
+    * @param {String} req.body.name - name of the user.
+    * @param {Boolean} req.body.isAMentor - is a mentor or not .
+    * @param {String} req.body.email - user email.
+    * @param {String} req.body.password - user password.
+    * @returns {JSON} - response contains account creation details.
     */
 
     async create(req) {
@@ -41,7 +47,10 @@ module.exports = class Account {
     * @method
     * @name login
     * @param {Object} req -request data.
-    * @returns {JSON} - login details.
+    * @param {Object} req.body -request body contains user login deatils.
+    * @param {String} req.body.email - user email.
+    * @param {String} req.body.password - user password.
+    * @returns {JSON} - returns susccess or failure of login details.
     */
 
     async login(req) {
@@ -54,12 +63,17 @@ module.exports = class Account {
         }
     }
 
+
     /**
-    * logout user account
-    * @method
-    * @name create
-    * @param {Object} req -request data.
-    * @returns {JSON} - accounts loggedout.
+        * logout user account
+        * @method
+        * @name logout
+        * @param {Object} req -request data.
+        * @param {Object} req.decodedToken - it contains user token informations.
+        * @param {string} req.body.loggedInId - user id.
+        * @param {string} req.body.refreshToken - refresh token.
+        * @param {String} req.decodedToken._id - userId.
+        * @returns {JSON} - accounts loggedout.
     */
 
     async logout(req) {
@@ -74,11 +88,12 @@ module.exports = class Account {
     }
 
     /**
-    * regenerate access token
-    * @method
-    * @name regenerate
-    * @param {Object} req -request data.
-    * @returns {JSON} - access token info
+        * generate access token
+        * @method
+        * @name generateToken
+        * @param {Object} req -request data.
+        * @param {string} req.body.refreshToken - refresh token.
+        * @returns {JSON} - access token info
     */
 
     async generateToken(req) {
@@ -92,11 +107,12 @@ module.exports = class Account {
     }
 
     /**
-    * generate otp
-    * @method
-    * @name generateOtp
-    * @param {Object} req -request data.
-    * @returns {JSON} - otp success response
+        * generate otp
+        * @method
+        * @name generateOtp
+        * @param {Object} req -request data.
+        * @param {string} req.body.email - user email.
+        * @returns {JSON} - otp success response
     */
 
     async generateOtp(req) {
@@ -110,11 +126,14 @@ module.exports = class Account {
     }
 
     /**
-    * Reset password
-    * @method
-    * @name generateOtp
-    * @param {Object} req -request data.
-    * @returns {JSON} - password reset response
+        * Reset password
+        * @method
+        * @name resetPassword
+        * @param {Object} req -request data.
+        * @param {string} req.body.email - user email.
+        * @param {string} req.body.otp - user otp.
+        * @param {string} req.body.password - user password.
+        * @returns {JSON} - password reset response
     */
 
     async resetPassword(req) {
@@ -128,13 +147,12 @@ module.exports = class Account {
     }
 
     /**
-    * Bulk create mentors
-    * @method
-    * @name bulkCreateMentors
-    * @param {Object} req -request data.
-    * @returns {CSV} - created mentors.
+        * Bulk create mentors
+        * @method
+        * @name bulkCreateMentors
+        * @param {Object} req -request data.
+        * @returns {CSV} - created mentors.
     */
-
     async bulkCreateMentors(req) {
         try {
             const mentors = await csv().fromString(req.files.mentors.data.toString());
@@ -146,14 +164,13 @@ module.exports = class Account {
     }
 
     /**
-    * Reset password
-    * @method
-    * @name verifyMentor
-    * @param {Object} req -request data.
-    * @returns {JSON} - verifies user is mentor or not
+        * Verify the mentor or not
+        * @method
+        * @name verifyMentor
+        * @param {Object} req -request data.
+        * @param {Object} req.query.userId -userId.
+        * @returns {JSON} - verifies user is mentor or not
     */
-
-
     async verifyMentor(req) {
         try {
             const result = await accountHelper.verifyMentor(req.query.userId);
@@ -163,6 +180,15 @@ module.exports = class Account {
         }
     }
 
+
+    /**
+        * Accept term and condition
+        * @method
+        * @name acceptTermsAndCondition
+        * @param {Object} req -request data.
+        * @param {Object} req.decodedToken._id - userId.
+        * @returns {JSON} - accept the term and condition 
+    */
     async acceptTermsAndCondition(req) {
         try {
             const result = await accountHelper.acceptTermsAndCondition(req.decodedToken._id);
@@ -173,13 +199,14 @@ module.exports = class Account {
     }
 
     /**
-    * Account List
-    * @method
-    * @name list
-    * @param {Object} req -request data.
-    * @returns {JSON} - all accounts data
+        * Account List
+        * @method
+        * @name list
+        * @param {Object} req -request data.
+        * @param {Object} req.body -request body contains user deatils.
+        * @param {Array} req.body.userIds -contains userIds.
+        * @returns {JSON} - all accounts data
     */
-
     async list(req) {
         try {
             const result = await accountHelper.list(req.body.userIds);

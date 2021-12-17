@@ -15,6 +15,9 @@ module.exports = class Mentors {
     * @method
     * @name list
     * @param {Object} req -request data.
+    * @param {string} req.pageNo -page number.
+    * @param {string} req.pageSize -request data.
+    * @param {string} req.searchText - search text.
     * @returns {Array} - Mentors 
     */
 

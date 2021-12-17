@@ -5,8 +5,9 @@
  * Description : Contains connections of all configs
  */
 
- require("./mongodb")();
 
+//Dependencies
+ require("./mongodb")();
  require("./kafka")();
  const path = require("path");
 

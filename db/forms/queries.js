@@ -5,6 +5,7 @@
  * Description : Users database operations
  */
 
+// Dependencies
 const Forms = require("./model");
 
 module.exports = class FormsData {

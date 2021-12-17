@@ -5,6 +5,7 @@
  * Description : System User schema data
  */
 
+// Dependencies
  const mongoose = require('mongoose');
  const Schema = mongoose.Schema;
  

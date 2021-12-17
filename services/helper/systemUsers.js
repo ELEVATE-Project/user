@@ -1,3 +1,11 @@
+/**
+ * name : services/helper/systemUsers.js
+ * author : Aman
+ * created-date : 02-Nov-2021
+ * Description : system user Service Helper.
+ */
+
+// Dependencies
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
@@ -6,6 +14,16 @@ const systemUserData = require("../../db/systemUsers/queries");
 
 module.exports = class SystemUsersHelper {
 
+
+    /**
+        * create system users
+        * @method
+        * @name create
+        * @param {Object} bodyData - user create information
+        * @param {string} bodyData.email - email.
+        * @param {string} bodyData.password - email.
+        * @returns {JSON} - returns created user information
+    */
     static async create(bodyData) {
         try {
             const email = bodyData.email;
@@ -23,6 +41,15 @@ module.exports = class SystemUsersHelper {
         }
     }
 
+    /**
+        * login user
+        * @method
+        * @name login
+        * @param {Object} bodyData - user login data.
+        * @param {string} bodyData.email - email.
+        * @param {string} bodyData.password - email.
+        * @returns {JSON} - returns login response
+    */
     static async login(bodyData) {
         try {
             let user = await systemUserData.findUsersByEmail(bodyData.email);

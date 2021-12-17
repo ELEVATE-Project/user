@@ -5,6 +5,7 @@
  * Description : Users database operations
  */
 
+// Dependencies
 const Users = require("./model");
 
 module.exports = class UsersData {

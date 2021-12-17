@@ -37,6 +37,7 @@ module.exports = class UserEntity {
     * @method
     * @name create
     * @param {Object} req -request data.
+    * @param {string} req.decodedToken._id - user id.
     * @returns {JSON} - user entities creation object.
     */
 
@@ -55,6 +56,8 @@ module.exports = class UserEntity {
     * @method
     * @name update
     * @param {Object} req - request data.
+    * @param {string} req.decodedToken._id - user id.
+    * @param {string} req.params.id - entity id.
     * @returns {JSON} - user entities updation response.
     */
 
@@ -92,6 +95,7 @@ module.exports = class UserEntity {
     * @method
     * @name delete
     * @param {Object} req - request data.
+    * @param {string} req.params.id - entity id.
     * @returns {JSON} - user entities deletion response.
     */
 

@@ -5,6 +5,7 @@
  * Description : Notification template database operations
  */
 
+// Dependencies
 const NotificationTemplate = require('./model');
 
 module.exports = class NotificationTemplateData {

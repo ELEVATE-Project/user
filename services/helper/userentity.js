@@ -1,3 +1,11 @@
+/**
+ * name : services/helper/userentity.js
+ * author : Aman
+ * created-date : 02-Nov-2021
+ * Description : user entity reltaed information.
+ */
+
+// Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
 
 const utilsHelper = require("../../generics/utils");
@@ -8,6 +16,16 @@ const userEntitiesData = require("../../db/userentities/query");
 
 module.exports = class UserEntityHelper {
 
+    /**
+        * create entity
+        * @method
+        * @name create
+        * @param {Object} bodyData - entity information
+        * @param {string} bodyData.code - entity code.
+        * @param {string} bodyData.type - entity type.
+        * @param {string} _id - user id.
+        * @returns {JSON} - returns created entity information
+    */
     static async create(bodyData, _id) {
         bodyData.createdBy = ObjectId(_id);
         bodyData.updatedBy = ObjectId(_id);
@@ -24,6 +42,16 @@ module.exports = class UserEntityHelper {
         }
     }
 
+
+    /**
+        * update entity
+        * @method
+        * @name create
+        * @param {Object} bodyData - entity information
+        * @param {string} _id - user id.
+        * @param {string} loggedInUserId - logged in user id.
+        * @returns {JSON} - returns updated entity information
+    */
     static async update(bodyData, _id, loggedInUserId) {
         bodyData.updatedBy = ObjectId(loggedInUserId);
         bodyData.updatedAt = new Date().getTime();
@@ -40,6 +68,13 @@ module.exports = class UserEntityHelper {
         }
     }
 
+    /**
+        * read entity
+        * @method
+        * @name read
+        * @param {Object} bodyData - entity information
+        * @returns {JSON} - returns entity information
+    */
     static async read(bodyData) {
         const projection = { value: 1, label: 1, _id: 0 };
         if (!bodyData.deleted) {
@@ -53,6 +88,14 @@ module.exports = class UserEntityHelper {
         }
     }
 
+    /**
+        * delete entity
+        * @method
+        * @name delete
+        * @param {string} _id - user id.
+        * @param {string} loggedInUserId - logged in user id.
+        * @returns {JSON} - returns success of failure of deletion 
+    */
     static async delete(_id) {
         try {
             const result = await userEntitiesData.updateOneEntity({ _id: ObjectId(_id) }, { deleted: true });

@@ -4,6 +4,8 @@
  * Date : 04-Nov-2021
  * Description : User Entity schema
  */
+
+// Dependencies
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 

@@ -1,12 +1,32 @@
-const ObjectId = require('mongoose').Types.ObjectId;
+/**
+ * name : form.js
+ * author : Aman Gupta
+ * created-date : 03-Nov-2021
+ * Description : Form helper.
+ */
 
-const utilsHelper = require("../../generics/utils");
+
+// Dependencies
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const common = require('../../constants/common');
 const formsData = require("../../db/forms/queries");
 
 module.exports = class FormsHelper {
+
+
+    /**
+        * create form
+        * @method
+        * @name create
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.type - form type.
+        * @param {string} bodyData.subType -subtype of the form.
+        * @param {string} bodyData.action -form action.
+        * @param {string} bodyData.data -form data.
+        * @param {string} bodyData.data.templateName -name of the template
+        * @returns {JSON} - forms created object.
+    */
 
     static async create(bodyData) {
         try {
@@ -22,6 +42,19 @@ module.exports = class FormsHelper {
         }
     }
 
+
+    /**
+        * update form
+        * @method
+        * @name update
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.type - form type.
+        * @param {string} bodyData.subType -subtype of the form.
+        * @param {string} bodyData.action -form action.
+        * @param {string} bodyData.data -form data.
+        * @param {string} bodyData.data.templateName -name of the template
+        * @returns {JSON} - returns update form information
+    */
     static async update(bodyData) {
         try {
             const filter = { type: bodyData.type, subType: bodyData.subType, action: bodyData.action, ver: bodyData.ver, 'data.templateName': bodyData.data.templateName };
@@ -36,6 +69,20 @@ module.exports = class FormsHelper {
             throw error;
         }
     }
+
+
+    /**
+        * read form
+        * @method
+        * @name read
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.type - form type.
+        * @param {string} bodyData.subType -subtype of the form.
+        * @param {string} bodyData.action -form action.
+        * @param {string} bodyData.data -form data.
+        * @param {string} bodyData.data.templateName -name of the template
+        * @returns {JSON} - returns the form data
+    */
 
     static async read(bodyData) {
         try {

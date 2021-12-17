@@ -5,6 +5,7 @@
  * Description : User Profile Service Helper.
  */
 
+// Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
 
 const utilsHelper = require("../../generics/utils");
@@ -15,6 +16,15 @@ const usersData = require("../../db/users/queries");
 
 module.exports = class ProfileHelper {
 
+    /**
+        * update profile
+        * @method
+        * @name update
+        * @param {Object} bodyData - it contains profile infomration
+        * @param {string} pageSize -request data.
+        * @param {string} searchText - search text.
+        * @returns {JSON} - update profile response 
+    */
     static async update(bodyData, _id) {
         bodyData.updatedAt = new Date().getTime();
         try {
@@ -25,6 +35,15 @@ module.exports = class ProfileHelper {
         }
     }
 
+
+    /**
+        * profile details
+        * @method
+        * @name details
+        * @param {string} _id -userId.
+        * @param {string} searchText - search text.
+        * @returns {JSON} - user profile information 
+    */
     static async details(_id) {
         const projection = { password: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, refreshTokens: 0 }
         try {

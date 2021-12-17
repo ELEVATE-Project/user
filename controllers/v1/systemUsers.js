@@ -11,11 +11,13 @@ const systemUsersHelper = require("../../services/helper/systemUsers");
 module.exports = class SystemUsers {
 
     /**
-    * create system users
-    * @method
-    * @name create
-    * @param {Object} req -request data.
-    * @returns {JSON} - accounts creation.
+        * create system users
+        * @method
+        * @name create
+        * @param {Object} bodyData - user create information
+        * @param {string} bodyData.email - email.
+        * @param {string} bodyData.password - email.
+        * @returns {JSON} - returns created user information
     */
 
     async create(req) {
@@ -29,11 +31,13 @@ module.exports = class SystemUsers {
     }
 
     /**
-    * login system user
-    * @method
-    * @name login
-    * @param {Object} req -request data.
-    * @returns {JSON} - login details.
+        * login system user
+        * @method
+        * @name login
+        * @param {Object} bodyData - user login data.
+        * @param {string} bodyData.email - email.
+        * @param {string} bodyData.password - email.
+        * @returns {JSON} - returns login response
     */
 
     async login(req) {

@@ -14,7 +14,9 @@ module.exports = class File {
       * @method
       * @name getSignedUrl
       * @param {JSON} req  request body.
-      * @returns {JSON} Response with status message and result.
+      * @param {string} req.query.fileName  name of the file
+      * @param {string} req.decodedToken._id  it contains userId
+      * @returns {JSON} Response with status message and result .
     */
     async getSignedUrl(req) {
         try {
