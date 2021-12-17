@@ -8,6 +8,14 @@ const formsData = require("../../db/forms/queries");
 
 module.exports = class FormsHelper {
 
+    /**
+     * Create Form.
+     * @method
+     * @name create
+     * @param {Object} bodyData
+     * @returns {JSON} - Form creation data.
+    */
+
     static async create(bodyData) {
         try {
             const form = await formsData.findOneForm(bodyData.type, bodyData.subType, bodyData.action, bodyData.ver, bodyData.data.templateName);
@@ -20,6 +28,14 @@ module.exports = class FormsHelper {
             throw error;
         }
     }
+
+     /**
+     * Update Form.
+     * @method
+     * @name update
+     * @param {Object} bodyData
+     * @returns {JSON} - Update form data.
+    */
 
     static async update(bodyData) {
         try {
@@ -34,6 +50,14 @@ module.exports = class FormsHelper {
             throw error;
         }
     }
+
+     /**
+     * Read Form.
+     * @method
+     * @name read
+     * @param {Object} bodyData
+     * @returns {JSON} - Read form data.
+    */
 
     static async read(bodyData) {
         try {

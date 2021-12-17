@@ -1,19 +1,16 @@
+// Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
 const moment = require("moment-timezone");
 const bcyptJs = require('bcryptjs');
 const path = require('path');
-
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const apiEndpoints = require("../../constants/endpoints");
 const common = require('../../constants/common');
-
 const sessionData = require("../../db/sessions/queries");
 const sessionAttendesData = require("../../db/sessionAttendees/queries");
 const notificationTemplateData = require("../../db/notification-template/query");
-
 const kafkaCommunication = require('../../generics/kafka-communication');
-
 const apiBaseUrl =
     process.env.USER_SERIVCE_HOST +
     process.env.USER_SERIVCE_BASE_URL;
@@ -24,6 +21,15 @@ const userProfile = require("./userProfile");
 const utils = require('../../generics/utils');
 
 module.exports = class SessionsHelper {
+
+    /**
+     * Create session.
+     * @method
+     * @name create
+     * @param {Object} bodyData - Session creation data.
+     * @param {String} loggedInUserId - logged in user id.
+     * @returns {JSON} - Create session data.
+    */
 
     static async create(bodyData, loggedInUserId) {
         bodyData.userId = ObjectId(loggedInUserId);
@@ -58,6 +64,17 @@ module.exports = class SessionsHelper {
             throw error;
         }
     }
+
+    /**
+     * Update session.
+     * @method
+     * @name update
+     * @param {String} sessionId - Session id.
+     * @param {Object} bodyData - Session creation data.
+     * @param {String} userId - logged in user id.
+     * @param {String} method - method name.
+     * @returns {JSON} - Update session data.
+    */
 
     static async update(sessionId, bodyData, userId, method) {
         let isSessionReschedule = false;
@@ -199,6 +216,15 @@ module.exports = class SessionsHelper {
 
     }
 
+     /**
+     * Session details.
+     * @method
+     * @name details
+     * @param {String} id - Session id.
+     * @param {String} userId - logged in user id.
+     * @returns {JSON} - Session details
+    */
+
     static async details(id, userId) {
         try {
             const filter = {};
@@ -246,6 +272,17 @@ module.exports = class SessionsHelper {
         }
     }
 
+      /**
+     * Session list.
+     * @method
+     * @name list
+     * @param {String} loggedInUserId - LoggedIn user id.
+     * @param {Number} page - page no.
+     * @param {Number} limit - page size.
+     * @param {String} search - search text.
+     * @returns {JSON} - List of sessions
+    */
+
     static async list(loggedInUserId, page, limit, search, status) {
         try {
 
@@ -284,6 +321,19 @@ module.exports = class SessionsHelper {
             throw error;
         }
     }
+
+    /**
+     * Enroll Session.
+     * @method
+     * @name enroll
+     * @param {String} sessionId - Session id.
+     * @param {Object} userTokenData
+     * @param {String} userTokenData._id - user id.
+     * @param {String} userTokenData.email - user email.
+     * @param {String} userTokenData.name - user name.
+     * @param {String} timeZone - timezone.
+     * @returns {JSON} - Enroll session.
+    */
 
     static async enroll(sessionId, userTokenData, timeZone) {
         const userId = userTokenData._id;
@@ -348,6 +398,18 @@ module.exports = class SessionsHelper {
         }
     }
 
+      /**
+     * UnEnroll Session.
+     * @method
+     * @name enroll
+     * @param {String} sessionId - Session id.
+     * @param {Object} userTokenData
+     * @param {String} userTokenData._id - user id.
+     * @param {String} userTokenData.email - user email.
+     * @param {String} userTokenData.name - user name.
+     * @returns {JSON} - UnEnroll session.
+    */
+
     static async unEnroll(sessionId, userTokenData) {
         const userId = userTokenData._id;
         const name = userTokenData.name;
@@ -401,6 +463,14 @@ module.exports = class SessionsHelper {
         }
     }
 
+      /**
+     * Verify whether user is a mentor
+     * @method
+     * @name verifyMentor
+     * @param {String} id - user id.
+     * @returns {Boolean} - true/false.
+    */
+
     static async verifyMentor(id) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -440,6 +510,14 @@ module.exports = class SessionsHelper {
         });
     }
 
+    /**
+     * Get Accounts details.
+     * @method
+     * @name getAllAccountsDetail
+     * @param {Array} userIds
+     * @returns
+    */
+
     static getAllAccountsDetail(userIds) {
         return new Promise((resolve, reject) => {
             let options = {
@@ -472,6 +550,14 @@ module.exports = class SessionsHelper {
         });
     }
 
+       /**
+     * Share a session.
+     * @method
+     * @name share
+     * @param {String} sessionId - session id.
+     * @returns {JSON} - Session share link.
+    */
+
     static async share(sessionId) {
         try {
             const session = await sessionData.findSessionById(sessionId);
@@ -494,6 +580,16 @@ module.exports = class SessionsHelper {
         }
     }
 
+    /**
+     * List of upcoming sessions.
+     * @method
+     * @name upcomingPublishedSessions
+     * @param {Number} page - page no.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search text.
+     * @returns {JSON} - List of upcoming sessions.
+    */
+
     static upcomingPublishedSessions(page, limit, search) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -504,6 +600,15 @@ module.exports = class SessionsHelper {
             }
         })
     }
+
+    /**
+     * Start session.
+     * @method
+     * @name start
+     * @param {String} sessionId - session id.
+     * @param {String} token - token information.
+     * @returns {JSON} - start session link
+    */
 
     static start(sessionId, token) {
         return new Promise(async (resolve, reject) => {
@@ -608,6 +713,15 @@ module.exports = class SessionsHelper {
         })
     }
 
+       /**
+     * Set mentor password in session collection..
+     * @method
+     * @name setMentorPassword
+     * @param {String} sessionId - session id.
+     * @param {String} userId - user id.
+     * @returns {JSON} - updated session data.
+    */
+
     static setMentorPassword(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -627,6 +741,15 @@ module.exports = class SessionsHelper {
         })
     }
 
+        /**
+     * Set mentee password in session collection.
+     * @method
+     * @name setMenteePassword
+     * @param {String} sessionId - session id.
+     * @param {String} userId - user id.
+     * @returns {JSON} - update session data.
+    */
+
     static setMenteePassword(sessionId, createdAt) {
         return new Promise(async (resolve, reject) => {
             try {
@@ -645,6 +768,14 @@ module.exports = class SessionsHelper {
             }
         })
     }
+
+    /**
+     * Update session collection status to completed.
+     * @method
+     * @name completed
+     * @param {String} sessionId - session id.
+     * @returns {JSON} - updated session data.
+    */
 
     static completed(sessionId) {
         return new Promise(async (resolve, reject) => {
@@ -667,6 +798,14 @@ module.exports = class SessionsHelper {
             }
         })
     }
+
+      /**
+     * Get recording details.
+     * @method
+     * @name getRecording
+     * @param {String} sessionId - session id.
+     * @returns {JSON} - Recording details.
+    */
 
     static getRecording(sessionId) {
         return new Promise(async (resolve, reject) => {

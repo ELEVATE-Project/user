@@ -1,9 +1,29 @@
+/**
+ * name : bigBlueButton.js
+ * author : Aman Karki
+ * created-date : 09-Nov-2021
+ * Description : Google cloud services methods.
+*/
+
+// Dependencies
 const bigBlueButtonUrl = process.env.BIG_BLUE_BUTTON_URL + process.env.BIB_BLUE_BUTTON_BASE_URL;
 const crypto = require("crypto");
 const request = require("../../generics/requests");
 const endpoints = require('../../constants/endpoints');
 
-module.exports = class SessionsHelper {
+module.exports = class BigBlueButtonHelper {
+
+    /**
+     * Create Meeting.
+     * @method
+     * @name createMeeting
+     * @param {String} meetingId - meeting Id.
+     * @param {String} meetingName - meeting name.
+     * @param {String} attendeePW - Attendee Password.
+     * @param {String} moderatorPW - Moderator Password.
+     * @returns {String} - Meeting success message.
+    */
+
     static async createMeeting(meetingId,meetingName,attendeePW,moderatorPW) {
         try {
             
@@ -23,6 +43,16 @@ module.exports = class SessionsHelper {
         }
     }
 
+     /**
+     * Join Meeting as Moderator.
+     * @method
+     * @name joinMeetingAsModerator
+     * @param {String} meetingId - meeting Id.
+     * @param {String} mentorName - mentor name.
+     * @param {String} moderatorPW - Moderator Password.
+     * @returns {String} - Moderator Meeting url.
+    */
+
     static async joinMeetingAsModerator(meetingId,mentorName,moderatorPW) {
         try {
 
@@ -38,6 +68,16 @@ module.exports = class SessionsHelper {
             throw error;
         }
     }
+
+     /**
+     * Join Meeting as Attendee.
+     * @method
+     * @name joinMeetingAsAttendee
+     * @param {String} meetingId - meeting Id.
+     * @param {String} menteeName - mentee name.
+     * @param {String} menteePW - Mentee Password.
+     * @returns {String} - Mentee Meeting url.
+    */
 
     static async joinMeetingAsAttendee(meetingId,menteeName,menteePW) {
         try {
@@ -55,6 +95,14 @@ module.exports = class SessionsHelper {
         }
     }
 
+     /**
+     * Get meeting recordings.
+     * @method
+     * @name getRecordings
+     * @param {String} meetingId - meeting Id.
+     * @returns {JSON} - Recording response.
+    */
+
     static async getRecordings(meetingId) {
         try {
 
@@ -69,6 +117,14 @@ module.exports = class SessionsHelper {
             throw error;
         }
     }
+
+     /**
+     * Generate security checksum.
+     * @method
+     * @name generateCheckSum
+     * @param {String} queryHash - Query hash.
+     * @returns {Number} - checksum key.
+    */
 
     static generateCheckSum(queryHash) {
         var shasum = crypto.createHash('sha1');

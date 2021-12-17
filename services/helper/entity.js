@@ -1,5 +1,5 @@
+// Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
-
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
@@ -7,6 +7,15 @@ const common = require('../../constants/common');
 const entitiesData = require("../../db/entities/query");
 
 module.exports = class EntityHelper {
+
+    /**
+     * Create entity.
+     * @method
+     * @name create
+     * @param {Object} bodyData - entity body data.
+     * @param {String} _id - entity id.
+     * @returns {JSON} - Entity created response.
+    */
 
     static async create(bodyData, _id) {
         bodyData.createdBy = ObjectId(_id);
@@ -22,6 +31,16 @@ module.exports = class EntityHelper {
             throw error;
         }
     }
+
+    /**
+     * Update entity.
+     * @method
+     * @name update
+     * @param {Object} bodyData - entity body data.
+     * @param {String} _id - entity id.
+     * @param {String} loggedInUserId - logged in user id.
+     * @returns {JSON} - Entity updted response.
+    */
 
     static async update(bodyData, _id, loggedInUserId) {
         bodyData.updatedBy = loggedInUserId;
@@ -39,6 +58,14 @@ module.exports = class EntityHelper {
         }
     }
 
+    /**
+     * Read entity.
+     * @method
+     * @name read
+     * @param {Object} bodyData - entity body data.
+     * @returns {JSON} - Entity read response.
+    */
+
     static async read(bodyData) {
         if (!bodyData.deleted) {
             bodyData.deleted = false;
@@ -50,6 +77,14 @@ module.exports = class EntityHelper {
             throw error;
         }
     }
+
+    /**
+     * Delete entity.
+     * @method
+     * @name delete
+     * @param {String} _id - Delete entity.
+     * @returns {JSON} - Entity deleted response.
+    */
 
     static async delete(_id) {
         try {

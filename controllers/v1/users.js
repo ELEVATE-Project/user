@@ -10,6 +10,15 @@ const feedbackHelper = require("../../services/helper/feedback");
 
 module.exports = class Users {
 
+     /**
+     * Pending feedback.
+     * @method
+     * @name pendingFeedbacks
+     * @param {Object} req -request data.
+     * @param {String} req.decodedToken._id - User Id.
+     * @param {String} req.decodedToken.isAMentor - User Mentor key true/false.
+     * @returns {JSON} - Pending feedback information.
+    */
 
     async pendingFeedbacks(req) {
         try {

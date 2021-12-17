@@ -1,16 +1,21 @@
+// Dependenices
 const moment = require("moment-timezone");
 const common = require('../../constants/common');
-
 const sessionData = require("../../db/sessions/queries");
 const notificationData = require("../../db/notification-template/query");
 const userProfile = require("./userProfile");
 const sessionAttendesData = require("../../db/sessionAttendees/queries");
 const sessionsHelper = require("./sessions");
 const ObjectId = require('mongoose').Types.ObjectId;
-
 const kafkaCommunication = require('../../generics/kafka-communication');
 
 module.exports = class Notifications {
+    /**
+     * Send Notification to user before 1 hour.
+     * @method
+     * @name sendNotificationBefore1Hour
+     * @returns
+    */
 
     static async sendNotificationBefore1Hour() {
 
@@ -55,6 +60,14 @@ module.exports = class Notifications {
 
         }
     }
+
+    /**
+     * Send Notification to user before 15 mins.
+     * @method
+     * @name sendNotificationBefore15mins
+     * @returns
+    */
+
     static async sendNotificationBefore15mins() {
 
         let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT);

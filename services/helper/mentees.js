@@ -1,8 +1,7 @@
+// Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
-
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
 const moment = require("moment-timezone");
-
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const userProfile = require("./userProfile");
 const sessionData = require("../../db/sessions/queries");
@@ -10,11 +9,22 @@ const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
-
 const feedbackHelper = require("./feedback")
 const utils = require('../../generics/utils');
 
 module.exports = class MenteesHelper {
+    
+    /**
+     * Sessions list. Includes upcoming and enrolled sessions.
+     * @method
+     * @name sessions
+     * @param {String} userId - user id.
+     * @param {Boolean} enrolledSessions - true/false.
+     * @param {Number} page - page No.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search field.
+     * @returns {JSON} - List of sessions
+    */
 
     static async sessions(userId, enrolledSessions, page, limit, search = '') {
         try {
@@ -37,6 +47,15 @@ module.exports = class MenteesHelper {
             throw error;
         }
     }
+
+      /**
+     * Mentees reports.
+     * @method
+     * @name reports
+     * @param {String} userId - user id.
+     * @param {String} filterType - MONTHLY/WEEKLY/QUARTERLY.
+     * @returns {JSON} - Mentees reports
+    */
 
     static async reports(userId, filterType) {
         let filterStartDate;
@@ -84,6 +103,15 @@ module.exports = class MenteesHelper {
         }
     }
 
+    /**
+     * Mentees homeFeed.
+     * @method
+     * @name homeFeed
+     * @param {String} userId - user id.
+     * @param {Boolean} isAMentor - true/false.
+     * @returns {JSON} - Mentees homeFeed.
+    */
+
     static async homeFeed(userId, isAMentor) {
         try {
             /* All Sessions */
@@ -116,6 +144,15 @@ module.exports = class MenteesHelper {
             throw error;
         }
     }
+
+      /**
+     * Join session as Mentees.
+     * @method
+     * @name joinSession
+     * @param {String} sessionId - session id.
+     * @param {String} token - Mentees token.
+     * @returns {JSON} - Mentees join session link.
+    */
 
     static joinSession(sessionId, token) {
         return new Promise(async (resolve, reject) => {
@@ -198,7 +235,17 @@ module.exports = class MenteesHelper {
         })
     }
 
-    /** Upcoming unenrolled sessions */
+    /**
+     * Get all upcoming unenrolled session.
+     * @method
+     * @name getAllSessions
+     * @param {Number} page - page No.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search session.
+     * @param {String} userId - user id.
+     * @returns {JSON} - List of all sessions
+    */
+   
     static async getAllSessions(page, limit, search, userId) {
         const filters = {
             status: { $in: ['published', 'live'] },
@@ -231,7 +278,17 @@ module.exports = class MenteesHelper {
         return sessions;
     }
 
-    /** Upcoming user's enrolled sessions */
+     /**
+     * Get all enrolled session.
+     * @method
+     * @name getMySessions
+     * @param {Number} page - page No.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search session.
+     * @param {String} userId - user id.
+     * @returns {JSON} - List of enrolled sessions
+    */
+
     static async getMySessions(page, limit, search, userId) {
         const filters = {
             $or: [

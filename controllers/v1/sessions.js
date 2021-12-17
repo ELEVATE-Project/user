@@ -10,6 +10,18 @@ const sessionsHelper = require("../../services/helper/sessions");
 
 module.exports = class Sessions {
 
+    /**
+     * Update Sessions
+     * @method
+     * @name update
+     * @param {Object} req -request data.
+     * @param {String} [req.params.id] - Session id.
+     * @param {String} req.headers.timezone - Session timezone.
+     * @param {String} req.decodedToken._id - User Id.
+     * @param {Object} req.body - requested body data.
+     * @returns {JSON} - Create/update session.
+    */
+
     async update(req) {
         try {
             if (req.params.id) {
@@ -49,6 +61,16 @@ module.exports = class Sessions {
         }
     }
 
+    /**
+     * Sessions details
+     * @method
+     * @name details
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session id.
+     * @param {String} req.decodedToken._id - User Id.
+     * @returns {JSON} - Session Details.
+    */
+
     async details(req) {
         try {
             const sessionDetails =
@@ -61,6 +83,18 @@ module.exports = class Sessions {
             return error;
         }
     }
+
+    /**
+     * Sessions list
+     * @method
+     * @name list
+     * @param {Object} req -request data.
+     * @param {String} req.decodedToken._id - User Id.
+     * @param {String} req.pageNo - Page No.
+     * @param {String} req.pageSize - Page size limit.
+     * @param {String} req.searchText - Search text.
+     * @returns {JSON} - Session List.
+    */
 
     async list(req) {
         try {
@@ -78,6 +112,15 @@ module.exports = class Sessions {
         }
     }
 
+    /**
+     * Share Session
+     * @method
+     * @name share
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @returns {JSON} - Share session.
+    */
+
     async share(req) {
         try {
             const shareSessionDetails = await sessionsHelper.share(req.params.id);
@@ -86,6 +129,17 @@ module.exports = class Sessions {
             return error;
         }
     }
+
+    /**
+     * Enroll Session
+     * @method
+     * @name share
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @param {Object} req.decodedToken - token information.
+     * @param {String} req.headers.timeZone - timeZone.
+     * @returns {JSON} - Enroll session.
+    */
 
     async enroll(req) {
         try {
@@ -96,6 +150,16 @@ module.exports = class Sessions {
         }
     }
 
+    /**
+     * UnEnroll Session
+     * @method
+     * @name unEnroll
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @param {Object} req.decodedToken - token information.
+     * @returns {JSON} - UnEnroll user session.
+    */
+
     async unEnroll(req) {
         try {
             const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken);
@@ -104,6 +168,16 @@ module.exports = class Sessions {
             return error;
         }
     }
+
+    /**
+     * Start Session.
+     * @method
+     * @name start
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @param {Object} req.decodedToken - token information.
+     * @returns {JSON} - Started Mentor session.
+    */
 
     async start(req) {
         try {
@@ -114,6 +188,15 @@ module.exports = class Sessions {
         }
     }
 
+    /**
+     * Completed Session.
+     * @method
+     * @name completed
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @returns {JSON} - Completed session callback url.
+    */
+
     async completed(req) {
         try {
             const sessionsCompleted = await sessionsHelper.completed(req.params.id);
@@ -123,6 +206,15 @@ module.exports = class Sessions {
         }
     }
 
+     /**
+     * Get session recording.
+     * @method
+     * @name getRecording
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @returns {JSON} - Session recorded url.
+    */
+
     async getRecording(req) {
         try {
             const recording = await sessionsHelper.getRecording(req.params.id);
@@ -131,6 +223,16 @@ module.exports = class Sessions {
             return reject(error);
         }
     }
+
+    /**
+     * Session feedback.
+     * @method
+     * @name feedback
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - Session Id.
+     * @param {body} req.body - feedback body data.
+     * @returns {JSON} - Session feedback information.
+    */
 
     async feedback(req) {
         try {

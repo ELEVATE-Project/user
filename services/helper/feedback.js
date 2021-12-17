@@ -1,3 +1,4 @@
+// Dependencies
 const sessionAttendees = require("../../db/sessionAttendees/queries");
 const sessionData = require("../../db/sessions/queries");
 const common = require('../../constants/common');
@@ -8,6 +9,15 @@ const questionsData = require("../../db/questions/queries");
 
 
 module.exports = class MenteesHelper {
+
+    /**
+     * Pending feedback.
+     * @method
+     * @name pending
+     * @param {String} userId - user id.
+     * @param {Boolean} isAMentor
+     * @returns {JSON} - pending feedback.
+    */
 
     static async pending(userId, isAMentor) {
         try {
@@ -64,6 +74,15 @@ module.exports = class MenteesHelper {
             throw error;
         }
     }
+
+     /**
+     * Feedback forms.
+     * @method
+     * @name forms
+     * @param {String} sessionId - session id.
+     * @param {Boolean} isAMentor
+     * @returns {JSON} - Feedback forms.
+    */
 
     static async forms(sessionId, isAMentor) {
 
@@ -126,6 +145,17 @@ module.exports = class MenteesHelper {
             throw error;
         }
     }
+
+      /**
+     * Feedback submission.
+     * @method
+     * @name submit
+     * @param {String} sessionId - session id.
+     * @param {Object} updateData
+     * @param {String} userId - user id.
+     * @param {Boolean} isAMentor
+     * @returns {JSON} - Feedback submission.
+    */
 
     static async submit(sessionId, updateData, userId, isAMentor) {
         try {
