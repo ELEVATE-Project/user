@@ -9,6 +9,8 @@
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+
+
 /**
   * Send Email
   * @method
@@ -21,7 +23,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   * @param  {String} params.cc - contains the cc of the email
   * @returns {JSON} Returns response of the email sending information
 */  
-
 async function sendEmail(params) {
     try {
         let fromMail = process.env.SENDGRID_FROM_MAIL;
@@ -47,7 +48,6 @@ async function sendEmail(params) {
                 console.error(error.response.body)
             }
         }
-
         return {
             status: "success",
             message: "successfully mail sent",
