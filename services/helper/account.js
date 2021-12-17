@@ -292,7 +292,7 @@ module.exports = class AccountHelper {
             let user = await usersData.findOne({ '_id': userId }, { "isAMentor": 1 });
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
-            } else if (user && user.isAMentor == true) {
+            } else if (user.isAMentor == true) {
                 return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_A_MENTOR, result: user });
             } else {
                 return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_IS_NOT_A_MENTOR, result: user });
