@@ -17,6 +17,7 @@ module.exports = (app) => {
     app.use(pagination);
     app.use(expressValidator());
 
+
     async function router(req, res, next) {
         let controllerResponse;
         let validationError;
@@ -39,60 +40,33 @@ module.exports = (app) => {
         }
 
 
-        if (!req.params.version) {
-            next();
-        } else if (!controllers[req.params.version]) {
-            next();
-        } else if (!controllers[req.params.version][req.params.controller]) {
-            next();
-        } else if (!(controllers[req.params.version][req.params.controller][req.params.method] ||
-                controllers[req.params.version][req.params.controller][req.params.file][req.params.method])) {
-            next();
-        } else if (req.params.method.startsWith("_")) {
-            next();
-        } else {
-            try {
-
-                if (req.params.file) {
-                    controllerResponse =
-                        await controllers[req.params.version][req.params.controller][req.params.file][req.params.method](req);
+        try {
+            let controller;
+            if (req.params.file) {
+                let folderExists = fs.existsSync(PROJECT_ROOT_DIRECTORY + "/controllers/" + req.params.version + "/" + req.params.controller + "/" + req.params.file + ".js");
+                if (folderExists) {
+                    controller = require(`../controllers/${req.params.version}/${req.params.controller}/${req.params.file}`);
                 } else {
-                    controllerResponse =
-                        await controllers[req.params.version][req.params.controller][req.params.method](req);
+                    controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
                 }
-
-
-            } catch (error) { // If controller or service throws some random error
-                return next(error);
-            }
-
-            if (controllerResponse.isResponseAStream && controllerResponse.isResponseAStream == true) {
-                fs.exists(controllerResponse.fileNameWithPath, function (exists) {
-
-                    if (exists) {
-
-                        res.setHeader(
-                            'Content-disposition',
-                            'attachment; filename=' + controllerResponse.fileNameWithPath.split('/').pop()
-                        );
-                        res.set('Content-Type', 'application/octet-stream');
-                        fs.createReadStream(controllerResponse.fileNameWithPath).pipe(res);
-
-                    } else {}
-                });
             } else {
-                if (controllerResponse.statusCode !== 200 && controllerResponse.statusCode !== 201 && controllerResponse.statusCode !== 202) {
-                    /* If error obtained then global error handler gets executed */
-                    return next(controllerResponse);
-                }
-
-                res.status(controllerResponse.statusCode).json({
-                    responseCode: controllerResponse.responseCode,
-                    message: controllerResponse.message,
-                    result: controllerResponse.result
-                });
+                controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
             }
+            controllerResponse = new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
+        } catch (error) { // If controller or service throws some random error
+            return next(error);
         }
+
+        if (controllerResponse.statusCode !== 200 && controllerResponse.statusCode !== 201 && controllerResponse.statusCode !== 202) {
+            /* If error obtained then global error handler gets executed */
+            return next(controllerResponse);
+        }
+        res.status(controllerResponse.statusCode).json({
+            responseCode: controllerResponse.responseCode,
+            message: controllerResponse.message,
+            result: controllerResponse.result,
+            meta: controllerResponse.meta
+        });
 
     }
 
