@@ -5,6 +5,7 @@ const sessionData = require("../../db/sessions/queries");
 const notificationData = require("../../db/notification-template/query");
 const sessionAttendesData = require("../../db/sessionAttendees/queries");
 const sessionsHelper = require("./sessions");
+const sessionAttendeesHelper = require("./sessionAttendees");
 const ObjectId = require('mongoose').Types.ObjectId;
 const kafkaCommunication = require('../../generics/kafka-communication');
 
@@ -116,7 +117,7 @@ module.exports = class Notifications {
                 }));
 
             }
-            const attendeesAccounts = await sessionsHelper.getAllAccountsDetail(allAttendess);
+            const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(allAttendess);
 
             if (attendeesAccounts.result && attendeesAccounts.result.length > 0) {
 
