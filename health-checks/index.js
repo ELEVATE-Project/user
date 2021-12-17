@@ -1,6 +1,13 @@
 /**
- * name : health-checks
- * author : Aman Kumar Gupta
- * Date : 01-Oct-2021
- * Description : Health check of all used modules and third party resource's
- */
+ * name : index.js.
+ * author : Aman Karki.
+ * created-date : 17-Dec-2021.
+ * Description : Health check Root file.
+*/
+
+let healthCheckService = require("./health-check");
+
+module.exports = function (app) {
+    app.get("/healthCheckStatus",healthCheckService.healthCheckStatus);
+    app.get("/health",healthCheckService.health_check);
+}

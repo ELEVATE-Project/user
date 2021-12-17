@@ -43,10 +43,9 @@ if (process.env.APPLICATION_ENV !== 'development') {
 require('./routes')(app);
 
 // Server listens to given port
-app.listen("4300", 'localhost', (res, err) => {
+app.listen(process.env.APPLICATION_PORT, 'localhost', (res, err) => {
     if (err) {
-        console.log("err ----",err);
-        // onError(err);
+        onError(err);
     }
     console.log("Environment: " + process.env.APPLICATION_ENV);
     console.log("Application is running on the port:" + process.env.APPLICATION_PORT);

@@ -1,3 +1,7 @@
+
+/**
+ * All required API responses
+*/
 module.exports = {
     "EMAIL_INVALID": "Email Id is invalid",
     "PASSWORD_INVALID": "Password is invalid",

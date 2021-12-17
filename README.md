@@ -1,4 +1,4 @@
-# Mentoring User Service APIs
+# NoTIFICATION SERVICE
 
 ## Environment variables:
 
