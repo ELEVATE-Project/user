@@ -6,7 +6,6 @@
  */
 
 const path = require('path');
-const fs = require('fs');
 
 const {
     AwsFileHelper,
@@ -17,8 +16,8 @@ const {
 module.exports = class FilesHelper {
 
 
-    static async getGcpSignedUrl(destFilePath, bucketName, actionType = 'write') {
-        bucketName = bucketName || process.env.DEFAULT_GCP_BUCKET_NAME;
+    static async getGcpSignedUrl(destFilePath, actionType = 'write') {
+        const bucketName = process.env.DEFAULT_GCP_BUCKET_NAME;
         const options = {
             destFilePath: destFilePath, // Stored file path - location from bucket - example - users/abc.png
             bucketName: bucketName, // google cloud storage bucket in which action is peformed over file
@@ -38,9 +37,8 @@ module.exports = class FilesHelper {
     }
 
 
-    static async getAwsSignedUrl(destFilePath, bucketName, actionType = 'putObject') {
-
-        bucketName = bucketName || process.env.DEFAULT_AWS_BUCKET_NAME;
+    static async getAwsSignedUrl(destFilePath, actionType = 'putObject') {
+        const bucketName = process.env.DEFAULT_AWS_BUCKET_NAME;
         const options = {
             destFilePath: destFilePath, // Stored file path - i.e location from bucket - ex - users/abc.png
             bucketName: bucketName, // aws s3 storage bucket in which action is peformed over file
@@ -59,10 +57,8 @@ module.exports = class FilesHelper {
         }
     }
 
-    static async getAzureSignedUrl(destFilePath, containerName) {
-
-        containerName = containerName || process.env.DEFAULT_AZURE_CONTAINER_NAME;
-
+    static async getAzureSignedUrl(destFilePath) {
+        const containerName = process.env.DEFAULT_AZURE_CONTAINER_NAME;
 
         const startDate = new Date();
         const expiryDate = new Date(startDate);

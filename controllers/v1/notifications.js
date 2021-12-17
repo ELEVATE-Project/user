@@ -11,8 +11,14 @@ const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class Notifications {
 
+    /**
+     * Notification email cron job.
+     * @method
+     * @name emailCronJob
+     * @returns {JSON} - Send email notification.
+    */
     
-    async emailCronJob(req) {
+    async emailCronJob() {
         try {
              notificationsHelper.sendNotificationBefore15mins();
              notificationsHelper.sendNotificationBefore1Hour();

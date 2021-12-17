@@ -10,6 +10,14 @@ const questionsSetHelper = require("../../services/helper/questionsSet");
 
 module.exports = class QuestionsSet {
 
+    /**
+    * create questions set
+    * @method
+    * @name create
+    * @param {Object} req -request data.
+    * @returns {JSON} - Questions Set creation.
+    */
+
     async create(req) {
         try {
             const createQuestionsSet = await questionsSetHelper.create(req.body);
@@ -18,6 +26,15 @@ module.exports = class QuestionsSet {
             return error;
         }
     }
+
+     /**
+    * update questions set
+    * @method
+    * @name update
+    * @param {Object} req -request data.
+    * @param {String} req.params.id - question set id.
+    * @returns {JSON} - Questions Set updation.
+    */
 
     async update(req) {
         try {
@@ -28,6 +45,15 @@ module.exports = class QuestionsSet {
         }
     }
     
+     /**
+    * read questions set
+    * @method
+    * @name read
+    * @param {Object} req -request data.
+    * @param {String} req.params.id - question set id.
+    * @returns {JSON} - Questions set data.
+    */
+
     async read(req) {
 
         try {

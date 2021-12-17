@@ -7,6 +7,14 @@ const questionsData = require("../../db/questions/queries");
 
 module.exports = class questionsHelper {
 
+    /**
+     * Create questions.
+     * @method
+     * @name create
+     * @param {Object} bodyData
+     * @returns {JSON} - Create questions
+    */
+
     static async create(bodyData) {
         try {
            let data = await questionsData.createQuestion(bodyData);
@@ -15,6 +23,15 @@ module.exports = class questionsHelper {
             throw error;
         }
     }
+
+     /**
+     * Update questions.
+     * @method
+     * @name update
+     * @param {String} questionId - question id.
+     * @param {Object} bodyData
+     * @returns {JSON} - Update questions.
+    */
 
     static async update(questionId,bodyData) {
         try {
@@ -30,6 +47,14 @@ module.exports = class questionsHelper {
             throw error;
         }
     }
+
+     /**
+     * Read question.
+     * @method
+     * @name read
+     * @param {String} questionId - question id.
+     * @returns {JSON} - Read question.
+    */
 
     static async read(questionId) {
         try {

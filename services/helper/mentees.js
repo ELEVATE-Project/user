@@ -1,6 +1,4 @@
-const ObjectId = require('mongoose').Types.ObjectId;
-
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage');
+// Dependencies
 const moment = require("moment-timezone");
 
 const sessionAttendees = require("../../db/sessionAttendees/queries");
@@ -10,80 +8,37 @@ const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
-
 const feedbackHelper = require("./feedback")
 const utils = require('../../generics/utils');
 
 module.exports = class MenteesHelper {
+    
+    /**
+     * Sessions list. Includes upcoming and enrolled sessions.
+     * @method
+     * @name sessions
+     * @param {String} userId - user id.
+     * @param {Boolean} enrolledSessions - true/false.
+     * @param {Number} page - page No.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search field.
+     * @returns {JSON} - List of sessions
+    */
 
     static async sessions(userId, enrolledSessions, page, limit, search = '') {
         try {
             let sessions = [];
-            let filters;
 
             if (!enrolledSessions) {
                 /** Upcoming unenrolled sessions {All sessions}*/
-                filters = {
-                    status: { $in: ['published', 'live'] },
-                    endDateUtc: {
-                        $gt:  moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-                    },
-                    userId: {
-                        $ne: userId
-                    }
-                };
-              
-                sessions = await sessionData.findAllSessions(page, limit, search, filters);
-              
-                if (sessions[0].data.length > 0) {
-
-                    await Promise.all(sessions[0].data.map(async session => {
-                        let attendee = await sessionAttendees.findOneSessionAttendee(session._id, userId);
-
-                        session.isEnrolled = false;
-                        if (attendee) {
-                            session.isEnrolled = true;
-                        }
-
-                        session.image = session.image.map(async imgPath => {
-                            return utils.getDownloadableUrl(imgPath);
-                        });
-                        session.image = await Promise.all(session.image);
-                    }));
-                }
-
+                sessions = await this.getAllSessions(page, limit, search, userId);
             } else {
                 /** Upcoming user's enrolled sessions {My sessions}*/
                 /* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
                 delays in starting session then status will remain published for that particular interval so fetch that also */
 
                 /* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
-
-                filters = {
-                    $or: [
-                        {
-                            'sessionDetail.endDateUtc': {
-                                $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-                            }
-                        },
-                        {
-                            'sessionDetail.status': 'published'
-                        },
-                        {
-                            'sessionDetail.status': 'live'
-                        }
-                    ],
-                    userId: ObjectId(userId)
-                };
-                sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
-                sessions[0].data = sessions[0].data.map(async session => {
-                    session.image = session.image.map(async imgPath => {
-                        return utils.getDownloadableUrl(imgPath);
-                    });
-                    session.image = await Promise.all(session.image);
-                    return session;
-                });
-                sessions[0].data = await Promise.all(sessions[0].data);
+                sessions = await this.getMySessions(page, limit, search, userId);
             }
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.SESSION_FETCHED_SUCCESSFULLY, result: sessions });
@@ -92,12 +47,20 @@ module.exports = class MenteesHelper {
         }
     }
 
+      /**
+     * Mentees reports.
+     * @method
+     * @name reports
+     * @param {String} userId - user id.
+     * @param {String} filterType - MONTHLY/WEEKLY/QUARTERLY.
+     * @returns {JSON} - Mentees reports
+    */
+
     static async reports(userId, filterType) {
         let filterStartDate;
         let filterEndDate;
         let totalSessionEnrolled;
         let totalsessionsAttended;
-        let filters;
         try {
             if (filterType === 'MONTHLY') {
                 [filterStartDate, filterEndDate] = utils.getCurrentMonthRange();
@@ -107,30 +70,10 @@ module.exports = class MenteesHelper {
                 [filterStartDate, filterEndDate] = utils.getCurrentQuarterRange();
             }
 
-            /* totalSessionEnrolled */
-            filters = {
-                createdAt: {
-                    $gte: filterStartDate.toISOString(),
-                    $lte: filterEndDate.toISOString()
-                },
-                userId: ObjectId(userId),
-                deleted: false
-            };
+            totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filterStartDate, filterEndDate, userId);
 
-            totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filters);
+            totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filterStartDate, filterEndDate, userId);
 
-            /* totalSessionAttended */
-            filters = {
-                'sessionDetail.startDateUtc': {
-                    $gte: filterStartDate.toISOString(),
-                    $lte: filterEndDate.toISOString()
-                },
-                userId: ObjectId(userId),
-                deleted: false,
-                isSessionAttended: true
-            };
-
-            totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(filters);
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY, result: { totalSessionEnrolled, totalsessionsAttended } });
 
         } catch (error) {
@@ -138,20 +81,29 @@ module.exports = class MenteesHelper {
         }
     }
 
+    /**
+     * Mentees homeFeed.
+     * @method
+     * @name homeFeed
+     * @param {String} userId - user id.
+     * @param {Boolean} isAMentor - true/false.
+     * @returns {JSON} - Mentees homeFeed.
+    */
+
     static async homeFeed(userId, isAMentor) {
         try {
             /* All Sessions */
             const page = 1;
             let limit = 4;
-            let allSessions = await this.sessions(userId, false, page, limit);
+            let allSessions = await this.getAllSessions(page, limit, '', userId);
 
             /* My Sessions */
             limit = 2;
-            let mySessions = await this.sessions(userId, true, page, limit);
-
+            let mySessions = await this.getMySessions(page, limit, '', userId);
+            
             const result = {
-                allSessions: allSessions.result[0].data,
-                mySessions: mySessions.result[0].data,
+                allSessions: allSessions[0].data,
+                mySessions: mySessions[0].data,
             }
 
             const feedbackData = await feedbackHelper.pending(userId, isAMentor)
@@ -166,9 +118,19 @@ module.exports = class MenteesHelper {
                 }
             });
         } catch (error) {
+            console.log(error);
             throw error;
         }
     }
+
+      /**
+     * Join session as Mentees.
+     * @method
+     * @name joinSession
+     * @param {String} sessionId - session id.
+     * @param {String} token - Mentees token.
+     * @returns {JSON} - Mentees join session link.
+    */
 
     static joinSession(sessionId, token) {
         return new Promise(async (resolve, reject) => {
@@ -204,7 +166,7 @@ module.exports = class MenteesHelper {
                 let menteeDetails = mentee.data.result;
 
                 const sessionAttendee =
-                    await sessionAttendees.findLinkBySessionAndUserId(
+                    await sessionAttendees.findAttendeeBySessionAndUserId(
                         menteeDetails._id,
                         sessionId
                     );
@@ -228,10 +190,10 @@ module.exports = class MenteesHelper {
                     );
 
                     await sessionAttendees.updateOne({
-                        _id: sessionAttendee
+                        _id: sessionAttendee._id
                     }, {
                         link: attendeeLink,
-                        joinedAt: new Date(),
+                        joinedAt: utils.utcFormat(),
                         isSessionAttended: true
                     })
 
@@ -249,5 +211,101 @@ module.exports = class MenteesHelper {
                 return reject(error);
             }
         })
+    }
+
+    /**
+     * Get all upcoming unenrolled session.
+     * @method
+     * @name getAllSessions
+     * @param {Number} page - page No.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search session.
+     * @param {String} userId - user id.
+     * @returns {JSON} - List of all sessions
+    */
+   
+    static async getAllSessions(page, limit, search, userId) {
+        const sessionIds = [];
+
+        let filters = {
+            status: { $in: ['published', 'live'] },
+            endDateUtc: {
+                $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+            },
+            userId: {
+                $ne: userId
+            }
+        };
+
+        const sessions = await sessionData.findAllSessions(page, limit, search, filters);
+        
+        if (sessions[0].data.length > 0) {
+            sessions[0].data.forEach(session => {
+                sessionIds.push(session._id);
+            });
+    
+            filters = {
+                sessionId: {
+                    $in: sessionIds
+                },
+                userId
+            };
+    
+            const attendees = await sessionAttendees.findAllSessionAttendees(filters);
+
+            await Promise.all(sessions[0].data.map(async session => {
+                const attendee = attendees.find(attendee => attendee.sessionId.toString() === session._id.toString());
+                session.isEnrolled = false;
+                if (attendee) {
+                    session.isEnrolled = true;
+                }
+
+                session.image = session.image.map(async imgPath => {
+                    return utils.getDownloadableUrl(imgPath);
+                });
+                session.image = await Promise.all(session.image);
+            }));
+        }
+        return sessions;
+    }
+
+     /**
+     * Get all enrolled session.
+     * @method
+     * @name getMySessions
+     * @param {Number} page - page No.
+     * @param {Number} limit - page limit.
+     * @param {String} search - search session.
+     * @param {String} userId - user id.
+     * @returns {JSON} - List of enrolled sessions
+    */
+
+    static async getMySessions(page, limit, search, userId) {
+        const filters = {
+            $or: [
+                {
+                    'sessionDetail.endDateUtc': {
+                        $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+                    }
+                },
+                {
+                    'sessionDetail.status': 'published'
+                },
+                {
+                    'sessionDetail.status': 'live'
+                }
+            ],
+            userId
+        };
+        const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
+        sessions[0].data = sessions[0].data.map(async session => {
+            session.image = session.image.map(async imgPath => {
+                return utils.getDownloadableUrl(imgPath);
+            });
+            session.image = await Promise.all(session.image);
+            return session;
+        });
+        sessions[0].data = await Promise.all(sessions[0].data);
+        return sessions;
     }
 }

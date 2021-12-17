@@ -40,7 +40,6 @@ let sessionsSchema = new Schema({
   mentorPassword: String ,
   startedAt: String,
   shareLink: String,
-  bigBlueButtonMeetingInfo: Object,
   completedAt: Date,
   feedbacks: [
     {

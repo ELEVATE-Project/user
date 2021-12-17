@@ -1,3 +1,4 @@
+// Dependencies
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
@@ -6,6 +7,14 @@ const questionsSetData = require("../../db/questionsSet/queries");
 const questionData = require("../../db/questions/queries");
 
 module.exports = class questionsSetHelper {
+
+     /**
+     * Create question set.
+     * @method
+     * @name create
+     * @param {Object} bodyData
+     * @returns {JSON} - Create question set
+    */
 
     static async create(bodyData) {
         try {
@@ -47,6 +56,15 @@ module.exports = class questionsSetHelper {
             throw error;
         }
     }
+
+    /**
+     * Update question set.
+     * @method
+     * @name update
+     * @param {String} questionSetId - questionset id.
+     * @param {Object} bodyData
+     * @returns {JSON} - Update question set.
+    */
 
     static async update(questionSetId, bodyData) {
         try {
@@ -123,6 +141,14 @@ module.exports = class questionsSetHelper {
             throw error;
         }
     }
+
+     /**
+     * Read question set.
+     * @method
+     * @name read
+     * @param {String} questionsSetId - question set id.
+     * @returns {JSON} - Read question set.
+    */
 
     static async read(questionsSetId) {
         try {

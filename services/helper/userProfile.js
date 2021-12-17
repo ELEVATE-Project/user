@@ -1,8 +1,18 @@
+// Dependencies
 const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL;
 const requests = require("../../generics/requests");
 const endpoints = require('../../constants/endpoints');
 
 module.exports = class UserProfileHelper {
+
+      /**
+     * User profile details.
+     * @method
+     * @name details
+     * @param {String} [token =  ""] - token information.
+     * @param {String} [userId =  ""] - user id.
+     * @returns {JSON} - User profile details.
+    */
 
     static details(token="",userId="") {
         return new Promise(async (resolve, reject) => {
