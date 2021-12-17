@@ -55,7 +55,7 @@ module.exports = class AccountHelper {
         try {
             let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
             if (!user) {
-                return common.failureResponse({ message: apiResponses.USERNAME_OR_PASSWORD_IS_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                return common.failureResponse({ message: apiResponses.EMAIL_ID_NOT_REGISTERED, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
             const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
             if (!isPasswordCorrect) {
