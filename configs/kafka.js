@@ -4,9 +4,10 @@
  * Date : 03-Nov-2021
  * Description : Contains kafk connection
  */
+
+//Dependencies
 const kafka = require('kafka-node');
 const emailNotifications = require("../generics/helpers/email-notifications");
-
 
 module.exports = function (config) {
 
@@ -42,7 +43,11 @@ module.exports = function (config) {
   //   process.env.KAFKA_TOPIC
   // );
 
-  const consumer = new kafka.Consumer(client, [{ topic: process.env.KAFKA_TOPIC }], { autoCommit: true });
+  const consumer = new kafka.Consumer(client, [{
+    topic: process.env.KAFKA_TOPIC
+  }], {
+    autoCommit: true
+  });
 
   consumer.on('message', async function (message) {
     try {

@@ -1,16 +1,27 @@
 /**
- * email-notifications.js
- *
- *  email notification functionalities are written below
+ * name : email-notifications
+ * author : Rakesh Kumar
+ * Date : 03-Nov-2021
+ * Description : Contains email notifications related data
  */
 
+//Dependencies
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 /**
- * 
- * @param {Object} params api is used send the email
- */
+  * Send Email
+  * @method
+  * @name sendEmail
+  * @param  {Object} params - contains email information for sending email
+  * @param  {String} params.from - email id of the sender 
+  * @param  {String} params.to - email id of the receiver 
+  * @param  {String} params.subject - subject of the email
+  * @param  {String} params.body - contains email content 
+  * @param  {String} params.cc - contains the cc of the email
+  * @returns {JSON} Returns response of the email sending information
+*/  
+
 async function sendEmail(params) {
     try {
         let fromMail = process.env.SENDGRID_FROM_MAIL;

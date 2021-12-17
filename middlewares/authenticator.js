@@ -5,8 +5,8 @@
  * Description : Validating authorized requests
  */
 
+//Dependencies
  const jwt = require('jsonwebtoken');
-
  const httpStatusCode = require('../generics/http-status');
  const apiResponses = require('../constants/api-responses');
  const common = require('../constants/common');
