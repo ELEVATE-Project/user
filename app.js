@@ -8,13 +8,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require("dotenv").config();
-require("./configs");
+require('dotenv').config({ path: './.env' });
+require('./configs');
 
 const app = express();
-
-// Health check
-require("./health-checks")(app);
 
 app.use(cors());
 
@@ -26,7 +23,7 @@ app.use(express.static("public"));
 /* Logs request info if environment is not development*/
 if (process.env.APPLICATION_ENV !== 'development') {
     app.all("*", (req, res, next) => {
-        console.log("***Mentoring Service Logs Starts Here***");
+        console.log("***Mentoring User Service Logs Starts Here***");
         console.log(
             "%s %s on %s from ",
             req.method,
@@ -37,7 +34,7 @@ if (process.env.APPLICATION_ENV !== 'development') {
         console.log("Request Headers: ", req.headers);
         console.log("Request Body: ", req.body);
         console.log("Request Files: ", req.files);
-        console.log("***Mentoring Service Logs Ends Here***");
+        console.log("***Mentoring User Service Logs Ends Here***");
         next();
     });
 }
