@@ -5,16 +5,7 @@
  * Description : Kafka producer methods
 */
 
-const sendOtpEmailToKafka = async message => {
-    try {
-        const payload = [{ topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: JSON.stringify(message) }];
-        return await pushPayloadToKafka(payload)
-    } catch (error) {
-        throw error;
-    }
-};
-
-const pushRegistrationEmailToKafka = async message => {
+const pushEmailToKafka = async message => {
     try {
         const payload = [{ topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: JSON.stringify(message) }];
         return await pushPayloadToKafka(payload)
@@ -34,7 +25,6 @@ const pushPayloadToKafka = (payload) => {
     });
 };
 
-module.exports = { 
-    sendOtpEmailToKafka,
-    pushRegistrationEmailToKafka
- };
+module.exports = {
+    pushEmailToKafka
+};
