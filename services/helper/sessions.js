@@ -10,6 +10,7 @@ const common = require('../../constants/common');
 const sessionData = require("../../db/sessions/queries");
 const sessionAttendesData = require("../../db/sessionAttendees/queries");
 const notificationTemplateData = require("../../db/notification-template/query");
+const sessionAttendeesHelper = require('./sessionAttendees');
 const kafkaCommunication = require('../../generics/kafka-communication');
 const apiBaseUrl =
     process.env.USER_SERIVCE_HOST +
@@ -140,7 +141,8 @@ module.exports = class SessionsHelper {
                 sessionAttendees.forEach(attendee => {
                     sessionAttendeesIds.push(attendee.userId.toString());
                 });
-                const attendeesAccounts = await this.getAllAccountsDetail(sessionAttendeesIds);
+                
+                const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(sessionAttendeesIds);
 
                 sessionAttendees.map(attendee => {
                     for (let index = 0; index < attendeesAccounts.result.length; index++) {
@@ -511,46 +513,6 @@ module.exports = class SessionsHelper {
     }
 
     /**
-     * Get Accounts details.
-     * @method
-     * @name getAllAccountsDetail
-     * @param {Array} userIds
-     * @returns
-    */
-
-    static getAllAccountsDetail(userIds) {
-        return new Promise((resolve, reject) => {
-            let options = {
-                "headers": {
-                    'Content-Type': "application/json",
-                    "internal_access_token": process.env.INTERNAL_ACCESS_TOKEN
-                },
-                "form": {
-                    userIds
-                }
-            };
-
-            let apiUrl = apiBaseUrl + apiEndpoints.LIST_ACCOUNTS;
-            try {
-                request.post(apiUrl, options, callback);
-
-                function callback(err, data) {
-                    if (err) {
-                        reject({
-                            message: apiResponses.USER_SERVICE_DOWN
-                        });
-                    } else {
-                        data.body = JSON.parse(data.body);
-                        resolve(data.body);
-                    }
-                }
-            } catch (error) {
-                reject(error);
-            }
-        });
-    }
-
-       /**
      * Share a session.
      * @method
      * @name share
