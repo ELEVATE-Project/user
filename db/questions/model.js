@@ -27,7 +27,7 @@ const questionsSchema = new Schema({
       type: Boolean,
       default: false
    },
-   validation: {
+   validators: {
       type: Object
    },
    value: {
