@@ -44,6 +44,6 @@ module.exports = {
         '/user/v1/account/list'
     ],
     notificationEmailType: 'email',
-    accessTokenExpiry: '1d',
-    refreshTokenExpiry: '183d',
+    accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
+    refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 };

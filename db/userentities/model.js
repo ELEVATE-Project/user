@@ -30,7 +30,8 @@ const userEntitySchema = new Schema({
     },
     type: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     createdBy: {
         type: mongoose.Types.ObjectId,
