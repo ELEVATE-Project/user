@@ -7,13 +7,13 @@
 
 // Dependencies
 const { v1 : uuidv1 } = require('uuid');
-const mongodbHealthCheck = require("./mongodb");
+const kafkaHealthCheck = require("./kafka");
 
 const obj = {
-    MONGO_DB: {
-        NAME: 'Mongo.db',
-        FAILED_CODE: 'MONGODB_HEALTH_FAILED',
-        FAILED_MESSAGE: 'Mongo db is not connected'
+    KAFKA: {
+        NAME: 'kafka',
+        FAILED_CODE: 'KAFKA_HEALTH_FAILED',
+        FAILED_MESSAGE: 'Kafka is not connected'
     },
     NAME: 'NotificationServiceHealthCheck',
     API_VERSION: '1.0'
@@ -22,9 +22,9 @@ const obj = {
 let health_check = async function(req,res) {
 
     let checks = [];
-    let mongodbConnection = await mongodbHealthCheck.health_check();
+    let kafkaConnection = await kafkaHealthCheck.health_check();
 
-    checks.push(checkResult("MONGO_DB",mongodbConnection));
+    checks.push(checkResult("KAFKA",kafkaConnection));
 
     let checkServices = checks.filter( check => check.healthy === false);
 
