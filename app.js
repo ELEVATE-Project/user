@@ -34,7 +34,7 @@ if (process.env.APPLICATION_ENV !== 'development') {
         console.log("Request Headers: ", req.headers);
         console.log("Request Body: ", req.body);
         console.log("Request Files: ", req.files);
-        console.log("***Mentoring User Service Logs Ends Here***");
+        console.log("***Notification Service Logs Ends Here***");
         next();
     });
 }

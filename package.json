@@ -1,7 +1,7 @@
 {
-  "name": "com.shikshalokam.mentoring.userservice",
+  "name": "com.shikshalokam.notification",
   "version": "1.0.0",
-  "description": "A user service for mentoring capability",
+  "description": "A notification service for notification capability",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
