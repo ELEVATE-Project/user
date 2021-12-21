@@ -28,7 +28,8 @@ const questionsSchema = new Schema({
       default: false
    },
    validators: {
-      type: Object
+      type: Object,
+      default: { required: false }
    },
    value: {
       type: String
