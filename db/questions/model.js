@@ -14,14 +14,14 @@ const questionsSchema = new Schema({
       type: String
    },
    question: {
-      type: Array,
+      type: String,
       required: true
    },
    options: {
       type: Array
    },
    type: {
-      type: Array
+      type: String
    },
    deleted: {
       type: Boolean,
