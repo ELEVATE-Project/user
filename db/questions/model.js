@@ -14,21 +14,22 @@ const questionsSchema = new Schema({
       type: String
    },
    question: {
-      type: Array,
+      type: String,
       required: true
    },
    options: {
       type: Array
    },
    type: {
-      type: Array
+      type: String
    },
    deleted: {
       type: Boolean,
       default: false
    },
    validators: {
-      type: Object
+      type: Object,
+      default: { required: false }
    },
    value: {
       type: String
