@@ -225,7 +225,8 @@ module.exports = class SessionsAttendees {
                             'sessionDetail._id': 1,
                             'sessionDetail.title': 1,
                             'sessionDetail.description': 1,
-                            'sessionDetail.status': 1
+                            'sessionDetail.status': 1,
+                            'sessionDetail.menteeFeedbackForm':1
                         }
                     },
                     { $unwind: "$sessionDetail" }
