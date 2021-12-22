@@ -11,6 +11,13 @@ const cors = require('cors');
 require('dotenv').config({ path: './.env' });
 require('./configs');
 
+let environmentData = require("./envVariables")();
+
+if (!environmentData.success) {
+    console.log("Server could not start . Not all environment variable is provided");
+    process.exit();
+}
+
 const app = express();
 
 // Health check
@@ -24,9 +31,9 @@ app.use(bodyParser.json({ limit: '50MB' }));
 app.use(express.static("public"));
 
 /* Logs request info if environment is not development*/
-if (process.env.APPLICATION_ENV !== 'development') {
+if (process.env.ENABLE_LOG === 'true') {
     app.all("*", (req, res, next) => {
-        console.log("***Mentoring User Service Logs Starts Here***");
+        console.log("***Notification Service Logs Starts Here***");
         console.log(
             "%s %s on %s from ",
             req.method,
