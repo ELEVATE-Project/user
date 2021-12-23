@@ -70,6 +70,7 @@ module.exports = async function (req, res, next) {
             });
         }
 
+        /* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
         const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL;
         const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id;
 
