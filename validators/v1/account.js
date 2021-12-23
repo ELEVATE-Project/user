@@ -86,5 +86,13 @@ module.exports = {
             .withMessage('otp should be number')
             .isLength({ min: 6, max: 6 })
             .withMessage('otp is invalid');
+    },
+
+    changeRole: (req) => {
+        req.checkBody('email')
+            .notEmpty()
+            .withMessage('email field is empty')
+            .isEmail()
+            .withMessage('email is invalid');
     }
 };

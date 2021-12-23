@@ -215,4 +215,23 @@ module.exports = class Account {
             return error;
         }
     }
+
+    /**
+        * change role of user
+        * @method
+        * @name changeRole
+        * @param {Object} req -request data.
+        * @param {string} req.body.email - email
+        * @returns {JSON} access token info
+    */
+
+     async changeRole(req) {
+        const params = req.body;
+        try {
+            const roleUpdated = await accountHelper.changeRole(params);
+            return roleUpdated;
+        } catch (error) {
+            return error;
+        }
+    }
 }

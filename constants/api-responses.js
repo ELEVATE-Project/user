@@ -41,6 +41,8 @@ module.exports = {
     "USER_IS_A_MENTOR":"User has mentor access",
     "USER_IS_NOT_A_MENTOR":"User does't have mentor access",
     "USER_UPDATED_SUCCESSFULLY": "User successfully updated",
+    "USER_ROLE_UPDATED_SUCCESSFULLY": "User role successfully updated",
     "USERS_FETCHED_SUCCESSFULLY": "Users fetched successfully",
     "INVALID_SECRET_CODE": "Invalid secret code",
+    "USER_ROLE_UPDATED": "User role was updated, please login again"
 };

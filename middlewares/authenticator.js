@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 const httpStatusCode = require('../generics/http-status');
 const apiResponses = require('../constants/api-responses');
 const common = require('../constants/common');
+const UsersData = require('../db/users/queries');
 
 module.exports = async function (req, res, next) {
     try {
@@ -69,6 +70,16 @@ module.exports = async function (req, res, next) {
             if (!decodedToken) {
                 throw common.failureResponse({
                     message: apiResponses.UNAUTHORIZED_REQUEST,
+                    statusCode: httpStatusCode.unauthorized,
+                    responseCode: 'UNAUTHORIZED'
+                });
+            }
+
+            const user = await UsersData.findOne({ _id: decodedToken.data._id });
+
+            if (user && user.isAMentor !== decodedToken.data.isAMentor) {
+                throw common.failureResponse({
+                    message: apiResponses.USER_ROLE_UPDATED,
                     statusCode: httpStatusCode.unauthorized,
                     responseCode: 'UNAUTHORIZED'
                 });

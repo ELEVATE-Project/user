@@ -46,7 +46,7 @@ module.exports = class AccountHelper {
 
             bodyData.password = utilsHelper.hashPassword(bodyData.password);
             bodyData.email = { address: email, verified: false };
-            
+
             await usersData.createUser(bodyData);
 
             const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
@@ -255,7 +255,7 @@ module.exports = class AccountHelper {
                         body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
                     }
                 };
-    
+
                 await kafkaCommunication.pushEmailToKafka(payload);
             }
 
@@ -439,6 +439,35 @@ module.exports = class AccountHelper {
             });
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_UPDATED_SUCCESSFULLY });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+        * Update role of user
+        * @method
+        * @name changeRole
+        * @param {string} bodyData.email - email of user.
+        * @returns {JSON} change role success response
+    */
+    static async changeRole(bodyData) {
+        try {
+            const update = [{
+                $set: {
+                    isAMentor: { "$not": "$isAMentor" },
+                    refreshTokens: []
+                }
+            }];
+
+            const res = await usersData.updateOneUser({ 'email.address': bodyData.email }, update);
+
+            /* If user doc not updated  */
+            if (!res) {
+                return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.USER_ROLE_UPDATED_SUCCESSFULLY });
         } catch (error) {
             throw error;
         }
