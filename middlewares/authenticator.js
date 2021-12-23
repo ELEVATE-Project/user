@@ -75,7 +75,7 @@ module.exports = async function (req, res, next) {
                 });
             }
 
-            /* In validate token when user role is update say from mentor to mentee */
+            /* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
             const user = await UsersData.findOne({ _id: decodedToken.data._id });
 
             if (user && user.isAMentor !== decodedToken.data.isAMentor) {
