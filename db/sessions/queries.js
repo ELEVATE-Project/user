@@ -121,7 +121,7 @@ module.exports = class SessionsData {
         return new Promise(async (resolve, reject) => {
             try {
 
-                let sessionData = await Sessions.find(filter,projection);
+                let sessionData = await Sessions.find(filter,projection).lean();
                 resolve(sessionData);
 
             } catch (error) {

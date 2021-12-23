@@ -18,7 +18,7 @@ module.exports = class MenteesHelper {
      * @param {String} userId - user id.
      * @param {Boolean} isAMentor
      * @returns {JSON} - pending feedback.
-    */
+     */
 
     static async pending(userId, isAMentor) {
         try {
@@ -37,8 +37,10 @@ module.exports = class MenteesHelper {
                 let mentorSessions = await sessionData.findSessions(filters, {
                     _id: 1,
                     title: 1,
-                    description: 1
+                    description: 1,
+                    mentorFeedbackForm: 1
                 });
+
                 sessions = mentorSessions;
             }
 
@@ -65,6 +67,44 @@ module.exports = class MenteesHelper {
                 })
             }
 
+            let formCodes = [];
+            await Promise.all(sessions.map(function (session) {
+                let formCode;
+                if (session.menteeFeedbackForm) {
+                    formCode = session.menteeFeedbackForm;
+                } else if (session.mentorFeedbackForm) {
+                    formCode = session.mentorFeedbackForm
+                }
+                if (formCode && !formCodes.includes(formCode)) {
+                    formCodes.push(formCode)
+                }
+            }));
+
+
+            let feedbackForm = {};
+            await Promise.all(formCodes.map(async function (formCode) {
+                let formData = await getFeedbackQuestions(formCode);
+                if (formData) {
+                    feedbackForm[formCode] = formData;
+                }
+            }));
+
+            sessions.map(async function (sessionData) {
+                var formCode = "";
+                if (sessionData.menteeFeedbackForm) {
+                    formCode = sessionData.menteeFeedbackForm;
+                } else if (sessionData.mentorFeedbackForm) {
+                    formCode = sessionData.mentorFeedbackForm
+                }
+                if (formCode && feedbackForm[formCode]) {
+                    sessionData['form'] = feedbackForm[formCode]
+
+                } else {
+                    sessionData['form'] = [];
+                }
+                return sessionData;
+            });
+
             return common.successResponse({
                 statusCode: httpStatusCode.ok,
                 message: apiResponses.PENDING_FEEDBACK_FETCHED_SUCCESSFULLY,
@@ -76,14 +116,14 @@ module.exports = class MenteesHelper {
         }
     }
 
-     /**
+    /**
      * Feedback forms.
      * @method
      * @name forms
      * @param {String} sessionId - session id.
      * @param {Boolean} isAMentor
      * @returns {JSON} - Feedback forms.
-    */
+     */
 
     static async forms(sessionId, isAMentor) {
 
@@ -109,37 +149,14 @@ module.exports = class MenteesHelper {
                 formCode = sessioninfo.menteeFeedbackForm;
             }
 
-            let questionsSet = await questionsSetData.findOneQuestionsSet({
-                code: formCode
-            })
-
-            let result = {};
-            if (questionsSet && questionsSet.questions) {
-
-                let questions = await questionsData.find({
-                    _id: {
-                        $in: questionsSet.questions
-                    }
-                });
-
-                if (questions && questions.length > 0) {
-                    questions.map(data => {
-                        if (data.question) {
-                            data['label'] = data.question;
-                            delete data.question;
-                            return data;
-                        }
-                    });
-                    result = {
-                        form: questions
-                    }
-                }
-            }
+            let formData = await getFeedbackQuestions(formCode);
 
             return common.successResponse({
                 statusCode: httpStatusCode.ok,
                 message: apiResponses.FEEDBACKFORM_MESSAGE,
-                result: result
+                result: {
+                    form: formData
+                }
             });
 
         } catch (error) {
@@ -147,7 +164,7 @@ module.exports = class MenteesHelper {
         }
     }
 
-      /**
+    /**
      * Feedback submission.
      * @method
      * @name submit
@@ -156,7 +173,7 @@ module.exports = class MenteesHelper {
      * @param {String} userId - user id.
      * @param {Boolean} isAMentor
      * @returns {JSON} - Feedback submission.
-    */
+     */
 
     static async submit(sessionId, updateData, userId, isAMentor) {
         try {
@@ -244,4 +261,49 @@ module.exports = class MenteesHelper {
         }
     }
 
+}
+
+/**
+ * Get Feedback Questions.
+ * @method
+ * @name getFeedbackQuestions
+ * @param {String} formCode - form code
+ * @returns {JSON} - Feedback forms.
+ */
+
+getFeedbackQuestions = function (formCode) {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            let questionsSet = await questionsSetData.findOneQuestionsSet({
+                code: formCode
+            })
+
+            let result = {};
+            if (questionsSet && questionsSet.questions) {
+
+                let questions = await questionsData.find({
+                    _id: {
+                        $in: questionsSet.questions
+                    }
+                });
+
+                if (questions && questions.length > 0) {
+                    questions.map(data => {
+                        if (data.question) {
+                            data['label'] = data.question;
+                            delete data.question;
+                            return data;
+                        }
+                    });
+                    result = questions
+                }
+            }
+            resolve(result);
+
+        } catch (error) {
+            reject(error);
+        }
+
+    });
 }
