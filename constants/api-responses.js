@@ -28,7 +28,7 @@ module.exports = {
     "USER_ENTITY_UPDATED_SUCCESSFULLY": "User entity updated successfully",
     "USER_ENTITY_DELETED_SUCCESSFULLY": "User entity deleted successfully",
     "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
-    "OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please check your email and enter the OTP and try again",
+    "OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
     "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
     "OTP_INVALID": "Invalid otp",
     "SYSTEM_USER_ALREADY_EXISTS": "System User already exists",
@@ -44,5 +44,5 @@ module.exports = {
     "USER_ROLE_UPDATED_SUCCESSFULLY": "User role successfully updated",
     "USERS_FETCHED_SUCCESSFULLY": "Users fetched successfully",
     "INVALID_SECRET_CODE": "Invalid secret code",
-    "USER_ROLE_UPDATED": "User role was updated, please login again"
+    "USER_ROLE_UPDATED": "You have been logged out of your account due to change in platform role. Please login again"
 };
