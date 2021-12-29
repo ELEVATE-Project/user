@@ -21,7 +21,7 @@ module.exports = {
     "SIGNED_URL_GENERATED_SUCCESSFULLY": "Signed Url Generated Successfully",
     "USER_SERVICE_DOWN" : "User service is down",
     "INVALID_PERMISSION" : "User does't have the permission",
-    "SESSION_DELETED_SUCCESSFULLY": "Session deleted successfully",
+    "SESSION_DELETED_SUCCESSFULLY": "Session deleted successfully ! This session is no longer be available",
     "MEETING_NOT_CREATED" : "Could not create meeting",
     "MENTORS_NOT_FOUND": "Could not found mentor",
     "NOT_A_MENTOR": "User is not a mentor",
