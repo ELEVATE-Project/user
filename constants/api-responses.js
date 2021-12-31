@@ -30,7 +30,7 @@ module.exports = {
     "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
     "OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please check your email and enter the OTP and try again",
     "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
-    "OTP_INVALID": "Invalid otp",
+    "OTP_INVALID": "The OTP entered in incorrect. Please check and try again",
     "SYSTEM_USER_ALREADY_EXISTS": "System User already exists",
     "NOT_AN_ADMIN": "Not an admin",
     "MENTOR_LIST": "Mentor list fetched successfully",
