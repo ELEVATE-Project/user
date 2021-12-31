@@ -825,7 +825,7 @@ module.exports = class SessionsHelper {
             });
 
         } catch (error) {
-            return error;
+            throw error;
         }
     }
 

@@ -33,8 +33,8 @@ module.exports = async function (req, res, next) {
 
         common.guestUrls.map(function (path) {
             if (req.path.includes(path)) {
-                next();
-                return;
+                return next();
+                
             }
         });
 
