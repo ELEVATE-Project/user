@@ -30,7 +30,8 @@ module.exports = {
     successResponse,
     failureResponse,
     guestUrls: [
-        "/sessions/completed"
+        "/sessions/completed",
+        "/sessions/updateRecordingUrl"
     ],
     DELETE_METHOD:"DELETE",
     dateFormat: 'dddd, Do MMMM YYYY',
@@ -39,8 +40,7 @@ module.exports = {
     MENTOR_SESSION_REMAINDER_EMAIL_CODE:"mentor_session_reminder",
     UTC_DATE_TIME_FORMAT:"YYYY-MM-DDTHH:mm:ss",
     internalAccessUrs:[
-        "/notifications/emailCronJob",
-        "/sessions/updateRecordingUrl"
+        "/notifications/emailCronJob"
     ]
 };
 
