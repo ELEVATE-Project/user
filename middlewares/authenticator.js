@@ -18,6 +18,7 @@ module.exports = async function (req, res, next) {
 
         let internalAccess = false;
         await Promise.all(common.internalAccessUrs.map(async function (path) {
+
             if (req.path.includes(path)) {
                 if (req.headers.internal_access_token && process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token) {
                     internalAccess = true;

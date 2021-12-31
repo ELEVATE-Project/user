@@ -807,10 +807,9 @@ module.exports = class SessionsHelper {
     * @returns {JSON} - Recording link updated.
    */
 
-    static async updateRecordingUrl(internalMeetingID, recordingUrl) {
+    static async updateRecordingUrl(internalMeetingId, recordingUrl) {
         try {
-
-            const updateStatus = await sessionData.updateOneSession({ internalMeetingID }, { recordingUrl });
+            const updateStatus = await sessionData.updateOneSession({ internalMeetingId }, { recordingUrl });
 
             if (updateStatus === 'SESSION_NOT_FOUND') {
                 return common.failureResponse({
@@ -826,7 +825,7 @@ module.exports = class SessionsHelper {
             });
 
         } catch (error) {
-            return reject(error);
+            return error;
         }
     }
 
