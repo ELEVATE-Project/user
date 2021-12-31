@@ -206,14 +206,14 @@ module.exports = class Sessions {
         }
     }
 
-     /**
-     * Get session recording.
-     * @method
-     * @name getRecording
-     * @param {Object} req -request data.
-     * @param {String} req.params.id - Session Id.
-     * @returns {JSON} - Session recorded url.
-    */
+    /**
+    * Get session recording.
+    * @method
+    * @name getRecording
+    * @param {Object} req -request data.
+    * @param {String} req.params.id - Session Id.
+    * @returns {JSON} - Session recorded url.
+   */
 
     async getRecording(req) {
         try {
@@ -237,14 +237,35 @@ module.exports = class Sessions {
     async feedback(req) {
         try {
             const sessionsFeedBack =
-            await sessionsHelper.feedback(
-                req.params.id,
-                req.body
-            );
-            
+                await sessionsHelper.feedback(
+                    req.params.id,
+                    req.body
+                );
+
             return resolve(sessionsFeedBack);
         } catch (error) {
             return reject(error);
-        } 
+        }
+    }
+
+    /**
+     * Update recording link
+     * @method
+     * @name updateRecordingUrl
+     * @param {Object} req -request data.
+     * @param {String} req.params.id - internalMeetingId
+     * @param {String} req.body.recordingUrl - Recording cloud storage url
+     * @returns {JSON} - Recording url updated
+    */
+
+    async updateRecordingUrl(req) {
+        const internalMeetingId = req.params.id;
+        const recordingUrl = req.body.recordingUrl;
+        try {
+            const sessionUpdated = await sessionsHelper.updateRecordingUrl(internalMeetingId, recordingUrl);
+            return sessionUpdated;
+        } catch (error) {
+            return error;
+        }
     }
 }

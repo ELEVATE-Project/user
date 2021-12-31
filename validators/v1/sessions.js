@@ -92,5 +92,15 @@ module.exports = {
             .withMessage('id param is empty')
             .isMongoId()
             .withMessage('id is invalid');
+    },
+
+    updateRecordingUrl: (req) => {
+        req.checkParams('id')
+            .notEmpty()
+            .withMessage('id param is empty')
+
+        req.checkBody('recordingUrl')
+            .notEmpty()
+            .withMessage('recordingUrl field is empty')
     }
 };
