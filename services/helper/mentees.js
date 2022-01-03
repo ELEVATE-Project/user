@@ -118,7 +118,6 @@ module.exports = class MenteesHelper {
                 }
             });
         } catch (error) {
-            console.log(error);
             throw error;
         }
     }

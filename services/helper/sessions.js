@@ -91,8 +91,6 @@ module.exports = class SessionsHelper {
 
             const sessionDetail = await sessionData.findSessionById(ObjectId(sessionId));
 
-            console.log(sessionDetail);
-
             if (!sessionDetail) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,

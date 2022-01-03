@@ -24,7 +24,6 @@ module.exports = class SessionsData {
         return new Promise(async (resolve, reject) => {
             try {
                 const updateResponse = await Sessions.updateOne(filter, update, options);
-                console.log(updateResponse);
                 if (updateResponse.n === 1 && updateResponse.nModified === 1) {
                     resolve('SESSION_UPDATED')
                 } else if (updateResponse.n === 1 && updateResponse.nModified === 0) {
