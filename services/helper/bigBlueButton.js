@@ -32,7 +32,6 @@ module.exports = class BigBlueButtonHelper {
             meetingName = encodeURI(meetingName);
             let query = "name=" + meetingName + "&meetingID=" + meetingId + "&record=true" + "&autoStartRecording=true" + "&meta_endCallbackUrl=" + endMeetingCallBackUrl + "&attendeePW=" + attendeePW + "&moderatorPW=" + moderatorPW;
             let checkSumGeneration = "create" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
-            console.log({create: checkSumGeneration});
             const checksum = this.generateCheckSum(checkSumGeneration);
 
             const createUrl = bigBlueButtonUrl + endpoints.CREATE_MEETING + "?" + query + "&checksum=" + checksum;
@@ -60,7 +59,6 @@ module.exports = class BigBlueButtonHelper {
             mentorName = encodeURI(mentorName);
             let query = "meetingID=" + meetingId + "&password=" + moderatorPW + "&fullName=" + mentorName;
             let checkSumGeneration = "join" + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY;
-            console.log({join: checkSumGeneration});
             const checksum = this.generateCheckSum(checkSumGeneration);
 
             const joinUrl = bigBlueButtonUrl + endpoints.JOIN_MEETING + "?" + query + "&checksum=" + checksum;
