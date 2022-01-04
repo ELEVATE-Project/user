@@ -36,9 +36,7 @@ module.exports = class BigBlueButtonHelper {
 
             const createUrl = bigBlueButtonUrl + endpoints.CREATE_MEETING + "?" + query + "&checksum=" + checksum;
             let response = await request.get(createUrl);
-            console.log(response);
-            return response.success;
-
+            return response;
         } catch (error) {
             throw error;
         }

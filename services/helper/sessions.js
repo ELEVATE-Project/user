@@ -634,9 +634,7 @@ module.exports = class SessionsHelper {
                         session.mentorPassword
                     );
 
-                    console.log(meetingDetails);
-
-                    if (!meetingDetails) {
+                    if (!meetingDetails.success) {
                         return resolve(common.failureResponse({
                             message: apiResponses.MEETING_NOT_CREATED,
                             statusCode: httpStatusCode.internal_server_error,
@@ -656,7 +654,7 @@ module.exports = class SessionsHelper {
                         link: moderatorMeetingLink,
                         status: "live",
                         startedAt: utils.utcFormat(),
-                        // internalMeetingId: meetingDetails.data.response.internalMeetingID
+                        internalMeetingId: meetingDetails.data.response.internalMeetingID
                     })
 
                     link = moderatorMeetingLink;
