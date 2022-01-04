@@ -634,6 +634,8 @@ module.exports = class SessionsHelper {
                         session.mentorPassword
                     );
 
+                    console.log(meetingDetails);
+
                     if (!meetingDetails) {
                         return resolve(common.failureResponse({
                             message: apiResponses.MEETING_NOT_CREATED,
