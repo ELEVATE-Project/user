@@ -28,7 +28,7 @@ module.exports = {
     "USER_ENTITY_UPDATED_SUCCESSFULLY": "User entity updated successfully",
     "USER_ENTITY_DELETED_SUCCESSFULLY": "User entity deleted successfully",
     "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
-    "OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please check your email and enter the OTP and try again",
+    "OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
     "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
     "OTP_INVALID": "The OTP entered in incorrect. Please check and try again",
     "SYSTEM_USER_ALREADY_EXISTS": "System User already exists",
