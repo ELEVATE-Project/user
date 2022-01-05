@@ -225,7 +225,7 @@ module.exports = class SessionsHelper {
     * @returns {JSON} - Session details
    */
 
-    static async details(id, userId) {
+    static async details(id, userId="") {
         try {
             const filter = {};
             const projection = {
@@ -249,11 +249,13 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id, userId);
-
-            sessionDetails.isEnrolled = false;
-            if (sessionAttendee) {
-                sessionDetails.isEnrolled = true;
+            if(userId){
+                
+                let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id, userId);
+                sessionDetails.isEnrolled = false;
+                if (sessionAttendee) {
+                    sessionDetails.isEnrolled = true;
+                }
             }
 
             sessionDetails.image = sessionDetails.image.map(async imgPath => {

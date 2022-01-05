@@ -76,7 +76,7 @@ module.exports = class Sessions {
             const sessionDetails =
                 await sessionsHelper.details(
                     req.params.id,
-                    req.decodedToken._id
+                    req.decodedToken ? req.decodedToken._id : ""
                 );
             return sessionDetails;
         } catch (error) {

@@ -19,6 +19,8 @@ module.exports = async function (req, res, next) {
         let internalAccess = false;
         let guestUrl = false;
 
+        const authHeader = req.get('X-auth-token');
+
         common.internalAccessUrs.map(function (path) {
             if (req.path.includes(path)) {
                 if (req.headers.internal_access_token && process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token) {
@@ -33,12 +35,12 @@ module.exports = async function (req, res, next) {
             }
         });
 
-        if (internalAccess || guestUrl) {
+        if ((internalAccess || guestUrl) && !authHeader) {
             next();
             return;
         }
 
-        const authHeader = req.get('X-auth-token');
+ 
         if (!authHeader) {
             throw common.failureResponse({
                 message: apiResponses.UNAUTHORIZED_REQUEST,
