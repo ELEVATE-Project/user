@@ -73,14 +73,14 @@ module.exports = class UsersData {
                         },
                     },
                     {
-                        $sort: {"name": 1}
-                    },
-                    {
                         $project: {
                             name: 1,
                             image: 1,
                             areasOfExpertise: 1
                         }
+                    },
+                    {
+                        $sort: {"name": 1}
                     },
                     {
                         $facet: {
@@ -100,7 +100,8 @@ module.exports = class UsersData {
                             }
                         }
                     }
-                ]);
+
+                ]).collation({ locale: "en", caseLevel: false });
 
                 return resolve(users);
             } catch (error) {
