@@ -258,9 +258,12 @@ module.exports = class SessionsHelper {
                 }
             }
 
-            sessionDetails.image = sessionDetails.image.map(async imgPath => {
-                return utils.getDownloadableUrl(imgPath);
-            });
+            if(sessionDetails.image){
+                sessionDetails.image = sessionDetails.image.map(async imgPath => {
+                    return await utils.getDownloadableUrl(imgPath);
+                });
+            }
+
 
             sessionDetails.image = await Promise.all(sessionDetails.image);
             return common.successResponse({
