@@ -258,9 +258,12 @@ module.exports = class SessionsHelper {
                 }
             }
 
-            if(sessionDetails.image){
+            if(sessionDetails.image && sessionDetails.image.length > 0){
                 sessionDetails.image = sessionDetails.image.map(async imgPath => {
-                    return await utils.getDownloadableUrl(imgPath);
+                    if(imgPath != ""){
+                        return await utils.getDownloadableUrl(imgPath);
+                    }
+                    
                 });
             }
 
