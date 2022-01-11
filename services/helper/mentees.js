@@ -299,10 +299,15 @@ module.exports = class MenteesHelper {
         const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
         if(sessions[0].data && sessions[0].data.length > 0){
             sessions[0].data = sessions[0].data.map(async session => {
-                session.image = session.image.map(async imgPath => {
-                    return utils.getDownloadableUrl(imgPath);
-                });
-                session.image = await Promise.all(session.image);
+
+                if(session.image && session.image.length > 0){
+                    session.image = session.image.map(async imgPath => {
+                        if(imgPath !=""){
+                            return await utils.getDownloadableUrl(imgPath);
+                        }
+                    });
+                    session.image = await Promise.all(session.image);
+                }
                 return session;
             });
             sessions[0].data = await Promise.all(sessions[0].data);
