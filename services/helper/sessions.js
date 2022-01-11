@@ -265,10 +265,9 @@ module.exports = class SessionsHelper {
                     }
                     
                 });
+                sessionDetails.image = await Promise.all(sessionDetails.image);
             }
-
-
-            sessionDetails.image = await Promise.all(sessionDetails.image);
+            
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
