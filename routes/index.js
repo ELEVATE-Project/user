@@ -5,42 +5,88 @@
  * Description : Routes for available service
  */
 
+const validator = require('../middlewares/validator');
+const authenticator = require('../middlewares/authenticator');
+const pagination = require('../middlewares/pagination');
+const expressValidator = require('express-validator');
+const fs = require("fs");
+
 module.exports = (app) => {
 
+    app.use(authenticator);
+    app.use(pagination);
+    app.use(expressValidator());
+
+
     async function router(req, res, next) {
-        let controller;
         let controllerResponse;
+        let validationError;
+
+        /* Check for input validation error */
         try {
-            /* Dynamically loaded requested controller */
-            // and required here to minimize space complexity so that the memory to controller will only get allocated when request is made and then it gets destroyed when response is sent
-            controller = require(`../controllers/${req.params.version}/${req.params.controller}`)
-        } catch (error) { // if module not get found, say some one requested unsupported version or controller
-            return next();
+            validationError = req.validationErrors();
+        } catch (error) {
+            error.statusCode = 422;
+            error.responseCode = 'CLIENT_ERROR';
+            return next(error);
         }
 
+        if (validationError.length) {
+            const error = new Error('Validation failed, Entered data is incorrect!');
+            error.statusCode = 422;
+            error.responseCode = 'CLIENT_ERROR';
+            error.data = validationError;
+            return next(error);
+        }
+
+
         try {
-            controllerResponse = await controller[req.params.method](req);
-        } catch (error) { // if requested resource not found, i.e method does not exists
-            return next();
+            let controller;
+            if (req.params.file) {
+                let folderExists = fs.existsSync(PROJECT_ROOT_DIRECTORY + "/controllers/" + req.params.version + "/" + req.params.controller + "/" + req.params.file + ".js");
+                if (folderExists) {
+                    controller = require(`../controllers/${req.params.version}/${req.params.controller}/${req.params.file}`);
+                } else {
+                    controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+                }
+            } else {
+                controller = require(`../controllers/${req.params.version}/${req.params.controller}`);
+            }
+            controllerResponse = new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
+        } catch (error) { // If controller or service throws some random error
+            return next(error);
         }
 
         if (controllerResponse.statusCode !== 200 && controllerResponse.statusCode !== 201 && controllerResponse.statusCode !== 202) {
             /* If error obtained then global error handler gets executed */
             return next(controllerResponse);
         }
-        res.status(controllerResponse.statusCode).json(controllerResponse);
+        res.status(controllerResponse.statusCode).json({
+            responseCode: controllerResponse.responseCode,
+            message: controllerResponse.message,
+            result: controllerResponse.result,
+            meta: controllerResponse.meta
+        });
+
     }
 
-    app.all("/:version/:controller/:method", router);
-    app.all("/:version/:controller/:method/:id", router);
+
+    app.all("/user/:version/:controller/:method", validator, router);
+    app.all("/user/:version/:controller/:file/:method", validator, router);
+    app.all("/user/:version/:controller/:method/:id", validator, router);
+    app.all("/user/:version/:controller/:file/:method/:id", validator, router);
 
     app.use((req, res, next) => {
-        res.status(404).send('Requested resource not found!');
+        res.status(404).json({
+            responseCode: 'RESOURCE_ERROR',
+            message: 'Requested resource not found!',
+        });
     });
 
     // Global error handling middleware, should be present in last in the stack of a middleware's
     app.use((error, req, res, next) => {
         const status = error.statusCode || 500;
+        const responseCode = error.responseCode || 'SERVER_ERROR';
         const message = error.message || '';
         let errorData = [];
 
@@ -48,9 +94,8 @@ module.exports = (app) => {
             errorData = error.data;
         }
         res.status(status).json({
-            message: message,
-            status: 'failure',
-            statusCode: status,
+            responseCode,
+            message,
             error: errorData
         });
     });

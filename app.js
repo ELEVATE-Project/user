@@ -8,32 +8,47 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require("dotenv").config({ path: './.env.sample' });
+const expressFileUpload = require('express-fileupload');
+
+require('dotenv').config({ path: './.env' });
+
+let environmentData = require("./envVariables")();
+
+if (!environmentData.success) {
+    console.log("Server could not start . Not all environment variable is provided");
+    process.exit();
+}
+
+require('./configs');
 
 const app = express();
 
+// Health check
+require("./health-checks")(app);
+
 app.use(cors());
+
+app.use(expressFileUpload());
 
 app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }));
 app.use(bodyParser.json({ limit: '50MB' }));
 
 app.use(express.static("public"));
 
-/* Logs request info if environment is not development*/
-if (process.env.APPLICATION_ENV !== 'development') {
+/* Logs request info if environment is configured to enable log */
+if (process.env.ENABLE_LOG === 'true') {
     app.all("*", (req, res, next) => {
-        console.log("***Mentoring User Service Logs Starts Here***");
+        console.log("***User Service Logs Starts Here***");
         console.log(
-            "%s %s on %s from ",
+            "Request Type %s for %s on %s from ",
             req.method,
             req.url,
-            new Date(),
-            req.headers["user-agent"]
+            new Date()
         );
         console.log("Request Headers: ", req.headers);
         console.log("Request Body: ", req.body);
         console.log("Request Files: ", req.files);
-        console.log("***Mentoring User Service Logs Ends Here***");
+        console.log("***User Service Logs Ends Here***");
         next();
     });
 }
@@ -63,4 +78,3 @@ function onError(error) {
             throw error
     }
 }
-

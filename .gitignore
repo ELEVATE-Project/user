@@ -30,6 +30,7 @@ build/Release
 
 # Dependency directories
 node_modules
+tmp
 jspm_packages
 doc
 .vscode
@@ -58,6 +59,7 @@ package-lock.json
 
 public/assessment/web
 public/assessment/web2
+public/tmp
 
 .env
 
@@ -67,4 +69,7 @@ gcp1.json
 
 # Ignore all credentials
 generics/helpers/credentials/*
+
+gcp.json
+gcp1.json
 
