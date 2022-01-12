@@ -30,7 +30,9 @@ module.exports = {
     successResponse,
     failureResponse,
     guestUrls: [
-        "/sessions/completed"
+        "/sessions/completed",
+        "/sessions/updateRecordingUrl",
+        "/sessions/details"
     ],
     DELETE_METHOD:"DELETE",
     dateFormat: 'dddd, Do MMMM YYYY',

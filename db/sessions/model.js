@@ -21,7 +21,7 @@ let sessionsSchema = new Schema({
   },
   mentorName: String,
   sessionReschedule: Number,
-  status : {
+  status: {
     type: String,
     index: true,
     default: "published"
@@ -30,14 +30,14 @@ let sessionsSchema = new Schema({
     type: Boolean,
     default: false
   },
-  timeZone:String,
+  timeZone: String,
   startDate: String,
   endDate: String,
   startDateUtc: String,
   endDateUtc: String,
   link: String,
   menteePassword: String,
-  mentorPassword: String ,
+  mentorPassword: String,
   startedAt: String,
   shareLink: String,
   completedAt: Date,
@@ -48,20 +48,29 @@ let sessionsSchema = new Schema({
       label: String
     }
   ],
-  skippedFeedback:{
+  skippedFeedback: {
     type: Boolean,
     default: false
   },
-  menteeFeedbackForm:{
+  menteeFeedbackForm: {
     type: String,
     default: "menteeQS1"
   },
-  mentorFeedbackForm:{
+  mentorFeedbackForm: {
     type: String,
     default: "mentorQS2"
   },
-  recordings: Object
+  recordings: Object,
+  recordingUrl: {
+    type: String,
+    default: null
+  },
+  internalMeetingId: {
+    type: String,
+    unique: true,
+    default: null
+  }
 });
 
-const Sessions = db.model("sessions",sessionsSchema);
+const Sessions = db.model("sessions", sessionsSchema);
 module.exports = Sessions;

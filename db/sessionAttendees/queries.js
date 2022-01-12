@@ -81,7 +81,6 @@ module.exports = class SessionsAttendees {
                         $count: 'count'
                     }
                 ]);
-                console.log(result);
                 resolve(result.length ? result[0].count : 0);
             } catch (error) {
                 reject(error);

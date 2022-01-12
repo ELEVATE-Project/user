@@ -91,8 +91,6 @@ module.exports = class SessionsHelper {
 
             const sessionDetail = await sessionData.findSessionById(ObjectId(sessionId));
 
-            console.log(sessionDetail);
-
             if (!sessionDetail) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
@@ -141,7 +139,7 @@ module.exports = class SessionsHelper {
                 sessionAttendees.forEach(attendee => {
                     sessionAttendeesIds.push(attendee.userId.toString());
                 });
-                
+
                 const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(sessionAttendeesIds);
 
                 sessionAttendees.map(attendee => {
@@ -218,16 +216,16 @@ module.exports = class SessionsHelper {
 
     }
 
-     /**
-     * Session details.
-     * @method
-     * @name details
-     * @param {String} id - Session id.
-     * @param {String} userId - logged in user id.
-     * @returns {JSON} - Session details
-    */
+    /**
+    * Session details.
+    * @method
+    * @name details
+    * @param {String} id - Session id.
+    * @param {String} userId - logged in user id.
+    * @returns {JSON} - Session details
+   */
 
-    static async details(id, userId) {
+    static async details(id, userId="") {
         try {
             const filter = {};
             const projection = {
@@ -251,18 +249,25 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id, userId);
-
-            sessionDetails.isEnrolled = false;
-            if (sessionAttendee) {
-                sessionDetails.isEnrolled = true;
+            if(userId){
+                
+                let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id, userId);
+                sessionDetails.isEnrolled = false;
+                if (sessionAttendee) {
+                    sessionDetails.isEnrolled = true;
+                }
             }
 
-            sessionDetails.image = sessionDetails.image.map(async imgPath => {
-                return utils.getDownloadableUrl(imgPath);
-            });
-
-            sessionDetails.image = await Promise.all(sessionDetails.image);
+            if(sessionDetails.image && sessionDetails.image.length > 0){
+                sessionDetails.image = sessionDetails.image.map(async imgPath => {
+                    if(imgPath != ""){
+                        return await utils.getDownloadableUrl(imgPath);
+                    }
+                    
+                });
+                sessionDetails.image = await Promise.all(sessionDetails.image);
+            }
+            
             return common.successResponse({
                 statusCode: httpStatusCode.created,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
@@ -274,16 +279,16 @@ module.exports = class SessionsHelper {
         }
     }
 
-      /**
-     * Session list.
-     * @method
-     * @name list
-     * @param {String} loggedInUserId - LoggedIn user id.
-     * @param {Number} page - page no.
-     * @param {Number} limit - page size.
-     * @param {String} search - search text.
-     * @returns {JSON} - List of sessions
-    */
+    /**
+   * Session list.
+   * @method
+   * @name list
+   * @param {String} loggedInUserId - LoggedIn user id.
+   * @param {Number} page - page no.
+   * @param {Number} limit - page size.
+   * @param {String} search - search text.
+   * @returns {JSON} - List of sessions
+  */
 
     static async list(loggedInUserId, page, limit, search, status) {
         try {
@@ -400,17 +405,17 @@ module.exports = class SessionsHelper {
         }
     }
 
-      /**
-     * UnEnroll Session.
-     * @method
-     * @name enroll
-     * @param {String} sessionId - Session id.
-     * @param {Object} userTokenData
-     * @param {String} userTokenData._id - user id.
-     * @param {String} userTokenData.email - user email.
-     * @param {String} userTokenData.name - user name.
-     * @returns {JSON} - UnEnroll session.
-    */
+    /**
+   * UnEnroll Session.
+   * @method
+   * @name enroll
+   * @param {String} sessionId - Session id.
+   * @param {Object} userTokenData
+   * @param {String} userTokenData._id - user id.
+   * @param {String} userTokenData.email - user email.
+   * @param {String} userTokenData.name - user name.
+   * @returns {JSON} - UnEnroll session.
+  */
 
     static async unEnroll(sessionId, userTokenData) {
         const userId = userTokenData._id;
@@ -465,13 +470,13 @@ module.exports = class SessionsHelper {
         }
     }
 
-      /**
-     * Verify whether user is a mentor
-     * @method
-     * @name verifyMentor
-     * @param {String} id - user id.
-     * @returns {Boolean} - true/false.
-    */
+    /**
+   * Verify whether user is a mentor
+   * @method
+   * @name verifyMentor
+   * @param {String} id - user id.
+   * @returns {Boolean} - true/false.
+  */
 
     static async verifyMentor(id) {
         return new Promise(async (resolve, reject) => {
@@ -636,7 +641,7 @@ module.exports = class SessionsHelper {
                         session.mentorPassword
                     );
 
-                    if (!meetingDetails) {
+                    if (!meetingDetails.success) {
                         return resolve(common.failureResponse({
                             message: apiResponses.MEETING_NOT_CREATED,
                             statusCode: httpStatusCode.internal_server_error,
@@ -655,7 +660,8 @@ module.exports = class SessionsHelper {
                     }, {
                         link: moderatorMeetingLink,
                         status: "live",
-                        startedAt: utils.utcFormat()
+                        startedAt: utils.utcFormat(),
+                        internalMeetingId: meetingDetails.data.response.internalMeetingID
                     })
 
                     link = moderatorMeetingLink;
@@ -675,14 +681,14 @@ module.exports = class SessionsHelper {
         })
     }
 
-       /**
-     * Set mentor password in session collection..
-     * @method
-     * @name setMentorPassword
-     * @param {String} sessionId - session id.
-     * @param {String} userId - user id.
-     * @returns {JSON} - updated session data.
-    */
+    /**
+  * Set mentor password in session collection..
+  * @method
+  * @name setMentorPassword
+  * @param {String} sessionId - session id.
+  * @param {String} userId - user id.
+  * @returns {JSON} - updated session data.
+ */
 
     static setMentorPassword(sessionId, userId) {
         return new Promise(async (resolve, reject) => {
@@ -703,14 +709,14 @@ module.exports = class SessionsHelper {
         })
     }
 
-        /**
-     * Set mentee password in session collection.
-     * @method
-     * @name setMenteePassword
-     * @param {String} sessionId - session id.
-     * @param {String} userId - user id.
-     * @returns {JSON} - update session data.
-    */
+    /**
+ * Set mentee password in session collection.
+ * @method
+ * @name setMenteePassword
+ * @param {String} sessionId - session id.
+ * @param {String} userId - user id.
+ * @returns {JSON} - update session data.
+*/
 
     static setMenteePassword(sessionId, createdAt) {
         return new Promise(async (resolve, reject) => {
@@ -761,13 +767,13 @@ module.exports = class SessionsHelper {
         })
     }
 
-      /**
-     * Get recording details.
-     * @method
-     * @name getRecording
-     * @param {String} sessionId - session id.
-     * @returns {JSON} - Recording details.
-    */
+    /**
+   * Get recording details.
+   * @method
+   * @name getRecording
+   * @param {String} sessionId - session id.
+   * @returns {JSON} - Recording details.
+  */
 
     static getRecording(sessionId) {
         return new Promise(async (resolve, reject) => {
@@ -796,6 +802,36 @@ module.exports = class SessionsHelper {
                 return reject(error);
             }
         })
+    }
+
+    /**
+    * Get recording details.
+    * @method
+    * @name updateRecordingUrl
+    * @param {String} internalMeetingID - Internal Meeting ID
+    * @returns {JSON} - Recording link updated.
+   */
+
+    static async updateRecordingUrl(internalMeetingId, recordingUrl) {
+        try {
+            const updateStatus = await sessionData.updateOneSession({ internalMeetingId }, { recordingUrl });
+
+            if (updateStatus === 'SESSION_NOT_FOUND') {
+                return common.failureResponse({
+                    message: apiResponses.SESSION_NOT_FOUND,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+
+            return common.successResponse({
+                statusCode: httpStatusCode.ok,
+                message: apiResponses.SESSION_UPDATED_SUCCESSFULLY
+            });
+
+        } catch (error) {
+            throw error;
+        }
     }
 
 }
