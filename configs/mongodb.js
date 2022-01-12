@@ -14,8 +14,8 @@ module.exports = function() {
   
   // Added to remove depreciation warnings from logs.
   // mongoose.set('useCreateIndex', true) // Default is true in mongoose v6
-  mongoose.set('useFindAndModify', false)
-  mongoose.set('useUnifiedTopology', true)
+  // mongoose.set('useFindAndModify', false) // Default is false in mongoose v6
+  // mongoose.set('useUnifiedTopology', true) // Default is true in mongoose v6
   
   var db = mongoose.createConnection(
     process.env.MONGODB_URL,
