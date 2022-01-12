@@ -13,7 +13,7 @@ const mongoose_timestamp = require("mongoose-timestamp");
 module.exports = function() {
   
   // Added to remove depreciation warnings from logs.
-  mongoose.set('useCreateIndex', true)
+  // mongoose.set('useCreateIndex', true) // Default is true in mongoose v6
   mongoose.set('useFindAndModify', false)
   mongoose.set('useUnifiedTopology', true)
   
