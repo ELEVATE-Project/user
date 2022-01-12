@@ -1,5 +1,5 @@
+// Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
-
 const utilsHelper = require("../../generics/utils");
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
@@ -8,12 +8,20 @@ const entitiesData = require("../../db/entities/query");
 
 module.exports = class EntityHelper {
 
+    /**
+     * Create entity.
+     * @method
+     * @name create
+     * @param {Object} bodyData - entity body data.
+     * @param {String} _id - entity id.
+     * @returns {JSON} - Entity created response.
+    */
+
     static async create(bodyData, _id) {
         bodyData.createdBy = ObjectId(_id);
         bodyData.updatedBy = ObjectId(_id);
         try {
-            const filter = { type: bodyData.type, value: bodyData.value };
-            const entity = await entitiesData.findOneEntity(filter);
+            const entity = await entitiesData.findOneEntity(bodyData.type, bodyData.value);
             if (entity) {
                 return common.failureResponse({ message: apiResponses.ENTITY_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
@@ -24,11 +32,21 @@ module.exports = class EntityHelper {
         }
     }
 
+    /**
+     * Update entity.
+     * @method
+     * @name update
+     * @param {Object} bodyData - entity body data.
+     * @param {String} _id - entity id.
+     * @param {String} loggedInUserId - logged in user id.
+     * @returns {JSON} - Entity updted response.
+    */
+
     static async update(bodyData, _id, loggedInUserId) {
-        bodyData.updatedBy = ObjectId(loggedInUserId);
+        bodyData.updatedBy = loggedInUserId;
         bodyData.updatedAt = new Date().getTime();
         try {
-            const result = await entitiesData.updateOneEntity({ _id: ObjectId(_id) }, bodyData);
+            const result = await entitiesData.updateOneEntity(_id, bodyData);
             if (result === 'ENTITY_ALREADY_EXISTS') {
                 return common.failureResponse({ message: apiResponses.ENTITY_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             } else if (result === 'ENTITY_NOT_FOUND') {
@@ -40,22 +58,37 @@ module.exports = class EntityHelper {
         }
     }
 
+    /**
+     * Read entity.
+     * @method
+     * @name read
+     * @param {Object} bodyData - entity body data.
+     * @returns {JSON} - Entity read response.
+    */
+
     static async read(bodyData) {
-        const projection = { value: 1, label: 1, _id: 0 };
         if (!bodyData.deleted) {
             bodyData.deleted = false;
         }
         try {
-            const entities = await entitiesData.findAllEntities(bodyData, projection);
+            const entities = await entitiesData.findAllEntities(bodyData);
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ENTITY_FETCHED_SUCCESSFULLY, result: entities });
         } catch (error) {
             throw error;
         }
     }
 
+    /**
+     * Delete entity.
+     * @method
+     * @name delete
+     * @param {String} _id - Delete entity.
+     * @returns {JSON} - Entity deleted response.
+    */
+
     static async delete(_id) {
         try {
-            const result = await entitiesData.updateOneEntity({ _id: ObjectId(_id) }, { deleted: true });
+            const result = await entitiesData.deleteOneEntity(_id);
             if (result === 'ENTITY_ALREADY_EXISTS') {
                 return common.failureResponse({ message: apiResponses.ENTITY_ALREADY_DELETED, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             } else if (result === 'ENTITY_NOT_FOUND') {

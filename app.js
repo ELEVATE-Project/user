@@ -9,9 +9,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 require("dotenv").config({ path: './.env' });
+
+let environmentData = require("./envVariables")();
+
+if (!environmentData.success) {
+    console.log("Server could not start . Not all environment variable is provided");
+    process.exit();
+}
+
 require("./configs");
 
 const app = express();
+
+// Health check
+require("./health-checks")(app);
 
 app.use(cors());
 
@@ -21,7 +32,7 @@ app.use(bodyParser.json({ limit: '50MB' }));
 app.use(express.static("public"));
 
 /* Logs request info if environment is not development*/
-if (process.env.APPLICATION_ENV !== 'development') {
+if (process.env.ENABLE_LOG === 'true') {
     app.all("*", (req, res, next) => {
         console.log("***Mentoring Service Logs Starts Here***");
         console.log(
@@ -64,4 +75,3 @@ function onError(error) {
             throw error
     }
 }
-

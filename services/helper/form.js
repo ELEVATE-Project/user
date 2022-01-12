@@ -8,10 +8,17 @@ const formsData = require("../../db/forms/queries");
 
 module.exports = class FormsHelper {
 
+    /**
+     * Create Form.
+     * @method
+     * @name create
+     * @param {Object} bodyData
+     * @returns {JSON} - Form creation data.
+    */
+
     static async create(bodyData) {
         try {
-            const filter = { type: bodyData.type, subType: bodyData.subType, action: bodyData.action, ver: bodyData.ver, "data.templateName": bodyData.data.templateName }
-            const form = await formsData.findOneForm(filter);
+            const form = await formsData.findOneForm(bodyData.type, bodyData.subType, bodyData.action, bodyData.ver, bodyData.data.templateName);
             if (form) {
                 return common.failureResponse({ message: apiResponses.FORM_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
@@ -22,10 +29,17 @@ module.exports = class FormsHelper {
         }
     }
 
+     /**
+     * Update Form.
+     * @method
+     * @name update
+     * @param {Object} bodyData
+     * @returns {JSON} - Update form data.
+    */
+
     static async update(bodyData) {
         try {
-            const filter = { type: bodyData.type, subType: bodyData.subType, action: bodyData.action, ver: bodyData.ver, 'data.templateName': bodyData.data.templateName };
-            const result = await formsData.updateOneForm(filter, bodyData);
+            const result = await formsData.updateOneForm(bodyData);
             if (result === 'ENTITY_ALREADY_EXISTS') {
                 return common.failureResponse({ message: apiResponses.FORM_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             } else if (result === 'ENTITY_NOT_FOUND') {
@@ -37,10 +51,17 @@ module.exports = class FormsHelper {
         }
     }
 
+     /**
+     * Read Form.
+     * @method
+     * @name read
+     * @param {Object} bodyData
+     * @returns {JSON} - Read form data.
+    */
+
     static async read(bodyData) {
         try {
-            const filter = { type: bodyData.type, subType: bodyData.subType, action: bodyData.action, ver: bodyData.ver, "data.templateName": bodyData.templateName }
-            const form = await formsData.findOneForm(filter);
+            const form = await formsData.findOneForm(bodyData.type, bodyData.subType, bodyData.action, bodyData.ver, bodyData.templateName);
             if (!form) {
                 return common.failureResponse({ message: apiResponses.FORM_NOT_FOUND, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }

@@ -5,7 +5,10 @@
  * Description : Session Attendes database operations
  */
 
+const ObjectId = require('mongoose').Types.ObjectId;
+
 const SessionAttendees = require("./model");
+
 
 module.exports = class SessionsAttendees {
     static create(data) {
@@ -19,7 +22,7 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static findLinkBySessionAndUserId(id, sessionId) {
+    static findAttendeeBySessionAndUserId(id, sessionId) {
         return new Promise(async (resolve, reject) => {
             try {
                 const session = await SessionAttendees.findOne({ userId: id, sessionId: sessionId, deleted: false }).lean();
@@ -30,18 +33,16 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static findOneSessionAttendee(sessionId, userId) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const session = await SessionAttendees.findOne({ sessionId, userId, deleted: false }).lean();
-                resolve(session);
-            } catch (error) {
-                reject(error);
-            }
-        })
-    }
-
-    static countSessionAttendees(filter) {
+    static countSessionAttendees(filterStartDate, filterEndDate, userId) {
+        const filter = {
+            createdAt: {
+                $gte: filterStartDate.toISOString(),
+                $lte: filterEndDate.toISOString()
+            },
+            userId: ObjectId(userId),
+            deleted: false
+        };
+    
         return new Promise(async (resolve, reject) => {
             try {
                 const count = await SessionAttendees.countDocuments(filter);
@@ -52,7 +53,16 @@ module.exports = class SessionsAttendees {
         });
     }
 
-    static countSessionAttendeesThroughStartDate(filter) {
+    static countSessionAttendeesThroughStartDate(filterStartDate, filterEndDate, userId) {
+        const filter = {
+            'sessionDetail.startDateUtc': {
+                $gte: filterStartDate.toISOString(),
+                $lte: filterEndDate.toISOString()
+            },
+            userId: ObjectId(userId),
+            deleted: false,
+            isSessionAttended: true
+        };
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await SessionAttendees.aggregate([
@@ -68,10 +78,9 @@ module.exports = class SessionsAttendees {
                         $match: filter
                     },
                     {
-                      $count: 'count'
+                        $count: 'count'
                     }
                 ]);
-                console.log(result);
                 resolve(result.length ? result[0].count : 0);
             } catch (error) {
                 reject(error);
@@ -83,7 +92,13 @@ module.exports = class SessionsAttendees {
         return new Promise(async (resolve, reject) => {
             try {
                 const updateResponse = await SessionAttendees.updateOne(filter, update);
-                resolve(updateResponse);
+                if (updateResponse.n === 1 && updateResponse.nModified === 1) {
+                    resolve('SESSION_ATTENDENCE_UPDATED')
+                } else if (updateResponse.n === 1 && updateResponse.nModified === 0) {
+                    resolve('SESSION_ATTENDENCE_ALREADY_UPDATED')
+                } else {
+                    resolve('SESSION_ATTENDENCE_NOT_FOUND');
+                }
             } catch (error) {
                 reject(error);
             }
@@ -106,6 +121,7 @@ module.exports = class SessionsAttendees {
     }
 
     static findAllUpcomingMenteesSession(page, limit, search, filters) {
+        filters.userId = ObjectId(filters.userId);
         return new Promise(async (resolve, reject) => {
             try {
 
@@ -131,7 +147,7 @@ module.exports = class SessionsAttendees {
                         },
                     },
                     {
-                        $sort: { 'sessionDetail.startDate': 1 }
+                        $sort: { 'sessionDetail.startDateUtc': 1 }
                     },
                     {
                         $project: {
@@ -174,6 +190,76 @@ module.exports = class SessionsAttendees {
                         }
                     }
                 ]);
+                resolve(sessionAttendeesData);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    static findPendingFeedbackSessions(filters) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                const sessionAttendeesData = await SessionAttendees.aggregate([
+                    {
+                        $lookup: {
+                            from: 'sessions',
+                            localField: 'sessionId',
+                            foreignField: '_id',
+                            as: 'sessionDetail'
+                        }
+                    },
+                    {
+                        $match: {
+                            $and: [
+                                filters,
+                                { deleted: false }
+                            ]
+                        },
+                    },
+                    {
+                        $project: {
+                            sessionId: 1,
+                            'sessionDetail._id': 1,
+                            'sessionDetail.title': 1,
+                            'sessionDetail.description': 1,
+                            'sessionDetail.status': 1,
+                            'sessionDetail.menteeFeedbackForm':1
+                        }
+                    },
+                    { $unwind: "$sessionDetail" }
+
+                ]);
+                resolve(sessionAttendeesData);
+
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    static findOneSessionAttendee(sessionId, userId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const session = await SessionAttendees.findOne({ sessionId, userId, deleted: false }).lean();
+                resolve(session);
+            } catch (error) {
+                reject(error);
+            }
+        })
+    }
+
+    static findAllSessionAttendees(filters) {
+        return new Promise(async (resolve, reject) => {
+            try {
+
+                let sessionAttendeesData = await SessionAttendees.find(
+                    {
+                        ...filters,
+                        deleted: false
+                    }
+                ).lean();
                 resolve(sessionAttendeesData);
             } catch (error) {
                 reject(error);

@@ -1,7 +1,7 @@
 const request = require('request');
 const parser = require('xml2json');
 
-var get = function(url,token = "") {
+var get = function(url,token = "",internal_access_token=false) {
     return new Promise(async (resolve, reject) => {
         try {
 
@@ -29,6 +29,9 @@ var get = function(url,token = "") {
 
             let headers = {
                 "content-type": "application/json"
+            }
+            if(internal_access_token){
+                headers['internal_access_token'] = process.env.INTERNAL_ACCESS_TOKEN;
             }
 
             if (token) {

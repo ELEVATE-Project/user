@@ -20,24 +20,27 @@ module.exports = class FormsData {
         });
     }
 
-    static findOneForm(filter, projection = {}) {
-        return new Promise(async (resolve,reject) => {
-            try { 
+    static findOneForm(type, subType, action, ver, templateName) {
+        const filter = { type, subType, action, ver, "data.templateName": templateName };
+        const projection = {};
+        return new Promise(async (resolve, reject) => {
+            try {
                 const formData = await Forms.findOne(filter, projection);
                 resolve(formData);
-            } catch(error) {
+            } catch (error) {
                 reject(error);
             }
         })
     }
 
-    static updateOneForm(filter, update, options = {}) {
+    static updateOneForm(update, options = {}) {
+        const filter = { type: update.type, subType: update.subType, action: update.action, ver: update.ver, 'data.templateName': update.data.templateName };
         return new Promise(async (resolve, reject) => {
             try {
                 const res = await Forms.updateOne(filter, update, options);
                 if (res.n === 1 && res.nModified === 1) {
                     resolve('ENTITY_UPDATED')
-                } else if (res.n === 1 && res.nModified === 0){
+                } else if (res.n === 1 && res.nModified === 0) {
                     resolve('ENTITY_ALREADY_EXISTS')
                 } else {
                     resolve('ENTITY_NOT_FOUND');

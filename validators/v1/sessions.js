@@ -12,13 +12,13 @@ module.exports = {
             req.checkBody('title')
                 .notEmpty()
                 .withMessage('title field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('title is invalid');
 
             req.checkBody('description')
                 .notEmpty()
                 .withMessage('description field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('description is invalid');
 
             req.checkBody('startDate')
@@ -41,18 +41,20 @@ module.exports = {
                 .notEmpty()
                 .withMessage('medium field is empty');
 
+
         } else {
             req.checkBody('title')
                 .optional()
                 .withMessage('title field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('title is invalid');
 
             req.checkBody('description')
                 .optional()
                 .withMessage('description field is empty')
-                .matches(/^[A-Za-z0-9 ]+$/)
+                .matches(/^[A-Za-z0-9 -]+$/)
                 .withMessage('description is invalid');
+
         }
     },
     details: (req) => {
@@ -68,6 +70,8 @@ module.exports = {
             .withMessage('id param is empty')
             .isMongoId()
             .withMessage('id is invalid');
+
+
     },
 
     unEnroll: (req) => {
@@ -88,5 +92,15 @@ module.exports = {
             .withMessage('id param is empty')
             .isMongoId()
             .withMessage('id is invalid');
+    },
+
+    updateRecordingUrl: (req) => {
+        req.checkParams('id')
+            .notEmpty()
+            .withMessage('id param is empty')
+
+        req.checkBody('recordingUrl')
+            .notEmpty()
+            .withMessage('recordingUrl field is empty')
     }
 };

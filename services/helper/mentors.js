@@ -1,31 +1,20 @@
+// Dependencies
 const sessionsData = require('../../db/sessions/queries');
-
 const utils = require('../../generics/utils');
 const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class MentorsHelper {
-    
-    static sessions(upComingSessions) {
-        return new Promise(async (resolve,reject) => {
-            try {
 
-                if (upComingSessions) {
-                    /** Upcoming sessions */
-                } else {
-                    /** Completed sessions */
-                }
-
-                /**
-                 * Your business logic here
-                 */
-
-            } catch(error) {
-                return reject(error);
-            }
-        })
-    }
+    /**
+     * Mentors reports.
+     * @method
+     * @name reports
+     * @param {String} userId - user id.
+     * @param {String} filterType - MONTHLY/WEEKLY/QUARTERLY.
+     * @returns {JSON} - Mentors reports
+    */
 
     static async reports(userId, filterType) {
         let filterStartDate;
@@ -56,7 +45,7 @@ module.exports = class MentorsHelper {
 
             /* totalsessionHosted */ 
             filters = {
-                startDate: {
+                startDateUtc: {
                     $gte: filterStartDate.toISOString(),
                     $lte: filterEndDate.toISOString()
                 },
@@ -64,7 +53,7 @@ module.exports = class MentorsHelper {
                 status: 'completed',
                 deleted: false
             };
-
+          
             totalsessionHosted = await sessionsData.countSessions(filters);
             return common.successResponse({statusCode: httpStatusCode.ok, message: apiResponses.MENTORS_REPORT_FETCHED_SUCCESSFULLY, result: {totalSessionCreated, totalsessionHosted}});
 

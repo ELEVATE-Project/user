@@ -46,7 +46,6 @@ module.exports = (app) => {
             }
             controllerResponse = new controller()[req.params.method] ? await new controller()[req.params.method](req) : next();
         } catch (error) { // If controller or service throws some random error
-            console.log(error);
             return next(error);
         }
 
@@ -57,7 +56,8 @@ module.exports = (app) => {
         res.status(controllerResponse.statusCode).json({
             responseCode: controllerResponse.responseCode,
             message: controllerResponse.message,
-            result: controllerResponse.result
+            result: controllerResponse.result,
+            meta: controllerResponse.meta
         });
     }
 
