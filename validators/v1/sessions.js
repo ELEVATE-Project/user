@@ -12,14 +12,10 @@ module.exports = {
             req.checkBody('title')
                 .notEmpty()
                 .withMessage('title field is empty')
-                .matches(/^[A-Za-z0-9 -]+$/)
-                .withMessage('title is invalid');
 
             req.checkBody('description')
                 .notEmpty()
                 .withMessage('description field is empty')
-                .matches(/^[A-Za-z0-9 -]+$/)
-                .withMessage('description is invalid');
 
             req.checkBody('startDate')
                 .notEmpty()
