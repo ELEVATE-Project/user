@@ -67,7 +67,6 @@ let sessionsSchema = new Schema({
   },
   internalMeetingId: {
     type: String,
-    unique: true,
     default: null
   }
 });
