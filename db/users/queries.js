@@ -47,7 +47,7 @@ module.exports = class UsersData {
         return new Promise(async (resolve, reject) => {
             try {
                 const res = await Users.updateOne(filter, update, options);
-                if (res.n === 1 && res.nModified === 1) {
+                if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
                     resolve(true)
                 } else {
                     resolve(false)
