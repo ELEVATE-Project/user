@@ -44,14 +44,8 @@ module.exports = class MentorsHelper {
 
             for (let mentor of mentors[0].data) {
                 /* Assigned image url from the stored location */
-                if (mentor._id === '61b76bd790783b59d7c2894c') {
-                    console.log(mentor.image, '1');
-                }
                 if (mentor.image) {
-                    mentor.image = utilsHelper.getDownloadableUrl(mentor.image);
-                }
-                if (mentor._id === '61b76bd790783b59d7c2894c') {
-                    console.log(mentor.image, '2');
+                    mentor.image = await utilsHelper.getDownloadableUrl(mentor.image);
                 }
                 
                 let firstChar = mentor.name.charAt(0);
