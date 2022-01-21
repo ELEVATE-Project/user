@@ -64,3 +64,5 @@ public/assessment/web2
 # Ignore all credentials
 generics/helpers/credentials/*
 
+gcp.json
+
