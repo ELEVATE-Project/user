@@ -35,9 +35,9 @@
          return new Promise(async (resolve, reject) => {
              try {
                  const res = await QuestionsSet.updateOne(filter, update, options);
-                 if (res.n === 1 && res.nModified === 1) {
+                 if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
                      resolve('QUESTIONS_SET_UPDATED')
-                 } else if (res.n === 1 && res.nModified === 0){
+                 } else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
                      resolve('QUESTIONS_SET_ALREADY_EXISTS')
                  } else {
                      resolve('QUESTIONS_SET_NOT_FOUND');

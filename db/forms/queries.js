@@ -38,9 +38,9 @@ module.exports = class FormsData {
         return new Promise(async (resolve, reject) => {
             try {
                 const res = await Forms.updateOne(filter, update, options);
-                if (res.n === 1 && res.nModified === 1) {
+                if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
                     resolve('ENTITY_UPDATED')
-                } else if (res.n === 1 && res.nModified === 0) {
+                } else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
                     resolve('ENTITY_ALREADY_EXISTS')
                 } else {
                     resolve('ENTITY_NOT_FOUND');
