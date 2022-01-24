@@ -54,7 +54,7 @@ if (process.env.ENABLE_LOG === 'true') {
 require('./routes')(app);
 
 // Server listens to given port
-app.listen(process.env.APPLICATION_PORT, process.env.APPLICATION_HOST, (res, err) => {
+app.listen(process.env.APPLICATION_PORT, (res, err) => {
     if (err) {
         onError(err);
     }
