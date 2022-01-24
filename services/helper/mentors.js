@@ -42,11 +42,18 @@ module.exports = class MentorsHelper {
             let foundKeys = {};
             let result = [];
 
-            for (let mentor of mentors[0].data) {
+            /* Required to resolve all promises first before preparing response object else sometime 
+                it will push unresolved promise object if you put this logic in below for loop */
+
+            await Promise.all(mentors[0].data.map(async mentor => {
                 /* Assigned image url from the stored location */
                 if (mentor.image) {
                     mentor.image = await utilsHelper.getDownloadableUrl(mentor.image);
                 }
+                return mentor;
+            }));
+
+            for (let mentor of mentors[0].data) {
                 
                 let firstChar = mentor.name.charAt(0);
                 firstChar = firstChar.toUpperCase();
