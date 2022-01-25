@@ -22,11 +22,12 @@ module.exports = class MentorsHelper {
         * @param {string} pageNo -page number.
         * @param {string} pageSize -request data.
         * @param {string} searchText - search text.
+        * @param {string} userId - logged in user id.
         * @returns {Array} - Mentors list 
     */
-    static async list(page, limit, search) {
+    static async list(page, limit, search, userId) {
         try {
-            const mentors = await usersData.searchMentors(page, limit, search);
+            const mentors = await usersData.searchMentors(page, limit, search, userId);
 
             if (mentors[0].data.length < 1) {
                 return common.successResponse({

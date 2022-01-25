@@ -6,6 +6,7 @@
  */
 
 // Dependencies
+const ObjectId = require('mongoose').Types.ObjectId;
 const Users = require("./model");
 
 module.exports = class UsersData {
@@ -58,7 +59,7 @@ module.exports = class UsersData {
         });
     }
 
-    static searchMentors(page,limit,search) {
+    static searchMentors(page,limit,search,userId) {
         return new Promise(async (resolve, reject) => {
             try {
                 
@@ -67,6 +68,9 @@ module.exports = class UsersData {
                         $match: { 
                             deleted: false,
                             isAMentor: true,
+                            _id: {
+                                $ne: ObjectId(userId)
+                            },
                             $or: [
                                 { name: new RegExp(search, 'i') }
                             ] 
