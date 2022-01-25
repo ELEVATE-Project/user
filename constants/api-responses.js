@@ -1,3 +1,5 @@
 module.exports = {
-    'eventFetched': 'Event Fetched Successfully'
+    /**
+     * All required API responses
+     */
 };
