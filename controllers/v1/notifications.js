@@ -21,7 +21,7 @@ module.exports = class Notifications {
     async emailCronJob() {
         try {
              notificationsHelper.sendNotificationBefore15mins();
-             notificationsHelper.sendNotificationBefore1Hour();
+             notificationsHelper.sendNotificationBefore24Hour();
              return({
                 statusCode: httpStatusCode.ok,
             });
