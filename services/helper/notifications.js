@@ -11,19 +11,19 @@ const kafkaCommunication = require('../../generics/kafka-communication');
 
 module.exports = class Notifications {
     /**
-     * Send Notification to user before 1 hour.
+     * Send Notification to Mentors before 24 hour.
      * @method
-     * @name sendNotificationBefore1Hour
+     * @name sendNotificationBefore24Hour
      * @returns
     */
 
-    static async sendNotificationBefore1Hour() {
+    static async sendNotificationBefore24Hour() {
         try {
 
 
             let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
-            var dateEndTime = moment(currentDateutc).add(61, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
-            var dateStartTime = moment(currentDateutc).add(60, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+            var dateEndTime = moment(currentDateutc).add(1441, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+            var dateStartTime = moment(currentDateutc).add(1440, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
 
             let sessions = await sessionData.findSessions({
                 status: "published",
@@ -72,7 +72,7 @@ module.exports = class Notifications {
     }
     
     /**
-     * Send Notification to user before 15 mins.
+     * Send Notification to attendees before 15 mins.
      * @method
      * @name sendNotificationBefore15mins
      * @returns
