@@ -320,7 +320,7 @@ module.exports = class AccountHelper {
                 }
             }
 
-            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.OTP_EMAIL_TEMPLATE_CODE);
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE);
 
             if (templateData) {
                 // Push otp to kafka
@@ -329,7 +329,7 @@ module.exports = class AccountHelper {
                     email: {
                         to: bodyData.email,
                         subject: templateData.subject,
-                        body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
+                        body: utilsHelper.composeEmailBody(templateData.body, { otp }),
                     }
                 };
 
