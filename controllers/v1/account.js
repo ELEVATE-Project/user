@@ -234,4 +234,23 @@ module.exports = class Account {
             return error;
         }
     }
+
+    /**
+        * otp to verify user during registration
+        * @method
+        * @name registrationOtp
+        * @param {Object} req -request data.
+        * @param {String} req.body.email - user email.
+        * @returns {JSON} - otp success response
+    */
+
+     async registrationOtp(req) {
+        const params = req.body;
+        try {
+            const result = await accountHelper.registrationOtp(params);
+            return result;
+        } catch (error) {
+            return error;
+        }
+    }
 }

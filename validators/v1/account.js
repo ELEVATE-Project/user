@@ -69,6 +69,14 @@ module.exports = {
             .withMessage('email is invalid');
     },
 
+    registrationOtp: (req) => {
+        req.checkBody('email')
+            .notEmpty()
+            .withMessage('email field is empty')
+            .isEmail()
+            .withMessage('email is invalid');
+    },
+
     resetPassword: (req) => {
         req.checkBody('email')
             .notEmpty()

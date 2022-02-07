@@ -39,6 +39,7 @@
     "mongoose-delete": "^0.5.4",
     "mongoose-paginate-v2": "^1.4.2",
     "mongoose-timestamp": "^0.6.0",
+    "redis": "^4.0.3",
     "require-all": "^3.0.0",
     "stream": "^0.0.2",
     "uuid": "^8.3.2"

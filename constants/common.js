@@ -46,4 +46,5 @@ module.exports = {
     notificationEmailType: 'email',
     accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
     refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
+    otpExpirationTime: process.env.OTP_EXP_TIME // In Seconds
 };

@@ -18,6 +18,7 @@ const common = require('../../constants/common');
 const usersData = require("../../db/users/queries");
 const notificationTemplateData = require("../../db/notification-template/query");
 const kafkaCommunication = require('../../generics/kafka-communication');
+const redisCommunication = require('../../generics/redis-communication');
 const systemUserData = require("../../db/systemUsers/queries");
 const FILESTREAM = require("../../generics/file-stream");
 
@@ -44,6 +45,13 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
             }
 
+            if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
+                const redisData = await redisCommunication.getKey(email);
+                if (!redisData || redisData.otp != bodyData.otp ) {
+                    return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                }
+            }
+
             bodyData.password = utilsHelper.hashPassword(bodyData.password);
             bodyData.email = { address: email, verified: false };
 
@@ -68,7 +76,7 @@ module.exports = class AccountHelper {
 
             return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY });
         } catch (error) {
-            throw error;
+            throw error;k
         }
     }
 
@@ -224,23 +232,31 @@ module.exports = class AccountHelper {
     static async generateOtp(bodyData) {
         try {
             let otp;
-            let expiresIn
             let isValidOtpExist = true;
             const user = await usersData.findOne({ 'email.address': bodyData.email });
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            if (!user.otpInfo.otp || new Date().getTime() > user.otpInfo.exp) {
-                isValidOtpExist = false;
+            const userData = await redisCommunication.getKey(bodyData.email);
+
+            if (userData && userData.action === 'forgetpassword') {
+                otp = userData.otp // If valid then get previuosly generated otp
             } else {
-                otp = user.otpInfo.otp // If valid then get previuosly generated otp
+                isValidOtpExist = false;
             }
 
             if (!isValidOtpExist) {
                 otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
-                expiresIn = new Date().getTime() + (24 * 60 * 60 * 1000); // 1 day expiration time
-                await usersData.updateOneUser({ _id: user._id }, { otpInfo: { otp, exp: expiresIn } });
+                const redisData = {
+                    verify: bodyData.email,
+                    action: 'forgetpassword',
+                    otp
+                };
+                const res = await redisCommunication.setKey(bodyData.email, redisData, common.otpExpirationTime);
+                if (res !== 'OK') {
+                    return common.failureResponse({ message: apiResponses.UNABLE_TO_SEND_OTP, statusCode: httpStatusCode.internal_server_error, responseCode: 'SERVER_ERROR' });
+                }
             }
 
             const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.OTP_EMAIL_TEMPLATE_CODE);
@@ -259,8 +275,68 @@ module.exports = class AccountHelper {
                 await kafkaCommunication.pushEmailToKafka(payload);
             }
 
-
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.OTP_SENT_SUCCESSFULLY });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+        * otp to verify user during registration
+        * @method
+        * @name registrationOtp
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.email - user email.
+        * @returns {JSON} - returns otp success response
+    */
+
+     static async registrationOtp(bodyData) {
+        try {
+            let otp;
+            let isValidOtpExist = true;
+            const user = await usersData.findOne({ 'email.address': bodyData.email });
+            if (user) {
+                return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            const userData = await redisCommunication.getKey(bodyData.email);
+
+            if (userData && userData.action === 'signup') {
+                otp = userData.otp // If valid then get previuosly generated otp
+            } else {
+                isValidOtpExist = false;
+            }
+
+            if (!isValidOtpExist) {
+                otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
+                const redisData = {
+                    verify: bodyData.email,
+                    action: 'signup',
+                    otp
+                };
+                const res = await redisCommunication.setKey(bodyData.email, redisData, common.otpExpirationTime);
+                if (res !== 'OK') {
+                    return common.failureResponse({ message: apiResponses.UNABLE_TO_SEND_OTP, statusCode: httpStatusCode.internal_server_error, responseCode: 'SERVER_ERROR' });
+                }
+            }
+
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.OTP_EMAIL_TEMPLATE_CODE);
+
+            if (templateData) {
+                // Push otp to kafka
+                const payload = {
+                    type: common.notificationEmailType,
+                    email: {
+                        to: bodyData.email,
+                        subject: templateData.subject,
+                        body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
+                    }
+                };
+
+                await kafkaCommunication.pushEmailToKafka(payload);
+            }
+            console.log(otp);
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.REGISTRATION_OTP_SENT_SUCCESSFULLY });
         } catch (error) {
             throw error;
         }

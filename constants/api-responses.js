@@ -29,6 +29,7 @@ module.exports = {
     "USER_ENTITY_DELETED_SUCCESSFULLY": "User entity deleted successfully",
     "USER_ENTITY_FETCHED_SUCCESSFULLY": "User entity fetched successfully",
     "OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
+    "REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the otp to complete the registration process.",
     "PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully",
     "OTP_INVALID": "The OTP entered in incorrect. Please check and try again",
     "SYSTEM_USER_ALREADY_EXISTS": "System User already exists",
@@ -44,5 +45,6 @@ module.exports = {
     "USER_ROLE_UPDATED_SUCCESSFULLY": "User role successfully updated",
     "USERS_FETCHED_SUCCESSFULLY": "Users fetched successfully",
     "INVALID_SECRET_CODE": "Invalid secret code",
-    "USER_ROLE_UPDATED": "You have been logged out of your account due to change in platform role. Please login again"
+    "USER_ROLE_UPDATED": "You have been logged out of your account due to change in platform role. Please login again",
+    "UNABLE_TO_SEND_OTP": "Unable to send otp, may be redis server is down"
 };

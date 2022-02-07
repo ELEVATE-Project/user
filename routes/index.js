@@ -13,7 +13,7 @@ const fs = require("fs");
 
 module.exports = (app) => {
 
-    app.use(authenticator);
+    // app.use(authenticator);
     app.use(pagination);
     app.use(expressValidator());
 
