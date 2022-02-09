@@ -33,6 +33,7 @@ module.exports = {
         '/user/v1/account/create',
         '/user/v1/account/generateToken',
         '/user/v1/account/generateOtp',
+        '/user/v1/account/registrationOtp',
         '/user/v1/account/resetPassword',
         '/user/v1/systemUsers/create',
         '/user/v1/systemUsers/login'
