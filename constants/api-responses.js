@@ -5,7 +5,7 @@ module.exports = {
     "USER_DOESNOT_EXISTS": "User doesn't exist",
     "USERNAME_OR_PASSWORD_IS_INVALID": "Username or password is invalid",
     "EMAIL_ID_NOT_REGISTERED": "This email ID is not registered. Please sign-up using the email ID to login",
-    "USER_CREATED_SUCCESSFULLY": "Sign-up successful. Please use your registered email ID and password to login",
+    "USER_CREATED_SUCCESSFULLY": "Sign-up successful, Please wait while logging in",
     "LOGGED_IN_SUCCESSFULLY": "User logged in successfully",
     "LOGGED_OUT_SUCCESSFULLY": "User logged out successfully",
     "UNAUTHORIZED_REQUEST": "Unauthorized request",

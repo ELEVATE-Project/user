@@ -58,22 +58,6 @@ module.exports = class AccountHelper {
 
             await usersData.createUser(bodyData);
 
-            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
-
-            if (templateData) {
-                // Push successfull registration email to kafka
-                const payload = {
-                    type: common.notificationEmailType,
-                    email: {
-                        to: email,
-                        subject: templateData.subject,
-                        body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, appName: process.env.APP_NAME })
-                    }
-                };
-
-                await kafkaCommunication.pushEmailToKafka(payload);
-            }
-
             /* FLOW STARTED: user login after registration */
 
             user = await usersData.findOne({ "email.address": email }, projection);
@@ -99,6 +83,22 @@ module.exports = class AccountHelper {
             await usersData.updateOneUser({ _id: ObjectId(user._id) }, update);
 
             const result = { access_token: accessToken, refresh_token: refreshToken, user };
+
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
+
+            if (templateData) {
+                // Push successfull registration email to kafka
+                const payload = {
+                    type: common.notificationEmailType,
+                    email: {
+                        to: email,
+                        subject: templateData.subject,
+                        body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, appName: process.env.APP_NAME })
+                    }
+                };
+
+                await kafkaCommunication.pushEmailToKafka(payload);
+            }
 
             return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY, result });
         } catch (error) {
