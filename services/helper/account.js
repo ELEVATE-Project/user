@@ -48,11 +48,6 @@ module.exports = class AccountHelper {
 
             if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
                 const redisData = await redisCommunication.getKey(email);
-                console.log(redisData)
-                console.log(redisData.otp)
-                console.log(typeof redisData.otp)
-                console.log(bodyData.otp)
-                console.log(typeof bodyData.otp)
                 if (!redisData || redisData.otp != bodyData.otp) {
                     return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
