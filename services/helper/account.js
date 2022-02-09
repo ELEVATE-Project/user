@@ -38,16 +38,17 @@ module.exports = class AccountHelper {
     */
 
     static async create(bodyData) {
+        const projection = { password: 0, refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
         try {
             const email = bodyData.email;
-            const user = await usersData.findOne({ 'email.address': email });
+            let user = await usersData.findOne({ 'email.address': email });
             if (user) {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
             }
 
             if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
                 const redisData = await redisCommunication.getKey(email);
-                if (!redisData || redisData.otp != bodyData.otp ) {
+                if (!redisData || redisData.otp != bodyData.otp) {
                     return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
             }
@@ -73,10 +74,35 @@ module.exports = class AccountHelper {
                 await kafkaCommunication.pushEmailToKafka(payload);
             }
 
+            /* FLOW STARTED: user login after registration */
 
-            return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY });
+            user = await usersData.findOne({ "email.address": email }, projection);
+
+            const tokenDetail = {
+                data: {
+                    _id: user._id,
+                    email: user.email.address,
+                    name: user.name,
+                    isAMentor: user.isAMentor
+                }
+            };
+
+            const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, common.accessTokenExpiry);
+            const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, common.refreshTokenExpiry);
+
+            const update = {
+                $push: {
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs }
+                },
+                lastLoggedInAt: new Date().getTime()
+            };
+            await usersData.updateOneUser({ _id: ObjectId(user._id) }, update);
+
+            const result = { access_token: accessToken, refresh_token: refreshToken, user };
+
+            return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY, result });
         } catch (error) {
-            throw error;k
+            throw error;
         }
     }
 
@@ -118,7 +144,7 @@ module.exports = class AccountHelper {
 
             const update = {
                 $push: {
-                    refreshTokens: { token: refreshToken, exp: new Date().getTime() }
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs }
                 },
                 lastLoggedInAt: new Date().getTime()
             };
@@ -211,7 +237,7 @@ module.exports = class AccountHelper {
             }
 
             /* Generate new access token */
-            const accessToken = utilsHelper.generateToken({ data: decodedToken.data }, process.env.ACCESS_TOKEN_SECRET, '1d');
+            const accessToken = utilsHelper.generateToken({ data: decodedToken.data }, process.env.ACCESS_TOKEN_SECRET, common.accessTokenExpiry);
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY, result: { access_token: accessToken } });
         }
@@ -290,7 +316,7 @@ module.exports = class AccountHelper {
         * @returns {JSON} - returns otp success response
     */
 
-     static async registrationOtp(bodyData) {
+    static async registrationOtp(bodyData) {
         try {
             let otp;
             let isValidOtpExist = true;
