@@ -53,5 +53,6 @@ module.exports = {
     "SESSION_ESTIMATED_TIME": "Session cannot be started ! Please check the scheduled date and time of the session",
     "MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully",
     "MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully",
-    "USER_ROLE_UPDATED": "User role was updated, please login again"
+    "USER_ROLE_UPDATED": "User role was updated, please login again",
+    "FEEDBACK_AS_NOT_PASSED": "feedbackAs key is not passed for mentor"
 };

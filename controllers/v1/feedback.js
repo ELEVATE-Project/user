@@ -7,6 +7,9 @@
 
 // Dependencies
 const feedbackHelper = require("../../services/helper/feedback");
+const common = require('../../constants/common');
+const apiResponses = require("../../constants/api-responses");
+const httpStatusCode = require("../../generics/http-status");
 
 module.exports = class Feedback {
 
@@ -43,6 +46,13 @@ module.exports = class Feedback {
 
     async submit(req) {
         try {
+            if (req.decodedToken.isAMentor && !req.body.feedbackAs) {
+                return common.failureResponse({
+                    message: apiResponses.FEEDBACK_AS_NOT_PASSED,
+                    statusCode: httpStatusCode.unprocessable_entity,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
             const feedbackSubmitData = await feedbackHelper.submit(req.params.id,req.body,req.decodedToken._id,req.decodedToken.isAMentor);
             return feedbackSubmitData;
         } catch (error) {
