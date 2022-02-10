@@ -32,7 +32,7 @@ module.exports = class MenteesHelper {
                     feedbacks: {
                         $size: 0
                     },
-                    userId: ObjectId(userId)
+                    userId
                 };
                 let mentorSessions = await sessionData.findSessions(filters, {
                     _id: 1,
@@ -176,8 +176,12 @@ module.exports = class MenteesHelper {
      */
 
     static async submit(sessionId, updateData, userId, isAMentor) {
+        let feedbackAs;
+        if (isAMentor) {
+            feedbackAs = updateData.feedbackAs;
+            delete updateData.feedbackAs;
+        }
         try {
-
             let sessionInfo = await sessionData.findOneSession({
                 _id: sessionId
             }, {
@@ -193,8 +197,7 @@ module.exports = class MenteesHelper {
                 });
             }
 
-            if (isAMentor) {
-
+            if (isAMentor && feedbackAs === 'mentor') {
                 if (sessionInfo.skippedFeedback == true || (sessionInfo.feedbacks && sessionInfo.feedbacks.length > 0)) {
 
                     return common.failureResponse({
