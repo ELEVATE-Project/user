@@ -92,6 +92,7 @@ module.exports = class SessionsAttendees {
         return new Promise(async (resolve, reject) => {
             try {
                 const updateResponse = await SessionAttendees.updateOne(filter, update);
+                console.log(updateResponse, 'Update Session Attendee');
                 if (updateResponse.n === 1 && updateResponse.nModified === 1) {
                     resolve('SESSION_ATTENDENCE_UPDATED')
                 } else if (updateResponse.n === 1 && updateResponse.nModified === 0) {

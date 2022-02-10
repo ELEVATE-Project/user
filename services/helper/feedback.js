@@ -186,6 +186,7 @@ module.exports = class MenteesHelper {
                 feedbacks: 1
             });
             if (!sessionInfo) {
+                console.log("SESSION FOUND");
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
                     statusCode: httpStatusCode.bad_request,
@@ -194,7 +195,7 @@ module.exports = class MenteesHelper {
             }
 
             if (isAMentor) {
-
+                console.log("Mentor Executed");
                 if (sessionInfo.skippedFeedback == true || (sessionInfo.feedbacks && sessionInfo.feedbacks.length > 0)) {
 
                     return common.failureResponse({
@@ -224,6 +225,7 @@ module.exports = class MenteesHelper {
 
             } else {
 
+                console.log("Mentee Executed");
                 let sessionAttendesInfo = await sessionAttendees.findOneSessionAttendee(sessionId, userId);
                 if (sessionAttendesInfo.skippedFeedback == true || (sessionAttendesInfo.feedbacks && sessionAttendesInfo.feedbacks.length > 0)) {
 
