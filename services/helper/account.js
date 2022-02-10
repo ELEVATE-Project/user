@@ -388,7 +388,8 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            if (user.otpInfo.otp != bodyData.otp || new Date().getTime() > user.otpInfo.exp) {
+            const redisData = await redisCommunication.getKey(bodyData.email);
+            if (!redisData || redisData.otp != bodyData.otp) {
                 return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
@@ -409,7 +410,7 @@ module.exports = class AccountHelper {
 
             const updateParams = {
                 $push: {
-                    refreshTokens: { token: refreshToken, exp: new Date().getTime() }
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs }
                 },
                 lastLoggedInAt: new Date().getTime(),
                 password: bodyData.password
