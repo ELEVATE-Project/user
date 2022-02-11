@@ -38,7 +38,7 @@ let sessionsSchema = new Schema({
   link: String,
   menteePassword: String,
   mentorPassword: String,
-  startedAt: String,
+  startedAt: Date,
   shareLink: String,
   completedAt: Date,
   feedbacks: [
