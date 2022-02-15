@@ -537,8 +537,7 @@ module.exports = class SessionsHelper {
             }
             let shareLink = session.shareLink;
             if (!shareLink) {
-                shareLink = bcyptJs.hashSync(sessionId, bcyptJs.genSaltSync(10));
-                shareLink = shareLink.replace('/', '');
+                shareLink = encodeURIComponent(bcyptJs.hashSync(sessionId, bcyptJs.genSaltSync(10)));
                 await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink });
             }
             return common.successResponse({ message: apiResponses.SESSION_LINK_GENERATED_SUCCESSFULLY, statusCode: httpStatusCode.ok, result: { shareLink } });
