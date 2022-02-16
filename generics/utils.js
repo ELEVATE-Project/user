@@ -10,6 +10,7 @@ const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-s
 const momentTimeZone = require("moment-timezone");
 const moment = require('moment');
 const path = require('path');
+const md5 = require("md5");
 
 const hash = (str) => {
     const salt = bcryptJs.genSaltSync(10);
@@ -106,6 +107,17 @@ const utcFormat = () => {
     return momentTimeZone().utc().format("YYYY-MM-DDTHH:mm:ss");
 }
 
+/**
+  * md5 hash
+  * @function
+  * @name md5Hash
+  * @returns {String} returns uuid.  
+*/
+
+function md5Hash(value) {
+    return md5(value);
+  }
+
 module.exports = {
     hash: hash,
     getCurrentMonthRange: getCurrentMonthRange,
@@ -116,5 +128,6 @@ module.exports = {
     composeEmailBody: composeEmailBody,
     getDownloadableUrl: getDownloadableUrl,
     getTimeZone,
-    utcFormat: utcFormat
+    utcFormat: utcFormat,
+    md5Hash: md5Hash
 }

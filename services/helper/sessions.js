@@ -1,8 +1,6 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId;
 const moment = require("moment-timezone");
-const bcyptJs = require('bcryptjs');
-const path = require('path');
 const httpStatusCode = require("../../generics/http-status");
 const apiResponses = require("../../constants/api-responses");
 const apiEndpoints = require("../../constants/endpoints");
@@ -537,7 +535,8 @@ module.exports = class SessionsHelper {
             }
             let shareLink = session.shareLink;
             if (!shareLink) {
-                shareLink = encodeURIComponent(bcyptJs.hashSync(sessionId, bcyptJs.genSaltSync(10)));
+
+                shareLink = utils.md5Hash(sessionId + "###" + session.userId);
                 await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink });
             }
             return common.successResponse({ message: apiResponses.SESSION_LINK_GENERATED_SUCCESSFULLY, statusCode: httpStatusCode.ok, result: { shareLink } });
