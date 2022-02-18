@@ -246,7 +246,11 @@ module.exports = class Account {
 
      async registrationOtp(req) {
         const params = req.body;
+        const isAMentor = params.isAMentor ? true : false;
         try {
+            if (isAMentor && req.body.secretCode != process.env.MENTOR_SECRET_CODE) {
+                throw common.failureResponse({ message: apiResponses.INVALID_SECRET_CODE, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
             const result = await accountHelper.registrationOtp(params);
             return result;
         } catch (error) {
