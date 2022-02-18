@@ -13,7 +13,7 @@ const setKey = async function (key, value, exp) {
         key,
         value,
         {
-            NX: true, // Only set the key if it does not already exist.
+            // NX: true, // Only set the key if it does not already exist.
             EX: exp
         }
     );
