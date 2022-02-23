@@ -355,7 +355,7 @@ module.exports = class AccountHelper {
                     email: {
                         to: bodyData.email,
                         subject: templateData.subject,
-                        body: utilsHelper.composeEmailBody(templateData.body, { otp }),
+                        body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name,otp }),
                     }
                 };
 
