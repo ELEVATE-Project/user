@@ -390,7 +390,7 @@ module.exports = class AccountHelper {
 
             const redisData = await redisCommunication.getKey(bodyData.email);
             if (!redisData || redisData.otp != bodyData.otp) {
-                return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                return common.failureResponse({ message: apiResponses.RESET_OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
             const salt = bcryptJs.genSaltSync(10);

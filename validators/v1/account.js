@@ -75,6 +75,10 @@ module.exports = {
             .withMessage('email field is empty')
             .isEmail()
             .withMessage('email is invalid');
+
+        req.checkBody('name')
+            .notEmpty()
+            .withMessage('name field is empty');
     },
 
     resetPassword: (req) => {
