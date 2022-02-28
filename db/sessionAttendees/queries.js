@@ -109,7 +109,7 @@ module.exports = class SessionsAttendees {
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await SessionAttendees.deleteOne({ sessionId, userId }).lean();
-                if (result.n === 1 && result.deletedCount === 1) {
+                if (result && result.deletedCount === 1) {
                     resolve('USER_UNENROLLED');
                 } else if (result.n === 0) {
                     resolve('USER_NOT_ENROLLED')

@@ -620,8 +620,12 @@ module.exports = class SessionsHelper {
                 if (session.link) {
                     link = session.link;
                 } else {
-
-                    let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
+                    let currentDate;
+                    if(session.timeZone){
+                         currentDate = moment().utc().tz(session.timeZone).format(common.UTC_DATE_TIME_FORMAT);
+                    } else {
+                         currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+                    }
                     let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes');
 
                     if (elapsedMinutes > 10) {
