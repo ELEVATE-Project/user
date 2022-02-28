@@ -111,7 +111,7 @@ module.exports = class SessionsAttendees {
                 const result = await SessionAttendees.deleteOne({ sessionId, userId }).lean();
                 if (result && result.deletedCount === 1) {
                     resolve('USER_UNENROLLED');
-                } else if (result.n === 0) {
+                } else {
                     resolve('USER_NOT_ENROLLED')
                 }
             } catch (error) {
