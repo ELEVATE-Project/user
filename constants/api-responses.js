@@ -1,5 +1,7 @@
+
+/**
+ * All required API responses
+*/
 module.exports = {
-    /**
-     * All required API responses
-     */
+   
 };
