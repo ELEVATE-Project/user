@@ -48,6 +48,15 @@ module.exports = class SessionsHelper {
                 bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT);
             }
 
+            let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes');
+            if(elapsedMinutes > 1440){
+                return common.failureResponse({
+                    message: apiResponses.SESSION_DURATION_TIME,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
+            }
+
             let data = await sessionData.createSession(bodyData);
 
             await this.setMentorPassword(data._id, data.userId);
@@ -104,6 +113,15 @@ module.exports = class SessionsHelper {
             if (bodyData.endDate) {
                 bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT);
                 isSessionReschedule = true;
+            }
+
+            let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes');
+            if(elapsedMinutes > 1440){
+                return common.failureResponse({
+                    message: apiResponses.SESSION_DURATION_TIME,
+                    statusCode: httpStatusCode.bad_request,
+                    responseCode: 'CLIENT_ERROR'
+                });
             }
 
             let message;
@@ -620,12 +638,8 @@ module.exports = class SessionsHelper {
                 if (session.link) {
                     link = session.link;
                 } else {
-                    let currentDate;
-                    if(session.timeZone){
-                         currentDate = moment().utc().tz(session.timeZone).format(common.UTC_DATE_TIME_FORMAT);
-                    } else {
-                         currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-                    }
+                    
+                    let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                     let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes');
 
                     if (elapsedMinutes > 10) {

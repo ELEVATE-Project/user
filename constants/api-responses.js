@@ -54,5 +54,6 @@ module.exports = {
     "MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully.",
     "MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully.",
     "USER_ROLE_UPDATED": "User role was updated, please login again.",
-    "FEEDBACK_AS_NOT_PASSED": "feedbackAs key is not passed for mentor"
+    "FEEDBACK_AS_NOT_PASSED": "feedbackAs key is not passed for mentor",
+    "SESSION_DURATION_TIME" : "Session cannot be created ! Session duration should be less than 24 hours."
 };
