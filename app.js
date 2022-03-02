@@ -2,16 +2,27 @@
  * name : app.js
  * author : Aman Kumar Gupta
  * Date : 29-Sep-2021
- * Description : Start file of a user service
+ * Description : Start file of a mentoring service
  */
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require("dotenv").config();
+require("dotenv").config({ path: './.env' });
+
+let environmentData = require("./envVariables")();
+
+if (!environmentData.success) {
+    console.log("Server could not start . Not all environment variable is provided");
+    process.exit();
+}
+
 require("./configs");
 
 const app = express();
+
+// Health check
+require("./health-checks")(app);
 
 app.use(cors());
 
@@ -21,7 +32,7 @@ app.use(bodyParser.json({ limit: '50MB' }));
 app.use(express.static("public"));
 
 /* Logs request info if environment is not development*/
-if (process.env.APPLICATION_ENV !== 'development') {
+if (process.env.ENABLE_LOG === 'true') {
     app.all("*", (req, res, next) => {
         console.log("***Mentoring Service Logs Starts Here***");
         console.log(
@@ -43,7 +54,7 @@ if (process.env.APPLICATION_ENV !== 'development') {
 require('./routes')(app);
 
 // Server listens to given port
-app.listen(process.env.APPLICATION_PORT, 'localhost', (res, err) => {
+app.listen(process.env.APPLICATION_PORT, (res, err) => {
     if (err) {
         onError(err);
     }
@@ -64,4 +75,3 @@ function onError(error) {
             throw error
     }
 }
-
