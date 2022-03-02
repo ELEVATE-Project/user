@@ -19,6 +19,7 @@ module.exports = {
             .notEmpty()
             .withMessage('email field is empty')
             .isEmail()
+            .matches(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
             .withMessage('email is invalid')
             .normalizeEmail();
 
@@ -66,6 +67,18 @@ module.exports = {
             .withMessage('email field is empty')
             .isEmail()
             .withMessage('email is invalid');
+    },
+
+    registrationOtp: (req) => {
+        req.checkBody('email')
+            .notEmpty()
+            .withMessage('email field is empty')
+            .isEmail()
+            .withMessage('email is invalid');
+
+        req.checkBody('name')
+            .notEmpty()
+            .withMessage('name field is empty');
     },
 
     resetPassword: (req) => {

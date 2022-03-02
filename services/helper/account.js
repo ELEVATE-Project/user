@@ -18,6 +18,7 @@ const common = require('../../constants/common');
 const usersData = require("../../db/users/queries");
 const notificationTemplateData = require("../../db/notification-template/query");
 const kafkaCommunication = require('../../generics/kafka-communication');
+const redisCommunication = require('../../generics/redis-communication');
 const systemUserData = require("../../db/systemUsers/queries");
 const FILESTREAM = require("../../generics/file-stream");
 
@@ -37,17 +38,51 @@ module.exports = class AccountHelper {
     */
 
     static async create(bodyData) {
+        const projection = { password: 0, refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
         try {
             const email = bodyData.email;
-            const user = await usersData.findOne({ 'email.address': email });
+            let user = await usersData.findOne({ 'email.address': email });
             if (user) {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
+            }
+
+            if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
+                const redisData = await redisCommunication.getKey(email);
+                if (!redisData || redisData.otp != bodyData.otp) {
+                    return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+                }
             }
 
             bodyData.password = utilsHelper.hashPassword(bodyData.password);
             bodyData.email = { address: email, verified: false };
 
             await usersData.createUser(bodyData);
+
+            /* FLOW STARTED: user login after registration */
+
+            user = await usersData.findOne({ "email.address": email }, projection);
+
+            const tokenDetail = {
+                data: {
+                    _id: user._id,
+                    email: user.email.address,
+                    name: user.name,
+                    isAMentor: user.isAMentor
+                }
+            };
+
+            const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, common.accessTokenExpiry);
+            const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, common.refreshTokenExpiry);
+
+            const update = {
+                $push: {
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs }
+                },
+                lastLoggedInAt: new Date().getTime()
+            };
+            await usersData.updateOneUser({ _id: ObjectId(user._id) }, update);
+
+            const result = { access_token: accessToken, refresh_token: refreshToken, user };
 
             const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
 
@@ -65,8 +100,7 @@ module.exports = class AccountHelper {
                 await kafkaCommunication.pushEmailToKafka(payload);
             }
 
-
-            return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY });
+            return common.successResponse({ statusCode: httpStatusCode.created, message: apiResponses.USER_CREATED_SUCCESSFULLY, result });
         } catch (error) {
             throw error;
         }
@@ -110,7 +144,7 @@ module.exports = class AccountHelper {
 
             const update = {
                 $push: {
-                    refreshTokens: { token: refreshToken, exp: new Date().getTime() }
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs }
                 },
                 lastLoggedInAt: new Date().getTime()
             };
@@ -203,7 +237,7 @@ module.exports = class AccountHelper {
             }
 
             /* Generate new access token */
-            const accessToken = utilsHelper.generateToken({ data: decodedToken.data }, process.env.ACCESS_TOKEN_SECRET, '1d');
+            const accessToken = utilsHelper.generateToken({ data: decodedToken.data }, process.env.ACCESS_TOKEN_SECRET, common.accessTokenExpiry);
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY, result: { access_token: accessToken } });
         }
@@ -224,23 +258,31 @@ module.exports = class AccountHelper {
     static async generateOtp(bodyData) {
         try {
             let otp;
-            let expiresIn
             let isValidOtpExist = true;
             const user = await usersData.findOne({ 'email.address': bodyData.email });
             if (!user) {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            if (!user.otpInfo.otp || new Date().getTime() > user.otpInfo.exp) {
-                isValidOtpExist = false;
+            const userData = await redisCommunication.getKey(bodyData.email);
+
+            if (userData && userData.action === 'forgetpassword') {
+                otp = userData.otp // If valid then get previuosly generated otp
             } else {
-                otp = user.otpInfo.otp // If valid then get previuosly generated otp
+                isValidOtpExist = false;
             }
 
             if (!isValidOtpExist) {
                 otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
-                expiresIn = new Date().getTime() + (24 * 60 * 60 * 1000); // 1 day expiration time
-                await usersData.updateOneUser({ _id: user._id }, { otpInfo: { otp, exp: expiresIn } });
+                const redisData = {
+                    verify: bodyData.email,
+                    action: 'forgetpassword',
+                    otp
+                };
+                const res = await redisCommunication.setKey(bodyData.email, redisData, common.otpExpirationTime);
+                if (res !== 'OK') {
+                    return common.failureResponse({ message: apiResponses.UNABLE_TO_SEND_OTP, statusCode: httpStatusCode.internal_server_error, responseCode: 'SERVER_ERROR' });
+                }
             }
 
             const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.OTP_EMAIL_TEMPLATE_CODE);
@@ -259,8 +301,68 @@ module.exports = class AccountHelper {
                 await kafkaCommunication.pushEmailToKafka(payload);
             }
 
-
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.OTP_SENT_SUCCESSFULLY });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    /**
+        * otp to verify user during registration
+        * @method
+        * @name registrationOtp
+        * @param {Object} bodyData -request data.
+        * @param {string} bodyData.email - user email.
+        * @returns {JSON} - returns otp success response
+    */
+
+    static async registrationOtp(bodyData) {
+        try {
+            let otp;
+            let isValidOtpExist = true;
+            const user = await usersData.findOne({ 'email.address': bodyData.email });
+            if (user) {
+                return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            const userData = await redisCommunication.getKey(bodyData.email);
+
+            if (userData && userData.action === 'signup') {
+                otp = userData.otp // If valid then get previuosly generated otp
+            } else {
+                isValidOtpExist = false;
+            }
+
+            if (!isValidOtpExist) {
+                otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
+                const redisData = {
+                    verify: bodyData.email,
+                    action: 'signup',
+                    otp
+                };
+                const res = await redisCommunication.setKey(bodyData.email, redisData, common.otpExpirationTime);
+                if (res !== 'OK') {
+                    return common.failureResponse({ message: apiResponses.UNABLE_TO_SEND_OTP, statusCode: httpStatusCode.internal_server_error, responseCode: 'SERVER_ERROR' });
+                }
+            }
+
+            const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE);
+
+            if (templateData) {
+                // Push otp to kafka
+                const payload = {
+                    type: common.notificationEmailType,
+                    email: {
+                        to: bodyData.email,
+                        subject: templateData.subject,
+                        body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name,otp }),
+                    }
+                };
+
+                await kafkaCommunication.pushEmailToKafka(payload);
+            }
+            console.log(otp);
+            return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.REGISTRATION_OTP_SENT_SUCCESSFULLY });
         } catch (error) {
             throw error;
         }
@@ -286,8 +388,9 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            if (user.otpInfo.otp != bodyData.otp || new Date().getTime() > user.otpInfo.exp) {
-                return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            const redisData = await redisCommunication.getKey(bodyData.email);
+            if (!redisData || redisData.otp != bodyData.otp) {
+                return common.failureResponse({ message: apiResponses.RESET_OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
             const salt = bcryptJs.genSaltSync(10);
@@ -307,7 +410,7 @@ module.exports = class AccountHelper {
 
             const updateParams = {
                 $push: {
-                    refreshTokens: { token: refreshToken, exp: new Date().getTime() }
+                    refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs }
                 },
                 lastLoggedInAt: new Date().getTime(),
                 password: bodyData.password

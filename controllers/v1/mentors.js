@@ -22,8 +22,9 @@ module.exports = class Mentors {
     */
 
     async list(req) {
+        const userId = req.decodedToken._id;
         try {
-            const mentors = await mentorsHelper.list(req.pageNo,req.pageSize,req.searchText);
+            const mentors = await mentorsHelper.list(req.pageNo,req.pageSize,req.searchText, userId);
             return mentors;
         } catch (error) {
             return error;

@@ -49,7 +49,7 @@ module.exports = class ProfileHelper {
         try {
             const user = await usersData.findOne({ _id: ObjectId(_id) }, projection);
             if (user && user.image) {
-                user.image = utilsHelper.getDownloadableUrl(user.image);
+                user.image = await utilsHelper.getDownloadableUrl(user.image);
             }
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PROFILE_FETCHED_SUCCESSFULLY, result: user ? user : {} });
         } catch (error) {

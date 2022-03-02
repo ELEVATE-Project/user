@@ -33,6 +33,7 @@ module.exports = {
         '/user/v1/account/create',
         '/user/v1/account/generateToken',
         '/user/v1/account/generateOtp',
+        '/user/v1/account/registrationOtp',
         '/user/v1/account/resetPassword',
         '/user/v1/systemUsers/create',
         '/user/v1/systemUsers/login'
@@ -46,4 +47,6 @@ module.exports = {
     notificationEmailType: 'email',
     accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
     refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
+    refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
+    otpExpirationTime: process.env.OTP_EXP_TIME // In Seconds
 };
