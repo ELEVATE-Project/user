@@ -42,7 +42,7 @@ module.exports = class Notifications {
                 sessions.forEach(session => {
                     mentorIds.push(session.userId.toString());
                 });
-                const userAccounts = await sessionsHelper.getAllAccountsDetail(mentorIds);
+                const userAccounts = await sessionAttendeesHelper.getAllAccountsDetail(mentorIds);
                 if (userAccounts && userAccounts.result.length > 0) {
                     await Promise.all(sessions.map(async function (session) {
 
