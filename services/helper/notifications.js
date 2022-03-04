@@ -78,12 +78,12 @@ module.exports = class Notifications {
      * @returns
     */
 
-    static async sendNotificationBefore15mins() {
+    static async sendNotificationBefore60mins() {
         try {
             let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
 
-            var dateEndTime = moment(currentDateutc).add(16, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
-            var dateStartTime = moment(currentDateutc).add(15, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+            var dateEndTime = moment(currentDateutc).add(61, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+            var dateStartTime = moment(currentDateutc).add(60, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
 
             let data = await sessionData.findSessions({
                 status: "published",
