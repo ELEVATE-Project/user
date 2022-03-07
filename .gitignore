@@ -63,6 +63,10 @@ public/tmp
 
 .env
 
+gcp.json
+
+gcp1.json
+
 # Ignore all credentials
 generics/helpers/credentials/*
 
