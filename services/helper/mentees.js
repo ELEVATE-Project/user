@@ -10,6 +10,7 @@ const httpStatusCode = require("../../generics/http-status");
 const bigBlueButton = require("./bigBlueButton");
 const feedbackHelper = require("./feedback")
 const utils = require('../../generics/utils');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = class MenteesHelper {
     
