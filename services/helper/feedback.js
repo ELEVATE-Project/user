@@ -32,7 +32,7 @@ module.exports = class MenteesHelper {
                     feedbacks: {
                         $size: 0
                     },
-                    userId
+                    userId: ObjectId(userId)
                 };
                 let mentorSessions = await sessionData.findSessions(filters, {
                     _id: 1,

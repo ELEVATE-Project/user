@@ -4,6 +4,7 @@ const utils = require('../../generics/utils');
 const common = require('../../constants/common');
 const apiResponses = require("../../constants/api-responses");
 const httpStatusCode = require("../../generics/http-status");
+const ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = class MentorsHelper {
 
@@ -37,7 +38,7 @@ module.exports = class MentorsHelper {
                     $gte: filterStartDate.toISOString(),
                     $lte: filterEndDate.toISOString()
                 },
-                userId,
+                userId: ObjectId(userId),
                 deleted: false
             };
 
@@ -49,7 +50,7 @@ module.exports = class MentorsHelper {
                     $gte: filterStartDate.toISOString(),
                     $lte: filterEndDate.toISOString()
                 },
-                userId,
+                userId: ObjectId(userId),
                 status: 'completed',
                 deleted: false
             };

@@ -315,7 +315,7 @@ module.exports = class SessionsHelper {
             }
 
             let filters = {
-                userId: loggedInUserId,
+                userId: ObjectId(loggedInUserId),
                 endDateUtc: {
                     $gt: moment().utc().format()
                 }
