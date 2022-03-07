@@ -30,7 +30,7 @@ let enviromentVariables = {
   },
   "KAFKA_GROUP_ID":{
     "message" : "Required kafka consumer group id",
-    "optional" : false
+    "optional" : true
   },
   "SENDGRID_API_KEY" : {
     "message" : "Required sendgrid api key",
