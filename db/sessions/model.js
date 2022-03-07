@@ -16,7 +16,7 @@ let sessionsSchema = new Schema({
   medium: Array,
   image: Array,
   userId: {
-    type: String,
+    type: mongoose.Types.ObjectId,
     index: true
   },
   mentorName: String,
