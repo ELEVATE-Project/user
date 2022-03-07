@@ -34,7 +34,7 @@ async function sendEmail(params) {
             from: fromMail, // sender address
             to: params.to, // list of receivers
             subject: params.subject, // Subject line
-            text: params.body // plain text body
+            html: params.body
         };
         if (params.cc) {
             message['cc'] = params.cc;
@@ -42,8 +42,6 @@ async function sendEmail(params) {
         try {
             await sgMail.send(message);
         } catch (error) {
-            console.error(error);
-
             if (error.response) {
                 console.error(error.response.body)
             }
