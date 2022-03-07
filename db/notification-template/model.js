@@ -43,6 +43,12 @@ const notificationTemplateSchema = new Schema({
     updatedBy: {
         type: mongoose.Types.ObjectId,
         required: true
+    },
+    emailHeader:{
+        type: String
+    },
+    emailFooter:{
+        type: String
     }
 });
 

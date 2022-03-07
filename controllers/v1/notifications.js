@@ -22,6 +22,7 @@ module.exports = class Notifications {
         try {
              notificationsHelper.sendNotificationBefore15mins();
              notificationsHelper.sendNotificationBefore24Hour();
+             notificationsHelper.sendNotificationBefore1Hour();
              return({
                 statusCode: httpStatusCode.ok,
             });
