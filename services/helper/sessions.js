@@ -172,7 +172,7 @@ module.exports = class SessionsHelper {
                 /* Find email template according to request type */
                 let templateData;
                 if (method == common.DELETE_METHOD) {
-                    templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE);
+                    templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE);             
                 } else if (isSessionReschedule) {
                     templateData = await notificationTemplateData.findOneEmailTemplate(process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE);
                 }
