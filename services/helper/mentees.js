@@ -232,7 +232,7 @@ module.exports = class MenteesHelper {
                 $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
             },
             userId: {
-                $ne: userId
+                $ne: ObjectId(userId)
             }
         };
 
