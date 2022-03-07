@@ -78,12 +78,12 @@ module.exports = class Notifications {
      * @returns
     */
 
-    static async sendNotificationBefore60mins() {
+    static async sendNotificationBefore15mins() {
         try {
             let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
 
-            var dateEndTime = moment(currentDateutc).add(61, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
-            var dateStartTime = moment(currentDateutc).add(60, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+            var dateEndTime = moment(currentDateutc).add(16, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+            var dateStartTime = moment(currentDateutc).add(15, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
 
             let data = await sessionData.findSessions({
                 status: "published",
@@ -144,4 +144,66 @@ module.exports = class Notifications {
             throw error;
         }
     }
+
+    /**
+     * Send Notification to Mentors before 1 hour.
+     * @method
+     * @name sendNotificationBefore1Hour
+     * @returns
+    */
+
+         static async sendNotificationBefore1Hour() {
+            try {
+    
+    
+                let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
+                var dateEndTime = moment(currentDateutc).add(61, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+                var dateStartTime = moment(currentDateutc).add(60, 'minutes').format(common.UTC_DATE_TIME_FORMAT);
+    
+                let sessions = await sessionData.findSessions({
+                    status: "published",
+                    deleted: false,
+                    startDateUtc: {
+                        $gte: dateStartTime,
+                        $lt: dateEndTime
+                    }
+                });
+    
+                let emailTemplate = await notificationData.findOneEmailTemplate(common.MENTOR_SESSION_ONE_HOUR_REMAINDER_EMAIL_CODE);
+    
+                if (emailTemplate && sessions && sessions.length > 0) {
+    
+                    const mentorIds = [];
+                    sessions.forEach(session => {
+                        mentorIds.push(session.userId.toString());
+                    });
+                    const userAccounts = await sessionAttendeesHelper.getAllAccountsDetail(mentorIds);
+                    if (userAccounts && userAccounts.result.length > 0) {
+                        await Promise.all(sessions.map(async function (session) {
+    
+                            let emailBody = emailTemplate.body.replace("{sessionTitle}", session.title);
+                            var foundElement = userAccounts.result.find(e => e._id === session.userId);
+    
+                            if (foundElement && foundElement.email.address && foundElement.name) {
+                                emailBody = emailBody.replace("{name}", foundElement.name);
+                                const payload = {
+                                    type: 'email',
+                                    email: {
+                                        to: foundElement.email.address,
+                                        subject: emailTemplate.subject,
+                                        body: emailBody
+                                    }
+                                };
+                                await kafkaCommunication.pushEmailToKafka(payload);
+                            }
+    
+                        }));
+                    }
+    
+                }
+            } catch (error) {
+                throw error;
+            }
+        }
+        
 }
