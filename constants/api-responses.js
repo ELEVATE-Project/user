@@ -32,7 +32,7 @@ module.exports = {
     "JOIN_ONLY_LIVE_SESSION": "Please wait for Mentor to start the session.",
     "USER_NOT_ENROLLED": "User has not enrolled for the session.",
     "SESSION_LINK_GENERATED_SUCCESSFULLY": "Session link generated successfully.",
-    "USER_ENROLLED_SUCCESSFULLY": "User enrolled successfully.",
+    "USER_ENROLLED_SUCCESSFULLY": "You have enrolled successfully.",
     "USER_ALREADY_ENROLLED": "User already enrolled.",
     "USER_UNENROLLED_SUCCESSFULLY": "You are no longer enrolled in this session.",
     "USER_NOT_ENROLLED": "User not enrolled.",
