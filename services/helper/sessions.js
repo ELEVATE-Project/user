@@ -59,7 +59,7 @@ module.exports = class SessionsHelper {
 
             let data = await sessionData.createSession(bodyData);
 
-            await this.setMentorPassword(data._id, data.userId);
+            await this.setMentorPassword(data._id, data.userId.toString());
             await this.setMenteePassword(data._id, data.createdAt);
 
             return common.successResponse({
@@ -554,7 +554,7 @@ module.exports = class SessionsHelper {
             let shareLink = session.shareLink;
             if (!shareLink) {
 
-                shareLink = utils.md5Hash(sessionId + "###" + session.userId);
+                shareLink = utils.md5Hash(sessionId + "###" + session.userId.toString());
                 await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink });
             }
             return common.successResponse({ message: apiResponses.SESSION_LINK_GENERATED_SUCCESSFULLY, statusCode: httpStatusCode.ok, result: { shareLink } });
@@ -626,7 +626,7 @@ module.exports = class SessionsHelper {
                     }));
                 }
 
-                if (session.userId !== mentor.data.result._id) {
+                if (session.userId.toString() !== mentor.data.result._id) {
                     return resolve(common.failureResponse({
                         message: apiResponses.CANNOT_START_OTHER_MENTOR_SESSION,
                         statusCode: httpStatusCode.bad_request,
