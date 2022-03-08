@@ -47,7 +47,7 @@ module.exports = class Notifications {
                     await Promise.all(sessions.map(async function (session) {
 
                         let emailBody = emailTemplate.body.replace("{sessionTitle}", session.title);
-                        var foundElement = userAccounts.result.find(e => e._id === session.userId);
+                        var foundElement = userAccounts.result.find(e => e._id === session.userId.toString());
 
                         if (foundElement && foundElement.email.address && foundElement.name) {
                             emailBody = emailBody.replace("{name}", foundElement.name);
@@ -124,7 +124,7 @@ module.exports = class Notifications {
                 attendeesInfo.forEach(async function (attendee) {
 
                     let emailBody = emailTemplate.body.replace("{sessionTitle}", attendee.title);
-                    var foundElement = attendeesAccounts.result.find(e => e._id === attendee.userId);
+                    var foundElement = attendeesAccounts.result.find(e => e._id === attendee.userId.toString());
                     if (foundElement && foundElement.email.address && foundElement.name) {
 
                         emailBody = emailBody.replace("{name}", foundElement.name);
@@ -182,7 +182,7 @@ module.exports = class Notifications {
                         await Promise.all(sessions.map(async function (session) {
     
                             let emailBody = emailTemplate.body.replace("{sessionTitle}", session.title);
-                            var foundElement = userAccounts.result.find(e => e._id === session.userId);
+                            var foundElement = userAccounts.result.find(e => e._id === session.userId.toString());
     
                             if (foundElement && foundElement.email.address && foundElement.name) {
                                 emailBody = emailBody.replace("{name}", foundElement.name);
