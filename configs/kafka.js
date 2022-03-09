@@ -35,12 +35,16 @@ module.exports = function (config) {
     console.error.bind(console, "kafka producer creation error!")
   })
 
-  const consumer = new kafka.Consumer(client, [{
-    topic: process.env.KAFKA_TOPIC
-  }], {
-    groupId : process.env.KAFKA_GROUP_ID,
-    autoCommit: true
-  });
+
+  const consumer = new kafka.ConsumerGroup(
+    {
+        kafkaHost :  process.env.KAFKA_HOST,
+        groupId : process.env.KAFKA_GROUP_ID,
+        autoCommit : true
+    },
+    process.env.KAFKA_TOPIC
+    ); 
+
 
   consumer.on('message', async function (message) {
     try {
