@@ -99,7 +99,7 @@ module.exports = class Notifications {
 
             let emailTemplate = await notificationData.findOneEmailTemplate(common.MENTEE_SESSION_REMAINDER_EMAIL_CODE);
 
-            if (emailTemplate && data && data.length > 1) {
+            if (emailTemplate && data && data.length > 0) {
                 await Promise.all(data.map(async function (session) {
                     const sessionAttendees = await sessionAttendesData.findAllSessionAttendees({
                         sessionId: ObjectId(session._id)
