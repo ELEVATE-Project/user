@@ -315,10 +315,7 @@ module.exports = class SessionsHelper {
             }
 
             let filters = {
-                userId: ObjectId(loggedInUserId),
-                endDateUtc: {
-                    $gt: moment().utc().format()
-                }
+                userId: ObjectId(loggedInUserId)
             };
             if (arrayOfStatus.length > 0) {
                 filters['status'] = {

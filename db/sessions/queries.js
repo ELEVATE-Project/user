@@ -111,6 +111,7 @@ module.exports = class SessionsData {
                     }
                 ]);
                 resolve(sessionData);
+                
             } catch (error) {
                 reject(error);
             }
