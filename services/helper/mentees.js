@@ -155,6 +155,14 @@ module.exports = class MenteesHelper {
                     }));
                 }
 
+                if (session.status == "completed") {
+                    return resolve(common.failureResponse({
+                        message: apiResponses.SESSION_ENDED,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    }));
+                }
+
                 if (session.status !== "live") {
                     return resolve(common.failureResponse({
                         message: apiResponses.JOIN_ONLY_LIVE_SESSION,
