@@ -318,6 +318,18 @@ module.exports = class SessionsHelper {
                 userId: ObjectId(loggedInUserId)
             };
             if (arrayOfStatus.length > 0) {
+
+                if(arrayOfStatus.includes("published") && arrayOfStatus.includes("completed") && arrayOfStatus.includes("live")){
+                    filters['endDateUtc'] = {
+                        $lt: moment().utc().format()
+                    }
+                } 
+                else if(arrayOfStatus.includes("published") && arrayOfStatus.includes("live")){
+                    filters['endDateUtc'] = {
+                        $gte: moment().utc().format()
+                    }
+                } 
+               
                 filters['status'] = {
                     $in: arrayOfStatus
                 }
