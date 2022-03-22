@@ -29,15 +29,16 @@ async function sendEmail(params) {
         if (params.from) {
             fromMail = params.from;
         }
+        const to = params.to.split(",");
 
         let message = {
             from: fromMail, // sender address
-            to: params.to, // list of receivers
+            to: to, // list of receivers
             subject: params.subject, // Subject line
             html: params.body
         };
         if (params.cc) {
-            message['cc'] = params.cc;
+            message['cc'] = params.cc.split(",");
         }
         try {
             await sgMail.send(message);
