@@ -12,7 +12,7 @@ module.exports = {
             .notEmpty()
             .withMessage('name field is empty')
             .matches(/^[A-Za-z ]+$/)
-            .withMessage('name is invalid');
+            .withMessage('This field can only contain alphabets');
 
         req.checkBody('email')
             .trim()
