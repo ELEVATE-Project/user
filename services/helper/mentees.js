@@ -270,7 +270,7 @@ module.exports = class MenteesHelper {
 
                 if(session.image && session.image.length > 0){
                     session.image = session.image.map(async imgPath => {
-                        if(imgPath){
+                        if(imgPath && imgPath != ""){
                             return await utils.getDownloadableUrl(imgPath);
                         }
                     });
@@ -316,7 +316,7 @@ module.exports = class MenteesHelper {
 
                 if(session.image && session.image.length > 0){
                     session.image = session.image.map(async imgPath => {
-                        if(imgPath){
+                        if(imgPath && imgPath != ""){
                             return await utils.getDownloadableUrl(imgPath);
                         }
                     });
