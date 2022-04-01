@@ -381,7 +381,7 @@ module.exports = class AccountHelper {
     */
 
     static async resetPassword(bodyData) {
-        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, password: 0 };
+        const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0 };
         try {
             let user = await usersData.findOne({ 'email.address': bodyData.email }, projection);
             if (!user) {
@@ -391,6 +391,10 @@ module.exports = class AccountHelper {
             const redisData = await redisCommunication.getKey(bodyData.email);
             if (!redisData || redisData.otp != bodyData.otp) {
                 return common.failureResponse({ message: apiResponses.RESET_OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+            const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
+            if (isPasswordCorrect) {
+                return common.failureResponse({ message: apiResponses.RESET_PREVIOUS_PASSWORD, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
             const salt = bcryptJs.genSaltSync(10);
@@ -405,6 +409,8 @@ module.exports = class AccountHelper {
                 }
             };
 
+            
+
             const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d');
             const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d');
 
@@ -418,8 +424,10 @@ module.exports = class AccountHelper {
             await usersData.updateOneUser({ _id: user._id }, updateParams);
 
             /* Mongoose schema is in strict mode, so can not delete otpInfo directly */
+            delete user._doc.password;
             user = { ...user._doc };
             delete user.otpInfo;
+            
             const result = { access_token: accessToken, refresh_token: refreshToken, user };
 
             return common.successResponse({ statusCode: httpStatusCode.ok, message: apiResponses.PASSWORD_RESET_SUCCESSFULLY, result });
