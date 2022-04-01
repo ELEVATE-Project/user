@@ -124,22 +124,28 @@ module.exports = class SessionsHelper {
                 isSessionReschedule = true;
             }
 
-            let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes');
+        
 
-            if(elapsedMinutes < 30){
-                return common.failureResponse({
-                    message: apiResponses.SESSION__MINIMUM_DURATION_TIME,
-                    statusCode: httpStatusCode.bad_request,
-                    responseCode: 'CLIENT_ERROR'
-                });
-            }
+            if (method != common.DELETE_METHOD ){
 
-            if(elapsedMinutes > 1440){
-                return common.failureResponse({
-                    message: apiResponses.SESSION_DURATION_TIME,
-                    statusCode: httpStatusCode.bad_request,
-                    responseCode: 'CLIENT_ERROR'
-                });
+                let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes');
+                
+                if(elapsedMinutes < 30){
+                    return common.failureResponse({
+                        message: apiResponses.SESSION__MINIMUM_DURATION_TIME,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    });
+                }
+
+                if(elapsedMinutes > 1440){
+                    return common.failureResponse({
+                        message: apiResponses.SESSION_DURATION_TIME,
+                        statusCode: httpStatusCode.bad_request,
+                        responseCode: 'CLIENT_ERROR'
+                    });
+                }
+
             }
 
             let message;
