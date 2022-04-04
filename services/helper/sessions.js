@@ -281,6 +281,7 @@ module.exports = class SessionsHelper {
             }
 
             const sessionDetails = await sessionData.findOneSession(filter, projection);
+
             if (!sessionDetails) {
                 return common.failureResponse({
                     message: apiResponses.SESSION_NOT_FOUND,
@@ -296,6 +297,15 @@ module.exports = class SessionsHelper {
                 if (sessionAttendee) {
                     sessionDetails.isEnrolled = true;
                 }
+            }
+
+
+            let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
+            let sessionEndDate = moment.unix(parseInt(sessionDetails.endDateUtc)).utc().format(common.UTC_DATE_TIME_FORMAT);
+            let diff = moment(sessionEndDate).diff(currentDate,'minutes');
+            if(diff < 0){
+                await sessionData.updateOneSession({ _id: id }, { status:common.COMPLETED_STATUS });
+                sessionDetails.status = common.COMPLETED_STATUS;
             }
 
             if(sessionDetails.image && sessionDetails.image.length > 0){

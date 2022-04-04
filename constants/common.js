@@ -43,6 +43,7 @@ module.exports = {
     UTC_DATE_TIME_FORMAT:"YYYY-MM-DDTHH:mm:ss",
     internalAccessUrs:[
         "/notifications/emailCronJob"
-    ]
+    ],
+    COMPLETED_STATUS:"completed"
 };
 

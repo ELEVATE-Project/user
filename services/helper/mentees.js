@@ -311,6 +311,7 @@ module.exports = class MenteesHelper {
             userId
         };
         const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
+       
         if(sessions[0].data && sessions[0].data.length > 0){
             sessions[0].data = sessions[0].data.map(async session => {
 
@@ -324,9 +325,14 @@ module.exports = class MenteesHelper {
                 }
                 return session;
             });
+
+
             sessions[0].data = await Promise.all(sessions[0].data);
+            sessions[0].data.sort((a, b) => a.title.localeCompare(b.title))
+
         }
 
+       
         return sessions;
     }
 }
