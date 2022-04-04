@@ -252,6 +252,7 @@ module.exports = class AccountHelper {
         * @name generateOtp
         * @param {Object} bodyData -request data.
         * @param {string} bodyData.email - user email.
+        * @param {string} bodyData.password - user email.
         * @returns {JSON} - returns otp success response
     */
 
@@ -272,6 +273,12 @@ module.exports = class AccountHelper {
                 isValidOtpExist = false;
             }
 
+            const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password);
+            if (isPasswordCorrect) {
+                return common.failureResponse({ message: apiResponses.RESET_PREVIOUS_PASSWORD, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
+            }
+
+            
             if (!isValidOtpExist) {
                 otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
                 const redisData = {
