@@ -301,7 +301,7 @@ module.exports = class SessionsHelper {
 
 
             let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
-            let sessionEndDate = moment.unix(parseInt(sessionDetails.endDateUtc)).utc().format(common.UTC_DATE_TIME_FORMAT);
+            let sessionEndDate = moment(sessionDetails.endDateUtc).format(common.UTC_DATE_TIME_FORMAT);
             let diff = moment(sessionEndDate).diff(currentDate,'minutes');
             if(diff < 0){
                 await sessionData.updateOneSession({ _id: sessionDetails._id }, { status:common.COMPLETED_STATUS });
