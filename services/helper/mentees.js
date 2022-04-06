@@ -295,36 +295,25 @@ module.exports = class MenteesHelper {
 
     static async getMySessions(page, limit, search, userId) {
         const filters = {
-            $or: [
-                {
-                    'sessionDetail.endDateUtc': {
-                        $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-                    }
-                },
-                {
-                    'sessionDetail.status': 'published'
-                },
-                {
-                    'sessionDetail.status': 'live'
+
+            $and: [{
+                'sessionDetail.endDateUtc': {
+                    $gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT)
                 }
+            }],
+            $or: [
+                    {
+                        'sessionDetail.status': 'published'
+                    },
+                    {
+                        'sessionDetail.status': 'live'
+                    }
             ],
             userId
         };
         const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters);
         if(sessions[0].data && sessions[0].data.length > 0){
             sessions[0].data = sessions[0].data.map(async session => {
-
-
-                let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
-                let sessionEndDate = moment(session.endDateUtc).format(common.UTC_DATE_TIME_FORMAT);
-                let diff = moment(sessionEndDate).diff(currentDate,'minutes');
-                if(diff < 0){
-                    
-                    await sessionData.updateOneSession({ _id: session._id }, { status:common.COMPLETED_STATUS });
-                    session.status = common.COMPLETED_STATUS;
-                    return false;
-
-                } else {
 
                     if(session.image && session.image.length > 0){
                         session.image = session.image.map(async imgPath => {
@@ -336,7 +325,6 @@ module.exports = class MenteesHelper {
                     }
                     return session;
 
-                }
             });
 
 
