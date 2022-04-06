@@ -167,6 +167,7 @@ module.exports = class SessionsAttendees {
                             description: '$sessionDetail.description',
                             startDate: '$sessionDetail.startDate',
                             endDate: '$sessionDetail.endDate',
+                            endDateUtc: '$sessionDetail.endDateUtc',
                             status: '$sessionDetail.status',
                             image: '$sessionDetail.image'
                         }
