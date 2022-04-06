@@ -314,15 +314,29 @@ module.exports = class MenteesHelper {
         if(sessions[0].data && sessions[0].data.length > 0){
             sessions[0].data = sessions[0].data.map(async session => {
 
-                if(session.image && session.image.length > 0){
-                    session.image = session.image.map(async imgPath => {
-                        if(imgPath && imgPath != ""){
-                            return await utils.getDownloadableUrl(imgPath);
-                        }
-                    });
-                    session.image = await Promise.all(session.image);
+
+                let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
+                let sessionEndDate = moment(session.endDateUtc).format(common.UTC_DATE_TIME_FORMAT);
+                let diff = moment(sessionEndDate).diff(currentDate,'minutes');
+                if(diff < 0){
+                    
+                    await sessionData.updateOneSession({ _id: session._id }, { status:common.COMPLETED_STATUS });
+                    session.status = common.COMPLETED_STATUS;
+                    return false;
+
+                } else {
+
+                    if(session.image && session.image.length > 0){
+                        session.image = session.image.map(async imgPath => {
+                            if(imgPath && imgPath != ""){
+                                return await utils.getDownloadableUrl(imgPath);
+                            }
+                        });
+                        session.image = await Promise.all(session.image);
+                    }
+                    return session;
+
                 }
-                return session;
             });
 
 
