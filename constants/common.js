@@ -44,6 +44,8 @@ module.exports = {
     internalAccessUrs:[
         "/notifications/emailCronJob"
     ],
-    COMPLETED_STATUS:"completed"
+    COMPLETED_STATUS:"completed",
+    PUBLISHED_STATUS:"published",
+    LIVE_STATUS:"live"
 };
 

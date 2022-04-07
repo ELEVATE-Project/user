@@ -340,16 +340,16 @@ module.exports = class SessionsHelper {
             }
 
             let filters = {
-                userId: ObjectId(loggedInUserId)
+                 userId: ObjectId(loggedInUserId)
             };
             if (arrayOfStatus.length > 0) {
 
-                if(arrayOfStatus.includes("published") && arrayOfStatus.includes("completed") && arrayOfStatus.includes("live")){
+                if(arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)){
                     filters['endDateUtc'] = {
                         $lt: moment().utc().format()
                     }
                 } 
-                else if(arrayOfStatus.includes("published") && arrayOfStatus.includes("live")){
+                else if(arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)){
                     filters['endDateUtc'] = {
                         $gte: moment().utc().format()
                     }
@@ -368,6 +368,23 @@ module.exports = class SessionsHelper {
                     result: []
                 });
             }
+
+            if(sessionDetails[0].data && sessionDetails[0].data.length > 0){
+               await Promise.all(sessionDetails[0].data.map(async function(session){
+                    if(session.status==common.PUBLISHED_STATUS){
+
+                        let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
+                        let sessionEndDate = moment(session.endDateUtc).format(common.UTC_DATE_TIME_FORMAT);
+                        let diff = moment(sessionEndDate).diff(currentDate,'minutes');  
+                        if(diff < 0 ){
+                            await sessionData.updateOneSession({ _id: session._id }, { status:common.COMPLETED_STATUS });
+                            session.status = common.COMPLETED_STATUS;
+                        }
+                        return session;
+                    }
+                }));
+            }
+
             return common.successResponse({
                 statusCode: httpStatusCode.ok,
                 message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
