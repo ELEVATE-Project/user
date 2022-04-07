@@ -88,7 +88,8 @@ module.exports = class SessionsData {
                             startDate: 1,
                             endDate: 1,
                             status: 1,
-                            image: 1
+                            image: 1,
+                            endDateUtc: 1
                         }
                     },
                     {
