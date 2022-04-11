@@ -141,6 +141,23 @@ module.exports = class SessionsData {
             }
         });
     }
+
+    static updateSession(filter, update, options = {}) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const updateResponse = await Sessions.update(filter, update, options);
+                if ((updateResponse.n === 1 && updateResponse.nModified === 1) || (updateResponse.matchedCount === 1 && updateResponse.modifiedCount === 1)) {
+                    resolve('SESSION_UPDATED')
+                } else if ((updateResponse.n === 1 && updateResponse.nModified === 0) || (updateResponse.matchedCount === 1 && updateResponse.modifiedCount === 0)) {
+                    resolve('SESSION_ALREADY_UPDATED')
+                } else {
+                    resolve('SESSION_NOT_FOUND');
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
 }
 
 
