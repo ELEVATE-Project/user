@@ -338,7 +338,7 @@ module.exports = class SessionsHelper {
             // update sessions which having status as published and  exceeds the current date and time  
             await sessionData.updateSession({ 
                  "status": common.PUBLISHED_STATUS,
-                 "endDateUtc": { $gte: moment().utc().format() } 
+                 "endDateUtc": { $lt: moment().utc().format() } 
                 }, { status:common.COMPLETED_STATUS });
 
 
@@ -377,21 +377,6 @@ module.exports = class SessionsHelper {
                 });
             }
 
-            // if(sessionDetails[0].data && sessionDetails[0].data.length > 0){
-            //    await Promise.all(sessionDetails[0].data.map(async function(session){
-            //         if(session.status==common.PUBLISHED_STATUS){
-
-            //             let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT);
-            //             let sessionEndDate = moment(session.endDateUtc).format(common.UTC_DATE_TIME_FORMAT);
-            //             let diff = moment(sessionEndDate).diff(currentDate,'minutes');  
-            //             if(diff < 0 ){
-            //                 await sessionData.updateOneSession({ _id: session._id }, { status:common.COMPLETED_STATUS });
-            //                 session.status = common.COMPLETED_STATUS;
-            //             }
-            //             return session;
-            //         }
-            //     }));
-            // }
 
             return common.successResponse({
                 statusCode: httpStatusCode.ok,
