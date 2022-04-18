@@ -82,6 +82,8 @@ module.exports = class AccountHelper {
             };
             await usersData.updateOneUser({ _id: ObjectId(user._id) }, update);
 
+            const deleteData = await redisCommunication.deleteKey(email.toLowerCase());
+
             const result = { access_token: accessToken, refresh_token: refreshToken, user };
 
             const templateData = await notificationTemplateData.findOneEmailTemplate(process.env.REGISTRATION_EMAIL_TEMPLATE_CODE);
@@ -429,6 +431,9 @@ module.exports = class AccountHelper {
                 password: bodyData.password
             };
             await usersData.updateOneUser({ _id: user._id }, updateParams);
+
+            const deleteData = await redisCommunication.deleteKey(bodyData.email.toLowerCase());
+
 
             /* Mongoose schema is in strict mode, so can not delete otpInfo directly */
             delete user._doc.password;
