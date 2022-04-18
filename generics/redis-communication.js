@@ -32,7 +32,21 @@ const getKey = async function (key) {
     return JSON.parse(data);
 }
 
+/**
+ * @method
+ * @name deleteKey - delete key from the redis cache
+ * @param {String} key key to get corresponding saved data
+ * @returns {Promise<Object>} Returns the deleted corresponding object
+ * @author Rakesh
+ **/
+const deleteKey = async function(key){
+
+    const data = await redisClient.del(key);
+    return JSON.parse(data);
+}
+
 module.exports = {
     setKey,
-    getKey
+    getKey,
+    deleteKey
 };
