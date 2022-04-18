@@ -47,7 +47,7 @@ module.exports = class AccountHelper {
             }
 
             if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-                const redisData = await redisCommunication.getKey(email);
+                const redisData = await redisCommunication.getKey(email.toLowerCase());
                 if (!redisData || redisData.otp != bodyData.otp) {
                     return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
@@ -265,7 +265,7 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            const userData = await redisCommunication.getKey(bodyData.email);
+            const userData = await redisCommunication.getKey(bodyData.email.toLowerCase());
 
             if (userData && userData.action === 'forgetpassword') {
                 otp = userData.otp // If valid then get previuosly generated otp
@@ -282,11 +282,11 @@ module.exports = class AccountHelper {
             if (!isValidOtpExist) {
                 otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
                 const redisData = {
-                    verify: bodyData.email,
+                    verify: bodyData.email.toLowerCase(),
                     action: 'forgetpassword',
                     otp
                 };
-                const res = await redisCommunication.setKey(bodyData.email, redisData, common.otpExpirationTime);
+                const res = await redisCommunication.setKey(bodyData.email.toLowerCase(), redisData, common.otpExpirationTime);
                 if (res !== 'OK') {
                     return common.failureResponse({ message: apiResponses.UNABLE_TO_SEND_OTP, statusCode: httpStatusCode.internal_server_error, responseCode: 'SERVER_ERROR' });
                 }
@@ -332,7 +332,7 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            const userData = await redisCommunication.getKey(bodyData.email);
+            const userData = await redisCommunication.getKey(bodyData.email.toLowerCase());
 
             if (userData && userData.action === 'signup') {
                 otp = userData.otp // If valid then get previuosly generated otp
@@ -343,11 +343,11 @@ module.exports = class AccountHelper {
             if (!isValidOtpExist) {
                 otp = Math.floor(Math.random() * 900000 + 100000); // 6 digit otp
                 const redisData = {
-                    verify: bodyData.email,
+                    verify: bodyData.email.toLowerCase(),
                     action: 'signup',
                     otp
                 };
-                const res = await redisCommunication.setKey(bodyData.email, redisData, common.otpExpirationTime);
+                const res = await redisCommunication.setKey(bodyData.email.toLowerCase(), redisData, common.otpExpirationTime);
                 if (res !== 'OK') {
                     return common.failureResponse({ message: apiResponses.UNABLE_TO_SEND_OTP, statusCode: httpStatusCode.internal_server_error, responseCode: 'SERVER_ERROR' });
                 }
@@ -395,7 +395,7 @@ module.exports = class AccountHelper {
                 return common.failureResponse({ message: apiResponses.USER_DOESNOT_EXISTS, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
 
-            const redisData = await redisCommunication.getKey(bodyData.email);
+            const redisData = await redisCommunication.getKey(bodyData.email.toLowerCase());
             if (!redisData || redisData.otp != bodyData.otp) {
                 return common.failureResponse({ message: apiResponses.RESET_OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
