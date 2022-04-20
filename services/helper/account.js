@@ -40,14 +40,14 @@ module.exports = class AccountHelper {
     static async create(bodyData) {
         const projection = { password: 0, refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
         try {
-            const email = bodyData.email;
+            const email = bodyData.email.toLowerCase();
             let user = await usersData.findOne({ 'email.address': email });
             if (user) {
                 return common.failureResponse({ message: apiResponses.USER_ALREADY_EXISTS, statusCode: httpStatusCode.not_acceptable, responseCode: 'CLIENT_ERROR' });
             }
 
             if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-                const redisData = await redisCommunication.getKey(email.toLowerCase());
+                const redisData = await redisCommunication.getKey(email);
                 if (!redisData || redisData.otp != bodyData.otp) {
                     return common.failureResponse({ message: apiResponses.OTP_INVALID, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
                 }
@@ -82,7 +82,7 @@ module.exports = class AccountHelper {
             };
             await usersData.updateOneUser({ _id: ObjectId(user._id) }, update);
 
-            const deleteData = await redisCommunication.deleteKey(email.toLowerCase());
+            const deleteData = await redisCommunication.deleteKey(email);
 
             const result = { access_token: accessToken, refresh_token: refreshToken, user };
 
@@ -123,7 +123,7 @@ module.exports = class AccountHelper {
     static async login(bodyData) {
         const projection = { refreshTokens: 0, "designation.deleted": 0, "designation._id": 0, "areasOfExpertise.deleted": 0, "areasOfExpertise._id": 0, "location.deleted": 0, "location._id": 0, otpInfo: 0 };
         try {
-            let user = await usersData.findOne({ "email.address": bodyData.email }, projection);
+            let user = await usersData.findOne({ "email.address": bodyData.email.toLowerCase() }, projection);
             if (!user) {
                 return common.failureResponse({ message: apiResponses.EMAIL_ID_NOT_REGISTERED, statusCode: httpStatusCode.bad_request, responseCode: 'CLIENT_ERROR' });
             }
