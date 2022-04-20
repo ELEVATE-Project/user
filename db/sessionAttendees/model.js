@@ -45,5 +45,5 @@ let sessionAttendeesSchema = new Schema({
   }
 });
 
-const SessionAttendes = db.model("sessionAttendees", sessionAttendeesSchema);
+const SessionAttendes = db.model("sessionAttendees", sessionAttendeesSchema,"sessionAttendees");
 module.exports = SessionAttendes;

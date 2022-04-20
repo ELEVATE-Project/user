@@ -29,7 +29,7 @@ const { feedback } = require('../../services/helper/sessions');
      }
  });
  
- const QuestionsSet = db.model("questionSet", questionsSetSchema);
+ const QuestionsSet = db.model("questionSet", questionsSetSchema,"questionSet");
  
  module.exports = QuestionsSet;    
 
