@@ -34,6 +34,6 @@ const userSchema = new Schema({
     role: String
 });
 
-const SystemUsers = db.model("systemUsers", userSchema);
+const SystemUsers = db.model("systemUsers", userSchema,"systemUsers");
 
 module.exports = SystemUsers;

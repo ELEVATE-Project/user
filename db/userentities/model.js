@@ -43,6 +43,6 @@ const userEntitySchema = new Schema({
     }
 });
 
-const UserEntities = db.model("userEntities", userEntitySchema);
+const UserEntities = db.model("userEntities", userEntitySchema,"userEntities");
 
 module.exports = UserEntities;

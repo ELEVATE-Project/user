@@ -54,6 +54,6 @@ const notificationTemplateSchema = new Schema({
     }
 });
 
-const Users = db.model('notificationtemplates', notificationTemplateSchema);
+const Users = db.model('notificationtemplates', notificationTemplateSchema,"notificationTemplates");
 
 module.exports = Users;
