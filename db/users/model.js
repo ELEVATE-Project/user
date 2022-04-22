@@ -57,7 +57,8 @@ const userSchema = new Schema({
   otpInfo: {
     otp: Number,
     exp: Number
-  }
+  },
+  languages:[{ value: String, label: String }]
 });
 
 const Users = db.model("users", userSchema);
