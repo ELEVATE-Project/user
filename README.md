@@ -7,7 +7,7 @@ Install mongoDB: https://docs.mongodb.com/manual/installation/
 Install Robo 3T: ​​https://robomongo.org/
 
 
-## 1. Cloning the ml-survey-service repository into your system
+## 1. Cloning the Mentoring repository into your system
 
 Goto https://github.com/ELEVATE-Project/mentoring From the code tab copy the link. Using that link clone the repository into your local machine.
 
@@ -24,7 +24,14 @@ git clone https://github.com/ELEVATE-Project/mentoring.git
     create  a file named as .env in root directory of the project and copy below code into that file.
     Add fallowing enviorment configs 
 
-## Required Environment variables:
+
+
+## 3. Run mongodb locally
+   spacify the mongo port and ip in .env
+   application takes the db as specified in the .env
+
+
+### Required Environment variables:
 
 ````
 ```
@@ -125,9 +132,10 @@ ENABLE_LOG = true
 ````
 
 
-## 3. Install Npm
+## 4. Install Npm
 	npm i
     To install the dependencies in your local machine.
 
-## 4. To Run server
+
+## 5. To Run server
 	npm start
