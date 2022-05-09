@@ -5,6 +5,8 @@ Install any IDE in your system(eg: VScode etc..)
 Install nodejs from : https://nodejs.org/en/download/
 Install mongoDB: https://docs.mongodb.com/manual/installation/
 Install Robo 3T: ​​https://robomongo.org/
+Install kafka from : https://kafka.apache.org/downloads
+
 
 
 ## 1. Cloning the User repository into your system
