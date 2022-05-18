@@ -1,18 +1,19 @@
-FROM node:12
+FROM node:16
 
+#Set working directory
 WORKDIR /opt/user
 
-#copy package.json file
-COPY package.json /opt/user
+#Copy package.json file
+COPY package.json .
 
-#install node packges
-RUN npm install
+#Install node packages
+RUN npm install && npm install -g nodemon@2.0.16
 
-#copy all files 
-COPY . /opt/user
+#Copy all files 
+COPY . .
 
-#expose the application port
-EXPOSE 3000
+#Expose the application port
+EXPOSE 3001
 
-#start the application
-CMD node app.js
+#Start the application
+CMD [ "node", "app.js" ]
