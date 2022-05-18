@@ -1,0 +1,346 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Elevate",
+    "version": "1.0.0",
+    "description": "testing"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "local dev"
+    }
+  ],
+  "tags": [
+    {
+      "name": "User",
+      "description": "User Endpoints"
+    }
+  ],
+  "paths": {
+    "/user/v1/account/create": {
+      "post": {
+        "summary": "Creates user as a Mentor and Mentee",
+        "tags": ["User"],
+        "description": "This Api is associated with Create User on menteroing \n - Then Endpoint for creating user `/user/account/create` \n - It is mandatory to provide values for parameter marked with `required` \n - Mandatory parameter cannot be empty or null \n - secretCode is required only for mentor",
+        "requestBody": {
+          "description": "Request body consist of metadata and accepts payload as JSON",
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/user/userCreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK. User created.",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user/userCreateUserRsponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Not Acceptable. User already exists.",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user/userCreateUser406Exist"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Refrral code is invalid",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user/userCreateUser400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/v1/account/login": {
+      "post": {
+        "summary": "Login Api",
+        "tags": ["User"],
+        "description": "",
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/user/userLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user/userLoginResponse"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Not Acceptable",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/user/userLoginRequest"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "user": {
+        "userCreateUserRequest": {
+          "description": "User program and solution request",
+          "type": "object",
+          "required": ["name", "email", "password", "isAMentor"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the user",
+              "example": "John Deo",
+              "required": true
+            },
+            "email": {
+              "type": "string",
+              "description": "Email Id of user",
+              "example": "example@mail.com",
+              "required": true
+            },
+            "password": {
+              "type": "string",
+              "description": "Password of user",
+              "example": "Password",
+              "required": true
+            },
+            "isAMentor": {
+              "tyep": "boolean",
+              "description": "Type of User (Mentor - True, Mentee - False)",
+              "example": true,
+              "required": true
+            },
+            "secretCode": {
+              "tyep": "string",
+              "required": "optional",
+              "description": "Referral Code for mentor ",
+              "example": "4567"
+            }
+          }
+        },
+        "userCreateUserRsponse": {
+          "description": "User solutions response",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Sign-up successful, Please wait while logging in."
+            },
+
+            "result": {
+              "type": "object",
+              "properties": {
+                "access_token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODQ4MzI0MmQ1MzMyNzQ2MDQ2OWJlYyIsImVtYWlsIjoiYW5raXRzdGFyMDA3ODZAeWFob28uY29tIiwibmFtZSI6IkFua2l0IiwiaXNBTWVudG9yIjpmYWxzZX0sImlhdCI6MTY1Mjg1MTQ5MiwiZXhwIjoxNjUyOTM3ODkyfQ.ZgCXMVVAC50OlBZxiMFs47FxFpBL29Pl-LjIGcsd2iU"
+                },
+                "refresh_token": {
+                  "type": "string",
+                  "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODQ4MzI0MmQ1MzMyNzQ2MDQ2OWJlYyIsImVtYWlsIjoiYW5raXRzdGFyMDA3ODZAeWFob28uY29tIiwibmFtZSI6IkFua2l0IiwiaXNBTWVudG9yIjpmYWxzZX0sImlhdCI6MTY1Mjg1MTQ5MiwiZXhwIjoxNjY4NjYyNjkyfQ.0gnDJDcsCVL4jdinDza97yv9uzjdr2d7OLH15iGc9jg"
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "object",
+                      "properties": {
+                        "verified": { "type": "boolean", "example": false },
+                        "address": {
+                          "type": "string",
+                          "example": "example@mail.com"
+                        }
+                      }
+                    },
+                    "isAMentor": { "type": "boolean", "example": false },
+                    "hasAcceptedTAndC": { "type": "boolean", "example": false },
+                    "deleted": { "type": "boolean", "example": false },
+                    "_id": {
+                      "type": "string",
+                      "example": "628483242d53327460469bec"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "John Deo"
+                    },
+                    "designation": {
+                      "type": "array",
+                      "example": []
+                    },
+                    "location": {
+                      "type": "array",
+                      "example": []
+                    },
+                    "areasOfExpertise": {
+                      "type": "array",
+                      "example": []
+                    },
+                    "languages": {
+                      "type": "array",
+                      "example": []
+                    },
+                    "updatedAt": {
+                      "type": "datetime",
+                      "example": "2022-05-18T05:24:52.431Z"
+                    },
+                    "createdAt": {
+                      "type": "datetime",
+                      "example": "2022-05-18T05:24:52.431Z"
+                    },
+                    "__v": {
+                      "type": "number",
+                      "example": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "userCreateUser406Exist": {
+          "description": "User solutions response",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "User already exists."
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "userCreateUser400Response": {
+          "description": "Reffral Code is Invalid",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Incorrect code. Please try again."
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "userLoginRequest": {
+          "type": "object",
+          "description": "API for login",
+          "required": ["email", "password"],
+          "properties": {
+            "email": {
+              "type": "string",
+              "description": "Email Id of user",
+              "example": "example@mail.com"
+            },
+            "password": {
+              "type": "string",
+              "description": "Password of user",
+              "example": "Password"
+            }
+          }
+        },
+        "userLoginResponse": {
+          "type": "object",
+          "description": "User solutions response",
+          "properties": {
+            "responseCode": "OK",
+            "message": "User logged in successfully.",
+            "result": {
+              "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY1Mjk0MDgyMH0.TGuFqQ6pSbQW3NyiG8BZzAz0kPN7NiX2VS0yD4dhRUs",
+              "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY2ODY2NTYyMH0.fThfHLWiRDv1ez0KmBiOd2wUsYsHg7r--RhXrd68e1M",
+              "user": {
+                "email": {
+                  "verified": false,
+                  "address": "ankit.s@pacewisdom.com"
+                },
+                "isAMentor": false,
+                "hasAcceptedTAndC": true,
+                "deleted": false,
+                "_id": "62832531a05cbd57b273aebb",
+                "name": "Ankit",
+                "designation": [
+                  {
+                    "value": "1",
+                    "label": "Teacher"
+                  },
+                  {
+                    "value": "2",
+                    "label": "District Official"
+                  }
+                ],
+                "location": [
+                  {
+                    "value": "1",
+                    "label": "Bangalore"
+                  }
+                ],
+                "areasOfExpertise": [
+                  {
+                    "value": "1",
+                    "label": "Educational Leadership"
+                  },
+                  {
+                    "value": "2",
+                    "label": "SQAA"
+                  }
+                ],
+                "languages": [],
+                "updatedAt": "2022-05-17T05:40:46.683Z",
+                "createdAt": "2022-05-17T04:31:45.641Z",
+                "__v": 0,
+                "lastLoggedInAt": "2022-05-17T06:23:36.010Z",
+                "about": "This is test about of mentee",
+                "experience": "4.2",
+                "gender": "MALE",
+                "image": "https://cloudstorage.com/container/abc.png"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

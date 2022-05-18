@@ -1,0 +1,2334 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ML-Core Service API(s)",
+    "termsOfService": "https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE",
+    "description": "- The ML-Core Service is a centralised Service to support other services. Apis perform operations related to program entities user solutions etc \n- The URL for ML-Core API(s) is `{context}/mlcore/v1`\n- <b>Note:</b> These resources can be used in other services",
+    "contact": {
+      "email": "info@sunbird.org"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://staging.open-sunbird.org/api",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/users/mlcore/v1/programs": {
+      "post": {
+        "summary": "List of targeted user programs",
+        "description": "This API is used to get list of targeted user programs. Targeted programs are programs that are based on the user role and location preference.\n  - The endpoint for **User Programs** is `/users/mlcore/v1/programs`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["User APIs"],
+        "operationId": "List of targeted user programs",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isAPrivateProgram",
+            "in": "query",
+            "description": "isAPrivateProgram value will be true/false. True will return the private programs which is created by the user.",
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Represent Page Number",
+            "schema": {
+              "type": "string"
+            },
+            "example": 2
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Represents the Number of records returned per page",
+            "schema": {
+              "type": "string"
+            },
+            "example": 100
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "You can search the program based on program name, description and external Id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "apple"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "'The body parameter refers to the format of the request, the request body (payload) takes the following media types to make the payload:'\n \n - JSON \n \nThe body is the representation of the resource object for searching objects",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userapiUserProgramAndSolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of program return based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userapiProgramResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userapiProgram400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/users/mlcore/v1/solutions/{programId}": {
+      "post": {
+        "summary": "List of targeted user solutions.",
+        "description": "This API is used to get list of targeted user solutions. Targeted solutions are solutions that are based on the user role and location preference.\n  - The endpoint for **User Programs** is `/users/mlcore/v1/solutions`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["User APIs"],
+        "operationId": "List of targeted user solutions",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "programId",
+            "required": true,
+            "description": "Please append a valid Program Id To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "5ff438b04698083dbfab7284"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Represent Page Number",
+            "schema": {
+              "type": "string"
+            },
+            "example": 2
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Represents the Number of records returned per page",
+            "schema": {
+              "type": "string"
+            },
+            "example": 100
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "You can search the program based on name, description and external Id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "apple"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "'The body parameter refers to the format of the request, the request body (payload) takes the following media types to make the payload:'\n \n - JSON \n \nThe body is the representation of the resource object for searching objects",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userapiUserProgramAndSolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of solutions return based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userapiSolutionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userapiSolutions400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/users/mlcore/v1/targetedEntity/{solutionId}": {
+      "post": {
+        "summary": "List of Targeted entity",
+        "description": "This API is used to get list of targeted entity. Targeted entity are fetched based on the user role and location preference.\n  - The endpoint for **User targetedEntity** is `/users/mlcore/v1/targetedEntity`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["User APIs"],
+        "operationId": "targetedEntity",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "solutionId",
+            "description": "Please append a valid Solution Id To the Request URL",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "601d41607d4c835cf8b724ad"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "'The body parameter refers to the format of the request, the request body (payload) takes the following media types to make the payload:'\n \n - JSON \n \nThe body is the representation of the resource object for searching objects",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userapiUserProgramAndSolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of entity return based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userapiTargetedEntityResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/solutionIdMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/solutions/mlcore/v1/targetedSolutions": {
+      "post": {
+        "summary": "List of assigned solutions and targeted solutions",
+        "description": "This API is used to get List of solution which is assigned to the user and the solutions which is targeted to the user based on role and location. \n  - The endpoint for **Solution targetedSolutions** is `/solutions/mlcore/v1/targetedSolutions`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Solutions APIs"],
+        "operationId": "targetedSolutions",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Represents the type of the Solution. Solution type can be survey, observation or improvementProject",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "observation"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Represent Page Number",
+            "schema": {
+              "type": "string"
+            },
+            "example": 2
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Represents the Number of records returned per page",
+            "schema": {
+              "type": "string"
+            },
+            "example": 100
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "You can search the program based on program name, description and external Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "apple"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Criteria on which data has to be fetched. It can be assignedToMe or createdByMe. filter assignedToMe returns the solutions that are assigned to the user. createdByMe returns the solutions that are created by that user.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "assignedTome"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "- The body payload comprises of the metadata of the user being created - The body parameter refers to the format of the request, the request body (payload) takes the following media types to \n  payload:\n    json",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userapiUserProgramAndSolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "List of assigned solutions and targetted ones Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityapiTargetedSolutionsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolutionTypeMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/solutions/mlcore/v1/create": {
+      "post": {
+        "summary": "Create solution",
+        "description": "This API is associated with creating solution on the Sunbird Platform.\n  - The endpoint for **Solution create** is `/solutions/mlcore/v1/create`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Solutions APIs"],
+        "operationId": "createSolution",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "- The body payload comprises of the metadata of the user being created - The body parameter refers to the format of the request, the request body (payload) takes the following media types to \n  payload:\n    json",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/solutionapiSolutionCreationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solution creation Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/solutionapiCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolutionTypeMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/solutions/mlcore/v1/verifyLink/{link}": {
+      "post": {
+        "summary": "Verify Solution Link",
+        "description": "This API is associated with validating the solution link. The response will contains the below key.\n**isATargetedSolution** - If the user is targeted to the role and location then value will be true else it will be false.\n \n  - The endpoint for **Solution Verify Link** is `/solutions/mlcore/v1/verifyLink`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Solutions APIs"],
+        "operationId": "Verify Solution Link",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "link",
+            "required": true,
+            "description": "Please append a valid solution link To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2515e6fbe5039a6db09c10148e3c743b"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "- The body payload comprises of the metadata of the user being created - The body parameter refers to the format of the request, the request body (payload) takes the following media types to \n  payload:\n    json",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userapiUserProgramAndSolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verify Link Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/solutionapiVerifyLinkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/solutions/mlcore/v1/details/{solutionId}": {
+      "post": {
+        "summary": "Get Project Template Or Assessment Questions Based on Solution Type",
+        "description": "This API is associated with get the project template details or assessment questions based on solution type. If the solution type is observation then response will contain the assessment questions. If the solution type is improvementProject then response will contains the project template details.\n \n  - The endpoint for **Solution details** is `/solutions/mlcore/v1/details`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Solutions APIs"],
+        "operationId": "Get Template Or Questions",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "solutionId",
+            "required": true,
+            "description": "Please append a valid solution id To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "600ac0d1c7de076e6f9943b9"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "- The body payload comprises of the metadata of the role and location of the user - The body parameter refers to the format of the request, the request body (payload) takes the following media types to \n  payload:\n    json",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userapiUserProgramAndSolutionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Solution Detail Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/solutionapiDetailsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/solutionIdMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/entities/mlcore/v1/subEntityListBasedOnRoleAndLocation/{locationId}": {
+      "get": {
+        "summary": "Get the list of sub entity based on role and location",
+        "description": "This API is used to get the list of sub entity based on role and location. Exmaple for entities are state, district, block and school.\n  - The endpoint for **Entities subEntityListBasedOnRoleAndLocation** is `/entities/mlcore/v1/subEntityListBasedOnRoleAndLocation`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Entities APIs"],
+        "operationId": "Get list of sub entity based on role and location",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locationId",
+            "in": "path",
+            "description": "Please append a valid Location Id To the Request URL",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "236f5cff-c9af-4366-b0b6-253a1789766a"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Represents the Role. Example for roles are HM, DEO, Teacher etc.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "HM"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Get list of sub entity based on role and location Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityapisubEntityListBasedOnRoleAndLocationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityIdMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/entities/mlcore/v1/subEntityList/{entityId}": {
+      "post": {
+        "summary": "Get sub entity list for the given entity",
+        "description": "This API is used to get the list of sub entities based on the parent entity. For example If you are passing entity Id of a state you will get the list of district entity details in the response.\n  - The endpoint for **Entities subEntityList** is `/entities/mlcore/v1/subEntityList`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Entities APIs"],
+        "operationId": "Get sub entity list for the given entity",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "in": "path",
+            "description": "Please append a valid entity Id To the Request URL",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "5db173598a8e070bedca6ba1"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Represents the type of entity. Possible media types can be:- district, state",
+            "schema": {
+              "type": "string"
+            },
+            "example": "district"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "You can search the entity based on  name, description and external Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "apple"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Represent Page Number",
+            "schema": {
+              "type": "string"
+            },
+            "example": 2
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Represents the Number of records returned per page",
+            "schema": {
+              "type": "string"
+            },
+            "example": 100
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of sub entities return based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityapisubEntityListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityIdMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/entities/mlcore/v1/entityTypesByLocationAndRole/{stateLocationId}": {
+      "get": {
+        "summary": "List of sub entity type by location and role",
+        "description": "This API is used to get list of sub entity type based on location Id. For example if you are passing state location Id, then you will get the sub entities (district, block etc) of the state.\n  - The endpoint for **Entities subEntityListBasedOnRoleAndLocation** is `/entities/mlcore/v1/entityTypesByLocationAndRole`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Entities APIs"],
+        "operationId": "List of entity type by location and role",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "stateLocationId",
+            "required": true,
+            "description": "Please append a valid Location Id To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "236f5cff-c9af-4366-b0b6-253a1789766a"
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Represents the role",
+            "schema": {
+              "type": "string"
+            },
+            "example": "HM"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of sub entity types based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityapientityTypesByLocationAndRoleResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entityapiEntityTypesByLocationAndRole400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/cloud-services/mlcore/v1/files/preSignedUrls": {
+      "post": {
+        "summary": "Get signed URL",
+        "description": "This API is used to get signed URL. It will generate the file upload urls in the cloud storage.\n  - The endpoint for **Files preSignedUrls** is `/cloud-services/mlcore/v1/files/preSignedUrls`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["Files APIs"],
+        "operationId": "files Get signed URL",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "- The body payload comprises of the metadata of the user being created - The body parameter refers to the format of the request, the request body (payload) takes the following media types to \n  payload:\n    json",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/fileapiFilepreSignedUrlsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Get signed URL Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fileapiFilesGetSignedUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/fileapiFilesGetSignedUrl400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/user-extension/mlcore/v1/programsByPlatformRoles": {
+      "get": {
+        "summary": "List of Platform programs",
+        "description": "This API is used to get the List of programs for platform user. Based on role you can fetch the programs.\n  - The endpoint for **UserExtension programsByPlatformRoles** is `/user-extension/mlcore/v1/programsByPlatformRoles`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["User Extension APIs"],
+        "operationId": "programsByPlatformRoles",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Represents the user roles. You can pass multiple roles in query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "PM,PGM"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of platform program return based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userextensionapiProgramsByPlatformRoleslResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userextensionapiProgramsByPlatformRoles400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/user-extension/mlcore/v1/solutions/{programId}": {
+      "get": {
+        "summary": "List of solutions",
+        "description": "This API is used to get  the list of solutions for platform user program. It will return the solutions that are mapped to the requested program.\n  - The endpoint for **UserExtension solutions** is `/user-extension/mlcore/v1/solutions`\n  - It is mandatory to provide values for parameters marked with *. \n  - Mandatory fields cannot be null or empty.",
+        "tags": ["User Extension APIs"],
+        "operationId": "solutions",
+        "parameters": [
+          {
+            "name": "X-Authenticated-User-Token",
+            "in": "header",
+            "description": "Represents the authorized User ID to execute the API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "To make use of the API, you require authorization. Raise a request to the administrator for the use of the API. You will receive the authorization key. Specify the key received, here.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "description": "Represents the role of user",
+            "schema": {
+              "type": "string"
+            },
+            "example": "PM,PGM"
+          },
+          {
+            "name": "programId",
+            "in": "path",
+            "description": "Please append a valid program Id To the Request URL",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "5f9288fd5e25636ce6dcad66"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Platform solutions return based on the parameter provided",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userextensionapiSolutionsByPlatformRoleslResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "BAD REQUEST. The operation failed ! The possible reason for failure is that you may have missed providing input for a mandatory parameter.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/solutionIdMissing400Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "'INTERNAL SERVER ERROR. We track these errors automatically and try to set it right at the earliest. Try refreshing the page. If the problem persists contact us at info@sunbird.org.'",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/500Error"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false,
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "userapiUserProgramAndSolutionRequest": {
+        "description": "User program and solution request",
+        "type": "object",
+        "required": ["role", "state", "district", "school"],
+        "properties": {
+          "role": {
+            "description": "Represent the role of user",
+            "type": "string",
+            "example": "HM,DEO"
+          },
+          "state": {
+            "description": "Represent the state location id of user",
+            "type": "string",
+            "example": "236f5cff-c9af-4366-b0b6-253a1789766a"
+          },
+          "district": {
+            "description": "Represent the district location id of user",
+            "type": "string",
+            "example": "1dcbc362-ec4c-4559-9081-e0c2864c2931"
+          },
+          "school": {
+            "description": "Represent the school location id of user",
+            "type": "string",
+            "example": "c5726207-4f9f-4f45-91f1-3e9e8e84d824"
+          }
+        }
+      },
+      "userapiProgramResponse": {
+        "description": "User program response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Users programs fetched successfully"
+          },
+          "status": {
+            "type": "number",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "5ff438b04698083dbfab7284"
+                    },
+                    "externalId": {
+                      "type": "string",
+                      "example": "TEST_SCOPE_PROGRAM"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "TEST scope in program"
+                    },
+                    "solutions": {
+                      "type": "number",
+                      "example": 16
+                    }
+                  }
+                }
+              },
+              "count": {
+                "type": "number",
+                "example": 1
+              },
+              "description": {
+                "type": "string",
+                "example": "View and participate in educational programs active in your location and designed for your role"
+              }
+            }
+          },
+          "count": {
+            "type": "string",
+            "example": 1
+          },
+          "description": {
+            "type": "string",
+            "example": "View and participate in educational programs active in your location and designed for your role"
+          }
+        }
+      },
+      "500Error": {
+        "description": "500 Error Response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 500
+          },
+          "message": {
+            "type": "string",
+            "example": "oops something went wrong"
+          }
+        }
+      },
+      "userapiSolutionsResponse": {
+        "description": "User solutions response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Program solutions fetched successfully"
+          },
+          "status": {
+            "type": "number",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "5fc3dff14ea9b44f3340afe2"
+                    },
+                    "type": {
+                      "type": "string",
+                      "example": "improvementProject"
+                    },
+                    "externalId": {
+                      "type": "string",
+                      "example": "f449823a-06bb-4a3f-9d49-edbe1524ebbb-1606672337956"
+                    },
+                    "projectTemplateId": {
+                      "type": "string",
+                      "example": "5ff4a46aa87a5c721f9eb664"
+                    }
+                  }
+                }
+              },
+              "count": {
+                "type": "number",
+                "example": 3
+              },
+              "programName": {
+                "type": "string",
+                "example": "TEST_SCOPE_PROGRAM"
+              },
+              "programId": {
+                "type": "string",
+                "example": "5ff438b04698083dbfab7284"
+              },
+              "description": {
+                "type": "string",
+                "example": "View and participate in educational programs active in your location and designed for your role."
+              }
+            }
+          }
+        }
+      },
+      "userapiSolutions400Error": {
+        "description": "User Solutions Error Response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "query"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "type"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "Program Id required"
+                }
+              }
+            }
+          }
+        }
+      },
+      "entityapiTargetedSolutionsResponse": {
+        "description": "Targeted solutions response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Solutions fetched successfully"
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "5f9288fd5e25636ce6dcad66"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "obs1"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "observation1"
+                    },
+                    "solutionId": {
+                      "type": "string",
+                      "example": "5f9288fd5e25636ce6dcad65"
+                    },
+                    "programId": {
+                      "type": "string",
+                      "example": "5d287326652f311044f41dbb"
+                    }
+                  }
+                }
+              },
+              "count": {
+                "type": "string",
+                "example": 1
+              }
+            }
+          }
+        }
+      },
+      "SolutionTypeMissing400Error": {
+        "description": "solution type missing 400 error response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "query"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "type"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required solution type"
+                }
+              }
+            }
+          }
+        }
+      },
+      "entityapisubEntityListBasedOnRoleAndLocationResponse": {
+        "description": "List of sub entities return based on the parameter provided",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Entities child hierarchy path fetched successfully"
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["district", "block", "cluster", "school"]
+          }
+        }
+      },
+      "entityIdMissing400Error": {
+        "description": "Entity Id missing 400 response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "path"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "_id"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required Entity id"
+                }
+              }
+            }
+          }
+        }
+      },
+      "entityapisubEntityListResponse": {
+        "description": "Sub entity list response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "List of entities fetched successfully"
+          },
+          "status": {
+            "type": "string",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "5db1dd3e8a8e070bedca6bef"
+                    },
+                    "entityType": {
+                      "type": "string",
+                      "example": "school"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Sachdeva Convent School, Street No.-5 Sangam Vihar (Wazirabad - Jagatpur Road), Delhi"
+                    },
+                    "externalId": {
+                      "type": "string",
+                      "example": 1207229
+                    },
+                    "addressLine1": {
+                      "type": "string",
+                      "example": "Street No.-5 Sangam Vihar (Wazirabad - Jagatpur Road), Delhi"
+                    },
+                    "label": {
+                      "type": "string",
+                      "example": "Sachdeva Convent School, Street No.-5 Sangam Vihar (Wazirabad - Jagatpur Road), Delhi"
+                    },
+                    "value": {
+                      "type": "string",
+                      "example": "5db1dd3e8a8e070bedca6bef"
+                    }
+                  }
+                }
+              },
+              "count": {
+                "type": "integer",
+                "example": 6005
+              }
+            }
+          }
+        }
+      },
+      "entityapientityTypesByLocationAndRoleResponse": {
+        "description": "Entity type by role and location response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Entity types fetched successfully"
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": ["district", "block", "cluster"]
+            }
+          }
+        }
+      },
+      "entityapiEntityTypesByLocationAndRole400Error": {
+        "description": "Entity type by role and location 400 response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "query"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "type"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required location Id"
+                }
+              }
+            }
+          }
+        }
+      },
+      "fileapiFilepreSignedUrlsRequest": {
+        "description": "File presigned url Request Object",
+        "type": "object",
+        "properties": {
+          "request": {
+            "type": "object",
+            "properties": {
+              "5f72f9998925ec7c60f79a91": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "description": "List of file name",
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "example": "uploadFile.jpg"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "ref": {
+            "type": "string",
+            "example": "survey"
+          }
+        }
+      },
+      "fileapiFilesGetSignedUrlResponse": {
+        "description": "File presigned url Response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "File upload urls generated successfully."
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "5f72f9998925ec7c60f79a91": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "example": "uploadFile.jpg"
+                        },
+                        "url": {
+                          "type": "string",
+                          "example": "https://storage.googleapis.com/sl-dev-storage/01c04166-a65e-4e92-a87b-a9e4194e771d/5f72f9998925ec7c60f79a91/cd6763c9-a64a-4241-9907-4365970e8d11_uploadFile.jpg?GoogleAccessId=sl-dev-storage%40shikshalokam.iam.gserviceaccount.com&Expires=1605698490&Signature=ej6WHNOyx6EvUbAi81pDcYb3YqM7dkAhNT1Ktsf%2FTiRhwL%2ByhS89E1zRspIYlVOutlzoZXgRAl%2Fd0y%2BQcdryWYgfVAKAZmJVZtK3oVisLxhkFCKYeHAbzZ%2FadkCXdU3e1AVJGyRvKoN04Yr84%2BIa%2F1ApszOYDmVT%2Fn%2FOi4JSScbvzhe82bSe5xEr%2FPDwDq48%2FKgUhAc0faP%2FlAA2Wf7V1Ifuxc3quw9OpzvND8CKuugXZ%2FDZ6mhF0O80IXwP%2BFJOn4u9ydHqwXM3zDRDOO0WMh6VBLuvRFBRwJsrJG3v5zZMw0r5cYOIvkW4Tqo%2FefpXUDsvCVBTlZ9zBEdwx2Jshw%3D%3D"
+                        },
+                        "payload": {
+                          "type": "object",
+                          "properties": {
+                            "sourcePath": {
+                              "type": "string",
+                              "example": "01c04166-a65e-4e92-a87b-a9e4194e771d/5f72f9998925ec7c60f79a91/cd6763c9-a64a-4241-9907-4365970e8d11_uploadFile.jpg"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "userapiTargetedEntityResponse": {
+        "description": "User targeted entity response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Targeted entity fetched successfully"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "5fd098e2e049735a86b748ad"
+              },
+              "entityType": {
+                "type": "string",
+                "example": "district"
+              },
+              "entityName": {
+                "type": "string",
+                "example": "VIZIANAGARAM"
+              }
+            }
+          }
+        }
+      },
+      "solutionIdMissing400Error": {
+        "description": "Solution Id missing 400 response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "path"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "_id"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required solution id"
+                }
+              }
+            }
+          }
+        }
+      },
+      "userextensionapiProgramsByPlatformRoleslResponse": {
+        "description": "Program by platform role response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Mapped user program fetched successfully"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 200
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "5f34e44681871d939950bca6"
+                },
+                "externalId": {
+                  "type": "string",
+                  "example": "TN-Program-1597301830708"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "TN01-Mantra4Change-APSWREIS School Leader Feedback"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "TN-Program"
+                },
+                "role”": {
+                  "type": "string",
+                  "example": "PM"
+                }
+              }
+            }
+          }
+        }
+      },
+      "userextensionapiSolutionsByPlatformRoleslResponse": {
+        "description": "Solution by platform role response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Mapped user program fetched successfully"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 200
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "5f34e44681871d939950bca6"
+                },
+                "externalId": {
+                  "type": "string",
+                  "example": "TN-Program-1597301830708"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "TN01-Mantra4Change-APSWREIS School Leader Feedback"
+                },
+                "name": {
+                  "type": "string",
+                  "example": "TN-Program"
+                },
+                "type": {
+                  "type": "string",
+                  "example": "observation"
+                },
+                "subType": {
+                  "type": "string",
+                  "example": "school"
+                },
+                "isRubricDriven": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "solutionapiSolutionCreationRequest": {
+        "description": "Create solution request",
+        "type": "object",
+        "required": ["name", "type", "subType", "isReusable"],
+        "properties": {
+          "name": {
+            "description": "Represent the name of solution",
+            "type": "string",
+            "example": "Uk course with no assessment"
+          },
+          "description": {
+            "description": "Represent the description for solution",
+            "type": "string",
+            "example": "Enter description for Course"
+          },
+          "link": {
+            "description": "Represent the sharable link for solution of type course",
+            "type": "string",
+            "example": "https://staging.sunbirded.org/explore-course/course/do_2133258882237562881860"
+          },
+          "externalId": {
+            "description": "Represent the external id of the solution",
+            "type": "string",
+            "example": "Solution-Uk-course"
+          },
+          "type": {
+            "description": "Represent the type of the solution",
+            "type": "string",
+            "example": "course"
+          },
+          "subType": {
+            "description": "Represent the sub type for solution",
+            "type": "string",
+            "example": "course"
+          },
+          "programExternalId": {
+            "description": "Represent the program external id for solution",
+            "type": "string",
+            "example": "TN-Program-1597301830708"
+          },
+          "isReusable": {
+            "description": "Represent the isReusable",
+            "type": "boolean"
+          }
+        }
+      },
+      "solutionapiCreateResponse": {
+        "description": "Solution creation response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Solution created successfully"
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "5ff447e127ef425953bd8306"
+              }
+            }
+          }
+        }
+      },
+      "userapiProgram400Error": {
+        "description": "User Programs Error Response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "query"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "type"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "isAPrivateProgram field is required"
+                }
+              }
+            }
+          }
+        }
+      },
+      "fileapiFilesGetSignedUrl400Error": {
+        "description": "Get Signed URL Error Response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "body"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "type"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required reference type"
+                }
+              }
+            }
+          }
+        }
+      },
+      "userextensionapiProgramsByPlatformRoles400Error": {
+        "description": "Get Signed URL Error Response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "query"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "type"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required role"
+                }
+              }
+            }
+          }
+        }
+      },
+      "solutionapiVerifyLinkResponse": {
+        "description": "Verify Link Response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Solution verified successfully"
+          },
+          "status": {
+            "type": "number",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "isATargetedSolution": {
+                "type": "boolean"
+              },
+              "link": {
+                "type": "string",
+                "example": "2515e6fbe5039a6db09c10148e3c743b"
+              },
+              "name": {
+                "type": "string",
+                "example": "AP-TEST-PROGRAM-3.6.5-OBS-1-DEO"
+              },
+              "type": {
+                "type": "string",
+                "example": "observation"
+              },
+              "programId": {
+                "type": "string",
+                "example": "600ab53cc7de076e6f993724"
+              },
+              "solutionId": {
+                "type": "string",
+                "example": "600ac0d1c7de076e6f9943b9"
+              },
+              "observationId": {
+                "type": "string",
+                "example": "60110e692d0bbd2f0c3229c3"
+              }
+            }
+          }
+        }
+      },
+      "LinkMissing400Error": {
+        "description": "Link Required Error Response",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "message": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "example": "path"
+                },
+                "param": {
+                  "type": "string",
+                  "example": "link"
+                },
+                "msg": {
+                  "type": "string",
+                  "example": "required solution link"
+                }
+              }
+            }
+          }
+        }
+      },
+      "solutionapiDetailsResponse": {
+        "description": "Solution Detail Response",
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Successfully fetched project template details"
+          },
+          "status": {
+            "type": "integer",
+            "example": 200
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string",
+                "example": "600acc61a0cc3e4909f91f80"
+              },
+              "approaches": {
+                "type": "string",
+                "example": ""
+              },
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "example": "5fcfa9a2457d6055e33843f2"
+                    },
+                    "externalId": {
+                      "type": "string",
+                      "example": "community"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Community"
+                    }
+                  }
+                }
+              },
+              "concepts": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": ""
+                }
+              },
+              "deleted": {
+                "type": "boolean",
+                "example": false
+              },
+              "description": {
+                "type": "string",
+                "example": "Come See Our School!- Parent Mela"
+              },
+              "duration": {
+                "type": "string",
+                "example": "At the end of every quarter"
+              },
+              "entityType": {
+                "type": "string",
+                "example": null
+              },
+              "externalId": {
+                "type": "string",
+                "example": "AP-TEST-PROGRAM-3.6.5-IMP-PROJECT-1-DEO"
+              },
+              "goal": {
+                "type": "string",
+                "example": "Organizing the Parent Mela in the school in order to make better community reach"
+              },
+              "isDeleted": {
+                "type": "boolean"
+              },
+              "isReusable": {
+                "type": "boolean"
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "Community Parent Mela"
+                }
+              },
+              "learningResources": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "app": {
+                      "type": "string",
+                      "example": "diksha"
+                    },
+                    "id": {
+                      "type": "string",
+                      "example": "do_31268582767737241615189"
+                    },
+                    "link": {
+                      "type": "string",
+                      "example": "https://staging.sunbirded.org/resources/play/content/do_31268582767737241615189"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Examprep_10EM_ps_cha1_Q3"
+                    }
+                  }
+                }
+              },
+              "primaryAudience": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "example": "Community"
+                }
+              },
+              "programInformation": {
+                "type": "object",
+                "properties": {
+                  "programId": {
+                    "type": "string",
+                    "example": "600ab53cc7de076e6f993724"
+                  },
+                  "programName": {
+                    "type": "string",
+                    "example": "AP-TEST-PROGRAM-3.6.5"
+                  },
+                  "projectId": {
+                    "type": "string",
+                    "example": "601287e7c4a0d070a331afa0"
+                  },
+                  "rationale": {
+                    "type": "string",
+                    "example": null
+                  },
+                  "recommendedFor": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": []
+                  },
+                  "risks": {
+                    "type": "string",
+                    "example": null
+                  },
+                  "solutionExternalId": {
+                    "type": "string",
+                    "example": "AP-TEST-PROGRAM-3.6.5-IMP-PROJECT-1-DEO"
+                  },
+                  "solutionId": {
+                    "type": "string",
+                    "example": "600acc42c7de076e6f995147"
+                  },
+                  "status": {
+                    "type": "string",
+                    "example": "published"
+                  },
+                  "successIndicators": {
+                    "type": "string",
+                    "example": null
+                  },
+                  "taskCreationForm": {
+                    "type": "string",
+                    "example": null
+                  },
+                  "taskSequence": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": []
+                  },
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": []
+                  },
+                  "title": {
+                    "type": "string",
+                    "example": "Come See Our School!- Parent Mela"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  }
+}
