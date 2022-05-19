@@ -63,6 +63,7 @@ services:
         environment:
             - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
             - KAFKA_URL=kafka:9092
+            - USER_SERIVCE_HOST=http://user:3001
         depends_on:
             - kafka
             - mongo
