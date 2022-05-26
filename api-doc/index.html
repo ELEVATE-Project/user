@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base id="baseURL" href="/{{site.docsVersion}}/" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=10, user-scalable=yes"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/img/favicon/favicon-16x16.png"
+      sizes="16x16"
+    />
+    <meta name="msapplication-TileColor" content="#65d3f7" />
+    <meta
+      name="msapplication-TileImage"
+      content="/img/favicon/mstile-150x150.png"
+    />
+
+    <title>{{page.page_title}}</title>
+    <meta name="description" content="{{page.description}}" />
+
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta name="last-modified" content="{{ site.time }}" />
+    <meta http-equiv="Expires" content="600" />
+
+    <!--Build Details-->
+    <meta name="buildVersion" content="{{site.buildVersion}}" />
+    <meta name="buildNo" content="{{site.buildNo}}" />
+    <meta name="version" id="docsVersion" content="{{site.docsBranch}}" />
+    <!--/Build Details-->
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,600,700"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/css/style.css?{{ site.time | | date: '%d%m%Y'}}"
+    />
+
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-2.1.3.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/bootstrap.min.js?{{ site.time | | date: '%d%m%Y'}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/jquery.tocLight.js?{{ site.time | | date: '%d%m%Y'}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/jquery.elevateZoom-3.0.8.min.js?{{ site.time | | date: '%d%m%Y'}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/handlebars-v4.0.11.js?{{ site.time | | date: '%d%m%Y'}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/widgets-data.js?{{ site.time | | date: '%d%m%Y'}}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/widgets.js?{{ site.time | | date: '%d%m%Y'}}"
+    ></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-106552125-1"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "UA-106552125-1");
+    </script>
+    <script>
+      function resetBase() {
+        currentURLArray = window.location.pathname.split("/");
+        secondLevelLocation = currentURLArray[1];
+        if (secondLevelLocation == "latest") {
+          baseURL = document.getElementById("baseURL");
+          baseURL.href = "/latest/";
+        }
+      }
+      resetBase();
+    </script>
+    <meta name="robots" content="index, follow" />
+    <script src="https://sunbirdpublic.blob.core.windows.net/documentationassets/redoc.standalone.js"></script>
+  </head>
+  <body>
+    <div class="apidoc inner__content fixed-content">
+      <div class="container main">
+        <redoc suppress-warnings></redoc>
+        <script>
+          yamlLink = "./api-doc/api-doc.yaml";
+          yamlBasedLink = baseURL.href + yamlLink;
+          Redoc.init(yamlBasedLink);
+        </script>
+      </div>
+    </div>
+  </body>
+</html>

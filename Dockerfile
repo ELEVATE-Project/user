@@ -1,13 +1,13 @@
 FROM node:16
 
 #Set working directory
-WORKDIR /opt/user
+WORKDIR /data/user
 
 #Copy package.json file
 COPY package.json .
 
 #Install node packages
-RUN npm install && npm install -g nodemon@2.0.16
+RUN npm install -f && npm install -g nodemon@2.0.16
 
 #Copy all files 
 COPY . .
