@@ -5,7 +5,6 @@ Install any IDE in your system(eg: VScode etc..)
 Install nodejs from : https://nodejs.org/en/download/
 Install kafka from : https://kafka.apache.org/downloads
 
-
 ## 1. Cloning the Notifications repository into your system
 
 Goto https://github.com/ELEVATE-Project/Notification From the code tab copy the link. Using that link clone the repository into your local machine.
@@ -17,17 +16,16 @@ Let's make it more easy for you:
 
 git clone https://github.com/ELEVATE-Project/Notification.git
 
-
 ## 2. Add .env file to the project directory
 
     create  a file named as .env in root directory of the project and copy below code into that file.
-    Add fallowing enviorment configs 
-
+    Add fallowing enviorment configs
 
 ## 3. Start Kafka
+
     start kafka
-	create the kafka topic and use the same in .env
-    
+    create the kafka topic and use the same in .env
+
 ### Required Environment variables:
 
 ````
@@ -35,37 +33,37 @@ git clone https://github.com/ELEVATE-Project/Notification.git
 # Notification Service Config
 
 #Port on which service runs
-APPLICATION_PORT = 3000    
+APPLICATION_PORT = 3000
 
 #Application environment
-APPLICATION_ENV = development    
+APPLICATION_ENV = development
 
 #Route after base url
-APPLICATION_BASE_URL = /notification/  
+APPLICATION_BASE_URL = /notification/
 
 #Kafka endpoint
-KAFKA_HOST = "localhost:9092"                                                        
+KAFKA_HOST = "localhost:9092"
 
 #kafka topic name
-KAFKA_TOPIC ="testTopic"     
+KAFKA_TOPIC ="testTopic"
 
 #kafka consumer group id
 KAFKA_GROUP_ID = "notification"
 
 #sendgrid api key
-SENDGRID_API_KEY = "SG.sdssd.dsdsd.XVSDGFEBGEB.sddsd"            
+SENDGRID_API_KEY = "SG.sdssd.dsdsd.XVSDGFEBGEB.sddsd"
 
 #sendgrid sender email address
-SENDGRID_FROM_MAIL = "test@gmail.com"                                        
+SENDGRID_FROM_MAIL = "test@gmail.com"
 
 ```
 ````
 
-
 ## 3. Install Npm
-	npm i
+
+    npm i
     To install the dependencies in your local machine.
 
-
 ## 4. To Run server
-	npm start
+
+    npm start

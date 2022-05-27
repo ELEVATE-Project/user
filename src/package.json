@@ -1,0 +1,42 @@
+{
+	"name": "com.shikshalokam.notification",
+	"version": "1.0.0",
+	"description": "A notification service for notification capability",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 0",
+		"start": "nodemon app.js",
+		"prod": "node app.js",
+		"stage": "node app.js",
+		"prepare": "cd .. && husky install src/.husky"
+	},
+	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
+	"license": "ISC",
+	"dependencies": {
+		"@sendgrid/mail": "^7.5.0",
+		"axios": "^0.21.4",
+		"bcrypt": "^5.0.1",
+		"bcryptjs": "^2.4.3",
+		"body-parser": "^1.19.0",
+		"cli-table": "^0.3.11",
+		"cors": "^2.8.5",
+		"dotenv": "^10.0.0",
+		"express": "^4.17.1",
+		"express-validator": "^5.3.1",
+		"jsonwebtoken": "^8.5.1",
+		"kafka-node": "^5.0.0",
+		"require-all": "^3.0.0",
+		"uuid": "^8.3.2"
+	},
+	"devDependencies": {
+		"eslint": "^8.16.0",
+		"husky": "^8.0.1",
+		"lint-staged": "^12.4.1",
+		"nodemon": "^2.0.13",
+		"prettier": "^2.6.2"
+	},
+	"lint-staged": {
+		"../*": "prettier --ignore-unknown --write",
+		"*": "prettier --ignore-unknown --write"
+	}
+}

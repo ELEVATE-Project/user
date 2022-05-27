@@ -6,4 +6,4 @@
  */
 
 //Dependencies
- require("./kafka")();
+require('./kafka')()

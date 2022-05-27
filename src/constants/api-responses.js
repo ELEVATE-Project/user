@@ -1,7 +1,4 @@
-
 /**
  * All required API responses
-*/
-module.exports = {
-   
-};
+ */
+module.exports = {}
