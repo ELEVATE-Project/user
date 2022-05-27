@@ -1,18 +1,19 @@
-FROM node:12
+FROM node:16
 
-WORKDIR /opt/mentoring
+#Set working directory
+WORKDIR /var/src/
 
-#copy package.json file
-COPY package.json /opt/mentoring
+#Copy package.json file
+COPY ./src/package.json .
 
-#install node packges
-RUN npm install
+#Install node packages
+RUN npm install && npm install -g nodemon@2.0.16
 
-#copy all files 
-COPY . /opt/mentoring
+#Copy all files 
+COPY ./src .
 
-#expose the application port
+#Expose the application port
 EXPOSE 3000
 
-#start the application
-CMD node app.js
+#Start the application
+CMD [ "node", "app.js" ]
