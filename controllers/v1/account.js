@@ -28,35 +28,20 @@ module.exports = class Account {
    */
 
   async create(req) {
-    console.log(typeof req.method);
-    switch (req.method) {
-      case "POST": {
-        const params = req.body;
-        const isAMentor = params.isAMentor ? true : false;
-        try {
-          if (
-            isAMentor &&
-            req.body.secretCode != process.env.MENTOR_SECRET_CODE
-          ) {
-            throw common.failureResponse({
-              message: apiResponses.INVALID_SECRET_CODE,
-              statusCode: httpStatusCode.bad_request,
-              responseCode: "CLIENT_ERROR",
-            });
-          }
-          const createdAccount = await accountHelper.create(params);
-          return createdAccount;
-        } catch (error) {
-          return error;
-        }
-      }
-
-      default:
+    const params = req.body;
+    const isAMentor = params.isAMentor ? true : false;
+    try {
+      if (isAMentor && req.body.secretCode != process.env.MENTOR_SECRET_CODE) {
         throw common.failureResponse({
-          message: apiResponses.URL_NOT_FOUND,
-          statusCode: httpStatusCode.not_found,
+          message: apiResponses.INVALID_SECRET_CODE,
+          statusCode: httpStatusCode.bad_request,
           responseCode: "CLIENT_ERROR",
         });
+      }
+      const createdAccount = await accountHelper.create(params);
+      return createdAccount;
+    } catch (error) {
+      return error;
     }
   }
 

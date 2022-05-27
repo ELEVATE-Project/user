@@ -2,8 +2,12 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Elevate",
-    "version": "1.0.0",
-    "description": "testing"
+    "termsOfService": "https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE",
+    "description": "- The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notification etc \n- The URL for Users API(s) is `{context}/user/v1`\n- <b>Note:</b> These resources can be used in other services",
+    "contact": {
+      "email": "info@shikshalokam.org"
+    },
+    "version": "1.0.0"
   },
   "servers": [
     {

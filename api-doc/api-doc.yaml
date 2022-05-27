@@ -3,7 +3,14 @@ openapi: 3.0.0
 info:
   title: Elevate
   version: 1.0.0
-  description: testing
+   termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
+  description: >-
+    - The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notifcation etc 
+    
+    - The URL for Users API(s) is `{context}/user/v1`
+    - <b>Note:</b> These resources can be used in other services 
+  contact:
+    email: info@sunbird.org
 servers:
   - url: http://localhost:3000
     description: local dev
