@@ -36,7 +36,6 @@ module.exports = {
 	USER_ENROLLED_SUCCESSFULLY: 'You have enrolled successfully.',
 	USER_ALREADY_ENROLLED: 'User already enrolled.',
 	USER_UNENROLLED_SUCCESSFULLY: 'You are no longer enrolled in this session.',
-	USER_NOT_ENROLLED: 'User not enrolled.',
 	FEEDBACK_SUBMITTED: 'Feedback submitted successfully.',
 	QUESTION_ALREADY_EXISTS: 'Question already exists',
 	QUESTION_CREATED_SUCCESSFULLY: 'Question created successfully',
