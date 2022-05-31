@@ -28,6 +28,7 @@
 		"jsonwebtoken": "^8.5.1",
 		"kafka-node": "^5.0.0",
 		"md5": "^2.3.0",
+		"module-alias": "^2.2.2",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",
 		"mongodb": "^4.1.2",
@@ -50,5 +51,19 @@
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",
 		"*": "prettier --ignore-unknown --write"
+	},
+	"_moduleAliases": {
+		"@root": ".",
+		"@configs": "configs",
+		"@constants": "constants",
+		"@controllers": "controllers",
+		"@db": "db",
+		"@generics": "generics",
+		"@health-checks": "health-checks",
+		"@middlewares": "middlewares",
+		"@public": "public",
+		"@routes": "routes",
+		"@services": "services",
+		"@validators": "validators"
 	}
 }
