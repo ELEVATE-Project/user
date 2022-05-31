@@ -13,9 +13,9 @@ const mongoose_paginate = require('mongoose-paginate-v2')
 
 module.exports = function () {
 	// Added to remove depreciation warnings from logs.
-	mongoose.set('useCreateIndex', true)
-	mongoose.set('useFindAndModify', false)
-	mongoose.set('useUnifiedTopology', true)
+	// mongoose.set('useCreateIndex', true)
+	// mongoose.set('useFindAndModify', false)
+	// mongoose.set('useUnifiedTopology', true)
 
 	const db = mongoose.createConnection(process.env.MONGODB_URL, {
 		useNewUrlParser: true,
