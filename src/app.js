@@ -21,7 +21,7 @@ if (!environmentData.success) {
 const app = express()
 
 // Health check
-require('./health-checks')(app)
+require('@health-checks')(app)
 
 app.use(cors())
 
