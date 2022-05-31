@@ -14,20 +14,20 @@ jobs:
           version: '16.10'
           # If you are using yarn, change the line below from "npm" to "yarn"
           pkg-manager: npm
-            working_directory: ~/src/
-            steps:
-              - checkout:
-                  path: ~/src/
-              - run: 
-                  name: Installing prerequisites
-                  command: |-
-                    node --version
-              - run:
-                  name: Installing npm deps
-                  command: 'npm install'
-              - run:
-                  name: Executing test cases
-                  command: echo "npm run test"
+          working_directory: ~/src/
+          steps:
+            - checkout:
+                path: ~/src/
+            - run: 
+                name: Installing prerequisites
+                command: |-
+                  node --version
+            - run:
+                name: Installing npm deps
+                command: 'npm install'
+            - run:
+                name: Executing test cases
+                command: echo "npm run test"
               
 
 # Invoke jobs via workflows
@@ -36,7 +36,7 @@ workflows:
   buil-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
     jobs:
-      - test-cases:
+      - test-cases
 
 
          
