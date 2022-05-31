@@ -15,8 +15,8 @@ jobs:
 
     docker:
       - image: cimg/node:16.10
+     working_directory: ~/src/
     steps:
-      working_directory: ~/src/
       - checkout:
           path: ~/src/
       - node/install-packages:
