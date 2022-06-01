@@ -9,7 +9,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const expressFileUpload = require('express-fileupload')
-const path = require("path");
+const path = require('path')
 require('dotenv').config({ path: './.env' })
 
 let environmentData = require('./envVariables')()
@@ -29,10 +29,9 @@ require('./health-checks')(app)
 app.use(cors())
 
 app.use(expressFileUpload())
-app.get("/api-doc", function (req, res) {
-  console.log("api");
-  res.sendFile(path.join(__dirname, "./api-doc/index.html"));
-});
+app.get('/api-doc', function (req, res) {
+	res.sendFile(path.join(__dirname, './api-doc/index.html'))
+})
 app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }))
 app.use(bodyParser.json({ limit: '50MB' }))
 
