@@ -3,7 +3,7 @@ openapi: 3.0.0
 info:
   title: Elevate
   version: 1.0.0
-  termsOfService: "https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE"
+  termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
   description: >-
     - The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notifcation etc 
 
@@ -22,13 +22,12 @@ tags:
   - name: Profile
     description: Profile Endpoints
 paths:
-  "/user/v1/account/create":
+  '/user/v1/account/create':
     post:
       summary: Creates user as a Mentor and Mentee
       tags:
         - User
-      description:
-        "This Api is associated with Create User on menteroing \n - Then
+      description: "This Api is associated with Create User on menteroing \n - Then
         Endpoint for creating user `/user/account/create` \n - It is mandatory to
         provide values for parameter marked with `required` \n - Mandatory parameter
         cannot be empty or null \n - secretCode is required only for mentor"
@@ -37,51 +36,51 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/user/userCreateUserRequest"
+              '$ref': '#/components/schemas/user/userCreateUserRequest'
       responses:
-        "200":
+        '200':
           description: OK. User created.
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/userCreateUserRsponse"
-        "400":
+                '$ref': '#/components/schemas/user/userCreateUserRsponse'
+        '400':
           description: Bad Request. Refrral code is invalid
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/userCreateUser400Response"
-        "406":
+                '$ref': '#/components/schemas/user/userCreateUser400Response'
+        '406':
           description: Not Acceptable. User already exists.
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/userCreateUser406Exist"
-  "/user/v1/account/login":
+                '$ref': '#/components/schemas/user/userCreateUser406Exist'
+  '/user/v1/account/login':
     post:
       summary: Login Api
       tags:
         - User
-      description: ""
+      description: ''
       requestBody:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/user/userLoginRequest"
+              '$ref': '#/components/schemas/user/userLoginRequest'
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/userLoginResponse"
-        "400":
+                '$ref': '#/components/schemas/user/userLoginResponse'
+        '400':
           description: Bad Request. Invalid Email or Password
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/userLoginResponse400"
-  "/user/v1/account/acceptTermsAndCondition":
+                '$ref': '#/components/schemas/user/userLoginResponse400'
+  '/user/v1/account/acceptTermsAndCondition':
     patch:
       summary: Terms & Condition API
       tags:
@@ -90,227 +89,222 @@ paths:
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/acceptTermsAndConditionResponse"
-        "400":
+                '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse'
+        '400':
           description: Bad Request. User Does not exist.
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/user/acceptTermsAndConditionResponse400"
-  "/user/v1/account/verifyMentor":
+                '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse400'
+  '/user/v1/account/verifyMentor?userId={userId}':
     get:
       summary: Verify user is mentor or mentee
       tags:
         - User
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application.json:
-            schema:
-              "$ref": "#/components/schemas/user/userLoginRequest"
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/userLoginResponse"
-        "406":
-          description: Not Acceptable
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/userLoginRequest"
-  "/user/v1/account/changeRole":
-    patch:
-      summary: Change User form mentee to mentor
-      tags:
-        - User
-      description: ""
-      parameters:
-        - name: X-auth-token
-          in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application.json:
-            schema:
-              "$ref": "#/components/schemas/user/userChangeRoleRequest"
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/userChangeRoleResponse"
-        "400":
-          description: Bad Request.
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/userChangeRoleResponse400"
-        "401":
-          description: Unauthorized
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/userChangeRoleResponse401"
-  "/user/v1/account/generateToken":
-    post:
-      summary: Generates Access token.
-      tags:
-        - User
-      description: ""
-      parameters:
-        - name: X-auth-token
-          in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application.json:
-            schema:
-              "$ref": "#/components/schemas/user/generateTokenRequest"
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/generateTokenResponse200"
-        "400":
-          description: Bad Request
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/generateTokenResponse400"
-        "401":
-          description: Unauthorized
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/generateTokenResponse401"
-        "500":
-          description: Internal Server Error
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/generateTokenResponse500"
-  "/user/v1/account/logout":
-    post:
-      summary: Logout API
-      tags:
-        - User
-      description: ""
-      parameters:
-        - name: X-auth-token
-          in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application.json:
-            schema:
-              "$ref": "#/components/schemas/user/logoutRequest"
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/logoutResponse200"
-        "400":
-          description: Bad Request
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/logoutResponse400"
-        "401":
-          description: Unauthorized
-          content:
-            application.json:
-              schema:
-                "$ref": "#/components/schemas/user/logoutResponse401"
-  "/user/v1/profile/details/{userId}":
-    get:
-      summary: Get User Info
-      tags:
-        - Profile
-      description: ""
-      parameters:
-        - name: X-auth-token
-          in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: "userId "
+          name: 'userId '
           required: true
           description: Please append a valid User Id To the Request URL
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/profile/profileDetailsResponse200"
-        "401":
+                '$ref': '#/components/schemas/user/userVerifyMentor200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userVerifyMentor400'
+  '/user/v1/account/changeRole':
+    patch:
+      summary: Change User form mentee to mentor
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/userChangeRoleRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userChangeRoleResponse'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userChangeRoleResponse400'
+        '401':
           description: Unauthorized
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/profile/Unauthorized401Response"
-  "/user/v1/profile/update":
+                '$ref': '#/components/schemas/user/userChangeRoleResponse401'
+  '/user/v1/account/generateToken':
+    post:
+      summary: Generates Access token.
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/generateTokenRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse401'
+        '500':
+          description: Internal Server Error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse500'
+  '/user/v1/account/logout':
+    post:
+      summary: Logout API
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/logoutRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/logoutResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/logoutResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/logoutResponse401'
+  '/user/v1/profile/details/{userId}':
+    get:
+      summary: Get User Info
+      tags:
+        - Profile
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'userId '
+          required: true
+          description: Please append a valid User Id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/profileDetailsResponse200'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/profile/update':
     patch:
       summary: update User Info
       tags:
         - Profile
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -319,31 +313,30 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/profile/updateRequest"
+              '$ref': '#/components/schemas/profile/updateRequest'
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/profile/updateRequest200Response"
-        "401":
+                '$ref': '#/components/schemas/profile/updateRequest200Response'
+        '401':
           description: Unauthorized
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/profile/Unauthorized401Response"
-  "/user/v1/form/create":
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/form/create':
     post:
       summary: Create form
       tags:
         - Form
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -352,31 +345,30 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/form/createFormRequest"
+              '$ref': '#/components/schemas/form/createFormRequest'
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/form/createForm200Response"
-        "400":
+                '$ref': '#/components/schemas/form/createForm200Response'
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/form/createForm400Response"
-  "/user/v1/form/update":
+                '$ref': '#/components/schemas/form/createForm400Response'
+  '/user/v1/form/update':
     patch:
       summary: Update form
       tags:
         - Form
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -385,31 +377,30 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/form/updateFormRequest"
+              '$ref': '#/components/schemas/form/updateFormRequest'
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/form/updateForm200Response"
-        "400":
+                '$ref': '#/components/schemas/form/updateForm200Response'
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/form/updateForm400Response"
-  "/user/v1/form/read":
+                '$ref': '#/components/schemas/form/updateForm400Response'
+  '/user/v1/form/read':
     get:
       summary: Get form Data
       tags:
         - Form
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -418,31 +409,30 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/form/readFormRequest"
+              '$ref': '#/components/schemas/form/readFormRequest'
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/form/readForm200Response"
-        "400":
+                '$ref': '#/components/schemas/form/readForm200Response'
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/form/readForm400Response"
-  "/user/v1/mentors/list?page={pageNo}&limit={pageSize}&search={searchText}":
+                '$ref': '#/components/schemas/form/readForm400Response'
+  '/user/v1/mentors/list?page={pageNo}&limit={pageSize}&search={searchText}':
     get:
       summary: Get All Mentor list
       tags:
         - Mentor
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -453,14 +443,14 @@ paths:
           description: Please append a page Number
           schema:
             type: string
-          example: "1"
+          example: '1'
         - in: path
           name: limit
           required: true
           description: Please append a page Size
           schema:
             type: string
-          example: "10"
+          example: '10'
         - in: path
           name: search
           required: true
@@ -469,23 +459,22 @@ paths:
             type: string
           example: jhon
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/mentor/getMentorList200Resposne"
-  "/user/v1/userentity/create":
+                '$ref': '#/components/schemas/mentor/getMentorList200Resposne'
+  '/user/v1/userentity/create':
     post:
       summary: Create User Entity
       tags:
         - User Entity
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -494,37 +483,36 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/userentity/createUserEntityRequest"
+              '$ref': '#/components/schemas/userentity/createUserEntityRequest'
       responses:
-        "201":
+        '201':
           description: ok
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/userentity/createUserEntity201Response"
+                $ref: '#/components/schemas/userentity/createUserEntity201Response'
         400:
           description: Bad Request. User Entity alrady exist
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/createUserEntity400Response"
-  "/user/v1/userentity/update/{id}":
+                '$ref': '#/components/schemas/userentity/createUserEntity400Response'
+  '/user/v1/userentity/update/{id}':
     patch:
       summary: Update User Entity
       tags:
         - User Entity
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: "id "
+          name: 'id '
           required: true
           description: Please append a valid user entity id To the Request URL
           schema:
@@ -534,31 +522,30 @@ paths:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/userentity/updateUserEntityRequest"
+              '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/updateUserEntity202Response"
-        "400":
+                '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
+        '400':
           description: Bad Request. User Entity Not Found
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/updateUserEntity400Response"
-  "/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}":
+                '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
+  '/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}':
     get:
       summary: get User entity
       tags:
         - User Entity
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
@@ -573,111 +560,108 @@ paths:
         - in: path
           name: deleted
           required: true
-          description:
-            Please append a deleted type eg. for deleted user `true` and
+          description: Please append a deleted type eg. for deleted user `true` and
             for existing user `false`
           schema:
             type: string
-          example: "false"
+          example: 'false'
         - in: path
           name: status
           required: true
-          description:
-            Please append a deleted type eg. for active user `ACTIVE` and
+          description: Please append a deleted type eg. for active user `ACTIVE` and
             for Disabled user `DISABLED`
           schema:
             type: string
           example: ACTIVE
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/readUserEntity200Response"
-  "/user/v1/userentity/delete/{id}":
+                '$ref': '#/components/schemas/userentity/readUserEntity200Response'
+  '/user/v1/userentity/delete/{id}':
     patch:
       summary: delete User Entity
       tags:
         - User Entity
-      description: ""
+      description: ''
       parameters:
         - name: X-auth-token
           in: header
-          description:
-            To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Avlibale
             in login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: "id "
+          name: 'id '
           required: true
           description: Please append a valid user entity id To the Request URL
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/deleteUserEntity202Response"
-        "400":
+                '$ref': '#/components/schemas/userentity/deleteUserEntity202Response'
+        '400':
           description: Bad Request. User Entity Already Deleted
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/deleteUserEntity400Response"
-  "/user/v1/systemUsers/create":
+                '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
+  '/user/v1/systemUsers/create':
     post:
       summary: Create System User
       tags:
         - System User
-      description: ""
+      description: ''
       requestBody:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/systemuser/createSystemUserRequest"
+              '$ref': '#/components/schemas/systemuser/createSystemUserRequest'
       responses:
-        "201":
+        '201':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/systemuser/createSystemUser201Response"
-        "406":
+                '$ref': '#/components/schemas/systemuser/createSystemUser201Response'
+        '406':
           description: Bad Request. System User alrady exist
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/systemuser/createSystemUser406Response"
-  "/user/v1/systemUsers/login":
+                '$ref': '#/components/schemas/systemuser/createSystemUser406Response'
+  '/user/v1/systemUsers/login':
     post:
       summary: login System User
       tags:
         - System User
-      description: ""
+      description: ''
       requestBody:
         content:
           application.json:
             schema:
-              "$ref": "#/components/schemas/systemuser/loginSystemUserRequest"
+              '$ref': '#/components/schemas/systemuser/loginSystemUserRequest'
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/systemuser/loginSystemUser200Response"
-        "400":
+                '$ref': '#/components/schemas/systemuser/loginSystemUser200Response'
+        '400':
           description: Bad Request. System User doesn't exist
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/systemuser/loginSystemUser400Response"
+                '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
 components:
   schemas:
     user:
@@ -714,8 +698,8 @@ components:
           secretCode:
             tyep: string
             required: optional
-            description: "Referral Code for mentor "
-            example: "4567"
+            description: 'Referral Code for mentor '
+            example: '4567'
       userCreateUserRsponse:
         description: User solutions response
         type: object
@@ -776,10 +760,10 @@ components:
                     example: []
                   updatedAt:
                     type: datetime
-                    example: "2022-05-18T05:24:52.431Z"
+                    example: '2022-05-18T05:24:52.431Z'
                   createdAt:
                     type: datetime
-                    example: "2022-05-18T05:24:52.431Z"
+                    example: '2022-05-18T05:24:52.431Z'
                   __v:
                     type: number
                     example: 0
@@ -916,22 +900,22 @@ components:
                       example: English
               updatedAt:
                 type: datetime
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               createdAt:
                 type: datetime
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               __v:
                 type: number
                 example: 0
               lastLoggedInAt:
                 type: datetime
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               about:
                 type: string
                 example: This is test about of mentee
               experience:
                 type: string
-                example: "4.2"
+                example: '4.2'
               gender:
                 type: string
                 example: MALE
@@ -1022,8 +1006,7 @@ components:
             example: UNAUTHORIZED
           message:
             type: string
-            example:
-              You have been logged out of your account due to change in platform
+            example: You have been logged out of your account due to change in platform
               role. Please login again.
           error:
             type: array
@@ -1142,6 +1125,38 @@ components:
           error:
             type: array
             example: []
+      userVerifyMentor200:
+        description: OK, User logout successfully
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User has mentor access.
+          result:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              isAMentor:
+                tyep: boolean
+                example: true
+      userVerifyMentor400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
     profile:
       profileDetailsResponse200:
         type: object
@@ -1226,22 +1241,22 @@ components:
                       example: English
               updatedAt:
                 type: datetime
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               createdAt:
                 type: datetime
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               __v:
                 type: number
                 example: 0
               lastLoggedInAt:
                 type: datetime
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               about:
                 type: string
                 example: This is test about of mentee
               experience:
                 type: string
-                example: "4.2"
+                example: '4.2'
               gender:
                 type: string
                 example: MALE
@@ -1344,7 +1359,7 @@ components:
             example: profileFields
           ver:
             type: string
-            example: "1.0"
+            example: '1.0'
           data:
             type: object
             properties:
@@ -1367,7 +1382,7 @@ components:
                           example: name
                         value:
                           type: string
-                          example: ""
+                          example: ''
                         class:
                           type: string
                           example: ion-margin
@@ -1426,7 +1441,7 @@ components:
             example: profileFields
           ver:
             type: string
-            example: "1.0"
+            example: '1.0'
           data:
             type: object
             properties:
@@ -1449,7 +1464,7 @@ components:
                           example: name
                         value:
                           type: string
-                          example: ""
+                          example: ''
                         class:
                           type: string
                           example: ion-margin
@@ -1508,7 +1523,7 @@ components:
             example: profileFields
           ver:
             type: string
-            example: "1.0"
+            example: '1.0'
           templateName:
             type: string
             example: defaultTemplate
@@ -1536,13 +1551,13 @@ components:
                 example: profileFields
               ver:
                 type: string
-                example: "1.0"
+                example: '1.0'
               updatedAt:
                 type: string
-                example: "2022-05-24T23:14:10.080Z"
+                example: '2022-05-24T23:14:10.080Z'
               createdAt:
                 type: string
-                example: "2022-05-24T23:14:10.080Z"
+                example: '2022-05-24T23:14:10.080Z'
               __v:
                 type: number
                 example: 0
@@ -1571,7 +1586,7 @@ components:
                               example: name
                             value:
                               type: string
-                              example: ""
+                              example: ''
                             class:
                               type: string
                               example: ion-margin
@@ -1895,10 +1910,10 @@ components:
                     example: admin
                   updatedAt:
                     type: string
-                    example: "2022-05-25T01:51:24.138Z"
+                    example: '2022-05-25T01:51:24.138Z'
                   createdAt:
                     type: string
-                    example: "2022-05-25T01:51:24.138Z"
+                    example: '2022-05-25T01:51:24.138Z'
                   __v:
                     type: number
                     example: 0
