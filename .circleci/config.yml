@@ -19,6 +19,7 @@ jobs:
                 command: |-
                   node --version
             - run:
+                working_directory: ~/src/
                 name: Executing test cases
                 command: npm run test
               
