@@ -27,7 +27,7 @@ jobs:
                 command: 'npm install'
             - run:
                 name: Executing test cases
-                command: echo "npm run test"
+                command: npm run test
               
 
 # Invoke jobs via workflows
