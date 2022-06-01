@@ -1,11 +1,7 @@
 FROM node:16
 
 #Set working directory
-<<<<<<< HEAD
-WORKDIR /data/user
-=======
 WORKDIR /var/src/
->>>>>>> master
 
 #Copy package.json file
 COPY ./src/package.json .
