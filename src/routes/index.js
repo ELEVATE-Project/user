@@ -67,6 +67,7 @@ module.exports = (app) => {
 		}
 
 		if (
+			controllerResponse &&
 			controllerResponse.statusCode !== 200 &&
 			controllerResponse.statusCode !== 201 &&
 			controllerResponse.statusCode !== 202
@@ -74,12 +75,14 @@ module.exports = (app) => {
 			/* If error obtained then global error handler gets executed */
 			return next(controllerResponse)
 		}
-		res.status(controllerResponse.statusCode).json({
-			responseCode: controllerResponse.responseCode,
-			message: controllerResponse.message,
-			result: controllerResponse.result,
-			meta: controllerResponse.meta,
-		})
+		if (controllerResponse) {
+			res.status(controllerResponse.statusCode).json({
+				responseCode: controllerResponse.responseCode,
+				message: controllerResponse.message,
+				result: controllerResponse.result,
+				meta: controllerResponse.meta,
+			})
+		}
 	}
 
 	app.all('/user/:version/:controller/:method', validator, router)

@@ -36,6 +36,7 @@ doc
 .vscode
 uploadedFiles
 uploads
+package-lock.json
 
 # Optional npm cache directory
 .npm

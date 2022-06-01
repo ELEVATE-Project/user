@@ -1,0 +1,1946 @@
+---
+openapi: 3.0.0
+info:
+  title: Elevate
+  version: 1.0.0
+  termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
+  description: >-
+    - The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notifcation etc 
+
+    - The URL for Users API(s) is `{context}/user/v1`
+    - <b>Note:</b> These resources can be used in other services
+  contact:
+    email: info@sunbird.org
+servers:
+  - url: http://localhost:3000
+    description: local dev
+  - url: https://dev.elevate-apis.shikshalokam.org
+    description: dev server
+tags:
+  - name: User
+    description: User Endpoints
+  - name: Profile
+    description: Profile Endpoints
+paths:
+  '/user/v1/account/create':
+    post:
+      summary: Creates user as a Mentor and Mentee
+      tags:
+        - User
+      description: "This Api is associated with Create User on menteroing \n - Then
+        Endpoint for creating user `/user/account/create` \n - It is mandatory to
+        provide values for parameter marked with `required` \n - Mandatory parameter
+        cannot be empty or null \n - secretCode is required only for mentor"
+      requestBody:
+        description: Request body consist of metadata and accepts payload as JSON
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/userCreateUserRequest'
+      responses:
+        '200':
+          description: OK. User created.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userCreateUserRsponse'
+        '400':
+          description: Bad Request. Refrral code is invalid
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userCreateUser400Response'
+        '406':
+          description: Not Acceptable. User already exists.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userCreateUser406Exist'
+  '/user/v1/account/login':
+    post:
+      summary: Login Api
+      tags:
+        - User
+      description: ''
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/userLoginRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userLoginResponse'
+        '400':
+          description: Bad Request. Invalid Email or Password
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userLoginResponse400'
+  '/user/v1/account/acceptTermsAndCondition':
+    patch:
+      summary: Terms & Condition API
+      tags:
+        - User
+      description: This API Requires only X-auth-token and it will set flag to true.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse'
+        '400':
+          description: Bad Request. User Does not exist.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse400'
+  '/user/v1/account/verifyMentor?userId={userId}':
+    get:
+      summary: Verify user is mentor or mentee
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'userId '
+          required: true
+          description: Please append a valid User Id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userVerifyMentor200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userVerifyMentor400'
+  '/user/v1/account/changeRole':
+    patch:
+      summary: Change User form mentee to mentor
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/userChangeRoleRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userChangeRoleResponse'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userChangeRoleResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userChangeRoleResponse401'
+  '/user/v1/account/generateToken':
+    post:
+      summary: Generates Access token.
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/generateTokenRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse401'
+        '500':
+          description: Internal Server Error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateTokenResponse500'
+  '/user/v1/account/logout':
+    post:
+      summary: Logout API
+      tags:
+        - User
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/logoutRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/logoutResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/logoutResponse400'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/logoutResponse401'
+  '/user/v1/profile/details/{userId}':
+    get:
+      summary: Get User Info
+      tags:
+        - Profile
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'userId '
+          required: true
+          description: Please append a valid User Id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/profileDetailsResponse200'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/profile/update':
+    patch:
+      summary: update User Info
+      tags:
+        - Profile
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/profile/updateRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/updateRequest200Response'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/form/create':
+    post:
+      summary: Create form
+      tags:
+        - Form
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/form/createFormRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/createForm200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/createForm400Response'
+  '/user/v1/form/update':
+    patch:
+      summary: Update form
+      tags:
+        - Form
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/form/updateFormRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/updateForm200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/updateForm400Response'
+  '/user/v1/form/read':
+    get:
+      summary: Get form Data
+      tags:
+        - Form
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/form/readFormRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/readForm200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/readForm400Response'
+  '/user/v1/mentors/list?page={pageNo}&limit={pageSize}&search={searchText}':
+    get:
+      summary: Get All Mentor list
+      tags:
+        - Mentor
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: page
+          required: true
+          description: Please append a page Number
+          schema:
+            type: string
+          example: '1'
+        - in: path
+          name: limit
+          required: true
+          description: Please append a page Size
+          schema:
+            type: string
+          example: '10'
+        - in: path
+          name: search
+          required: true
+          description: Please append a search text
+          schema:
+            type: string
+          example: jhon
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentor/getMentorList200Resposne'
+  '/user/v1/userentity/create':
+    post:
+      summary: Create User Entity
+      tags:
+        - User Entity
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/userentity/createUserEntityRequest'
+      responses:
+        '201':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $ref: '#/components/schemas/userentity/createUserEntity201Response'
+        400:
+          description: Bad Request. User Entity alrady exist
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/userentity/createUserEntity400Response'
+  '/user/v1/userentity/update/{id}':
+    patch:
+      summary: Update User Entity
+      tags:
+        - User Entity
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid user entity id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Not Found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
+  '/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}':
+    get:
+      summary: get User entity
+      tags:
+        - User Entity
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: type
+          required: true
+          description: Please append a valid type of role
+          schema:
+            type: string
+          example: roles
+        - in: path
+          name: deleted
+          required: true
+          description: Please append a deleted type eg. for deleted user `true` and
+            for existing user `false`
+          schema:
+            type: string
+          example: 'false'
+        - in: path
+          name: status
+          required: true
+          description: Please append a deleted type eg. for active user `ACTIVE` and
+            for Disabled user `DISABLED`
+          schema:
+            type: string
+          example: ACTIVE
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/userentity/readUserEntity200Response'
+  '/user/v1/userentity/delete/{id}':
+    patch:
+      summary: delete User Entity
+      tags:
+        - User Entity
+      description: ''
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Avlibale
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid user entity id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/userentity/deleteUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Already Deleted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
+  '/user/v1/systemUsers/create':
+    post:
+      summary: Create System User
+      tags:
+        - System User
+      description: ''
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/systemuser/createSystemUserRequest'
+      responses:
+        '201':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/systemuser/createSystemUser201Response'
+        '406':
+          description: Bad Request. System User alrady exist
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/systemuser/createSystemUser406Response'
+  '/user/v1/systemUsers/login':
+    post:
+      summary: login System User
+      tags:
+        - System User
+      description: ''
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/systemuser/loginSystemUserRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/systemuser/loginSystemUser200Response'
+        '400':
+          description: Bad Request. System User doesn't exist
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
+components:
+  schemas:
+    user:
+      userCreateUserRequest:
+        description: User program and solution request
+        type: object
+        required:
+          - name
+          - email
+          - password
+          - isAMentor
+        properties:
+          name:
+            type: string
+            description: Name of the user
+            example: John Deo
+            required: true
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+            required: true
+          password:
+            type: string
+            description: Password of user
+            format: password
+            example: Password
+            required: true
+          isAMentor:
+            tyep: boolean
+            description: Type of User (Mentor - True, Mentee - False)
+            example: true
+            required: true
+          secretCode:
+            tyep: string
+            required: optional
+            description: 'Referral Code for mentor '
+            example: '4567'
+      userCreateUserRsponse:
+        description: User solutions response
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Sign-up successful, Please wait while logging in.
+          result:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODQ4MzI0MmQ1MzMyNzQ2MDQ2OWJlYyIsImVtYWlsIjoiYW5raXRzdGFyMDA3ODZAeWFob28uY29tIiwibmFtZSI6IkFua2l0IiwiaXNBTWVudG9yIjpmYWxzZX0sImlhdCI6MTY1Mjg1MTQ5MiwiZXhwIjoxNjUyOTM3ODkyfQ.ZgCXMVVAC50OlBZxiMFs47FxFpBL29Pl-LjIGcsd2iU
+              refresh_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODQ4MzI0MmQ1MzMyNzQ2MDQ2OWJlYyIsImVtYWlsIjoiYW5raXRzdGFyMDA3ODZAeWFob28uY29tIiwibmFtZSI6IkFua2l0IiwiaXNBTWVudG9yIjpmYWxzZX0sImlhdCI6MTY1Mjg1MTQ5MiwiZXhwIjoxNjY4NjYyNjkyfQ.0gnDJDcsCVL4jdinDza97yv9uzjdr2d7OLH15iGc9jg
+              user:
+                type: object
+                properties:
+                  email:
+                    type: object
+                    properties:
+                      verified:
+                        type: boolean
+                        example: false
+                      address:
+                        type: string
+                        example: example@mail.com
+                  isAMentor:
+                    type: boolean
+                    example: false
+                  hasAcceptedTAndC:
+                    type: boolean
+                    example: false
+                  deleted:
+                    type: boolean
+                    example: false
+                  _id:
+                    type: string
+                    example: 628483242d53327460469bec
+                  name:
+                    type: string
+                    example: John Deo
+                  designation:
+                    type: array
+                    example: []
+                  location:
+                    type: array
+                    example: []
+                  areasOfExpertise:
+                    type: array
+                    example: []
+                  languages:
+                    type: array
+                    example: []
+                  updatedAt:
+                    type: datetime
+                    example: '2022-05-18T05:24:52.431Z'
+                  createdAt:
+                    type: datetime
+                    example: '2022-05-18T05:24:52.431Z'
+                  __v:
+                    type: number
+                    example: 0
+      userCreateUser406Exist:
+        description: User solutions response
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User already exists.
+          error:
+            type: array
+            example: []
+      userCreateUser400Response:
+        description: Reffral Code is Invalid
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Incorrect code. Please try again.
+          error:
+            type: array
+            example: []
+      userLoginRequest:
+        type: object
+        description: API for login
+        required:
+          - email
+          - password
+        properties:
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+          password:
+            type: string
+            description: Password of user
+            example: Password
+      userLoginResponse:
+        type: object
+        description: User solutions response
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User logged in successfully.
+          result:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY1Mjk0MDgyMH0.TGuFqQ6pSbQW3NyiG8BZzAz0kPN7NiX2VS0yD4dhRUs
+              refresh_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY2ODY2NTYyMH0.fThfHLWiRDv1ez0KmBiOd2wUsYsHg7r--RhXrd68e1M
+              user:
+                type: object
+                properties:
+                  email:
+                    type: object
+                    properties:
+                      verified:
+                        type: boolean
+                        example: false
+                      address:
+                        type: string
+                        example: example@mail.com
+              isAMentor:
+                type: boolean
+                example: false
+              hasAcceptedTAndC:
+                type: boolean
+                example: false
+              deleted:
+                type: boolean
+                example: false
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              name:
+                type: string
+                example: Ankit
+              designation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Teacher
+              location:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Bangalore
+              areasOfExpertise:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Educational Leadership
+              languages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: English
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
+              lastLoggedInAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              about:
+                type: string
+                example: This is test about of mentee
+              experience:
+                type: string
+                example: '4.2'
+              gender:
+                type: string
+                example: MALE
+              image:
+                type: string
+                example: https://cloudstorage.com/container/abc.png
+      userLoginResponse400:
+        description: Username or password is invalid.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Please enter the correct login ID and Password.
+          error:
+            type: array
+            example: []
+      acceptTermsAndConditionResponse:
+        description: OK, User Accepted Terms.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User successfully updated.
+          result:
+            type: array
+            example: []
+      acceptTermsAndConditionResponse400:
+        description: OK, User Does not exist
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+      userChangeRoleRequest:
+        type: object
+        description: API for login
+        required:
+          - email
+        properties:
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+      userChangeRoleResponse:
+        description: OK, User Changed his role form mentee to mentor.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User role successfully updated.
+          result:
+            type: array
+            example: []
+      userChangeRoleResponse400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+      userChangeRoleResponse401:
+        description: UNAUTHORIZED
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: UNAUTHORIZED
+          message:
+            type: string
+            example: You have been logged out of your account due to change in platform
+              role. Please login again.
+          error:
+            type: array
+            example: []
+      generateTokenRequest:
+        type: object
+        description: API for generate access token
+        required:
+          - refreshToken
+        properties:
+          refreshToken:
+            type: string
+            description: Refresh token.
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
+      generateTokenResponse200:
+        description: OK, Access token has been genrated again.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Access token generated successfully
+          result:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDk4NCwiZXhwIjoxNjUzMDk3Mzg0fQ.BOZ_d6xNxuAJZ1ubdj94mCeO4jwXsC7t9JT4KXECVN
+      generateTokenResponse400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+      generateTokenResponse401:
+        description: Unauthorized
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: SERVER_ERROR
+          message:
+            type: string
+            example: Refresh token expired
+          error:
+            type: array
+            example: []
+      generateTokenResponse500:
+        description: Internal Server Error
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Refresh token not found
+          error:
+            type: array
+            example: []
+      logoutRequest:
+        type: object
+        description: API for logout
+        required:
+          - refreshToken
+        properties:
+          refreshToken:
+            type: string
+            description: Refresh token.
+            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
+      logoutResponse200:
+        description: OK, User logout successfully
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User logged out successfully.
+          result:
+            type: array
+            example: []
+      logoutResponse400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+      logoutResponse401:
+        description: Unauthorized
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: UNAUTHORIZED
+          message:
+            type: string
+            example: Invalid refresh token
+          error:
+            type: array
+            example: []
+      userVerifyMentor200:
+        description: OK, User logout successfully
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User has mentor access.
+          result:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              isAMentor:
+                tyep: boolean
+                example: true
+      userVerifyMentor400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+    profile:
+      profileDetailsResponse200:
+        type: object
+        description: User solutions response
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Profile fetched successfully.
+          result:
+            type: object
+            properties:
+              email:
+                type: object
+                properties:
+                  verified:
+                    type: boolean
+                    example: false
+                  address:
+                    type: string
+                    example: example@mail.com
+              isAMentor:
+                type: boolean
+                example: false
+              hasAcceptedTAndC:
+                type: boolean
+                example: false
+              deleted:
+                type: boolean
+                example: false
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              name:
+                type: string
+                example: Ankit
+              designation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Teacher
+              location:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Bangalore
+              areasOfExpertise:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Educational Leadership
+              languages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: English
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
+              lastLoggedInAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              about:
+                type: string
+                example: This is test about of mentee
+              experience:
+                type: string
+                example: '4.2'
+              gender:
+                type: string
+                example: MALE
+              image:
+                type: string
+                example: https://cloudstorage.com/container/abc.png
+      updateRequest:
+        type: object
+        description: User solutions response
+        properties:
+          name:
+            type: string
+            example: Ankit
+          designation:
+            type: array
+            items:
+              type: object
+              properties:
+                value:
+                  type: number
+                  example: 1
+                label:
+                  type: string
+                  example: Teacher
+          location:
+            type: array
+            items:
+              type: object
+              properties:
+                value:
+                  type: number
+                  example: 1
+                label:
+                  type: string
+                  example: Bangalore
+          about:
+            type: string
+            example: This is test about of mentee
+          areasOfExpertise:
+            type: array
+            items:
+              type: object
+              properties:
+                value:
+                  type: number
+                  example: 1
+                label:
+                  type: string
+                  example: Educational Leadership
+          experience:
+            type: string
+            example: 4.2
+          hasAcceptedTAndC:
+            type: boolean
+            example: true
+          gender:
+            type: string
+            example: MALE
+          image:
+            type: string
+            example: https://cloudstorage.com/container/abc.png
+      updateRequest200Response:
+        description: Accepted
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Profile updated successfully.
+          result:
+            type: array
+            example: []
+      Unauthorized401Response:
+        description: UNAUTHORIZED
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: UNAUTHORIZED
+          message:
+            type: string
+            example: Access token expired
+          error:
+            type: array
+            example: []
+    form:
+      createFormRequest:
+        type: object
+        properties:
+          type:
+            type: string
+            example: profile
+          subType:
+            type: string
+            example: profileForm
+          action:
+            type: string
+            example: profileFields
+          ver:
+            type: string
+            example: '1.0'
+          data:
+            type: object
+            properties:
+              templateName:
+                type: string
+                example: defaultTemplate
+              fields:
+                type: object
+                properties:
+                  controls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: name
+                        label:
+                          type: string
+                          example: name
+                        value:
+                          type: string
+                          example: ''
+                        class:
+                          type: string
+                          example: ion-margin
+                        type:
+                          type: string
+                          example: text
+                        position:
+                          type: string
+                          example: floating
+                        validators:
+                          type: object
+                          properties:
+                            required:
+                              type: boolean
+                              example: true
+                            minLength:
+                              type: number
+                              example: 10
+      createForm200Response:
+        description: Created
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Form created successfully
+          result:
+            type: array
+            example: []
+      createForm400Response:
+        description: Bad Request. Form Already Exist
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Form already exists
+          error:
+            type: array
+            example: []
+      updateFormRequest:
+        type: object
+        properties:
+          type:
+            type: string
+            example: profile
+          subType:
+            type: string
+            example: profileForm
+          action:
+            type: string
+            example: profileFields
+          ver:
+            type: string
+            example: '1.0'
+          data:
+            type: object
+            properties:
+              templateName:
+                type: string
+                example: defaultTemplate
+              fields:
+                type: object
+                properties:
+                  controls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: name
+                        label:
+                          type: string
+                          example: name
+                        value:
+                          type: string
+                          example: ''
+                        class:
+                          type: string
+                          example: ion-margin
+                        type:
+                          type: string
+                          example: text
+                        position:
+                          type: string
+                          example: floating
+                        validators:
+                          type: object
+                          properties:
+                            required:
+                              type: boolean
+                              example: true
+                            minLength:
+                              type: number
+                              example: 10
+      updateForm200Response:
+        description: Updated
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Form updated successfully
+          result:
+            type: array
+            example: []
+      updateForm400Response:
+        description: Bad Request. Form Already Exist
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Form already exists
+          error:
+            type: array
+            example: []
+      readFormRequest:
+        type: object
+        properties:
+          type:
+            type: string
+            example: profile
+          subType:
+            type: string
+            example: profileForm
+          action:
+            type: string
+            example: profileFields
+          ver:
+            type: string
+            example: '1.0'
+          templateName:
+            type: string
+            example: defaultTemplate
+      readForm200Response:
+        description: Read
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Form fetched successfully
+          result:
+            type: object
+            properties:
+              type:
+                type: string
+                example: profile
+              subType:
+                type: string
+                example: profileForm
+              action:
+                type: string
+                example: profileFields
+              ver:
+                type: string
+                example: '1.0'
+              updatedAt:
+                type: string
+                example: '2022-05-24T23:14:10.080Z'
+              createdAt:
+                type: string
+                example: '2022-05-24T23:14:10.080Z'
+              __v:
+                type: number
+                example: 0
+              _id:
+                type: string
+                example: 628d66c28069a73506cb4b2d
+              data:
+                type: object
+                properties:
+                  templateName:
+                    type: string
+                    example: defaultTemplate
+                  fields:
+                    type: object
+                    properties:
+                      controls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: name
+                            label:
+                              type: string
+                              example: name
+                            value:
+                              type: string
+                              example: ''
+                            class:
+                              type: string
+                              example: ion-margin
+                            type:
+                              type: string
+                              example: text
+                            position:
+                              type: string
+                              example: floating
+                            validators:
+                              type: object
+                              properties:
+                                required:
+                                  type: boolean
+                                  example: true
+                                minLength:
+                                  type: number
+                                  example: 10
+      readForm400Response:
+        description: Bad Request. Form not found
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Form not found
+          error:
+            type: array
+            example: []
+    mentor:
+      getMentorList200Resposne:
+        description: Get List of mentor
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Mentor list fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      example: A
+                    values:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 6283256c4dd32457ca55cc0a
+                          name:
+                            type: string
+                            example: Adams
+                          areasOfExpertise:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                _id:
+                                  type: string
+                                  example: 62833602c57ddb589912a51c
+                                value:
+                                  type: number
+                                  example: 1
+                                label:
+                                  type: string
+                                  example: Educational Leadership
+                          image:
+                            type: string
+                            example: https://cloudstorage.com/container/abc.png
+              count:
+                type: number
+                example: 1
+    userentity:
+      createUserEntityRequest:
+        type: object
+        properties:
+          value:
+            type: string
+            example: HM
+          label:
+            type: string
+            example: Head Master
+          type:
+            type: string
+            example: roles
+      createUserEntity201Response:
+        type: object
+        description: User entity created
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity created successfully
+          result:
+            type: array
+            example: []
+      createUserEntity400Response:
+        type: object
+        description: User entity already exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User entity already exists
+          error:
+            type: array
+            example: []
+      updateUserEntityRequest:
+        type: object
+        description: User Entity update request
+        properties:
+          value:
+            type: string
+            example: HM
+          label:
+            type: string
+            example: Head Master
+          status:
+            type: string
+            example: DISABLED
+          type:
+            type: string
+            example: roles
+      updateUserEntity202Response:
+        type: object
+        description: User Entity Updated
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity updated successfully
+          result:
+            type: array
+            example: []
+      updateUserEntity400Response:
+        type: object
+        description: User Entity Not Found
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User entity not found
+          error:
+            type: array
+            example: []
+      readUserEntity200Response:
+        description: User Entity fetched
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity fetched successfully
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                value:
+                  type: string
+                  example: HM
+                label:
+                  type: string
+                  example: Head Master
+      deleteUserEntity202Response:
+        type: object
+        description: User Entity Deleted
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity deleted successfully
+          result:
+            type: array
+            example: []
+      deleteUserEntity400Response:
+        type: object
+        description: User Entity Deleted
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User entity already deleted
+          error:
+            type: array
+            example: []
+    systemuser:
+      createSystemUserRequest:
+        type: object
+        description: Creates System user
+        required:
+          - name
+          - email
+          - password
+          - role
+        properties:
+          name:
+            type: string
+            example: John Deo
+            required: true
+          email:
+            type: string
+            example: systemuser@mail.com
+            required: true
+          password:
+            type: string
+            format: password
+            example: password
+            required: true
+          role:
+            type: string
+            example: admin
+            required: true
+      createSystemUser201Response:
+        type: object
+        description: System User created
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Sign-up successful, Please wait while logging in.
+          result:
+            type: array
+            example: []
+      createSystemUser406Response:
+        type: object
+        description: System User alreay exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: System User already exists.
+          error:
+            type: array
+            example: []
+      loginSystemUserRequest:
+        type: object
+        description: Creates System user
+        required:
+          - email
+          - password
+        properties:
+          email:
+            type: string
+            example: systemuser@mail.com
+            required: true
+          password:
+            type: string
+            format: password
+            example: password
+            required: true
+      loginSystemUser200Response:
+        description: System User logged
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User logged in successfully.
+          result:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyOGQ4YjljNGRmOGFkM2ExM2QyODNlNyIsImVtYWlsIjoic3lzdGVtQGFkbWluLmNvbSIsInJvbGUiOiJhZG1pbiJ9LCJpYXQiOjE2NTM0NDQ2MDQsImV4cCI6MTY1MzUzMTAwNH0.l6I0MC16FegRLDym_VwgxFsa97ApUuOKohj2k49cV0I
+              refresh_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyOGQ4YjljNGRmOGFkM2ExM2QyODNlNyIsImVtYWlsIjoic3lzdGVtQGFkbWluLmNvbSIsInJvbGUiOiJhZG1pbiJ9LCJpYXQiOjE2NTM0NDQ2MDQsImV4cCI6MTY2OTI1NTgwNH0.TGDhpCVa0hTAbki8Dp5XGtQyqCMXu4Xu9L_72Yr4G1A
+              user:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: 628d8b9c4df8ad3a13d283e7
+                  email:
+                    type: object
+                    properties:
+                      address:
+                        type: string
+                        example: system@admin.com
+                      verified:
+                        type: boolean
+                        example: false
+                  name:
+                    type: string
+                    example: system
+                  role:
+                    type: string
+                    example: admin
+                  updatedAt:
+                    type: string
+                    example: '2022-05-25T01:51:24.138Z'
+                  createdAt:
+                    type: string
+                    example: '2022-05-25T01:51:24.138Z'
+                  __v:
+                    type: number
+                    example: 0
+            items:
+              type: object
+              properties:
+                value:
+                  type: string
+                  example: HM
+                label:
+                  type: string
+                  example: Head Master
+      loginSystemUser400Response:
+        type: object
+        description: System user doesn't exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+  securitySchemes:
+    bearer:
+      type: apiKey
+      name: X-auth-token
+      in: header
