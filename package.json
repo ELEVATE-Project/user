@@ -40,6 +40,7 @@
     "mongoose-paginate-v2": "^1.4.2",
     "mongoose-timestamp": "^0.6.0",
     "redis": "^4.0.3",
+    "redoc-cli": "^0.13.15",
     "redoc-express": "^1.0.0",
     "require-all": "^3.0.0",
     "stream": "^0.0.2",

@@ -20,7 +20,7 @@ module.exports = (app) => {
     let controllerResponse;
     let validationError;
 
-    console.log(".//////////////", req.method);
+    console.log(".//////////////", req.pageNo, req.pageSize, req.searchText);
 
     /* Check for input validation error */
     try {

@@ -9,25 +9,30 @@
 const mentorsHelper = require("../../services/helper/mentors");
 
 module.exports = class Mentors {
+  /**
+   * List of mentors
+   * @method
+   * @name list
+   * @param {Object} req -request data.
+   * @param {string} req.pageNo -page number.
+   * @param {string} req.pageSize -request data.
+   * @param {string} req.searchText - search text.
+   * @returns {Array} - Mentors
+   */
 
-    /**
-    * List of mentors
-    * @method
-    * @name list
-    * @param {Object} req -request data.
-    * @param {string} req.pageNo -page number.
-    * @param {string} req.pageSize -request data.
-    * @param {string} req.searchText - search text.
-    * @returns {Array} - Mentors 
-    */
-
-    async list(req) {
-        const userId = req.decodedToken._id;
-        try {
-            const mentors = await mentorsHelper.list(req.pageNo,req.pageSize,req.searchText, userId);
-            return mentors;
-        } catch (error) {
-            return error;
-        }
+  async list(req) {
+    const userId = req.decodedToken._id;
+    try {
+      console.log("=======>", req.pageNo, req.pageSize, req.searchText, userId);
+      const mentors = await mentorsHelper.list(
+        req.pageNo,
+        req.pageSize,
+        req.searchText,
+        userId
+      );
+      return mentors;
+    } catch (error) {
+      return error;
     }
-}
+  }
+};

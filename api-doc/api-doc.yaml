@@ -3,12 +3,12 @@ openapi: 3.0.0
 info:
   title: Elevate
   version: 1.0.0
-   termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
+  termsOfService: "https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE"
   description: >-
     - The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notifcation etc 
-    
+
     - The URL for Users API(s) is `{context}/user/v1`
-    - <b>Note:</b> These resources can be used in other services 
+    - <b>Note:</b> These resources can be used in other services
   contact:
     email: info@sunbird.org
 servers:
@@ -432,7 +432,7 @@ paths:
             application.json:
               schema:
                 "$ref": "#/components/schemas/form/readForm400Response"
-  "/user/v1/mentors/list":
+  "/user/v1/mentors/list?page={pageNo}&limit={pageSize}&search={searchText}":
     get:
       summary: Get All Mentor list
       tags:
@@ -447,6 +447,27 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: page
+          required: true
+          description: Please append a page Number
+          schema:
+            type: string
+          example: "1"
+        - in: path
+          name: limit
+          required: true
+          description: Please append a page Size
+          schema:
+            type: string
+          example: "10"
+        - in: path
+          name: search
+          required: true
+          description: Please append a search text
+          schema:
+            type: string
+          example: jhon
       responses:
         "200":
           description: ok
@@ -480,8 +501,8 @@ paths:
           content:
             application.json:
               schema:
-                "$ref": "#/components/schemas/userentity/createUserEntity201Response"
-        "400":
+                $ref: "#/components/schemas/userentity/createUserEntity201Response"
+        400:
           description: Bad Request. User Entity alrady exist
           content:
             application.json:
@@ -489,7 +510,7 @@ paths:
                 "$ref": "#/components/schemas/userentity/createUserEntity400Response"
   "/user/v1/userentity/update/{id}":
     patch:
-      summary: Create User Entity
+      summary: Update User Entity
       tags:
         - User Entity
       description: ""
@@ -529,7 +550,7 @@ paths:
                 "$ref": "#/components/schemas/userentity/updateUserEntity400Response"
   "/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}":
     get:
-      summary: Create User Entity
+      summary: get User entity
       tags:
         - User Entity
       description: ""
@@ -576,7 +597,7 @@ paths:
                 "$ref": "#/components/schemas/userentity/readUserEntity200Response"
   "/user/v1/userentity/delete/{id}":
     patch:
-      summary: Create User Entity
+      summary: delete User Entity
       tags:
         - User Entity
       description: ""
@@ -1632,7 +1653,9 @@ components:
                           image:
                             type: string
                             example: https://cloudstorage.com/container/abc.png
-            count: 1
+              count:
+                type: number
+                example: 1
     userentity:
       createUserEntityRequest:
         type: object

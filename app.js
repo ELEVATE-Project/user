@@ -9,9 +9,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const expressFileUpload = require("express-fileupload");
-const redoc = require("redoc-express");
-// const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("./api-doc/api.json");
 const path = require("path");
 
 require("dotenv").config({ path: "./.env" });
@@ -36,38 +33,11 @@ app.use(cors());
 
 app.use(expressFileUpload());
 
-// serve your swagger.json file
-// app.get("/temp/swagger", (req, res) => {
-//   res.sendFile("api-doc/temp.json", { root: "." });
-// });
-
 app.get("/api-doc", function (req, res) {
   console.log("api");
   res.sendFile(path.join(__dirname, "./api-doc/index.html"));
 });
-// define title and specUrl location
-// serve redoc
-// app.get(
-//   "/temp",
-//   redoc({
-//     title: "API Docs",
-//     specUrl: "/temp/swagger",
-//   })
-// );
 
-// serve your swagger.json file
-app.get("/docs/swagger", (req, res) => {
-  res.sendFile("api-doc/api.json", { root: "." });
-});
-app.get(
-  "/docs",
-  redoc({
-    title: "API Docs",
-    specUrl: "/docs/swagger",
-  })
-);
-// app.use("/api-docs", swaggerUi.serve);
-// app.get("/api-docs", swaggerUi.setup(swaggerDocument));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50MB" }));
 app.use(bodyParser.json({ limit: "50MB" }));
 
