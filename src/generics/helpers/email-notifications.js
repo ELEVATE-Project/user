@@ -42,7 +42,7 @@ async function sendEmail(params) {
 			await sgMail.send(message)
 		} catch (error) {
 			if (error.response) {
-				console.error(error.response.body)
+				return error
 			}
 		}
 		return {
