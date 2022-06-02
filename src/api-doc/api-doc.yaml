@@ -315,7 +315,7 @@ paths:
                 '$ref': '#/components/schemas/user/resetPasswordResponse401'
   '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
     get:
-      summary: Cloud Services get signed url
+      summary: Cloud services get signed url
       tags:
         - Cloud services APIs
       description: "This API is associated with the cloud services for getting signed URL  \n - Then
@@ -346,7 +346,7 @@ paths:
                 '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
   '/user/v1/cloud-services/file/getDownloadableUrl?filePath={filePath}':
     get:
-      summary: Cloud Services get download url
+      summary: Cloud services get download url
       tags:
         - Cloud services APIs
       description: "This API is associated with the cloud services for getting downloadable URL  \n - Then
@@ -868,7 +868,7 @@ components:
             example: []
       resetPasswordRequest:
         type: object
-        description: API for Reset password
+        description: API for reset password
         required:
           - email
           - password
