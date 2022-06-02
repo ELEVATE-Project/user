@@ -1,11 +1,11 @@
 ---
 openapi: 3.0.0
 info:
-  title: Elevate
+  title: Elevate User
   version: 1.0.0
   termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
   description: >-
-    - The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notifcation etc 
+    - The Users Service is a centralized Service to support other services. Apis perform operations related to mentoring entities notification etc 
 
     - The URL for Users API(s) is `{context}/user/v1`
     - <b>Note:</b> These resources can be used in other services
@@ -16,19 +16,15 @@ servers:
     description: local dev
   - url: https://dev.elevate-apis.shikshalokam.org
     description: dev server
-tags:
-  - name: User
-    description: User Endpoints
-  - name: Profile
-    description: Profile Endpoints
+
 paths:
   '/user/v1/account/create':
     post:
-      summary: Creates user as a Mentor and Mentee
+      summary: Create user
       tags:
-        - User
-      description: "This Api is associated with Create User on menteroing \n - Then
-        Endpoint for creating user `/user/account/create` \n - It is mandatory to
+        - User APIs
+      description: "This Api is associated with Create User on mentoring \n - Then
+        Endpoint for creating user `/user/v1/account/create` \n - It is mandatory to
         provide values for parameter marked with `required` \n - Mandatory parameter
         cannot be empty or null \n - secretCode is required only for mentor"
       requestBody:
@@ -58,10 +54,13 @@ paths:
                 '$ref': '#/components/schemas/user/userCreateUser406Exist'
   '/user/v1/account/login':
     post:
-      summary: Login Api
+      summary: Login
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This Api is associated with login user \n - Then
+        Endpoint for login user `/user/v1/account/login` \n - It is mandatory to
+        provide values for parameter marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       requestBody:
         content:
           application.json:
@@ -82,14 +81,14 @@ paths:
                 '$ref': '#/components/schemas/user/userLoginResponse400'
   '/user/v1/account/acceptTermsAndCondition':
     patch:
-      summary: Terms & Condition API
+      summary: Terms & Condition
       tags:
-        - User
-      description: This API Requires only X-auth-token and it will set flag to true.
+        - User APIs
+      description: This API Requires only X-auth-token and it will set an email to verify true.
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -109,14 +108,17 @@ paths:
                 '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse400'
   '/user/v1/account/verifyMentor?userId={userId}':
     get:
-      summary: Verify user is mentor or mentee
+      summary: Verify user type
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with verify type of user on mentoring  \n - Then
+        Endpoint for verifying user `/user/v1/account/verifyMentor` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -143,14 +145,17 @@ paths:
                 '$ref': '#/components/schemas/user/userVerifyMentor400'
   '/user/v1/account/changeRole':
     patch:
-      summary: Change User form mentee to mentor
+      summary: Change user role
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with change role of user  \n - Then
+        Endpoint for change role user `/user/v1/account/changeRole` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -181,14 +186,17 @@ paths:
                 '$ref': '#/components/schemas/user/userChangeRoleResponse401'
   '/user/v1/account/generateToken':
     post:
-      summary: Generates Access token.
+      summary: Generates access token.
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with re-login and generating access token from refresh token \n - Then
+        Endpoint for generating access token `/user/v1/account/generateToken` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -225,14 +233,17 @@ paths:
                 '$ref': '#/components/schemas/user/generateTokenResponse500'
   '/user/v1/account/logout':
     post:
-      summary: Logout API
+      summary: Logout
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with logout  \n - Then
+        Endpoint for logout `/user/v1/account/logout` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -263,14 +274,17 @@ paths:
                 '$ref': '#/components/schemas/user/logoutResponse401'
   '/user/v1/profile/details/{userId}':
     get:
-      summary: Get User Info
+      summary: User details
       tags:
-        - Profile
-      description: ''
+        - Profile APIs
+      description: "This API is associated with the user's profile details  \n - Then
+        Endpoint for user profile details `/user/v1/profile/details/` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -297,14 +311,17 @@ paths:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
   '/user/v1/profile/update':
     patch:
-      summary: update User Info
+      summary: Update user
       tags:
-        - Profile
-      description: ''
+        - Profile APIs
+      description: "This API is associated with update user profile  \n - Then
+        Endpoint for update user profile `/user/v1/profile/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -331,12 +348,15 @@ paths:
     post:
       summary: Create form
       tags:
-        - Form
-      description: ''
+        - Form APIs
+      description: "This API is associated with create form  \n - Then
+        Endpoint for create form `/user/v1/form/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -363,12 +383,15 @@ paths:
     patch:
       summary: Update form
       tags:
-        - Form
-      description: ''
+        - Form APIs
+      description: "This API is associated with update form  \n - Then
+        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -393,14 +416,17 @@ paths:
                 '$ref': '#/components/schemas/form/updateForm400Response'
   '/user/v1/form/read':
     get:
-      summary: Get form Data
+      summary: Get form details
       tags:
-        - Form
-      description: ''
+        - Form APIs
+      description: "This API is associated with update form  \n - Then
+        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -423,58 +449,20 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/readForm400Response'
-  '/user/v1/mentors/list?page={pageNo}&limit={pageSize}&search={searchText}':
-    get:
-      summary: Get All Mentor list
-      tags:
-        - Mentor
-      description: ''
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: page
-          required: true
-          description: Please append a page Number
-          schema:
-            type: string
-          example: '1'
-        - in: path
-          name: limit
-          required: true
-          description: Please append a page Size
-          schema:
-            type: string
-          example: '10'
-        - in: path
-          name: search
-          required: true
-          description: Please append a search text
-          schema:
-            type: string
-          example: jhon
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/mentor/getMentorList200Resposne'
+
   '/user/v1/userentity/create':
     post:
-      summary: Create User Entity
+      summary: Create user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with user entity creation  \n - Then
+        Endpoint for create entity `/user/v1/userentity/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -499,14 +487,17 @@ paths:
                 '$ref': '#/components/schemas/userentity/createUserEntity400Response'
   '/user/v1/userentity/update/{id}':
     patch:
-      summary: Update User Entity
+      summary: Update user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with update user entity  \n - Then
+        Endpoint for update entity `/user/v1/userentity/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -514,7 +505,7 @@ paths:
         - in: path
           name: 'id '
           required: true
-          description: Please append a valid user entity id To the Request URL
+          description: Please append a valid user entity id to the request url
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
@@ -538,14 +529,17 @@ paths:
                 '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
   '/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}':
     get:
-      summary: get User entity
+      summary: Get user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with getting user entity based on conditions  \n - Then
+        Endpoint for getting user entity `/user/v1/userentity/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -582,14 +576,17 @@ paths:
                 '$ref': '#/components/schemas/userentity/readUserEntity200Response'
   '/user/v1/userentity/delete/{id}':
     patch:
-      summary: delete User Entity
+      summary: Delete user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with delete user entity  \n - Then
+        Endpoint for delete user entity `/user/v1/userentity/delete` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -597,7 +594,7 @@ paths:
         - in: path
           name: 'id '
           required: true
-          description: Please append a valid user entity id To the Request URL
+          description: Please append a valid user entity id to the request url
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
@@ -616,10 +613,13 @@ paths:
                 '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
   '/user/v1/systemUsers/create':
     post:
-      summary: Create System User
+      summary: Create system user
       tags:
-        - System User
-      description: ''
+        - System User APIs
+      description: "This API is associated with create system user  \n - Then
+        Endpoint for create system user `/user/v1/systemUsers/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       requestBody:
         content:
           application.json:
@@ -640,10 +640,13 @@ paths:
                 '$ref': '#/components/schemas/systemuser/createSystemUser406Response'
   '/user/v1/systemUsers/login':
     post:
-      summary: login System User
+      summary: Login system user
       tags:
-        - System User
-      description: ''
+        - System User APIs
+      description: "This API is associated with login system user  \n - Then
+        Endpoint for login system user `/user/v1/systemUsers/login` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       requestBody:
         content:
           application.json:
@@ -1269,7 +1272,7 @@ components:
         properties:
           name:
             type: string
-            example: Ankit
+            example: Jhon
           designation:
             type: array
             items:
@@ -1347,6 +1350,12 @@ components:
     form:
       createFormRequest:
         type: object
+        required:
+          - type
+          - subType
+          - action
+          - ver
+          - data
         properties:
           type:
             type: string
@@ -1429,6 +1438,12 @@ components:
             example: []
       updateFormRequest:
         type: object
+        required:
+          - type
+          - subType
+          - action
+          - ver
+          - data
         properties:
           type:
             type: string
@@ -1674,6 +1689,10 @@ components:
     userentity:
       createUserEntityRequest:
         type: object
+        required:
+          - value
+          - label
+          - type
         properties:
           value:
             type: string
@@ -1712,6 +1731,11 @@ components:
             example: []
       updateUserEntityRequest:
         type: object
+        required:
+          - value
+          - label
+          - type
+          - status
         description: User Entity update request
         properties:
           value:
