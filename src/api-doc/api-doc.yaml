@@ -96,7 +96,7 @@ components:
                 example: "Dear Jhon, \n Welcome to Notification"
                 required: true
       emailSendResponse200:
-        description: Failed to send email
+        description: Email Sent response
         type: object
         properties:
           message:
@@ -112,7 +112,7 @@ components:
                 type: string
                 example: successfully mail sent
       emailSendResponse400:
-        description: Email Sent response
+        description: Failed to send email
         type: object
         properties:
           message:

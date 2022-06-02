@@ -14,7 +14,7 @@ module.exports = class EmailHelper {
 	 * @param {String} bodyData.email.cc - email id of receiver in cc
 	 * @param {String} bodyData.email.subject - subject of email
 	 * @param {String} bodyData.email.body - body of email
-	 * @returns {JSON} - response contains account creation details.
+	 * @returns {JSON} - email send status
 	 */
 	static async send(bodyData) {
 		if (bodyData.type == 'email' && bodyData.email) {
