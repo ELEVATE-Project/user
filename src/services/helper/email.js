@@ -4,11 +4,22 @@ const httpStatusCode = require('../../generics/http-status')
 const apiResponses = require('../../constants/api-responses')
 
 module.exports = class EmailHelper {
-	static async send(req) {
-		let notificationData = req.body
-		console.log(notificationData)
-		if (notificationData.type == 'email' && notificationData.email) {
-			let result = await emailNotifications.sendEmail(notificationData.email)
+	/**
+	 * send email
+	 * @method
+	 * @name send
+	 * @param {String} bodyData.type - type of payload email
+	 * @param {String} bodyData.email - email object
+	 * @param {Boolean} bodyData.email.to - email id of receiver
+	 * @param {String} bodyData.email.cc - email id of receiver in cc
+	 * @param {String} bodyData.email.subject - subject of email
+	 * @param {String} bodyData.email.body - body of email
+	 * @returns {JSON} - response contains account creation details.
+	 */
+	static async send(bodyData) {
+		console.log(bodyData)
+		if (bodyData.type == 'email' && bodyData.email) {
+			let result = await emailNotifications.sendEmail(bodyData.email)
 			if (result && result.status == 'success') {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,

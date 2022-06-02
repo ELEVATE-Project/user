@@ -2,22 +2,23 @@ const emailHelper = require('../../services/helper/email')
 
 module.exports = class Email {
 	/**
-	 * create mentee account
+	 * send email
 	 * @method
-	 * @name create
+	 * @name send
 	 * @param {Object} req -request data.
 	 * @param {Object} req.body -request body contains user creation deatils.
-	 * @param {String} req.body.secretCode - secrate code to create mentor.
-	 * @param {String} req.body.name - name of the user.
-	 * @param {Boolean} req.body.isAMentor - is a mentor or not .
-	 * @param {String} req.body.email - user email.
-	 * @param {String} req.body.password - user password.
+	 * @param {String} req.body.type - type of payload email
+	 * @param {String} req.body.email - email object
+	 * @param {Boolean} req.body.email.to - email id of receiver
+	 * @param {String} req.body.email.cc - email id of receiver in cc
+	 * @param {String} req.body.email.subject - subject of email
+	 * @param {String} req.body.email.body - body of email
 	 * @returns {JSON} - response contains account creation details.
 	 */
 
 	async send(req) {
 		try {
-			const sendEmail = await emailHelper.send(req)
+			const sendEmail = await emailHelper.send(req.body)
 			return sendEmail
 		} catch (error) {
 			return error
