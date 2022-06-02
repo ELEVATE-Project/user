@@ -17,7 +17,6 @@ module.exports = class EmailHelper {
 	 * @returns {JSON} - response contains account creation details.
 	 */
 	static async send(bodyData) {
-		console.log(bodyData)
 		if (bodyData.type == 'email' && bodyData.email) {
 			let result = await emailNotifications.sendEmail(bodyData.email)
 			if (result && result.status == 'success') {

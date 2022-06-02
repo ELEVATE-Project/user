@@ -17,8 +17,9 @@ module.exports = class Email {
 	 */
 
 	async send(req) {
+		const params = req.body
 		try {
-			const sendEmail = await emailHelper.send(req.body)
+			const sendEmail = await emailHelper.send(params)
 			return sendEmail
 		} catch (error) {
 			return error
