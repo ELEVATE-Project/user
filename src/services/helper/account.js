@@ -58,16 +58,16 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await redisCommunication.getKey(email)
-				if (!redisData || redisData.otp != bodyData.otp) {
-					return common.failureResponse({
-						message: apiResponses.OTP_INVALID,
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-			}
+			// if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
+			// 	const redisData = await redisCommunication.getKey(email)
+			// 	if (!redisData || redisData.otp != bodyData.otp) {
+			// 		return common.failureResponse({
+			// 			message: apiResponses.OTP_INVALID,
+			// 			statusCode: httpStatusCode.bad_request,
+			// 			responseCode: 'CLIENT_ERROR',
+			// 		})
+			// 	}
+			// }
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 			bodyData.email = { address: email, verified: false }
@@ -127,7 +127,7 @@ module.exports = class AccountHelper {
 						}),
 					},
 				}
-
+				console.log('---------------', payload, '===============')
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 

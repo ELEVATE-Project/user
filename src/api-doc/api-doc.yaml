@@ -12,7 +12,7 @@ info:
   contact:
     email: info@sunbird.org
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3002
     description: local dev
   - url: https://dev.elevate-apis.shikshalokam.org
     description: dev server
@@ -231,6 +231,89 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse500'
+  'user/v1/account/generateOtp':
+    post:
+      summary: Generate OTP
+      tags:
+        - User APIs
+      description: "This API is associated with generating OTP  \n - Then
+        Endpoint for generating OTP `user/v1/account/generateOtp` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/genrateOtpRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateOtpResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateOtpResponse400'
+        '500':
+          description: Internal Server Error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateOtpResponse500'
+  'user/v1/account/resetPassword':
+    post:
+      summary: Reset password
+      tags:
+        - User APIs
+      description: "This API is associated with reset password  \n - Then
+        Endpoint for reset password `user/v1/account/resetPassword` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/resetPasswordRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/resetPasswordResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/resetPasswordResponse400'
+        '401':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/resetPasswordResponse401'
+
   '/user/v1/account/logout':
     post:
       summary: Logout
@@ -449,7 +532,6 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/readForm400Response'
-
   '/user/v1/userentity/create':
     post:
       summary: Create user entity
@@ -668,6 +750,220 @@ paths:
 components:
   schemas:
     user:
+      genrateOtpRequest:
+        type: object
+        description: API for genarting OTP
+        required:
+          - email
+          - password
+        properties:
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+          password:
+            type: string
+            description: Password of user
+            example: Password
+      generateOtpResponse200:
+        description: OK, otp genrated successfully
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: OTP has been sent to your registered email ID. Please enter the number to update your password.
+          result:
+            type: array
+            example: []
+      generateOtpResponse400:
+        description: Internal Server Error
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: SERVER_ERROR
+          message:
+            type: string
+            example: Unable to send otp, may be redis server is down.
+          error:
+            type: array
+            example: []
+      generateOtpResponse500:
+        description:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+      resetPasswordRequest:
+        type: object
+        description: API for Reset password
+        required:
+          - email
+          - password
+          - otp
+        properties:
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+          password:
+            type: string
+            description: New password of user
+            example: New password
+          otp:
+            type: string
+            description: OTP sent on mail
+            example: '123456'
+      resetPasswordResponse200:
+        type: object
+        description: User login response
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Password reset successfully.
+          result:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY1Mjk0MDgyMH0.TGuFqQ6pSbQW3NyiG8BZzAz0kPN7NiX2VS0yD4dhRUs
+              refresh_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY2ODY2NTYyMH0.fThfHLWiRDv1ez0KmBiOd2wUsYsHg7r--RhXrd68e1M
+              user:
+                type: object
+                properties:
+                  email:
+                    type: object
+                    properties:
+                      verified:
+                        type: boolean
+                        example: false
+                      address:
+                        type: string
+                        example: example@mail.com
+              isAMentor:
+                type: boolean
+                example: false
+              hasAcceptedTAndC:
+                type: boolean
+                example: false
+              deleted:
+                type: boolean
+                example: false
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              name:
+                type: string
+                example: Ankit
+              designation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Teacher
+              location:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Bangalore
+              areasOfExpertise:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Educational Leadership
+              languages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: English
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
+              lastLoggedInAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              about:
+                type: string
+                example: This is test about of mentee
+              experience:
+                type: string
+                example: '4.2'
+              gender:
+                type: string
+                example: MALE
+              image:
+                type: string
+                example: https://cloudstorage.com/container/abc.png
+      resetPasswordResponse400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Please enter a new password, that has not been used before
+          error:
+            type: array
+            example: []
+      resetPasswordResponse401:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Please enter the correct OTP.
+          error:
+            type: array
+            example: []
       userCreateUserRequest:
         description: User program and solution request
         type: object
@@ -813,7 +1109,7 @@ components:
             example: Password
       userLoginResponse:
         type: object
-        description: User solutions response
+        description: User login response
         properties:
           responseCode:
             type: string
