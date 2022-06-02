@@ -25,8 +25,16 @@ paths:
         - Email APIs
       description: "This Api is associated with sending email througt api \n - Then
         Endpoint for sending email `/notification/v1/email/send` \n - It is mandatory to
-        provide values for parameter marked with `required` \n - Mandatory parameter
+        provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
+
+      parameters:
+        - name: internal_access_token
+          in: header
+          description: To make use of the API, you require internal access token.
+          required: true
+          schema:
+            type: string
       requestBody:
         description: Request body consist of metadata and accepts payload as JSON
         content:
