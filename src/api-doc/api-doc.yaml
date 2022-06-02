@@ -13,9 +13,9 @@ info:
     email: info@sunbird.org
 servers:
   - url: http://localhost:3002
-    description: local dev
+    description: local server url
   - url: https://dev.elevate-apis.shikshalokam.org
-    description: dev server
+    description: dev server url
 
 paths:
   '/notification/v1/email/send':
@@ -88,15 +88,15 @@ components:
               subject:
                 type: string
                 description: Subject of email
-                example: This is subject
+                example: Email Notification
                 required: true
               body:
                 type: string
-                description: Body of Email
-                example: This is body of Email
+                description: Body of Email. It will accept Html too.
+                example: "Dear Jhon, \n Welcome to Notification"
                 required: true
       emailSendResponse200:
-        description: Email Sent response
+        description: Failed to send email
         type: object
         properties:
           message:

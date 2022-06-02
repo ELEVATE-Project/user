@@ -13,7 +13,7 @@ module.exports = class Email {
 	 * @param {String} req.body.email.cc - email id of receiver in cc
 	 * @param {String} req.body.email.subject - subject of email
 	 * @param {String} req.body.email.body - body of email
-	 * @returns {JSON} - response contains account creation details.
+	 * @returns {JSON} - Email Status
 	 */
 
 	async send(req) {
