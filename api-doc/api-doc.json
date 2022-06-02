@@ -1,0 +1,2941 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Elevate",
+    "version": "1.0.0",
+    "description": "testing"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "local dev"
+    },
+    {
+      "url": "https://dev.elevate-apis.shikshalokam.org",
+      "description": "dev server"
+    }
+  ],
+
+  "paths": {
+    "/mentoring/v1/form/create": {
+      "post": {
+        "summary": "Create form",
+        "tags": ["Form"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/form/createFormRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/form/createForm200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/form/createForm400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/form/update": {
+      "patch": {
+        "summary": "Update form",
+        "tags": ["Form"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/form/updateFormRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/form/updateForm200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/form/updateForm400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/form/read": {
+      "get": {
+        "summary": "Get form Data",
+        "tags": ["Form"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/form/readFormRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/form/readForm200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/form/readForm400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/entity/create": {
+      "post": {
+        "summary": "Create User Entity",
+        "tags": ["Entity"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/entity/createUserEntityRequest"
+              }
+            }
+          }
+        },
+
+        "responses": {
+          "201": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/createUserEntity201Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. User Entity alrady exist",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/createUserEntity400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/entity/update/{id}": {
+      "patch": {
+        "summary": "Create User Entity",
+        "tags": ["Entity"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id ",
+            "required": true,
+            "description": "Please append a valid user entity id To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/entity/updateUserEntityRequest"
+              }
+            }
+          }
+        },
+
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/updateUserEntity202Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. User Entity Not Found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/updateUserEntity400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/entity/read?type={type}&deleted={deleted}&status={Status}": {
+      "get": {
+        "summary": "Create User Entity",
+        "tags": ["Entity"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "description": "Please append a valid type of role",
+            "schema": {
+              "type": "string"
+            },
+            "example": "roles"
+          },
+          {
+            "in": "path",
+            "name": "deleted",
+            "required": true,
+            "description": "Please append a deleted type eg. for deleted user `true` and for existing user `false`",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          },
+          {
+            "in": "path",
+            "name": "status",
+            "required": true,
+            "description": "Please append a deleted type eg. for active user `ACTIVE` and for Disabled user `DISABLED`",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ACTIVE"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/readUserEntity200Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/entity/delete/{id}": {
+      "patch": {
+        "summary": "Create User Entity",
+        "tags": ["Entity"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id ",
+            "required": true,
+            "description": "Please append a valid user entity id To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/deleteUserEntity202Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. User Entity Already Deleted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/deleteUserEntity400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}": {
+      "get": {
+        "summary": "Get list of Session based on conditoion",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "page",
+            "required": true,
+            "description": "Please add page number",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "in": "path",
+            "name": "limit",
+            "required": true,
+            "description": "number of record to limit",
+            "schema": {
+              "type": "number"
+            },
+            "example": 2
+          },
+          {
+            "in": "path",
+            "name": "status",
+            "required": true,
+            "description": "Please append a status eg. for published user `published` and for completed user `completed` etc",
+            "schema": {
+              "type": "string"
+            },
+            "example": "published,completed"
+          },
+          {
+            "in": "path",
+            "name": "search",
+            "required": true,
+            "description": "Please search for author name or title of session etc.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "jhon"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/getSessionList200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Session Not Found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/getSessionList400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/details/{sessionId}": {
+      "get": {
+        "summary": "get session details",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "201": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/getSessionDetails200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. session not found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/getSessionDetails400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/mentoring/v1/sessions/share/{sessionId}": {
+      "get": {
+        "summary": "share session details",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/shareSession200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. session not found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/shareSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/enroll/{sessionId}": {
+      "post": {
+        "summary": "Enroll to session",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/enrollSession200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. User already enrolled.",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/enrollSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/unenroll/{sessionId}": {
+      "post": {
+        "summary": "Unenroll to session",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/unenrollSession200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. User not enrolled.",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/unenrollSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/start/{sessionId}": {
+      "get": {
+        "summary": "start session details",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/startSession200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. session not found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/startSession400Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Bad Request. Could not create meeting.",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/startSession500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/update": {
+      "post": {
+        "summary": "Create Session",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/sessions/createSessionRequest"
+              }
+            }
+          }
+        },
+
+        "responses": {
+          "201": {
+            "description": "created",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/createSession201Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Create Session Error",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/createSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mentoring/v1/sessions/update/{sessionId}": {
+      "delete": {
+        "summary": "Delete Session",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/deleteSession202Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. session not found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/deleteSession400Response"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Update Session",
+        "tags": ["Sessions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/sessions/updateSessionRequest"
+              }
+            }
+          }
+        },
+
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/updateSession202Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. update Session Error",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/sessions/updateSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}": {
+      "get": {
+        "summary": "Get list of Session based on conditoion",
+        "tags": ["Mentees"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "enrolled",
+            "required": true,
+            "description": "enrolled status of mentee `true`",
+            "schema": {
+              "type": "boolean"
+            },
+            "example": true
+          },
+          {
+            "in": "path",
+            "name": "page",
+            "required": true,
+            "description": "Please add page number",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1
+          },
+          {
+            "in": "path",
+            "name": "limit",
+            "required": true,
+            "description": "number of record to limit",
+            "schema": {
+              "type": "number"
+            },
+            "example": 2
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentees/menteeSessionList200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. Session Not Found",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentees/menteeSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mentoring/v1/mentees/joinSession/{sessionId}": {
+      "get": {
+        "summary": "join session as mentee",
+        "tags": ["Mentees"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "sessionId ",
+            "required": true,
+            "description": "Please append a valid sessionId To the Request URL",
+            "schema": {
+              "type": "string"
+            },
+            "example": "62832531a05cbd57b273aebb"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Accepted",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentees/menteeSessionList200Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. join session error",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentees/menteeJoinSession400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mentoring/v1/mentees/reports?filterType={filterType}": {
+      "get": {
+        "summary": "mentee reports",
+        "tags": ["Mentees"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "filterType ",
+            "required": true,
+            "description": "Please append a valid filter Type for reports like `MONTHLY` or `QUARTERLY`",
+            "schema": {
+              "type": "string"
+            },
+            "example": "QUARTERLY"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentees/menteeSessionReport200Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mentoring/v1/mentees/homeFeed": {
+      "get": {
+        "summary": "Get list of Session based on conditoion",
+        "tags": ["Mentees"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentees/homefeed200Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mentoring/v1/mentors/reports?filterType={filterType}": {
+      "get": {
+        "summary": "mentors reports",
+        "tags": ["Mentors"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "filterType ",
+            "required": true,
+            "description": "Please append a valid filter Type for reports like `MONTHLY` or `QUARTERLY`",
+            "schema": {
+              "type": "string"
+            },
+            "example": "QUARTERLY"
+          }
+        ],
+
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/mentors/mentorSessionReport200Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mentoring/v1/questions/create": {
+      "post": {
+        "summary": "Create Questions",
+        "tags": ["Questions"],
+        "description": "",
+        "parameters": [
+          {
+            "name": "X-auth-token",
+            "in": "header",
+            "description": "To make use of the API, you require X-auth-token. This is Avlibale in login API Response.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application.json": {
+              "schema": {
+                "$ref": "#/components/schemas/questions/createQuestionRequest"
+              }
+            }
+          }
+        },
+
+        "responses": {
+          "201": {
+            "description": "ok",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/createUserEntity201Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. User Entity alrady exist",
+            "content": {
+              "application.json": {
+                "schema": {
+                  "$ref": "#/components/schemas/entity/createUserEntity400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "components": {
+    "schemas": {
+      "form": {
+        "createFormRequest": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "example": "profile"
+            },
+            "subType": {
+              "type": "string",
+              "example": "profileForm"
+            },
+
+            "action": {
+              "type": "string",
+              "example": "profileFields"
+            },
+            "ver": {
+              "type": "string",
+              "example": "1.0"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "templateName": {
+                  "type": "string",
+                  "example": "defaultTemplate"
+                },
+                "fields": {
+                  "type": "object",
+                  "properties": {
+                    "controls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "name"
+                          },
+
+                          "label": {
+                            "type": "string",
+                            "example": "name"
+                          },
+                          "value": {
+                            "type": "string",
+                            "example": ""
+                          },
+
+                          "class": {
+                            "type": "string",
+                            "example": "ion-margin"
+                          },
+                          "type": {
+                            "type": "string",
+                            "example": "text"
+                          },
+                          "position": {
+                            "type": "string",
+                            "example": "floating"
+                          },
+
+                          "validators": {
+                            "type": "object",
+                            "properties": {
+                              "required": {
+                                "type": "boolean",
+                                "example": true
+                              },
+                              "minLength": {
+                                "type": "number",
+                                "example": 10
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "createForm200Response": {
+          "description": "Created",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Form created successfully"
+            },
+            "result": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "createForm400Response": {
+          "description": "Bad Request. Form Already Exist",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Form already exists"
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "updateFormRequest": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "example": "profile"
+            },
+            "subType": {
+              "type": "string",
+              "example": "profileForm"
+            },
+
+            "action": {
+              "type": "string",
+              "example": "profileFields"
+            },
+            "ver": {
+              "type": "string",
+              "example": "1.0"
+            },
+            "data": {
+              "type": "object",
+              "properties": {
+                "templateName": {
+                  "type": "string",
+                  "example": "defaultTemplate"
+                },
+                "fields": {
+                  "type": "object",
+                  "properties": {
+                    "controls": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "example": "name"
+                          },
+
+                          "label": {
+                            "type": "string",
+                            "example": "name"
+                          },
+                          "value": {
+                            "type": "string",
+                            "example": ""
+                          },
+
+                          "class": {
+                            "type": "string",
+                            "example": "ion-margin"
+                          },
+                          "type": {
+                            "type": "string",
+                            "example": "text"
+                          },
+                          "position": {
+                            "type": "string",
+                            "example": "floating"
+                          },
+
+                          "validators": {
+                            "type": "object",
+                            "properties": {
+                              "required": {
+                                "type": "boolean",
+                                "example": true
+                              },
+                              "minLength": {
+                                "type": "number",
+                                "example": 10
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "updateForm200Response": {
+          "description": "Updated",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Form updated successfully"
+            },
+            "result": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "updateForm400Response": {
+          "description": "Bad Request. Form Already Exist",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Form already exists"
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "readFormRequest": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "example": "profile"
+            },
+            "subType": {
+              "type": "string",
+              "example": "profileForm"
+            },
+
+            "action": {
+              "type": "string",
+              "example": "profileFields"
+            },
+            "ver": {
+              "type": "string",
+              "example": "1.0"
+            },
+            "templateName": {
+              "type": "string",
+              "example": "defaultTemplate"
+            }
+          }
+        },
+        "readForm200Response": {
+          "description": "Read",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Form fetched successfully"
+            },
+            "result": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "profile"
+                },
+                "subType": {
+                  "type": "string",
+                  "example": "profileForm"
+                },
+
+                "action": {
+                  "type": "string",
+                  "example": "profileFields"
+                },
+                "ver": {
+                  "type": "string",
+                  "example": "1.0"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "example": "2022-05-24T23:14:10.080Z"
+                },
+
+                "createdAt": {
+                  "type": "string",
+                  "example": "2022-05-24T23:14:10.080Z"
+                },
+                "__v": {
+                  "type": "number",
+                  "example": 0
+                },
+                "_id": {
+                  "type": "string",
+                  "example": "628d66c28069a73506cb4b2d"
+                },
+
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "templateName": {
+                      "type": "string",
+                      "example": "defaultTemplate"
+                    },
+                    "fields": {
+                      "type": "object",
+                      "properties": {
+                        "controls": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "type": "string",
+                                "example": "name"
+                              },
+
+                              "label": {
+                                "type": "string",
+                                "example": "name"
+                              },
+                              "value": {
+                                "type": "string",
+                                "example": ""
+                              },
+
+                              "class": {
+                                "type": "string",
+                                "example": "ion-margin"
+                              },
+                              "type": {
+                                "type": "string",
+                                "example": "text"
+                              },
+                              "position": {
+                                "type": "string",
+                                "example": "floating"
+                              },
+
+                              "validators": {
+                                "type": "object",
+                                "properties": {
+                                  "required": {
+                                    "type": "boolean",
+                                    "example": true
+                                  },
+                                  "minLength": {
+                                    "type": "number",
+                                    "example": 10
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "readForm400Response": {
+          "description": "Bad Request. Form not found",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Form not found"
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        }
+      },
+      "entity": {
+        "createUserEntityRequest": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "string",
+              "example": "HM"
+            },
+            "label": {
+              "type": "string",
+              "example": "Head Master"
+            },
+            "type": {
+              "type": "string",
+              "example": "roles"
+            }
+          }
+        },
+        "createUserEntity201Response": {
+          "type": "object",
+          "description": "User entity created",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "User entity created successfully"
+            },
+
+            "result": { "type": "array", "example": [] }
+          }
+        },
+        "createUserEntity400Response": {
+          "type": "object",
+          "description": "User entity already exist",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "User entity already exists"
+            },
+            "error": { "type": "array", "example": [] }
+          }
+        },
+
+        "updateUserEntityRequest": {
+          "type": "object",
+          "description": "User Entity update request",
+          "properties": {
+            "value": {
+              "type": "string",
+              "example": "HM"
+            },
+
+            "label": {
+              "type": "string",
+              "example": "Head Master"
+            },
+
+            "status": {
+              "type": "string",
+              "example": "DISABLED"
+            },
+
+            "type": {
+              "type": "string",
+              "example": "roles"
+            }
+          }
+        },
+        "updateUserEntity202Response": {
+          "type": "object",
+          "description": "User Entity Updated",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "User entity updated successfully"
+            },
+            "result": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "updateUserEntity400Response": {
+          "type": "object",
+          "description": "User Entity Not Found",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "User entity not found"
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "readUserEntity200Response": {
+          "description": "User Entity fetched",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "User entity fetched successfully"
+            },
+            "result": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "example": "HM"
+                  },
+                  "label": {
+                    "type": "string",
+                    "example": "Head Master"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deleteUserEntity202Response": {
+          "type": "object",
+          "description": "User Entity Deleted",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "User entity deleted successfully"
+            },
+            "result": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "deleteUserEntity400Response": {
+          "type": "object",
+          "description": "User Entity Deleted",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "User entity already deleted"
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        }
+      },
+      "sessions": {
+        "getSessionList200Response": {
+          "description": "list of all sessions",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session fetched successfully."
+            },
+            "result": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "628dae0fce0ce9359aeb8b23"
+                      },
+
+                      "title": {
+                        "type": "string",
+                        "example": "Leadership5"
+                      },
+
+                      "description": {
+                        "type": "string",
+                        "example": "Training in leadership"
+                      },
+
+                      "image": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "example": "[\"users/1232s2133sdd1-12e2dasd3123.png\"]"
+                        }
+                      },
+                      "mentorName": {
+                        "type": "string",
+                        "example": "Ankit"
+                      },
+
+                      "status": {
+                        "type": "string",
+                        "example": "published"
+                      },
+
+                      "startDate": {
+                        "type": "string",
+                        "example": "2022-01-04 18:00:00"
+                      },
+
+                      "endDate": {
+                        "type": "string",
+                        "example": "2022-01-04 18:30:00"
+                      },
+
+                      "endDateUtc": {
+                        "type": "string",
+                        "example": "Invalid date"
+                      }
+                    }
+                  }
+                },
+                "count": {
+                  "type": "number",
+                  "example": 1
+                }
+              },
+
+              "meta": { "type": "object", "example": {} }
+            }
+          }
+        },
+        "getSessionList400Response": {
+          "type": "object",
+          "description": "Session not found.",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session not found."
+            },
+            "error": { "type": "array", "example": [] }
+          }
+        },
+        "getSessionDetails200Response": {
+          "description": "Details of session",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Session fetched successfully."
+            },
+
+            "result": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "example": "628dae0fce0ce9359aeb8b23"
+                },
+
+                "title": {
+                  "type": "string",
+                  "example": "Leadership5"
+                },
+
+                "description": {
+                  "type": "string",
+                  "example": "Training in leadership"
+                },
+
+                "recommendedFor": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "[{\"label\":\"HM\", \"value\": 1}]"
+                  }
+                },
+
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "[{\"label\": \"label\", \"value\": \"value\"}]"
+                  }
+                },
+                "medium": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "[{\"label\":\"Hindi\", \"value\": 2 }]"
+                  }
+                },
+                "image": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "[\"users/1232s2133sdd1-12e2dasd3123.png\"]"
+                  }
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "62832531a05cbd57b273aebb"
+                },
+
+                "mentorName": {
+                  "type": "string",
+                  "example": "jhon"
+                },
+
+                "status": {
+                  "type": "string",
+                  "example": "published"
+                },
+
+                "deleted": {
+                  "type": "boolean",
+                  "example": false
+                },
+
+                "startDate": {
+                  "type": "string",
+                  "example": "2022-01-04 18:00:00"
+                },
+
+                "endDate": {
+                  "type": "string",
+                  "example": "2022-01-04 18:30:00"
+                },
+
+                "startDateUtc": {
+                  "type": "string",
+                  "example": "Invalid date"
+                },
+
+                "endDateUtc": {
+                  "type": "string",
+                  "example": "Invalid date"
+                },
+
+                "skippedFeedback": {
+                  "type": "boolean",
+                  "example": false
+                },
+
+                "menteeFeedbackForm": {
+                  "type": "string",
+                  "example": "menteeQS1"
+                },
+
+                "mentorFeedbackForm": {
+                  "type": "string",
+                  "example": "mentorQS2"
+                },
+
+                "recordingUrl": {
+                  "type": "string",
+                  "example": null
+                },
+
+                "internalMeetingId": {
+                  "type": "string",
+                  "example": null
+                },
+
+                "feedbacks": [],
+                "updatedAt": {
+                  "type": "string",
+                  "example": "2022-05-25T04:18:23.942Z"
+                },
+
+                "createdAt": {
+                  "type": "string",
+                  "example": "2022-05-25T04:18:23.942Z"
+                },
+
+                "__v": {
+                  "type": "number",
+                  "example": 0
+                },
+                "isEnrolled": {
+                  "type": "boolean",
+                  "example": false
+                }
+              }
+            },
+            "meta": {}
+          }
+        },
+        "getSessionDetails400Response": {
+          "type": "object",
+          "description": "Session not found.",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session not found."
+            },
+            "error": { "type": "array", "example": [] }
+          }
+        },
+        "shareSession200Response": {
+          "description": "share session details",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Session link generated successfully."
+            },
+
+            "result": {
+              "type": "object",
+              "properties": {
+                "shareLink": {
+                  "type": "string",
+                  "example": "45fd48791a7a9d589aaa2d1b7f3f8dd7"
+                }
+              }
+            },
+            "meta": {}
+          }
+        },
+        "shareSession400Response": {
+          "description": "Session not found.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Session not found."
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "enrollSession200Response": {
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "You have enrolled successfully."
+            },
+
+            "result": {
+              "type": "array",
+              "example": []
+            },
+
+            "meta": {}
+          }
+        },
+        "enrollSession400Response": {
+          "description": "Session not found.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "User already enrolled."
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "unenrollSession200Response": {
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "You are no longer enrolled in this session."
+            },
+
+            "result": {
+              "type": "array",
+              "example": []
+            },
+
+            "meta": {}
+          }
+        },
+        "unenrollSession400Response": {
+          "description": "Session not found.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "User not enrolled."
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "startSession200Response": {
+          "description": "share session details",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Successfully fetched session start link."
+            },
+
+            "result": {
+              "type": "object",
+              "properties": {
+                "link": {
+                  "type": "string",
+                  "example": "https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed"
+                }
+              }
+            },
+            "meta": {}
+          }
+        },
+        "startSession400Response": {
+          "description": "Session not found.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": [
+                "Session not found.",
+                "Could not found mentor.",
+                "User is not a mentor.",
+                "Session not found.",
+                "You cannot start other mentor session.",
+                "You can start the session 10 minutes before the schedued time."
+              ]
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "startSession500Response": {
+          "description": "Could not create meeting.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "SERVER_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Could not create meeting."
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "createSessionRequest": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "example": "testing"
+            },
+
+            "description": {
+              "type": "string",
+              "example": "Training in leadership"
+            },
+
+            "startDate": {
+              "type": "string",
+              "example": "2022-01-04 18:00:00"
+            },
+
+            "endDate": {
+              "type": "string",
+              "example": "2022-01-04 18:30:00"
+            },
+
+            "recommendedFor": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "HM"
+                  },
+                  "value": {
+                    "type": "number",
+                    "example": 1
+                  }
+                }
+              }
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "label"
+                  },
+                  "value": {
+                    "type": "number",
+                    "example": "value"
+                  }
+                }
+              }
+            },
+            "medium": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "Hindi"
+                  },
+                  "value": {
+                    "type": "number",
+                    "example": 2
+                  }
+                }
+              }
+            },
+
+            "image": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "users/1232s2133sdd1-12e2dasd3123.png"
+              }
+            }
+          }
+        },
+        "createSession201Response": {
+          "type": "object",
+          "description": "User entity created",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session Created successfully."
+            },
+
+            "result": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "testing"
+                },
+
+                "description": {
+                  "type": "string",
+                  "example": "Training in leadership"
+                },
+
+                "startDate": {
+                  "type": "string",
+                  "example": "2022-01-04 18:00:00"
+                },
+
+                "endDate": {
+                  "type": "string",
+                  "example": "2022-01-04 18:30:00"
+                },
+
+                "recommendedFor": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": { "label": "HM", "value": 1 }
+                  }
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": { "label": "label", "value": "value" }
+                  }
+                },
+                "medium": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": { "label": "Hindi", "value": 2 }
+                  }
+                },
+
+                "image": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "example": "users/1232s2133sdd1-12e2dasd3123.png"
+                  }
+                },
+                "userId": {
+                  "type": "string",
+                  "example": "62832531a05cbd57b273aebb"
+                },
+                "mentorName": {
+                  "type": "string",
+                  "example": "John"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "published"
+                },
+                "deleted": {
+                  "type": "boolean",
+                  "example": false
+                },
+
+                "startDateUtc": {
+                  "type": "string",
+                  "example": "Invalid date"
+                },
+                "endDateUtc": {
+                  "type": "string",
+                  "example": "Invalid date"
+                },
+                "skippedFeedback": {
+                  "type": "boolean",
+                  "example": false
+                },
+
+                "menteeFeedbackForm": {
+                  "type": "string",
+                  "example": "menteeQS1"
+                },
+                "mentorFeedbackForm": {
+                  "type": "string",
+                  "example": "mentorQS2"
+                },
+                "recordingUrl": {
+                  "type": "string",
+                  "example": null
+                },
+                "internalMeetingId": {
+                  "type": "string",
+                  "example": null
+                },
+                "_id": {
+                  "type": "string",
+                  "example": "628ee25e4b9243687f68431d"
+                },
+                "feedbacks": {
+                  "type": "array",
+                  "example": []
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "example": "2022-05-26T02:13:50.472Z"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "example": "2022-05-26T02:13:50.472Z"
+                },
+                "__v": {
+                  "type": "number",
+                  "example": 0
+                }
+              }
+            }
+          }
+        },
+        "createSession400Response": {
+          "description": "Create Session Error.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": [
+                "User does't have the permission.",
+                "End time should be atleast 30 minutes after start time.",
+                "Session cannot be created ! Session duration should be less than 24 hours."
+              ]
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "deleteSession202Response": {
+          "description": "delete session",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Session deleted. This session is no longer available."
+            },
+
+            "result": {
+              "type": "array",
+              "example": []
+            },
+            "meta": {}
+          }
+        },
+        "deleteSession400Response": {
+          "description": "delete session",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Session not found."
+            },
+            "result": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "updateSessionRequest": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "example": "testing"
+            },
+
+            "description": {
+              "type": "string",
+              "example": "Training in leadership"
+            },
+
+            "startDate": {
+              "type": "string",
+              "example": "2022-01-04 18:00:00"
+            },
+
+            "endDate": {
+              "type": "string",
+              "example": "2022-01-04 18:30:00"
+            },
+
+            "recommendedFor": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "HM"
+                  },
+                  "value": {
+                    "type": "number",
+                    "example": 1
+                  }
+                }
+              }
+            },
+            "categories": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "label"
+                  },
+                  "value": {
+                    "type": "number",
+                    "example": "value"
+                  }
+                }
+              }
+            },
+            "medium": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "example": "Hindi"
+                  },
+                  "value": {
+                    "type": "number",
+                    "example": 2
+                  }
+                }
+              }
+            },
+
+            "image": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": "users/1232s2133sdd1-12e2dasd3123.png"
+              }
+            }
+          }
+        },
+        "updateSession202Response": {
+          "description": "updated session",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Your session details have been updated."
+            },
+
+            "result": {
+              "type": "array",
+              "example": []
+            },
+            "meta": {}
+          }
+        },
+        "updateSession400Response": {
+          "description": "update session",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Session not found."
+            },
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        }
+      },
+      "mentees": {
+        "menteeSessionList200Response": {
+          "description": "list of all sessions",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session fetched successfully."
+            },
+            "result": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "628dae0fce0ce9359aeb8b23"
+                      },
+
+                      "title": {
+                        "type": "string",
+                        "example": "Leadership5"
+                      },
+
+                      "description": {
+                        "type": "string",
+                        "example": "Training in leadership"
+                      },
+
+                      "image": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "example": "[\"users/1232s2133sdd1-12e2dasd3123.png\"]"
+                        }
+                      },
+                      "mentorName": {
+                        "type": "string",
+                        "example": "Ankit"
+                      },
+
+                      "status": {
+                        "type": "string",
+                        "example": "published"
+                      },
+
+                      "startDate": {
+                        "type": "string",
+                        "example": "2022-01-04 18:00:00"
+                      },
+
+                      "endDate": {
+                        "type": "string",
+                        "example": "2022-01-04 18:30:00"
+                      },
+
+                      "endDateUtc": {
+                        "type": "string",
+                        "example": "Invalid date"
+                      }
+                    }
+                  }
+                },
+                "count": {
+                  "type": "number",
+                  "example": 1
+                }
+              },
+
+              "meta": { "type": "object", "example": {} }
+            }
+          }
+        },
+        "menteeSession400Response": {
+          "type": "object",
+          "description": "Session not found.",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session not found."
+            },
+            "error": { "type": "array", "example": [] }
+          }
+        },
+        "menteeJoinSession200Response": {
+          "description": "share session details",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+
+            "message": {
+              "type": "string",
+              "example": "Successfully fetched session start link."
+            },
+
+            "result": {
+              "type": "object",
+              "properties": {
+                "link": {
+                  "type": "string",
+                  "example": "https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed"
+                }
+              }
+            },
+            "meta": {}
+          }
+        },
+        "menteeJoinSession400Response": {
+          "description": "Session not found.",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "CLIENT_ERROR"
+            },
+
+            "message": {
+              "type": "string",
+              "example": [
+                "User is not found.",
+                "Session not found.",
+                "Host has ended the session, you will not be able to join.",
+                "Please wait for Mentor to start the session.",
+                "User has not enrolled for the session."
+              ]
+            },
+
+            "error": {
+              "type": "array",
+              "example": []
+            }
+          }
+        },
+        "menteeSessionReport200Response": {
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Mentees report fetched successfully."
+            },
+            "result": {
+              "type": "object",
+              "properties": {
+                "totalSessionEnrolled": {
+                  "type": "number",
+                  "example": 1
+                },
+
+                "totalsessionsAttended": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            },
+            "meta": {}
+          }
+        },
+        "homefeed200Response": {
+          "description": "home feed",
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Session fetched successfully."
+            },
+            "result": {
+              "type": "object",
+              "properties": {
+                "allSessions": { "type": "array", "example": [] },
+
+                "mySessions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string",
+                        "example": "628dae0fce0ce9359aeb8b23"
+                      },
+
+                      "title": {
+                        "type": "string",
+                        "example": "Leadership5"
+                      },
+
+                      "description": {
+                        "type": "string",
+                        "example": "Training in leadership"
+                      },
+
+                      "image": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "example": "[\"users/1232s2133sdd1-12e2dasd3123.png\"]"
+                        }
+                      },
+                      "mentorName": {
+                        "type": "string",
+                        "example": "jhon"
+                      },
+
+                      "status": {
+                        "type": "string",
+                        "example": "published"
+                      },
+
+                      "startDate": {
+                        "type": "string",
+                        "example": "2022-01-04 18:00:00"
+                      },
+
+                      "endDate": {
+                        "type": "string",
+                        "example": "2022-01-04 18:30:00"
+                      },
+
+                      "endDateUtc": {
+                        "type": "string",
+                        "example": "Invalid date"
+                      }
+                    }
+                  }
+                }
+              },
+
+              "meta": { "type": "object", "example": {} }
+            }
+          }
+        }
+      },
+      "mentors": {
+        "mentorSessionReport200Response": {
+          "type": "object",
+          "properties": {
+            "responseCode": {
+              "type": "string",
+              "example": "OK"
+            },
+            "message": {
+              "type": "string",
+              "example": "Mentors report fetched successfully."
+            },
+            "result": {
+              "type": "object",
+              "properties": {
+                "totalSessionEnrolled": {
+                  "type": "number",
+                  "example": 1
+                },
+
+                "totalsessionsAttended": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            },
+            "meta": {}
+          }
+        }
+      },
+      "questions": {
+        "createQuestionRequest": {
+          "type": "object",
+          "properties": {
+            "question": {
+              "type": "string",
+              "example": "How much you rate the audio/video quality of session"
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "example": ["1", "2"]
+              }
+            },
+            "deleted": {
+              "type": "boolean",
+              "example": false
+            },
+            "value": {
+              "type": "string",
+              "example": "1"
+            },
+            "hint": {
+              "type": "string",
+              "example": ""
+            }
+          }
+        }
+      }
+    },
+
+    "securitySchemes": {
+      "bearer": {
+        "type": "apiKey",
+        "name": "X-auth-token",
+        "in": "header"
+      }
+    }
+  }
+}

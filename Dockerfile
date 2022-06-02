@@ -1,7 +1,7 @@
 FROM node:16
 
 #Set working directory
-WORKDIR /opt/mentoring
+WORKDIR /data/mentoring
 
 #Copy package.json file
 COPY package.json .
