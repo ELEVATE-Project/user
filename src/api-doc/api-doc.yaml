@@ -231,7 +231,7 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse500'
-  'user/v1/account/generateOtp':
+  '/user/v1/account/generateOtp':
     post:
       summary: Generate OTP
       tags:
@@ -272,7 +272,7 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/generateOtpResponse500'
-  'user/v1/account/resetPassword':
+  '/user/v1/account/resetPassword':
     post:
       summary: Reset password
       tags:
@@ -313,6 +313,68 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/resetPasswordResponse401'
+  '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
+    get:
+      summary: Cloud Services get signed url
+      tags:
+        - Cloud services APIs
+      description: "This API is associated with the cloud services for getting signed URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getSignedUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'fileName'
+          required: true
+          description: Please append a valid file name to url which has to be uploaded
+          schema:
+            type: string
+          example: image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
+  '/user/v1/cloud-services/file/getDownloadableUrl?filePath={filePath}':
+    get:
+      summary: Cloud Services get download url
+      tags:
+        - Cloud services APIs
+      description: "This API is associated with the cloud services for getting downloadable URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getDownloadableUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'filePath'
+          required: true
+          description: Please append a valid file path to url which has to be downloaded
+          schema:
+            type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesDownloadResponse200'
 
   '/user/v1/account/logout':
     post:
@@ -2119,6 +2181,41 @@ components:
           error:
             type: array
             example: []
+    cloudServices:
+      cloudServicesResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Signed Url Generated Successfully.
+          result:
+            type: object
+            properties:
+              signedUrl:
+                type: string
+                example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+              filePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+              destFilePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+      cloudServicesDownloadResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Download Url Generated Successfully.
+          result:
+            type: string
+            example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+
     systemuser:
       createSystemUserRequest:
         type: object
