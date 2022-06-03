@@ -3,7 +3,6 @@ openapi: 3.0.0
 info:
   title: Elevate Mentoring
   version: 1.0.0
-  termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
   description: >-
     - The Mentoring Service is a centralized Service to support other services. Apis perform operations related to user entities etc 
 
@@ -22,7 +21,7 @@ paths:
       summary: Create form
       tags:
         - Form APIs
-      description: "This API is associated with creating a form in mentoring \n - Then
+      description: "This API is associated with creating a form \n - Then
         Endpoint for creating form `/mentoring/v1/form/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -57,7 +56,7 @@ paths:
       summary: Update form
       tags:
         - Form APIs
-      description: "This API is associated with updating a form in mentoring \n - Then
+      description: "This API is associated with updating a form \n - Then
         Endpoint for updating form `/mentoring/v1/form/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -92,7 +91,7 @@ paths:
       summary: Get form data
       tags:
         - Form APIs
-      description: "This API is associated with getting a form in mentoring \n - Then
+      description: "This API is associated with getting a form \n - Then
         Endpoint for read form `/mentoring/v1/form/read` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -127,7 +126,7 @@ paths:
       summary: Create user entity
       tags:
         - Entity APIs
-      description: "This API is associated with creating user entity in mentoring \n - Then
+      description: "This API is associated with creating user entity \n - Then
         Endpoint for creating user entity `/mentoring/v1/entity/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -1042,7 +1041,7 @@ paths:
       summary: Get feedback form
       tags:
         - Feedback Form APIs
-      description: "This API is associated with getting feedback form in mentoring \n - Then
+      description: "This API is associated with getting feedback forms of the session. \n - Then
         Endpoint for get feedback form `/mentoring/v1/feedback/forms` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -1079,7 +1078,7 @@ paths:
       summary: Submit feedback
       tags:
         - Feedback Form APIs
-      description: "This API is associated with submit feedback form in mentoring \n - Then
+      description: "This API is associated with submit feedback forms of the session. \n - Then
         Endpoint for submit feedback form `/mentoring/v1/feedback/submit` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
