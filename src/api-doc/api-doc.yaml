@@ -117,7 +117,7 @@ components:
         properties:
           message:
             type: string
-            example: mail cant be sent
+            example: failed to send email
           status:
             type: string
             example: failure
