@@ -9,6 +9,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 require('dotenv').config({ path: './.env' })
+const path = require('path')
 
 let environmentData = require('./envVariables')()
 
@@ -30,6 +31,10 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }))
 app.use(bodyParser.json({ limit: '50MB' }))
 
 app.use(express.static('public'))
+
+app.get(process.env.API_DOC_URL, function (req, res) {
+	res.sendFile(path.join(__dirname, './api-doc/index.html'))
+})
 
 /* Logs request info if environment is not development*/
 if (process.env.ENABLE_LOG === 'true') {
