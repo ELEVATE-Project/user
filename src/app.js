@@ -29,7 +29,7 @@ require('./health-checks')(app)
 app.use(cors())
 
 app.use(expressFileUpload())
-app.get('/api-doc', function (req, res) {
+app.get(process.env.API_DOC_URL, function (req, res) {
 	res.sendFile(path.join(__dirname, './api-doc/index.html'))
 })
 app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }))

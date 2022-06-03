@@ -52,6 +52,6 @@ module.exports = {
 	USER_ROLE_UPDATED: 'You have been logged out of your account due to change in platform role. Please login again.',
 	UNABLE_TO_SEND_OTP: 'Unable to send otp, may be redis server is down.',
 	RESET_PREVIOUS_PASSWORD: 'Please enter a new password, that has not been used before',
-	EMAIL_UPDATE_FAILED: "You can not update email.",
-  	URL_NOT_FOUND: "Url not found",
+	EMAIL_UPDATE_FAILED: 'You can not update email.',
+	URL_NOT_FOUND: 'Url not found',
 }

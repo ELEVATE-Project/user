@@ -1,34 +1,30 @@
 ---
 openapi: 3.0.0
 info:
-  title: Elevate
+  title: Elevate User
   version: 1.0.0
   termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
   description: >-
-    - The Users Service is a centralised Service to support other services. Apis perform operations related to mentoring entities notifcation etc 
+    - The Users Service is a centralized Service to support other services. Apis perform operations related to mentoring entities notification etc 
 
     - The URL for Users API(s) is `{context}/user/v1`
     - <b>Note:</b> These resources can be used in other services
   contact:
     email: info@sunbird.org
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:3002
     description: local dev
   - url: https://dev.elevate-apis.shikshalokam.org
     description: dev server
-tags:
-  - name: User
-    description: User Endpoints
-  - name: Profile
-    description: Profile Endpoints
+
 paths:
   '/user/v1/account/create':
     post:
-      summary: Creates user as a Mentor and Mentee
+      summary: Create user
       tags:
-        - User
-      description: "This Api is associated with Create User on menteroing \n - Then
-        Endpoint for creating user `/user/account/create` \n - It is mandatory to
+        - User APIs
+      description: "This Api is associated with Create User on mentoring \n - Then
+        Endpoint for creating user `/user/v1/account/create` \n - It is mandatory to
         provide values for parameter marked with `required` \n - Mandatory parameter
         cannot be empty or null \n - secretCode is required only for mentor"
       requestBody:
@@ -58,10 +54,13 @@ paths:
                 '$ref': '#/components/schemas/user/userCreateUser406Exist'
   '/user/v1/account/login':
     post:
-      summary: Login Api
+      summary: Login
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This Api is associated with login user \n - Then
+        Endpoint for login user `/user/v1/account/login` \n - It is mandatory to
+        provide values for parameter marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       requestBody:
         content:
           application.json:
@@ -82,14 +81,14 @@ paths:
                 '$ref': '#/components/schemas/user/userLoginResponse400'
   '/user/v1/account/acceptTermsAndCondition':
     patch:
-      summary: Terms & Condition API
+      summary: Terms & Condition
       tags:
-        - User
-      description: This API Requires only X-auth-token and it will set flag to true.
+        - User APIs
+      description: This API Requires only X-auth-token and it will set an email to verify true.
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -109,14 +108,17 @@ paths:
                 '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse400'
   '/user/v1/account/verifyMentor?userId={userId}':
     get:
-      summary: Verify user is mentor or mentee
+      summary: Verify user type
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with verify type of user on mentoring  \n - Then
+        Endpoint for verifying user `/user/v1/account/verifyMentor` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -143,14 +145,17 @@ paths:
                 '$ref': '#/components/schemas/user/userVerifyMentor400'
   '/user/v1/account/changeRole':
     patch:
-      summary: Change User form mentee to mentor
+      summary: Change user role
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with change role of user  \n - Then
+        Endpoint for change role user `/user/v1/account/changeRole` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -181,14 +186,17 @@ paths:
                 '$ref': '#/components/schemas/user/userChangeRoleResponse401'
   '/user/v1/account/generateToken':
     post:
-      summary: Generates Access token.
+      summary: Generates access token.
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with re-login and generating access token from refresh token \n - Then
+        Endpoint for generating access token `/user/v1/account/generateToken` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -223,16 +231,164 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse500'
-  '/user/v1/account/logout':
+  '/user/v1/account/generateOtp':
     post:
-      summary: Logout API
+      summary: Generate OTP
       tags:
-        - User
-      description: ''
+        - User APIs
+      description: "This API is associated with generating OTP  \n - Then
+        Endpoint for generating OTP `user/v1/account/generateOtp` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/genrateOtpRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateOtpResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateOtpResponse400'
+        '500':
+          description: Internal Server Error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/generateOtpResponse500'
+  '/user/v1/account/resetPassword':
+    post:
+      summary: Reset password
+      tags:
+        - User APIs
+      description: "This API is associated with reset password  \n - Then
+        Endpoint for reset password `user/v1/account/resetPassword` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/user/resetPasswordRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/resetPasswordResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/resetPasswordResponse400'
+        '401':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/resetPasswordResponse401'
+  '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
+    get:
+      summary: Cloud services get signed url
+      tags:
+        - Cloud services APIs
+      description: "This API is associated with the cloud services for getting signed URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getSignedUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'fileName'
+          required: true
+          description: Please append a valid file name to url which has to be uploaded
+          schema:
+            type: string
+          example: image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
+  '/user/v1/cloud-services/file/getDownloadableUrl?filePath={filePath}':
+    get:
+      summary: Cloud services get download url
+      tags:
+        - Cloud services APIs
+      description: "This API is associated with the cloud services for getting downloadable URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getDownloadableUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'filePath'
+          required: true
+          description: Please append a valid file path to url which has to be downloaded
+          schema:
+            type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesDownloadResponse200'
+
+  '/user/v1/account/logout':
+    post:
+      summary: Logout
+      tags:
+        - User APIs
+      description: "This API is associated with logout  \n - Then
+        Endpoint for logout `/user/v1/account/logout` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -263,14 +419,17 @@ paths:
                 '$ref': '#/components/schemas/user/logoutResponse401'
   '/user/v1/profile/details/{userId}':
     get:
-      summary: Get User Info
+      summary: User details
       tags:
-        - Profile
-      description: ''
+        - Profile APIs
+      description: "This API is associated with the user's profile details  \n - Then
+        Endpoint for user profile details `/user/v1/profile/details/` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -297,14 +456,17 @@ paths:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
   '/user/v1/profile/update':
     patch:
-      summary: update User Info
+      summary: Update user
       tags:
-        - Profile
-      description: ''
+        - Profile APIs
+      description: "This API is associated with update user profile  \n - Then
+        Endpoint for update user profile `/user/v1/profile/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -331,12 +493,15 @@ paths:
     post:
       summary: Create form
       tags:
-        - Form
-      description: ''
+        - Form APIs
+      description: "This API is associated with create form  \n - Then
+        Endpoint for create form `/user/v1/form/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -363,12 +528,15 @@ paths:
     patch:
       summary: Update form
       tags:
-        - Form
-      description: ''
+        - Form APIs
+      description: "This API is associated with update form  \n - Then
+        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -393,14 +561,17 @@ paths:
                 '$ref': '#/components/schemas/form/updateForm400Response'
   '/user/v1/form/read':
     get:
-      summary: Get form Data
+      summary: Get form details
       tags:
-        - Form
-      description: ''
+        - Form APIs
+      description: "This API is associated with update form  \n - Then
+        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -423,58 +594,19 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/readForm400Response'
-  '/user/v1/mentors/list?page={pageNo}&limit={pageSize}&search={searchText}':
-    get:
-      summary: Get All Mentor list
-      tags:
-        - Mentor
-      description: ''
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: page
-          required: true
-          description: Please append a page Number
-          schema:
-            type: string
-          example: '1'
-        - in: path
-          name: limit
-          required: true
-          description: Please append a page Size
-          schema:
-            type: string
-          example: '10'
-        - in: path
-          name: search
-          required: true
-          description: Please append a search text
-          schema:
-            type: string
-          example: jhon
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/mentor/getMentorList200Resposne'
   '/user/v1/userentity/create':
     post:
-      summary: Create User Entity
+      summary: Create user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with user entity creation  \n - Then
+        Endpoint for create entity `/user/v1/userentity/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -499,14 +631,17 @@ paths:
                 '$ref': '#/components/schemas/userentity/createUserEntity400Response'
   '/user/v1/userentity/update/{id}':
     patch:
-      summary: Update User Entity
+      summary: Update user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with update user entity  \n - Then
+        Endpoint for update entity `/user/v1/userentity/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -514,7 +649,7 @@ paths:
         - in: path
           name: 'id '
           required: true
-          description: Please append a valid user entity id To the Request URL
+          description: Please append a valid user entity id to the request url
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
@@ -538,14 +673,17 @@ paths:
                 '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
   '/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}':
     get:
-      summary: get User entity
+      summary: Get user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with getting user entity based on conditions  \n - Then
+        Endpoint for getting user entity `/user/v1/userentity/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -582,14 +720,17 @@ paths:
                 '$ref': '#/components/schemas/userentity/readUserEntity200Response'
   '/user/v1/userentity/delete/{id}':
     patch:
-      summary: delete User Entity
+      summary: Delete user entity
       tags:
-        - User Entity
-      description: ''
+        - User Entity APIs
+      description: "This API is associated with delete user entity  \n - Then
+        Endpoint for delete user entity `/user/v1/userentity/delete` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Avlibale
+          description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -597,7 +738,7 @@ paths:
         - in: path
           name: 'id '
           required: true
-          description: Please append a valid user entity id To the Request URL
+          description: Please append a valid user entity id to the request url
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
@@ -616,10 +757,13 @@ paths:
                 '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
   '/user/v1/systemUsers/create':
     post:
-      summary: Create System User
+      summary: Create system user
       tags:
-        - System User
-      description: ''
+        - System User APIs
+      description: "This API is associated with create system user  \n - Then
+        Endpoint for create system user `/user/v1/systemUsers/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       requestBody:
         content:
           application.json:
@@ -640,10 +784,13 @@ paths:
                 '$ref': '#/components/schemas/systemuser/createSystemUser406Response'
   '/user/v1/systemUsers/login':
     post:
-      summary: login System User
+      summary: Login system user
       tags:
-        - System User
-      description: ''
+        - System User APIs
+      description: "This API is associated with login system user  \n - Then
+        Endpoint for login system user `/user/v1/systemUsers/login` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       requestBody:
         content:
           application.json:
@@ -665,6 +812,220 @@ paths:
 components:
   schemas:
     user:
+      genrateOtpRequest:
+        type: object
+        description: API for genarting OTP
+        required:
+          - email
+          - password
+        properties:
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+          password:
+            type: string
+            description: Password of user
+            example: Password
+      generateOtpResponse200:
+        description: OK, otp genrated successfully
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: OTP has been sent to your registered email ID. Please enter the number to update your password.
+          result:
+            type: array
+            example: []
+      generateOtpResponse400:
+        description: Internal Server Error
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: SERVER_ERROR
+          message:
+            type: string
+            example: Unable to send otp, may be redis server is down.
+          error:
+            type: array
+            example: []
+      generateOtpResponse500:
+        description:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+      resetPasswordRequest:
+        type: object
+        description: API for reset password
+        required:
+          - email
+          - password
+          - otp
+        properties:
+          email:
+            type: string
+            description: Email Id of user
+            example: example@mail.com
+          password:
+            type: string
+            description: New password of user
+            example: New password
+          otp:
+            type: string
+            description: OTP sent on mail
+            example: '123456'
+      resetPasswordResponse200:
+        type: object
+        description: User login response
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Password reset successfully.
+          result:
+            type: object
+            properties:
+              access_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY1Mjk0MDgyMH0.TGuFqQ6pSbQW3NyiG8BZzAz0kPN7NiX2VS0yD4dhRUs
+              refresh_token:
+                type: string
+                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6ZmFsc2V9LCJpYXQiOjE2NTI4NTQ0MjAsImV4cCI6MTY2ODY2NTYyMH0.fThfHLWiRDv1ez0KmBiOd2wUsYsHg7r--RhXrd68e1M
+              user:
+                type: object
+                properties:
+                  email:
+                    type: object
+                    properties:
+                      verified:
+                        type: boolean
+                        example: false
+                      address:
+                        type: string
+                        example: example@mail.com
+              isAMentor:
+                type: boolean
+                example: false
+              hasAcceptedTAndC:
+                type: boolean
+                example: false
+              deleted:
+                type: boolean
+                example: false
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              name:
+                type: string
+                example: Ankit
+              designation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Teacher
+              location:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Bangalore
+              areasOfExpertise:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Educational Leadership
+              languages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: English
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
+              lastLoggedInAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              about:
+                type: string
+                example: This is test about of mentee
+              experience:
+                type: string
+                example: '4.2'
+              gender:
+                type: string
+                example: MALE
+              image:
+                type: string
+                example: https://cloudstorage.com/container/abc.png
+      resetPasswordResponse400:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Please enter a new password, that has not been used before
+          error:
+            type: array
+            example: []
+      resetPasswordResponse401:
+        description: Bad Request
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Please enter the correct OTP.
+          error:
+            type: array
+            example: []
       userCreateUserRequest:
         description: User program and solution request
         type: object
@@ -810,7 +1171,7 @@ components:
             example: Password
       userLoginResponse:
         type: object
-        description: User solutions response
+        description: User login response
         properties:
           responseCode:
             type: string
@@ -1269,7 +1630,7 @@ components:
         properties:
           name:
             type: string
-            example: Ankit
+            example: Jhon
           designation:
             type: array
             items:
@@ -1347,6 +1708,12 @@ components:
     form:
       createFormRequest:
         type: object
+        required:
+          - type
+          - subType
+          - action
+          - ver
+          - data
         properties:
           type:
             type: string
@@ -1429,6 +1796,12 @@ components:
             example: []
       updateFormRequest:
         type: object
+        required:
+          - type
+          - subType
+          - action
+          - ver
+          - data
         properties:
           type:
             type: string
@@ -1674,6 +2047,10 @@ components:
     userentity:
       createUserEntityRequest:
         type: object
+        required:
+          - value
+          - label
+          - type
         properties:
           value:
             type: string
@@ -1712,6 +2089,11 @@ components:
             example: []
       updateUserEntityRequest:
         type: object
+        required:
+          - value
+          - label
+          - type
+          - status
         description: User Entity update request
         properties:
           value:
@@ -1799,6 +2181,41 @@ components:
           error:
             type: array
             example: []
+    cloudServices:
+      cloudServicesResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Signed Url Generated Successfully.
+          result:
+            type: object
+            properties:
+              signedUrl:
+                type: string
+                example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+              filePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+              destFilePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+      cloudServicesDownloadResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Download Url Generated Successfully.
+          result:
+            type: string
+            example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+
     systemuser:
       createSystemUserRequest:
         type: object
