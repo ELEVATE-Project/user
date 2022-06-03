@@ -5,12 +5,12 @@ info:
   version: 1.0.0
   termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
   description: >-
-    - The Mentoring Service is a centralized Service to support other services. Apis perform operations related to user entities notification etc 
+    - The Mentoring Service is a centralized Service to support other services. Apis perform operations related to user entities etc 
 
     - The URL for Mentoring API(s) is `{context}/mentoring/v1`
     - <b>Note:</b> These resources can be used in other services
   contact:
-    email: info@sunbird.org
+    email: tech-infra@shikshalokam.org
 servers:
   - url: http://localhost:3002
     description: local server
