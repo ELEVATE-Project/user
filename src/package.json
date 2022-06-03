@@ -4,7 +4,7 @@
 	"description": "A user service for mentoring capability",
 	"main": "app.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 0",
+		"test": "mocha ./test/*.spec.js",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
@@ -49,11 +49,14 @@
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
+		"chai": "^4.3.6",
 		"eslint": "^8.16.0",
 		"husky": "^8.0.1",
 		"lint-staged": "^12.4.1",
+		"mocha": "^10.0.0",
 		"nodemon": "^2.0.13",
-		"prettier": "^2.6.2"
+		"prettier": "^2.6.2",
+		"sinon": "^14.0.0"
 	},
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",
