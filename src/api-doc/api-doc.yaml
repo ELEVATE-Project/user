@@ -21,7 +21,7 @@ paths:
       summary: Create form
       tags:
         - Form APIs
-      description: "This API is associated with creating a form \n - Then
+      description: "This API is associated with creating a form  \n -
         Endpoint for creating form `/mentoring/v1/form/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -56,7 +56,7 @@ paths:
       summary: Update form
       tags:
         - Form APIs
-      description: "This API is associated with updating a form \n - Then
+      description: "This API is associated with updating a form  \n -
         Endpoint for updating form `/mentoring/v1/form/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -91,7 +91,7 @@ paths:
       summary: Get form data
       tags:
         - Form APIs
-      description: "This API is associated with getting a form \n - Then
+      description: "This API is associated with getting a form  \n -
         Endpoint for read form `/mentoring/v1/form/read` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -126,7 +126,7 @@ paths:
       summary: Create user entity
       tags:
         - Entity APIs
-      description: "This API is associated with creating user entity \n - Then
+      description: "This API is associated with creating user entity  \n -
         Endpoint for creating user entity `/mentoring/v1/entity/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -161,7 +161,7 @@ paths:
       summary: Update user entity
       tags:
         - Entity APIs
-      description: "This API is associated with update user entity  \n - Then
+      description: "This API is associated with update user entity   \n -
         Endpoint for update entity `/mentoring/v1/entity/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -203,7 +203,7 @@ paths:
       summary: Get user entity details
       tags:
         - Entity APIs
-      description: "This API is associated with get user entity  \n - Then
+      description: "This API is associated with get user entity   \n -
         Endpoint for get user entity `/mentoring/v1/entity/read` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -224,7 +224,6 @@ paths:
           example: roles
         - in: path
           name: deleted
-          required: true
           description: Please append a deleted type eg. for deleted user `true` and
             for existing user `false`
           schema:
@@ -232,8 +231,7 @@ paths:
           example: 'false'
         - in: path
           name: status
-          required: true
-          description: Please append a deleted type eg. for active user `ACTIVE` and
+          description: Please append a status of user eg. for active user `ACTIVE` and
             for Disabled user `DISABLED`
           schema:
             type: string
@@ -250,7 +248,7 @@ paths:
       summary: Delete user entity
       tags:
         - Entity APIs
-      description: "This API is associated with delete user entity  \n - Then
+      description: "This API is associated with delete user entity   \n -
         Endpoint for delete user entity `/mentoring/v1/entity/delete` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -287,35 +285,32 @@ paths:
       summary: Get list of session
       tags:
         - Session APIs
-      description: "This API is associated with listing session based on condition on mentoring \n - Then
+      description: "This API is associated with listing session based on condition on mentoring  \n -
         Endpoint for listing session `/mentoring/v1/sessions/list` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
         - name: X-auth-token
+          required: true
           in: header
           description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
-          required: true
           schema:
             type: string
         - in: path
           name: page
-          required: true
           description: Please add page number
           schema:
             type: number
           example: 1
         - in: path
           name: limit
-          required: true
           description: number of record to limit
           schema:
             type: number
           example: 2
         - in: path
           name: status
-          required: true
           description: Please append a status eg. for published user `published` and
             for completed user `completed` etc
           schema:
@@ -323,7 +318,6 @@ paths:
           example: published,completed
         - in: path
           name: search
-          required: true
           description: Please search for author name or title of session etc.
           schema:
             type: string
@@ -346,7 +340,7 @@ paths:
       summary: Get session details
       tags:
         - Session APIs
-      description: "This API is associated with getting session details on mentoring \n - Then
+      description: "This API is associated with getting session details on mentoring  \n -
         Endpoint for getting session details `/mentoring/v1/sessions/details` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -383,7 +377,7 @@ paths:
       summary: Share session details
       tags:
         - Session APIs
-      description: "This API is associated with share session on mentoring \n - Then
+      description: "This API is associated with share session on mentoring  \n -
         Endpoint for share session `/mentoring/v1/sessions/share` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -420,7 +414,7 @@ paths:
       summary: Enroll to session
       tags:
         - Session APIs
-      description: "This API is associated with enrolling in a session on mentoring \n - Then
+      description: "This API is associated with enrolling in a session on mentoring  \n -
         Endpoint for enroll session `/mentoring/v1/sessions/enroll` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -457,7 +451,7 @@ paths:
       summary: Unenroll to session
       tags:
         - Session APIs
-      description: "This API is associated with unenrolling in a session on mentoring \n - Then
+      description: "This API is associated with unenrolling in a session on mentoring  \n -
         Endpoint for unenroll session `/mentoring/v1/sessions/unenroll` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -494,7 +488,7 @@ paths:
       summary: Start session
       tags:
         - Session APIs
-      description: "This API is associated with starting session on mentoring \n - Then
+      description: "This API is associated with starting session on mentoring  \n -
         Endpoint for starting session `/mentoring/v1/sessions/start` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -509,7 +503,7 @@ paths:
         - in: path
           name: 'sessionId '
           required: true
-          description: Please append a valid sessionId To the Request URL
+          description: Please append a valid session id To the Request URL
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
@@ -537,7 +531,7 @@ paths:
       summary: Create session
       tags:
         - Session APIs
-      description: "This API is associated with creating session on mentoring \n - Then
+      description: "This API is associated with creating session on mentoring  \n -
         Endpoint for creating session `/mentoring/v1/sessions/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -572,7 +566,7 @@ paths:
       summary: Delete session
       tags:
         - Session APIs
-      description: "This API is associated with delete session on mentoring \n - Then
+      description: "This API is associated with delete session on mentoring  \n -
         Endpoint for delete session `/mentoring/v1/sessions/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -608,7 +602,7 @@ paths:
       summary: Update session
       tags:
         - Session APIs
-      description: "This API is associated with update session on mentoring \n - Then
+      description: "This API is associated with update session on mentoring  \n -
         Endpoint for update session `/mentoring/v1/sessions/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -643,7 +637,7 @@ paths:
       summary: Get list of session
       tags:
         - Mentee APIs
-      description: "This API is associated with listing session based on condition mentoring \n - Then
+      description: "This API is associated with listing session based on condition mentoring  \n -
         Endpoint for list session `/mentoring/v1/mentees/sessions` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -657,21 +651,18 @@ paths:
             type: string
         - in: path
           name: enrolled
-          required: true
           description: enrolled status of mentee `true`
           schema:
             type: boolean
           example: true
         - in: path
           name: page
-          required: true
           description: Please add page number
           schema:
             type: number
           example: 1
         - in: path
           name: limit
-          required: true
           description: number of record to limit
           schema:
             type: number
@@ -694,7 +685,7 @@ paths:
       summary: Join session as mentee
       tags:
         - Mentee APIs
-      description: "This API is associated with join session as mentee on mentoring \n - Then
+      description: "This API is associated with join session as mentee on mentoring  \n -
         Endpoint for join session `/mentoring/v1/mentees/joinSession` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -731,7 +722,7 @@ paths:
       summary: Mentee reports
       tags:
         - Mentee APIs
-      description: "This API is associated with mentee report based on condition on mentoring \n - Then
+      description: "This API is associated with mentee report based on condition on mentoring  \n -
         Endpoint for mentee report `/mentoring/v1/mentees/joinSession` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -763,7 +754,7 @@ paths:
       summary: Get list of Session
       tags:
         - Mentee APIs
-      description: "This API is associated with list of session on mentoring \n - Then
+      description: "This API is associated with list of session on mentoring  \n -
         Endpoint for list session `/mentoring/v1/mentees/homeFeed` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -787,7 +778,7 @@ paths:
       summary: Mentors reports
       tags:
         - Mentor APIs
-      description: "This API is associated with mentor reports on mentoring \n - Then
+      description: "This API is associated with mentor reports on mentoring  \n -
         Endpoint for list session `/mentoring/v1/mentors/reports` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -819,7 +810,7 @@ paths:
       summary: Create questions
       tags:
         - Question APIs
-      description: "This API is associated with creating questions on mentoring \n - Then
+      description: "This API is associated with creating questions on mentoring  \n -
         Endpoint for create question `/mentoring/v1/questions/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -848,7 +839,7 @@ paths:
       summary: Update questions
       tags:
         - Question APIs
-      description: "This API is associated with updating questions on mentoring \n - Then
+      description: "This API is associated with updating questions on mentoring  \n -
         Endpoint for update question `/mentoring/v1/questions/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -890,7 +881,7 @@ paths:
       summary: Get questions
       tags:
         - Question APIs
-      description: "This API is associated with getting questions on mentoring \n - Then
+      description: "This API is associated with getting questions on mentoring  \n -
         Endpoint for get question `/mentoring/v1/questions/read` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -927,7 +918,7 @@ paths:
       summary: Create question set
       tags:
         - Question Set APIs
-      description: "This API is associated with creating questions set on mentoring \n - Then
+      description: "This API is associated with creating questions set on mentoring  \n -
         Endpoint for create question set `/mentoring/v1/questionsSet/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -962,7 +953,7 @@ paths:
       summary: Update question set
       tags:
         - Question Set APIs
-      description: "This API is associated with updating questions set on mentoring \n - Then
+      description: "This API is associated with updating questions set on mentoring  \n -
         Endpoint for updating question set `/mentoring/v1/questionsSet/update` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -1004,7 +995,7 @@ paths:
       summary: Get question set
       tags:
         - Question Set APIs
-      description: "This API is associated with getting questions set on mentoring \n - Then
+      description: "This API is associated with getting questions set on mentoring  \n -
         Endpoint for get question set `/mentoring/v1/questionsSet/read` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -1041,7 +1032,7 @@ paths:
       summary: Get feedback form
       tags:
         - Feedback Form APIs
-      description: "This API is associated with getting feedback forms of the session. \n - Then
+      description: "This API is associated with getting feedback forms of the session.  \n -
         Endpoint for get feedback form `/mentoring/v1/feedback/forms` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -1078,7 +1069,7 @@ paths:
       summary: Submit feedback
       tags:
         - Feedback Form APIs
-      description: "This API is associated with submit feedback forms of the session. \n - Then
+      description: "This API is associated with submit feedback forms of the session.  \n -
         Endpoint for submit feedback form `/mentoring/v1/feedback/submit` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
