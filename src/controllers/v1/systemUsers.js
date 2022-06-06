@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const systemUsersHelper = require('../../services/helper/systemUsers')
+const systemUsersHelper = require('@services/helper/systemUsers')
 
 module.exports = class SystemUsers {
 	/**

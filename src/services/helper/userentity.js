@@ -8,11 +8,11 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
 
-const utilsHelper = require('../../generics/utils')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const userEntitiesData = require('../../db/userentities/query')
+const utilsHelper = require('@generics/utils')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const userEntitiesData = require('@db/userentities/query')
 
 module.exports = class UserEntityHelper {
 	/**

@@ -10,16 +10,16 @@ const bcryptJs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const ObjectId = require('mongoose').Types.ObjectId
 
-const utilsHelper = require('../../generics/utils')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const usersData = require('../../db/users/queries')
-const notificationTemplateData = require('../../db/notification-template/query')
-const kafkaCommunication = require('../../generics/kafka-communication')
-const redisCommunication = require('../../generics/redis-communication')
-const systemUserData = require('../../db/systemUsers/queries')
-const FILESTREAM = require('../../generics/file-stream')
+const utilsHelper = require('@generics/utils')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const usersData = require('@db/users/queries')
+const notificationTemplateData = require('@db/notification-template/query')
+const kafkaCommunication = require('@generics/kafka-communication')
+const redisCommunication = require('@generics/redis-communication')
+const systemUserData = require('@db/systemUsers/queries')
+const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
 	/**

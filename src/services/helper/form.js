@@ -6,10 +6,10 @@
  */
 
 // Dependencies
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const formsData = require('../../db/forms/queries')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const formsData = require('@db/forms/queries')
 
 module.exports = class FormsHelper {
 	/**

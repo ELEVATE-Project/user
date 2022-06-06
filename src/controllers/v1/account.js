@@ -8,9 +8,9 @@
 // Dependencies
 const accountHelper = require('@services/helper/account')
 const csv = require('csvtojson')
-const common = require('../../constants/common')
-const apiResponses = require('../../constants/api-responses')
-const httpStatusCode = require('../../generics/http-status')
+const common = require('@constants/common')
+const apiResponses = require('@constants/api-responses')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Account {
 	/**

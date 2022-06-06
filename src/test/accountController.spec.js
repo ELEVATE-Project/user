@@ -8,8 +8,8 @@ global.db = {
 		return
 	},
 }
-const accountService = require('../services/helper/account')
-let controller = require('../controllers/v1/account')
+const accountService = require('@services/helper/account')
+let controller = require('@controllers/v1/account')
 
 let mockData = require('./mock')
 
