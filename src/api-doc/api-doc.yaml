@@ -1112,6 +1112,130 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/feedback/submitFeedbackResponse422'
+  '/mentoring/v1/users/pendingFeedbacks':
+    get:
+      summary: Users pending feedback
+      tags:
+        - Users APIs
+      description: "This API is associated with fetching users pending feedback form \n -
+        Endpoint for fetching feedback form `/mentoring/v1/users/pendingFeedbacks` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/users/feedbackResponse200'
+
+  '/user/v1/cloud-services/getSignedUrl?fileName={fileName}':
+    get:
+      summary: Cloud services get signed url
+      tags:
+        - Cloud Services APIs
+      description: "This API is associated with the cloud services for getting signed URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getSignedUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'fileName'
+          required: true
+          description: Please append a valid file name to url which has to be uploaded
+          schema:
+            type: string
+          example: image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
+  '/user/v1/cloud-services/getDownloadableUrl?filePath={filePath}':
+    get:
+      summary: Cloud services get download url
+      tags:
+        - Cloud Services APIs
+      description: "This API is associated with the cloud services for getting downloadable URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getDownloadableUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'filePath'
+          required: true
+          description: Please append a valid file path to url which has to be downloaded
+          schema:
+            type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesDownloadResponse200'
+  '/notification/v1/email/send':
+    post:
+      summary: Send email
+      tags:
+        - Email APIs
+      description: "This API is associated with sending email through API \n - Then
+        Endpoint for sending email `/notification/v1/email/send` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+
+      parameters:
+        - name: internal_access_token
+          in: header
+          description: To make use of the API, you require internal access token.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request body consist of metadata and accepts payload as JSON
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/email/emailSendRequest'
+      responses:
+        '200':
+          description: OK. Email sent successfully.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/email/emailSendResponse200'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/email/emailSendResponse400'
+
 components:
   schemas:
     form:
@@ -2852,6 +2976,142 @@ components:
           error:
             type: array
             example: []
+    cloudServices:
+      cloudServicesResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Signed Url Generated Successfully.
+          result:
+            type: object
+            properties:
+              signedUrl:
+                type: string
+                example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+              filePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+              destFilePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+      cloudServicesDownloadResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Download Url Generated Successfully.
+          result:
+            type: string
+            example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+    users:
+      feedbackResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK,
+          message:
+            type: string
+            example: Pending feedbacks fetched successfully.
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 628ee0c8efb3923017c27f03
+                title:
+                  type: string
+                  example: Leadership5
+                description:
+                  type: string
+                  example: Training in leadership
+                mentorFeedbackForm:
+                  type: string
+                  example: mentorQS2
+                form:
+                  type: object
+                  example: {}
+    email:
+      emailSendRequest:
+        description: Email Sent request
+        type: object
+        required:
+          - type
+          - email
+        properties:
+          type:
+            type: string
+            description: Type of channel eg. email
+            example: email
+            required: true
+          email:
+            type: object
+            required:
+              - to
+              - subject
+              - body
+            properties:
+              to:
+                type: string
+                description: Email id of recipient. Multiple emails are added with `,`
+                example: example@mail.com
+                required: true
+              cc:
+                type: string
+                description: Email id of recipient. Multiple emails are added with `,`
+                example: ccexample@mail.com
+              subject:
+                type: string
+                description: Subject of email
+                example: Email Notification
+                required: true
+              body:
+                type: string
+                description: Body of Email. It will accept Html too.
+                example: "Dear Jhon, \n Welcome to Notification"
+                required: true
+      emailSendResponse200:
+        description: Email Sent response
+        type: object
+        properties:
+          message:
+            type: string
+            example: Email sent successfully.
+          result:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              message:
+                type: string
+                example: successfully mail sent
+      emailSendResponse400:
+        description: Failed to send email
+        type: object
+        properties:
+          message:
+            type: string
+            example: failed to send email
+          status:
+            type: string
+            example: failure
+          statusCode:
+            type: number
+            example: 400
+          error:
+            type: array
+            example: []
+
   securitySchemes:
     bearer:
       type: apiKey
