@@ -25,6 +25,7 @@
 		"express-validator": "^5.3.1",
 		"jsonwebtoken": "^8.5.1",
 		"kafka-node": "^5.0.0",
+		"module-alias": "^2.2.2",
 		"require-all": "^3.0.0",
 		"uuid": "^8.3.2"
 	},
@@ -38,5 +39,17 @@
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",
 		"*": "prettier --ignore-unknown --write"
+	},
+	"_moduleAliases": {
+		"@root": ".",
+		"@configs": "configs",
+		"@constants": "constants",
+		"@controllers": "controllers",
+		"@generics": "generics",
+		"@health-checks": "health-checks",
+		"@middlewares": "middlewares",
+		"@public": "public",
+		"@routes": "routes",
+		"@services": "services"
 	}
 }

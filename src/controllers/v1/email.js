@@ -1,4 +1,4 @@
-const emailHelper = require('../../services/helper/email')
+const emailHelper = require('@services/helper/email')
 
 module.exports = class Email {
 	/**

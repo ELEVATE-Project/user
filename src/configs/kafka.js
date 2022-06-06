@@ -7,7 +7,7 @@
 
 //Dependencies
 const kafka = require('kafka-node')
-const emailNotifications = require('../generics/helpers/email-notifications')
+const emailNotifications = require('@generics/helpers/email-notifications')
 
 module.exports = function (config) {
 	Producer = kafka.Producer

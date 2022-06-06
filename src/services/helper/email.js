@@ -1,7 +1,7 @@
-const emailNotifications = require('../../generics/helpers/email-notifications')
-const common = require('../../constants/common')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
+const emailNotifications = require('@generics/helpers/email-notifications')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
 
 module.exports = class EmailHelper {
 	/**
