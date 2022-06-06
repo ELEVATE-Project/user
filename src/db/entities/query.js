@@ -37,6 +37,7 @@ module.exports = class UserEntityData {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const userEntitiesData = await Entities.find(filter, projection)
+
 				resolve(userEntitiesData)
 			} catch (error) {
 				reject(error)
