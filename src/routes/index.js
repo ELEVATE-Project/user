@@ -10,7 +10,7 @@ module.exports = (app) => {
 		let controllerResponse
 
 		try {
-			let controller = require(`../controllers/${req.params.version}/${req.params.controller}`)
+			let controller = require(`@controllers/${req.params.version}/${req.params.controller}`)
 			controllerResponse = await new controller()[req.params.method](req)
 		} catch (error) {
 			// if requested resource not found, i.e method does not exists

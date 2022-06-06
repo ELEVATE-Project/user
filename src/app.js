@@ -4,12 +4,12 @@
  * Date : 29-Sep-2021
  * Description : Start file of a user service
  */
-
+require('module-alias/register')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 require('dotenv').config({ path: './.env' })
-require('./configs')
+require('@configs')
 
 let environmentData = require('./envVariables')()
 
