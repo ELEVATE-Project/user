@@ -1,11 +1,11 @@
 // Dependencies
-const sessionAttendees = require('../../db/sessionAttendees/queries')
-const sessionData = require('../../db/sessions/queries')
-const common = require('../../constants/common')
-const apiResponses = require('../../constants/api-responses')
-const httpStatusCode = require('../../generics/http-status')
-const questionsSetData = require('../../db/questionsSet/queries')
-const questionsData = require('../../db/questions/queries')
+const sessionAttendees = require('@db/sessionAttendees/queries')
+const sessionData = require('@db/sessions/queries')
+const common = require('@constants/common')
+const apiResponses = require('@constants/api-responses')
+const httpStatusCode = require('@generics/http-status')
+const questionsSetData = require('@db/questionsSet/queries')
+const questionsData = require('@db/questions/queries')
 const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = class MenteesHelper {

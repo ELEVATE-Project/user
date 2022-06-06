@@ -6,8 +6,8 @@
  */
 
 // Dependencies
-const notificationsHelper = require('../../services/helper/notifications')
-const httpStatusCode = require('../../generics/http-status')
+const notificationsHelper = require('@services/helper/notifications')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Notifications {
 	/**

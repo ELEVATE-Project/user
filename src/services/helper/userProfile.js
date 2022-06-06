@@ -1,7 +1,7 @@
 // Dependencies
 const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-const requests = require('../../generics/requests')
-const endpoints = require('../../constants/endpoints')
+const requests = require('@generics/requests')
+const endpoints = require('@constants/endpoints')
 
 module.exports = class UserProfileHelper {
 	/**

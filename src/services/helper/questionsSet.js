@@ -1,10 +1,10 @@
 // Dependencies
-const utilsHelper = require('../../generics/utils')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const questionsSetData = require('../../db/questionsSet/queries')
-const questionData = require('../../db/questions/queries')
+const utilsHelper = require('@generics/utils')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const questionsSetData = require('@db/questionsSet/queries')
+const questionData = require('@db/questions/queries')
 
 module.exports = class questionsSetHelper {
 	/**

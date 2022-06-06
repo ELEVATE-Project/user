@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const questionsSetHelper = require('../../services/helper/questionsSet')
+const questionsSetHelper = require('@services/helper/questionsSet')
 
 module.exports = class QuestionsSet {
 	/**

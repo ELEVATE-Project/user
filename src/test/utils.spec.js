@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const utils = require('../generics/utils')
+const utils = require('@generics/utils')
 
 describe('Utils ', function () {
 	it('should check composeEmailBody', async function () {

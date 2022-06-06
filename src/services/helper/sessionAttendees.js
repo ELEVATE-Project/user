@@ -1,7 +1,7 @@
 const request = require('request')
 
-const apiEndpoints = require('../../constants/endpoints')
-const apiResponses = require('../../constants/api-responses')
+const apiEndpoints = require('@constants/endpoints')
+const apiResponses = require('@constants/api-responses')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 
 module.exports = class SessionAttendeesHelper {

@@ -6,7 +6,7 @@
  */
 
 const mongoose = require('mongoose')
-const { feedback } = require('../../services/helper/sessions')
+const { feedback } = require('@services/helper/sessions')
 const Schema = mongoose.Schema
 
 const questionsSetSchema = new Schema({
