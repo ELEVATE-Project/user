@@ -5,9 +5,9 @@
  * Description : Routes for available service
  */
 
-const validator = require('../middlewares/validator')
-const authenticator = require('../middlewares/authenticator')
-const pagination = require('../middlewares/pagination')
+const validator = require('@middlewares/validator')
+const authenticator = require('@middlewares/authenticator')
+const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
 const fs = require('fs')
 
@@ -51,12 +51,12 @@ module.exports = (app) => {
 						'.js'
 				)
 				if (folderExists) {
-					controller = require(`../controllers/${req.params.version}/${req.params.controller}/${req.params.file}`)
+					controller = require(`@controllers/${req.params.version}/${req.params.controller}/${req.params.file}`)
 				} else {
-					controller = require(`../controllers/${req.params.version}/${req.params.controller}`)
+					controller = require(`@controllers/${req.params.version}/${req.params.controller}`)
 				}
 			} else {
-				controller = require(`../controllers/${req.params.version}/${req.params.controller}`)
+				controller = require(`@controllers/${req.params.version}/${req.params.controller}`)
 			}
 			controllerResponse = new controller()[req.params.method]
 				? await new controller()[req.params.method](req)

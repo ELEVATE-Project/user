@@ -1,3 +1,4 @@
+require('module-alias/register')
 const chai = require('chai')
 const sinon = require('sinon')
 const expect = chai.expect
@@ -8,8 +9,8 @@ global.db = {
 		return
 	},
 }
-const accountService = require('../services/helper/account')
-let controller = require('../controllers/v1/account')
+const accountService = require('@services/helper/account')
+let controller = require('@controllers/v1/account')
 
 let mockData = require('./mock')
 

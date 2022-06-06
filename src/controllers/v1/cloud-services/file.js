@@ -5,7 +5,7 @@
  * Description : Google cloud services methods.
  */
 
-const filesHelper = require('../../../services/helper/files')
+const filesHelper = require('@services/helper/files')
 
 module.exports = class File {
 	/**

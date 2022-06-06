@@ -6,12 +6,12 @@
  */
 
 // Dependencies
-const usersData = require('../../db/users/queries')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const httpStatusCode = require('../../generics/http-status')
-const cloudServices = require('../../generics/cloud-services')
-const utilsHelper = require('../../generics/utils')
+const usersData = require('@db/users/queries')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
+const cloudServices = require('@generics/cloud-services')
+const utilsHelper = require('@generics/utils')
 
 module.exports = class MentorsHelper {
 	/**

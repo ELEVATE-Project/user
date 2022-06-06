@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const profileHelper = require('../../services/helper/profile')
+const profileHelper = require('@services/helper/profile')
 
 module.exports = class Profile {
 	/**
