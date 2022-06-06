@@ -4,7 +4,7 @@
 	"description": "A user service for mentoring capability",
 	"main": "app.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 0",
+		"test": "mocha ./test/*.spec.js",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
@@ -42,16 +42,22 @@
 		"mongoose-paginate-v2": "^1.4.2",
 		"mongoose-timestamp": "^0.6.0",
 		"redis": "^4.0.3",
+		"redoc-cli": "^0.13.15",
+		"redoc-express": "^1.0.0",
 		"require-all": "^3.0.0",
 		"stream": "^0.0.2",
+		"swagger-ui-express": "^4.4.0",
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
+		"chai": "^4.3.6",
 		"eslint": "^8.16.0",
 		"husky": "^8.0.1",
 		"lint-staged": "^12.4.1",
+		"mocha": "^10.0.0",
 		"nodemon": "^2.0.13",
-		"prettier": "^2.6.2"
+		"prettier": "^2.6.2",
+		"sinon": "^14.0.0"
 	},
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",

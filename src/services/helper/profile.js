@@ -27,6 +27,13 @@ module.exports = class ProfileHelper {
 	static async update(bodyData, _id) {
 		bodyData.updatedAt = new Date().getTime()
 		try {
+			if (bodyData.hasOwnProperty("email")) {
+				return common.failureResponse({
+				message: apiResponses.EMAIL_UPDATE_FAILED,
+				statusCode: httpStatusCode.bad_request,
+				responseCode: "CLIENT_ERROR",
+				});
+			}
 			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
