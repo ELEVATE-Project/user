@@ -1,8 +1,8 @@
-const utilsHelper = require('../../generics/utils')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const questionsData = require('../../db/questions/queries')
+const utilsHelper = require('@generics/utils')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const questionsData = require('@db/questions/queries')
 
 module.exports = class questionsHelper {
 	/**

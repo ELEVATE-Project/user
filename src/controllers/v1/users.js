@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const feedbackHelper = require('../../services/helper/feedback')
+const feedbackHelper = require('@services/helper/feedback')
 
 module.exports = class Users {
 	/**

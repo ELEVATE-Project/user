@@ -7,11 +7,11 @@
 
 const jwt = require('jsonwebtoken')
 
-const httpStatusCode = require('../generics/http-status')
-const apiResponses = require('../constants/api-responses')
-const common = require('../constants/common')
-const requests = require('../generics/requests')
-const endpoints = require('../constants/endpoints')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const requests = require('@generics/requests')
+const endpoints = require('@constants/endpoints')
 
 module.exports = async function (req, res, next) {
 	try {

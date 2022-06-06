@@ -1,3 +1,4 @@
+require('module-alias/register')
 const chai = require('chai')
 const sinon = require('sinon')
 const expect = chai.expect
@@ -8,8 +9,8 @@ global.db = {
 		return
 	},
 }
-const sessionService = require('../services/helper/sessions')
-let controller = require('../controllers/v1/sessions')
+const sessionService = require('@services/helper/sessions')
+let controller = require('@controllers/v1/sessions')
 
 describe('session service', async function () {
 	afterEach(() => {

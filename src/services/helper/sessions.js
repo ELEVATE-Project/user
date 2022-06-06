@@ -1,21 +1,21 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
 const moment = require('moment-timezone')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const apiEndpoints = require('../../constants/endpoints')
-const common = require('../../constants/common')
-const sessionData = require('../../db/sessions/queries')
-const sessionAttendesData = require('../../db/sessionAttendees/queries')
-const notificationTemplateData = require('../../db/notification-template/query')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const apiEndpoints = require('@constants/endpoints')
+const common = require('@constants/common')
+const sessionData = require('@db/sessions/queries')
+const sessionAttendesData = require('@db/sessionAttendees/queries')
+const notificationTemplateData = require('@db/notification-template/query')
 const sessionAttendeesHelper = require('./sessionAttendees')
-const kafkaCommunication = require('../../generics/kafka-communication')
+const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('request')
 
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
-const utils = require('../../generics/utils')
+const utils = require('@generics/utils')
 
 module.exports = class SessionsHelper {
 	/**
