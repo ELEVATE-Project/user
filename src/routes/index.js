@@ -5,7 +5,15 @@
  * Description : Routes for available service
  */
 
+const validator = require('../middlewares/validator')
+const authenticator = require('../middlewares/authenticator')
+const expressValidator = require('express-validator')
+const fs = require('fs')
+
 module.exports = (app) => {
+	app.use(authenticator)
+	app.use(expressValidator())
+
 	async function router(req, res, next) {
 		let controllerResponse
 
@@ -18,6 +26,7 @@ module.exports = (app) => {
 		}
 
 		if (
+			controllerResponse &&
 			controllerResponse.statusCode !== 200 &&
 			controllerResponse.statusCode !== 201 &&
 			controllerResponse.statusCode !== 202
@@ -25,13 +34,15 @@ module.exports = (app) => {
 			/* If error obtained then global error handler gets executed */
 			return next(controllerResponse)
 		}
-		res.status(controllerResponse.statusCode).json({
-			message: controllerResponse.message,
-			result: controllerResponse.result,
-		})
+		if (controllerResponse) {
+			res.status(controllerResponse.statusCode).json({
+				message: controllerResponse.message,
+				result: controllerResponse.result,
+			})
+		}
 	}
 
-	app.all(process.env.APPLICATION_BASE_URL + ':version/:controller/:method', router)
+	app.all(process.env.APPLICATION_BASE_URL + ':version/:controller/:method', validator, router)
 	app.all(process.env.APPLICATION_BASE_URL + ':version/:controller/:method/:id', router)
 
 	app.use((req, res, next) => {
