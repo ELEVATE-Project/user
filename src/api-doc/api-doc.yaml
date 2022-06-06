@@ -1,0 +1,134 @@
+---
+openapi: 3.0.0
+info:
+  title: Elevate Notification
+  version: 1.0.0
+  termsOfService: 'https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE'
+  description: >-
+    - The Notification Service is a centralized Service to support other services. Apis perform operations related to sending email notification etc 
+
+    - The URL for Users API(s) is `{context}/notification/v1`
+    - <b>Note:</b> These resources can be used in other services
+  contact:
+    email: tech-infra@shikshalokam.org
+servers:
+  - url: http://localhost:3002
+    description: local server url
+  - url: https://dev.elevate-apis.shikshalokam.org
+    description: dev server url
+
+paths:
+  '/notification/v1/email/send':
+    post:
+      summary: Send email
+      tags:
+        - Email APIs
+      description: "This API is associated with sending email through API \n - Then
+        Endpoint for sending email `/notification/v1/email/send` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+
+      parameters:
+        - name: internal_access_token
+          in: header
+          description: To make use of the API, you require internal access token.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request body consist of metadata and accepts payload as JSON
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/email/emailSendRequest'
+      responses:
+        '200':
+          description: OK. Email sent successfully.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/email/emailSendResponse200'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/email/emailSendResponse400'
+components:
+  schemas:
+    email:
+      emailSendRequest:
+        description: Email Sent request
+        type: object
+        required:
+          - type
+          - email
+        properties:
+          type:
+            type: string
+            description: Type of channel eg. email
+            example: email
+            required: true
+          email:
+            type: object
+            required:
+              - to
+              - subject
+              - body
+            properties:
+              to:
+                type: string
+                description: Email id of recipient. Multiple emails are added with `,`
+                example: example@mail.com
+                required: true
+              cc:
+                type: string
+                description: Email id of recipient. Multiple emails are added with `,`
+                example: ccexample@mail.com
+              subject:
+                type: string
+                description: Subject of email
+                example: Email Notification
+                required: true
+              body:
+                type: string
+                description: Body of Email. It will accept Html too.
+                example: "Dear Jhon, \n Welcome to Notification"
+                required: true
+      emailSendResponse200:
+        description: Email Sent response
+        type: object
+        properties:
+          message:
+            type: string
+            example: Email sent successfully.
+          result:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              message:
+                type: string
+                example: successfully mail sent
+      emailSendResponse400:
+        description: Failed to send email
+        type: object
+        properties:
+          message:
+            type: string
+            example: failed to send email
+          status:
+            type: string
+            example: failure
+          statusCode:
+            type: number
+            example: 400
+          error:
+            type: array
+            example: []
+  securitySchemes:
+    bearer:
+      type: apiKey
+      name: X-auth-token
+      in: header
