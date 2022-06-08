@@ -183,6 +183,23 @@ module.exports = class Account {
 	}
 
 	/**
+	 * Verify user is mentor or not
+	 * @method
+	 * @name verifyUser
+	 * @param {Object} req -request data.
+	 * @param {Object} req.query.userId -userId.
+	 * @returns {JSON} - verifies user is mentor or not
+	 */
+	async verifyUser(req) {
+		try {
+			const result = await accountHelper.verifyUser(req.query.userId)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
 	 * Accept term and condition
 	 * @method
 	 * @name acceptTermsAndCondition
@@ -259,6 +276,27 @@ module.exports = class Account {
 			const result = await accountHelper.registrationOtp(params)
 			return result
 		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * list user based on type
+	 * @method
+	 * @name listUser
+	 * @param {Object} req - request data.
+	 * @param {Boolean} req.query.type - User Type mentor/mentee
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @param {String} req.searchText - search text.
+	 * @returns {JSON} - List of user.
+	 */
+	async listUser(req) {
+		try {
+			const userDetails = await accountHelper.listUser(req.query.type, req.pageNo, req.pageSize, req.searchText)
+			return userDetails
+		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}
