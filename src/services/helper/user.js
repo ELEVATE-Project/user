@@ -1,8 +1,8 @@
 const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-const request = require('../../generics/requests')
-const endpoints = require('../../constants/endpoints')
-const common = require('../../constants/common')
-const httpStatusCode = require('../../generics/http-status')
+const request = require('@/generics/requests')
+const endpoints = require('@/constants/endpoints')
+const common = require('@/constants/common')
+const httpStatusCode = require('@/generics/http-status')
 
 module.exports = class UserProfileHelper {
 	/**

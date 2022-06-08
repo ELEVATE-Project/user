@@ -1,15 +1,15 @@
 // Dependencies
 const moment = require('moment-timezone')
 
-const sessionAttendees = require('../../db/sessionAttendees/queries')
+const sessionAttendees = require('@db/sessionAttendees/queries')
 const userProfile = require('./userProfile')
-const sessionData = require('../../db/sessions/queries')
-const common = require('../../constants/common')
-const apiResponses = require('../../constants/api-responses')
-const httpStatusCode = require('../../generics/http-status')
+const sessionData = require('@db/sessions/queries')
+const common = require('@constants/common')
+const apiResponses = require('@constants/api-responses')
+const httpStatusCode = require('@generics/http-status')
 const bigBlueButton = require('./bigBlueButton')
 const feedbackHelper = require('./feedback')
-const utils = require('../../generics/utils')
+const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = class MenteesHelper {

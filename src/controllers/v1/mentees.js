@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const menteesHelper = require('../../services/helper/mentees')
+const menteesHelper = require('@services/helper/mentees')
 
 module.exports = class Mentees {
 	/**

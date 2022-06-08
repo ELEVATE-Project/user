@@ -4,7 +4,7 @@
 	"description": "A mentoring service for mentoring capability",
 	"main": "app.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 0",
+		"test": "mocha ./test/*.spec.js",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
@@ -28,6 +28,7 @@
 		"jsonwebtoken": "^8.5.1",
 		"kafka-node": "^5.0.0",
 		"md5": "^2.3.0",
+		"module-alias": "^2.2.2",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",
 		"mongodb": "^4.1.2",
@@ -44,14 +45,32 @@
 		"xml2json": "^0.12.0"
 	},
 	"devDependencies": {
+		"chai": "^4.3.6",
 		"eslint": "^8.16.0",
+		"faker": "^6.6.6",
 		"husky": "^8.0.1",
 		"lint-staged": "^12.4.1",
+		"mocha": "^10.0.0",
 		"nodemon": "^2.0.13",
-		"prettier": "^2.6.2"
+		"prettier": "^2.6.2",
+		"sinon": "^14.0.0"
 	},
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",
 		"*": "prettier --ignore-unknown --write"
+	},
+	"_moduleAliases": {
+		"@root": ".",
+		"@configs": "configs",
+		"@constants": "constants",
+		"@controllers": "controllers",
+		"@db": "db",
+		"@generics": "generics",
+		"@health-checks": "health-checks",
+		"@middlewares": "middlewares",
+		"@public": "public",
+		"@routes": "routes",
+		"@services": "services",
+		"@validators": "validators"
 	}
 }
