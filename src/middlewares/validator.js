@@ -8,7 +8,7 @@ const fs = require('fs')
 
 module.exports = (req, res, next) => {
 	try {
-		require(`../validators/${req.params.version}/${req.params.controller}`)[req.params.method](req)
+		require(`@validators/${req.params.version}/${req.params.controller}`)[req.params.method](req)
 	} catch (error) {}
 	next()
 }

@@ -4,7 +4,7 @@
  * Date : 29-Sep-2021
  * Description : Start file of a user service
  */
-
+require('module-alias/register')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -19,12 +19,12 @@ if (!environmentData.success) {
 	process.exit()
 }
 
-require('./configs')
+require('@configs')
 
 const app = express()
 
 // Health check
-require('./health-checks')(app)
+require('@health-checks')(app)
 
 app.use(cors())
 

@@ -8,11 +8,11 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
 
-const utilsHelper = require('../../generics/utils')
-const httpStatusCode = require('../../generics/http-status')
-const apiResponses = require('../../constants/api-responses')
-const common = require('../../constants/common')
-const usersData = require('../../db/users/queries')
+const utilsHelper = require('@generics/utils')
+const httpStatusCode = require('@generics/http-status')
+const apiResponses = require('@constants/api-responses')
+const common = require('@constants/common')
+const usersData = require('@db/users/queries')
 
 module.exports = class ProfileHelper {
 	/**
@@ -27,12 +27,12 @@ module.exports = class ProfileHelper {
 	static async update(bodyData, _id) {
 		bodyData.updatedAt = new Date().getTime()
 		try {
-			if (bodyData.hasOwnProperty("email")) {
+			if (bodyData.hasOwnProperty('email')) {
 				return common.failureResponse({
-				message: apiResponses.EMAIL_UPDATE_FAILED,
-				statusCode: httpStatusCode.bad_request,
-				responseCode: "CLIENT_ERROR",
-				});
+					message: apiResponses.EMAIL_UPDATE_FAILED,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
 			return common.successResponse({

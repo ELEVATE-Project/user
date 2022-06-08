@@ -20,7 +20,7 @@ jobs:
                   node --version
             - run:
                 name: Executing test cases
-                command: echo "npm run test"
+                command: cd src && npm install && npm run test
               
 
 # Invoke jobs via workflows

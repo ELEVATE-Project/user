@@ -6,8 +6,7 @@
  */
 
 // Dependencies
-const mentorsHelper = require('../../services/helper/mentors')
-
+const mentorsHelper = require('@services/helper/mentors')
 module.exports = class Mentors {
 	/**
 	 * List of mentors

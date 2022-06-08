@@ -6,11 +6,11 @@
  */
 
 // Dependencies
-const cloudServices = require('../../generics/cloud-services')
-const apiResponses = require('../../constants/api-responses')
-const httpStatusCode = require('../../generics/http-status')
-const common = require('../../constants/common')
-const utils = require('../../generics/utils')
+const cloudServices = require('@generics/cloud-services')
+const apiResponses = require('@constants/api-responses')
+const httpStatusCode = require('@generics/http-status')
+const common = require('@constants/common')
+const utils = require('@generics/utils')
 
 module.exports = class FilesHelper {
 	/**
