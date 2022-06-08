@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const userHelper = require('@/services/helper/user')
+const userHelper = require('@services/helper/user')
 const feedbackHelper = require('@services/helper/feedback')
 
 module.exports = class Users {
@@ -46,7 +46,6 @@ module.exports = class Users {
 			const lsitUser = await userHelper.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
 			return lsitUser
 		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}
