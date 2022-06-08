@@ -11,4 +11,8 @@ module.exports = {
 		//     .notEmpty()
 		//     .withMessage('id param is empty');
 	},
+
+	list: (req) => {
+		req.checkQuery('type').notEmpty().withMessage('type can not be null').isString()
+	},
 }
