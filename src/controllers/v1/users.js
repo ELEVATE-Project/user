@@ -6,6 +6,7 @@
  */
 
 // Dependencies
+const userHelper = require('@services/helper/user')
 const feedbackHelper = require('@services/helper/feedback')
 
 module.exports = class Users {
@@ -23,6 +24,27 @@ module.exports = class Users {
 		try {
 			const pendingFeedBacks = await feedbackHelper.pending(req.decodedToken._id, req.decodedToken.isAMentor)
 			return pendingFeedBacks
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * list user based on type
+	 * @method
+	 * @name list
+	 * @param {Object} req - request data.
+	 * @param {Boolean} req.query.type - User Type mentor/mentee
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @param {String} req.searchText - search text.
+	 * @returns {JSON} - List of user.
+	 */
+
+	async list(req) {
+		try {
+			const lsitUser = await userHelper.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
+			return lsitUser
 		} catch (error) {
 			return error
 		}

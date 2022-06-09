@@ -5,4 +5,5 @@ module.exports = {
 	CREATE_MEETING: 'api/create',
 	JOIN_MEETING: 'api/join',
 	GET_RECORDINGS: 'api/getRecordings',
+	USERS_LIST: 'v1/account/list',
 }

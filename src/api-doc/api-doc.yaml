@@ -1,0 +1,3452 @@
+---
+openapi: 3.0.0
+info:
+  title: Elevate Mentoring
+  version: 1.0.0
+  description: >-
+    - The Mentoring Service is a centralized Service to support other services. Apis perform operations related to user entities etc 
+
+    - The URL for Mentoring API(s) is `{context}/mentoring/v1`
+    - <b>Note:</b> These resources can be used in other services
+  contact:
+    email: tech-infra@shikshalokam.org
+servers:
+  - url: http://localhost:3002
+    description: local server
+  - url: https://dev.elevate-apis.shikshalokam.org
+    description: dev server
+paths:
+  '/mentoring/v1/form/create':
+    post:
+      summary: Create form
+      tags:
+        - Form APIs
+      description: "This API is associated with creating a form  \n -
+        Endpoint for creating form `/mentoring/v1/form/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/form/createFormRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/createForm200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/createForm400Response'
+  '/mentoring/v1/form/update':
+    patch:
+      summary: Update form
+      tags:
+        - Form APIs
+      description: "This API is associated with updating a form  \n -
+        Endpoint for updating form `/mentoring/v1/form/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/form/updateFormRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/updateForm200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/updateForm400Response'
+  '/mentoring/v1/form/read':
+    get:
+      summary: Get form data
+      tags:
+        - Form APIs
+      description: "This API is associated with getting a form  \n -
+        Endpoint for read form `/mentoring/v1/form/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/form/readFormRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/readForm200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/form/readForm400Response'
+  '/mentoring/v1/entity/create':
+    post:
+      summary: Create user entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with creating user entity  \n -
+        Endpoint for creating user entity `/mentoring/v1/entity/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/entity/createUserEntityRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/createUserEntity201Response'
+        '400':
+          description: Bad Request. User Entity alrady exist
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/createUserEntity400Response'
+  '/mentoring/v1/entity/update/{id}':
+    patch:
+      summary: Update user entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with update user entity   \n -
+        Endpoint for update entity `/mentoring/v1/entity/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid user entity id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/entity/updateUserEntityRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/updateUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Not Found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/updateUserEntity400Response'
+  '/mentoring/v1/entity/read?type={type}&deleted={deleted}&status={Status}':
+    get:
+      summary: Get user entity details
+      tags:
+        - Entity APIs
+      description: "This API is associated with get user entity   \n -
+        Endpoint for get user entity `/mentoring/v1/entity/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: type
+          required: true
+          description: Please append a valid type of role
+          schema:
+            type: string
+          example: roles
+        - in: path
+          name: deleted
+          description: Please append a deleted type eg. for deleted user `true` and
+            for existing user `false`
+          schema:
+            type: string
+          example: 'false'
+        - in: path
+          name: status
+          description: Please append a status of user eg. for active user `ACTIVE` and
+            for Disabled user `DISABLED`
+          schema:
+            type: string
+          example: ACTIVE
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/readUserEntity200Response'
+  '/mentoring/v1/entity/delete/{id}':
+    patch:
+      summary: Delete user entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with delete user entity   \n -
+        Endpoint for delete user entity `/mentoring/v1/entity/delete` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid user entity id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/deleteUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Already Deleted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/entity/deleteUserEntity400Response'
+  '/mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}':
+    get:
+      summary: Get list of session
+      tags:
+        - Session APIs
+      description: "This API is associated with listing session based on condition \n -
+        Endpoint for listing session `/mentoring/v1/sessions/list` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          required: true
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          schema:
+            type: string
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          schema:
+            type: number
+          example: 2
+        - in: path
+          name: status
+          description: Please append a status eg. for published user `published` and
+            for completed user `completed` etc
+          schema:
+            type: string
+          example: published,completed
+        - in: path
+          name: search
+          description: Please search for author name or title of session etc.
+          schema:
+            type: string
+          example: jhon
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/getSessionList200Response'
+        '400':
+          description: Bad Request. Session Not Found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/getSessionList400Response'
+  '/mentoring/v1/sessions/details/{sessionId}':
+    get:
+      summary: Get session details
+      tags:
+        - Session APIs
+      description: "This API is associated with getting session details \n -
+        Endpoint for getting session details `/mentoring/v1/sessions/details` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/getSessionDetails200Response'
+        '400':
+          description: Bad Request. session not found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/getSessionDetails400Response'
+  '/mentoring/v1/sessions/share/{sessionId}':
+    get:
+      summary: Share session details
+      tags:
+        - Session APIs
+      description: "This API is associated with share session \n -
+        Endpoint for share session `/mentoring/v1/sessions/share` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/shareSession200Response'
+        '400':
+          description: Bad Request. session not found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/shareSession400Response'
+  '/mentoring/v1/sessions/enroll/{sessionId}':
+    post:
+      summary: Enroll to session
+      tags:
+        - Session APIs
+      description: "This API is associated with enrolling in a session \n -
+        Endpoint for enroll session `/mentoring/v1/sessions/enroll` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/enrollSession200Response'
+        '400':
+          description: Bad Request. User already enrolled.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/enrollSession400Response'
+  '/mentoring/v1/sessions/unenroll/{sessionId}':
+    post:
+      summary: Unenroll to session
+      tags:
+        - Session APIs
+      description: "This API is associated with unenrolling in a session \n -
+        Endpoint for unenroll session `/mentoring/v1/sessions/unenroll` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/unenrollSession200Response'
+        '400':
+          description: Bad Request. User not enrolled.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/unenrollSession400Response'
+  '/mentoring/v1/sessions/start/{sessionId}':
+    get:
+      summary: Start session
+      tags:
+        - Session APIs
+      description: "This API is associated with starting session \n -
+        Endpoint for starting session `/mentoring/v1/sessions/start` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid session id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/startSession200Response'
+        '400':
+          description: Bad Request. session not found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/startSession400Response'
+        '500':
+          description: Bad Request. Could not create meeting.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/startSession500Response'
+  '/mentoring/v1/sessions/update':
+    post:
+      summary: Create session
+      tags:
+        - Session APIs
+      description: "This API is associated with creating session \n -
+        Endpoint for creating session `/mentoring/v1/sessions/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/sessions/createSessionRequest'
+      responses:
+        '201':
+          description: created
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/createSession201Response'
+        '400':
+          description: Bad Request. Create Session Error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/createSession400Response'
+  '/mentoring/v1/sessions/update/{sessionId}':
+    delete:
+      summary: Delete session
+      tags:
+        - Session APIs
+      description: "This API is associated with delete session \n -
+        Endpoint for delete session `/mentoring/v1/sessions/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/deleteSession202Response'
+        '400':
+          description: Bad Request. session not found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/deleteSession400Response'
+    post:
+      summary: Update session
+      tags:
+        - Session APIs
+      description: "This API is associated with update session \n -
+        Endpoint for update session `/mentoring/v1/sessions/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/sessions/updateSessionRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/updateSession202Response'
+        '400':
+          description: Bad Request. update Session Error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/updateSession400Response'
+  'mentoring/v1/sessions/getRecording/{sessionId}':
+    get:
+      summary: Get session recording
+      tags:
+        - Session APIs
+      description: "This API is associated with getting session recording \n -
+        Endpoint for session recording `/mentoring/v1/sessions/getRecording` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: OK
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/sessionRecording200Response'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/sessionRecording400Response'
+  '/mentoring/v1/sessions/completed/{sessionId}':
+    patch:
+      summary: Update session status
+      tags:
+        - Session APIs
+      description: "This API is associated with update session status \n -
+        Endpoint for update session `/mentoring/v1/sessions/completed` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: OK
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/sessionCompleted200Response'
+  '/mentoring/v1/sessions/updateRecordingUrl/{internalSessionId}':
+    patch:
+      summary: Update session recording url
+      tags:
+        - Session APIs
+      description: "This API is associated with update session recording url \n -
+        Endpoint for update session recording url `/mentoring/v1/sessions/updateRecordingUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'internalSessionId '
+          required: true
+          description: Please append a valid internalSessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/updateRecordingUrl200Response'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/updateRecordingUrl400Response'
+
+  '/mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}':
+    get:
+      summary: Get list of session
+      tags:
+        - Mentee APIs
+      description: "This API is associated with listing session based on condition  \n -
+        Endpoint for list session `/mentoring/v1/mentees/sessions` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: enrolled
+          description: enrolled status of mentee `true`
+          schema:
+            type: boolean
+          example: true
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          schema:
+            type: number
+          example: 2
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/menteeSessionList200Response'
+        '400':
+          description: Bad Request. Session Not Found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/menteeSession400Response'
+  '/mentoring/v1/mentees/joinSession/{sessionId}':
+    get:
+      summary: Join session as mentee
+      tags:
+        - Mentee APIs
+      description: "This API is associated with join session as mentee \n -
+        Endpoint for join session `/mentoring/v1/mentees/joinSession` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/menteeSessionList200Response'
+        '400':
+          description: Bad Request. join session error
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/menteeJoinSession400Response'
+  '/mentoring/v1/mentees/reports?filterType={filterType}':
+    get:
+      summary: Mentee reports
+      tags:
+        - Mentee APIs
+      description: "This API is associated with mentee report based on condition \n -
+        Endpoint for mentee report `/mentoring/v1/mentees/joinSession` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'filterType '
+          required: true
+          description: Please append a valid filter Type for reports like `MONTHLY`
+            or `QUARTERLY`
+          schema:
+            type: string
+          example: QUARTERLY
+      responses:
+        '200':
+          description: Ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/menteeSessionReport200Response'
+  '/mentoring/v1/mentees/homeFeed':
+    get:
+      summary: Get list of Session
+      tags:
+        - Mentee APIs
+      description: "This API is associated with list of session \n -
+        Endpoint for list session `/mentoring/v1/mentees/homeFeed` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/homefeed200Response'
+  '/mentoring/v1/mentors/reports?filterType={filterType}':
+    get:
+      summary: Mentors reports
+      tags:
+        - Mentor APIs
+      description: "This API is associated with mentor reports \n -
+        Endpoint for list session `/mentoring/v1/mentors/reports` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'filterType '
+          required: true
+          description: Please append a valid filter Type for reports like `MONTHLY`
+            or `QUARTERLY`
+          schema:
+            type: string
+          example: QUARTERLY
+      responses:
+        '200':
+          description: Ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/mentorSessionReport200Response'
+  '/mentoring/v1/questions/create':
+    post:
+      summary: Create questions
+      tags:
+        - Question APIs
+      description: "This API is associated with creating questions \n -
+        Endpoint for create question `/mentoring/v1/questions/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/questions/createQuestionRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questions/createQuestionResponse201'
+  '/mentoring/v1/questions/update/{QuestionId}':
+    patch:
+      summary: Update questions
+      tags:
+        - Question APIs
+      description: "This API is associated with updating questions \n -
+        Endpoint for update question `/mentoring/v1/questions/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: QuestionId
+          required: true
+          description: Please append a valid question id in url
+          schema:
+            type: string
+          example: 629978caf0cf0901d7d74d12
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/questions/updateQuestionRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questions/updateQuestionResponse202'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questions/updateQuestionResponse400'
+  '/mentoring/v1/questions/read/{QuestionId}':
+    get:
+      summary: Get questions
+      tags:
+        - Question APIs
+      description: "This API is associated with getting questions \n -
+        Endpoint for get question `/mentoring/v1/questions/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: QuestionId
+          required: true
+          description: Please append a valid question id in url
+          schema:
+            type: string
+          example: 629978caf0cf0901d7d74d12
+      responses:
+        '200':
+          description: Ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questions/readQuestionResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questions/readQuestionResponse400'
+  '/mentoring/v1/questionsSet/create':
+    post:
+      summary: Create question set
+      tags:
+        - Question Set APIs
+      description: "This API is associated with creating questions set \n -
+        Endpoint for create question set `/mentoring/v1/questionsSet/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/questionset/createQuestionSetRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questionset/createQuestionSetResponse201'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questionset/createQuestionSetResponse400'
+  '/mentoring/v1/questionsSet/update/{QuestionSetId}':
+    patch:
+      summary: Update question set
+      tags:
+        - Question Set APIs
+      description: "This API is associated with updating questions set \n -
+        Endpoint for updating question set `/mentoring/v1/questionsSet/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: QuestionSetId
+          required: true
+          description: Please append a valid question set id in url
+          schema:
+            type: string
+          example: 629978caf0cf0901d7d74d12
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/questionset/updateQuestionSetRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questionset/updateQuestionSetResponse202'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questionset/updateQuestionSetResponse400'
+  '/mentoring/v1/questionsSet/read/{QuestionSetId}':
+    get:
+      summary: Get question set
+      tags:
+        - Question Set APIs
+      description: "This API is associated with getting questions set \n -
+        Endpoint for get question set `/mentoring/v1/questionsSet/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: QuestionSetId
+          required: true
+          description: Please append a valid question set id in url
+          schema:
+            type: string
+          example: 629978caf0cf0901d7d74d12
+      responses:
+        '200':
+          description: Ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questionset/readQuestionSetResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/questionset/readQuestionSetResponse400'
+  '/mentoring/v1/feedback/forms/{SessionId}':
+    get:
+      summary: Get feedback form
+      tags:
+        - Feedback Form APIs
+      description: "This API is associated with getting feedback forms of the session.  \n -
+        Endpoint for get feedback form `/mentoring/v1/feedback/forms` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: SessionId
+          required: true
+          description: Please append a valid session id in url
+          schema:
+            type: string
+          example: 629978caf0cf0901d7d74d12
+      responses:
+        '200':
+          description: Ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/feedback/getFeedbackFromResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/feedback/getFeedbackFormResponse400'
+  '/mentoring/v1/feedback/submit/{SessionId}':
+    post:
+      summary: Submit feedback
+      tags:
+        - Feedback Form APIs
+      description: "This API is associated with submitting feedback forms of a session.  \n -
+        Endpoint for submit feedback form `/mentoring/v1/feedback/submit` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: SessionId
+          required: true
+          description: Please append a valid session id in url
+          schema:
+            type: string
+          example: 629978caf0cf0901d7d74d12
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/feedback/submitFeedbackRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/feedback/submitFeedbackResponse200'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/feedback/submitFeedbackResponse400'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/feedback/submitFeedbackResponse422'
+  '/mentoring/v1/users/pendingFeedbacks':
+    get:
+      summary: Users pending feedback
+      tags:
+        - Users APIs
+      description: "This API is associated with fetching users pending feedback form \n -
+        Endpoint for fetching feedback form `/mentoring/v1/users/pendingFeedbacks` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/users/feedbackResponse200'
+  '/user/v1/cloud-services/getSignedUrl?fileName={fileName}':
+    get:
+      summary: Cloud services get signed url
+      tags:
+        - Cloud Services APIs
+      description: "This API is associated with the cloud services for getting signed URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getSignedUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'fileName'
+          required: true
+          description: Please append a valid file name to url which has to be uploaded
+          schema:
+            type: string
+          example: image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
+  '/user/v1/cloud-services/getDownloadableUrl?filePath={filePath}':
+    get:
+      summary: Cloud services get download url
+      tags:
+        - Cloud Services APIs
+      description: "This API is associated with the cloud services for getting downloadable URL  \n - Then
+        Endpoint for cloud services `/user/v1/cloud-services/file/getDownloadableUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'filePath'
+          required: true
+          description: Please append a valid file path to url which has to be downloaded
+          schema:
+            type: string
+          example: users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/cloudServices/cloudServicesDownloadResponse200'
+  '/notification/v1/email/send':
+    post:
+      summary: Send email
+      tags:
+        - Email APIs
+      description: "This API is associated with sending email through API \n - Then
+        Endpoint for sending email `/notification/v1/email/send` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+
+      parameters:
+        - name: internal_access_token
+          in: header
+          description: To make use of the API, you require internal access token.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request body consist of metadata and accepts payload as JSON
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/email/emailSendRequest'
+      responses:
+        '200':
+          description: OK. Email sent successfully.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/email/emailSendResponse200'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/email/emailSendResponse400'
+  '/mentoring/v1/users/list?type={userType}&page={page}&limit={limit}&search={search}':
+    get:
+      summary: List user
+      tags:
+        - Users APIs
+      description: "This API is associated with the listing of users based on condition  \n -
+        Endpoint for list user `/mentoring/v1/users/list` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userType
+          description: Type of user
+          required: true
+          schema:
+            type: string
+          example: mentor
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          schema:
+            type: number
+          example: 2
+        - in: path
+          name: search
+          description: Please search for name or title of user etc.
+          schema:
+            type: string
+          example: jhon
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/users/userList200Response'
+
+components:
+  schemas:
+    form:
+      createFormRequest:
+        type: object
+        required:
+          - type
+          - subType
+          - action
+          - ver
+          - data
+        properties:
+          type:
+            type: string
+            example: profile
+          subType:
+            type: string
+            example: profileForm
+          action:
+            type: string
+            example: profileFields
+          ver:
+            type: string
+            example: '1.0'
+          data:
+            type: object
+            properties:
+              templateName:
+                type: string
+                example: defaultTemplate
+              fields:
+                type: object
+                properties:
+                  controls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: name
+                        label:
+                          type: string
+                          example: name
+                        value:
+                          type: string
+                          example: ''
+                        class:
+                          type: string
+                          example: ion-margin
+                        type:
+                          type: string
+                          example: text
+                        position:
+                          type: string
+                          example: floating
+                        validators:
+                          type: object
+                          properties:
+                            required:
+                              type: boolean
+                              example: true
+                            minLength:
+                              type: number
+                              example: 10
+      createForm200Response:
+        description: Created
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Form created successfully
+          result:
+            type: array
+            example: []
+      createForm400Response:
+        description: Bad Request. Form Already Exist
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Form already exists
+          error:
+            type: array
+            example: []
+      updateFormRequest:
+        type: object
+        required:
+          - type
+          - subType
+          - action
+          - ver
+          - data
+        properties:
+          type:
+            type: string
+            example: profile
+          subType:
+            type: string
+            example: profileForm
+          action:
+            type: string
+            example: profileFields
+          ver:
+            type: string
+            example: '1.0'
+          data:
+            type: object
+            properties:
+              templateName:
+                type: string
+                example: defaultTemplate
+              fields:
+                type: object
+                properties:
+                  controls:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: name
+                        label:
+                          type: string
+                          example: name
+                        value:
+                          type: string
+                          example: ''
+                        class:
+                          type: string
+                          example: ion-margin
+                        type:
+                          type: string
+                          example: text
+                        position:
+                          type: string
+                          example: floating
+                        validators:
+                          type: object
+                          properties:
+                            required:
+                              type: boolean
+                              example: true
+                            minLength:
+                              type: number
+                              example: 10
+      updateForm200Response:
+        description: Updated
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Form updated successfully
+          result:
+            type: array
+            example: []
+      updateForm400Response:
+        description: Bad Request. Form Already Exist
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Form already exists
+          error:
+            type: array
+            example: []
+      readFormRequest:
+        type: object
+        properties:
+          type:
+            type: string
+            example: profile
+          subType:
+            type: string
+            example: profileForm
+          action:
+            type: string
+            example: profileFields
+          ver:
+            type: string
+            example: '1.0'
+          templateName:
+            type: string
+            example: defaultTemplate
+      readForm200Response:
+        description: Read
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Form fetched successfully
+          result:
+            type: object
+            properties:
+              type:
+                type: string
+                example: profile
+              subType:
+                type: string
+                example: profileForm
+              action:
+                type: string
+                example: profileFields
+              ver:
+                type: string
+                example: '1.0'
+              updatedAt:
+                type: string
+                example: '2022-05-24T23:14:10.080Z'
+              createdAt:
+                type: string
+                example: '2022-05-24T23:14:10.080Z'
+              __v:
+                type: number
+                example: 0
+              _id:
+                type: string
+                example: 628d66c28069a73506cb4b2d
+              data:
+                type: object
+                properties:
+                  templateName:
+                    type: string
+                    example: defaultTemplate
+                  fields:
+                    type: object
+                    properties:
+                      controls:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: name
+                            label:
+                              type: string
+                              example: name
+                            value:
+                              type: string
+                              example: ''
+                            class:
+                              type: string
+                              example: ion-margin
+                            type:
+                              type: string
+                              example: text
+                            position:
+                              type: string
+                              example: floating
+                            validators:
+                              type: object
+                              properties:
+                                required:
+                                  type: boolean
+                                  example: true
+                                minLength:
+                                  type: number
+                                  example: 10
+      readForm400Response:
+        description: Bad Request. Form not found
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Form not found
+          error:
+            type: array
+            example: []
+    entity:
+      createUserEntityRequest:
+        type: object
+        required:
+          - value
+          - label
+          - type
+        properties:
+          value:
+            type: string
+            example: HM
+          label:
+            type: string
+            example: Head Master
+          type:
+            type: string
+            example: roles
+      createUserEntity201Response:
+        type: object
+        description: User entity created
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity created successfully
+          result:
+            type: array
+            example: []
+      createUserEntity400Response:
+        type: object
+        description: User entity already exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User entity already exists
+          error:
+            type: array
+            example: []
+      updateUserEntityRequest:
+        type: object
+        description: User entity update request
+        required:
+          - value
+          - label
+          - type
+          - status
+        properties:
+          value:
+            type: string
+            example: HM
+          label:
+            type: string
+            example: Head Master
+          status:
+            type: string
+            example: DISABLED
+          type:
+            type: string
+            example: roles
+      updateUserEntity202Response:
+        type: object
+        description: User Entity Updated
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity updated successfully
+          result:
+            type: array
+            example: []
+      updateUserEntity400Response:
+        type: object
+        description: User Entity Not Found
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User entity not found
+          error:
+            type: array
+            example: []
+      readUserEntity200Response:
+        description: User Entity fetched
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity fetched successfully
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                value:
+                  type: string
+                  example: HM
+                label:
+                  type: string
+                  example: Head Master
+      deleteUserEntity202Response:
+        type: object
+        description: User Entity Deleted
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity deleted successfully
+          result:
+            type: array
+            example: []
+      deleteUserEntity400Response:
+        type: object
+        description: User Entity Deleted
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User entity already deleted
+          error:
+            type: array
+            example: []
+    sessions:
+      getSessionList200Response:
+        description: list of all sessions
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 628dae0fce0ce9359aeb8b23
+                    title:
+                      type: string
+                      example: Leadership5
+                    description:
+                      type: string
+                      example: Training in leadership
+                    image:
+                      type: array
+                      items:
+                        type: string
+                        example: '["users/1232s2133sdd1-12e2dasd3123.png"]'
+                    mentorName:
+                      type: string
+                      example: Ankit
+                    status:
+                      type: string
+                      example: published
+                    startDate:
+                      type: string
+                      example: '2022-01-04 18:00:00'
+                    endDate:
+                      type: string
+                      example: '2022-01-04 18:30:00'
+                    endDateUtc:
+                      type: string
+                      example: Invalid date
+              count:
+                type: number
+                example: 1
+            meta:
+              type: object
+              example: {}
+      getSessionList400Response:
+        type: object
+        description: Session not found.
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      getSessionDetails200Response:
+        description: Details of session
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session fetched successfully.
+          result:
+            type: object
+            properties:
+              _id:
+                type: string
+                example: 628dae0fce0ce9359aeb8b23
+              title:
+                type: string
+                example: Leadership5
+              description:
+                type: string
+                example: Training in leadership
+              recommendedFor:
+                type: array
+                items:
+                  type: string
+                  example: '[{"label":"HM", "value": 1}]'
+              categories:
+                type: array
+                items:
+                  type: string
+                  example: '[{"label": "label", "value": "value"}]'
+              medium:
+                type: array
+                items:
+                  type: string
+                  example: '[{"label":"Hindi", "value": 2 }]'
+              image:
+                type: array
+                items:
+                  type: string
+                  example: '["users/1232s2133sdd1-12e2dasd3123.png"]'
+              userId:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              mentorName:
+                type: string
+                example: jhon
+              status:
+                type: string
+                example: published
+              deleted:
+                type: boolean
+                example: false
+              startDate:
+                type: string
+                example: '2022-01-04 18:00:00'
+              endDate:
+                type: string
+                example: '2022-01-04 18:30:00'
+              startDateUtc:
+                type: string
+                example: Invalid date
+              endDateUtc:
+                type: string
+                example: Invalid date
+              skippedFeedback:
+                type: boolean
+                example: false
+              menteeFeedbackForm:
+                type: string
+                example: menteeQS1
+              mentorFeedbackForm:
+                type: string
+                example: mentorQS2
+              recordingUrl:
+                type: string
+                example:
+              internalMeetingId:
+                type: string
+                example:
+              feedbacks: []
+              updatedAt:
+                type: string
+                example: '2022-05-25T04:18:23.942Z'
+              createdAt:
+                type: string
+                example: '2022-05-25T04:18:23.942Z'
+              __v:
+                type: number
+                example: 0
+              isEnrolled:
+                type: boolean
+                example: false
+          meta: {}
+      getSessionDetails400Response:
+        type: object
+        description: Session not found.
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      shareSession200Response:
+        description: share session details
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session link generated successfully.
+          result:
+            type: object
+            properties:
+              shareLink:
+                type: string
+                example: 45fd48791a7a9d589aaa2d1b7f3f8dd7
+          meta: {}
+      shareSession400Response:
+        description: Session not found.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      enrollSession200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: You have enrolled successfully.
+          result:
+            type: array
+            example: []
+          meta: {}
+      enrollSession400Response:
+        description: Session not found.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User already enrolled.
+          error:
+            type: array
+            example: []
+      unenrollSession200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: You are no longer enrolled in this session.
+          result:
+            type: array
+            example: []
+          meta: {}
+      unenrollSession400Response:
+        description: Session not found.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User not enrolled.
+          error:
+            type: array
+            example: []
+      startSession200Response:
+        description: share session details
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Successfully fetched session start link.
+          result:
+            type: object
+            properties:
+              link:
+                type: string
+                example: https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed
+          meta: {}
+      startSession400Response:
+        description: Session not found.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example:
+              - Session not found.
+              - Could not found mentor.
+              - User is not a mentor.
+              - Session not found.
+              - You cannot start other mentor session.
+              - You can start the session 10 minutes before the schedued time.
+          error:
+            type: array
+            example: []
+      startSession500Response:
+        description: Could not create meeting.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: SERVER_ERROR
+          message:
+            type: string
+            example: Could not create meeting.
+          error:
+            type: array
+            example: []
+      createSessionRequest:
+        type: object
+        required:
+          - title
+          - description
+          - startDate
+          - endDate
+          - recommendedFor
+          - categories
+          - medium
+        properties:
+          title:
+            type: string
+            example: testing
+          description:
+            type: string
+            example: Training in leadership
+          startDate:
+            type: string
+            example: '2022-01-04 18:00:00'
+          endDate:
+            type: string
+            example: '2022-01-04 18:30:00'
+          recommendedFor:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: HM
+                value:
+                  type: number
+                  example: 1
+          categories:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: label
+                value:
+                  type: number
+                  example: value
+          medium:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: Hindi
+                value:
+                  type: number
+                  example: 2
+          image:
+            type: array
+            items:
+              type: string
+              example: users/1232s2133sdd1-12e2dasd3123.png
+      createSession201Response:
+        type: object
+        description: User entity created
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session Created successfully.
+          result:
+            type: object
+            properties:
+              title:
+                type: string
+                example: testing
+              description:
+                type: string
+                example: Training in leadership
+              startDate:
+                type: string
+                example: '2022-01-04 18:00:00'
+              endDate:
+                type: string
+                example: '2022-01-04 18:30:00'
+              recommendedFor:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    label: HM
+                    value: 1
+              categories:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    label: label
+                    value: value
+              medium:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    label: Hindi
+                    value: 2
+              image:
+                type: array
+                items:
+                  type: string
+                  example: users/1232s2133sdd1-12e2dasd3123.png
+              userId:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              mentorName:
+                type: string
+                example: John
+              status:
+                type: string
+                example: published
+              deleted:
+                type: boolean
+                example: false
+              startDateUtc:
+                type: string
+                example: Invalid date
+              endDateUtc:
+                type: string
+                example: Invalid date
+              skippedFeedback:
+                type: boolean
+                example: false
+              menteeFeedbackForm:
+                type: string
+                example: menteeQS1
+              mentorFeedbackForm:
+                type: string
+                example: mentorQS2
+              recordingUrl:
+                type: string
+                example:
+              internalMeetingId:
+                type: string
+                example:
+              _id:
+                type: string
+                example: 628ee25e4b9243687f68431d
+              feedbacks:
+                type: array
+                example: []
+              updatedAt:
+                type: string
+                example: '2022-05-26T02:13:50.472Z'
+              createdAt:
+                type: string
+                example: '2022-05-26T02:13:50.472Z'
+              __v:
+                type: number
+                example: 0
+      createSession400Response:
+        description: Create Session Error.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example:
+              - User does't have the permission.
+              - End time should be atleast 30 minutes after start time.
+              - Session cannot be created ! Session duration should be less than 24
+                hours.
+          error:
+            type: array
+            example: []
+      deleteSession202Response:
+        description: delete session
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session deleted. This session is no longer available.
+          result:
+            type: array
+            example: []
+          meta: {}
+      deleteSession400Response:
+        description: delete session
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          result:
+            type: array
+            example: []
+      updateSessionRequest:
+        type: object
+        properties:
+          title:
+            type: string
+            example: testing
+          description:
+            type: string
+            example: Training in leadership
+          startDate:
+            type: string
+            example: '2022-01-04 18:00:00'
+          endDate:
+            type: string
+            example: '2022-01-04 18:30:00'
+          menteeFeedbackForm:
+            type: string
+            example: feedback
+          mentorFeedbackForm:
+            type: string
+            example: feedback
+          recommendedFor:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: HM
+                value:
+                  type: number
+                  example: 1
+          categories:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: label
+                value:
+                  type: number
+                  example: value
+          medium:
+            type: array
+            items:
+              type: object
+              properties:
+                label:
+                  type: string
+                  example: Hindi
+                value:
+                  type: number
+                  example: 2
+          image:
+            type: array
+            items:
+              type: string
+              example: users/1232s2133sdd1-12e2dasd3123.png
+      updateSession202Response:
+        description: updated session
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Your session details have been updated.
+          result:
+            type: array
+            example: []
+          meta: {}
+      updateSession400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      sessionRecording200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          result:
+            type: object
+            properties:
+              recording:
+                type: object
+                properties:
+                  recordID:
+                    type: string
+                    example: 26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241
+                  meetingID:
+                    type: string
+                    example: 626267aa2832e6cea85aa435
+                  internalMeetingID:
+                    type: string
+                    example: 26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241
+                  name:
+                    type: string
+                    example: Okkkk
+                  isBreakout:
+                    type: boolean
+                    example: false
+                  published:
+                    type: boolean
+                    example: true
+                  state:
+                    type: string
+                    example: published
+                  startTime:
+                    type: string
+                    example: 1650616238241
+                  endTime:
+                    type: string
+                    example: 1650616245013
+                  participants:
+                    type: string
+                    example: 1
+                  rawSize:
+                    type: string
+                    example: 35425
+                  metadata:
+                    type: object
+                    properties:
+                      meetingName:
+                        type: string
+                        example: Okkkk
+                      isBreakout:
+                        type: boolean
+                        example: false
+                      endcallbackurl:
+                        type: string
+                        example: https://elevate-apis.shikshalokam.org/mentoring/v1/sessions/completed/626267aa2832e6cea85aa435
+                      meetingId:
+                        type: string
+                        example: 626267aa2832e6cea85aa435
+                  size:
+                    type: string
+                    example: 27256
+                  playback:
+                    type: object
+                    properties:
+                      format:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: video
+                          url:
+                            type: string
+                            example: https://mentoring.shikshalokam.org/presentation/26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241/meeting.mp4
+                          processingTime:
+                            type: string
+                            example: 576
+                          length:
+                            type: string
+                            example: 0
+                          size:
+                            type: string
+                            example: 27256
+                  data:
+                    type: object
+                    example: {}
+          meta:
+            type: object
+            example: {}
+      sessionRecording400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      sessionCompleted200Response:
+        type: object
+        properties:
+          result:
+            type: string
+            example: SESSION_UPDATED
+      updateRecordingUrl200Response:
+        type: object
+        properties:
+          message:
+            type: string
+            example: Your session details have been updated.
+          result:
+            type: object
+            example: {}
+      updateRecordingUrl400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+    mentees:
+      menteeSessionList200Response:
+        description: list of all sessions
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 628dae0fce0ce9359aeb8b23
+                    title:
+                      type: string
+                      example: Leadership5
+                    description:
+                      type: string
+                      example: Training in leadership
+                    image:
+                      type: array
+                      items:
+                        type: string
+                        example: '["users/1232s2133sdd1-12e2dasd3123.png"]'
+                    mentorName:
+                      type: string
+                      example: Ankit
+                    status:
+                      type: string
+                      example: published
+                    startDate:
+                      type: string
+                      example: '2022-01-04 18:00:00'
+                    endDate:
+                      type: string
+                      example: '2022-01-04 18:30:00'
+                    endDateUtc:
+                      type: string
+                      example: Invalid date
+              count:
+                type: number
+                example: 1
+            meta:
+              type: object
+              example: {}
+      menteeSession400Response:
+        type: object
+        description: Session not found.
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      menteeJoinSession200Response:
+        description: share session details
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Successfully fetched session start link.
+          result:
+            type: object
+            properties:
+              link:
+                type: string
+                example: https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed
+          meta: {}
+      menteeJoinSession400Response:
+        description: Session not found.
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example:
+              - User is not found.
+              - Session not found.
+              - Host has ended the session, you will not be able to join.
+              - Please wait for Mentor to start the session.
+              - User has not enrolled for the session.
+          error:
+            type: array
+            example: []
+      menteeSessionReport200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Mentees report fetched successfully.
+          result:
+            type: object
+            properties:
+              totalSessionEnrolled:
+                type: number
+                example: 1
+              totalsessionsAttended:
+                type: number
+                example: 1
+          meta: {}
+      homefeed200Response:
+        description: home feed
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Session fetched successfully.
+          result:
+            type: object
+            properties:
+              allSessions:
+                type: array
+                example: []
+              mySessions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 628dae0fce0ce9359aeb8b23
+                    title:
+                      type: string
+                      example: Leadership5
+                    description:
+                      type: string
+                      example: Training in leadership
+                    image:
+                      type: array
+                      items:
+                        type: string
+                        example: '["users/1232s2133sdd1-12e2dasd3123.png"]'
+                    mentorName:
+                      type: string
+                      example: jhon
+                    status:
+                      type: string
+                      example: published
+                    startDate:
+                      type: string
+                      example: '2022-01-04 18:00:00'
+                    endDate:
+                      type: string
+                      example: '2022-01-04 18:30:00'
+                    endDateUtc:
+                      type: string
+                      example: Invalid date
+            meta:
+              type: object
+              example: {}
+    mentors:
+      mentorSessionReport200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Mentors report fetched successfully.
+          result:
+            type: object
+            properties:
+              totalSessionEnrolled:
+                type: number
+                example: 1
+              totalsessionsAttended:
+                type: number
+                example: 1
+          meta: {}
+    questions:
+      createQuestionRequest:
+        type: object
+        required:
+          - question
+          - options
+          - deleted
+          - hint
+          - value
+        properties:
+          question:
+            type: string
+            example: How much do you rate the audio/video quality of the session
+          options:
+            type: array
+            items:
+              type: string
+              example:
+                - '1'
+                - '2'
+          deleted:
+            type: boolean
+            example: false
+          value:
+            type: string
+            example: '1'
+          hint:
+            type: string
+            example: ''
+      createQuestionResponse201:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Question created successfully
+          result:
+            type: object
+            properties:
+              question:
+                type: string
+                example: How much do you rate the audio/video quality of the session
+              options:
+                - '1'
+                - '2'
+              deleted:
+                type: boolean
+                example: false
+              validators:
+                type: object
+                properties:
+                  required:
+                    type: boolean
+                    example: false
+              value:
+                type: string
+                example: '1'
+              hint:
+                type: string
+                example: ''
+              disable:
+                type: boolean
+                example: false
+              visible:
+                type: boolean
+                example: true
+              status:
+                type: string
+                example: published
+              _id:
+                type: string
+                example: 6296e6892fdc1f037cbf4529
+              updatedAt:
+                type: string
+                example: '2022-06-01T04:09:45.713Z'
+              createdAt:
+                type: string
+                example: '2022-06-01T04:09:45.713Z'
+              __v:
+                type: number
+                example: 0
+          meta:
+            type: object
+            example: {}
+      updateQuestionRequest:
+        type: object
+        properties:
+          question:
+            type: string
+            example: How much do you rate the audio/video quality of the session
+          options:
+            type: array
+            items:
+              type: string
+              example:
+                - '1'
+                - '2'
+                - '3'
+          deleted:
+            type: boolean
+            example: false
+          value:
+            type: string
+            example: '1'
+          hint:
+            type: string
+            example: ''
+      updateQuestionResponse202:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Question updated successfully
+          result:
+            type: array
+            example: []
+          meta:
+            type: object
+            example: {}
+      updateQuestionResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Question not found
+          error:
+            type: array
+            example: []
+      readQuestionResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Question created successfully
+          result:
+            type: object
+            properties:
+              question:
+                type: string
+                example: How much do you rate the audio/video quality of the session
+              options:
+                type: array
+                items:
+                  - type: string
+                    example: '1'
+                  - type: string
+                    example: '2'
+                  - type: string
+                    example: '3'
+              deleted:
+                type: boolean
+                example: false
+              validators:
+                type: object
+                properties:
+                  required:
+                    type: boolean
+                    example: false
+              value:
+                type: string
+                example: '1'
+              hint:
+                type: string
+                example: ''
+              disable:
+                type: boolean
+                example: false
+              visible:
+                type: boolean
+                example: true
+              status:
+                type: string
+                example: published
+              _id:
+                type: string
+                example: 6296e6892fdc1f037cbf4529
+              updatedAt:
+                type: string
+                example: '2022-06-01T04:09:45.713Z'
+              createdAt:
+                type: string
+                example: '2022-06-01T04:09:45.713Z'
+              __v:
+                type: number
+                example: 0
+          meta:
+            type: object
+            example: {}
+      readQuestionResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Question not found
+          error:
+            type: array
+            example: []
+    questionset:
+      createQuestionSetRequest:
+        type: object
+        required:
+          - questions
+          - code
+        properties:
+          questions:
+            type: array
+            items:
+              - type: string
+                example: 6296e6892fdc1f037cbf4529
+              - type: string
+                example: 6296e6892fdc1f037cbf4767
+          code: feedback
+      createQuestionSetResponse201:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Questions set created successfully
+          result:
+            type: object
+            properties:
+              questions:
+                type: array
+                items:
+                  - type: string
+                    example: 6296e6892fdc1f037cbf4529
+                  - type: string
+                    example: 6296e6892fdc1f037cbf4767
+              code:
+                type: string
+                example: feedback
+              deleted:
+                type: boolean
+                example: false
+              status:
+                type: string
+                example: published
+              _id:
+                type: string
+                example: 629978caf0cf0901d7d74d12
+              updatedAt:
+                type: string
+                example: '2022-06-03T02:58:18.462Z'
+              createdAt:
+                type: string
+                example: '2022-06-03T02:58:18.462Z'
+              __v:
+                type: number
+                example: 0
+          meta:
+            type: object
+            example: {}
+      createQuestionSetResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Questions already been used in question set
+          error:
+            type: array
+            example: []
+      updateQuestionSetRequest:
+        type: object
+        properties:
+          questions:
+            type: array
+            items:
+              - type: string
+                example: 6296e6892fdc1f037cbf4529
+              - type: string
+                example: 6296e6892fdc1f037cbf4767
+              - type: string
+                example: 6296e6522fdc1f037cbf4525
+          code: feedback
+      updateQuestionSetResponse202:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Questions set updated successfully
+          result:
+            type: array
+            example: []
+          meta:
+            type: object
+            example: {}
+      updateQuestionSetResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Questions already been used in question set
+          error:
+            type: array
+            example: []
+      readQuestionSetResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Questions set fetched successfully
+          result:
+            type: object
+            properties:
+              questions:
+                type: array
+                items:
+                  - type: string
+                    example: 6296e6892fdc1f037cbf4529
+                  - type: string
+                    example: 6296e6892fdc1f037cbf4767
+              code:
+                type: string
+                example: feedback
+              deleted:
+                type: boolean
+                example: false
+              status:
+                type: string
+                example: published
+              _id:
+                type: string
+                example: 629978caf0cf0901d7d74d12
+              updatedAt:
+                type: string
+                example: '2022-06-03T02:58:18.462Z'
+              createdAt:
+                type: string
+                example: '2022-06-03T02:58:18.462Z'
+              __v:
+                type: number
+                example: 0
+          meta:
+            type: object
+            example: {}
+      readQuestionSetResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Question not found
+          error:
+            type: array
+            example: []
+    feedback:
+      getFeedbackFromResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Thank you for hosting the session, please rate us   on the following
+              to help us improve.
+          result:
+            type: object
+            properties:
+              form:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 6296e6522fdc1f037cbf4525
+                    options:
+                      type: array
+                      items:
+                        - type: string
+                          example: '1'
+                        - type: string
+                          example: '2'
+                    deleted:
+                      type: boolean
+                      example: false
+                    validators:
+                      type: object
+                      properties:
+                        required:
+                          type: boolean
+                          example: false
+                    value:
+                      type: string
+                      example: ''
+                    hint:
+                      type: string
+                      example: ''
+                    disable:
+                      type: boolean
+                      example: false
+                    visible:
+                      type: boolean
+                      example: true
+                    status:
+                      type: string
+                      example: published
+                    updatedAt:
+                      type: string
+                      example: '2022-06-01T04:08:50.155Z'
+                    createdAt:
+                      type: string
+                      example: '2022-06-01T04:08:50.155Z'
+                    __v:
+                      type: number
+                      example: 1
+                    questionsSetId:
+                      type: string
+                      example: 629978caf0cf0901d7d74d12
+                    label:
+                      type: string
+                      example: How much do you rate the audio/video quality of the session
+          meta:
+            type: object
+            example: {}
+      getFeedbackFormResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      submitFeedbackRequest:
+        type: object
+        required:
+          - feedbacks
+          - feedbackAs
+        properties:
+          feedbacks:
+            type: array
+            items:
+              type: object
+              required:
+                - questionId
+                - value
+                - question
+              properties:
+                questionId:
+                  type: string
+                  example: 6296e65c2fdc1f037cbf4527
+                value:
+                  type: string
+                  example: '1'
+                question:
+                  type: string
+                  example: How much do you rate the audio/video quality of the session
+          feedbackAs:
+            type: string
+            example: mentee
+      submitFeedbackResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Feedback submitted successfully.
+          result:
+            type: array
+            example: []
+          meta:
+            type: object
+            example: {}
+      submitFeedbackResponse400:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Feedback form has already been submitted.
+          error:
+            type: array
+            example: []
+      submitFeedbackResponse422:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: feedbackAs key is not passed for mentor
+          error:
+            type: array
+            example: []
+    cloudServices:
+      cloudServicesResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Signed Url Generated Successfully.
+          result:
+            type: object
+            properties:
+              signedUrl:
+                type: string
+                example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+              filePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+              destFilePath:
+                type: string
+                example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+      cloudServicesDownloadResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Download Url Generated Successfully.
+          result:
+            type: string
+            example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+    users:
+      feedbackResponse200:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK,
+          message:
+            type: string
+            example: Pending feedbacks fetched successfully.
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 628ee0c8efb3923017c27f03
+                title:
+                  type: string
+                  example: Leadership5
+                description:
+                  type: string
+                  example: Training in leadership
+                mentorFeedbackForm:
+                  type: string
+                  example: mentorQS2
+                form:
+                  type: object
+                  example: {}
+      userList200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Mentor list fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      example: A
+                    values:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 62832531a05cbd57b273aebb
+                          name:
+                            type: string
+                            example: jhon
+                          areasOfExpertise:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                value:
+                                  type: string
+                                  example: 1
+                                label:
+                                  type: string
+                                  example: Educational Leadership
+                                _id:
+                                  type: string
+                                  example: 628d422029034b105806b906
+                          image:
+                            type: string
+                            example: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png'
+              count:
+                type: number
+                example: 1
+    email:
+      emailSendRequest:
+        description: Email Sent request
+        type: object
+        required:
+          - type
+          - email
+        properties:
+          type:
+            type: string
+            description: Type of channel eg. email
+            example: email
+            required: true
+          email:
+            type: object
+            required:
+              - to
+              - subject
+              - body
+            properties:
+              to:
+                type: string
+                description: Email id of recipient. Multiple emails are added with `,`
+                example: example@mail.com
+                required: true
+              cc:
+                type: string
+                description: Email id of recipient. Multiple emails are added with `,`
+                example: ccexample@mail.com
+              subject:
+                type: string
+                description: Subject of email
+                example: Email Notification
+                required: true
+              body:
+                type: string
+                description: Body of Email. It will accept Html too.
+                example: "Dear Jhon, \n Welcome to Notification"
+                required: true
+      emailSendResponse200:
+        description: Email Sent response
+        type: object
+        properties:
+          message:
+            type: string
+            example: Email sent successfully.
+          result:
+            type: object
+            properties:
+              status:
+                type: string
+                example: success
+              message:
+                type: string
+                example: successfully mail sent
+      emailSendResponse400:
+        description: Failed to send email
+        type: object
+        properties:
+          message:
+            type: string
+            example: failed to send email
+          status:
+            type: string
+            example: failure
+          statusCode:
+            type: number
+            example: 400
+          error:
+            type: array
+            example: []
+
+  securitySchemes:
+    bearer:
+      type: apiKey
+      name: X-auth-token
+      in: header
