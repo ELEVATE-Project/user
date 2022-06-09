@@ -4,7 +4,7 @@ const endpoints = require('@constants/endpoints')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 
-module.exports = class UserProfileHelper {
+module.exports = class UserHelper {
 	/**
 	 * User list.
 	 * @method
