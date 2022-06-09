@@ -21,7 +21,7 @@ module.exports = class UserProfileHelper {
 			try {
 				const apiUrl =
 					userBaseUrl +
-					endpoints.LIST_USERS +
+					endpoints.USERS_LIST +
 					'?type=' +
 					userType +
 					'&page=' +
