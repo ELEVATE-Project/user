@@ -220,15 +220,35 @@ module.exports = class Account {
 	 * Account List
 	 * @method
 	 * @name list
-	 * @param {Object} req -request data.
+	 * @param {Object} req -request data with method POST.
 	 * @param {Object} req.body -request body contains user deatils.
 	 * @param {Array} req.body.userIds -contains userIds.
 	 * @returns {JSON} - all accounts data
+	 *
+	 * @param {Object} req - request data with method GET.
+	 * @param {Boolean} req.query.type - User Type mentor/mentee
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @param {String} req.searchText - search text.
+	 * @returns {JSON} - List of user.
 	 */
 	async list(req) {
 		try {
-			const result = await accountHelper.list(req.body.userIds)
-			return result
+			switch (req.method) {
+				case 'POST':
+					const result = await accountHelper.list(req.body.userIds)
+					return result
+					break
+				case 'GET':
+					const userDetails = await accountHelper.listUser(
+						req.query.type,
+						req.pageNo,
+						req.pageSize,
+						req.searchText
+					)
+					return userDetails
+					break
+			}
 		} catch (error) {
 			return error
 		}
@@ -276,27 +296,6 @@ module.exports = class Account {
 			const result = await accountHelper.registrationOtp(params)
 			return result
 		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * list user based on type
-	 * @method
-	 * @name listUser
-	 * @param {Object} req - request data.
-	 * @param {Boolean} req.query.type - User Type mentor/mentee
-	 * @param {Number} req.pageNo - page no.
-	 * @param {Number} req.pageSize - page size limit.
-	 * @param {String} req.searchText - search text.
-	 * @returns {JSON} - List of user.
-	 */
-	async listUser(req) {
-		try {
-			const userDetails = await accountHelper.listUser(req.query.type, req.pageNo, req.pageSize, req.searchText)
-			return userDetails
-		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}
