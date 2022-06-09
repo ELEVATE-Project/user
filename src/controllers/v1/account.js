@@ -234,21 +234,8 @@ module.exports = class Account {
 	 */
 	async list(req) {
 		try {
-			switch (req.method) {
-				case 'POST':
-					const result = await accountHelper.list(req.body.userIds)
-					return result
-					break
-				case 'GET':
-					const userDetails = await accountHelper.listUser(
-						req.query.type,
-						req.pageNo,
-						req.pageSize,
-						req.searchText
-					)
-					return userDetails
-					break
-			}
+			const result = await accountHelper.list(req)
+			return result
 		} catch (error) {
 			return error
 		}
