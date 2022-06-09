@@ -104,4 +104,51 @@ module.exports = class UsersData {
 			}
 		})
 	}
+	static async listUsers(type, page, limit, search) {
+		try {
+			let isAMentorFlag = true
+			if (type === 'mentor') {
+				isAMentorFlag = true
+			} else if (type === 'mentee') {
+				isAMentorFlag = false
+			}
+			let users = await Users.aggregate([
+				{
+					$match: {
+						deleted: false,
+						isAMentor: isAMentorFlag,
+						$or: [{ name: new RegExp(search, 'i') }],
+					},
+				},
+				{
+					$project: {
+						name: 1,
+						image: 1,
+						areasOfExpertise: 1,
+					},
+				},
+				{
+					$sort: { name: 1 },
+				},
+				{
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
+					},
+				},
+				{
+					$project: {
+						data: 1,
+						count: {
+							$arrayElemAt: ['$totalCount.count', 0],
+						},
+					},
+				},
+			]).collation({ locale: 'en', caseLevel: false })
+
+			return users
+		} catch (error) {
+			return error
+		}
+	}
 }

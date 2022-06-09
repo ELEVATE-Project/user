@@ -680,25 +680,137 @@ module.exports = class AccountHelper {
 	}
 
 	/**
+	 * Verify user is mentor or not
+	 * @method
+	 * @name verifyUser
+	 * @param {Object} userId - userId.
+	 * @returns {JSON} - verifies user is mentor or not
+	 */
+	static async verifyUser(userId) {
+		try {
+			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1 })
+			if (!user) {
+				return common.failureResponse({
+					message: apiResponses.USER_DOESNOT_EXISTS,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else if (user.isAMentor == true) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: apiResponses.USER_IS_A_MENTOR,
+					result: user,
+				})
+			} else {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: apiResponses.USER_IS_NOT_A_MENTOR,
+					result: user,
+				})
+			}
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
 	 * Account List
 	 * @method
-	 * @name list
+	 * @name list method post
 	 * @param {Object} req -request data.
 	 * @param {Array} userIds -contains userIds.
 	 * @returns {JSON} - all accounts data
+	 *
+	 *
+	 * User list.
+	 * @method
+	 * @name list method get
+	 * @param {Boolean} userType - mentor/mentee.
+	 * @param {Number} page - page No.
+	 * @param {Number} limit - page limit.
+	 * @param {String} search - search field.
+	 * @returns {JSON} - List of users
 	 */
-	static async list(userIds) {
+	static async list(params) {
 		try {
-			const users = await usersData.findAllUsers(
-				{ _id: { $in: userIds } },
-				{ password: 0, refreshTokens: 0, otpInfo: 0 }
-			)
+			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
+				const userIds = params.body.userIds
+				const users = await usersData.findAllUsers(
+					{ _id: { $in: userIds } },
+					{ password: 0, refreshTokens: 0, otpInfo: 0 }
+				)
 
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: apiResponses.USERS_FETCHED_SUCCESSFULLY,
-				result: users,
-			})
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: apiResponses.USERS_FETCHED_SUCCESSFULLY,
+					result: users,
+				})
+			} else {
+				let users = await usersData.listUsers(
+					params.query.type,
+					params.pageNo,
+					params.pageSize,
+					params.searchText
+				)
+				let message = ''
+				if (params.query.type === 'mentor') {
+					message = apiResponses.MENTOR_LIST
+				} else if (params.query.type === 'mentee') {
+					message = apiResponses.MENTEE_LIST
+				}
+
+				if (users[0].data.length < 1) {
+					return common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: message,
+						result: {
+							data: [],
+							count: 0,
+						},
+					})
+				}
+
+				let foundKeys = {}
+				let result = []
+
+				/* Required to resolve all promises first before preparing response object else sometime 
+                it will push unresolved promise object if you put this logic in below for loop */
+
+				await Promise.all(
+					users[0].data.map(async (user) => {
+						/* Assigned image url from the stored location */
+						if (user.image) {
+							user.image = await utilsHelper.getDownloadableUrl(user.image)
+						}
+						return user
+					})
+				)
+
+				for (let user of users[0].data) {
+					let firstChar = user.name.charAt(0)
+					firstChar = firstChar.toUpperCase()
+
+					if (!foundKeys[firstChar]) {
+						result.push({
+							key: firstChar,
+							values: [user],
+						})
+						foundKeys[firstChar] = result.length
+					} else {
+						let index = foundKeys[firstChar] - 1
+						result[index].values.push(user)
+					}
+				}
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: message,
+					result: {
+						data: result,
+						count: users[0].count,
+					},
+				})
+			}
 		} catch (error) {
 			throw error
 		}

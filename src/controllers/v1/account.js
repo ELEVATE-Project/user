@@ -183,6 +183,23 @@ module.exports = class Account {
 	}
 
 	/**
+	 * Verify user is mentor or not
+	 * @method
+	 * @name verifyUser
+	 * @param {Object} req -request data.
+	 * @param {Object} req.query.userId -userId.
+	 * @returns {JSON} - verifies user is mentor or not
+	 */
+	async verifyUser(req) {
+		try {
+			const result = await accountHelper.verifyUser(req.query.userId)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
 	 * Accept term and condition
 	 * @method
 	 * @name acceptTermsAndCondition
@@ -203,14 +220,21 @@ module.exports = class Account {
 	 * Account List
 	 * @method
 	 * @name list
-	 * @param {Object} req -request data.
+	 * @param {Object} req -request data with method POST.
 	 * @param {Object} req.body -request body contains user deatils.
 	 * @param {Array} req.body.userIds -contains userIds.
 	 * @returns {JSON} - all accounts data
+	 *
+	 * @param {Object} req - request data with method GET.
+	 * @param {Boolean} req.query.type - User Type mentor/mentee
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @param {String} req.searchText - search text.
+	 * @returns {JSON} - List of user.
 	 */
 	async list(req) {
 		try {
-			const result = await accountHelper.list(req.body.userIds)
+			const result = await accountHelper.list(req)
 			return result
 		} catch (error) {
 			return error

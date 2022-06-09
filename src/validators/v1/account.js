@@ -79,4 +79,8 @@ module.exports = {
 	changeRole: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
 	},
+
+	listUser: (req) => {
+		req.checkQuery('type').notEmpty().withMessage('type can not be null').isString()
+	},
 }

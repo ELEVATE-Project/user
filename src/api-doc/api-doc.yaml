@@ -106,13 +106,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse400'
-  '/user/v1/account/verifyMentor?userId={userId}':
+  '/user/v1/account/verifyUser?userId={userId}':
     get:
       summary: Verify user type
       tags:
         - User APIs
       description: "This API is associated with verify type of user on mentoring  \n - Then
-        Endpoint for verifying user `/user/v1/account/verifyMentor` \n - It is mandatory to
+        Endpoint for verifying user `/user/v1/account/verifyUser` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
@@ -136,13 +136,13 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/user/userVerifyMentor200'
+                '$ref': '#/components/schemas/user/userverifyUser200'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/user/userVerifyMentor400'
+                '$ref': '#/components/schemas/user/userverifyUser400'
   '/user/v1/account/changeRole':
     patch:
       summary: Change user role
@@ -313,6 +313,55 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/resetPasswordResponse401'
+  '/user/v1/account/list?type={userType}&page={page}&limit={limit}&search={search}':
+    get:
+      summary: List user
+      tags:
+        - Users APIs
+      description: "This API is associated with the listing of users based on condition  \n -
+        Endpoint for list user `/user/v1/account/listUser` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userType
+          description: Type of user
+          required: true
+          schema:
+            type: string
+          example: mentor
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          schema:
+            type: number
+          example: 2
+        - in: path
+          name: search
+          description: Please search for name or title of user etc.
+          schema:
+            type: string
+          example: jhon
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/user/userList200Response'
   '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
     get:
       summary: Cloud services get signed url
@@ -1486,7 +1535,7 @@ components:
           error:
             type: array
             example: []
-      userVerifyMentor200:
+      userverifyUser200:
         description: OK, User logout successfully
         type: object
         properties:
@@ -1505,7 +1554,7 @@ components:
               isAMentor:
                 tyep: boolean
                 example: true
-      userVerifyMentor400:
+      userverifyUser400:
         description: Bad Request
         type: object
         properties:
@@ -1518,6 +1567,58 @@ components:
           error:
             type: array
             example: []
+      userList200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Mentor list fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                      example: A
+                    values:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          _id:
+                            type: string
+                            example: 62832531a05cbd57b273aebb
+                          name:
+                            type: string
+                            example: jhon
+                          areasOfExpertise:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                value:
+                                  type: string
+                                  example: 1
+                                label:
+                                  type: string
+                                  example: Educational Leadership
+                                _id:
+                                  type: string
+                                  example: 628d422029034b105806b906
+                          image:
+                            type: string
+                            example: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png'
+              count:
+                type: number
+                example: 1
+
     profile:
       profileDetailsResponse200:
         type: object
