@@ -313,7 +313,7 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/user/resetPasswordResponse401'
-  '/user/v1/account/listUser?type={userType}&page={page}&limit={limit}&search={search}':
+  '/user/v1/account/list?type={userType}&page={page}&limit={limit}&search={search}':
     get:
       summary: List user
       tags:
