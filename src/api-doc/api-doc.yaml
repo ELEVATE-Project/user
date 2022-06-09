@@ -632,6 +632,112 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/sessions/updateSession400Response'
+  'mentoring/v1/sessions/getRecording/{sessionId}':
+    get:
+      summary: Get session recording
+      tags:
+        - Session APIs
+      description: "This API is associated with getting session recording \n -
+        Endpoint for session recording `/mentoring/v1/sessions/getRecording` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: OK
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/sessionRecording200Response'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/sessionRecording400Response'
+  '/mentoring/v1/sessions/completed/{sessionId}':
+    patch:
+      summary: Update session status
+      tags:
+        - Session APIs
+      description: "This API is associated with update session status \n -
+        Endpoint for update session `/mentoring/v1/sessions/completed` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'sessionId '
+          required: true
+          description: Please append a valid sessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: OK
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/sessionCompleted200Response'
+  '/mentoring/v1/sessions/updateRecordingUrl/{internalSessionId}':
+    patch:
+      summary: Update session recording url
+      tags:
+        - Session APIs
+      description: "This API is associated with update session recording url \n -
+        Endpoint for update session recording url `/mentoring/v1/sessions/updateRecordingUrl` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'internalSessionId '
+          required: true
+          description: Please append a valid internalSessionId To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/updateRecordingUrl200Response'
+        '400':
+          description: Bad Request.
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/sessions/updateRecordingUrl400Response'
+
   '/mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}':
     get:
       summary: Get list of session
@@ -1136,7 +1242,6 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/users/feedbackResponse200'
-
   '/user/v1/cloud-services/getSignedUrl?fileName={fileName}':
     get:
       summary: Cloud services get signed url
@@ -2294,7 +2399,135 @@ components:
             example: []
           meta: {}
       updateSession400Response:
-        description: update session
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      sessionRecording200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          result:
+            type: object
+            properties:
+              recording:
+                type: object
+                properties:
+                  recordID:
+                    type: string
+                    example: 26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241
+                  meetingID:
+                    type: string
+                    example: 626267aa2832e6cea85aa435
+                  internalMeetingID:
+                    type: string
+                    example: 26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241
+                  name:
+                    type: string
+                    example: Okkkk
+                  isBreakout:
+                    type: boolean
+                    example: false
+                  published:
+                    type: boolean
+                    example: true
+                  state:
+                    type: string
+                    example: published
+                  startTime:
+                    type: string
+                    example: 1650616238241
+                  endTime:
+                    type: string
+                    example: 1650616245013
+                  participants:
+                    type: string
+                    example: 1
+                  rawSize:
+                    type: string
+                    example: 35425
+                  metadata:
+                    type: object
+                    properties:
+                      meetingName:
+                        type: string
+                        example: Okkkk
+                      isBreakout:
+                        type: boolean
+                        example: false
+                      endcallbackurl:
+                        type: string
+                        example: https://elevate-apis.shikshalokam.org/mentoring/v1/sessions/completed/626267aa2832e6cea85aa435
+                      meetingId:
+                        type: string
+                        example: 626267aa2832e6cea85aa435
+                  size:
+                    type: string
+                    example: 27256
+                  playback:
+                    type: object
+                    properties:
+                      format:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            example: video
+                          url:
+                            type: string
+                            example: https://mentoring.shikshalokam.org/presentation/26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241/meeting.mp4
+                          processingTime:
+                            type: string
+                            example: 576
+                          length:
+                            type: string
+                            example: 0
+                          size:
+                            type: string
+                            example: 27256
+                  data:
+                    type: object
+                    example: {}
+          meta:
+            type: object
+            example: {}
+      sessionRecording400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Session not found.
+          error:
+            type: array
+            example: []
+      sessionCompleted200Response:
+        type: object
+        properties:
+          result:
+            type: string
+            example: SESSION_UPDATED
+      updateRecordingUrl200Response:
+        type: object
+        properties:
+          message:
+            type: string
+            example: Your session details have been updated.
+          result:
+            type: object
+            example: {}
+      updateRecordingUrl400Response:
         type: object
         properties:
           responseCode:
