@@ -733,7 +733,7 @@ module.exports = class AccountHelper {
 	 */
 	static async list(params) {
 		try {
-			if (params.method === 'POST') {
+			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
 				const userIds = params.body.userIds
 				const users = await usersData.findAllUsers(
 					{ _id: { $in: userIds } },
@@ -745,7 +745,7 @@ module.exports = class AccountHelper {
 					message: apiResponses.USERS_FETCHED_SUCCESSFULLY,
 					result: users,
 				})
-			} else if (params.method === 'GET') {
+			} else {
 				let users = await usersData.listUsers(
 					params.query.type,
 					params.pageNo,
