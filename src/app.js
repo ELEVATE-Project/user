@@ -4,11 +4,12 @@
  * Date : 29-Sep-2021
  * Description : Start file of a mentoring service
  */
-
+require('module-alias/register')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 require('dotenv').config({ path: './.env' })
+const path = require('path')
 
 let environmentData = require('./envVariables')()
 
@@ -17,12 +18,12 @@ if (!environmentData.success) {
 	process.exit()
 }
 
-require('./configs')
+require('@configs')
 
 const app = express()
 
 // Health check
-require('./health-checks')(app)
+require('@health-checks')(app)
 
 app.use(cors())
 
@@ -30,6 +31,10 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }))
 app.use(bodyParser.json({ limit: '50MB' }))
 
 app.use(express.static('public'))
+
+app.get(process.env.API_DOC_URL, function (req, res) {
+	res.sendFile(path.join(__dirname, './api-doc/index.html'))
+})
 
 /* Logs request info if environment is not development*/
 if (process.env.ENABLE_LOG === 'true') {

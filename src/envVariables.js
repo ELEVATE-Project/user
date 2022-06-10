@@ -111,6 +111,10 @@ let enviromentVariables = {
 		message: 'log enable or disable',
 		optional: true,
 	},
+	API_DOC_URL: {
+		message: 'Required api doc url',
+		optional: false,
+	},
 }
 
 let success = true

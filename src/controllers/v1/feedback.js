@@ -6,10 +6,10 @@
  */
 
 // Dependencies
-const feedbackHelper = require('../../services/helper/feedback')
-const common = require('../../constants/common')
-const apiResponses = require('../../constants/api-responses')
-const httpStatusCode = require('../../generics/http-status')
+const feedbackHelper = require('@services/helper/feedback')
+const common = require('@constants/common')
+const apiResponses = require('@constants/api-responses')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Feedback {
 	/**

@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const sessionsHelper = require('../../services/helper/sessions')
+const sessionsHelper = require('@services/helper/sessions')
 
 module.exports = class Sessions {
 	/**
