@@ -1,9 +1,14 @@
 # Notifications Service APIs
 
+## Setup Notification Service without docker
+
 Recommend to,
+
 Install any IDE in your system(eg: VScode etc..)
-Install nodejs from : https://nodejs.org/en/download/
-Install kafka from : https://kafka.apache.org/downloads
+
+Install NodeJs from: https://nodejs.org/en/download/
+
+Install kafka from: https://kafka.apache.org/downloads
 
 ### 1. Cloning the Notifications repository into your system
 
