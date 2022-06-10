@@ -15,9 +15,9 @@ describe('Test qui Model Test', () => {
 	let sessionModel
 	beforeAll(async () => {
 		await loadMongo()
-		sessionService = require('../services/helper/sessions')
-		controller = require('../controllers/v1/sessions')
-		sessionModel = require('../db/sessions/queries')
+		sessionService = require('@services/helper/sessions')
+		controller = require('@controllers/v1/sessions')
+		sessionModel = require('@db/sessions/queries')
 		return
 	})
 

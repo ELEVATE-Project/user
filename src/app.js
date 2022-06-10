@@ -4,7 +4,7 @@
  * Date : 29-Sep-2021
  * Description : Start file of a mentoring service
  */
-
+require('module-alias/register')
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
