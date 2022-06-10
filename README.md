@@ -154,7 +154,7 @@ Install Docker Compose from: https://docs.docker.com/compose/install/
 
 ### 1. Cloning the User repository into your system
 
-Goto https://github.com/ELEVATE-Project/User From the code tab copy the link. Using that link clone the repository into your local machine.
+Go to https://github.com/ELEVATE-Project/User From the code tab copy the link. Using that link clone the repository into your local machine.
 
 Let's make it easier for you:
 
@@ -166,7 +166,7 @@ git clone https://github.com/ELEVATE-Project/User.git
 ### 2. Add the .env file to the project directory
 
     create a file named .env in the root directory of the project and copy the below code into that file.
-    Add fallowing enviorment configs
+    Add the following environment configs
 
 ### 3. Required Environment variables
 
