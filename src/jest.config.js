@@ -1,6 +1,7 @@
 module.exports = {
-	preset: '@shelf/jest-mongodb',
 	rootDir: '.',
+	roots: ['<rootDir>/'],
+	preset: '@shelf/jest-mongodb',
 	moduleNameMapper: {
 		'@root/(.*)': '<rootDir>/$1',
 		'@services/(.*)': '<rootDir>/services/$1',
