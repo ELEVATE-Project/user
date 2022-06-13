@@ -49,7 +49,9 @@ module.exports = class SessionsData {
 
 	static async findSessionById(id) {
 		try {
+			console.log('=================', id)
 			const session = await Sessions.findOne({ _id: id, deleted: false, status: { $ne: 'cancelled' } }).lean()
+			console.log('==============', session)
 			return session
 		} catch (error) {
 			return error

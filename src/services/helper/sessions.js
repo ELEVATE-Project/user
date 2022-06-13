@@ -92,7 +92,7 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method) {
 		let isSessionReschedule = false
 		try {
-			if (!(await this.verifyMentor(userId))) {
+			if (!!(await this.verifyMentor(userId))) {
 				return common.failureResponse({
 					message: apiResponses.INVALID_PERMISSION,
 					statusCode: httpStatusCode.bad_request,
@@ -442,6 +442,7 @@ module.exports = class SessionsHelper {
 
 		try {
 			const session = await sessionData.findSessionById(sessionId)
+			console.log('==============>>>>>>', session)
 			if (!session) {
 				return common.failureResponse({
 					message: apiResponses.SESSION_NOT_FOUND,
@@ -594,7 +595,7 @@ module.exports = class SessionsHelper {
 
 			let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR + '?userId=' + id
 			try {
-				request.post(apiUrl, options, (err, data) => {
+				await request.post(apiUrl, options, (err, data) => {
 					if (err) {
 						return {
 							message: apiResponses.USER_SERVICE_DOWN,

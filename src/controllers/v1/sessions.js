@@ -175,6 +175,7 @@ module.exports = class Sessions {
 	 */
 
 	async start(req) {
+		console.log('====================>')
 		try {
 			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token)
 			return sessionsStarted

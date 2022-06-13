@@ -13,6 +13,7 @@ module.exports = class FormsData {
 			await new Forms(data).save()
 			return true
 		} catch (error) {
+			console.log(error, '<]]]]]]]]]]]]]')
 			return error
 		}
 	}
@@ -25,6 +26,7 @@ module.exports = class FormsData {
 			const formData = await Forms.findOne(filter, projection)
 			return formData
 		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}

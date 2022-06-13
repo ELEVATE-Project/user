@@ -17,7 +17,6 @@ module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
 		let guestUrl = false
-		let decodedToken = ''
 
 		const authHeader = req.get('X-auth-token')
 
@@ -80,13 +79,14 @@ module.exports = async function (req, res, next) {
 		const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
 
 		const user = await requests.get(profileUrl, null, true)
-
-		if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
-			throw common.failureResponse({
-				message: apiResponses.USER_ROLE_UPDATED,
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
+		if (user) {
+			if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
+				throw common.failureResponse({
+					message: apiResponses.USER_ROLE_UPDATED,
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 
 		req.decodedToken = {

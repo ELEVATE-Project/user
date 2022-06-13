@@ -34,6 +34,7 @@ module.exports = class FormsHelper {
 				message: apiResponses.FORM_CREATED_SUCCESSFULLY,
 			})
 		} catch (error) {
+			console.log(error, "><'''''''''''")
 			throw error
 		}
 	}
