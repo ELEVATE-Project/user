@@ -14,14 +14,12 @@ const pushEmailToKafka = async (message) => {
 	}
 }
 
-const pushPayloadToKafka = (payload) => {
-	return new Promise((resolve, reject) => {
-		kafkaProducer.send(payload, (error, data) => {
-			if (error) {
-				reject(error)
-			}
-			resolve(data)
-		})
+const pushPayloadToKafka = async (payload) => {
+	kafkaProducer.send(payload, (error, data) => {
+		if (error) {
+			return error
+		}
+		return data
 	})
 }
 

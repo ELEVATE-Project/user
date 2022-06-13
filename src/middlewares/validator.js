@@ -8,6 +8,8 @@
 module.exports = (req, res, next) => {
 	try {
 		require(`@validators/${req.params.version}/${req.params.controller}`)[req.params.method](req)
-	} catch (error) {}
+	} catch (error) {
+		return error
+	}
 	next()
 }

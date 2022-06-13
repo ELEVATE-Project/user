@@ -213,9 +213,9 @@ module.exports = class Sessions {
 	async getRecording(req) {
 		try {
 			const recording = await sessionsHelper.getRecording(req.params.id)
-			return resolve(recording)
+			return recording
 		} catch (error) {
-			return reject(error)
+			return error
 		}
 	}
 
@@ -233,9 +233,9 @@ module.exports = class Sessions {
 		try {
 			const sessionsFeedBack = await sessionsHelper.feedback(req.params.id, req.body)
 
-			return resolve(sessionsFeedBack)
+			return sessionsFeedBack
 		} catch (error) {
-			return reject(error)
+			return error
 		}
 	}
 

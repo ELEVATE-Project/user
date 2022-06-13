@@ -15,38 +15,36 @@ const request = require('request')
  * @returns {Boolean} - true/false.
  */
 
-function health_check() {
-	return new Promise(async (resolve, reject) => {
-		try {
-			let healthCheckUrl = process.env.USER_SERIVCE_HOST + '/healthCheckStatus'
+async function health_check() {
+	try {
+		let healthCheckUrl = process.env.USER_SERIVCE_HOST + '/healthCheckStatus'
 
-			const options = {
-				headers: {
-					'content-type': 'application/json',
-				},
-			}
-
-			request.get(healthCheckUrl, options, userServiceCallback)
-
-			function userServiceCallback(err, data) {
-				let result = false
-
-				if (err) {
-					result = false
-				} else {
-					let response = JSON.parse(data.body)
-					if (response.status === 200) {
-						result = true
-					} else {
-						result = false
-					}
-				}
-				return resolve(result)
-			}
-		} catch (error) {
-			return reject(error)
+		const options = {
+			headers: {
+				'content-type': 'application/json',
+			},
 		}
-	})
+
+		request.get(healthCheckUrl, options, userServiceCallback)
+
+		function userServiceCallback(err, data) {
+			let result = false
+
+			if (err) {
+				result = false
+			} else {
+				let response = JSON.parse(data.body)
+				if (response.status === 200) {
+					result = true
+				} else {
+					result = false
+				}
+			}
+			return result
+		}
+	} catch (error) {
+		return error
+	}
 }
 
 module.exports = {

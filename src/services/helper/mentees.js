@@ -142,107 +142,90 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees join session link.
 	 */
 
-	static joinSession(sessionId, token) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const mentee = await userProfile.details(token)
+	static async joinSession(sessionId, token) {
+		try {
+			const mentee = await userProfile.details(token)
 
-				if (mentee.data.responseCode !== 'OK') {
-					return resolve(
-						common.failureResponse({
-							message: apiResponses.USER_NOT_FOUND,
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					)
-				}
-
-				const session = await sessionData.findSessionById(sessionId)
-
-				if (!session) {
-					return resolve(
-						common.failureResponse({
-							message: apiResponses.SESSION_NOT_FOUND,
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					)
-				}
-
-				if (session.status == 'completed') {
-					return resolve(
-						common.failureResponse({
-							message: apiResponses.SESSION_ENDED,
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					)
-				}
-
-				if (session.status !== 'live') {
-					return resolve(
-						common.failureResponse({
-							message: apiResponses.JOIN_ONLY_LIVE_SESSION,
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					)
-				}
-
-				let menteeDetails = mentee.data.result
-
-				const sessionAttendee = await sessionAttendees.findAttendeeBySessionAndUserId(
-					menteeDetails._id,
-					sessionId
-				)
-
-				if (!sessionAttendee) {
-					return resolve(
-						common.failureResponse({
-							message: apiResponses.USER_NOT_ENROLLED,
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					)
-				}
-
-				let link = ''
-				if (sessionAttendee.link) {
-					link = sessionAttendee.link
-				} else {
-					const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
-						sessionId,
-						menteeDetails.name,
-						session.menteePassword
-					)
-
-					await sessionAttendees.updateOne(
-						{
-							_id: sessionAttendee._id,
-						},
-						{
-							link: attendeeLink,
-							joinedAt: utils.utcFormat(),
-							isSessionAttended: true,
-						}
-					)
-
-					link = attendeeLink
-				}
-
-				return resolve(
-					common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: apiResponses.SESSION_START_LINK,
-						result: {
-							link: link,
-						},
-					})
-				)
-			} catch (error) {
-				return reject(error)
+			if (mentee.data.responseCode !== 'OK') {
+				return common.failureResponse({
+					message: apiResponses.USER_NOT_FOUND,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-		})
+
+			const session = await sessionData.findSessionById(sessionId)
+
+			if (!session) {
+				return common.failureResponse({
+					message: apiResponses.SESSION_NOT_FOUND,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (session.status == 'completed') {
+				return common.failureResponse({
+					message: apiResponses.SESSION_ENDED,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (session.status !== 'live') {
+				return common.failureResponse({
+					message: apiResponses.JOIN_ONLY_LIVE_SESSION,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let menteeDetails = mentee.data.result
+
+			const sessionAttendee = await sessionAttendees.findAttendeeBySessionAndUserId(menteeDetails._id, sessionId)
+
+			if (!sessionAttendee) {
+				return common.failureResponse({
+					message: apiResponses.USER_NOT_ENROLLED,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let link = ''
+			if (sessionAttendee.link) {
+				link = sessionAttendee.link
+			} else {
+				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
+					sessionId,
+					menteeDetails.name,
+					session.menteePassword
+				)
+
+				await sessionAttendees.updateOne(
+					{
+						_id: sessionAttendee._id,
+					},
+					{
+						link: attendeeLink,
+						joinedAt: utils.utcFormat(),
+						isSessionAttended: true,
+					}
+				)
+
+				link = attendeeLink
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: apiResponses.SESSION_START_LINK,
+				result: {
+					link: link,
+				},
+			})
+		} catch (error) {
+			return error
+		}
 	}
 
 	/**

@@ -16,31 +16,27 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - List of users
 	 */
 
-	static list(userType, pageNo, pageSize, searchText) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const apiUrl =
-					userBaseUrl +
-					endpoints.USERS_LIST +
-					'?type=' +
-					userType +
-					'&page=' +
-					pageNo +
-					'&limit=' +
-					pageSize +
-					'&search=' +
-					searchText
-				const userDetails = await request.get(apiUrl, false, true)
-				return resolve(
-					common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: userDetails.data.message,
-						result: userDetails.data.result,
-					})
-				)
-			} catch (error) {
-				return reject(error)
-			}
-		})
+	static async list(userType, pageNo, pageSize, searchText) {
+		try {
+			const apiUrl =
+				userBaseUrl +
+				endpoints.USERS_LIST +
+				'?type=' +
+				userType +
+				'&page=' +
+				pageNo +
+				'&limit=' +
+				pageSize +
+				'&search=' +
+				searchText
+			const userDetails = await request.get(apiUrl, false, true)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: userDetails.data.message,
+				result: userDetails.data.result,
+			})
+		} catch (error) {
+			return error
+		}
 	}
 }

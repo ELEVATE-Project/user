@@ -13,34 +13,29 @@ module.exports = class SessionAttendeesHelper {
 	 * @returns
 	 */
 	static getAllAccountsDetail(userIds) {
-		return new Promise((resolve, reject) => {
-			const options = {
-				headers: {
-					'Content-Type': 'application/json',
-					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-				},
-				form: {
-					userIds,
-				},
-			}
-
-			const apiUrl = apiBaseUrl + apiEndpoints.LIST_ACCOUNTS
-			try {
-				request.post(apiUrl, options, callback)
-
-				function callback(err, data) {
-					if (err) {
-						reject({
-							message: apiResponses.USER_SERVICE_DOWN,
-						})
-					} else {
-						data.body = JSON.parse(data.body)
-						resolve(data.body)
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				userIds,
+			},
+		}
+		const apiUrl = apiBaseUrl + apiEndpoints.LIST_ACCOUNTS
+		try {
+			request.post(apiUrl, options, (err, data) => {
+				if (err) {
+					return {
+						message: apiResponses.USER_SERVICE_DOWN,
 					}
+				} else {
+					data.body = JSON.parse(data.body)
+					return data.body
 				}
-			} catch (error) {
-				reject(error)
-			}
-		})
+			})
+		} catch (error) {
+			return error
+		}
 	}
 }

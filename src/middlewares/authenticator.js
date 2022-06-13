@@ -17,6 +17,7 @@ module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
 		let guestUrl = false
+		let decodedToken = ''
 
 		const authHeader = req.get('X-auth-token')
 

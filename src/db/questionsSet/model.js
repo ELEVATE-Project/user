@@ -6,7 +6,7 @@
  */
 
 const mongoose = require('mongoose')
-const { feedback } = require('@services/helper/sessions')
+
 const Schema = mongoose.Schema
 
 const questionsSetSchema = new Schema({
@@ -33,5 +33,5 @@ const QuestionsSet = db.model('questionSet', questionsSetSchema, 'questionSet')
 
 module.exports = QuestionsSet
 
-skippedFeedback: true / false
-feedback: []
+// skippedFeedback: true / false
+// feedback: []

@@ -8,20 +8,18 @@
 // Dependencies
 const kafka = require('kafka-node')
 
-function health_check() {
-	return new Promise(async (resolve, reject) => {
-		const client = new kafka.KafkaClient({
-			kafkaHost: process.env.KAFKA_URL,
-		})
+async function health_check() {
+	const client = new kafka.KafkaClient({
+		kafkaHost: process.env.KAFKA_URL,
+	})
 
-		const producer = new kafka.Producer(client)
+	const producer = new kafka.Producer(client)
 
-		producer.on('error', function (err) {
-			return resolve(false)
-		})
-		producer.on('ready', function () {
-			return resolve(true)
-		})
+	producer.on('error', function (err) {
+		return false
+	})
+	producer.on('ready', function () {
+		return true
 	})
 }
 

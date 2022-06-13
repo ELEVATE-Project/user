@@ -7,9 +7,7 @@
 
 module.exports = {
 	pendingFeedbacks: (req) => {
-		// req.checkParams('id')
-		//     .notEmpty()
-		//     .withMessage('id param is empty');
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 
 	list: (req) => {

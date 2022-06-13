@@ -13,21 +13,19 @@ module.exports = class UserProfileHelper {
 	 * @returns {JSON} - User profile details.
 	 */
 
-	static details(token = '', userId = '') {
-		return new Promise(async (resolve, reject) => {
-			try {
-				let profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS
+	static async details(token = '', userId = '') {
+		try {
+			let profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS
 
-				let internalToken = false
-				if (userId != '') {
-					profileUrl = profileUrl + '/' + userId
-					internalToken = true
-				}
-				const profileDetails = await requests.get(profileUrl, token, internalToken)
-				return resolve(profileDetails)
-			} catch (error) {
-				return reject(error)
+			let internalToken = false
+			if (userId != '') {
+				profileUrl = profileUrl + '/' + userId
+				internalToken = true
 			}
-		})
+			const profileDetails = await requests.get(profileUrl, token, internalToken)
+			return profileDetails
+		} catch (error) {
+			return error
+		}
 	}
 }
