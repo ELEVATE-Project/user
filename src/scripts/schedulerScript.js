@@ -12,6 +12,7 @@ require('dotenv').config({ path: '../.env' })
 const schedulerServiceUrl = process.env.SCHEDULER_SERVICE_URL // port address on which scheduler service is running
 const email = [process.env.SCHEDULER_SERVICE_ERROR_REPORTING_EMAIL_ID] // email id, to which error reports are send during exicution failure of job
 const internalAcsessToken = process.env.INTERNAL_ACCESS_TOKEN // internal access token for mentor service
+const mentoringBaseurl = `http://localhost:${process.env.APPLICATION_PORT}`
 
 // API ONE
 // Request body for emailCronJobBeforeFifteenMin
@@ -19,7 +20,7 @@ const emailCronJobBeforeFifteenMinData = {
 	name: 'emailCronJobBeforeFifteenMin',
 	email: email,
 	request: {
-		url: 'http://localhost:3000/mentoring/v1/notifications/emailCronJobBeforeFifteenMin',
+		url: mentoringBaseurl + '/mentoring/v1/notifications/emailCronJobBeforeFifteenMin',
 		method: 'get',
 		header: { internal_access_token: internalAcsessToken },
 	},
@@ -37,7 +38,7 @@ const emailCronJobBeforeOneDayData = {
 	name: 'emailCronJobBeforeOneDay',
 	email: email,
 	request: {
-		url: 'http://localhost:3000/mentoring/v1/notifications/emailCronJobBeforeOneDay',
+		url: mentoringBaseurl + '/mentoring/v1/notifications/emailCronJobBeforeOneDay',
 		method: 'get',
 		header: { internal_access_token: internalAcsessToken },
 	},
@@ -55,7 +56,7 @@ const emailCronJobBeforeOneHourData = {
 	name: 'emailCronJobBeforeOneHour',
 	email: email,
 	request: {
-		url: 'http://localhost:3000/mentoring/v1/notifications/emailCronJobBeforeOneHour',
+		url: mentoringBaseurl + '/mentoring/v1/notifications/emailCronJobBeforeOneHour',
 		method: 'get',
 		header: { internal_access_token: internalAcsessToken },
 	},
