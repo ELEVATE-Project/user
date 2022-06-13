@@ -19,7 +19,7 @@ const emailCronJobBeforeFifteenMinData = {
 	name: 'emailCronJobBeforeFifteenMin',
 	email: email,
 	request: {
-		url: 'http://localhost:3000/mentoring/v1/notifications/emailCronJobBeforeFifteenMin',
+		url: 'http://dev.elevate-apis.shikshalokam.org/mentoring/v1/notifications/emailCronJobBeforeFifteenMin',
 		method: 'get',
 		header: { internal_access_token: internalAcsessToken },
 	},
@@ -37,7 +37,7 @@ const emailCronJobBeforeOneDayData = {
 	name: 'emailCronJobBeforeOneDay',
 	email: email,
 	request: {
-		url: 'http://localhost:3000/mentoring/v1/notifications/emailCronJobBeforeOneDay',
+		url: 'http://dev.elevate-apis.shikshalokam.org/mentoring/v1/notifications/emailCronJobBeforeOneDay',
 		method: 'get',
 		header: { internal_access_token: internalAcsessToken },
 	},
@@ -55,7 +55,7 @@ const emailCronJobBeforeOneHourData = {
 	name: 'emailCronJobBeforeOneHour',
 	email: email,
 	request: {
-		url: 'http://localhost:3000/mentoring/v1/notifications/emailCronJobBeforeOneHour',
+		url: 'http://dev.elevate-apis.shikshalokam.org/mentoring/v1/notifications/emailCronJobBeforeOneHour',
 		method: 'get',
 		header: { internal_access_token: internalAcsessToken },
 	},
