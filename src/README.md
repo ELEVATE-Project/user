@@ -135,3 +135,8 @@ ENABLE_LOG = true
 ## 5. To Run server
 
     npm start
+
+## 6. To set scheduler service job for mentoring
+
+    step 1 : Go to scripts directory - cd src/scripts/
+    serp 2 : Run the script file by executing the command -  node schedulerScript.js
