@@ -52,4 +52,18 @@ module.exports = {
 			image: 'https://cloudstorage.com/container/abc.png',
 		},
 	},
+	userData: {
+		email: {
+			address: 'example@mail.com',
+			verified: true,
+		},
+		// password: "$2a$10$5Ya1LAAjoM3/fgNXcrpg2uAS79fiZlUMJeiU2m.87sCn0KvVq1xRS",
+		password: '$2a$10$5Ya1LAAjoM3/fgNXcrpg2uAS79fiZlUMJeiU2m.87sCn0KvVq1xRS',
+		name: 'abcd',
+		isAMentor: true,
+		hasAcceptedTAndC: true,
+		deleted: false,
+		about: 'about user',
+		experience: '2',
+	},
 }

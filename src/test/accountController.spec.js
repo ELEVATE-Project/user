@@ -1,35 +1,62 @@
-require('module-alias/register')
-const chai = require('chai')
-const sinon = require('sinon')
-const expect = chai.expect
-const flushPromises = () => new Promise(setImmediate)
+const mongoose = require('mongoose')
+const mock = require('./mock')
 
-global.db = {
-	model: function () {
-		return
-	},
+async function loadMongo() {
+	let db = await mongoose.connect(global.__MONGO_URI__ + global.mongoDBName, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+	})
+	global.db = db
+	return
 }
-const accountService = require('@services/helper/account')
-let controller = require('@controllers/v1/account')
 
 let mockData = require('./mock')
 
-describe('Account service', async function () {
+describe('Sessions controller and helper test', () => {
 	afterEach(() => {
-		sinon.restore()
+		loadMongo()
 	})
 
-	it('login api check', async () => {
+	let controller
+	let accountService
+	let userModel
+
+	beforeAll(async () => {
+		await loadMongo()
+		accountService = require('@services/helper/account')
+		controller = require('@controllers/v1/account')
+		userModel = require('@db/users/queries')
+		return
+	})
+
+	test('add user', async () => {
+		let user = await userModel.createUser(mock.userData)
+		expect(user).toBe(true)
+	})
+
+	test('login api check', async () => {
 		const request = {
-			email: 'example@mail.com',
-			password: 'Password',
+			body: { email: 'example@mail.com', password: 'Okok@123' },
+			pageNo: 1,
+			pageSize: 10,
+			query: { type: 'mentor' },
 		}
 
-		sinon.stub(accountService, 'login').returns(mockData.loginResponse)
+		let list = await accountService.list(request)
+		expect(list.statusCode).toBe(200)
+		expect(list.responseCode).toBe('OK')
+		expect(list.result.count).toBe(1)
+	})
 
-		let controllerResponse = new controller()
-		let loginResponse = await controllerResponse.login(request)
-		// await flushPromises();
-		expect(loginResponse).to.equals(mockData.loginResponse)
+	afterAll(async () => {
+		try {
+			mongoose.connection.close()
+		} catch (error) {
+			console.log(`
+            You did something wrong
+            ${error}
+          `)
+			throw error
+		}
 	})
 })
