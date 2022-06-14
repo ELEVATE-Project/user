@@ -1,0 +1,38 @@
+{
+	"info": {
+		"_postman_id": "c208eafb-8d59-4414-8b02-41bde6580ca9",
+		"name": "MentorED-Notification",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7997930"
+	},
+	"item": [
+		{
+			"name": "SendEmail",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "internal_access_token",
+						"value": "bsj82AHBxahusub12yexlashsbxAXADHBlaj",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"type\":\"email\",\n    \"email\":{\n        \"to\": \"ankitstar00786@gmail.com\",\n\t\t\"subject\": \"temp\",\n\t    \"body\": \"data\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{notificationBaseUrl}}notification/v1/email/send",
+					"host": ["{{notificationBaseUrl}}notification"],
+					"path": ["v1", "email", "send"]
+				}
+			},
+			"response": []
+		}
+	]
+}
