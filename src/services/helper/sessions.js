@@ -13,6 +13,7 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('request')
 
+const axios = require('axios')
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
@@ -30,7 +31,9 @@ module.exports = class SessionsHelper {
 	static async create(bodyData, loggedInUserId) {
 		bodyData.userId = ObjectId(loggedInUserId)
 		try {
-			if (!(await this.verifyMentor(loggedInUserId))) {
+			const mentorStatus = await this.verifyMentor(loggedInUserId)
+
+			if (mentorStatus === false) {
 				return common.failureResponse({
 					message: apiResponses.INVALID_PERMISSION,
 					statusCode: httpStatusCode.bad_request,
@@ -92,7 +95,7 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method) {
 		let isSessionReschedule = false
 		try {
-			if (!!(await this.verifyMentor(userId))) {
+			if (!(await this.verifyMentor(userId))) {
 				return common.failureResponse({
 					message: apiResponses.INVALID_PERMISSION,
 					statusCode: httpStatusCode.bad_request,
@@ -585,36 +588,38 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async verifyMentor(id) {
-		try {
-			let options = {
-				headers: {
-					'Content-Type': 'application/json',
-					internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-				},
-			}
-
-			let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR + '?userId=' + id
+		return new Promise((resolve, reject) => {
 			try {
-				await request.post(apiUrl, options, (err, data) => {
-					if (err) {
-						return {
-							message: apiResponses.USER_SERVICE_DOWN,
-						}
-					} else {
-						data.body = JSON.parse(data.body)
-						if (data.body.result && data.body.result.isAMentor) {
-							return true
+				let options = {
+					headers: {
+						'Content-Type': 'application/json',
+						internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+					},
+				}
+
+				let apiUrl = apiBaseUrl + apiEndpoints.VERIFY_MENTOR + '?userId=' + id
+				try {
+					request.post(apiUrl, options, (err, data) => {
+						if (err) {
+							return reject({
+								message: apiResponses.USER_SERVICE_DOWN,
+							})
 						} else {
-							return false
+							data.body = JSON.parse(data.body)
+							if (data.body.result && data.body.result.isAMentor) {
+								return resolve(true)
+							} else {
+								return resolve(false)
+							}
 						}
-					}
-				})
+					})
+				} catch (error) {
+					reject(error)
+				}
 			} catch (error) {
-				return error
+				reject(error)
 			}
-		} catch (error) {
-			return error
-		}
+		})
 	}
 
 	/**

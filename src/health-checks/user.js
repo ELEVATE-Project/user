@@ -25,9 +25,7 @@ async function health_check() {
 			},
 		}
 
-		request.get(healthCheckUrl, options, userServiceCallback)
-
-		function userServiceCallback(err, data) {
+		request.get(healthCheckUrl, options, (err, data) => {
 			let result = false
 
 			if (err) {
@@ -41,7 +39,7 @@ async function health_check() {
 				}
 			}
 			return result
-		}
+		})
 	} catch (error) {
 		return error
 	}
