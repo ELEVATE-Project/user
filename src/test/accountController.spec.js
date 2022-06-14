@@ -2,7 +2,6 @@ require('module-alias/register')
 const chai = require('chai')
 const sinon = require('sinon')
 const expect = chai.expect
-const flushPromises = () => new Promise(setImmediate)
 
 global.db = {
 	model: function () {

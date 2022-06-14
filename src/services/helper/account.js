@@ -106,7 +106,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
 
-			const deleteData = await redisCommunication.deleteKey(email)
+			await redisCommunication.deleteKey(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -359,6 +359,7 @@ module.exports = class AccountHelper {
 
 			if (userData && userData.action === 'forgetpassword') {
 				otp = userData.otp // If valid then get previuosly generated otp
+				console.log(otp)
 			} else {
 				isValidOtpExist = false
 			}
@@ -570,7 +571,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: user._id }, updateParams)
 
-			const deleteData = await redisCommunication.deleteKey(bodyData.email.toLowerCase())
+			await redisCommunication.deleteKey(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user._doc.password
@@ -598,51 +599,49 @@ module.exports = class AccountHelper {
 	 * @returns {CSV} - created mentors.
 	 */
 	static async bulkCreateMentors(mentors, tokenInformation) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email)
+		try {
+			const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email)
 
-				if (!systemUser) {
-					return common.failureResponse({
-						message: apiResponses.USER_DOESNOT_EXISTS,
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-
-				if (systemUser.role.toLowerCase() !== 'admin') {
-					return common.failureResponse({
-						message: apiResponses.NOT_AN_ADMIN,
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-
-				const fileName = `mentors-creation`
-				let fileStream = new FILESTREAM(fileName)
-				let input = fileStream.initStream()
-
-				;(async function () {
-					await fileStream.getProcessorPromise()
-					return resolve({
-						isResponseAStream: true,
-						fileNameWithPath: fileStream.fileNameWithPath(),
-					})
-				})()
-
-				for (const mentor of mentors) {
-					mentor.isAMentor = true
-					const data = await this.create(mentor)
-					mentor.email = mentor.email.address
-					mentor.status = data.message
-					input.push(mentor)
-				}
-
-				input.push(null)
-			} catch (error) {
-				throw error
+			if (!systemUser) {
+				return common.failureResponse({
+					message: apiResponses.USER_DOESNOT_EXISTS,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-		})
+
+			if (systemUser.role.toLowerCase() !== 'admin') {
+				return common.failureResponse({
+					message: apiResponses.NOT_AN_ADMIN,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const fileName = 'mentors-creation'
+			let fileStream = new FILESTREAM(fileName)
+			let input = fileStream.initStream()
+
+			;(async function () {
+				await fileStream.getProcessorPromise()
+				return {
+					isResponseAStream: true,
+					fileNameWithPath: fileStream.fileNameWithPath(),
+				}
+			})()
+
+			for (const mentor of mentors) {
+				mentor.isAMentor = true
+				const data = await this.create(mentor)
+				mentor.email = mentor.email.address
+				mentor.status = data.message
+				input.push(mentor)
+			}
+
+			input.push(null)
+		} catch (error) {
+			throw error
+		}
 	}
 
 	/**
@@ -825,6 +824,7 @@ module.exports = class AccountHelper {
 	 */
 	static async acceptTermsAndCondition(userId) {
 		try {
+			console.log('=======>', userId)
 			const user = await usersData.findOne({ _id: userId }, { _id: 1 })
 
 			if (!user) {

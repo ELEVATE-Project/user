@@ -19,6 +19,7 @@ module.exports = (app) => {
 	async function router(req, res, next) {
 		let controllerResponse
 		let validationError
+		console.log('rechecje')
 
 		/* Check for input validation error */
 		try {
@@ -58,6 +59,7 @@ module.exports = (app) => {
 			} else {
 				controller = require(`@controllers/${req.params.version}/${req.params.controller}`)
 			}
+			console.log(controller)
 			controllerResponse = new controller()[req.params.method]
 				? await new controller()[req.params.method](req)
 				: next()

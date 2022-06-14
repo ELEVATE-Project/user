@@ -209,6 +209,7 @@ module.exports = class Account {
 	 */
 	async acceptTermsAndCondition(req) {
 		try {
+			console.log(req.decodedToken._id, '------------------------')
 			const result = await accountHelper.acceptTermsAndCondition(req.decodedToken._id)
 			return result
 		} catch (error) {

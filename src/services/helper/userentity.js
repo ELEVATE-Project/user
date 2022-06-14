@@ -8,7 +8,6 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
 
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
@@ -29,7 +28,8 @@ module.exports = class UserEntityHelper {
 		bodyData.createdBy = ObjectId(_id)
 		bodyData.updatedBy = ObjectId(_id)
 		try {
-			const filter = { type: bodyData.type, code: bodyData.code }
+			const filter = { type: bodyData.type, value: bodyData.value }
+			console.log(filter)
 			const entity = await userEntitiesData.findOneEntity(filter)
 			if (entity) {
 				return common.failureResponse({
