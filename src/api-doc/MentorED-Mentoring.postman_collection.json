@@ -1,0 +1,1006 @@
+{
+	"info": {
+		"_postman_id": "16d7e5d2-f69c-47ed-b724-a0a51fddfdef",
+		"name": "MentorED-Mentoring",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7997930"
+	},
+	"item": [
+		{
+			"name": "form",
+			"item": [
+				{
+					"name": "Create Form",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"type\": \"session\",\n\t\"subType\": \"createSessionFormhd\",\n\t\"action\": \"sessionFields\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"title\",\n\t\t\t\t\t\"label\": \"title\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 5\n}\n},\n{\n\t\t\t\t\t\"name\": \"categories\",\n\t\t\t\t\t\"label\": \"Select categories\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "form", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Form",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"session\",\n\t\"subType\": \"createSessionFormhd\",\n\t\"action\": \"sessionFields\",\n\t\"ver\": \"1.0\",\n    \"templateName\": \"defaultTemplate\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "form", "read"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Form",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"type\": \"session\",\n\t\"subType\": \"createSessionss\",\n\t\"action\": \"sessionField\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"title\",\n\t\t\t\t\t\"label\": \"title\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 5\n}\n},\n{\n\t\t\t\t\t\"name\": \"categories\",\n\t\t\t\t\t\"label\": \"Select categories\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n},\n{\n\t\t\t\t\t\"name\": \"ages\",\n\t\t\t\t\t\"label\": \"Select age\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "form", "update"]
+						},
+						"description": "NOTE: Id is required in params and that should be objectId"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "entity",
+			"item": [
+				{
+					"name": "Create Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"ELDS\",\n    \"label\": \"Education Leadership\",\n    \"type\": \"categories\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/read?type=role",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity", "read"],
+							"query": [
+								{
+									"key": "type",
+									"value": "role"
+								},
+								{
+									"key": "deleted",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"ELDS\",\n    \"label\": \"Educational Leaderships\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"role\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/update/629b8d923be3e3fe4004661a",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity", "update", "629b8d923be3e3fe4004661a"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/delete/6285debe4d63b82bd1859a76",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity", "delete", "6285debe4d63b82bd1859a76"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "sessions",
+			"item": [
+				{
+					"name": "List Sessions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/list?page=1&limit=2&status=published,completed&search=ankit",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "2"
+								},
+								{
+									"key": "status",
+									"value": "published,completed"
+								},
+								{
+									"key": "search",
+									"value": "ankit"
+								}
+							]
+						},
+						"description": "NOTE: All query parameters are optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Session Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/details/628dae0fce0ce9359aeb8b23",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "details", "628dae0fce0ce9359aeb8b23"]
+						},
+						"description": "NOTE: Get session by session id or session link"
+					},
+					"response": []
+				},
+				{
+					"name": "Share Session",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/share/628dae0fce0ce9359aeb8b23",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "share", "628dae0fce0ce9359aeb8b23"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enroll/62a7040d127a9c1717316b95",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "enroll", "62a7040d127a9c1717316b95"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UnEnroll Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/unEnroll/628dae0fce0ce9359aeb8b23",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "unEnroll", "628dae0fce0ce9359aeb8b23"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start Session",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "string"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/start/628dae0fce0ce9359aeb8b23",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "start", "628dae0fce0ce9359aeb8b23"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Session Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"testing\",\n  \"description\": \"Training in Mumabi\",\n  \"startDate\": \"2022-06-14T10:20:42.843Z\",\n  \"endDate\": \"2022-06-14T10:20:42.843Z\",\n  \"recommendedFor\": [{\"label\":\"HM\", \"value\": 1}],\n  \"categories\": [{\"label\": \"label\", \"value\": \"value\"}],\n  \"medium\": [{\"label\":\"Hindi\", \"value\": 2 }],\n  \"image\": [\"users/1232s2133sdd1-12e2dasd3123.png\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "update"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Session Delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "startDate",
+									"value": "1640430000",
+									"type": "text"
+								},
+								{
+									"key": "endDate",
+									"value": "1640433600",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update/628ee0c8efb3923017c27f03",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "update", "628ee0c8efb3923017c27f03"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Session Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "startDate",
+									"value": "1640430000",
+									"type": "text"
+								},
+								{
+									"key": "endDate",
+									"value": "1640433600",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update/62a6bd9ecfdbd471926ff39a",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "update", "62a6bd9ecfdbd471926ff39a"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Session Feedback",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ratings\": [\n        {\n            \"qid\": \"5fa28382fc1570691e4aa3e1\",\n            \"rating\": 4,\n            \"Label\": \"How would you rate the engagement in the session\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/feedback/5fa28382fc1570691e4aa3e1",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "feedback", "5fa28382fc1570691e4aa3e1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Recording Url",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "recordingUrl",
+									"value": "https://www.google.comm",
+									"type": "string"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/updateRecordingUrl/6cecc10c982d9062250a9952e2f5f060511ec0c8-1639502895932",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": [
+								"v1",
+								"sessions",
+								"updateRecordingUrl",
+								"6cecc10c982d9062250a9952e2f5f060511ec0c8-1639502895932"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "completed session",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/completed/628ee0c8efb3923017c27f03",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "completed", "628ee0c8efb3923017c27f03"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get Recording Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/getRecording/628ee0c8efb3923017c27f03",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "getRecording", "628ee0c8efb3923017c27f03"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "mentees",
+			"item": [
+				{
+					"name": "Mentees Sessions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/sessions?enrolled=true&page=1&limit=20",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "sessions"],
+							"query": [
+								{
+									"key": "enrolled",
+									"value": "true"
+								},
+								{
+									"key": "search",
+									"value": "my data",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "NOTE: \n\nsend enrolled as true for my sessions and enrolled as false for upcoming sessions,\n\npage,limit,search queryparams are optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Join Session",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "string"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/joinSession/628dae0fce0ce9359aeb8b23",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "joinSession", "628dae0fce0ce9359aeb8b23"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mentees Home Feed",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/homeFeed",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "homeFeed"],
+							"query": [
+								{
+									"key": "enrolled",
+									"value": "true",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "my data",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "4",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mentees Report Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/reports?filterType=QUARTERLY",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "reports"],
+							"query": [
+								{
+									"key": "filterType",
+									"value": "QUARTERLY"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "mentors",
+			"item": [
+				{
+					"name": "Mentors Report Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/reports?filterType=MONTHLY",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "reports"],
+							"query": [
+								{
+									"key": "filterType",
+									"value": "MONTHLY"
+								}
+							]
+						},
+						"description": "MOTE: filterType query params is mandatory, pass either MONTHLY, WEEKLY or QUARTERLY"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "feedback",
+			"item": [
+				{
+					"name": "Create Feedback",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"feedbacks\": [\n        {\n            \"questionId\": \"61b8656fed665f7b5470a9f1\",\n            \"value\": 4,\n            \"question\": \"How would you rate the host of the session?\"\n        }\n    ],\n    \"feedbackAs\": \"mentee\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/submit/61dd34bb7b4c614f18aad5f5",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "feedback", "submit", "61dd34bb7b4c614f18aad5f5"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Feedback Form",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/forms/619769c0203fcd5fbd9693b8",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "feedback", "forms", "619769c0203fcd5fbd9693b8"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Questions",
+			"item": [
+				{
+					"name": "Create Question",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\": \"How much you rate the audio/video quality of session\",\n    \"options\": [\"1\",\"2\"],\n    \"deleted\": false,\n    \"responseType\": \"radio\",\n    \"value\": \"1\",\n    \"hint\": \"\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "questions", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Question",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{   \"question\": \"How much you rate the audio/video quality of session\",\n    \"options\": [\"1\",\"2\",\"3\"],\n    \"deleted\": false,\n    \"responseType\": \"radio\",\n    \"value\": \"1\",\n    \"hint\": \"1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/update/6296e6892fdc1f037cbf4529",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "questions", "update", "6296e6892fdc1f037cbf4529"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Question",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/read/6296e6892fdc1f037cbf4529",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "questions", "read", "6296e6892fdc1f037cbf4529"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Question Set",
+			"item": [
+				{
+					"name": "Create Question Set",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"questions\": [\"6296e6892fdc1f037cbf4529\"],\n    \"code\": \"feedback\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "questionsSet", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Question Set",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"questions\": [\"6296e6892fdc1f037cbf4529\",\"6296e65c2fdc1f037cbf4527\",\"6296e6522fdc1f037cbf4525\"],\n    \"code\": \"feedback\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/update/629978caf0cf0901d7d74d12",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "questionsSet", "update", "629978caf0cf0901d7d74d12"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Question Set",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\": \"mentorQS2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/read/629978caf0cf0901d7d74d12",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "questionsSet", "read", "629978caf0cf0901d7d74d12"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Pending Feedback",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/users/pendingFeedbacks",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "users", "pendingFeedbacks"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List User Accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/users/list?type=mentee&page=1&limit=3",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "users", "list"],
+							"query": [
+								{
+									"key": "type",
+									"value": "mentee"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
