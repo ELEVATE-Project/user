@@ -318,7 +318,7 @@
 			"name": "mentors",
 			"item": [
 				{
-					"name": "Mentor Directory",
+					"name": "Users list",
 					"request": {
 						"method": "GET",
 						"header": [
