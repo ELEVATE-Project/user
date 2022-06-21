@@ -4,7 +4,7 @@
 	"description": "A mentoring service for mentoring capability",
 	"main": "app.js",
 	"scripts": {
-		"test": "mocha ./test/*.spec.js",
+		"test": "jest",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
@@ -14,6 +14,7 @@
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
 	"dependencies": {
+		"@shelf/jest-mongodb": "^3.0.1",
 		"axios": "^0.21.4",
 		"bcrypt": "^5.0.1",
 		"bcryptjs": "^2.4.3",
@@ -47,15 +48,12 @@
 		"aws-sdk": "^2.1025.0"
 	},
 	"devDependencies": {
-		"chai": "^4.3.6",
 		"eslint": "^8.16.0",
-		"faker": "^6.6.6",
 		"husky": "^8.0.1",
+		"jest": "^28.1.1",
 		"lint-staged": "^12.4.1",
-		"mocha": "^10.0.0",
 		"nodemon": "^2.0.13",
-		"prettier": "^2.6.2",
-		"sinon": "^14.0.0"
+		"prettier": "^2.6.2"
 	},
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",
