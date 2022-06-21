@@ -59,7 +59,7 @@ Elevate services can be setup in local using three methods:
      KAFKA_URL = host.docker.external:9092
     ```
 
-2. Find **host.docker.internal** IP address and added it to **mongod.conf** file.
+2. Find **host.docker.internal** IP address and added it to **mongod.conf** file in host.
 
     Eg: If **host.docker.internal** is **172.17.0.1**,
     **mongod.conf:**
@@ -105,7 +105,7 @@ Elevate services can be setup in local using three methods:
      KAFKA_URL = 11.2.3.45:9092
     ```
 
-2. Add Bind IP to **mongod.conf:**
+2. Add Bind IP to **mongod.conf** in host:
 
     Follow instructions given [here.](https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04)
 
