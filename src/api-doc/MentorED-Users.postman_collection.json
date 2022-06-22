@@ -10,7 +10,7 @@
 			"name": "Profile",
 			"item": [
 				{
-					"name": "Profile Details (Mentor + Mentee)",
+					"name": "Profile Details",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -36,7 +36,7 @@
 					"response": []
 				},
 				{
-					"name": "Profile Update (Mentor + Mentee)",
+					"name": "Profile Update",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -318,7 +318,7 @@
 			"name": "mentors",
 			"item": [
 				{
-					"name": "Mentor Directory",
+					"name": "Users list",
 					"request": {
 						"method": "GET",
 						"header": [
