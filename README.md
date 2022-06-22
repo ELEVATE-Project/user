@@ -1,143 +1,135 @@
-# Notifications Service APIs
+# Notifications Service
 
-## Setup Notification Service without docker
+Elevate notification services can be setup in local using three methods:
 
-Recommend to,
+1. Dockerized service with local dependencies(Intermediate): Refer **Section A**.
+2. Local Service with local dependencies(Hardest): Refer **Section B**.
 
-Install any IDE in your system(eg: VScode etc..)
+## A. Dockerized Service With Local Dependencies
 
-Install NodeJs from: https://nodejs.org/en/download/
+**Expectation**: Run single docker containerized service with existing local (in host) or remote dependencies.
 
-Install kafka from: https://kafka.apache.org/downloads
+### Local Dependencies Steps
 
-### 1. Cloning the Notifications repository into your system
+1. Update dependency (Kafka etc) IP addresses in .env with "**host.docker.internal**".
 
-Go to https://github.com/ELEVATE-Project/Notification From the code tab copy the link. Using that link clone the repository into your local machine.
+    Eg:
 
-Let's make it easier for you:
+    ```
+     #Kafka Host Server URL
+     KAFKA_URL = host.docker.external:9092
+    ```
 
-    1. Create a new folder where you want to clone the repository.
-    2. Goto that directory through the terminal and execute the commands.
+2. Build the docker image.
+    ```
+    /ELEVATE/notification$ docker build -t elevate/notification:1.0 .
+    ```
+3. Run the docker container.
 
-git clone https://github.com/ELEVATE-Project/Notification.git
+    - For Mac & Windows with docker v18.03+:
 
-### 2. Add the .env file to the project directory
+        ```
+        $ docker run --name notification elevate/notification:1.0
+        ```
 
-    create a file named .env in the root directory of the project and copy the below code into that file.
-    Add the following environment configs
+    - For Linux:
+        ```
+        $ docker run --name notification --add-host=host.docker.internal:host-gateway elevate/notification:1.0`
+        ```
+        Refer [this](https://stackoverflow.com/a/24326540) for more information.
 
-### 3. Start Kafka
+### Remote Dependencies Steps
 
-    start kafka
-    create the kafka topic and use the same in .env
+1. Update dependency (Kafka etc) Ip addresses in .env with respective remote server IPs.
 
-### Required Environment variables:
+    Eg:
 
-```
-# Notification Service Config
+    ```
+     #Kafka Host Server URL
+     KAFKA_URL = 11.2.3.45:9092
+    ```
 
-#Port on which service runs
-APPLICATION_PORT = 3000
+2. Build the docker image.
+    ```
+    /ELEVATE/notification$ docker build -t elevate/notification:1.0 .
+    ```
+3. Run the docker container.
 
-#Application environment
-APPLICATION_ENV = development
+    ```
+    $ docker run --name notification elevate/notification:1.0
+    ```
 
-#Route after base url
-APPLICATION_BASE_URL = /notification/
+## B. Local Service With Local Dependencies
 
-#Kafka endpoint
-KAFKA_HOST = "localhost:9092"
+**Expectation**: Run single service with existing local dependencies in host (**Non-Docker Implementation**).
 
-#kafka topic name
-KAFKA_TOPIC ="testTopic"
+### Steps
 
-#kafka consumer group id
-KAFKA_GROUP_ID = "notification"
+1. Install required tools & dependencies
 
-#sendgrid api key
-SENDGRID_API_KEY = "SG.sdssd.dsdsd.XVSDGFEBGEB.sddsd"
+    Install any IDE (eg: VScode)
 
-#sendgrid sender email address
-SENDGRID_FROM_MAIL = "test@gmail.com"
+    Install Nodejs: https://nodejs.org/en/download/
 
-# Api doc url
-API_DOC_URL = '/api-doc'
+2. Clone the **Notification service** repository.
 
-```
+    ```
+    git clone https://github.com/ELEVATE-Project/notification.git
+    ```
 
-### 3. Install Npm
+3. Add **.env** file to the project directory
 
-    npm i
-    To install the dependencies in your local machine.
+    Create a **.env** file in **src** directory of the project and copy these environment variables into it.
 
-### 4. To Run server
+    ```
+    # Notification Service Config
 
-    npm start
+    #Port on which service runs
+    APPLICATION_PORT = 3000
 
-## Setup Notification Service using Docker
+    #Application environment
+    APPLICATION_ENV = development
 
-Recommend to,
+    #Route after base url
+    APPLICATION_BASE_URL = /notification/
 
-Install any IDE in your system(eg: VScode etc..)
+    #Kafka endpoint
+    KAFKA_HOST = "localhost:9092"
 
-Install Docker Engine from: https://docs.docker.com/engine/install/
+    #kafka topic name
+    KAFKA_TOPIC ="testTopic"
 
-Install Docker Compose from: https://docs.docker.com/compose/install/
+    #kafka consumer group id
+    KAFKA_GROUP_ID = "notification"
 
-### 1. Cloning the Notifications repository into your system
+    #sendgrid api key
+    SENDGRID_API_KEY = "SG.sdssd.dsdsd.XVSDGFEBGEB.sddsd"
 
-Go to https://github.com/ELEVATE-Project/Notification From the code tab copy the link. Using that link clone the repository into your local machine.
+    #sendgrid sender email address
+    SENDGRID_FROM_MAIL = "test@gmail.com"
 
-Let's make it easier for you:
+    ```
 
-    1. Create a new folder where you want to clone the repository.
-    2. Goto that directory through the terminal and execute the commands.
+4. Install Npm packages
 
-git clone https://github.com/ELEVATE-Project/Notification.git
+    ```
+    ELEVATE/notification/src$ npm install
+    ```
 
-### 2. Add the .env file to the project directory
+5. Start Notification server
 
-    create a file named .env in the root directory of the project and copy the below code into that file.
-    Add the following environment configs
-
-### 3. Required Environment variables:
-
-```
-# Notification Service Config
-
-#Port on which service runs
-APPLICATION_PORT = 3000
-
-#Application environment
-APPLICATION_ENV = development
-
-#Route after base url
-APPLICATION_BASE_URL = /notification/
-
-#Kafka endpoint
-KAFKA_HOST = "localhost:9092"
-
-#kafka topic name
-KAFKA_TOPIC ="testTopic"
-
-#kafka consumer group id
-KAFKA_GROUP_ID = "notification"
-
-#sendgrid api key
-SENDGRID_API_KEY = "SG.sdssd.dsdsd.XVSDGFEBGEB.sddsd"
-
-#sendgrid sender email address
-SENDGRID_FROM_MAIL = "test@gmail.com"
-
-# Api doc url
-API_DOC_URL = '/api-doc'
-
-```
-
-### 4. To Run Server
-
-    docker-compose up
+    ```
+    ELEVATE/notification/src$ npm start
+    ```
 
 ## API Documentation link
 
 https://dev.elevate-apis.shikshalokam.org/notification/api-doc
+
+## Mentoring Services
+
+https://github.com/ELEVATE-Project/mentoring.git
+
+## User Services
+
+https://github.com/ELEVATE-Project/user.git
