@@ -1,4 +1,4 @@
-let table = require('cli-table/lib')
+let table = require('cli-table')
 
 let tableData = new table()
 
