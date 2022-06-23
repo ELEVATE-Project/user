@@ -26,6 +26,7 @@ module.exports = class MenteesHelper {
 				let filters = {
 					status: 'completed',
 					skippedFeedback: false,
+					isStarted: true,
 					feedbacks: {
 						$size: 0,
 					},
@@ -43,6 +44,7 @@ module.exports = class MenteesHelper {
 
 			let sessionAttendeesFilter = {
 				'sessionDetail.status': 'completed',
+				isSessionAttended: true,
 				skippedFeedback: false,
 				feedbacks: {
 					$size: 0,
