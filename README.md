@@ -3,6 +3,7 @@
 Elevate user services can be setup in local using two methods:
 
 A. Dockerized service with local dependencies(Intermediate): Refer **Section A**.
+
 B. Local Service with local dependencies(Hardest): Refer **Section B**.
 
 ## A. Dockerized Service With Local Dependencies
