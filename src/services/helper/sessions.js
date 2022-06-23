@@ -775,6 +775,7 @@ module.exports = class SessionsHelper {
 						{
 							link: moderatorMeetingLink,
 							status: 'live',
+							isStarted: true,
 							startedAt: utils.utcFormat(),
 							internalMeetingId: meetingDetails.data.response.internalMeetingID,
 						}

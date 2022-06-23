@@ -52,6 +52,10 @@ let sessionsSchema = new Schema({
 		type: Boolean,
 		default: false,
 	},
+	isStarted: {
+		type: Boolean,
+		default: false,
+	},
 	menteeFeedbackForm: {
 		type: String,
 		default: 'menteeQS1',
