@@ -45,6 +45,7 @@
 		"redoc-cli": "^0.13.15",
 		"redoc-express": "^1.0.0",
 		"require-all": "^3.0.0",
+		"@shelf/jest-mongodb": "^3.0.1",
 		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
 		"uuid": "^8.3.2"
