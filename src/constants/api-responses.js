@@ -58,4 +58,5 @@ module.exports = {
 	FEEDBACK_AS_NOT_PASSED: 'feedbackAs key is not passed for mentor',
 	SESSION_DURATION_TIME: 'Session cannot be created ! Session duration should be less than 24 hours.',
 	SESSION__MINIMUM_DURATION_TIME: 'End time should be atleast 30 minutes after start time.',
+	PROFILE_FTECHED_SUCCESSFULLY: 'Profile fetched successfully.',
 }

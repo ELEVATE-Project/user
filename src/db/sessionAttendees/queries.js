@@ -246,17 +246,15 @@ module.exports = class SessionsAttendees {
 		})
 	}
 
-	static findAllSessionAttendees(filters) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				let sessionAttendeesData = await SessionAttendees.find({
-					...filters,
-					deleted: false,
-				}).lean()
-				resolve(sessionAttendeesData)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async findAllSessionAttendees(filters) {
+		try {
+			let sessionAttendeesData = await SessionAttendees.count({
+				...filters,
+				deleted: false,
+			})
+			return sessionAttendeesData
+		} catch (error) {
+			return error
+		}
 	}
 }

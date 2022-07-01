@@ -15,6 +15,7 @@
 	"license": "ISC",
 	"dependencies": {
 		"@shelf/jest-mongodb": "^3.0.1",
+		"aws-sdk": "^2.1025.0",
 		"axios": "^0.21.4",
 		"bcrypt": "^5.0.1",
 		"bcryptjs": "^2.4.3",
@@ -41,11 +42,10 @@
 		"redoc-express": "^1.0.0",
 		"request": "^2.88.2",
 		"require-all": "^3.0.0",
+		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
 		"uuid": "^8.3.2",
-		"xml2json": "^0.12.0",
-		"stream": "^0.0.2",
-		"aws-sdk": "^2.1025.0"
+		"xml2json": "^0.12.0"
 	},
 	"devDependencies": {
 		"eslint": "^8.16.0",

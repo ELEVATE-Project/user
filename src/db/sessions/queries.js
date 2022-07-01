@@ -155,4 +155,13 @@ module.exports = class SessionsData {
 			}
 		})
 	}
+
+	static async findSessionHosted(filter) {
+		try {
+			const sessionHosted = await Sessions.count(filter)
+			return sessionHosted
+		} catch (error) {
+			return error
+		}
+	}
 }

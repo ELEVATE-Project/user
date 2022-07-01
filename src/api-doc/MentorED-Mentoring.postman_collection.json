@@ -321,9 +321,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enroll/62a7040d127a9c1717316b95",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enroll/62a863c1e0378ffc6ff13c8b",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "enroll", "62a7040d127a9c1717316b95"]
+							"path": ["v1", "sessions", "enroll", "62a863c1e0378ffc6ff13c8b"]
 						}
 					},
 					"response": []
@@ -359,9 +359,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/start/628dae0fce0ce9359aeb8b23",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/start/628ee14cefb3923017c27f07",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "start", "628dae0fce0ce9359aeb8b23"]
+							"path": ["v1", "sessions", "start", "628ee14cefb3923017c27f07"]
 						}
 					},
 					"response": []
@@ -693,6 +693,25 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Mentee Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/profile",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "profile"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -722,6 +741,25 @@
 							]
 						},
 						"description": "MOTE: filterType query params is mandatory, pass either MONTHLY, WEEKLY or QUARTERLY"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Mentor Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/628f2361258488b5015ab746",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "profile", "628f2361258488b5015ab746"]
+						}
 					},
 					"response": []
 				}
@@ -762,11 +800,17 @@
 					"name": "Get Feedback Form",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/forms/619769c0203fcd5fbd9693b8",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/forms",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "feedback", "forms", "619769c0203fcd5fbd9693b8"]
+							"path": ["v1", "feedback", "forms"]
 						}
 					},
 					"response": []
