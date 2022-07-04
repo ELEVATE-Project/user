@@ -77,4 +77,64 @@ module.exports = class ProfileHelper {
 			throw error
 		}
 	}
+
+	static async ratingCalculation(ratingData) {
+		let mentorDetails = await usersData.findOne({ _id: ObjectId(ratingData.mentorId) })
+		let updateData
+		if (mentorDetails.rating && mentorDetails.rating.average) {
+			let totalRating = parseFloat(ratingData.value)
+			let ratingBreakup = []
+			if (mentorDetails.rating.breakup && mentorDetails.rating.breakup.length > 0) {
+				let breakupFound = false
+				ratingBreakup = await Promise.all(
+					mentorDetails.rating.breakup.map((breakupData) => {
+						totalRating = totalRating + parseFloat(breakupData.star * breakupData.votes)
+
+						if (breakupData['star'] == Number(ratingData.value)) {
+							breakupFound = true
+							return {
+								star: breakupData.star,
+								votes: breakupData.votes + 1,
+							}
+						} else {
+							return breakupData
+						}
+					})
+				)
+
+				if (!breakupFound) {
+					ratingBreakup.push({
+						star: Number(ratingData.value),
+						votes: 1,
+					})
+				}
+			}
+
+			let totalVotesCount = mentorDetails.rating.votes + 1
+			let avg = Math.round(parseFloat(totalRating) / totalVotesCount)
+
+			updateData = {
+				rating: {
+					average: avg,
+					votes: totalVotesCount,
+					breakup: ratingBreakup,
+				},
+			}
+		} else {
+			updateData = {
+				rating: {
+					average: parseFloat(ratingData.value),
+					votes: 1,
+					breakup: [
+						{
+							star: Number(ratingData.value),
+							votes: 1,
+						},
+					],
+				},
+			}
+		}
+		await usersData.updateOneUser({ _id: ObjectId(ratingData.mentorId) }, updateData)
+		return
+	}
 }
