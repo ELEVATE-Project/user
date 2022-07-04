@@ -7,6 +7,7 @@ const httpStatusCode = require('@generics/http-status')
 const questionsSetData = require('@db/questionsSet/queries')
 const questionsData = require('@db/questions/queries')
 const ObjectId = require('mongoose').Types.ObjectId
+const kafkaCommunication = require('@generics/kafka-communication')
 
 module.exports = class MenteesHelper {
 	/**
@@ -191,6 +192,7 @@ module.exports = class MenteesHelper {
 					_id: 1,
 					skippedFeedback: 1,
 					feedbacks: 1,
+					userId: 1,
 				}
 			)
 			if (!sessionInfo) {
@@ -236,7 +238,7 @@ module.exports = class MenteesHelper {
 			} else {
 				let sessionAttendesInfo = await sessionAttendees.findOneSessionAttendee(sessionId, userId)
 				if (
-					sessionAttendesInfo.skippedFeedback == true ||
+					(sessionAttendesInfo.skippedFeedback && sessionAttendesInfo.skippedFeedback == true) ||
 					(sessionAttendesInfo.feedbacks && sessionAttendesInfo.feedbacks.length > 0)
 				) {
 					return common.failureResponse({
@@ -253,6 +255,18 @@ module.exports = class MenteesHelper {
 					},
 					updateData
 				)
+
+				updateData.feedbacks.map(async function (feedbackInfo) {
+					let questionData = await questionsData.findOneQuestion({ _id: feedbackInfo.questionId })
+					if (questionData && questionData.evaluating == common.MENTOR_EVALUATING) {
+						let data = {
+							type: 'MENTOR_RATING',
+							mentorId: sessionInfo.userId,
+							...feedbackInfo,
+						}
+						kafkaCommunication.pushMentorRatingToKafka(data)
+					}
+				})
 
 				if (result == 'SESSION_ATTENDENCE_NOT_FOUND') {
 					return common.failureResponse({
