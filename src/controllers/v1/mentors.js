@@ -42,8 +42,8 @@ module.exports = class Mentors {
 
 	async share(req) {
 		try {
-			const reports = await mentorsHelper.share(req.params.id)
-			return reports
+			const shareLink = await mentorsHelper.share(req.params.id)
+			return shareLink
 		} catch (error) {
 			return error
 		}

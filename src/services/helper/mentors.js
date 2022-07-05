@@ -81,12 +81,12 @@ module.exports = class MentorsHelper {
 		return new Promise(async (resolve, reject) => {
 			const apiUrl = apiBaseUrl + apiEndpoints.SHARE_MENTOR_PROFILE + '/' + profileId
 			try {
-				let userDetails = await request.get(apiUrl, false, true)
+				let shareLink = await request.get(apiUrl, false, true)
 				return resolve(
 					common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: userDetails.data.message,
-						result: userDetails.data.result,
+						message: shareLink.data.message,
+						result: shareLink.data.result,
 					})
 				)
 			} catch (error) {
