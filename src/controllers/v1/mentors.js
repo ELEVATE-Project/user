@@ -30,4 +30,22 @@ module.exports = class Mentors {
 			return error
 		}
 	}
+
+	/**
+	 * Shareable mentor profile link.
+	 * @method
+	 * @name share
+	 * @param {Object} req - Request data.
+	 * @param {String} req.params.id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+
+	async share(req) {
+		try {
+			const reports = await mentorsHelper.share(req.params.id)
+			return reports
+		} catch (error) {
+			return error
+		}
+	}
 }
