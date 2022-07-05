@@ -38,7 +38,7 @@ module.exports = {
 		'/user/v1/systemUsers/create',
 		'/user/v1/systemUsers/login',
 	],
-	allowedUrls: [
+	internalAccessUrls: [
 		'bulkCreateMentors',
 		'/user/v1/account/verifyMentor',
 		'profile/details',

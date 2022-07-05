@@ -103,7 +103,7 @@ module.exports = class ProfileHelper {
 				await usersData.updateOneUser({ _id: ObjectId(profileId) }, { shareLink })
 			}
 			return common.successResponse({
-				message: apiResponses.PROFILE_LINK_GENERATED_SUCCESSFULLY,
+				message: apiResponses.PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY,
 				statusCode: httpStatusCode.ok,
 				result: { shareLink },
 			})
