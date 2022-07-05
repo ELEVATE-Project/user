@@ -35,6 +35,7 @@ const userSchema = new Schema({
 	designation: [{ value: String, label: String }],
 	location: [{ value: String, label: String }],
 	about: String,
+	shareLink: String,
 	areasOfExpertise: [{ value: String, label: String }],
 	image: String,
 	experience: String,

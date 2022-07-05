@@ -16,7 +16,7 @@ module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
 		await Promise.all(
-			common.uploadUrls.map(async function (path) {
+			common.allowedUrls.map(async function (path) {
 				if (req.path.includes(path)) {
 					if (
 						req.headers.internal_access_token &&

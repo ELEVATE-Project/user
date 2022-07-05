@@ -10,6 +10,7 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
+const md5 = require('md5')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -68,6 +69,17 @@ const getDownloadableUrl = async (imgPath) => {
 	return imgPath
 }
 
+/**
+ * md5 hash
+ * @function
+ * @name md5Hash
+ * @returns {String} returns uuid.
+ */
+
+function md5Hash(value) {
+	return md5(value)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -75,4 +87,5 @@ module.exports = {
 	clearFile,
 	composeEmailBody,
 	getDownloadableUrl,
+	md5Hash,
 }

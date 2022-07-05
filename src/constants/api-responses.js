@@ -55,4 +55,5 @@ module.exports = {
 	RESET_PREVIOUS_PASSWORD: 'Please enter a new password, that has not been used before',
 	EMAIL_UPDATE_FAILED: 'You can not update email.',
 	URL_NOT_FOUND: 'Url not found',
+	PROFILE_LINK_GENERATED_SUCCESSFULLY: 'Profile link was generated successfully',
 }
