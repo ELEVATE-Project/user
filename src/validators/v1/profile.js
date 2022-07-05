@@ -53,7 +53,7 @@ module.exports = {
 
 	details: (req) => {},
 
-	shareMentorProfile: (req) => {
+	share: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
 	},
 }
