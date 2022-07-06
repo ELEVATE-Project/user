@@ -10,7 +10,6 @@ const ObjectId = require('mongoose').Types.ObjectId
 
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 
@@ -29,7 +28,7 @@ module.exports = class ProfileHelper {
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return common.failureResponse({
-					message: apiResponses.EMAIL_UPDATE_FAILED,
+					message: 'EMAIL_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -37,7 +36,7 @@ module.exports = class ProfileHelper {
 			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.PROFILE_UPDATED_SUCCESSFULLY,
+				message: 'PROFILE_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -70,7 +69,7 @@ module.exports = class ProfileHelper {
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.PROFILE_FETCHED_SUCCESSFULLY,
+				message: 'PROFILE_FETCHED_SUCCESSFULLY',
 				result: user ? user : {},
 			})
 		} catch (error) {
