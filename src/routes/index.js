@@ -109,7 +109,7 @@ module.exports = (app) => {
 		}
 		res.status(status).json({
 			responseCode,
-			message,
+			message: req.t(message),
 			error: errorData,
 		})
 	})
