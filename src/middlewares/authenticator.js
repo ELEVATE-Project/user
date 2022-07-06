@@ -8,7 +8,6 @@
 const jwt = require('jsonwebtoken')
 
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
@@ -44,7 +43,7 @@ module.exports = async function (req, res, next) {
 
 		if (!authHeader) {
 			throw common.failureResponse({
-				message: apiResponses.UNAUTHORIZED_REQUEST,
+				message: 'UNAUTHORIZED_REQUEST',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
 			})
@@ -52,7 +51,7 @@ module.exports = async function (req, res, next) {
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') {
 			throw common.failureResponse({
-				message: apiResponses.UNAUTHORIZED_REQUEST,
+				message: 'UNAUTHORIZED_REQUEST',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
 			})
@@ -62,13 +61,13 @@ module.exports = async function (req, res, next) {
 		} catch (err) {
 			err.statusCode = httpStatusCode.unauthorized
 			err.responseCode = 'UNAUTHORIZED'
-			err.message = apiResponses.ACCESS_TOKEN_EXPIRED
+			err.message = 'ACCESS_TOKEN_EXPIRED'
 			throw err
 		}
 
 		if (!decodedToken) {
 			throw common.failureResponse({
-				message: apiResponses.UNAUTHORIZED_REQUEST,
+				message: 'UNAUTHORIZED_REQUEST',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
 			})
@@ -82,7 +81,7 @@ module.exports = async function (req, res, next) {
 
 		if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
 			throw common.failureResponse({
-				message: apiResponses.USER_ROLE_UPDATED,
+				message: 'USER_ROLE_UPDATED',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
 			})
