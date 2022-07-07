@@ -64,6 +64,9 @@ const userSchema = new Schema({
 		exp: Number,
 	},
 	languages: [{ value: String, label: String }],
+	rating: {
+		type: Object,
+	},
 })
 
 const Users = db.model('users', userSchema)

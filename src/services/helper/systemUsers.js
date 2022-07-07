@@ -8,7 +8,6 @@
 // Dependencies
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const systemUserData = require('@db/systemUsers/queries')
 
@@ -28,7 +27,7 @@ module.exports = class SystemUsersHelper {
 			const user = await systemUserData.findUsersByEmail(email)
 			if (user) {
 				return common.failureResponse({
-					message: apiResponses.SYSTEM_USER_ALREADY_EXISTS,
+					message: 'SYSTEM_USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -39,7 +38,7 @@ module.exports = class SystemUsersHelper {
 			await systemUserData.create(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.USER_CREATED_SUCCESSFULLY,
+				message: 'USER_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -60,7 +59,7 @@ module.exports = class SystemUsersHelper {
 			let user = await systemUserData.findUsersByEmail(bodyData.email)
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -68,7 +67,7 @@ module.exports = class SystemUsersHelper {
 			const isPasswordCorrect = utilsHelper.comparePassword(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return common.failureResponse({
-					message: apiResponses.PASSWORD_INVALID,
+					message: 'PASSWORD_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -90,7 +89,7 @@ module.exports = class SystemUsersHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.LOGGED_IN_SUCCESSFULLY,
+				message: 'LOGGED_IN_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {

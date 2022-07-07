@@ -7,7 +7,6 @@
 
 // Dependencies
 const usersData = require('@db/users/queries')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const cloudServices = require('@generics/cloud-services')
@@ -31,7 +30,7 @@ module.exports = class MentorsHelper {
 			if (mentors[0].data.length < 1) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: apiResponses.MENTOR_LIST,
+					message: 'MENTOR_LIST',
 					result: {
 						data: [],
 						count: 0,
@@ -73,7 +72,7 @@ module.exports = class MentorsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.MENTOR_LIST,
+				message: 'MENTOR_LIST',
 				result: {
 					data: result,
 					count: mentors[0].count,
