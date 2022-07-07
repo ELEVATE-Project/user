@@ -1,4 +1,3 @@
-const { details } = require('@services/helper/userProfile')
 const mongoose = require('mongoose')
 
 async function loadMongo() {
@@ -10,7 +9,6 @@ async function loadMongo() {
 }
 
 describe('Sessions controller and helper test', () => {
-	let controller
 	let menteesServices
 	let sessionAttended
 	let userProfile
@@ -18,7 +16,6 @@ describe('Sessions controller and helper test', () => {
 	beforeAll(async () => {
 		await loadMongo()
 		menteesServices = require('@services/helper/mentees')
-		controller = require('@controllers/v1/mentees')
 		sessionAttended = require('@db/sessionAttendees/queries')
 		userProfile = require('@services/helper/userProfile')
 	})
