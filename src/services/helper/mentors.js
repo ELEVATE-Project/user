@@ -1,11 +1,46 @@
 // Dependencies
 const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
+const userProfile = require('./userProfile')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
+const sessionAttendees = require('@db/sessionAttendees/queries')
+
 module.exports = class MentorsHelper {
+	/**
+	 * Profile.
+	 * @method
+	 * @name profile
+	 * @param {String} userId - user id.
+	 * @returns {JSON} - profile details
+	 */
+	static async profile(id) {
+		const mentorsDetails = await userProfile.details('', id)
+		if (mentorsDetails.data.result.isAMentor) {
+			const filterSessionAttended = { userId: id, isSessionAttended: true }
+			const totalSessionsAttended = await sessionAttendees.findAllSessionAttendees(filterSessionAttended)
+			const filterSessionHosted = { userId: id, status: 'completed', isStarted: true }
+			const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_FTECHED_SUCCESSFULLY',
+				result: {
+					sessionsAttended: totalSessionsAttended,
+					sessionsHosted: totalSessionHosted,
+					...mentorsDetails.data.result,
+				},
+			})
+		} else {
+			return common.failureResponse({
+				statusCode: httpStatusCode.bad_request,
+				message: 'MENTORS_NOT_FOUND',
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+	}
+
 	/**
 	 * Mentors reports.
 	 * @method

@@ -879,6 +879,67 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/mentees/homefeed200Response'
+  '/mentoring/v1/mentees/profile':
+    get:
+      summary: Mentee profile
+      tags:
+        - Mentee APIs
+      description: "This API is associated with mentee profile \n -
+        Endpoint for list session `/mentoring/v1/mentees/profile` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentees/menteeProfile200Response'
+  '/mentoring/v1/mentors/profile/{mentorId}':
+    get:
+      summary: Mentor profile
+      tags:
+        - Mentor APIs
+      description: "This API is associated with mentor profile \n -
+        Endpoint for list session `/mentoring/v1/mentors/profile` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'mentorId '
+          required: true
+          description: Please append a valid mentorId
+          schema:
+            type: string
+            example: 62a820225ff93f30cfe5f990
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/mentorProfile200Response'
+        '400':
+          description: Bad request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/mentorProfile400Response'
   '/mentoring/v1/mentors/reports?filterType={filterType}':
     get:
       summary: Mentors reports
@@ -2713,6 +2774,113 @@ components:
             meta:
               type: object
               example: {}
+      menteeProfile200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Profile fetched successfully.
+          result:
+            type: object
+            properties:
+              email:
+                type: object
+                properties:
+                  verified:
+                    type: boolean
+                    example: false
+                  address:
+                    type: string
+                    example: example@mail.com
+              sessionAttended:
+                type: string
+                example: 1
+              isAMentor:
+                type: boolean
+                example: false
+              hasAcceptedTAndC:
+                type: boolean
+                example: false
+              deleted:
+                type: boolean
+                example: false
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              name:
+                type: string
+                example: Ankit
+              designation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Teacher
+              location:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Bangalore
+              areasOfExpertise:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Educational Leadership
+              languages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: English
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
+              lastLoggedInAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              about:
+                type: string
+                example: This is test about of mentee
+              experience:
+                type: string
+                example: '4.2'
+              gender:
+                type: string
+                example: MALE
+              image:
+                type: string
+                example: https://cloudstorage.com/container/abc.png
     mentors:
       mentorSessionReport200Response:
         type: object
@@ -2733,6 +2901,125 @@ components:
                 type: number
                 example: 1
           meta: {}
+      mentorProfile200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Profile fetched successfully.
+          result:
+            type: object
+            properties:
+              email:
+                type: object
+                properties:
+                  verified:
+                    type: boolean
+                    example: false
+                  address:
+                    type: string
+                    example: example@mail.com
+              sessionAttended:
+                type: string
+                example: 1
+              isAMentor:
+                type: boolean
+                example: true
+              hasAcceptedTAndC:
+                type: boolean
+                example: false
+              deleted:
+                type: boolean
+                example: false
+              _id:
+                type: string
+                example: 62832531a05cbd57b273aebb
+              name:
+                type: string
+                example: Ankit
+              designation:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Teacher
+              location:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Bangalore
+              areasOfExpertise:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: Educational Leadership
+              languages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    value:
+                      type: number
+                      example: 1
+                    lable:
+                      type: string
+                      example: English
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
+              lastLoggedInAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              about:
+                type: string
+                example: This is test about of mentee
+              experience:
+                type: string
+                example: '4.2'
+              gender:
+                type: string
+                example: MALE
+              image:
+                type: string
+                example: https://cloudstorage.com/container/abc.png
+      mentorProfile400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Could not found mentor.
+          error:
+            type: array
+            example: []
     questions:
       createQuestionRequest:
         type: object

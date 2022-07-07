@@ -11,7 +11,31 @@ const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
 
+const apiEndpoints = require('@constants/endpoints')
+const request = require('request')
+const { successResponse } = require('@constants/common')
+
+const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+
 module.exports = class MenteesHelper {
+	/**
+	 * Profile.
+	 * @method
+	 * @name profile
+	 * @param {String} userId - user id.
+	 * @returns {JSON} - profile details
+	 */
+	static async profile(id) {
+		const menteeDetails = await userProfile.details('', id)
+		const filter = { userId: id, isSessionAttended: true }
+		const totalsession = await sessionAttendees.findAllSessionAttendees(filter)
+		return successResponse({
+			statusCode: httpStatusCode.ok,
+			message: 'PROFILE_FTECHED_SUCCESSFULLY',
+			result: { sessionsAttended: totalsession, ...menteeDetails.data.result },
+		})
+	}
+
 	/**
 	 * Sessions list. Includes upcoming and enrolled sessions.
 	 * @method

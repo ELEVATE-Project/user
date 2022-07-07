@@ -19,6 +19,7 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	const error = new Error(message)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
+
 	return error
 }
 

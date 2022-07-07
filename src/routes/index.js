@@ -52,6 +52,7 @@ module.exports = (app) => {
 		}
 
 		if (
+			controllerResponse &&
 			controllerResponse.statusCode !== 200 &&
 			controllerResponse.statusCode !== 201 &&
 			controllerResponse.statusCode !== 202
