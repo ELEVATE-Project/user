@@ -7,6 +7,7 @@
 
 // Dependencies
 const mongoose = require('mongoose')
+const { stringify } = require('uuid')
 const Schema = mongoose.Schema
 
 const userSchema = new Schema({
@@ -52,6 +53,10 @@ const userSchema = new Schema({
 		type: Boolean,
 		default: false,
 		required: true,
+	},
+	educationQualification: {
+		type: String,
+		default: null,
 	},
 	refreshTokens: [{ token: String, exp: Number }],
 	otpInfo: {

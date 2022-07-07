@@ -28,9 +28,9 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/profile/details/62832531a05cbd57b273aebb",
+							"raw": "{{UserDevBaseUrl}}user/v1/profile/details/628483242d53327460469bec",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "profile", "details", "62832531a05cbd57b273aebb"]
+							"path": ["v1", "profile", "details", "628483242d53327460469bec"]
 						}
 					},
 					"response": []
@@ -48,7 +48,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n   \n    \"designation\": [{ \"value\": \"1\", \"label\": \"Teacher\" }, { \"value\": \"2\", \"label\": \"District Official\" }],\n    \"location\": [{ \"value\": \"1\", \"label\": \"Bangalore\" }],\n    \"about\": \"This is test about of mentee\",\n    \"areasOfExpertise\": [{ \"value\": \"1\", \"label\": \"Educational Leadership\" }, { \"value\": \"2\", \"label\": \"SQAA\" }],\n    \"experience\": 4.2,\n    \"hasAcceptedTAndC\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
+							"raw": "{\n    \"name\": \"Ankit\",\n   \n    \"designation\": [{ \"value\": \"1\", \"label\": \"Teacher\" }, { \"value\": \"2\", \"label\": \"District Official\" }],\n    \"location\": [{ \"value\": \"1\", \"label\": \"Bangalore\" }],\n    \"about\": \"This is test about of mentee\",\n    \"areasOfExpertise\": [{ \"value\": \"1\", \"label\": \"Educational Leadership\" }, { \"value\": \"2\", \"label\": \"SQAA\" }],\n    \"experience\": 4.2,\n    \"hasAcceptedTAndC\": true,\n    \"gender\": \"MALE\",\n    \"educationQualification\": \"B.A.\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -423,7 +423,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"ankitstar00786@gmail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
+							"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"vipin@gmail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
 							"options": {
 								"raw": {
 									"language": "json"

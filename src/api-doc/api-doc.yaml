@@ -1657,6 +1657,9 @@ components:
               name:
                 type: string
                 example: Ankit
+              educationQualification:
+                type: string
+                example: B.A.
               designation:
                 type: array
                 items:
@@ -1774,6 +1777,9 @@ components:
           hasAcceptedTAndC:
             type: boolean
             example: true
+          educationQualification:
+            type: string
+            example: B.A.
           gender:
             type: string
             example: MALE
