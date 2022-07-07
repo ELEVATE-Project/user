@@ -211,7 +211,7 @@ describe('Sessions controller and helper test', () => {
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
 
 		const actual = await mentorsServices.profile('62a820225ff93f30cfe5f990')
-		console.log('=========', actual)
+
 		expect(actual.statusCode).toEqual(400)
 		expect(actual.responseCode).toEqual('CLIENT_ERROR')
 	})
