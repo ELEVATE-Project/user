@@ -248,11 +248,10 @@ module.exports = class SessionsAttendees {
 
 	static async findAllSessionAttendees(filters) {
 		try {
-			let sessionAttendeesData = await SessionAttendees.count({
+			return await SessionAttendees.count({
 				...filters,
 				deleted: false,
 			})
-			return sessionAttendeesData
 		} catch (error) {
 			return error
 		}

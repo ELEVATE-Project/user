@@ -158,8 +158,7 @@ module.exports = class SessionsData {
 
 	static async findSessionHosted(filter) {
 		try {
-			const sessionHosted = await Sessions.count(filter)
-			return sessionHosted
+			return await Sessions.count(filter)
 		} catch (error) {
 			return error
 		}

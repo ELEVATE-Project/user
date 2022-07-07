@@ -15,12 +15,6 @@ describe('Sessions controller and helper test', () => {
 	let sessionsData
 	let userProfile
 
-	const mockQueries = () => ({
-		findAllSessionAttendees: jest.fn(),
-		details: jest.fn(),
-		findSessionHosted: jest.fn(),
-	})
-
 	beforeAll(async () => {
 		await loadMongo()
 		mentorsServices = require('@services/helper/mentors')

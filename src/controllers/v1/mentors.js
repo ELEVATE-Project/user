@@ -19,8 +19,7 @@ module.exports = class Mentors {
 	 */
 	async profile(req) {
 		try {
-			const profile = await mentorsHelper.profile(req.params.id)
-			return profile
+			return await mentorsHelper.profile(req.params.id)
 		} catch (error) {
 			return errors
 		}
