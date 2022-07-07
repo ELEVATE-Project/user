@@ -16,7 +16,7 @@ describe('Sessions controller and helper test', () => {
 	let sessionAttended
 	let userProfile
 
-	const mockQuries = () => ({
+	const mockQueries = () => ({
 		findAllSessionAttendees: jest.fn(),
 		details: jest.fn(),
 	})
