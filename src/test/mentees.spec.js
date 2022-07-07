@@ -34,6 +34,7 @@ describe('Sessions controller and helper test', () => {
 				_id: '62a820225ff93f30cfe5f990',
 				name: 'Ankit',
 				isAMentor: true,
+				educationQualification: 'B.A.',
 				hasAcceptedTAndC: true,
 				deleted: false,
 				designation: [
@@ -88,6 +89,8 @@ describe('Sessions controller and helper test', () => {
 					_id: '62a820225ff93f30cfe5f990',
 					name: 'Ankit',
 					isAMentor: true,
+					educationQualification: 'B.A.',
+
 					hasAcceptedTAndC: true,
 					deleted: false,
 					designation: [

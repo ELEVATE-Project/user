@@ -2857,6 +2857,9 @@ components:
                     lable:
                       type: string
                       example: English
+              educationQualification:
+                type: string
+                example: B.A.
               updatedAt:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
@@ -2984,6 +2987,9 @@ components:
                     lable:
                       type: string
                       example: English
+              educationQualification:
+                type: string
+                example: B.A.
               updatedAt:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
