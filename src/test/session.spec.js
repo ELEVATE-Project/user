@@ -56,7 +56,7 @@ describe('Sessions controller and helper test', () => {
 		let response = await sessionService.list('62832531a05cbd57b273aebb', 1, 10)
 
 		expect(response.statusCode).toBe(200)
-		expect(response.message).toBe('Session fetched successfully.')
+		expect(response.message).toBe('SESSION_FETCHED_SUCCESSFULLY')
 	})
 
 	test('should call session list controller', async () => {
@@ -73,7 +73,7 @@ describe('Sessions controller and helper test', () => {
 		let controllerResponse = new controller()
 		let response = await controllerResponse.list(request)
 		expect(response.statusCode).toBe(200)
-		expect(response.message).toBe('Session fetched successfully.')
+		expect(response.message).toBe('SESSION_FETCHED_SUCCESSFULLY')
 	})
 
 	afterAll(async () => {

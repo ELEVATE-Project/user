@@ -67,5 +67,5 @@ generics/helpers/credentials/*
 gcp.json
 
 #ignore jest db config 
-src/globalConfig.json
+./src/globalConfig.json
 
