@@ -5,7 +5,6 @@ const sessionAttendees = require('@db/sessionAttendees/queries')
 const userProfile = require('./userProfile')
 const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const bigBlueButton = require('./bigBlueButton')
 const feedbackHelper = require('./feedback')
@@ -32,7 +31,7 @@ module.exports = class MenteesHelper {
 		const totalsession = await sessionAttendees.findAllSessionAttendees(filter)
 		return successResponse({
 			statusCode: httpStatusCode.ok,
-			message: apiResponses.PROFILE_FTECHED_SUCCESSFULLY,
+			message: 'PROFILE_FTECHED_SUCCESSFULLY',
 			result: { sessionsAttended: totalsession, ...menteeDetails.data.result },
 		})
 	}
@@ -67,7 +66,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: sessions,
 			})
 		} catch (error) {
@@ -108,7 +107,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY,
+				message: 'MENTEES_REPORT_FETCHED_SUCCESSFULLY',
 				result: { totalSessionEnrolled, totalsessionsAttended },
 			})
 		} catch (error) {
@@ -145,7 +144,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: result,
 				meta: {
 					type: 'feedback',
@@ -174,7 +173,7 @@ module.exports = class MenteesHelper {
 				if (mentee.data.responseCode !== 'OK') {
 					return resolve(
 						common.failureResponse({
-							message: apiResponses.USER_NOT_FOUND,
+							message: 'USER_NOT_FOUND',
 							statusCode: httpStatusCode.bad_request,
 							responseCode: 'CLIENT_ERROR',
 						})
@@ -186,7 +185,7 @@ module.exports = class MenteesHelper {
 				if (!session) {
 					return resolve(
 						common.failureResponse({
-							message: apiResponses.SESSION_NOT_FOUND,
+							message: 'SESSION_NOT_FOUND',
 							statusCode: httpStatusCode.bad_request,
 							responseCode: 'CLIENT_ERROR',
 						})
@@ -196,7 +195,7 @@ module.exports = class MenteesHelper {
 				if (session.status == 'completed') {
 					return resolve(
 						common.failureResponse({
-							message: apiResponses.SESSION_ENDED,
+							message: 'SESSION_ENDED',
 							statusCode: httpStatusCode.bad_request,
 							responseCode: 'CLIENT_ERROR',
 						})
@@ -206,7 +205,7 @@ module.exports = class MenteesHelper {
 				if (session.status !== 'live') {
 					return resolve(
 						common.failureResponse({
-							message: apiResponses.JOIN_ONLY_LIVE_SESSION,
+							message: 'JOIN_ONLY_LIVE_SESSION',
 							statusCode: httpStatusCode.bad_request,
 							responseCode: 'CLIENT_ERROR',
 						})
@@ -223,7 +222,7 @@ module.exports = class MenteesHelper {
 				if (!sessionAttendee) {
 					return resolve(
 						common.failureResponse({
-							message: apiResponses.USER_NOT_ENROLLED,
+							message: 'USER_NOT_ENROLLED',
 							statusCode: httpStatusCode.bad_request,
 							responseCode: 'CLIENT_ERROR',
 						})
@@ -257,7 +256,7 @@ module.exports = class MenteesHelper {
 				return resolve(
 					common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: apiResponses.SESSION_START_LINK,
+						message: 'SESSION_START_LINK',
 						result: {
 							link: link,
 						},

@@ -3,7 +3,6 @@ const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
 const userProfile = require('./userProfile')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
@@ -26,7 +25,7 @@ module.exports = class MentorsHelper {
 			const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.PROFILE_FTECHED_SUCCESSFULLY,
+				message: 'PROFILE_FTECHED_SUCCESSFULLY',
 				result: {
 					sessionsAttended: totalSessionsAttended,
 					sessionsHosted: totalSessionHosted,
@@ -34,16 +33,9 @@ module.exports = class MentorsHelper {
 				},
 			})
 		} else {
-			console.log(
-				common.failureResponse({
-					statusCode: httpStatusCode.bad_request,
-					message: apiResponses.MENTORS_NOT_FOUND,
-					responseCode: 'CLIENT_ERROR',
-				})
-			)
 			return common.failureResponse({
 				statusCode: httpStatusCode.bad_request,
-				message: apiResponses.MENTORS_NOT_FOUND,
+				message: 'MENTORS_NOT_FOUND',
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
@@ -99,7 +91,7 @@ module.exports = class MentorsHelper {
 			totalsessionHosted = await sessionsData.countSessions(filters)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.MENTORS_REPORT_FETCHED_SUCCESSFULLY,
+				message: 'MENTORS_REPORT_FETCHED_SUCCESSFULLY',
 				result: { totalSessionCreated, totalsessionHosted },
 			})
 		} catch (error) {

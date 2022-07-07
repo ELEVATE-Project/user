@@ -42,4 +42,5 @@ module.exports = {
 	COMPLETED_STATUS: 'completed',
 	PUBLISHED_STATUS: 'published',
 	LIVE_STATUS: 'live',
+	MENTOR_EVALUATING: 'mentor',
 }

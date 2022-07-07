@@ -14,6 +14,15 @@ const pushEmailToKafka = async (message) => {
 	}
 }
 
+const pushMentorRatingToKafka = async (message) => {
+	try {
+		const payload = [{ topic: process.env.RATING_KAFKA_TOPIC, messages: JSON.stringify(message) }]
+		return await pushPayloadToKafka(payload)
+	} catch (error) {
+		throw error
+	}
+}
+
 const pushPayloadToKafka = (payload) => {
 	return new Promise((resolve, reject) => {
 		kafkaProducer.send(payload, (error, data) => {
@@ -27,4 +36,5 @@ const pushPayloadToKafka = (payload) => {
 
 module.exports = {
 	pushEmailToKafka,
+	pushMentorRatingToKafka,
 }

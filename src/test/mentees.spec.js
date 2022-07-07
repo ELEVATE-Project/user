@@ -34,7 +34,7 @@ describe('Sessions controller and helper test', () => {
 		const expectedResult = {
 			statusCode: 200,
 			responseCode: 'OK',
-			message: 'Profile fetched successfully.',
+			message: 'PROFILE_FTECHED_SUCCESSFULLY',
 			result: {
 				sessionsAttended: 2,
 				email: {
