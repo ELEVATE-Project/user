@@ -7,7 +7,6 @@ async function loadMongo() {
 		useUnifiedTopology: true,
 	})
 	global.db = db
-	return
 }
 
 describe('Sessions controller and helper test', () => {
@@ -22,7 +21,6 @@ describe('Sessions controller and helper test', () => {
 		controller = require('@controllers/v1/mentees')
 		sessionAttended = require('@db/sessionAttendees/queries')
 		userProfile = require('@services/helper/userProfile')
-		return
 	})
 
 	test('should return Profile of mentee', async () => {
