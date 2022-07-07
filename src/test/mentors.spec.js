@@ -38,6 +38,7 @@ describe('Sessions controller and helper test', () => {
 				name: 'Ankit',
 				isAMentor: true,
 				hasAcceptedTAndC: true,
+				educationQualification: 'B.A.',
 				deleted: false,
 				designation: [
 					{
@@ -92,6 +93,7 @@ describe('Sessions controller and helper test', () => {
 					name: 'Ankit',
 					isAMentor: true,
 					hasAcceptedTAndC: true,
+					educationQualification: 'B.A.',
 					deleted: false,
 					designation: [
 						{
@@ -159,6 +161,7 @@ describe('Sessions controller and helper test', () => {
 					name: 'Ankit',
 					isAMentor: false,
 					hasAcceptedTAndC: true,
+					educationQualification: 'B.A.',
 					deleted: false,
 					designation: [
 						{
