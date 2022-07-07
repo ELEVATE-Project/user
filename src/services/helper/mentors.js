@@ -2,7 +2,6 @@
 const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
@@ -57,7 +56,7 @@ module.exports = class MentorsHelper {
 			totalsessionHosted = await sessionsData.countSessions(filters)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.MENTORS_REPORT_FETCHED_SUCCESSFULLY,
+				message: 'MENTORS_REPORT_FETCHED_SUCCESSFULLY',
 				result: { totalSessionCreated, totalsessionHosted },
 			})
 		} catch (error) {

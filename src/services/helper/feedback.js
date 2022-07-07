@@ -2,7 +2,6 @@
 const sessionAttendees = require('@db/sessionAttendees/queries')
 const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const questionsSetData = require('@db/questionsSet/queries')
 const questionsData = require('@db/questions/queries')
@@ -109,7 +108,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.PENDING_FEEDBACK_FETCHED_SUCCESSFULLY,
+				message: 'PENDING_FEEDBACK_FETCHED_SUCCESSFULLY',
 				result: sessions,
 			})
 		} catch (error) {
@@ -139,7 +138,7 @@ module.exports = class MenteesHelper {
 			)
 			if (!sessioninfo) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -156,7 +155,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.FEEDBACKFORM_MESSAGE,
+				message: 'FEEDBACKFORM_MESSAGE',
 				result: {
 					form: formData,
 				},
@@ -197,7 +196,7 @@ module.exports = class MenteesHelper {
 			)
 			if (!sessionInfo) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -209,7 +208,7 @@ module.exports = class MenteesHelper {
 					(sessionInfo.feedbacks && sessionInfo.feedbacks.length > 0)
 				) {
 					return common.failureResponse({
-						message: apiResponses.FEEDBACK_ALREADY_SUBMITTED,
+						message: 'FEEDBACK_ALREADY_SUBMITTED',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -225,14 +224,14 @@ module.exports = class MenteesHelper {
 
 				if (result == 'SESSION_NOT_FOUND') {
 					return common.failureResponse({
-						message: apiResponses.SESSION_NOT_FOUND,
+						message: 'SESSION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				} else {
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: apiResponses.FEEDBACK_SUBMITTED,
+						message: 'FEEDBACK_SUBMITTED',
 					})
 				}
 			} else {
@@ -242,7 +241,7 @@ module.exports = class MenteesHelper {
 					(sessionAttendesInfo.feedbacks && sessionAttendesInfo.feedbacks.length > 0)
 				) {
 					return common.failureResponse({
-						message: apiResponses.FEEDBACK_ALREADY_SUBMITTED,
+						message: 'FEEDBACK_ALREADY_SUBMITTED',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -270,14 +269,14 @@ module.exports = class MenteesHelper {
 
 				if (result == 'SESSION_ATTENDENCE_NOT_FOUND') {
 					return common.failureResponse({
-						message: apiResponses.SESSION_NOT_FOUND,
+						message: 'SESSION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				} else {
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: apiResponses.FEEDBACK_SUBMITTED,
+						message: 'FEEDBACK_SUBMITTED',
 					})
 				}
 			}
