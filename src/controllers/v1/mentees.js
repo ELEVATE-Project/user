@@ -20,7 +20,6 @@ module.exports = class Mentees {
 	async profile(req) {
 		try {
 			const profile = await menteesHelper.profile(req.decodedToken._id)
-			console.log(profile)
 			return profile
 		} catch (error) {
 			return errors

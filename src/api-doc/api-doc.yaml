@@ -909,7 +909,7 @@ paths:
       tags:
         - Mentor APIs
       description: "This API is associated with mentor profile \n -
-        Endpoint for list session `/mentoring/v1/mentees/profile` \n - It is mandatory to
+        Endpoint for list session `/mentoring/v1/mentors/profile` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
