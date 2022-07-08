@@ -17,6 +17,22 @@ module.exports = class Mentors {
 	 * @param {String} req.params.id - mentor Id.
 	 * @returns {JSON} - mentors profile details
 	 */
+	async upcomingSessions(req) {
+		try {
+			return await mentorsHelper.upcomingSessions(req.params.id, req.pageNo, req.pageSize, req.searchText)
+		} catch (error) {
+			return errors
+		}
+	}
+
+	/**
+	 * mentors profile
+	 * @method
+	 * @name profile
+	 * @param {Object} req - request data.
+	 * @param {String} req.params.id - mentor Id.
+	 * @returns {JSON} - mentors profile details
+	 */
 	async profile(req) {
 		try {
 			return await mentorsHelper.profile(req.params.id)
