@@ -6,6 +6,7 @@
  */
 
 const Sessions = require('./model')
+const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = class SessionsData {
 	static createSession(data) {
@@ -159,6 +160,54 @@ module.exports = class SessionsData {
 	static async findSessionHosted(filter) {
 		try {
 			return await Sessions.count(filter)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async mentorsUpcomingSession(page, limit, search, filters) {
+		filters.userId = ObjectId(filters.userId)
+		try {
+			const sessionAttendeesData = await Sessions.aggregate([
+				{
+					$match: {
+						$and: [filters, { deleted: false }],
+						$or: [{ title: new RegExp(search, 'i') }, { mentorName: new RegExp(search, 'i') }],
+					},
+				},
+				{
+					$sort: { startDateUtc: 1 },
+				},
+				{
+					$project: {
+						_id: 1,
+						title: 1,
+						mentorName: 1,
+						description: 1,
+						startDate: 1,
+						endDate: 1,
+						status: 1,
+						image: 1,
+						endDateUtc: 1,
+					},
+				},
+				{
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
+					},
+				},
+				{
+					$project: {
+						data: 1,
+						count: {
+							$arrayElemAt: ['$totalCount.count', 0],
+						},
+					},
+				},
+			])
+			console.log(sessionAttendeesData)
+			return sessionAttendeesData
 		} catch (error) {
 			return error
 		}

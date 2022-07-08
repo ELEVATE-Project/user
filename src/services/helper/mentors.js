@@ -1,4 +1,6 @@
 // Dependencies
+const moment = require('moment-timezone')
+
 const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
 const userProfile = require('./userProfile')
@@ -9,6 +11,57 @@ const ObjectId = require('mongoose').Types.ObjectId
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
 module.exports = class MentorsHelper {
+	/**
+	 * Profile.
+	 * @method
+	 * @name profile
+	 * @param {String} userId - user id.
+	 * @returns {JSON} - profile details
+	 */
+	static async upcomingSessions(id, page, limit, search = '') {
+		try {
+			const mentorsDetails = await userProfile.details('', id)
+			if (mentorsDetails.data.result.isAMentor) {
+				const filterUpcomingSession = {
+					$and: [
+						{
+							startDate: {
+								$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
+							},
+						},
+						{
+							status: 'published',
+						},
+						{
+							isStarted: false,
+						},
+					],
+					userId: id,
+				}
+				const upcomingSessions = await sessionsData.mentorsUpcomingSession(
+					page,
+					limit,
+					search,
+					filterUpcomingSession
+				)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'UPCOMING_SESSION_FETCHED',
+					result: upcomingSessions,
+				})
+			} else {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		} catch (err) {
+			console.log(err)
+			return err
+		}
+	}
+
 	/**
 	 * Profile.
 	 * @method
