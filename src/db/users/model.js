@@ -7,6 +7,7 @@
 
 // Dependencies
 const mongoose = require('mongoose')
+const { stringify } = require('uuid')
 const Schema = mongoose.Schema
 
 const userSchema = new Schema({
@@ -54,12 +55,19 @@ const userSchema = new Schema({
 		default: false,
 		required: true,
 	},
+	educationQualification: {
+		type: String,
+		default: null,
+	},
 	refreshTokens: [{ token: String, exp: Number }],
 	otpInfo: {
 		otp: Number,
 		exp: Number,
 	},
 	languages: [{ value: String, label: String }],
+	rating: {
+		type: Object,
+	},
 })
 
 const Users = db.model('users', userSchema)

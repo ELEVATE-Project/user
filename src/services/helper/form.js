@@ -7,7 +7,6 @@
 
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
 
@@ -37,7 +36,7 @@ module.exports = class FormsHelper {
 			const form = await formsData.findOneForm(filter)
 			if (form) {
 				return common.failureResponse({
-					message: apiResponses.FORM_ALREADY_EXISTS,
+					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -45,7 +44,7 @@ module.exports = class FormsHelper {
 			await formsData.createForm(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.FORM_CREATED_SUCCESSFULLY,
+				message: 'FORM_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -76,20 +75,20 @@ module.exports = class FormsHelper {
 			const result = await formsData.updateOneForm(filter, bodyData)
 			if (result === 'FORM_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.FORM_ALREADY_EXISTS,
+					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'FORM_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.FORM_NOT_FOUND,
+					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.FORM_UPDATED_SUCCESSFULLY,
+				message: 'FORM_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -121,14 +120,14 @@ module.exports = class FormsHelper {
 			const form = await formsData.findOneForm(filter)
 			if (!form) {
 				return common.failureResponse({
-					message: apiResponses.FORM_NOT_FOUND,
+					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.FORM_FETCHED_SUCCESSFULLY,
+				message: 'FORM_FETCHED_SUCCESSFULLY',
 				result: form ? form : {},
 			})
 		} catch (error) {
