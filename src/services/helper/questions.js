@@ -1,6 +1,5 @@
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const questionsData = require('@db/questions/queries')
 
@@ -18,7 +17,7 @@ module.exports = class questionsHelper {
 			let data = await questionsData.createQuestion(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.QUESTION_CREATED_SUCCESSFULLY,
+				message: 'QUESTION_CREATED_SUCCESSFULLY',
 				result: data,
 			})
 		} catch (error) {
@@ -41,20 +40,20 @@ module.exports = class questionsHelper {
 			const result = await questionsData.updateOneQuestion(filter, bodyData)
 			if (result === 'QUESTION_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.QUESTION_ALREADY_EXISTS,
+					message: 'QUESTION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'QUESTION_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.QUESTION_NOT_FOUND,
+					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.QUESTION_UPDATED_SUCCESSFULLY,
+				message: 'QUESTION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -75,14 +74,14 @@ module.exports = class questionsHelper {
 			const Questions = await questionsData.findOneQuestion(filter)
 			if (!Questions) {
 				return common.failureResponse({
-					message: apiResponses.QUESTION_NOT_FOUND,
+					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.QUESTION_FETCHED_SUCCESSFULLY,
+				message: 'QUESTION_FETCHED_SUCCESSFULLY',
 				result: Questions ? Questions : {},
 			})
 		} catch (error) {

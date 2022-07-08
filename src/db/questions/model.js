@@ -60,6 +60,9 @@ const questionsSchema = new Schema({
 		type: String,
 		default: 'published',
 	},
+	evaluating: {
+		type: String,
+	},
 })
 
 const Questions = db.model('questions', questionsSchema)

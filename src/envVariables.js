@@ -115,6 +115,10 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
+	RATING_KAFKA_TOPIC: {
+		message: 'Required kafka topic',
+		optional: false,
+	},
 }
 
 let success = true

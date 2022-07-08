@@ -321,9 +321,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enroll/62a7040d127a9c1717316b95",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enroll/62a863c1e0378ffc6ff13c8b",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "enroll", "62a7040d127a9c1717316b95"]
+							"path": ["v1", "sessions", "enroll", "62a863c1e0378ffc6ff13c8b"]
 						}
 					},
 					"response": []
@@ -359,9 +359,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/start/628dae0fce0ce9359aeb8b23",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/start/628ee14cefb3923017c27f07",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "start", "628dae0fce0ce9359aeb8b23"]
+							"path": ["v1", "sessions", "start", "628ee14cefb3923017c27f07"]
 						}
 					},
 					"response": []
@@ -379,7 +379,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"testing\",\n  \"description\": \"Training in Mumabi\",\n  \"startDate\": \"2022-06-14T10:20:42.843Z\",\n  \"endDate\": \"2022-06-14T10:20:42.843Z\",\n  \"recommendedFor\": [{\"label\":\"HM\", \"value\": 1}],\n  \"categories\": [{\"label\": \"label\", \"value\": \"value\"}],\n  \"medium\": [{\"label\":\"Hindi\", \"value\": 2 }],\n  \"image\": [\"users/1232s2133sdd1-12e2dasd3123.png\"]\n}",
+							"raw": "{\n  \"title\": \"testing\",\n  \"description\": \"Training in Mumabi\",\n  \"startDate\": \"2022-07-14T10:20:42.843Z\",\n  \"endDate\": \"2022-07-14T10:20:42.843Z\",\n  \"recommendedFor\": [{\"label\":\"HM\", \"value\": 1}],\n  \"categories\": [{\"label\": \"label\", \"value\": \"value\"}],\n  \"medium\": [{\"label\":\"Hindi\", \"value\": 2 }],\n  \"image\": [\"users/1232s2133sdd1-12e2dasd3123.png\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -693,6 +693,25 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Mentee Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/profile",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "profile"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -722,6 +741,58 @@
 							]
 						},
 						"description": "MOTE: filterType query params is mandatory, pass either MONTHLY, WEEKLY or QUARTERLY"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Mentor Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/62a820225ff93f30cfe5f990",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "profile", "62a820225ff93f30cfe5f990"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Mentor upcommingSession",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/62a820225ff93f30cfe5f990?page=1&limit=5&search=testing5",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "upcomingSessions", "62a820225ff93f30cfe5f990"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "search",
+									"value": "testing5"
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -762,11 +833,17 @@
 					"name": "Get Feedback Form",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/forms/619769c0203fcd5fbd9693b8",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/forms",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "feedback", "forms", "619769c0203fcd5fbd9693b8"]
+							"path": ["v1", "feedback", "forms"]
 						}
 					},
 					"response": []

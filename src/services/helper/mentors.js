@@ -1,16 +1,105 @@
 // Dependencies
+const moment = require('moment-timezone')
+
 const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
+const userProfile = require('./userProfile')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
 const apiEndpoints = require('@constants/endpoints')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('@generics/requests')
+const sessionAttendees = require('@db/sessionAttendees/queries')
 
 module.exports = class MentorsHelper {
+	/**
+	 * upcomingSessions.
+	 * @method
+	 * @name upcomingSessions
+	 * @param {String} id - user id.
+	 * @param {String} page - Page No.
+	 * @param {String} limit - Page size limit.
+	 * @param {String} search - Search text.
+	 * @returns {JSON} - mentors upcoming session details
+	 */
+	static async upcomingSessions(id, page, limit, search = '') {
+		try {
+			const mentorsDetails = await userProfile.details('', id)
+			if (mentorsDetails.data.result.isAMentor) {
+				const filterUpcomingSession = {
+					$and: [
+						{
+							startDate: {
+								$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
+							},
+						},
+						{
+							status: 'published',
+						},
+						{
+							isStarted: false,
+						},
+					],
+					userId: id,
+				}
+				const upcomingSessions = await sessionsData.mentorsUpcomingSession(
+					page,
+					limit,
+					search,
+					filterUpcomingSession
+				)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'UPCOMING_SESSION_FETCHED',
+					result: upcomingSessions,
+				})
+			} else {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		} catch (err) {
+			console.log(err)
+			return err
+		}
+	}
+
+	/**
+	 * Profile.
+	 * @method
+	 * @name profile
+	 * @param {String} userId - user id.
+	 * @returns {JSON} - profile details
+	 */
+	static async profile(id) {
+		const mentorsDetails = await userProfile.details('', id)
+		if (mentorsDetails.data.result.isAMentor) {
+			const filterSessionAttended = { userId: id, isSessionAttended: true }
+			const totalSessionsAttended = await sessionAttendees.findAllSessionAttendees(filterSessionAttended)
+			const filterSessionHosted = { userId: id, status: 'completed', isStarted: true }
+			const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_FTECHED_SUCCESSFULLY',
+				result: {
+					sessionsAttended: totalSessionsAttended,
+					sessionsHosted: totalSessionHosted,
+					...mentorsDetails.data.result,
+				},
+			})
+		} else {
+			return common.failureResponse({
+				statusCode: httpStatusCode.bad_request,
+				message: 'MENTORS_NOT_FOUND',
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+	}
+
 	/**
 	 * Mentors reports.
 	 * @method
@@ -61,7 +150,7 @@ module.exports = class MentorsHelper {
 			totalsessionHosted = await sessionsData.countSessions(filters)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.MENTORS_REPORT_FETCHED_SUCCESSFULLY,
+				message: 'MENTORS_REPORT_FETCHED_SUCCESSFULLY',
 				result: { totalSessionCreated, totalsessionHosted },
 			})
 		} catch (error) {

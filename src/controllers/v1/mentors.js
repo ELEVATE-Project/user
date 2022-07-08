@@ -10,6 +10,40 @@ const mentorsHelper = require('@services/helper/mentors')
 
 module.exports = class Mentors {
 	/**
+	 * mentors profile
+	 * @method
+	 * @name profile
+	 * @param {Object} req - request data.
+	 * @param {String} req.params.id - mentor Id.
+	 * @param {String} req.pageNo - Page No.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - mentors upcoming session details
+	 */
+	async upcomingSessions(req) {
+		try {
+			return await mentorsHelper.upcomingSessions(req.params.id, req.pageNo, req.pageSize, req.searchText)
+		} catch (error) {
+			return errors
+		}
+	}
+
+	/**
+	 * mentors profile
+	 * @method
+	 * @name profile
+	 * @param {Object} req - request data.
+	 * @param {String} req.params.id - mentor Id.
+	 * @returns {JSON} - mentors profile details
+	 */
+	async profile(req) {
+		try {
+			return await mentorsHelper.profile(req.params.id)
+		} catch (error) {
+			return errors
+		}
+	}
+	/**
 	 * Mentors reports
 	 * @method
 	 * @name reports

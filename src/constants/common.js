@@ -19,6 +19,7 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	const error = new Error(message)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
+
 	return error
 }
 
@@ -41,4 +42,5 @@ module.exports = {
 	COMPLETED_STATUS: 'completed',
 	PUBLISHED_STATUS: 'published',
 	LIVE_STATUS: 'live',
+	MENTOR_EVALUATING: 'mentor',
 }
