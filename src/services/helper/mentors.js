@@ -8,15 +8,21 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
+const apiEndpoints = require('@constants/endpoints')
+const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+const request = require('@generics/requests')
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
 module.exports = class MentorsHelper {
 	/**
-	 * Profile.
+	 * upcomingSessions.
 	 * @method
-	 * @name profile
-	 * @param {String} userId - user id.
-	 * @returns {JSON} - profile details
+	 * @name upcomingSessions
+	 * @param {String} id - user id.
+	 * @param {String} page - Page No.
+	 * @param {String} limit - Page size limit.
+	 * @param {String} search - Search text.
+	 * @returns {JSON} - mentors upcoming session details
 	 */
 	static async upcomingSessions(id, page, limit, search = '') {
 		try {
@@ -150,5 +156,31 @@ module.exports = class MentorsHelper {
 		} catch (error) {
 			throw error
 		}
+	}
+
+	/**
+	 * Share a mentor Profile.
+	 * @method
+	 * @name share
+	 * @param {String} profileId - Profile id.
+	 * @returns {JSON} - Shareable profile link.
+	 */
+
+	static share(profileId) {
+		return new Promise(async (resolve, reject) => {
+			const apiUrl = apiBaseUrl + apiEndpoints.SHARE_MENTOR_PROFILE + '/' + profileId
+			try {
+				let shareLink = await request.get(apiUrl, false, true)
+				return resolve(
+					common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: shareLink.data.message,
+						result: shareLink.data.result,
+					})
+				)
+			} catch (error) {
+				reject(error)
+			}
+		})
 	}
 }

@@ -15,7 +15,10 @@ module.exports = class Mentors {
 	 * @name profile
 	 * @param {Object} req - request data.
 	 * @param {String} req.params.id - mentor Id.
-	 * @returns {JSON} - mentors profile details
+	 * @param {String} req.pageNo - Page No.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - mentors upcoming session details
 	 */
 	async upcomingSessions(req) {
 		try {
@@ -57,6 +60,24 @@ module.exports = class Mentors {
 		try {
 			const reports = await mentorsHelper.reports(req.decodedToken._id, req.query.filterType)
 			return reports
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Shareable mentor profile link.
+	 * @method
+	 * @name share
+	 * @param {Object} req - Request data.
+	 * @param {String} req.params.id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+
+	async share(req) {
+		try {
+			const shareLink = await mentorsHelper.share(req.params.id)
+			return shareLink
 		} catch (error) {
 			return error
 		}
