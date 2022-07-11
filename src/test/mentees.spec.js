@@ -134,7 +134,7 @@ describe('Sessions controller and helper test', () => {
 
 		const userDetails = jest.spyOn(userProfile, 'details')
 		userDetails.mockResolvedValueOnce(userProfileApiResponse)
-		const menteeSessionAttended = jest.spyOn(sessionAttended, 'findAllSessionAttendees')
+		const menteeSessionAttended = jest.spyOn(sessionAttended, 'countAllSessionAttendees')
 		menteeSessionAttended.mockResolvedValueOnce(2)
 		const actual = await menteesServices.profile('62a820225ff93f30cfe5f990')
 		expect(actual).toEqual(expectedResult)

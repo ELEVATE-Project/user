@@ -28,7 +28,7 @@ module.exports = class MenteesHelper {
 	static async profile(id) {
 		const menteeDetails = await userProfile.details('', id)
 		const filter = { userId: id, isSessionAttended: true }
-		const totalsession = await sessionAttendees.findAllSessionAttendees(filter)
+		const totalsession = await sessionAttendees.countAllSessionAttendees(filter)
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',

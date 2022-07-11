@@ -137,7 +137,7 @@ describe('Sessions controller and helper test', () => {
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
 
-		const mockMentorSessionAttended = jest.spyOn(sessionAttended, 'findAllSessionAttendees')
+		const mockMentorSessionAttended = jest.spyOn(sessionAttended, 'countAllSessionAttendees')
 		mockMentorSessionAttended.mockResolvedValueOnce(2)
 
 		const mockMentorsSessionHosted = jest.spyOn(sessionsData, 'findSessionHosted')
