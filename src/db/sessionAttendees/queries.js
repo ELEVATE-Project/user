@@ -246,12 +246,24 @@ module.exports = class SessionsAttendees {
 		})
 	}
 
-	static async findAllSessionAttendees(filters) {
+	static async countAllSessionAttendees(filters) {
 		try {
 			return await SessionAttendees.count({
 				...filters,
 				deleted: false,
 			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllSessionAttendees(filters) {
+		try {
+			let sessionAttendeesData = await SessionAttendees.find({
+				...filters,
+				deleted: false,
+			}).lean()
+			return sessionAttendeesData
 		} catch (error) {
 			return error
 		}

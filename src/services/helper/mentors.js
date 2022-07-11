@@ -79,7 +79,7 @@ module.exports = class MentorsHelper {
 		const mentorsDetails = await userProfile.details('', id)
 		if (mentorsDetails.data.result.isAMentor) {
 			const filterSessionAttended = { userId: id, isSessionAttended: true }
-			const totalSessionsAttended = await sessionAttendees.findAllSessionAttendees(filterSessionAttended)
+			const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
 			const filterSessionHosted = { userId: id, status: 'completed', isStarted: true }
 			const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
 			return common.successResponse({
