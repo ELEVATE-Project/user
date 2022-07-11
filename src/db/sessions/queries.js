@@ -190,7 +190,6 @@ module.exports = class SessionsData {
 						status: 1,
 						image: 1,
 						endDateUtc: 1,
-						startDate: 1,
 						startDateUtc: 1,
 					},
 				},
