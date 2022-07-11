@@ -310,14 +310,16 @@ module.exports = class MenteesHelper {
 
 			await Promise.all(
 				sessions[0].data.map(async (session) => {
-					session.isEnrolled = false
-					if (attendees && attendees.length > 0) {
+					if (attendees) {
 						const attendee = attendees.find(
 							(attendee) => attendee.sessionId.toString() === session._id.toString()
 						)
+						session.isEnrolled = false
 						if (attendee) {
 							session.isEnrolled = true
 						}
+					} else {
+						session.isEnrolled = false
 					}
 
 					if (session.image && session.image.length > 0) {

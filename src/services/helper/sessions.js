@@ -141,7 +141,9 @@ module.exports = class SessionsHelper {
 			let message
 			let updateData
 			if (method == common.DELETE_METHOD) {
-				updateData = { deleted: true }
+				updateData = {
+					deleted: true,
+				}
 				message = 'SESSION_DELETED_SUCCESSFULLY'
 			} else {
 				updateData = bodyData
@@ -366,9 +368,13 @@ module.exports = class SessionsHelper {
 			await sessionData.updateSession(
 				{
 					status: common.PUBLISHED_STATUS,
-					endDateUtc: { $lt: moment().utc().format() },
+					endDateUtc: {
+						$lt: moment().utc().format(),
+					},
 				},
-				{ status: common.COMPLETED_STATUS }
+				{
+					status: common.COMPLETED_STATUS,
+				}
 			)
 
 			let arrayOfStatus = []
@@ -409,6 +415,21 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 					result: [],
 				})
+			}
+
+			if (sessionDetails[0] && sessionDetails[0].data.length > 0) {
+				await Promise.all(
+					sessionDetails[0].data.map(async (session) => {
+						if (session.image && session.image.length > 0) {
+							session.image = session.image.map(async (imgPath) => {
+								if (imgPath && imgPath != '') {
+									return await utils.getDownloadableUrl(imgPath)
+								}
+							})
+							session.image = await Promise.all(session.image)
+						}
+					})
+				)
 			}
 
 			return common.successResponse({
@@ -640,12 +661,21 @@ module.exports = class SessionsHelper {
 			let shareLink = session.shareLink
 			if (!shareLink) {
 				shareLink = utils.md5Hash(sessionId + '###' + session.userId.toString())
-				await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink })
+				await sessionData.updateOneSession(
+					{
+						_id: ObjectId(sessionId),
+					},
+					{
+						shareLink,
+					}
+				)
 			}
 			return common.successResponse({
 				message: 'SESSION_LINK_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
-				result: { shareLink },
+				result: {
+					shareLink,
+				},
 			})
 		} catch (error) {
 			throw error
@@ -934,7 +964,14 @@ module.exports = class SessionsHelper {
 
 	static async updateRecordingUrl(internalMeetingId, recordingUrl) {
 		try {
-			const updateStatus = await sessionData.updateOneSession({ internalMeetingId }, { recordingUrl })
+			const updateStatus = await sessionData.updateOneSession(
+				{
+					internalMeetingId,
+				},
+				{
+					recordingUrl,
+				}
+			)
 
 			if (updateStatus === 'SESSION_NOT_FOUND') {
 				return common.failureResponse({
