@@ -7,6 +7,7 @@
 
 // Dependencies
 const mentorsHelper = require('@services/helper/mentors')
+const userProfile = require('@services/helper/userProfile')
 
 module.exports = class Mentors {
 	/**
@@ -76,7 +77,7 @@ module.exports = class Mentors {
 
 	async share(req) {
 		try {
-			const shareLink = await mentorsHelper.share(req.params.id)
+			const shareLink = await userProfile.share(req.params.id)
 			return shareLink
 		} catch (error) {
 			return error
