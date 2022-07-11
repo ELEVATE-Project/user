@@ -91,7 +91,7 @@ module.exports = class ProfileHelper {
 			const user = await usersData.findOne({ _id: ObjectId(profileId), isAMentor: true })
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -102,7 +102,7 @@ module.exports = class ProfileHelper {
 				await usersData.updateOneUser({ _id: ObjectId(profileId) }, { shareLink })
 			}
 			return common.successResponse({
-				message: apiResponses.PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY,
+				message: 'PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				result: { shareLink },
 			})
