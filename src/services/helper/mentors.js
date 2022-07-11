@@ -1,4 +1,6 @@
 // Dependencies
+const moment = require('moment-timezone')
+
 const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
 const userProfile = require('./userProfile')
@@ -6,9 +8,66 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
+const apiEndpoints = require('@constants/endpoints')
+const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+const request = require('@generics/requests')
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
 module.exports = class MentorsHelper {
+	/**
+	 * upcomingSessions.
+	 * @method
+	 * @name upcomingSessions
+	 * @param {String} id - user id.
+	 * @param {String} page - Page No.
+	 * @param {String} limit - Page size limit.
+	 * @param {String} search - Search text.
+	 * @returns {JSON} - mentors upcoming session details
+	 */
+	static async upcomingSessions(id, page, limit, search = '') {
+		try {
+			const mentorsDetails = await userProfile.details('', id)
+			if (mentorsDetails.data.result.isAMentor) {
+				const filterUpcomingSession = {
+					$and: [
+						{
+							startDate: {
+								$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
+							},
+						},
+						{
+							status: 'published',
+						},
+						{
+							isStarted: false,
+						},
+					],
+					userId: id,
+				}
+				const upcomingSessions = await sessionsData.mentorsUpcomingSession(
+					page,
+					limit,
+					search,
+					filterUpcomingSession
+				)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'UPCOMING_SESSION_FETCHED',
+					result: upcomingSessions,
+				})
+			} else {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		} catch (err) {
+			console.log(err)
+			return err
+		}
+	}
+
 	/**
 	 * Profile.
 	 * @method
@@ -97,5 +156,31 @@ module.exports = class MentorsHelper {
 		} catch (error) {
 			throw error
 		}
+	}
+
+	/**
+	 * Share a mentor Profile.
+	 * @method
+	 * @name share
+	 * @param {String} profileId - Profile id.
+	 * @returns {JSON} - Shareable profile link.
+	 */
+
+	static share(profileId) {
+		return new Promise(async (resolve, reject) => {
+			const apiUrl = apiBaseUrl + apiEndpoints.SHARE_MENTOR_PROFILE + '/' + profileId
+			try {
+				let shareLink = await request.get(apiUrl, false, true)
+				return resolve(
+					common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: shareLink.data.message,
+						result: shareLink.data.result,
+					})
+				)
+			} catch (error) {
+				reject(error)
+			}
+		})
 	}
 }

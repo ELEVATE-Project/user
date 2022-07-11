@@ -13,4 +13,7 @@ module.exports = {
 			.isIn(['MONTHLY', 'WEEKLY', 'QUARTERLY'])
 			.withMessage('filterType is invalid')
 	},
+	share: (req) => {
+		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
+	},
 }

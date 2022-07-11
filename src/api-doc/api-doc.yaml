@@ -972,6 +972,61 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/mentors/mentorSessionReport200Response'
+  '/mentoring/v1/mentors/upcomingSessions/{mentorId}?page={page}&limit={limit}&search={search}':
+    get:
+      summary: Upcoming sessions of mentor
+      tags:
+        - Mentor APIs
+      description: "This API is associated with the listing of upcoming sessions of one mentor \n -
+        Endpoint for listing session `/mentoring/v1/mentors/upcomingSessions/` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          required: true
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          schema:
+            type: string
+        - in: path
+          name: 'mentorId '
+          required: true
+          description: Please append a valid mentorId
+          schema:
+            type: string
+            example: 62a820225ff93f30cfe5f990
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          schema:
+            type: number
+          example: 2
+        - in: path
+          name: search
+          description: Please search for author name or title of session etc.
+          schema:
+            type: string
+          example: jhon
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/upcomingSession200Response'
+        '400':
+          description: Bad Request. Mentor Not Found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/upcomingSession400Response'
   '/mentoring/v1/questions/create':
     post:
       summary: Create questions
@@ -2885,6 +2940,70 @@ components:
                 type: string
                 example: https://cloudstorage.com/container/abc.png
     mentors:
+      upcomingSession400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Could not found mentor.
+          error:
+            type: array
+            example: []
+      upcomingSession200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Upcoming session fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 628dae0fce0ce9359aeb8b23
+                    title:
+                      type: string
+                      example: Leadership5
+                    description:
+                      type: string
+                      example: Training in leadership
+                    image:
+                      type: array
+                      items:
+                        type: string
+                        example: '["users/1232s2133sdd1-12e2dasd3123.png"]'
+                    mentorName:
+                      type: string
+                      example: Ankit
+                    status:
+                      type: string
+                      example: published
+                    startDate:
+                      type: string
+                      example: '2022-01-04 18:00:00'
+                    endDate:
+                      type: string
+                      example: '2022-01-04 18:30:00'
+                    endDateUtc:
+                      type: string
+                      example: Invalid date
+              count:
+                type: number
+                example: 1
+            meta:
+              type: object
+              example: {}
       mentorSessionReport200Response:
         type: object
         properties:

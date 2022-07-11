@@ -379,7 +379,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"title\": \"testing\",\n  \"description\": \"Training in Mumabi\",\n  \"startDate\": \"2022-06-14T10:20:42.843Z\",\n  \"endDate\": \"2022-06-14T10:20:42.843Z\",\n  \"recommendedFor\": [{\"label\":\"HM\", \"value\": 1}],\n  \"categories\": [{\"label\": \"label\", \"value\": \"value\"}],\n  \"medium\": [{\"label\":\"Hindi\", \"value\": 2 }],\n  \"image\": [\"users/1232s2133sdd1-12e2dasd3123.png\"]\n}",
+							"raw": "{\n  \"title\": \"testing\",\n  \"description\": \"Training in Mumabi\",\n  \"startDate\": \"2022-07-14T10:20:42.843Z\",\n  \"endDate\": \"2022-07-14T10:20:42.843Z\",\n  \"recommendedFor\": [{\"label\":\"HM\", \"value\": 1}],\n  \"categories\": [{\"label\": \"label\", \"value\": \"value\"}],\n  \"medium\": [{\"label\":\"Hindi\", \"value\": 2 }],\n  \"image\": [\"users/1232s2133sdd1-12e2dasd3123.png\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -756,9 +756,42 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/628f2361258488b5015ab746",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/62a820225ff93f30cfe5f990",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "profile", "628f2361258488b5015ab746"]
+							"path": ["v1", "mentors", "profile", "62a820225ff93f30cfe5f990"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Mentor upcommingSession",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/62a820225ff93f30cfe5f990?page=1&limit=5&search=testing5",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "upcomingSessions", "62a820225ff93f30cfe5f990"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "search",
+									"value": "testing5"
+								}
+							]
 						}
 					},
 					"response": []
