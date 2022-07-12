@@ -16,6 +16,7 @@
 	"dependencies": {
 		"@azure/storage-blob": "^12.8.0",
 		"@google-cloud/storage": "^5.15.6",
+		"@shelf/jest-mongodb": "^3.0.1",
 		"aws-sdk": "^2.1025.0",
 		"axios": "^0.21.4",
 		"bcrypt": "^5.0.1",
@@ -37,6 +38,7 @@
 		"json2csv": "^5.0.6",
 		"jsonwebtoken": "^8.5.1",
 		"kafka-node": "^5.0.0",
+		"md5": "^2.3.0",
 		"module-alias": "^2.2.2",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",

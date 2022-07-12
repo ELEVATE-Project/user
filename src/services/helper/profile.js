@@ -12,6 +12,7 @@ const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
+const utils = require('@generics/utils')
 
 module.exports = class ProfileHelper {
 	/**
@@ -78,6 +79,39 @@ module.exports = class ProfileHelper {
 				statusCode: httpStatusCode.ok,
 				message: 'PROFILE_FETCHED_SUCCESSFULLY',
 				result: user ? user : {},
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Share a mentor Profile.
+	 * @method
+	 * @name share
+	 * @param {String} profileId - Profile id.
+	 * @returns {JSON} - Shareable profile link.
+	 */
+
+	static async share(profileId) {
+		try {
+			const user = await usersData.findOne({ _id: ObjectId(profileId), isAMentor: true })
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let shareLink = user.shareLink
+			if (!shareLink) {
+				shareLink = utils.md5Hash(profileId)
+				await usersData.updateOneUser({ _id: ObjectId(profileId) }, { shareLink })
+			}
+			return common.successResponse({
+				message: 'PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY',
+				statusCode: httpStatusCode.ok,
+				result: { shareLink },
 			})
 		} catch (error) {
 			throw error
