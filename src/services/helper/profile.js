@@ -64,7 +64,14 @@ module.exports = class ProfileHelper {
 			refreshTokens: 0,
 		}
 		try {
-			const user = await usersData.findOne({ _id: ObjectId(_id) }, projection)
+			const filter = {}
+			if (ObjectId.isValid(_id)) {
+				filter._id = ObjectId(_id)
+			} else {
+				filter.shareLink = _id
+			}
+
+			const user = await usersData.findOne(filter, projection)
 			if (user && user.image) {
 				user.image = await utilsHelper.getDownloadableUrl(user.image)
 			}
