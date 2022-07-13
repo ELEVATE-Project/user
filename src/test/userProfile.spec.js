@@ -56,7 +56,7 @@ describe('User profile api test', () => {
 				meta: {},
 			}
 
-			const shareAPIRespnse = {
+			const shareAPIResponse = {
 				success: true,
 				data: {
 					responseCode: 'CLIENT_ERROR',
@@ -65,7 +65,7 @@ describe('User profile api test', () => {
 				},
 			}
 			const shareResponse = jest.spyOn(request, 'get')
-			shareResponse.mockResolvedValueOnce(shareAPIRespnse)
+			shareResponse.mockResolvedValueOnce(shareAPIResponse)
 
 			const actual = await profile.share('62b596db57d097c92d0a6b05')
 			expect(actual).toEqual(expectedResult)
