@@ -13,6 +13,7 @@ describe('Sessions controller and helper test', () => {
 	let sessionAttended
 	let sessionsData
 	let userProfile
+	let { RedisHelper } = require('@ankitpws/caching-library')
 
 	beforeAll(async () => {
 		await loadMongo()
@@ -20,6 +21,7 @@ describe('Sessions controller and helper test', () => {
 		sessionAttended = require('@db/sessionAttendees/queries')
 		sessionsData = require('@db/sessions/queries')
 		userProfile = require('@services/helper/userProfile')
+		RedisHelper
 	})
 
 	test('should return Profile of mentor', async () => {
@@ -134,6 +136,11 @@ describe('Sessions controller and helper test', () => {
 			},
 		}
 
+		const mockRedisClientGetKey = jest.spyOn(RedisHelper, 'getKey')
+		mockRedisClientGetKey.mockResolvedValueOnce(false)
+
+		const mockRedisClientSetKey = jest.spyOn(RedisHelper, 'setKey')
+		mockRedisClientSetKey.mockResolvedValueOnce(true)
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
 
@@ -202,6 +209,10 @@ describe('Sessions controller and helper test', () => {
 			},
 		}
 
+		const mockRedisClient = jest.spyOn(RedisHelper, 'getKey')
+		mockRedisClient.mockResolvedValueOnce(false)
+		const mockRedisClientSetKey = jest.spyOn(RedisHelper, 'setKey')
+		mockRedisClientSetKey.mockResolvedValueOnce(true)
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
 

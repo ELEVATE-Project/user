@@ -1,10 +1,10 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-const utilsHelper = require('@generics/utils')
+
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entitiesData = require('@db/entities/query')
-
+const { InternalCache } = require('@ankitpws/caching-library')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity.
@@ -28,6 +28,8 @@ module.exports = class EntityHelper {
 				})
 			}
 			await entitiesData.createEntity(bodyData)
+			const key = 'mentoring_entity_' + bodyData.type
+			await InternalCache.delKey(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -65,6 +67,16 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			console.log(_id)
+			let key = ''
+			if (bodyData.type) {
+				key = 'mentoring_entity_' + bodyData.type
+				await InternalCache.delKey(key)
+			} else {
+				const entities = await entitiesData.findOne(_id)
+				key = 'mentoring_entity_' + entities.type
+				await InternalCache.delKey(key)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_UPDATED_SUCCESSFULLY',
@@ -87,7 +99,14 @@ module.exports = class EntityHelper {
 			bodyData.deleted = false
 		}
 		try {
-			const entities = await entitiesData.findAllEntities(bodyData)
+			let entities = {}
+			const key = 'mentoring_entity_' + bodyData.type
+			if (await InternalCache.getKey(key)) {
+				entities = await InternalCache.getKey(key)
+			} else {
+				entities = await entitiesData.findAllEntities(bodyData)
+				await InternalCache.setKey(key, entities, 86400)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_FETCHED_SUCCESSFULLY',
@@ -122,6 +141,10 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const entities = await entitiesData.findOne(_id)
+			key = 'mentoring_entity_' + entities.type
+			await InternalCache.delKey(key)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_DELETED_SUCCESSFULLY',

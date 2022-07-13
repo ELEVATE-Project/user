@@ -12,6 +12,7 @@ const apiEndpoints = require('@constants/endpoints')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('@generics/requests')
 const sessionAttendees = require('@db/sessionAttendees/queries')
+const { RedisHelper } = require('@ankitpws/caching-library')
 
 module.exports = class MentorsHelper {
 	/**
@@ -76,28 +77,42 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async profile(id) {
-		const mentorsDetails = await userProfile.details('', id)
-		if (mentorsDetails.data.result.isAMentor) {
-			const _id = mentorsDetails.data.result._id
-			const filterSessionAttended = { userId: _id, isSessionAttended: true }
-			const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
-			const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true }
-			const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PROFILE_FTECHED_SUCCESSFULLY',
-				result: {
-					sessionsAttended: totalSessionsAttended,
-					sessionsHosted: totalSessionHosted,
-					...mentorsDetails.data.result,
-				},
-			})
-		} else {
-			return common.failureResponse({
-				statusCode: httpStatusCode.bad_request,
-				message: 'MENTORS_NOT_FOUND',
-				responseCode: 'CLIENT_ERROR',
-			})
+		try {
+			let mentorsDetails = {}
+			if (await RedisHelper.getKey(id)) {
+				mentorsDetails = await RedisHelper.getKey(id)
+			} else {
+				if (ObjectId.isValid(id)) {
+					mentorsDetails = await userProfile.details('', id)
+					await RedisHelper.setKey(id, mentorsDetails, 86400)
+				} else {
+					mentorsDetails = await userProfile.details('', id)
+				}
+			}
+			if (mentorsDetails.data.result.isAMentor) {
+				const _id = mentorsDetails.data.result._id
+				const filterSessionAttended = { userId: _id, isSessionAttended: true }
+				const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
+				const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true }
+				const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'PROFILE_FTECHED_SUCCESSFULLY',
+					result: {
+						sessionsAttended: totalSessionsAttended,
+						sessionsHosted: totalSessionHosted,
+						...mentorsDetails.data.result,
+					},
+				})
+			} else {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		} catch (err) {
+			return err
 		}
 	}
 

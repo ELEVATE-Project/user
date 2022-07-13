@@ -1,9 +1,7 @@
-const ObjectId = require('mongoose').Types.ObjectId
-
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
+const { InternalCache } = require('@ankitpws/caching-library')
 
 module.exports = class FormsHelper {
 	/**
@@ -50,6 +48,7 @@ module.exports = class FormsHelper {
 
 	static async update(bodyData) {
 		try {
+			const key = bodyData.type + bodyData.subType + bodyData.action + bodyData.ver + bodyData.data.templateName
 			const result = await formsData.updateOneForm(bodyData)
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
@@ -63,6 +62,10 @@ module.exports = class FormsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
+
+			if (await InternalCache.getKey(key)) {
+				await InternalCache.delKey(key)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -83,13 +86,20 @@ module.exports = class FormsHelper {
 
 	static async read(bodyData) {
 		try {
-			const form = await formsData.findOneForm(
-				bodyData.type,
-				bodyData.subType,
-				bodyData.action,
-				bodyData.ver,
-				bodyData.templateName
-			)
+			const key = bodyData.type + bodyData.subType + bodyData.action + bodyData.ver + bodyData.templateName
+			let form = {}
+			if (await InternalCache.getKey(key)) {
+				form = JSON.parse(await InternalCache.getKey(key))
+			} else {
+				form = await formsData.findOneForm(
+					bodyData.type,
+					bodyData.subType,
+					bodyData.action,
+					bodyData.ver,
+					bodyData.templateName
+				)
+				await InternalCache.setKey(key, JSON.stringify(form))
+			}
 			if (!form) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',
