@@ -28,7 +28,7 @@ describe('Share mentor profile api test', () => {
 				shareLink: '3f5755c15ec9bb79e6a963ee423ab783',
 			},
 		}
-		const userDataRespose = {
+		const userDataResponse = {
 			email: {
 				address: 'nevil@tunerlabs.com',
 				verified: false,
@@ -46,7 +46,7 @@ describe('Share mentor profile api test', () => {
 			lastLoggedInAt: '2022-06-30T05:40:02.256Z',
 		}
 		const user = jest.spyOn(userData, 'findOne')
-		user.mockResolvedValueOnce(userDataRespose)
+		user.mockResolvedValueOnce(userDataResponse)
 
 		const actual = await profile.share('62b596db57d097c92d0a6b05')
 		expect(actual.responseCode).toEqual(expectedResult.responseCode)
@@ -54,9 +54,9 @@ describe('Share mentor profile api test', () => {
 	})
 
 	test('Should not return on mentee profile', async () => {
-		const userDataRespose = null
+		const userDataResponse = null
 		const user = jest.spyOn(userData, 'findOne')
-		user.mockResolvedValueOnce(userDataRespose)
+		user.mockResolvedValueOnce(userDataResponse)
 
 		const actual = await profile.share('62b596db57d097c92d0a6b05')
 		expect(actual.responseCode).toEqual('CLIENT_ERROR')
