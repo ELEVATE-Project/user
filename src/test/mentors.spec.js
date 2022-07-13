@@ -21,7 +21,6 @@ describe('Sessions controller and helper test', () => {
 		sessionAttended = require('@db/sessionAttendees/queries')
 		sessionsData = require('@db/sessions/queries')
 		userProfile = require('@services/helper/userProfile')
-		RedisHelper
 	})
 
 	test('should return Profile of mentor', async () => {
