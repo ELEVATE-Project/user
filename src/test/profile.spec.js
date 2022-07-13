@@ -35,7 +35,7 @@ describe('Share mentor profile api test', () => {
 			},
 			educationQualification: null,
 			_id: '62b596db57d097c92d0a6b05',
-			password: '$2a$10$3QmiMTwCwoHJQYhfU5Dgg.VpAit8XQt57q6v/kqpFF/BvglMqQZ6C',
+			password: '',
 			name: 'nevil',
 			isAMentor: true,
 			hasAcceptedTAndC: false,
