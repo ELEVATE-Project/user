@@ -67,7 +67,6 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			console.log(_id)
 			let key = ''
 			if (bodyData.type) {
 				key = 'mentoring_entity_' + bodyData.type
@@ -142,7 +141,7 @@ module.exports = class EntityHelper {
 				})
 			}
 			const entities = await entitiesData.findOne(_id)
-			key = 'mentoring_entity_' + entities.type
+			let key = 'mentoring_entity_' + entities.type
 			await InternalCache.delKey(key)
 
 			return common.successResponse({

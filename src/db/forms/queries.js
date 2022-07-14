@@ -25,7 +25,6 @@ module.exports = class FormsData {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const formData = await Forms.findOne(filter, projection)
-				console.log(formData)
 				resolve(formData)
 			} catch (error) {
 				reject(error)
