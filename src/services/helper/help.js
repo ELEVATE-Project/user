@@ -1,0 +1,60 @@
+const issueData = require('@db/issues/query')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
+const ObjectId = require('mongoose').Types.ObjectId
+
+const utils = require('@generics/utils')
+const kafkaCommunication = require('@generics/kafka-communication')
+const notificationTemplateData = require('@db/notification-template/query')
+
+module.exports = class helpHelper {
+	/**
+	 * Report an issue.
+	 * @method
+	 * @name report
+	 * @param {Object} bodyData - Reported issue body data.
+	 * @param {String} decodedToken - Token information.
+	 * @returns {JSON} - Success response.
+	 */
+
+	static async report(bodyData, decodedToken) {
+		try {
+			const name = decodedToken.name
+			const role = decodedToken.isAMentor ? 'Mentor' : 'Mentee'
+			const email = process.env.SUPPORT_EMAIL_ID
+
+			bodyData.userId = ObjectId(decodedToken._id) //Getting user id from tokenDetail.
+
+			if (process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE) {
+				const templateData = await notificationTemplateData.findOneEmailTemplate(
+					process.env.REPORTED_ISSUE__EMAIL_TEMPLATE_CODE
+				)
+				if (templateData) {
+					const payload = {
+						type: 'email',
+						email: {
+							to: email,
+							subject: templateData.subject,
+							body: utils.composeEmailBody(templateData.body, {
+								name,
+								role,
+								description: bodyData.description,
+							}),
+						},
+					}
+					await kafkaCommunication.pushEmailToKafka(payload)
+					bodyData.isEmailTriggered = true
+				}
+			}
+
+			await issueData.create(bodyData)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'ISSUE_REPORTED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+}
