@@ -86,7 +86,13 @@ module.exports = class Mentees {
 
 	async homeFeed(req) {
 		try {
-			const homefeed = await menteesHelper.homeFeed(req.decodedToken._id, req.decodedToken.isAMentor)
+			const homefeed = await menteesHelper.homeFeed(
+				req.decodedToken._id,
+				req.decodedToken.isAMentor,
+				req.pageNo,
+				req.pageSize,
+				req.searchText
+			)
 			return homefeed
 		} catch (error) {
 			return error
