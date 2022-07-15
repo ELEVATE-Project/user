@@ -154,4 +154,20 @@ module.exports = class MentorsHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Shareable mentor profile link.
+	 * @method
+	 * @name share
+	 * @param {String} _id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+	static async share(_id) {
+		try {
+			const shareLink = await userProfile.share(_id)
+			return shareLink
+		} catch (error) {
+			return error
+		}
+	}
 }
