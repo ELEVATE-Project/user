@@ -46,6 +46,15 @@ module.exports = class UserProfileHelper {
 			const apiUrl = userBaseUrl + endpoints.SHARE_MENTOR_PROFILE + '/' + profileId
 			try {
 				let shareLink = await requests.get(apiUrl, false, true)
+				if (shareLink.data.responseCode === 'CLIENT_ERROR') {
+					return resolve(
+						common.failureResponse({
+							message: shareLink.data.message,
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					)
+				}
 				return resolve(
 					common.successResponse({
 						statusCode: httpStatusCode.ok,

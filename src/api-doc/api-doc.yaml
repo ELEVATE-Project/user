@@ -1505,6 +1505,43 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/users/userList200Response'
+  'mentoring/v1/mentors/share/{mentorId}':
+    get:
+      summary: Share mentor profile
+      tags:
+        - Mentor APIs
+      description: "This API is associated with mentor profile \n -
+        Endpoint for share mentor profile is `/mentoring/v1/mentors/share` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'mentorId '
+          required: true
+          description: Please append a valid mentorId
+          schema:
+            type: string
+            example: 62a820225ff93f30cfe5f990
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/shareMentorProfile200Response'
+        '400':
+          description: Bad request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/mentors/shareMentorProfile400Response'
 
 components:
   schemas:
@@ -3145,6 +3182,35 @@ components:
           error:
             type: array
             example: []
+      shareMentorProfile200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Profile share link generated successfully.
+          result:
+            type: object
+            properties:
+              shareLink:
+                type: string
+                example: 52f076629b3749ebf7dcab23f22b30df
+          meta: {}
+      shareMentorProfile400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
+
     questions:
       createQuestionRequest:
         type: object
