@@ -49,11 +49,7 @@ describe('User profile api test', () => {
 
 		test('Should not return on mentee profile', async () => {
 			const expectedResult = {
-				statusCode: 200,
-				responseCode: 'OK',
 				message: "User doesn't exist.",
-				result: [],
-				meta: {},
 			}
 
 			const shareAPIResponse = {
@@ -68,7 +64,7 @@ describe('User profile api test', () => {
 			shareResponse.mockResolvedValueOnce(shareAPIResponse)
 
 			const actual = await profile.share('62b596db57d097c92d0a6b05')
-			expect(actual).toEqual(expectedResult)
+			expect(actual).toEqual(expectedResult.message)
 		})
 
 		afterAll(async () => {
