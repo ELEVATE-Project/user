@@ -64,7 +64,7 @@ describe('User profile api test', () => {
 			shareResponse.mockResolvedValueOnce(shareAPIResponse)
 
 			const actual = await profile.share('62b596db57d097c92d0a6b05')
-			expect(actual).toEqual(expectedResult.message)
+			expect(actual.message).toEqual(expectedResult.message)
 		})
 
 		afterAll(async () => {
