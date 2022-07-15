@@ -124,16 +124,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees homeFeed.
 	 */
 
-	static async homeFeed(userId, isAMentor) {
+	static async homeFeed(userId, isAMentor, page, limit, search) {
 		try {
 			/* All Sessions */
-			const page = 1
-			let limit = 4
-			let allSessions = await this.getAllSessions(page, limit, '', userId)
+
+			let allSessions = await this.getAllSessions(page, limit, search, userId)
 
 			/* My Sessions */
-			limit = 2
-			let mySessions = await this.getMySessions(page, limit, '', userId)
+
+			let mySessions = await this.getMySessions(page, limit, search, userId)
 
 			const result = {
 				allSessions: allSessions[0].data,
