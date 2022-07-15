@@ -19,12 +19,27 @@ module.exports = class FormsData {
 		})
 	}
 
-	static findOneForm(type, subType, action, ver, templateName) {
-		const filter = { type, subType, action, ver, 'data.templateName': templateName }
+	static findOneForm(type) {
+		const filter = { type }
 		const projection = {}
 		return new Promise(async (resolve, reject) => {
 			try {
 				const formData = await Forms.findOne(filter, projection)
+				resolve(formData)
+			} catch (error) {
+				reject(error)
+			}
+		})
+	}
+
+	static findalltype() {
+		const projection = {
+			type: 1,
+			ver: 1,
+		}
+		return new Promise(async (resolve, reject) => {
+			try {
+				const formData = await Forms.find(projection)
 				resolve(formData)
 			} catch (error) {
 				reject(error)
@@ -37,7 +52,6 @@ module.exports = class FormsData {
 			type: update.type,
 			subType: update.subType,
 			action: update.action,
-			ver: update.ver,
 			'data.templateName': update.data.templateName,
 		}
 		return new Promise(async (resolve, reject) => {
@@ -57,5 +71,17 @@ module.exports = class FormsData {
 				reject(error)
 			}
 		})
+	}
+
+	static async checkVersion(bodyData) {
+		try {
+			const filter = { type: bodyData.type }
+			const projection = { type: 1, ver: 1 }
+			const formData = await Forms.findOne(filter, projection)
+			console.log(formData)
+			return false
+		} catch (err) {
+			return err
+		}
 	}
 }

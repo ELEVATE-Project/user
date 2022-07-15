@@ -43,4 +43,5 @@ module.exports = {
 	PUBLISHED_STATUS: 'published',
 	LIVE_STATUS: 'live',
 	MENTOR_EVALUATING: 'mentor',
+	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
 }

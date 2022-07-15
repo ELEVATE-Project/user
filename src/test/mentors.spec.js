@@ -13,7 +13,7 @@ describe('Sessions controller and helper test', () => {
 	let sessionAttended
 	let sessionsData
 	let userProfile
-	let { RedisHelper } = require('@ankitpws/caching-library')
+	let { RedisHelper } = require('elevate-node-cache')
 
 	beforeAll(async () => {
 		await loadMongo()

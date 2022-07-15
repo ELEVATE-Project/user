@@ -119,6 +119,21 @@ function md5Hash(value) {
 	return md5(value)
 }
 
+function compareVersion(dbValue, apiValue) {
+	if (dbValue == apiValue) {
+		return false
+	} else {
+		dbValue = dbValue.split('.')
+		apiValue = apiValue.split('.')
+		for (let i = 0; i < dbValue.length; i++) {
+			if (dbValue > apiValue) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -131,4 +146,5 @@ module.exports = {
 	getTimeZone,
 	utcFormat: utcFormat,
 	md5Hash: md5Hash,
+	compareVersion: compareVersion,
 }

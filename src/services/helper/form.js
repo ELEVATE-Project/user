@@ -1,7 +1,7 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
-const { InternalCache } = require('@ankitpws/caching-library')
+const { InternalCache } = require('elevate-node-cache')
 
 module.exports = class FormsHelper {
 	/**
@@ -14,13 +14,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData) {
 		try {
-			const form = await formsData.findOneForm(
-				bodyData.type,
-				bodyData.subType,
-				bodyData.action,
-				bodyData.ver,
-				bodyData.data.templateName
-			)
+			const form = await formsData.findOneForm(bodyData.type)
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -29,9 +23,14 @@ module.exports = class FormsHelper {
 				})
 			}
 			await formsData.createForm(bodyData)
+			let formVersionCached = await InternalCache.getKey('formsversion')
+			formVersionCached = formVersionCached ? formVersionCached : {}
+			formVersionCached[bodyData.type] = bodyData.ver
+			await InternalCache.setKey('formsversion', formVersionCached, common.internalCacheExpirationTime)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
+				meta: formVersionCached,
 			})
 		} catch (error) {
 			throw error
@@ -48,29 +47,35 @@ module.exports = class FormsHelper {
 
 	static async update(bodyData) {
 		try {
-			const key = bodyData.type + bodyData.subType + bodyData.action + bodyData.ver + bodyData.data.templateName
-			const result = await formsData.updateOneForm(bodyData)
-			if (result === 'ENTITY_ALREADY_EXISTS') {
-				return common.failureResponse({
-					message: 'FORM_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			const checkVersion = await formsData.checkVersion(bodyData)
+			console.log(checkVersion)
+			if (checkVersion) {
+				const result = await formsData.updateOneForm(bodyData)
+				if (result === 'ENTITY_ALREADY_EXISTS') {
+					return common.failureResponse({
+						message: 'FORM_ALREADY_EXISTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				} else if (result === 'ENTITY_NOT_FOUND') {
+					return common.failureResponse({
+						message: 'FORM_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				return common.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'FORM_UPDATED_SUCCESSFULLY',
 				})
-			} else if (result === 'ENTITY_NOT_FOUND') {
+			} else {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+					responseCode: 'CLIENT_ERRORhh',
 				})
 			}
-
-			if (await InternalCache.getKey(key)) {
-				await InternalCache.delKey(key)
-			}
-			return common.successResponse({
-				statusCode: httpStatusCode.accepted,
-				message: 'FORM_UPDATED_SUCCESSFULLY',
-			})
 		} catch (error) {
 			throw error
 		}

@@ -9,4 +9,4 @@ require('./mongodb')()
 
 require('./kafka')()
 
-require('@ankitpws/caching-library').RedisConfig()
+require('elevate-node-cache').RedisConfig()

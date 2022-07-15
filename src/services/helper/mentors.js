@@ -12,7 +12,7 @@ const apiEndpoints = require('@constants/endpoints')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('@generics/requests')
 const sessionAttendees = require('@db/sessionAttendees/queries')
-const { RedisHelper } = require('@ankitpws/caching-library')
+const { RedisHelper } = require('elevate-node-cache')
 
 module.exports = class MentorsHelper {
 	/**
