@@ -858,6 +858,42 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
+  '/user/v1/help/report':
+    post:
+      summary: Report an issue
+      tags:
+        - Help APIs
+      description: "This Api is associated with reporting issues \n - Then
+        Endpoint for login user `/user/v1/help/report` \n - It is mandatory to
+        provide values for parameter marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/help/reportRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/help/reportResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/help/report422Response'
+
 components:
   schemas:
     user:
@@ -2463,6 +2499,39 @@ components:
           error:
             type: array
             example: []
+    help:
+      reportRequest:
+        type: object
+        description: API for reporting an issue
+        required:
+          - description
+        properties:
+          description:
+            type: string
+            description: Description of the issue faced
+            example: Sample description of the issue faced
+      reportResponse:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Your issue was successfully reported.
+      report422Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Validation failed, Entered data is incorrect!.
+          error:
+            type: array
+            example: []
+
   securitySchemes:
     bearer:
       type: apiKey
