@@ -6,6 +6,7 @@ module.exports = class Help {
 	 * @method
 	 * @name create
 	 * @param {Object} req -request data.
+	 * @param {Object} req.body -request body contains issue details.
 	 * @param {string} req.body.description - Issue description.
 	 * @returns {JSON} - returns success response.
 	 */
