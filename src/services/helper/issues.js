@@ -26,7 +26,7 @@ module.exports = class issuesHelper {
 			bodyData.userId = ObjectId(decodedToken._id) //Getting user id from tokenDetail.
 			if (process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE === 'true') {
 				const templateData = await notificationTemplateData.findOneEmailTemplate(
-					process.env.REPORTED_ISSUE__EMAIL_TEMPLATE_CODE
+					process.env.REPORTED_ISSUE_EMAIL_TEMPLATE_CODE
 				)
 				if (templateData) {
 					const payload = {

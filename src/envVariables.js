@@ -125,11 +125,11 @@ let enviromentVariables = {
 	},
 	SUPPORT_EMAIL_ID: {
 		message: 'Required email id of support',
-		optional: false,
+		optional: process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE === 'true' ? false : true,
 	},
-	REPORTED_ISSUE__EMAIL_TEMPLATE_CODE: {
+	REPORTED_ISSUE_EMAIL_TEMPLATE_CODE: {
 		message: 'Required reported issue email template code',
-		optional: false,
+		optional: process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE === 'true' ? false : true,
 	},
 }
 
