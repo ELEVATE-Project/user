@@ -29,7 +29,7 @@ describe('Help api test', () => {
 			return
 		})
 
-		test('Should return mentors sharable profile link', async () => {
+		test('Should return a success response', async () => {
 			process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE = true
 
 			const expectedResult = {

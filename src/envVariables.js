@@ -119,6 +119,18 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
+	ENABLE_EMAIL_FOR_REPORTED_ISSUE: {
+		message: 'Required true or false',
+		optional: false,
+	},
+	SUPPORT_EMAIL_ID: {
+		message: 'Required email id of support',
+		optional: false,
+	},
+	REPORTED_ISSUE__EMAIL_TEMPLATE_CODE: {
+		message: 'Required reported issue email template code',
+		optional: false,
+	},
 }
 
 let success = true
