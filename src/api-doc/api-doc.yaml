@@ -863,7 +863,7 @@ paths:
       summary: Report an issue
       tags:
         - Issues APIs
-      description: "This Api is associated with reporting issues \n - Then
+      description: "This Api is associated with reporting issues \n - The
         Endpoint for login user `/user/v1/issues/create` \n - It is mandatory to
         provide values for parameter marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -2508,7 +2508,7 @@ components:
         properties:
           description:
             type: string
-            description: Description of the issue faced
+            description: Description of the issue faced.
             example: Sample description of the issue faced
       createResponse:
         type: object

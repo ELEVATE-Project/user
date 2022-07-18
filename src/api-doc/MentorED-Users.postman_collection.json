@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "9bed289e-ead9-4ba1-887e-d905422365a3",
+		"_postman_id": "45394f3a-2caf-424c-b8a2-81674dd6bcf0",
 		"name": "MentorED-Users",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7997930"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -465,7 +465,7 @@
 								}
 							},
 							"_postman_previewlanguage": "json",
-							"header": null,
+							"header": [],
 							"cookie": [],
 							"body": "{\n    \"responseCode\": \"CLIENT_ERROR\",\n    \"message\": \"User already exists.\",\n    \"error\": []\n}"
 						},
@@ -902,6 +902,132 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "issues",
+			"item": [
+				{
+					"name": "Create an issue.",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In hendrerit gravida rutrum quisque non tellus. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Accumsan sit amet nulla facilisi morbi tempus iaculis. Lobortis scelerisque fermentum dui faucibus in.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/issues/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "issues", "create"]
+						}
+					},
+					"response": [
+						{
+							"name": "Create Account Mentee",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Ankit\",\n    \"email\": \"ankitstar00786@mail.com\",\n    \"password\": \"testing\",\n    \"isAMentor\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mentoringDevBaseUrl}}user/v1/account/create",
+									"host": ["{{mentoringDevBaseUrl}}user"],
+									"path": ["v1", "account", "create"]
+								}
+							},
+							"_postman_previewlanguage": "json",
+							"header": [],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"CLIENT_ERROR\",\n    \"message\": \"User already exists.\",\n    \"error\": []\n}"
+						},
+						{
+							"name": "Create Account Mentee",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"ankitstar00786@mail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{mentoringDevBaseUrl}}user/v1/account/create",
+									"host": ["{{mentoringDevBaseUrl}}user"],
+									"path": ["v1", "account", "create"]
+								}
+							},
+							"status": "Not Acceptable",
+							"code": 406,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "75"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"4b-61/K9SPXpN+Tg4KvNfQKS14/5Jw\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 18 May 2022 02:30:45 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"CLIENT_ERROR\",\n    \"message\": \"User already exists.\",\n    \"error\": []\n}"
+						}
+					]
 				}
 			]
 		}
