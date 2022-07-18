@@ -119,6 +119,18 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
+	ENABLE_EMAIL_FOR_REPORTED_ISSUE: {
+		message: 'Required true or false',
+		optional: false,
+	},
+	SUPPORT_EMAIL_ID: {
+		message: 'Required email id of support',
+		optional: process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE === 'true' ? false : true,
+	},
+	REPORTED_ISSUE_EMAIL_TEMPLATE_CODE: {
+		message: 'Required reported issue email template code',
+		optional: process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE === 'true' ? false : true,
+	},
 }
 
 let success = true
