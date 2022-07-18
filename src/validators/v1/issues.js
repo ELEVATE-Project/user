@@ -1,5 +1,5 @@
 module.exports = {
-	report: (req) => {
+	create: (req) => {
 		req.checkBody('description')
 			.trim()
 			.notEmpty()

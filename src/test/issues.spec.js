@@ -1,4 +1,4 @@
-describe('Help api test', () => {
+describe('Issues api test', () => {
 	const mongoose = require('mongoose')
 
 	async function loadMongo() {
@@ -10,8 +10,8 @@ describe('Help api test', () => {
 		return
 	}
 
-	describe('Report api test', () => {
-		let help
+	describe('Create api test', () => {
+		let issuesHelper
 		let notificationTemplateData
 		let issueData
 		let kafkaCommunication
@@ -19,7 +19,7 @@ describe('Help api test', () => {
 
 		beforeAll(async () => {
 			await loadMongo()
-			help = require('@services/helper/help')
+			issuesHelper = require('@services/helper/issues')
 			notificationTemplateData = require('@db/notification-template/query')
 			kafkaCommunication = require('@generics/kafka-communication')
 			issueData = require('@db/issues/query')
@@ -66,7 +66,7 @@ describe('Help api test', () => {
 			const kafkaData = jest.spyOn(kafkaCommunication, 'pushEmailToKafka')
 			kafkaData.mockResolvedValueOnce(kafkaResponse)
 
-			const actual = await help.report(bodyData, decodedToken)
+			const actual = await issuesHelper.create(bodyData, decodedToken)
 			expect(actual.responseCode).toEqual(expectedResult.responseCode)
 			expect(actual.result).toEqual(expectedResult.result)
 		})

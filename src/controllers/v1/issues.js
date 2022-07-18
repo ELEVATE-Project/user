@@ -1,4 +1,4 @@
-const helpHelper = require('@services/helper/help')
+const issuesHelper = require('@services/helper/issues')
 
 module.exports = class Help {
 	/**
@@ -10,11 +10,11 @@ module.exports = class Help {
 	 * @returns {JSON} - returns success response.
 	 */
 
-	async report(req) {
+	async create(req) {
 		const params = req.body
 		try {
-			const reportedIssue = await helpHelper.report(params, req.decodedToken)
-			return reportedIssue
+			const createdIssue = await issuesHelper.create(params, req.decodedToken)
+			return createdIssue
 		} catch (error) {
 			return error
 		}

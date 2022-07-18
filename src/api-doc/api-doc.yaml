@@ -858,13 +858,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
-  '/user/v1/help/report':
+  '/user/v1/issues/create':
     post:
       summary: Report an issue
       tags:
-        - Help APIs
+        - Issues APIs
       description: "This Api is associated with reporting issues \n - Then
-        Endpoint for login user `/user/v1/help/report` \n - It is mandatory to
+        Endpoint for login user `/user/v1/issues/create` \n - It is mandatory to
         provide values for parameter marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
@@ -879,20 +879,20 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/help/reportRequest'
+              '$ref': '#/components/schemas/issues/createRequest'
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/help/reportResponse'
+                '$ref': '#/components/schemas/issues/createResponse'
         '422':
           description: Unprocessable Entity
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/help/report422Response'
+                '$ref': '#/components/schemas/issues/create422Response'
 
 components:
   schemas:
@@ -2499,8 +2499,8 @@ components:
           error:
             type: array
             example: []
-    help:
-      reportRequest:
+    issues:
+      createRequest:
         type: object
         description: API for reporting an issue
         required:
@@ -2510,7 +2510,7 @@ components:
             type: string
             description: Description of the issue faced
             example: Sample description of the issue faced
-      reportResponse:
+      createResponse:
         type: object
         properties:
           responseCode:
@@ -2519,7 +2519,7 @@ components:
           message:
             type: string
             example: Your issue was successfully reported.
-      report422Response:
+      create422Response:
         type: object
         properties:
           responseCode:

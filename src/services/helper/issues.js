@@ -7,17 +7,17 @@ const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
 const notificationTemplateData = require('@db/notification-template/query')
 
-module.exports = class helpHelper {
+module.exports = class issuesHelper {
 	/**
 	 * Report an issue.
 	 * @method
-	 * @name report
+	 * @name create
 	 * @param {Object} bodyData - Reported issue body data.
 	 * @param {String} decodedToken - Token information.
 	 * @returns {JSON} - Success response.
 	 */
 
-	static async report(bodyData, decodedToken) {
+	static async create(bodyData, decodedToken) {
 		try {
 			const name = decodedToken.name
 			const role = decodedToken.isAMentor ? 'Mentor' : 'Mentee'
