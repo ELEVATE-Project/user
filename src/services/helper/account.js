@@ -17,7 +17,7 @@ const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const redisCommunication = require('@generics/redis-communication')
+const { RedisHelper } = require('elevate-node-cache')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 
@@ -59,7 +59,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await redisCommunication.getKey(email)
+				const redisData = await RedisHelper.getKey(email)
 				if (!redisData || redisData.otp != bodyData.otp) {
 					return common.failureResponse({
 						message: 'OTP_INVALID',
@@ -106,7 +106,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
 
-			const deleteData = await redisCommunication.deleteKey(email)
+			await RedisHelper.deleteKey(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -355,7 +355,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const userData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const userData = await RedisHelper.getKey(bodyData.email.toLowerCase())
 
 			if (userData && userData.action === 'forgetpassword') {
 				otp = userData.otp // If valid then get previuosly generated otp
@@ -379,11 +379,7 @@ module.exports = class AccountHelper {
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await redisCommunication.setKey(
-					bodyData.email.toLowerCase(),
-					redisData,
-					common.otpExpirationTime
-				)
+				const res = await RedisHelper.setKey(bodyData.email.toLowerCase(), redisData, common.otpExpirationTime)
 				if (res !== 'OK') {
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
@@ -442,7 +438,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const userData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const userData = await RedisHelper.getKey(bodyData.email.toLowerCase())
 
 			if (userData && userData.action === 'signup') {
 				otp = userData.otp // If valid then get previuosly generated otp
@@ -457,11 +453,7 @@ module.exports = class AccountHelper {
 					action: 'signup',
 					otp,
 				}
-				const res = await redisCommunication.setKey(
-					bodyData.email.toLowerCase(),
-					redisData,
-					common.otpExpirationTime
-				)
+				const res = await RedisHelper.setKey(bodyData.email.toLowerCase(), redisData, common.otpExpirationTime)
 				if (res !== 'OK') {
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
@@ -529,7 +521,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const redisData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const redisData = await RedisHelper.getKey(bodyData.email.toLowerCase())
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
 					message: 'RESET_OTP_INVALID',
@@ -570,7 +562,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: user._id }, updateParams)
 
-			const deleteData = await redisCommunication.deleteKey(bodyData.email.toLowerCase())
+			const deleteData = await RedisHelper.deleteKey(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user._doc.password

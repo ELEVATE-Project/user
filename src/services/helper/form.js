@@ -9,6 +9,7 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
+const { RedisHelper } = require('elevate-node-cache')
 
 module.exports = class FormsHelper {
 	/**
@@ -42,6 +43,7 @@ module.exports = class FormsHelper {
 				})
 			}
 			await formsData.createForm(bodyData)
+			await RedisHelper.deleteKey('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
@@ -86,6 +88,7 @@ module.exports = class FormsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			await RedisHelper.deleteKey('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'FORM_UPDATED_SUCCESSFULLY',

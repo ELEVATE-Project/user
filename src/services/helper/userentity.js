@@ -8,10 +8,10 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
 
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userEntitiesData = require('@db/userentities/query')
+const { InternalCache } = require('elevate-node-cache')
 
 module.exports = class UserEntityHelper {
 	/**
@@ -28,8 +28,9 @@ module.exports = class UserEntityHelper {
 		bodyData.createdBy = ObjectId(_id)
 		bodyData.updatedBy = ObjectId(_id)
 		try {
-			const filter = { type: bodyData.type, code: bodyData.code }
+			const filter = { type: bodyData.type, value: bodyData.value }
 			const entity = await userEntitiesData.findOneEntity(filter)
+
 			if (entity) {
 				return common.failureResponse({
 					message: 'USER_ENTITY_ALREADY_EXISTS',
@@ -38,6 +39,8 @@ module.exports = class UserEntityHelper {
 				})
 			}
 			await userEntitiesData.createEntity(bodyData)
+			const key = 'entity_' + bodyData.type
+			await InternalCache.delKey(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENTITY_CREATED_SUCCESSFULLY',
@@ -74,6 +77,15 @@ module.exports = class UserEntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			let key = ''
+			if (bodyData.type) {
+				key = 'entity_' + bodyData.type
+				await InternalCache.delKey(key)
+			} else {
+				const entities = await userEntitiesData.findOne(_id)
+				key = 'entity_' + entities.type
+				await InternalCache.delKey(key)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'USER_ENTITY_UPDATED_SUCCESSFULLY',
@@ -96,7 +108,12 @@ module.exports = class UserEntityHelper {
 			bodyData.deleted = false
 		}
 		try {
-			const entities = await userEntitiesData.findAllEntities(bodyData, projection)
+			const key = 'entity_' + bodyData.type
+			let entities = (await InternalCache.getKey(key)) || false
+			if (!entities) {
+				entities = await userEntitiesData.findAllEntities(bodyData, projection)
+				await InternalCache.setKey(key, entities, common.internalCacheExpirationTime)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ENTITY_FETCHED_SUCCESSFULLY',
@@ -131,6 +148,9 @@ module.exports = class UserEntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const entities = await userEntitiesData.findOne(_id)
+			let key = 'entity_' + entities.type
+			await InternalCache.delKey(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'USER_ENTITY_DELETED_SUCCESSFULLY',

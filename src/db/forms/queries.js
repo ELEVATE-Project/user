@@ -50,4 +50,23 @@ module.exports = class FormsData {
 			}
 		})
 	}
+
+	static findAllTypeFormVersion() {
+		const projection = {
+			type: 1,
+			ver: 1,
+		}
+		return new Promise(async (resolve, reject) => {
+			try {
+				const formData = await Forms.find({}, projection)
+				let versions = {}
+				formData.forEach((version) => {
+					versions[version.type] = version.ver
+				})
+				resolve(versions)
+			} catch (error) {
+				reject(error)
+			}
+		})
+	}
 }
