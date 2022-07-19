@@ -1,7 +1,7 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
-const { InternalCache } = require('elevate-node-cache')
+const { RedisHelper } = require('elevate-node-cache')
 
 module.exports = class FormsHelper {
 	/**
@@ -23,14 +23,11 @@ module.exports = class FormsHelper {
 				})
 			}
 			await formsData.createForm(bodyData)
-			let formVersionCached = await InternalCache.getKey('formsversion')
-			formVersionCached = formVersionCached ? formVersionCached : {}
-			formVersionCached[bodyData.type] = bodyData.ver
-			await InternalCache.setKey('formsversion', formVersionCached, common.internalCacheExpirationTime)
+			await RedisHelper.deleteKey('formVersion')
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
-				meta: formVersionCached,
 			})
 		} catch (error) {
 			throw error
@@ -48,9 +45,9 @@ module.exports = class FormsHelper {
 	static async update(bodyData) {
 		try {
 			const checkVersion = await formsData.checkVersion(bodyData)
-			console.log(checkVersion)
 			if (checkVersion) {
 				const result = await formsData.updateOneForm(bodyData)
+
 				if (result === 'ENTITY_ALREADY_EXISTS') {
 					return common.failureResponse({
 						message: 'FORM_ALREADY_EXISTS',
@@ -64,6 +61,7 @@ module.exports = class FormsHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
+				await RedisHelper.deleteKey('formVersion')
 
 				return common.successResponse({
 					statusCode: httpStatusCode.accepted,
@@ -71,9 +69,9 @@ module.exports = class FormsHelper {
 				})
 			} else {
 				return common.failureResponse({
-					message: 'FORM_NOT_FOUND',
+					message: 'UPDATE_FORM_VERSION',
 					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERRORhh',
+					responseCode: 'CLIENT_ERROR',
 				})
 			}
 		} catch (error) {
@@ -91,20 +89,13 @@ module.exports = class FormsHelper {
 
 	static async read(bodyData) {
 		try {
-			const key = bodyData.type + bodyData.subType + bodyData.action + bodyData.ver + bodyData.templateName
-			let form = {}
-			if (await InternalCache.getKey(key)) {
-				form = JSON.parse(await InternalCache.getKey(key))
-			} else {
-				form = await formsData.findOneForm(
-					bodyData.type,
-					bodyData.subType,
-					bodyData.action,
-					bodyData.ver,
-					bodyData.templateName
-				)
-				await InternalCache.setKey(key, JSON.stringify(form))
-			}
+			const form = await formsData.findOneForm(
+				bodyData.type,
+				bodyData.subType,
+				bodyData.action,
+				bodyData.templateName
+			)
+
 			if (!form) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',

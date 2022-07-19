@@ -5,6 +5,7 @@
  * Description : Users database operations
  */
 
+const utils = require('@generics/utils')
 const Forms = require('./model')
 
 module.exports = class FormsData {
@@ -32,15 +33,19 @@ module.exports = class FormsData {
 		})
 	}
 
-	static findalltype() {
+	static findAllTypeFormVersion() {
 		const projection = {
 			type: 1,
 			ver: 1,
 		}
 		return new Promise(async (resolve, reject) => {
 			try {
-				const formData = await Forms.find(projection)
-				resolve(formData)
+				const formData = await Forms.find({}, projection)
+				let versions = {}
+				formData.forEach((version) => {
+					versions[version.type] = version.ver
+				})
+				resolve(versions)
 			} catch (error) {
 				reject(error)
 			}
@@ -78,8 +83,8 @@ module.exports = class FormsData {
 			const filter = { type: bodyData.type }
 			const projection = { type: 1, ver: 1 }
 			const formData = await Forms.findOne(filter, projection)
-			console.log(formData)
-			return false
+			const versionCheck = utils.compareVersion(formData.ver, bodyData.ver)
+			return versionCheck
 		} catch (err) {
 			return err
 		}

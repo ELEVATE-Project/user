@@ -432,6 +432,7 @@ module.exports = class SessionsHelper {
 				)
 			}
 
+			console.log(sessionDetails)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',

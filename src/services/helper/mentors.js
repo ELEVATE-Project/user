@@ -64,7 +64,6 @@ module.exports = class MentorsHelper {
 				})
 			}
 		} catch (err) {
-			console.log(err)
 			return err
 		}
 	}
@@ -78,13 +77,12 @@ module.exports = class MentorsHelper {
 	 */
 	static async profile(id) {
 		try {
-			let mentorsDetails = {}
-			if (await RedisHelper.getKey(id)) {
-				mentorsDetails = await RedisHelper.getKey(id)
-			} else {
+			let mentorsDetails = (await RedisHelper.getKey(id)) || false
+
+			if (!mentorsDetails) {
 				if (ObjectId.isValid(id)) {
 					mentorsDetails = await userProfile.details('', id)
-					await RedisHelper.setKey(id, mentorsDetails, 86400)
+					await RedisHelper.setKey(id, mentorsDetails, common.RedisCacheExpiryTime)
 				} else {
 					mentorsDetails = await userProfile.details('', id)
 				}

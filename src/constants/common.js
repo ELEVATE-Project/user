@@ -5,13 +5,24 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
+const FormsData = require('@db/forms/queries')
+const { InternalCache } = require('elevate-node-cache')
+
+const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
+	const formVersionData = (await InternalCache.getKey('formVersion')) || false
+
+	if (formVersionData) {
+		versions = formVersionData
+	} else {
+		versions = await FormsData.findAllTypeFormVersion()
+		await InternalCache.setKey('formVersion', versions, process.env.INTERNAL_CACHE_EXP_TIME)
+	}
 	return {
 		statusCode,
 		responseCode,
 		message,
 		result,
-		meta,
+		meta: { ...meta, formsVersion: versions },
 	}
 }
 
@@ -44,4 +55,5 @@ module.exports = {
 	LIVE_STATUS: 'live',
 	MENTOR_EVALUATING: 'mentor',
 	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
+	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
 }

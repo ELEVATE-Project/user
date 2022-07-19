@@ -28,7 +28,7 @@ module.exports = class EntityHelper {
 				})
 			}
 			await entitiesData.createEntity(bodyData)
-			const key = 'mentoring_entity_' + bodyData.type
+			const key = 'entity_' + bodyData.type
 			await InternalCache.delKey(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -69,11 +69,11 @@ module.exports = class EntityHelper {
 			}
 			let key = ''
 			if (bodyData.type) {
-				key = 'mentoring_entity_' + bodyData.type
+				key = 'entity_' + bodyData.type
 				await InternalCache.delKey(key)
 			} else {
 				const entities = await entitiesData.findOne(_id)
-				key = 'mentoring_entity_' + entities.type
+				key = 'entity_' + entities.type
 				await InternalCache.delKey(key)
 			}
 			return common.successResponse({
@@ -98,13 +98,11 @@ module.exports = class EntityHelper {
 			bodyData.deleted = false
 		}
 		try {
-			let entities = {}
-			const key = 'mentoring_entity_' + bodyData.type
-			if (await InternalCache.getKey(key)) {
-				entities = await InternalCache.getKey(key)
-			} else {
+			const key = 'entity_' + bodyData.type
+			let entities = (await InternalCache.getKey(key)) || false
+			if (!entities) {
 				entities = await entitiesData.findAllEntities(bodyData)
-				await InternalCache.setKey(key, entities, 86400)
+				await InternalCache.setKey(key, entities, common.internalCacheExpirationTime)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -141,7 +139,7 @@ module.exports = class EntityHelper {
 				})
 			}
 			const entities = await entitiesData.findOne(_id)
-			let key = 'mentoring_entity_' + entities.type
+			let key = 'entity_' + entities.type
 			await InternalCache.delKey(key)
 
 			return common.successResponse({
