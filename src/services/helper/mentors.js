@@ -8,9 +8,6 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
-const apiEndpoints = require('@constants/endpoints')
-const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-const request = require('@generics/requests')
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
 module.exports = class MentorsHelper {
@@ -160,28 +157,18 @@ module.exports = class MentorsHelper {
 	}
 
 	/**
-	 * Share a mentor Profile.
+	 * Shareable mentor profile link.
 	 * @method
 	 * @name share
-	 * @param {String} profileId - Profile id.
-	 * @returns {JSON} - Shareable profile link.
+	 * @param {String} _id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
 	 */
-
-	static share(profileId) {
-		return new Promise(async (resolve, reject) => {
-			const apiUrl = apiBaseUrl + apiEndpoints.SHARE_MENTOR_PROFILE + '/' + profileId
-			try {
-				let shareLink = await request.get(apiUrl, false, true)
-				return resolve(
-					common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: shareLink.data.message,
-						result: shareLink.data.result,
-					})
-				)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async share(_id) {
+		try {
+			const shareLink = await userProfile.share(_id)
+			return shareLink
+		} catch (error) {
+			return error
+		}
 	}
 }

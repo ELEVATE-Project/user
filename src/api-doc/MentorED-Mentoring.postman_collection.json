@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "16d7e5d2-f69c-47ed-b724-a0a51fddfdef",
+		"_postman_id": "74b520ed-86ca-4bda-bd47-c4134cfa083b",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7997930"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -792,6 +792,32 @@
 									"value": "testing5"
 								}
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Share Mentor Profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/share/62d00b7c082b1ebc88a2a095",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "share", "62d00b7c082b1ebc88a2a095"]
 						}
 					},
 					"response": []
