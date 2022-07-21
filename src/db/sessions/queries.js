@@ -108,8 +108,10 @@ module.exports = class SessionsData {
 						},
 					},
 				])
+				console.log(sessionData)
 				resolve(sessionData)
 			} catch (error) {
+				console.log(error)
 				reject(error)
 			}
 		})

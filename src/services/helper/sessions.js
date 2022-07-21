@@ -386,18 +386,8 @@ module.exports = class SessionsHelper {
 				userId: ObjectId(loggedInUserId),
 			}
 			if (arrayOfStatus.length > 0) {
-				if (
-					arrayOfStatus.includes(common.PUBLISHED_STATUS) &&
-					arrayOfStatus.includes(common.COMPLETED_STATUS) &&
-					arrayOfStatus.includes(common.LIVE_STATUS)
-				) {
-					filters['endDateUtc'] = {
-						$lt: moment().utc().format(),
-					}
-				} else if (
-					arrayOfStatus.includes(common.PUBLISHED_STATUS) &&
-					arrayOfStatus.includes(common.LIVE_STATUS)
-				) {
+				if (arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)) {
+					console.log('checking w')
 					filters['endDateUtc'] = {
 						$gte: moment().utc().format(),
 					}

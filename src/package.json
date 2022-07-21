@@ -9,7 +9,8 @@
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
 		"qa": "NODE_ENV=qa node app.js",
-		"prepare": "cd .. && husky install src/.husky"
+		"prepare": "cd .. && husky install src/.husky",
+		"migrate": "node ./module/lib/migrate.js"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
