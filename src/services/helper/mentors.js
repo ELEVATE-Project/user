@@ -12,7 +12,6 @@ const apiEndpoints = require('@constants/endpoints')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('@generics/requests')
 const sessionAttendees = require('@db/sessionAttendees/queries')
-const { RedisHelper } = require('elevate-node-cache')
 
 module.exports = class MentorsHelper {
 	/**
@@ -77,13 +76,15 @@ module.exports = class MentorsHelper {
 	 */
 	static async profile(id) {
 		try {
-			let mentorsDetails = (await RedisHelper.getKey(id)) || false
-
+			let mentorsDetails = (await utils.redisGet(id)) || false
+			console.log(mentorsDetails)
 			if (!mentorsDetails) {
 				if (ObjectId.isValid(id)) {
 					mentorsDetails = await userProfile.details('', id)
-					await RedisHelper.setKey(id, mentorsDetails, common.RedisCacheExpiryTime)
+					console.log('ched')
+					await utils.redisSet(id, mentorsDetails)
 				} else {
+					console.log('not')
 					mentorsDetails = await userProfile.details('', id)
 				}
 			}

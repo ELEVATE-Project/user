@@ -5,6 +5,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entitiesData = require('@db/entities/query')
 const { InternalCache } = require('elevate-node-cache')
+const utils = require('@generics/utils')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity.
@@ -29,7 +30,7 @@ module.exports = class EntityHelper {
 			}
 			await entitiesData.createEntity(bodyData)
 			const key = 'entity_' + bodyData.type
-			await InternalCache.delKey(key)
+			await utils.internalDel(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -70,11 +71,11 @@ module.exports = class EntityHelper {
 			let key = ''
 			if (bodyData.type) {
 				key = 'entity_' + bodyData.type
-				await InternalCache.delKey(key)
+				await utils.internalDel(key)
 			} else {
 				const entities = await entitiesData.findOne(_id)
 				key = 'entity_' + entities.type
-				await InternalCache.delKey(key)
+				await utils.internalDel(key)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -99,10 +100,10 @@ module.exports = class EntityHelper {
 		}
 		try {
 			const key = 'entity_' + bodyData.type
-			let entities = (await InternalCache.getKey(key)) || false
+			let entities = (await utils.internalGet(key)) || false
 			if (!entities) {
 				entities = await entitiesData.findAllEntities(bodyData)
-				await InternalCache.setKey(key, entities, common.internalCacheExpirationTime)
+				await utils.internalSet(key, entities)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -140,7 +141,7 @@ module.exports = class EntityHelper {
 			}
 			const entities = await entitiesData.findOne(_id)
 			let key = 'entity_' + entities.type
-			await InternalCache.delKey(key)
+			await utils.internalDel(key)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
