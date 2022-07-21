@@ -20,10 +20,10 @@ module.exports = (req, res, next) => {
 		next()
 		return
 	} else {
-		return common.successResponse({
-			statusCode: httpStatus.ok,
-			message: 'SESSION_FETCHED_SUCCESSFULLY',
-			result: [{ data: [] }],
+		throw common.failureResponse({
+			message: 'Invalid seach text 😥',
+			statusCode: httpStatus.bad_request,
+			responseCode: 'CLIENT_ERROR',
 		})
 	}
 }
