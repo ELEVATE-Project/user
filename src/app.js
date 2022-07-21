@@ -13,7 +13,6 @@ const path = require('path')
 const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
-
 let environmentData = require('./envVariables')()
 
 if (!environmentData.success) {

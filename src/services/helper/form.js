@@ -1,10 +1,7 @@
-const ObjectId = require('mongoose').Types.ObjectId
-
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
-
+const utils = require('@generics/utils')
 module.exports = class FormsHelper {
 	/**
 	 * Create Form.
@@ -16,13 +13,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData) {
 		try {
-			const form = await formsData.findOneForm(
-				bodyData.type,
-				bodyData.subType,
-				bodyData.action,
-				bodyData.ver,
-				bodyData.data.templateName
-			)
+			const form = await formsData.findOneForm(bodyData.type)
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -31,6 +22,8 @@ module.exports = class FormsHelper {
 				})
 			}
 			await formsData.createForm(bodyData)
+			await utils.redisDel('formVersion')
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
@@ -50,24 +43,36 @@ module.exports = class FormsHelper {
 
 	static async update(bodyData) {
 		try {
-			const result = await formsData.updateOneForm(bodyData)
-			if (result === 'ENTITY_ALREADY_EXISTS') {
-				return common.failureResponse({
-					message: 'FORM_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			const checkVersion = await formsData.checkVersion(bodyData)
+			if (checkVersion) {
+				const result = await formsData.updateOneForm(bodyData)
+
+				if (result === 'ENTITY_ALREADY_EXISTS') {
+					return common.failureResponse({
+						message: 'FORM_ALREADY_EXISTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				} else if (result === 'ENTITY_NOT_FOUND') {
+					return common.failureResponse({
+						message: 'FORM_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				await utils.redisDel('formVersion')
+
+				return common.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'FORM_UPDATED_SUCCESSFULLY',
 				})
-			} else if (result === 'ENTITY_NOT_FOUND') {
+			} else {
 				return common.failureResponse({
-					message: 'FORM_NOT_FOUND',
+					message: 'UPDATE_FORM_VERSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
-				statusCode: httpStatusCode.accepted,
-				message: 'FORM_UPDATED_SUCCESSFULLY',
-			})
 		} catch (error) {
 			throw error
 		}
@@ -87,9 +92,9 @@ module.exports = class FormsHelper {
 				bodyData.type,
 				bodyData.subType,
 				bodyData.action,
-				bodyData.ver,
 				bodyData.templateName
 			)
+
 			if (!form) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',
