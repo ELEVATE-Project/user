@@ -36,8 +36,8 @@ module.exports = class ProfileHelper {
 				})
 			}
 			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
-			if (await RedisHelper.getKey(_id)) {
-				await RedisHelper.deleteKey(_id)
+			if (await utils.redisGet(_id)) {
+				await utils.redisDel(_id)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -179,8 +179,8 @@ module.exports = class ProfileHelper {
 			}
 		}
 		await usersData.updateOneUser({ _id: ObjectId(ratingData.mentorId) }, updateData)
-		if (await RedisHelper.getKey(ratingData.mentorId)) {
-			await RedisHelper.deleteKey(ratingData.mentorId)
+		if (await utils.redisGet(ratingData.mentorId)) {
+			await utils.redisDel(ratingData.mentorId)
 		}
 		return
 	}

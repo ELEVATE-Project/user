@@ -11,7 +11,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userEntitiesData = require('@db/userentities/query')
-const { InternalCache } = require('elevate-node-cache')
+const utils = require('@generics/utils')
 
 module.exports = class UserEntityHelper {
 	/**
@@ -40,7 +40,7 @@ module.exports = class UserEntityHelper {
 			}
 			await userEntitiesData.createEntity(bodyData)
 			const key = 'entity_' + bodyData.type
-			await InternalCache.delKey(key)
+			await utils.internalDel(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENTITY_CREATED_SUCCESSFULLY',
@@ -80,11 +80,11 @@ module.exports = class UserEntityHelper {
 			let key = ''
 			if (bodyData.type) {
 				key = 'entity_' + bodyData.type
-				await InternalCache.delKey(key)
+				await utils.internalDel(key)
 			} else {
 				const entities = await userEntitiesData.findOne(_id)
 				key = 'entity_' + entities.type
-				await InternalCache.delKey(key)
+				await utils.internalDel(key)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -109,10 +109,10 @@ module.exports = class UserEntityHelper {
 		}
 		try {
 			const key = 'entity_' + bodyData.type
-			let entities = (await InternalCache.getKey(key)) || false
+			let entities = (await utils.internalGet(key)) || false
 			if (!entities) {
 				entities = await userEntitiesData.findAllEntities(bodyData, projection)
-				await InternalCache.setKey(key, entities, common.internalCacheExpirationTime)
+				await utils.internalSet(key, entities)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -150,7 +150,7 @@ module.exports = class UserEntityHelper {
 			}
 			const entities = await userEntitiesData.findOne(_id)
 			let key = 'entity_' + entities.type
-			await InternalCache.delKey(key)
+			await utils.internalDel(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'USER_ENTITY_DELETED_SUCCESSFULLY',

@@ -5,17 +5,17 @@
  * Description : All commonly used constants through out the service
  */
 
-const { InternalCache } = require('elevate-node-cache')
+const utils = require('@generics/utils')
 const FormsData = require('@db/forms/queries')
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
-	const formVersionData = (await InternalCache.getKey('formVersion')) || false
+	const formVersionData = (await utils.internalGet('formVersion')) || false
+	let versions = {}
 	if (formVersionData) {
 		versions = formVersionData
 	} else {
 		versions = await FormsData.findAllTypeFormVersion()
-		await InternalCache.setKey('formVersion', versions, process.env.INTERNAL_CACHE_EXP_TIME)
+		await utils.internalSet('formVersion', versions)
 	}
-
 	return {
 		statusCode,
 		responseCode,

@@ -8,7 +8,8 @@
 //Dependencies
 require('./mongodb')()
 require('./kafka')()
-require('elevate-node-cache').RedisConfig()
+const { RedisConfig } = require('elevate-node-cache')
+RedisConfig.config(process.env.REDIS_HOST)
 const path = require('path')
 
 global.PROJECT_ROOT_DIRECTORY = path.join(__dirname, '..')
