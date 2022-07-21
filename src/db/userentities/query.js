@@ -62,4 +62,15 @@ module.exports = class UserEntityData {
 			}
 		})
 	}
+
+	static async findOne(_id) {
+		try {
+			const filter = {
+				_id: ObjectId(_id),
+			}
+			return await UserEntities.findOne(filter)
+		} catch (error) {
+			return error
+		}
+	}
 }

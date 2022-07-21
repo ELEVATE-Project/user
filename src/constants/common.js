@@ -5,12 +5,23 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] }) => {
+const utils = require('@generics/utils')
+const FormsData = require('@db/forms/queries')
+const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
+	const formVersionData = (await utils.internalGet('formVersion')) || false
+	let versions = {}
+	if (formVersionData) {
+		versions = formVersionData
+	} else {
+		versions = await FormsData.findAllTypeFormVersion()
+		await utils.internalSet('formVersion', versions)
+	}
 	return {
 		statusCode,
 		responseCode,
 		message,
 		result,
+		meta: { ...meta, formsVersion: versions },
 	}
 }
 

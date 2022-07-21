@@ -13,6 +13,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const utils = require('@generics/utils')
+const { RedisHelper } = require('elevate-node-cache')
 
 module.exports = class ProfileHelper {
 	/**
@@ -35,6 +36,9 @@ module.exports = class ProfileHelper {
 				})
 			}
 			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
+			if (await utils.redisGet(_id)) {
+				await utils.redisDel(_id)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -175,6 +179,9 @@ module.exports = class ProfileHelper {
 			}
 		}
 		await usersData.updateOneUser({ _id: ObjectId(ratingData.mentorId) }, updateData)
+		if (await utils.redisGet(ratingData.mentorId)) {
+			await utils.redisDel(ratingData.mentorId)
+		}
 		return
 	}
 }

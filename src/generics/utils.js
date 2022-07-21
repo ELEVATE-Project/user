@@ -10,6 +10,7 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
+const { RedisHelper, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
@@ -80,6 +81,41 @@ function md5Hash(value) {
 	return md5(value)
 }
 
+function compareVersion(dbValue, apiValue) {
+	if (dbValue == apiValue) {
+		return false
+	} else {
+		dbValue = dbValue.split('.')
+		apiValue = apiValue.split('.')
+		for (let i = 0; i < dbValue.length; i++) {
+			if (dbValue[i] > apiValue[i]) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+function internalSet(key, value) {
+	return InternalCache.setKey(key, value)
+}
+function internalGet(key) {
+	return InternalCache.getKey(key)
+}
+function internalDel(key) {
+	return InternalCache.delKey(key)
+}
+
+function redisSet(key, value, exp) {
+	return RedisHelper.setKey(key, value, exp)
+}
+function redisGet(key) {
+	return RedisHelper.getKey(key)
+}
+function redisDel(key) {
+	return RedisHelper.deleteKey(key)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -88,4 +124,11 @@ module.exports = {
 	composeEmailBody,
 	getDownloadableUrl,
 	md5Hash,
+	compareVersion: compareVersion,
+	internalSet: internalSet,
+	internalDel: internalDel,
+	internalGet: internalGet,
+	redisSet: redisSet,
+	redisGet: redisGet,
+	redisDel: redisDel,
 }
