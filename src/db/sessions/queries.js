@@ -76,7 +76,7 @@ module.exports = class SessionsData {
 						},
 					},
 					{
-						$sort: { _id: -1 },
+						$sort: { startDate: -1 },
 					},
 					{
 						$project: {
@@ -90,6 +90,7 @@ module.exports = class SessionsData {
 							image: 1,
 							endDateUtc: 1,
 							userId: 1,
+							startDateUtc: 1,
 						},
 					},
 					{
