@@ -13,8 +13,6 @@ const path = require('path')
 const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
-const { InternalCache, RedisHelper } = require('elevate-node-cache')
-
 let environmentData = require('./envVariables')()
 
 if (!environmentData.success) {
@@ -24,8 +22,6 @@ if (!environmentData.success) {
 
 require('@configs')
 
-InternalCache.init(process.env.INTERNAL_CACHE_EXP_TIME)
-RedisHelper.init(process.env.REDIS_CACHE_EXP_TIME)
 i18next
 	.use(Backend)
 	.use(middleware.LanguageDetector)

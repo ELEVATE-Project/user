@@ -4,7 +4,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entitiesData = require('@db/entities/query')
-const { InternalCache } = require('elevate-node-cache')
+
 const utils = require('@generics/utils')
 module.exports = class EntityHelper {
 	/**
