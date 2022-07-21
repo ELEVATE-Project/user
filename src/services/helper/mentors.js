@@ -81,10 +81,8 @@ module.exports = class MentorsHelper {
 			if (!mentorsDetails) {
 				if (ObjectId.isValid(id)) {
 					mentorsDetails = await userProfile.details('', id)
-					console.log('ched')
 					await utils.redisSet(id, mentorsDetails)
 				} else {
-					console.log('not')
 					mentorsDetails = await userProfile.details('', id)
 				}
 			}
