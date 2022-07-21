@@ -77,7 +77,7 @@ module.exports = class MentorsHelper {
 	static async profile(id) {
 		try {
 			let mentorsDetails = (await utils.redisGet(id)) || false
-			console.log(mentorsDetails)
+
 			if (!mentorsDetails) {
 				if (ObjectId.isValid(id)) {
 					mentorsDetails = await userProfile.details('', id)

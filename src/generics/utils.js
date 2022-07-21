@@ -127,7 +127,7 @@ function compareVersion(dbValue, apiValue) {
 		dbValue = dbValue.split('.')
 		apiValue = apiValue.split('.')
 		for (let i = 0; i < dbValue.length; i++) {
-			if (dbValue > apiValue) {
+			if (dbValue[i] > apiValue[i]) {
 				return false
 			}
 		}
@@ -135,24 +135,24 @@ function compareVersion(dbValue, apiValue) {
 	}
 }
 
-async function internalSet(key, value) {
-	return await InternalCache.setKey(key, value)
+function internalSet(key, value) {
+	return InternalCache.setKey(key, value)
 }
-async function internalGet(key) {
-	return await InternalCache.getKey(key)
+function internalGet(key) {
+	return InternalCache.getKey(key)
 }
-async function internalDel(key) {
-	return await InternalCache.delKey(key)
+function internalDel(key) {
+	return InternalCache.delKey(key)
 }
 
-async function redisSet(key, value, exp) {
-	return await RedisHelper.setKey(key, value, exp)
+function redisSet(key, value, exp) {
+	return RedisHelper.setKey(key, value, exp)
 }
-async function redisGet(key) {
-	return await RedisHelper.getKey(key)
+function redisGet(key) {
+	return RedisHelper.getKey(key)
 }
-async function redisDel(key) {
-	return await RedisHelper.deleteKey(key)
+function redisDel(key) {
+	return RedisHelper.deleteKey(key)
 }
 
 module.exports = {

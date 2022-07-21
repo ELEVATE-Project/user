@@ -9,7 +9,7 @@ const FormsData = require('@db/forms/queries')
 const utils = require('@generics/utils')
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
 	const formVersionData = (await utils.internalGet('formVersion')) || false
-
+	let versions = {}
 	if (formVersionData) {
 		versions = formVersionData
 	} else {

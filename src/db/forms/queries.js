@@ -83,8 +83,7 @@ module.exports = class FormsData {
 			const filter = { type: bodyData.type }
 			const projection = { type: 1, ver: 1 }
 			const formData = await Forms.findOne(filter, projection)
-			const versionCheck = utils.compareVersion(formData.ver, bodyData.ver)
-			return versionCheck
+			return utils.compareVersion(formData.ver, bodyData.ver)
 		} catch (err) {
 			return err
 		}
