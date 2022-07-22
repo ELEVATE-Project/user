@@ -1,10 +1,11 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-const utilsHelper = require('@generics/utils')
+
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entitiesData = require('@db/entities/query')
 
+const utils = require('@generics/utils')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity.
@@ -28,6 +29,8 @@ module.exports = class EntityHelper {
 				})
 			}
 			await entitiesData.createEntity(bodyData)
+			const key = 'entity_' + bodyData.type
+			await utils.internalDel(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -65,6 +68,15 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			let key = ''
+			if (bodyData.type) {
+				key = 'entity_' + bodyData.type
+				await utils.internalDel(key)
+			} else {
+				const entities = await entitiesData.findOne(_id)
+				key = 'entity_' + entities.type
+				await utils.internalDel(key)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_UPDATED_SUCCESSFULLY',
@@ -87,7 +99,12 @@ module.exports = class EntityHelper {
 			bodyData.deleted = false
 		}
 		try {
-			const entities = await entitiesData.findAllEntities(bodyData)
+			const key = 'entity_' + bodyData.type
+			let entities = (await utils.internalGet(key)) || false
+			if (!entities) {
+				entities = await entitiesData.findAllEntities(bodyData)
+				await utils.internalSet(key, entities)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_FETCHED_SUCCESSFULLY',
@@ -122,6 +139,10 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const entities = await entitiesData.findOne(_id)
+			let key = 'entity_' + entities.type
+			await utils.internalDel(key)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_DELETED_SUCCESSFULLY',

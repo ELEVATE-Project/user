@@ -8,3 +8,5 @@
 require('./mongodb')()
 
 require('./kafka')()
+
+require('./cache')()

@@ -13,6 +13,7 @@ describe('Sessions controller and helper test', () => {
 	let sessionAttended
 	let sessionsData
 	let userProfile
+	let { RedisHelper } = require('elevate-node-cache')
 
 	beforeAll(async () => {
 		await loadMongo()
@@ -76,7 +77,9 @@ describe('Sessions controller and helper test', () => {
 				gender: 'MALE',
 				image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
 			},
-			meta: {},
+			meta: {
+				formsVersion: {},
+			},
 		}
 
 		const userProfileApiResponse = {
@@ -134,6 +137,11 @@ describe('Sessions controller and helper test', () => {
 			},
 		}
 
+		const mockRedisClientGetKey = jest.spyOn(RedisHelper, 'getKey')
+		mockRedisClientGetKey.mockResolvedValueOnce(false)
+
+		const mockRedisClientSetKey = jest.spyOn(RedisHelper, 'setKey')
+		mockRedisClientSetKey.mockResolvedValueOnce(true)
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
 
@@ -202,6 +210,10 @@ describe('Sessions controller and helper test', () => {
 			},
 		}
 
+		const mockRedisClient = jest.spyOn(RedisHelper, 'getKey')
+		mockRedisClient.mockResolvedValueOnce(false)
+		const mockRedisClientSetKey = jest.spyOn(RedisHelper, 'setKey')
+		mockRedisClientSetKey.mockResolvedValueOnce(true)
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
 
