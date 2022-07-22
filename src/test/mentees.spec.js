@@ -73,7 +73,9 @@ describe('Sessions controller and helper test', () => {
 				gender: 'MALE',
 				image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
 			},
-			meta: {},
+			meta: {
+				formsVersion: {},
+			},
 		}
 
 		const userProfileApiResponse = {

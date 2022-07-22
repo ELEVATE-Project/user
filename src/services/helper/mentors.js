@@ -60,7 +60,6 @@ module.exports = class MentorsHelper {
 				})
 			}
 		} catch (err) {
-			console.log(err)
 			return err
 		}
 	}
@@ -73,28 +72,41 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async profile(id) {
-		const mentorsDetails = await userProfile.details('', id)
-		if (mentorsDetails.data.result.isAMentor) {
-			const _id = mentorsDetails.data.result._id
-			const filterSessionAttended = { userId: _id, isSessionAttended: true }
-			const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
-			const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true }
-			const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PROFILE_FTECHED_SUCCESSFULLY',
-				result: {
-					sessionsAttended: totalSessionsAttended,
-					sessionsHosted: totalSessionHosted,
-					...mentorsDetails.data.result,
-				},
-			})
-		} else {
-			return common.failureResponse({
-				statusCode: httpStatusCode.bad_request,
-				message: 'MENTORS_NOT_FOUND',
-				responseCode: 'CLIENT_ERROR',
-			})
+		try {
+			let mentorsDetails = (await utils.redisGet(id)) || false
+
+			if (!mentorsDetails) {
+				if (ObjectId.isValid(id)) {
+					mentorsDetails = await userProfile.details('', id)
+					await utils.redisSet(id, mentorsDetails)
+				} else {
+					mentorsDetails = await userProfile.details('', id)
+				}
+			}
+			if (mentorsDetails.data.result.isAMentor) {
+				const _id = mentorsDetails.data.result._id
+				const filterSessionAttended = { userId: _id, isSessionAttended: true }
+				const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
+				const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true }
+				const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'PROFILE_FTECHED_SUCCESSFULLY',
+					result: {
+						sessionsAttended: totalSessionsAttended,
+						sessionsHosted: totalSessionHosted,
+						...mentorsDetails.data.result,
+					},
+				})
+			} else {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		} catch (err) {
+			return err
 		}
 	}
 
