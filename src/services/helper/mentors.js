@@ -143,6 +143,7 @@ module.exports = class MentorsHelper {
 				userId: ObjectId(userId),
 				status: 'completed',
 				deleted: false,
+				isStarted: true,
 			}
 
 			totalsessionHosted = await sessionsData.countSessions(filters)
