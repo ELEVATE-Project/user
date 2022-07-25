@@ -22,7 +22,7 @@ module.exports = class FormsHelper {
 				})
 			}
 			await formsData.createForm(bodyData)
-			await utils.redisDel('formVersion')
+			await utils.internalDel('formVersion')
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -60,7 +60,7 @@ module.exports = class FormsHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				await utils.redisDel('formVersion')
+				await utils.internalDel('formVersion')
 
 				return common.successResponse({
 					statusCode: httpStatusCode.accepted,
