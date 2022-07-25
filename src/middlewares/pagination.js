@@ -13,17 +13,17 @@ module.exports = (req, res, next) => {
 		req.query.limit && Number(req.query.limit) > 0 && Number(req.query.limit) <= 100 ? Number(req.query.limit) : 100
 
 	req.searchText = req.query.search && req.query.search != '' ? decodeURI(req.query.search) : ''
-
-	if (req.searchText.match(/^[A-Za-z0-9 ]+$/) || req.searchText == '') {
-		delete req.query.page
-		delete req.query.limit
-		next()
-		return
-	} else {
+	const specialChar = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
+	if (specialChar.test(req.searchText)) {
 		throw common.failureResponse({
 			message: 'Invalid seach text 😥',
 			statusCode: httpStatus.bad_request,
 			responseCode: 'CLIENT_ERROR',
 		})
+	} else {
+		delete req.query.page
+		delete req.query.limit
+		next()
+		return
 	}
 }
