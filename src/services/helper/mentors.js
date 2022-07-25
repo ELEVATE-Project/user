@@ -28,9 +28,7 @@ module.exports = class MentorsHelper {
 				const filterUpcomingSession = {
 					$and: [
 						{
-							startDate: {
-								$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
-							},
+							$expr: { $gt: [{ $toDouble: '$startDate' }, moment().unix()] },
 						},
 						{
 							status: 'published',
