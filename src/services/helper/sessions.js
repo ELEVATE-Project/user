@@ -15,6 +15,7 @@ const request = require('request')
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
+const UserProfileHelper = require('./userProfile')
 
 module.exports = class SessionsHelper {
 	/**
@@ -43,6 +44,9 @@ module.exports = class SessionsHelper {
 			if (bodyData.endDate) {
 				bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 			}
+
+			const mentorName = await UserProfileHelper.details('', loggedInUserId)
+			req.body.mentorName = mentorName.data.result.name
 
 			let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
 
@@ -340,6 +344,8 @@ module.exports = class SessionsHelper {
 				})
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
+			const mentorName = await UserProfileHelper.details('', sessionDetails.userId)
+			sessionDetails.mentorName = mentorName.data.result.name
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -426,7 +432,15 @@ module.exports = class SessionsHelper {
 						}
 					})
 				)
+
+				await Promise.all(
+					sessionDetails[0].data.map(async (session) => {
+						const mentorName = await UserProfileHelper.details('', session.userId)
+						session.mentorName = mentorName.data.result.name
+					})
+				)
 			}
+			console.log(sessionDetails[0].data)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -434,6 +448,7 @@ module.exports = class SessionsHelper {
 				result: sessionDetails[0] ? sessionDetails[0] : [],
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -465,6 +480,9 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const mentorName = await UserProfileHelper.details('', session.userId)
+			session.mentorName = mentorName.data.result.name
 
 			const sessionAttendeeExist = await sessionAttendesData.findOneSessionAttendee(sessionId, userId)
 			if (sessionAttendeeExist) {
@@ -550,6 +568,10 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const mentorName = await UserProfileHelper.details('', session.userId)
+			session.mentorName = mentorName.data.result.name
+
 			const response = await sessionAttendesData.unEnrollFromSession(sessionId, userId)
 
 			if (response === 'USER_NOT_ENROLLED') {
