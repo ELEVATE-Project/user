@@ -434,7 +434,7 @@ module.exports = class SessionsHelper {
 					.map((item) => item.userId.toString())
 					.filter((value, index, self) => self.indexOf(value) === index)
 
-				let mentorDetails = await UserProfileHelper.getAllMentorsDetail(userIds)
+				let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
 				mentorDetails = mentorDetails.result
 
 				for (let i = 0; i < sessionDetails[0].data.length; i++) {

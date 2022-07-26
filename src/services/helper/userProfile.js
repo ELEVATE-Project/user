@@ -41,7 +41,7 @@ module.exports = class UserProfileHelper {
 	 * @param {Array} userIds
 	 * @returns
 	 */
-	static getAllMentorsDetail(userIds) {
+	static getListOfUserDetails(userIds) {
 		return new Promise((resolve, reject) => {
 			const options = {
 				headers: {
