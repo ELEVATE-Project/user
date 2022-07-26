@@ -45,9 +45,6 @@ module.exports = class SessionsHelper {
 				bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 			}
 
-			const mentorName = await UserProfileHelper.details('', loggedInUserId)
-			req.body.mentorName = mentorName.data.result.name
-
 			let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
 
 			if (elapsedMinutes < 30) {
@@ -440,7 +437,6 @@ module.exports = class SessionsHelper {
 					})
 				)
 			}
-			console.log(sessionDetails[0].data)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -448,7 +444,6 @@ module.exports = class SessionsHelper {
 				result: sessionDetails[0] ? sessionDetails[0] : [],
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
