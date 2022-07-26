@@ -14,6 +14,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 const apiEndpoints = require('@constants/endpoints')
 const request = require('request')
 const { successResponse } = require('@constants/common')
+const UserProfileHelper = require('./userProfile')
 
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 
@@ -331,6 +332,19 @@ module.exports = class MenteesHelper {
 					}
 				})
 			)
+
+			const userIds = sessions[0].data
+				.map((item) => item.userId.toString())
+				.filter((value, index, self) => self.indexOf(value) === index)
+
+			let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
+			mentorDetails = mentorDetails.result
+
+			for (let i = 0; i < sessions[0].data.length; i++) {
+				let mentorIndex = mentorDetails.findIndex((x) => x._id === sessions[0].data[i].userId.toString())
+				console.log(mentorIndex)
+				sessions[0].data[i].mentorName = mentorDetails[mentorIndex].name
+			}
 		}
 		return sessions
 	}
@@ -380,6 +394,19 @@ module.exports = class MenteesHelper {
 			})
 
 			sessions[0].data = await Promise.all(sessions[0].data)
+			console.log(sessions[0].data)
+			const userIds = sessions[0].data
+				.map((item) => item.userId.toString())
+				.filter((value, index, self) => self.indexOf(value) === index)
+
+			let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
+			mentorDetails = mentorDetails.result
+
+			for (let i = 0; i < sessions[0].data.length; i++) {
+				let mentorIndex = mentorDetails.findIndex((x) => x._id === sessions[0].data[i].userId.toString())
+				console.log(mentorIndex)
+				sessions[0].data[i].mentorName = mentorDetails[mentorIndex].name
+			}
 		}
 
 		return sessions
