@@ -416,6 +416,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			console.log(sessionDetails[0].data)
 			if (sessionDetails[0] && sessionDetails[0].data.length > 0) {
 				await Promise.all(
 					sessionDetails[0].data.map(async (session) => {
@@ -429,13 +430,19 @@ module.exports = class SessionsHelper {
 						}
 					})
 				)
+				const userIds = sessionDetails[0].data
+					.map((item) => item.userId.toString())
+					.filter((value, index, self) => self.indexOf(value) === index)
 
-				await Promise.all(
-					sessionDetails[0].data.map(async (session) => {
-						const mentorName = await UserProfileHelper.details('', session.userId)
-						session.mentorName = mentorName.data.result.name
-					})
-				)
+				let mentorDetails = await UserProfileHelper.getAllMentorsDetail(userIds)
+				mentorDetails = mentorDetails.result
+
+				for (let i = 0; i < sessionDetails[0].data.length; i++) {
+					let mentorIndex = mentorDetails.findIndex(
+						(x) => x._id === sessionDetails[0].data[i].userId.toString()
+					)
+					sessionDetails[0].data[i].mentorName = mentorDetails[mentorIndex].name
+				}
 			}
 
 			return common.successResponse({

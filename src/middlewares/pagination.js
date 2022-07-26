@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
 	const specialChar = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/
 	if (specialChar.test(req.searchText)) {
 		throw common.failureResponse({
-			message: 'Invalid seach text 😥',
+			message: 'Invalid search text 😥',
 			statusCode: httpStatus.bad_request,
 			responseCode: 'CLIENT_ERROR',
 		})

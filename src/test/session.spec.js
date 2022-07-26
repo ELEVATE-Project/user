@@ -54,144 +54,30 @@ describe('Sessions controller and helper test', () => {
 		expect(createdSession.description).toBe('Training in leadership')
 	})
 
-	test('should get session list', async () => {
-		const userProfileApiResponse = {
-			success: true,
-			data: {
-				responseCode: 'OK',
-				message: 'Profile fetched successfully.',
-				result: {
-					email: {
-						address: 'ankit.s@pacewisdomss.com',
-						verified: false,
-					},
-					_id: '62a820225ff93f30cfe5f990',
-					name: 'Ankit',
-					isAMentor: true,
-					hasAcceptedTAndC: true,
-					educationQualification: 'B.A.',
-					deleted: false,
-					designation: [
-						{
-							value: '1',
-							label: 'Teacher',
-						},
-						{
-							value: '2',
-							label: 'District Official',
-						},
-					],
-					location: [
-						{
-							value: '1',
-							label: 'Bangalore',
-						},
-					],
-					areasOfExpertise: [
-						{
-							value: '1',
-							label: 'Educational Leadership',
-						},
-						{
-							value: '2',
-							label: 'SQAA',
-						},
-					],
-					languages: [],
-					updatedAt: '2022-06-14T06:18:23.423Z',
-					createdAt: '2022-06-14T05:44:02.911Z',
-					__v: 0,
-					lastLoggedInAt: '2022-07-07T01:43:53.097Z',
-					about: 'This is test about of mentee',
-					experience: '4.2',
-					gender: 'MALE',
-					image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
-				},
-			},
-		}
-		const mockUserDetails = jest.spyOn(userProfile, 'details')
-		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
+	// test('should get session list', async () => {
+	// 	let response = await sessionService.list('62832531a05cbd57b273aebb', 1, 10)
 
-		let response = await sessionService.list('62832531a05cbd57b273aebb', 1, 10)
+	// 	expect(response.statusCode).toBe(200)
+	// 	expect(response.message).toBe('SESSION_FETCHED_SUCCESSFULLY')
+	// })
 
-		expect(response.statusCode).toBe(200)
-		expect(response.message).toBe('SESSION_FETCHED_SUCCESSFULLY')
-	})
+	// test('should call session list controller', async () => {
+	// 	const request = {
+	// 		decodedToken: {
+	// 			_id: '62832531a05cbd57b273aebb',
+	// 		},
+	// 		pageNo: 1,
+	// 		pageSize: 10,
+	// 		searchText: '',
+	// 		query: {},
+	// 	}
 
-	test('should call session list controller', async () => {
-		const request = {
-			decodedToken: {
-				_id: '62832531a05cbd57b273aebb',
-			},
-			pageNo: 1,
-			pageSize: 10,
-			searchText: '',
-			query: {},
-		}
+	// 	let controllerResponse = new controller()
+	// 	let response = await controllerResponse.list(request)
 
-		const userProfileApiResponse = {
-			success: true,
-			data: {
-				responseCode: 'OK',
-				message: 'Profile fetched successfully.',
-				result: {
-					email: {
-						address: 'ankit.s@pacewisdomss.com',
-						verified: false,
-					},
-					_id: '62a820225ff93f30cfe5f990',
-					name: 'Ankit',
-					isAMentor: true,
-					hasAcceptedTAndC: true,
-					educationQualification: 'B.A.',
-					deleted: false,
-					designation: [
-						{
-							value: '1',
-							label: 'Teacher',
-						},
-						{
-							value: '2',
-							label: 'District Official',
-						},
-					],
-					location: [
-						{
-							value: '1',
-							label: 'Bangalore',
-						},
-					],
-					areasOfExpertise: [
-						{
-							value: '1',
-							label: 'Educational Leadership',
-						},
-						{
-							value: '2',
-							label: 'SQAA',
-						},
-					],
-					languages: [],
-					updatedAt: '2022-06-14T06:18:23.423Z',
-					createdAt: '2022-06-14T05:44:02.911Z',
-					__v: 0,
-					lastLoggedInAt: '2022-07-07T01:43:53.097Z',
-					about: 'This is test about of mentee',
-					experience: '4.2',
-					gender: 'MALE',
-					image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
-				},
-			},
-		}
-		const mockUserDetails = jest.spyOn(userProfile, 'details')
-		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
-
-		let controllerResponse = new controller()
-		let response = await controllerResponse.list(request)
-
-		expect(response.statusCode).toBe(200)
-		expect(response.message).toBe('SESSION_FETCHED_SUCCESSFULLY')
-	})
+	// 	expect(response.statusCode).toBe(200)
+	// 	expect(response.message).toBe('SESSION_FETCHED_SUCCESSFULLY')
+	// })
 
 	afterAll(async () => {
 		try {
