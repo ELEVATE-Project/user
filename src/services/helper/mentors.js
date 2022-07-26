@@ -41,12 +41,15 @@ module.exports = class MentorsHelper {
 					],
 					userId: id,
 				}
-				const upcomingSessions = await sessionsData.mentorsUpcomingSession(
+				let upcomingSessions = await sessionsData.mentorsUpcomingSession(
 					page,
 					limit,
 					search,
 					filterUpcomingSession
 				)
+				upcomingSessions[0].data.map((sessions) => {
+					sessions.mentorName = mentorsDetails.data.result.name
+				})
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'UPCOMING_SESSION_FETCHED',
