@@ -17,6 +17,8 @@ const { successResponse } = require('@constants/common')
 
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 
+const UserProfileHelper = require('./userProfile')
+
 module.exports = class MenteesHelper {
 	/**
 	 * Profile.
@@ -292,8 +294,19 @@ module.exports = class MenteesHelper {
 		}
 
 		const sessions = await sessionData.findAllSessions(page, limit, search, filters)
-
 		if (sessions[0].data.length > 0) {
+			const userIds = sessions[0].data
+				.map((item) => item.userId.toString())
+				.filter((value, index, self) => self.indexOf(value) === index)
+
+			let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
+			mentorDetails = mentorDetails.result
+
+			sessions[0].data.map((mappedSessions) => {
+				let mentorIndex = mentorDetails.findIndex((x) => x._id === mappedSessions.userId.toString())
+				mappedSessions.mentorName = mentorDetails[mentorIndex].name
+			})
+
 			sessions[0].data.forEach((session) => {
 				sessionIds.push(session._id)
 			})
