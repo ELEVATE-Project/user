@@ -11,13 +11,7 @@ const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
 
-const apiEndpoints = require('@constants/endpoints')
-const request = require('request')
 const { successResponse } = require('@constants/common')
-const UserProfileHelper = require('./userProfile')
-
-const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-
 module.exports = class MenteesHelper {
 	/**
 	 * Profile.
@@ -337,7 +331,7 @@ module.exports = class MenteesHelper {
 				.map((item) => item.userId.toString())
 				.filter((value, index, self) => self.indexOf(value) === index)
 
-			let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
+			let mentorDetails = await userProfile.getListOfUserDetails(userIds)
 			mentorDetails = mentorDetails.result
 
 			for (let i = 0; i < sessions[0].data.length; i++) {
@@ -399,7 +393,7 @@ module.exports = class MenteesHelper {
 				.map((item) => item.userId.toString())
 				.filter((value, index, self) => self.indexOf(value) === index)
 
-			let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
+			let mentorDetails = await userProfile.getListOfUserDetails(userIds)
 			mentorDetails = mentorDetails.result
 
 			for (let i = 0; i < sessions[0].data.length; i++) {
