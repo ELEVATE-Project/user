@@ -21,8 +21,9 @@ module.exports = class MentorsHelper {
 	 * @param {String} search - Search text.
 	 * @returns {JSON} - mentors upcoming session details
 	 */
-	static async upcomingSessions(id, page, limit, search = '') {
+	static async upcomingSessions(id, page, limit, search = '', menteeUserId) {
 		try {
+			const sessionIds = []
 			const mentorsDetails = await userProfile.details('', id)
 			if (mentorsDetails.data.result.isAMentor) {
 				const filterUpcomingSession = {
@@ -50,6 +51,48 @@ module.exports = class MentorsHelper {
 				upcomingSessions[0].data.map((sessions) => {
 					sessions.mentorName = mentorsDetails.data.result.name
 				})
+
+				if (id != menteeUserId) {
+					if (upcomingSessions[0].data.length > 0) {
+						upcomingSessions[0].data.forEach((session) => {
+							sessionIds.push(session._id)
+						})
+
+						let filters = {
+							sessionId: {
+								$in: sessionIds,
+							},
+							menteeUserId,
+						}
+
+						const attendees = await sessionAttendees.findAllSessionAttendees(filters)
+
+						await Promise.all(
+							upcomingSessions[0].data.map(async (session) => {
+								if (attendees) {
+									const attendee = attendees.find(
+										(attendee) => attendee.sessionId.toString() === session._id.toString()
+									)
+									session.isEnrolled = false
+									if (attendee) {
+										session.isEnrolled = true
+									}
+								} else {
+									session.isEnrolled = false
+								}
+
+								if (session.image && session.image.length > 0) {
+									session.image = session.image.map(async (imgPath) => {
+										if (imgPath && imgPath != '') {
+											return await utils.getDownloadableUrl(imgPath)
+										}
+									})
+									session.image = await Promise.all(session.image)
+								}
+							})
+						)
+					}
+				}
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'UPCOMING_SESSION_FETCHED',
@@ -63,6 +106,7 @@ module.exports = class MentorsHelper {
 				})
 			}
 		} catch (err) {
+			console.log(err)
 			return err
 		}
 	}
