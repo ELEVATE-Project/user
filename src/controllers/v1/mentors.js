@@ -22,7 +22,13 @@ module.exports = class Mentors {
 	 */
 	async upcomingSessions(req) {
 		try {
-			return await mentorsHelper.upcomingSessions(req.params.id, req.pageNo, req.pageSize, req.searchText)
+			return await mentorsHelper.upcomingSessions(
+				req.params.id,
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.decodedToken._id
+			)
 		} catch (error) {
 			return errors
 		}
