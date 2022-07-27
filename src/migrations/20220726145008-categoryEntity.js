@@ -1,10 +1,8 @@
-const entityData = [
+let categories = [
 	{
 		value: 'sqaa',
 		label: 'SQAA',
-		status: 'ACTIVE',
-		deleted: false,
-		type: 'categories',
+
 		image: 'entity/SQAA.jpg',
 	},
 	{
@@ -18,45 +16,51 @@ const entityData = [
 	{
 		value: 'defaultImage',
 		label: 'Default',
-		status: 'ACTIVE',
-		deleted: false,
-		type: 'categories',
+
 		image: 'entity/Default.png',
 	},
 	{
 		value: 'schoolProcess',
 		label: 'School Process',
-		status: 'ACTIVE',
-		deleted: false,
-		type: 'categories',
+
 		image: 'entity/School-process.png',
 	},
 	{
 		value: 'professionalDevelopment',
 		label: 'Professional Development',
-		status: 'ACTIVE',
-		deleted: false,
-		type: 'categories',
+
 		image: 'entity/Professional-development.png',
 	},
 	{
 		value: 'educationLeadership',
 		label: 'Education Leadership',
-		status: 'ACTIVE',
-		deleted: false,
-		type: 'categories',
 		image: 'entity/Education-leadership.png',
 	},
 ]
+var moment = require('moment')
+
 module.exports = {
 	async up(db) {
 		global.migrationMsg = 'Uploaded categories entity'
+		let entityData = []
+		categories.map(async function (mappedCategories) {
+			let categories = mappedCategories
+			categories['status'] = 'ACTIVE'
+			categories['deleted'] = false
+			categories['type'] = 'categories'
+			categories['updatedAt'] = moment().format()
+			categories['createdAt'] = moment().format()
+			categories['createdBy'] = 'SYSTEM'
+			categories['updatedBy'] = 'SYSTEM'
+			entityData.push(categories)
+		})
+
 		await db.collection('entities').insertMany(entityData)
 	},
 
 	async down(db) {
 		db.collection('entities').deleteMany({
-			value: { $in: entityData.map((mappedEntityData) => mappedEntityData.value) },
+			value: { $in: categories.map((mappedCategories) => mappedCategories.value) },
 		})
 	},
 }
