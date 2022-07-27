@@ -36,24 +36,22 @@ module.exports = {
 	async up(db) {
 		global.migrationMsg = 'Uploaded categories entity'
 		let entityData = []
-		categories.map(async function (mappedCategories) {
-			let categories = mappedCategories
-			categories['status'] = 'ACTIVE'
-			categories['deleted'] = false
-			categories['type'] = 'categories'
-			categories['updatedAt'] = moment().format()
-			categories['createdAt'] = moment().format()
-			categories['createdBy'] = 'SYSTEM'
-			categories['updatedBy'] = 'SYSTEM'
-			entityData.push(categories)
+		categories.forEach(async function (category) {
+			category['status'] = 'ACTIVE'
+			category['deleted'] = false
+			category['type'] = 'categories'
+			category['updatedAt'] = moment().format()
+			category['createdAt'] = moment().format()
+			category['createdBy'] = 'SYSTEM'
+			category['updatedBy'] = 'SYSTEM'
+			entityData.push(category)
 		})
-
 		await db.collection('entities').insertMany(entityData)
 	},
 
 	async down(db) {
 		db.collection('entities').deleteMany({
-			value: { $in: categories.map((mappedCategories) => mappedCategories.value) },
+			value: { $in: categories.map((category) => category.value) },
 		})
 	},
 }
