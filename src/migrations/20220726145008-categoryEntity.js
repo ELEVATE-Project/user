@@ -2,33 +2,26 @@ let categories = [
 	{
 		value: 'sqaa',
 		label: 'SQAA',
-
 		image: 'entity/SQAA.jpg',
 	},
 	{
 		value: 'communication',
 		label: 'Communication',
-		status: 'ACTIVE',
-		deleted: false,
-		type: 'categories',
 		image: 'entity/Communication.png',
 	},
 	{
 		value: 'defaultImage',
 		label: 'Default',
-
 		image: 'entity/Default.png',
 	},
 	{
 		value: 'schoolProcess',
 		label: 'School Process',
-
 		image: 'entity/School-process.png',
 	},
 	{
 		value: 'professionalDevelopment',
 		label: 'Professional Development',
-
 		image: 'entity/Professional-development.png',
 	},
 	{
