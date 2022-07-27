@@ -80,32 +80,23 @@ module.exports = class MentorsHelper {
 								} else {
 									session.isEnrolled = false
 								}
-
-								if (session.image && session.image.length > 0) {
-									session.image = session.image.map(async (imgPath) => {
-										if (imgPath && imgPath != '') {
-											return await utils.getDownloadableUrl(imgPath)
-										}
-									})
-									session.image = await Promise.all(session.image)
-								}
 							})
 						)
 					}
-				} else {
-					await Promise.all(
-						upcomingSessions[0].data.map(async (session) => {
-							if (session.image && session.image.length > 0) {
-								session.image = session.image.map(async (imgPath) => {
-									if (imgPath && imgPath != '') {
-										return await utils.getDownloadableUrl(imgPath)
-									}
-								})
-								session.image = await Promise.all(session.image)
-							}
-						})
-					)
 				}
+				await Promise.all(
+					upcomingSessions[0].data.map(async (session) => {
+						if (session.image && session.image.length > 0) {
+							session.image = session.image.map(async (imgPath) => {
+								if (imgPath && imgPath != '') {
+									return await utils.getDownloadableUrl(imgPath)
+								}
+							})
+							session.image = await Promise.all(session.image)
+						}
+					})
+				)
+
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'UPCOMING_SESSION_FETCHED',
