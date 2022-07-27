@@ -92,6 +92,19 @@ module.exports = class MentorsHelper {
 							})
 						)
 					}
+				} else {
+					await Promise.all(
+						upcomingSessions[0].data.map(async (session) => {
+							if (session.image && session.image.length > 0) {
+								session.image = session.image.map(async (imgPath) => {
+									if (imgPath && imgPath != '') {
+										return await utils.getDownloadableUrl(imgPath)
+									}
+								})
+								session.image = await Promise.all(session.image)
+							}
+						})
+					)
 				}
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
