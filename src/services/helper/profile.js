@@ -7,13 +7,10 @@
 
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const utils = require('@generics/utils')
-const { RedisHelper } = require('elevate-node-cache')
 
 module.exports = class ProfileHelper {
 	/**
@@ -75,16 +72,31 @@ module.exports = class ProfileHelper {
 				filter.shareLink = _id
 			}
 
-			const user = await usersData.findOne(filter, projection)
-			if (user && user.image) {
-				user.image = await utilsHelper.getDownloadableUrl(user.image)
+			const userDetails = (await utils.redisGet(_id)) || false
+			if (!userDetails) {
+				const user = await usersData.findOne(filter, projection)
+				if (user && user.image) {
+					user.image = await utils.getDownloadableUrl(user.image)
+				}
+				if (ObjectId.isValid(_id) && user.isAMentor) {
+					console.log('cached')
+					await utils.redisSet(_id, user)
+				}
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'PROFILE_FETCHED_SUCCESSFULLY',
+					result: user ? user : {},
+				})
+			} else {
+				console.log('data from cached')
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'PROFILE_FETCHED_SUCCESSFULLY',
+					result: userDetails ? userDetails : {},
+				})
 			}
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PROFILE_FETCHED_SUCCESSFULLY',
-				result: user ? user : {},
-			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
