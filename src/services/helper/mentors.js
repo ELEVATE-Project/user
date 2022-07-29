@@ -7,9 +7,7 @@ const userProfile = require('./userProfile')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
-
 const sessionAttendees = require('@db/sessionAttendees/queries')
-const menteeSession = require('./mentees')
 
 module.exports = class MentorsHelper {
 	/**
@@ -51,10 +49,7 @@ module.exports = class MentorsHelper {
 
 				upcomingSessions[0].data = await this.sessionMentorDetails(upcomingSessions[0].data)
 				if (id != menteeUserId) {
-					upcomingSessions[0].data = await menteeSession.menteeSessionDetails(
-						upcomingSessions[0].data,
-						menteeUserId
-					)
+					upcomingSessions[0].data = await this.menteeSessionDetails(upcomingSessions[0].data, menteeUserId)
 				}
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -219,6 +214,45 @@ module.exports = class MentorsHelper {
 			}
 		} catch (error) {
 			throw error
+		}
+	}
+
+	static async menteeSessionDetails(sessions, userId) {
+		try {
+			const sessionIds = []
+			if (sessions.length > 0) {
+				sessions.forEach((session) => {
+					sessionIds.push(session._id)
+				})
+
+				const filters = {
+					sessionId: {
+						$in: sessionIds,
+					},
+					userId,
+				}
+				const attendees = await sessionAttendees.findAllSessionAttendees(filters)
+				await Promise.all(
+					sessions.map(async (session) => {
+						if (attendees) {
+							const attendee = attendees.find(
+								(attendee) => attendee.sessionId.toString() === session._id.toString()
+							)
+							session.isEnrolled = false
+							if (attendee) {
+								session.isEnrolled = true
+							}
+						} else {
+							session.isEnrolled = false
+						}
+					})
+				)
+				return sessions
+			} else {
+				return sessions
+			}
+		} catch (err) {
+			return err
 		}
 	}
 }
