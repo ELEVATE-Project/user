@@ -122,7 +122,6 @@ module.exports = class MenteesHelper {
 	static async homeFeed(userId, isAMentor, page, limit, search) {
 		try {
 			/* All Sessions */
-			console.log('reched')
 
 			let allSessions = await this.getAllSessions(page, limit, search, userId)
 
