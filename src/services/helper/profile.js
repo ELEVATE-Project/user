@@ -79,7 +79,6 @@ module.exports = class ProfileHelper {
 					user.image = await utils.getDownloadableUrl(user.image)
 				}
 				if (ObjectId.isValid(_id) && user.isAMentor) {
-					console.log('cached')
 					await utils.redisSet(_id, user)
 				}
 				return common.successResponse({
@@ -88,7 +87,6 @@ module.exports = class ProfileHelper {
 					result: user ? user : {},
 				})
 			} else {
-				console.log('data from cached')
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
@@ -96,7 +94,6 @@ module.exports = class ProfileHelper {
 				})
 			}
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
