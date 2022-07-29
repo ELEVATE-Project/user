@@ -82,7 +82,6 @@ module.exports = class SessionsData {
 						$project: {
 							_id: 1,
 							title: 1,
-
 							description: 1,
 							startDate: 1,
 							endDate: 1,
@@ -192,6 +191,7 @@ module.exports = class SessionsData {
 						image: 1,
 						endDateUtc: 1,
 						startDateUtc: 1,
+						userId: 1,
 					},
 				},
 				{

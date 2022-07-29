@@ -16,6 +16,7 @@ const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
 const UserProfileHelper = require('./userProfile')
+const sessionMentor = require('./mentors')
 
 module.exports = class SessionsHelper {
 	/**
@@ -416,34 +417,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			console.log(sessionDetails[0].data)
-			if (sessionDetails[0] && sessionDetails[0].data.length > 0) {
-				await Promise.all(
-					sessionDetails[0].data.map(async (session) => {
-						if (session.image && session.image.length > 0) {
-							session.image = session.image.map(async (imgPath) => {
-								if (imgPath && imgPath != '') {
-									return await utils.getDownloadableUrl(imgPath)
-								}
-							})
-							session.image = await Promise.all(session.image)
-						}
-					})
-				)
-				const userIds = sessionDetails[0].data
-					.map((item) => item.userId.toString())
-					.filter((value, index, self) => self.indexOf(value) === index)
-
-				let mentorDetails = await UserProfileHelper.getListOfUserDetails(userIds)
-				mentorDetails = mentorDetails.result
-
-				for (let i = 0; i < sessionDetails[0].data.length; i++) {
-					let mentorIndex = mentorDetails.findIndex(
-						(x) => x._id === sessionDetails[0].data[i].userId.toString()
-					)
-					sessionDetails[0].data[i].mentorName = mentorDetails[mentorIndex].name
-				}
-			}
+			sessionDetails[0].data = await sessionMentor.sessionMentorDetails(sessionDetails[0].data)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
