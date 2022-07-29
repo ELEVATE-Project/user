@@ -10,7 +10,6 @@ const bigBlueButton = require('./bigBlueButton')
 const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
-const sessionMentor = require('./mentors')
 
 const { successResponse } = require('@constants/common')
 module.exports = class MenteesHelper {
@@ -147,6 +146,7 @@ module.exports = class MenteesHelper {
 				},
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -290,7 +290,7 @@ module.exports = class MenteesHelper {
 		const sessions = await sessionData.findAllSessions(page, limit, search, filters)
 
 		sessions[0].data = await this.menteeSessionDetails(sessions[0].data, userId)
-		sessions[0].data = await sessionMentor.sessionMentorDetails(sessions[0].data)
+		sessions[0].data = await this.sessionMentorDetails(sessions[0].data)
 		return sessions
 	}
 
@@ -326,43 +326,83 @@ module.exports = class MenteesHelper {
 		}
 		const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters)
 
-		sessions[0].data = await sessionMentor.sessionMentorDetails(sessions[0].data)
+		sessions[0].data = await this.sessionMentorDetails(sessions[0].data)
 
 		return sessions
 	}
 
 	static async menteeSessionDetails(sessions, userId) {
-		const sessionIds = []
-		if (sessions.length > 0) {
-			sessions.forEach((session) => {
-				sessionIds.push(session._id)
-			})
-
-			const filters = {
-				sessionId: {
-					$in: sessionIds,
-				},
-				userId,
-			}
-			const attendees = await sessionAttendees.findAllSessionAttendees(filters)
-			await Promise.all(
-				sessions.map(async (session) => {
-					if (attendees) {
-						const attendee = attendees.find(
-							(attendee) => attendee.sessionId.toString() === session._id.toString()
-						)
-						session.isEnrolled = false
-						if (attendee) {
-							session.isEnrolled = true
-						}
-					} else {
-						session.isEnrolled = false
-					}
+		try {
+			const sessionIds = []
+			if (sessions.length > 0) {
+				sessions.forEach((session) => {
+					sessionIds.push(session._id)
 				})
-			)
-			return sessions
-		} else {
-			return sessions
+
+				const filters = {
+					sessionId: {
+						$in: sessionIds,
+					},
+					userId,
+				}
+				const attendees = await sessionAttendees.findAllSessionAttendees(filters)
+				await Promise.all(
+					sessions.map(async (session) => {
+						if (attendees) {
+							const attendee = attendees.find(
+								(attendee) => attendee.sessionId.toString() === session._id.toString()
+							)
+							session.isEnrolled = false
+							if (attendee) {
+								session.isEnrolled = true
+							}
+						} else {
+							session.isEnrolled = false
+						}
+					})
+				)
+				return sessions
+			} else {
+				return sessions
+			}
+		} catch (err) {
+			return err
+		}
+	}
+
+	static async sessionMentorDetails(session) {
+		try {
+			if (session.length > 0) {
+				const userIds = session
+					.map((item) => item.userId.toString())
+					.filter((value, index, self) => self.indexOf(value) === index)
+
+				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
+				mentorDetails = mentorDetails.result
+				for (let i = 0; i < session.length; i++) {
+					let mentorIndex = mentorDetails.findIndex((x) => x._id === session[i].userId.toString())
+					session[i].mentorName = mentorDetails[mentorIndex].name
+				}
+
+				await Promise.all(
+					session.map(async (sessions) => {
+						if (sessions.image && sessions.image.length > 0) {
+							sessions.image = sessions.image.map(async (imgPath) => {
+								if (imgPath && imgPath != '') {
+									return await utils.getDownloadableUrl(imgPath)
+								}
+							})
+							sessions.image = await Promise.all(sessions.image)
+						}
+					})
+				)
+
+				return session
+			} else {
+				return session
+			}
+		} catch (error) {
+			throw error
 		}
 	}
 }
