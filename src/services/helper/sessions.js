@@ -15,7 +15,6 @@ const request = require('request')
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
-const UserProfileHelper = require('./userProfile')
 const sessionMentor = require('./mentors')
 
 module.exports = class SessionsHelper {
@@ -342,7 +341,7 @@ module.exports = class SessionsHelper {
 				})
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
-			const mentorName = await UserProfileHelper.details('', sessionDetails.userId)
+			const mentorName = await userProfile.details('', sessionDetails.userId)
 			sessionDetails.mentorName = mentorName.data.result.name
 
 			return common.successResponse({
@@ -457,7 +456,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await UserProfileHelper.details('', session.userId)
+			const mentorName = await userProfile.details('', session.userId)
 			session.mentorName = mentorName.data.result.name
 
 			const sessionAttendeeExist = await sessionAttendesData.findOneSessionAttendee(sessionId, userId)
@@ -545,7 +544,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await UserProfileHelper.details('', session.userId)
+			const mentorName = await userProfile.details('', session.userId)
 			session.mentorName = mentorName.data.result.name
 
 			const response = await sessionAttendesData.unEnrollFromSession(sessionId, userId)
