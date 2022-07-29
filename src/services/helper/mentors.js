@@ -9,6 +9,7 @@ const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 
 const sessionAttendees = require('@db/sessionAttendees/queries')
+const menteeSession = require('./mentees')
 
 module.exports = class MentorsHelper {
 	/**
@@ -23,7 +24,6 @@ module.exports = class MentorsHelper {
 	 */
 	static async upcomingSessions(id, page, limit, search = '', menteeUserId) {
 		try {
-			const sessionIds = []
 			const mentorsDetails = await userProfile.details('', id)
 			if (mentorsDetails.data.result.isAMentor) {
 				const filterUpcomingSession = {
@@ -48,54 +48,12 @@ module.exports = class MentorsHelper {
 					search,
 					filterUpcomingSession
 				)
-				upcomingSessions[0].data.map((sessions) => {
-					sessions.mentorName = mentorsDetails.data.result.name
-				})
 
+				upcomingSessions[0].data = await this.sessionMentorDetails(upcomingSessions[0].data)
 				if (id != menteeUserId) {
-					if (upcomingSessions[0].data.length > 0) {
-						upcomingSessions[0].data.forEach((session) => {
-							sessionIds.push(session._id)
-						})
-
-						let filters = {
-							sessionId: {
-								$in: sessionIds,
-							},
-							menteeUserId,
-						}
-
-						const attendees = await sessionAttendees.findAllSessionAttendees(filters)
-
-						await Promise.all(
-							upcomingSessions[0].data.map(async (session) => {
-								if (attendees) {
-									const attendee = attendees.find(
-										(attendee) => attendee.sessionId.toString() === session._id.toString()
-									)
-									session.isEnrolled = false
-									if (attendee) {
-										session.isEnrolled = true
-									}
-								} else {
-									session.isEnrolled = false
-								}
-							})
-						)
-					}
-				}
-				if (upcomingSessions[0].data.length > 0) {
-					await Promise.all(
-						upcomingSessions[0].data.map(async (session) => {
-							if (session.image && session.image.length > 0) {
-								session.image = session.image.map(async (imgPath) => {
-									if (imgPath && imgPath != '') {
-										return await utils.getDownloadableUrl(imgPath)
-									}
-								})
-								session.image = await Promise.all(session.image)
-							}
-						})
+					upcomingSessions[0].data = await menteeSession.menteeSessionDetails(
+						upcomingSessions[0].data,
+						menteeUserId
 					)
 				}
 				return common.successResponse({
@@ -125,16 +83,7 @@ module.exports = class MentorsHelper {
 	 */
 	static async profile(id) {
 		try {
-			let mentorsDetails = (await utils.redisGet(id)) || false
-
-			if (!mentorsDetails) {
-				if (ObjectId.isValid(id)) {
-					mentorsDetails = await userProfile.details('', id)
-					await utils.redisSet(id, mentorsDetails)
-				} else {
-					mentorsDetails = await userProfile.details('', id)
-				}
-			}
+			const mentorsDetails = await userProfile.details('', id)
 			if (mentorsDetails.data.result.isAMentor) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
@@ -234,6 +183,42 @@ module.exports = class MentorsHelper {
 			return shareLink
 		} catch (error) {
 			return error
+		}
+	}
+
+	static async sessionMentorDetails(session) {
+		try {
+			if (session.length > 0) {
+				const userIds = session
+					.map((item) => item.userId.toString())
+					.filter((value, index, self) => self.indexOf(value) === index)
+
+				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
+				mentorDetails = mentorDetails.result
+				for (let i = 0; i < session.length; i++) {
+					let mentorIndex = mentorDetails.findIndex((x) => x._id === session[i].userId.toString())
+					session[i].mentorName = mentorDetails[mentorIndex].name
+				}
+
+				await Promise.all(
+					session.map(async (sessions) => {
+						if (sessions.image && sessions.image.length > 0) {
+							sessions.image = sessions.image.map(async (imgPath) => {
+								if (imgPath && imgPath != '') {
+									return await utils.getDownloadableUrl(imgPath)
+								}
+							})
+							sessions.image = await Promise.all(sessions.image)
+						}
+					})
+				)
+
+				return session
+			} else {
+				return session
+			}
+		} catch (error) {
+			throw error
 		}
 	}
 }
