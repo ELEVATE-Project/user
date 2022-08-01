@@ -127,11 +127,11 @@ function compareVersion(dbValue, apiValue) {
 		dbValue = dbValue.split('.')
 		apiValue = apiValue.split('.')
 		for (let i = 0; i < dbValue.length; i++) {
-			if (dbValue[i] > apiValue[i]) {
-				return false
+			if (apiValue[i] > dbValue[i]) {
+				return true
 			}
 		}
-		return true
+		return false
 	}
 }
 
