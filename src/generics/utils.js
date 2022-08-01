@@ -87,9 +87,25 @@ function compareVersion(dbValue, apiValue) {
 	} else {
 		dbValue = dbValue.split('.')
 		apiValue = apiValue.split('.')
-		for (let i = 0; i < dbValue.length; i++) {
-			if (apiValue[i] > dbValue[i]) {
-				return true
+
+		if (dbValue.length < apiValue.length) {
+			for (let i = 0; i < dbValue.length; i++) {
+				if (apiValue[i] > dbValue[i]) {
+					return true
+				}
+			}
+			return true
+		} else if (dbValue.length > apiValue.length) {
+			for (let i = 0; i < apiValue.length; i++) {
+				if (apiValue[i] > dbValue[i]) {
+					return true
+				}
+			}
+		} else if (dbValue.length == apiValue.length) {
+			for (let i = 0; i < dbValue.length; i++) {
+				if (apiValue[i] > dbValue[i]) {
+					return true
+				}
 			}
 		}
 		return false
