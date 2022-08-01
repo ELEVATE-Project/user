@@ -92,6 +92,8 @@ function compareVersion(dbValue, apiValue) {
 			for (let i = 0; i < dbValue.length; i++) {
 				if (apiValue[i] > dbValue[i]) {
 					return true
+				} else if (apiValue[i] < dbValue[i]) {
+					return false
 				}
 			}
 			return true
