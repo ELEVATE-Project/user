@@ -21,6 +21,7 @@ const { RedisHelper } = require('elevate-node-cache')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const { ConsumerGroup } = require('kafka-node')
+const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -864,6 +865,7 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			await utils.redisDel(userId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_UPDATED_SUCCESSFULLY',
