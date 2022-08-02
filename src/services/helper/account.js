@@ -20,6 +20,8 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { RedisHelper } = require('elevate-node-cache')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
+const { ConsumerGroup } = require('kafka-node')
+const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -735,15 +737,34 @@ module.exports = class AccountHelper {
 		try {
 			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
 				const userIds = params.body.userIds
+
+				const userIdsNotFoundInRedis = []
+				const userDetailsFoundInRedis = []
+				for (let i = 0; i < userIds.length; i++) {
+					let userDetails = (await utilsHelper.redisGet(userIds[i])) || false
+
+					if (!userDetails) {
+						userIdsNotFoundInRedis.push(userIds[i])
+					} else {
+						userDetailsFoundInRedis.push(userDetails)
+					}
+				}
+
 				const users = await usersData.findAllUsers(
-					{ _id: { $in: userIds } },
+					{ _id: { $in: userIdsNotFoundInRedis } },
 					{ password: 0, refreshTokens: 0, otpInfo: 0 }
 				)
+
+				users.forEach(async (element) => {
+					if (element.isAMentor) {
+						await utilsHelper.redisSet(element._id.toString(), element)
+					}
+				})
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USERS_FETCHED_SUCCESSFULLY',
-					result: users,
+					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
 				let users = await usersData.listUsers(
@@ -844,6 +865,7 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			await utils.redisDel(userId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_UPDATED_SUCCESSFULLY',
