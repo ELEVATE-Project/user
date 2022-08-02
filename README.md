@@ -264,3 +264,21 @@ Elevate services can be setup in local using three methods:
     ```
     ELEVATE/mentoring/src/scripts$ node schedulerScript.js
     ```
+
+## Migrations Commands
+
+### Check migrations
+
+    npm run elevate-migrations s
+
+### Create migrations
+
+    npm run elevate-migrations create <migration-name>
+
+### Run migrations
+
+    npm run elevate-migrations up
+
+## Down migrations
+
+    npm run elevate-migrations down
