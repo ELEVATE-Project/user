@@ -11,3 +11,7 @@
 ## Run migrations
 
     npm run elevate-migrations up
+
+## Down migrations
+
+    npm run elevate-migrations down

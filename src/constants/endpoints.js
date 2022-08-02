@@ -7,4 +7,5 @@ module.exports = {
 	GET_RECORDINGS: 'api/getRecordings',
 	USERS_LIST: 'v1/account/list',
 	SHARE_MENTOR_PROFILE: 'v1/profile/share',
+	USERS_ENTITY_READ: 'v1/userentity/read',
 }
