@@ -72,7 +72,7 @@ module.exports = class SessionsData {
 					{
 						$match: {
 							$and: [filters, { deleted: false }],
-							$or: [{ title: new RegExp(search, 'i') }, { mentorName: new RegExp(search, 'i') }],
+							$or: [{ title: new RegExp(search, 'i') }],
 						},
 					},
 					{
@@ -82,7 +82,6 @@ module.exports = class SessionsData {
 						$project: {
 							_id: 1,
 							title: 1,
-							mentorName: 1,
 							description: 1,
 							startDate: 1,
 							endDate: 1,
@@ -175,7 +174,7 @@ module.exports = class SessionsData {
 				{
 					$match: {
 						$and: [filters, { deleted: false }],
-						$or: [{ title: new RegExp(search, 'i') }, { mentorName: new RegExp(search, 'i') }],
+						$or: [{ title: new RegExp(search, 'i') }],
 					},
 				},
 				{
@@ -185,7 +184,6 @@ module.exports = class SessionsData {
 					$project: {
 						_id: 1,
 						title: 1,
-						mentorName: 1,
 						description: 1,
 						startDate: 1,
 						endDate: 1,
@@ -193,6 +191,7 @@ module.exports = class SessionsData {
 						image: 1,
 						endDateUtc: 1,
 						startDateUtc: 1,
+						userId: 1,
 					},
 				},
 				{
@@ -210,7 +209,7 @@ module.exports = class SessionsData {
 					},
 				},
 			])
-			console.log(sessionAttendeesData)
+
 			return sessionAttendeesData
 		} catch (error) {
 			return error

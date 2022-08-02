@@ -121,18 +121,15 @@ function md5Hash(value) {
 }
 
 function compareVersion(dbValue, apiValue) {
-	if (dbValue == apiValue) {
-		return false
-	} else {
-		dbValue = dbValue.split('.')
-		apiValue = apiValue.split('.')
-		for (let i = 0; i < dbValue.length; i++) {
-			if (dbValue[i] > apiValue[i]) {
-				return false
-			}
-		}
-		return true
+	const oldParts = dbValue.split('.')
+	const newParts = apiValue.split('.')
+	for (var i = 0; i < newParts.length; i++) {
+		const a = ~~newParts[i]
+		const b = ~~oldParts[i]
+		if (a > b) return true
+		if (a < b) return false
 	}
+	return false
 }
 
 function internalSet(key, value) {

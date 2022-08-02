@@ -15,6 +15,7 @@ const request = require('request')
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
+const sessionMentor = require('./mentors')
 
 module.exports = class SessionsHelper {
 	/**
@@ -340,6 +341,8 @@ module.exports = class SessionsHelper {
 				})
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
+			const mentorName = await userProfile.details('', sessionDetails.userId)
+			sessionDetails.mentorName = mentorName.data.result.name
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -413,20 +416,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (sessionDetails[0] && sessionDetails[0].data.length > 0) {
-				await Promise.all(
-					sessionDetails[0].data.map(async (session) => {
-						if (session.image && session.image.length > 0) {
-							session.image = session.image.map(async (imgPath) => {
-								if (imgPath && imgPath != '') {
-									return await utils.getDownloadableUrl(imgPath)
-								}
-							})
-							session.image = await Promise.all(session.image)
-						}
-					})
-				)
-			}
+			sessionDetails[0].data = await sessionMentor.sessionMentorDetails(sessionDetails[0].data)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -465,6 +455,9 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const mentorName = await userProfile.details('', session.userId)
+			session.mentorName = mentorName.data.result.name
 
 			const sessionAttendeeExist = await sessionAttendesData.findOneSessionAttendee(sessionId, userId)
 			if (sessionAttendeeExist) {
@@ -550,6 +543,10 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const mentorName = await userProfile.details('', session.userId)
+			session.mentorName = mentorName.data.result.name
+
 			const response = await sessionAttendesData.unEnrollFromSession(sessionId, userId)
 
 			if (response === 'USER_NOT_ENROLLED') {

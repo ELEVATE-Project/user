@@ -19,7 +19,7 @@ let sessionsSchema = new Schema({
 		type: mongoose.Types.ObjectId,
 		index: true,
 	},
-	mentorName: String,
+
 	sessionReschedule: Number,
 	status: {
 		type: String,

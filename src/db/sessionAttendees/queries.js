@@ -168,7 +168,7 @@ module.exports = class SessionsAttendees {
 							_id: 1,
 							sessionId: 1,
 							title: '$sessionDetail.title',
-							mentorName: '$sessionDetail.mentorName',
+							userId: '$sessionDetail.userId',
 							description: '$sessionDetail.description',
 							startDate: '$sessionDetail.startDate',
 							endDate: '$sessionDetail.endDate',

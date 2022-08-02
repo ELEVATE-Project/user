@@ -37,10 +37,6 @@ module.exports = class Sessions {
 
 				return sessionUpdated
 			} else {
-				if (req.decodedToken.name) {
-					req.body.mentorName = req.decodedToken.name
-				}
-
 				if (req.headers.timezone) {
 					req.body['timeZone'] = req.headers.timezone
 				}
