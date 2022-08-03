@@ -275,8 +275,6 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async getAllSessions(page, limit, search, userId) {
-		const sessionIds = []
-
 		let filters = {
 			status: { $in: ['published', 'live'] },
 			endDateUtc: {
