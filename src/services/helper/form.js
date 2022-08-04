@@ -1,39 +1,19 @@
-/**
- * name : form.js
- * author : Aman Gupta
- * created-date : 03-Nov-2021
- * Description : Form helper.
- */
-
-// Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
-
+const utils = require('@generics/utils')
 module.exports = class FormsHelper {
 	/**
-	 * create form
+	 * Create Form.
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.type - form type.
-	 * @param {string} bodyData.subType -subtype of the form.
-	 * @param {string} bodyData.action -form action.
-	 * @param {string} bodyData.data -form data.
-	 * @param {string} bodyData.data.templateName -name of the template
-	 * @returns {JSON} - forms created object.
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Form creation data.
 	 */
 
 	static async create(bodyData) {
 		try {
-			const filter = {
-				type: bodyData.type,
-				subType: bodyData.subType,
-				action: bodyData.action,
-				ver: bodyData.ver,
-				'data.templateName': bodyData.data.templateName,
-			}
-			const form = await formsData.findOneForm(filter)
+			const form = await formsData.findOneForm(bodyData.type)
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -42,6 +22,8 @@ module.exports = class FormsHelper {
 				})
 			}
 			await formsData.createForm(bodyData)
+			await utils.internalDel('formVersion')
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
@@ -52,72 +34,67 @@ module.exports = class FormsHelper {
 	}
 
 	/**
-	 * update form
+	 * Update Form.
 	 * @method
 	 * @name update
-	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.type - form type.
-	 * @param {string} bodyData.subType -subtype of the form.
-	 * @param {string} bodyData.action -form action.
-	 * @param {string} bodyData.data -form data.
-	 * @param {string} bodyData.data.templateName -name of the template
-	 * @returns {JSON} - returns update form information
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Update form data.
 	 */
+
 	static async update(bodyData) {
 		try {
-			const filter = {
-				type: bodyData.type,
-				subType: bodyData.subType,
-				action: bodyData.action,
-				ver: bodyData.ver,
-				'data.templateName': bodyData.data.templateName,
-			}
-			const result = await formsData.updateOneForm(filter, bodyData)
-			if (result === 'FORM_ALREADY_EXISTS') {
+			const checkVersion = await formsData.checkVersion(bodyData)
+			if (checkVersion) {
+				const result = await formsData.updateOneForm(bodyData)
+
+				if (result === 'ENTITY_ALREADY_EXISTS') {
+					return common.failureResponse({
+						message: 'FORM_ALREADY_EXISTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				} else if (result === 'ENTITY_NOT_FOUND') {
+					return common.failureResponse({
+						message: 'FORM_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				await utils.internalDel('formVersion')
+
+				return common.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'FORM_UPDATED_SUCCESSFULLY',
+				})
+			} else {
 				return common.failureResponse({
-					message: 'FORM_ALREADY_EXISTS',
+					message: 'UPDATE_FORM_VERSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} else if (result === 'FORM_NOT_FOUND') {
-				return common.failureResponse({
-					message: 'FORM_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
 			}
-			return common.successResponse({
-				statusCode: httpStatusCode.accepted,
-				message: 'FORM_UPDATED_SUCCESSFULLY',
-			})
 		} catch (error) {
 			throw error
 		}
 	}
 
 	/**
-	 * read form
+	 * Read Form.
 	 * @method
 	 * @name read
-	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.type - form type.
-	 * @param {string} bodyData.subType -subtype of the form.
-	 * @param {string} bodyData.action -form action.
-	 * @param {string} bodyData.data -form data.
-	 * @param {string} bodyData.data.templateName -name of the template
-	 * @returns {JSON} - returns the form data
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Read form data.
 	 */
 
 	static async read(bodyData) {
 		try {
-			const filter = {
-				type: bodyData.type,
-				subType: bodyData.subType,
-				action: bodyData.action,
-				ver: bodyData.ver,
-				'data.templateName': bodyData.templateName,
-			}
-			const form = await formsData.findOneForm(filter)
+			const form = await formsData.findOneForm(
+				bodyData.type,
+				bodyData.subType,
+				bodyData.action,
+				bodyData.templateName
+			)
+
 			if (!form) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',

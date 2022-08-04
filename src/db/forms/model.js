@@ -13,6 +13,7 @@ const formSchema = new Schema({
 	type: {
 		type: String,
 		required: true,
+		unique: true,
 	},
 	subType: {
 		type: String,

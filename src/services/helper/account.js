@@ -17,9 +17,11 @@ const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const redisCommunication = require('@generics/redis-communication')
+const { RedisHelper } = require('elevate-node-cache')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
+const { ConsumerGroup } = require('kafka-node')
+const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -59,7 +61,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await redisCommunication.getKey(email)
+				const redisData = await utilsHelper.redisGet(email)
 				if (!redisData || redisData.otp != bodyData.otp) {
 					return common.failureResponse({
 						message: 'OTP_INVALID',
@@ -106,7 +108,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
 
-			const deleteData = await redisCommunication.deleteKey(email)
+			await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -355,7 +357,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const userData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 
 			if (userData && userData.action === 'forgetpassword') {
 				otp = userData.otp // If valid then get previuosly generated otp
@@ -379,7 +381,7 @@ module.exports = class AccountHelper {
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await redisCommunication.setKey(
+				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
 					redisData,
 					common.otpExpirationTime
@@ -442,7 +444,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const userData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 
 			if (userData && userData.action === 'signup') {
 				otp = userData.otp // If valid then get previuosly generated otp
@@ -457,7 +459,7 @@ module.exports = class AccountHelper {
 					action: 'signup',
 					otp,
 				}
-				const res = await redisCommunication.setKey(
+				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
 					redisData,
 					common.otpExpirationTime
@@ -529,7 +531,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const redisData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
 					message: 'RESET_OTP_INVALID',
@@ -570,7 +572,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: user._id }, updateParams)
 
-			const deleteData = await redisCommunication.deleteKey(bodyData.email.toLowerCase())
+			const deleteData = await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user._doc.password
@@ -735,15 +737,34 @@ module.exports = class AccountHelper {
 		try {
 			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
 				const userIds = params.body.userIds
+
+				const userIdsNotFoundInRedis = []
+				const userDetailsFoundInRedis = []
+				for (let i = 0; i < userIds.length; i++) {
+					let userDetails = (await utilsHelper.redisGet(userIds[i])) || false
+
+					if (!userDetails) {
+						userIdsNotFoundInRedis.push(userIds[i])
+					} else {
+						userDetailsFoundInRedis.push(userDetails)
+					}
+				}
+
 				const users = await usersData.findAllUsers(
-					{ _id: { $in: userIds } },
+					{ _id: { $in: userIdsNotFoundInRedis } },
 					{ password: 0, refreshTokens: 0, otpInfo: 0 }
 				)
+
+				users.forEach(async (element) => {
+					if (element.isAMentor) {
+						await utilsHelper.redisSet(element._id.toString(), element)
+					}
+				})
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USERS_FETCHED_SUCCESSFULLY',
-					result: users,
+					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
 				let users = await usersData.listUsers(
@@ -844,6 +865,7 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			await utils.redisDel(userId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_UPDATED_SUCCESSFULLY',

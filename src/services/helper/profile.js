@@ -7,8 +7,6 @@
 
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
@@ -35,6 +33,9 @@ module.exports = class ProfileHelper {
 				})
 			}
 			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
+			if (await utils.redisGet(_id)) {
+				await utils.redisDel(_id)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -64,15 +65,34 @@ module.exports = class ProfileHelper {
 			refreshTokens: 0,
 		}
 		try {
-			const user = await usersData.findOne({ _id: ObjectId(_id) }, projection)
-			if (user && user.image) {
-				user.image = await utilsHelper.getDownloadableUrl(user.image)
+			const filter = {}
+			if (ObjectId.isValid(_id)) {
+				filter._id = ObjectId(_id)
+			} else {
+				filter.shareLink = _id
 			}
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PROFILE_FETCHED_SUCCESSFULLY',
-				result: user ? user : {},
-			})
+
+			const userDetails = (await utils.redisGet(_id)) || false
+			if (!userDetails) {
+				const user = await usersData.findOne(filter, projection)
+				if (user && user.image) {
+					user.image = await utils.getDownloadableUrl(user.image)
+				}
+				if (ObjectId.isValid(_id) && user.isAMentor) {
+					await utils.redisSet(_id, user)
+				}
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'PROFILE_FETCHED_SUCCESSFULLY',
+					result: user ? user : {},
+				})
+			} else {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'PROFILE_FETCHED_SUCCESSFULLY',
+					result: userDetails ? userDetails : {},
+				})
+			}
 		} catch (error) {
 			throw error
 		}
@@ -91,7 +111,7 @@ module.exports = class ProfileHelper {
 			const user = await usersData.findOne({ _id: ObjectId(profileId), isAMentor: true })
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -102,7 +122,7 @@ module.exports = class ProfileHelper {
 				await usersData.updateOneUser({ _id: ObjectId(profileId) }, { shareLink })
 			}
 			return common.successResponse({
-				message: apiResponses.PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY,
+				message: 'PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				result: { shareLink },
 			})
@@ -168,6 +188,9 @@ module.exports = class ProfileHelper {
 			}
 		}
 		await usersData.updateOneUser({ _id: ObjectId(ratingData.mentorId) }, updateData)
+		if (await utils.redisGet(ratingData.mentorId)) {
+			await utils.redisDel(ratingData.mentorId)
+		}
 		return
 	}
 }

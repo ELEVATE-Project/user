@@ -130,6 +130,13 @@ let enviromentVariables = {
 	REPORTED_ISSUE_EMAIL_TEMPLATE_CODE: {
 		message: 'Required reported issue email template code',
 		optional: process.env.ENABLE_EMAIL_FOR_REPORTED_ISSUE === 'true' ? false : true,
+	INTERNAL_CACHE_EXP_TIME: {
+		message: 'Internal Cache Expiry Time',
+		optional: false,
+	},
+	REDIS_CACHE_EXP_TIME: {
+		message: 'Redis Cache Expiry Time',
+		optional: false,
 	},
 }
 
