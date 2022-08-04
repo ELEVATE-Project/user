@@ -127,6 +127,11 @@ let enviromentVariables = {
 		message: 'Redis Cache Expiry Time',
 		optional: false,
 	},
+
+	REDIS_HOST: {
+		message: 'Redis Host Url',
+		optional: false,
+	},
 }
 
 let success = true
