@@ -2344,7 +2344,7 @@ components:
             example: OK
           message:
             type: string
-            example: Session Created successfully.
+            example: Session created successfully.
           result:
             type: object
             properties:
