@@ -23,7 +23,7 @@ module.exports = class MentorsHelper {
 	static async upcomingSessions(id, page, limit, search = '', menteeUserId) {
 		try {
 			const mentorsDetails = await userProfile.details('', id)
-			console.log(mentorsDetails)
+
 			if (mentorsDetails.data.result.isAMentor) {
 				const filterUpcomingSession = {
 					$and: [
