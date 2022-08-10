@@ -11,8 +11,10 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 	const formVersionData = (await utils.internalGet('formVersion')) || false
 	let versions = {}
 	if (formVersionData) {
+		console.log('cahed')
 		versions = formVersionData
 	} else {
+		console.log('not cahed')
 		versions = await FormsData.findAllTypeFormVersion()
 		await utils.internalSet('formVersion', versions)
 	}

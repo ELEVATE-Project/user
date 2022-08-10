@@ -73,6 +73,7 @@ module.exports = class ProfileHelper {
 			}
 
 			const userDetails = (await utils.redisGet(_id)) || false
+
 			if (!userDetails) {
 				const user = await usersData.findOne(filter, projection)
 				if (user && user.image) {
