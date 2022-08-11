@@ -168,7 +168,7 @@ module.exports = class SessionsAttendees {
 							_id: 1,
 							sessionId: 1,
 							title: '$sessionDetail.title',
-							mentorName: '$sessionDetail.mentorName',
+							userId: '$sessionDetail.userId',
 							description: '$sessionDetail.description',
 							startDate: '$sessionDetail.startDate',
 							endDate: '$sessionDetail.endDate',
@@ -246,17 +246,26 @@ module.exports = class SessionsAttendees {
 		})
 	}
 
-	static findAllSessionAttendees(filters) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				let sessionAttendeesData = await SessionAttendees.find({
-					...filters,
-					deleted: false,
-				}).lean()
-				resolve(sessionAttendeesData)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async countAllSessionAttendees(filters) {
+		try {
+			return await SessionAttendees.count({
+				...filters,
+				deleted: false,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllSessionAttendees(filters) {
+		try {
+			let sessionAttendeesData = await SessionAttendees.find({
+				...filters,
+				deleted: false,
+			}).lean()
+			return sessionAttendeesData
+		} catch (error) {
+			return error
+		}
 	}
 }

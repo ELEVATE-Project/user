@@ -11,6 +11,7 @@ const Schema = mongoose.Schema
 const formSchema = new Schema({
 	type: {
 		type: String,
+		index: { unique: true },
 		required: true,
 	},
 	subType: {

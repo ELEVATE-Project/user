@@ -1,11 +1,11 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-const utilsHelper = require('@generics/utils')
+
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const entitiesData = require('@db/entities/query')
 
+const utils = require('@generics/utils')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity.
@@ -23,15 +23,17 @@ module.exports = class EntityHelper {
 			const entity = await entitiesData.findOneEntity(bodyData.type, bodyData.value)
 			if (entity) {
 				return common.failureResponse({
-					message: apiResponses.ENTITY_ALREADY_EXISTS,
+					message: 'ENTITY_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			await entitiesData.createEntity(bodyData)
+			const key = 'entity_' + bodyData.type
+			await utils.internalDel(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.ENTITY_CREATED_SUCCESSFULLY,
+				message: 'ENTITY_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -55,20 +57,29 @@ module.exports = class EntityHelper {
 			const result = await entitiesData.updateOneEntity(_id, bodyData)
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.ENTITY_ALREADY_EXISTS,
+					message: 'ENTITY_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.ENTITY_NOT_FOUND,
+					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			let key = ''
+			if (bodyData.type) {
+				key = 'entity_' + bodyData.type
+				await utils.internalDel(key)
+			} else {
+				const entities = await entitiesData.findOne(_id)
+				key = 'entity_' + entities.type
+				await utils.internalDel(key)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.ENTITY_UPDATED_SUCCESSFULLY,
+				message: 'ENTITY_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -88,10 +99,15 @@ module.exports = class EntityHelper {
 			bodyData.deleted = false
 		}
 		try {
-			const entities = await entitiesData.findAllEntities(bodyData)
+			const key = 'entity_' + bodyData.type
+			let entities = (await utils.internalGet(key)) || false
+			if (!entities) {
+				entities = await entitiesData.findAllEntities(bodyData)
+				await utils.internalSet(key, entities)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.ENTITY_FETCHED_SUCCESSFULLY,
+				message: 'ENTITY_FETCHED_SUCCESSFULLY',
 				result: entities,
 			})
 		} catch (error) {
@@ -112,20 +128,24 @@ module.exports = class EntityHelper {
 			const result = await entitiesData.deleteOneEntity(_id)
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.ENTITY_ALREADY_DELETED,
+					message: 'ENTITY_ALREADY_DELETED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.ENTITY_NOT_FOUND,
+					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const entities = await entitiesData.findOne(_id)
+			let key = 'entity_' + entities.type
+			await utils.internalDel(key)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.ENTITY_DELETED_SUCCESSFULLY,
+				message: 'ENTITY_DELETED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error

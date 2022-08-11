@@ -1,7 +1,6 @@
 // Dependencies
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const questionsSetData = require('@db/questionsSet/queries')
 const questionData = require('@db/questions/queries')
@@ -28,7 +27,7 @@ module.exports = class questionsSetHelper {
 
 			if (questionInfo.length == 0 || bodyData.questions.length != questionInfo.length) {
 				return common.failureResponse({
-					message: apiResponses.QUESTION_ALREADY_BEEN_USED,
+					message: 'QUESTION_ALREADY_BEEN_USED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -50,7 +49,7 @@ module.exports = class questionsSetHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.QUESTIONS_SET_CREATED_SUCCESSFULLY,
+				message: 'QUESTIONS_SET_CREATED_SUCCESSFULLY',
 				result: data,
 			})
 		} catch (error) {
@@ -79,7 +78,7 @@ module.exports = class questionsSetHelper {
 
 				if (questionInfo && questionInfo.length != bodyData.questions.length) {
 					return common.failureResponse({
-						message: apiResponses.QUESTION_NOT_FOUND,
+						message: 'QUESTION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -95,7 +94,7 @@ module.exports = class questionsSetHelper {
 
 				if (update == false) {
 					return common.failureResponse({
-						message: apiResponses.QUESTION_ALREADY_BEEN_USED,
+						message: 'QUESTION_ALREADY_BEEN_USED',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -108,13 +107,13 @@ module.exports = class questionsSetHelper {
 
 			if (result === 'QUESTIONS_SET_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.QUESTIONS_SET_ALREADY_EXISTS,
+					message: 'QUESTIONS_SET_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'QUESTIONS_SET_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.QUESTIONS_SET_NOT_FOUND,
+					message: 'QUESTIONS_SET_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -141,7 +140,7 @@ module.exports = class questionsSetHelper {
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.QUESTIONS_SET_UPDATED_SUCCESSFULLY,
+				message: 'QUESTIONS_SET_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -164,14 +163,14 @@ module.exports = class questionsSetHelper {
 			const QuestionsSet = await questionsSetData.findOneQuestionsSet(filter)
 			if (!QuestionsSet) {
 				return common.failureResponse({
-					message: apiResponses.QUESTION_NOT_FOUND,
+					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.QUESTIONS_SET_FETCHED_SUCCESSFULLY,
+				message: 'QUESTIONS_SET_FETCHED_SUCCESSFULLY',
 				result: QuestionsSet ? QuestionsSet : {},
 			})
 		} catch (error) {

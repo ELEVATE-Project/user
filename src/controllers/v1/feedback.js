@@ -8,7 +8,6 @@
 // Dependencies
 const feedbackHelper = require('@services/helper/feedback')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Feedback {
@@ -47,7 +46,7 @@ module.exports = class Feedback {
 		try {
 			if (req.decodedToken.isAMentor && !req.body.feedbackAs) {
 				return common.failureResponse({
-					message: apiResponses.FEEDBACK_AS_NOT_PASSED,
+					message: 'FEEDBACK_AS_NOT_PASSED',
 					statusCode: httpStatusCode.unprocessable_entity,
 					responseCode: 'CLIENT_ERROR',
 				})

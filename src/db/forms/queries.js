@@ -5,6 +5,7 @@
  * Description : Users database operations
  */
 
+const utils = require('@generics/utils')
 const Forms = require('./model')
 
 module.exports = class FormsData {
@@ -19,8 +20,8 @@ module.exports = class FormsData {
 		})
 	}
 
-	static findOneForm(type, subType, action, ver, templateName) {
-		const filter = { type, subType, action, ver, 'data.templateName': templateName }
+	static findOneForm(type) {
+		const filter = { type }
 		const projection = {}
 		return new Promise(async (resolve, reject) => {
 			try {
@@ -32,12 +33,30 @@ module.exports = class FormsData {
 		})
 	}
 
+	static findAllTypeFormVersion() {
+		const projection = {
+			type: 1,
+			ver: 1,
+		}
+		return new Promise(async (resolve, reject) => {
+			try {
+				const formData = await Forms.find({}, projection)
+				let versions = {}
+				formData.forEach((version) => {
+					versions[version.type] = version.ver
+				})
+				resolve(versions)
+			} catch (error) {
+				reject(error)
+			}
+		})
+	}
+
 	static updateOneForm(update, options = {}) {
 		const filter = {
 			type: update.type,
 			subType: update.subType,
 			action: update.action,
-			ver: update.ver,
 			'data.templateName': update.data.templateName,
 		}
 		return new Promise(async (resolve, reject) => {
@@ -57,5 +76,16 @@ module.exports = class FormsData {
 				reject(error)
 			}
 		})
+	}
+
+	static async checkVersion(bodyData) {
+		try {
+			const filter = { type: bodyData.type }
+			const projection = { type: 1, ver: 1 }
+			const formData = await Forms.findOne(filter, projection)
+			return utils.compareVersion(formData.ver, bodyData.ver)
+		} catch (err) {
+			return err
+		}
 	}
 }
