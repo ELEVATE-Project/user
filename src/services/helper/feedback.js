@@ -254,18 +254,19 @@ module.exports = class MenteesHelper {
 					},
 					updateData
 				)
-
-				updateData.feedbacks.map(async function (feedbackInfo) {
-					let questionData = await questionsData.findOneQuestion({ _id: feedbackInfo.questionId })
-					if (questionData && questionData.evaluating == common.MENTOR_EVALUATING) {
-						let data = {
-							type: 'MENTOR_RATING',
-							mentorId: sessionInfo.userId,
-							...feedbackInfo,
+				if (!updateData.skippedFeedback) {
+					updateData.feedbacks.map(async function (feedbackInfo) {
+						let questionData = await questionsData.findOneQuestion({ _id: feedbackInfo.questionId })
+						if (questionData && questionData.evaluating == common.MENTOR_EVALUATING) {
+							let data = {
+								type: 'MENTOR_RATING',
+								mentorId: sessionInfo.userId,
+								...feedbackInfo,
+							}
+							kafkaCommunication.pushMentorRatingToKafka(data)
 						}
-						kafkaCommunication.pushMentorRatingToKafka(data)
-					}
-				})
+					})
+				}
 
 				if (result == 'SESSION_ATTENDENCE_NOT_FOUND') {
 					return common.failureResponse({
