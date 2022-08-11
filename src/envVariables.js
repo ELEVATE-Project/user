@@ -119,6 +119,22 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
+	INTERNAL_CACHE_EXP_TIME: {
+		message: 'Internal Cache Expiry Time',
+		optional: false,
+	},
+	REDIS_CACHE_EXP_TIME: {
+		message: 'Redis Cache Expiry Time',
+		optional: false,
+	},
+	RATING_KAFKA_TOPIC: {
+		message: 'Kafka Rating Topic',
+		optional: false,
+	},
+	REDIS_HOST: {
+		message: 'Redis Host Url',
+		optional: false,
+	},
 }
 
 let success = true

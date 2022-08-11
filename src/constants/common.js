@@ -5,12 +5,23 @@
  * Description : All commonly used constants through out the service
  */
 
-const successResponse = ({ statusCode = 500, responseCode = 'OK', message, result = [] }) => {
+const utils = require('@generics/utils')
+const FormsData = require('@db/forms/queries')
+const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
+	const formVersionData = (await utils.internalGet('formVersion')) || false
+	let versions = {}
+	if (formVersionData) {
+		versions = formVersionData
+	} else {
+		versions = await FormsData.findAllTypeFormVersion()
+		await utils.internalSet('formVersion', versions)
+	}
 	return {
 		statusCode,
 		responseCode,
 		message,
 		result,
+		meta: { ...meta, formsVersion: versions },
 	}
 }
 
@@ -38,7 +49,13 @@ module.exports = {
 		'/user/v1/systemUsers/create',
 		'/user/v1/systemUsers/login',
 	],
-	uploadUrls: ['bulkCreateMentors', '/user/v1/account/verifyMentor', 'profile/details', '/user/v1/account/list'],
+	internalAccessUrls: [
+		'bulkCreateMentors',
+		'/user/v1/account/verifyMentor',
+		'profile/details',
+		'/user/v1/account/list',
+		'/profile/share',
+	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,

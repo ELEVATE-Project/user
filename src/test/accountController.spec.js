@@ -13,13 +13,10 @@ async function loadMongo() {
 let mockData = require('./mock')
 
 describe('Sessions controller and helper test', () => {
-	afterEach(() => {
-		loadMongo()
-	})
-
 	let controller
 	let accountService
 	let userModel
+	let { RedisHelper } = require('elevate-node-cache')
 
 	beforeAll(async () => {
 		await loadMongo()

@@ -74,3 +74,6 @@ generics/helpers/credentials/*
 gcp.json
 gcp1.json
 
+# Ignore jest config
+src/globalConfig.json
+
