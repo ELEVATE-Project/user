@@ -4,7 +4,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entitiesData = require('@db/entities/query')
-
+const KafkaProducer = require('@generics/kafka-communication')
 const utils = require('@generics/utils')
 module.exports = class EntityHelper {
 	/**
@@ -31,6 +31,7 @@ module.exports = class EntityHelper {
 			await entitiesData.createEntity(bodyData)
 			const key = 'entity_' + bodyData.type
 			await utils.internalDel(key)
+			await KafkaProducer.pushInternalCacheDelete(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -72,10 +73,12 @@ module.exports = class EntityHelper {
 			if (bodyData.type) {
 				key = 'entity_' + bodyData.type
 				await utils.internalDel(key)
+				await KafkaProducer.pushInternalCacheDelete(key)
 			} else {
 				const entities = await entitiesData.findOne(_id)
 				key = 'entity_' + entities.type
 				await utils.internalDel(key)
+				await KafkaProducer.pushInternalCacheDelete(key)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -142,6 +145,7 @@ module.exports = class EntityHelper {
 			const entities = await entitiesData.findOne(_id)
 			let key = 'entity_' + entities.type
 			await utils.internalDel(key)
+			await KafkaProducer.pushInternalCacheDelete(key)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
