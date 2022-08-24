@@ -2,6 +2,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
 const utils = require('@generics/utils')
+const KafkaProducer = require('@generics/kafka-communication')
 module.exports = class FormsHelper {
 	/**
 	 * Create Form.
@@ -23,7 +24,7 @@ module.exports = class FormsHelper {
 			}
 			await formsData.createForm(bodyData)
 			await utils.internalDel('formVersion')
-
+			await KafkaProducer.pushInternalCacheDelete('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
@@ -61,7 +62,7 @@ module.exports = class FormsHelper {
 					})
 				}
 				await utils.internalDel('formVersion')
-
+				await KafkaProducer.pushInternalCacheDelete('formVersion')
 				return common.successResponse({
 					statusCode: httpStatusCode.accepted,
 					message: 'FORM_UPDATED_SUCCESSFULLY',

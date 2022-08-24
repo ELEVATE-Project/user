@@ -7,7 +7,7 @@
 
 //Dependencies
 const Kafka = require('kafka-node')
-
+const utils = require('@generics/utils')
 const profileService = require('@services/helper/profile')
 
 module.exports = () => {
@@ -48,6 +48,14 @@ module.exports = () => {
 		process.env.RATING_KAFKA_TOPIC
 	)
 
+	const internalConsumer = new Kafka.ConsumerGroup(
+		{
+			kafkaHost: process.env.KAFKA_URL,
+			groupId: process.env.KAFKA_GROUP_ID,
+			autoCommit: true,
+		},
+		process.env.INTERNAL_CACHE_UPDATE
+	)
 	consumer.on('message', async function (message) {
 		try {
 			let streamingData = JSON.parse(message.value)
@@ -59,6 +67,20 @@ module.exports = () => {
 		}
 	})
 
+	internalConsumer.on('message', async function (message) {
+		try {
+			let internalData = JSON.parse(message.value)
+			if (internalData.type == 'INTERNAL_CACHE_UPDATE') {
+				utils.internalDel(internalData.value)
+			}
+		} catch (error) {
+			console.log('failed', error)
+		}
+	})
+
+	internalConsumer.on('error', async function (error) {
+		console.log('kafka consumer intialization error', error)
+	})
 	consumer.on('error', async function (error) {
 		console.log('kafka consumer intialization error', error)
 	})

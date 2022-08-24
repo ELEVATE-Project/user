@@ -41,6 +41,7 @@ module.exports = class UserEntityHelper {
 			await userEntitiesData.createEntity(bodyData)
 			const key = 'entity_' + bodyData.type
 			await utils.internalDel(key)
+			await KafkaProducer.pushInternalCacheDelete(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENTITY_CREATED_SUCCESSFULLY',
@@ -81,10 +82,12 @@ module.exports = class UserEntityHelper {
 			if (bodyData.type) {
 				key = 'entity_' + bodyData.type
 				await utils.internalDel(key)
+				await KafkaProducer.pushInternalCacheDelete(key)
 			} else {
 				const entities = await userEntitiesData.findOne(_id)
 				key = 'entity_' + entities.type
 				await utils.internalDel(key)
+				await KafkaProducer.pushInternalCacheDelete(key)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -151,6 +154,7 @@ module.exports = class UserEntityHelper {
 			const entities = await userEntitiesData.findOne(_id)
 			let key = 'entity_' + entities.type
 			await utils.internalDel(key)
+			await KafkaProducer.pushInternalCacheDelete(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'USER_ENTITY_DELETED_SUCCESSFULLY',
