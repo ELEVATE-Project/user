@@ -14,6 +14,9 @@ const issueSchema = new Schema({
 		type: Boolean,
 		default: false,
 	},
+	metaData: {
+		type: Object,
+	},
 })
 
 const Issues = db.model('issues', issueSchema)
