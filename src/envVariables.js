@@ -138,6 +138,14 @@ let enviromentVariables = {
 		message: 'Redis Cache Expiry Time',
 		optional: false,
 	},
+	RATING_KAFKA_TOPIC: {
+		message: 'Kafka Rating Topic',
+		optional: false,
+	},
+	REDIS_HOST: {
+		message: 'Redis Host Url',
+		optional: false,
+	},
 }
 
 let success = true
