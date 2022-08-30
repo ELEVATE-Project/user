@@ -3,6 +3,7 @@ const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
 const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
+const ObjectId = require('mongoose').Types.ObjectId
 module.exports = class FormsHelper {
 	/**
 	 * Create Form.
@@ -14,7 +15,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData) {
 		try {
-			const form = await formsData.findOneForm(bodyData.type)
+			const form = await formsData.findOneForm({ type: bodyData.type })
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -42,38 +43,42 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Update form data.
 	 */
 
-	static async update(bodyData) {
+	static async update(id, bodyData) {
 		try {
-			const checkVersion = await formsData.checkVersion(bodyData)
-			if (checkVersion) {
-				const result = await formsData.updateOneForm(bodyData)
-
-				if (result === 'ENTITY_ALREADY_EXISTS') {
-					return common.failureResponse({
-						message: 'FORM_ALREADY_EXISTS',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				} else if (result === 'ENTITY_NOT_FOUND') {
-					return common.failureResponse({
-						message: 'FORM_NOT_FOUND',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
+			let filter = {}
+			if (ObjectId.isValid(id)) {
+				filter = {
+					_id: ObjectId(id),
 				}
-				await utils.internalDel('formVersion')
-				await KafkaProducer.pushInternalCacheDelete('formVersion')
-				return common.successResponse({
-					statusCode: httpStatusCode.accepted,
-					message: 'FORM_UPDATED_SUCCESSFULLY',
-				})
 			} else {
+				filter = {
+					type: bodyData.type,
+					subType: bodyData.subType,
+					action: bodyData.action,
+					'data.templateName': bodyData.data.templateName,
+				}
+			}
+			const result = await formsData.updateOneForm(filter, bodyData)
+
+			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: 'UPDATE_FORM_VERSION',
+					message: 'FORM_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else if (result === 'ENTITY_NOT_FOUND') {
+				return common.failureResponse({
+					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			await utils.internalDel('formVersion')
+			await KafkaProducer.pushInternalCacheDelete('formVersion')
+			return common.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'FORM_UPDATED_SUCCESSFULLY',
+			})
 		} catch (error) {
 			throw error
 		}
@@ -87,14 +92,15 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Read form data.
 	 */
 
-	static async read(bodyData) {
+	static async read(id, bodyData) {
 		try {
-			const form = await formsData.findOneForm(
-				bodyData.type,
-				bodyData.subType,
-				bodyData.action,
-				bodyData.templateName
-			)
+			let filter = {}
+			if (ObjectId.isValid(id)) {
+				filter = { _id: id }
+			} else {
+				filter = { bodyData }
+			}
+			const form = await formsData.findOneForm(filter)
 
 			if (!form) {
 				return common.failureResponse({

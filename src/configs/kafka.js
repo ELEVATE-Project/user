@@ -45,42 +45,22 @@ module.exports = () => {
 			groupId: process.env.KAFKA_GROUP_ID,
 			autoCommit: true,
 		},
-		process.env.RATING_KAFKA_TOPIC
+		[process.env.RATING_KAFKA_TOPIC, process.env.INTERNAL_CACHE_UPDATE]
 	)
 
-	const internalConsumer = new Kafka.ConsumerGroup(
-		{
-			kafkaHost: process.env.KAFKA_URL,
-			groupId: process.env.KAFKA_GROUP_ID,
-			autoCommit: true,
-		},
-		process.env.INTERNAL_CACHE_UPDATE
-	)
 	consumer.on('message', async function (message) {
 		try {
 			let streamingData = JSON.parse(message.value)
 			if (streamingData.type == 'MENTOR_RATING' && streamingData.value && streamingData.mentorId) {
 				profileService.ratingCalculation(streamingData)
+			} else if (streamingData.type == 'INTERNAL_CACHE_UPDATE') {
+				utils.internalDel(streamingData.value)
 			}
 		} catch (error) {
 			console.log('failed', error)
 		}
 	})
 
-	internalConsumer.on('message', async function (message) {
-		try {
-			let internalData = JSON.parse(message.value)
-			if (internalData.type == 'INTERNAL_CACHE_UPDATE') {
-				utils.internalDel(internalData.value)
-			}
-		} catch (error) {
-			console.log('failed', error)
-		}
-	})
-
-	internalConsumer.on('error', async function (error) {
-		console.log('kafka consumer intialization error', error)
-	})
 	consumer.on('error', async function (error) {
 		console.log('kafka consumer intialization error', error)
 	})

@@ -28,13 +28,6 @@ module.exports = {
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('action is invalid')
 
-		req.checkBody('ver')
-			.trim()
-			.notEmpty()
-			.withMessage('ver field is empty')
-			.isString()
-			.withMessage('ver is invalid')
-
 		req.checkBody('data').notEmpty().withMessage('data field is empty')
 
 		req.checkBody('data.templateName')
@@ -66,8 +59,6 @@ module.exports = {
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('action is invalid')
 
-		req.checkBody('ver').notEmpty().withMessage('ver field is empty').isString().withMessage('ver is invalid')
-
 		req.checkBody('data.templateName')
 			.notEmpty()
 			.withMessage('data.templateName field is empty')
@@ -90,40 +81,5 @@ module.exports = {
 			})
 	},
 
-	read: (req) => {
-		req.checkBody('type')
-			.trim()
-			.notEmpty()
-			.withMessage('type field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid')
-
-		req.checkBody('subType')
-			.trim()
-			.notEmpty()
-			.withMessage('subType field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('subType is invalid')
-
-		req.checkBody('action')
-			.trim()
-			.notEmpty()
-			.withMessage('action field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('action is invalid')
-
-		req.checkBody('ver')
-			.trim()
-			.notEmpty()
-			.withMessage('ver field is empty')
-			.isString()
-			.withMessage('ver is invalid')
-
-		req.checkBody('templateName')
-			.trim()
-			.notEmpty()
-			.withMessage('templateName field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('templateName is invalid')
-	},
+	read: (req) => {},
 }
