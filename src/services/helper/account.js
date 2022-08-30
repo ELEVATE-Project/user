@@ -165,7 +165,6 @@ module.exports = class AccountHelper {
 			otpInfo: 0,
 		}
 		try {
-			console.log(bodyData)
 			let user = await usersData.findOne({ 'email.address': bodyData.email.toLowerCase() }, projection)
 			if (!user) {
 				return common.failureResponse({
