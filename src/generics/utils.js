@@ -120,18 +120,6 @@ function md5Hash(value) {
 	return md5(value)
 }
 
-function compareVersion(dbValue, apiValue) {
-	const oldParts = dbValue.split('.')
-	const newParts = apiValue.split('.')
-	for (var i = 0; i < newParts.length; i++) {
-		const a = ~~newParts[i]
-		const b = ~~oldParts[i]
-		if (a > b) return true
-		if (a < b) return false
-	}
-	return false
-}
-
 function internalSet(key, value) {
 	return InternalCache.setKey(key, value)
 }
@@ -164,7 +152,7 @@ module.exports = {
 	getTimeZone,
 	utcFormat: utcFormat,
 	md5Hash: md5Hash,
-	compareVersion: compareVersion,
+
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
