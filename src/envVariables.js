@@ -119,7 +119,10 @@ let enviromentVariables = {
 		message: 'Required kafka topic',
 		optional: false,
 	},
-
+	INTERNAL_CACHE_EXP_TIME: {
+		message: 'Internal Cache Expiry Time',
+		optional: false,
+	},
 	REDIS_HOST: {
 		message: 'Redis Host Url',
 		optional: false,

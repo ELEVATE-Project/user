@@ -43,13 +43,13 @@ module.exports = () => {
 			groupId: process.env.KAFKA_GROUP_ID,
 			autoCommit: true,
 		},
-		process.env.INTERNAL_CACHE_UPDATE
+		process.env.CLEAR_INTERNAL_CACHE
 	)
 
 	consumer.on('message', async function (message) {
 		try {
 			let streamingData = JSON.parse(message.value)
-			if (streamingData.type == 'INTERNAL_CACHE_UPDATE') {
+			if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 				utils.internalDel(streamingData.value)
 			}
 		} catch (error) {

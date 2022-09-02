@@ -23,12 +23,12 @@ const pushMentorRatingToKafka = async (message) => {
 	}
 }
 
-const pushInternalCacheDelete = async (key) => {
+const clearInternalCache = async (key) => {
 	try {
 		const payload = [
 			{
-				topic: process.env.INTERNAL_CACHE_UPDATE,
-				messages: JSON.stringify({ value: key, type: 'INTERNAL_CACHE_UPDATE' }),
+				topic: process.env.CLEAR_INTERNAL_CACHE,
+				messages: JSON.stringify({ value: key, type: 'CLEAR_INTERNAL_CACHE' }),
 			},
 		]
 		return await pushPayloadToKafka(payload)
@@ -51,5 +51,5 @@ const pushPayloadToKafka = (payload) => {
 module.exports = {
 	pushEmailToKafka,
 	pushMentorRatingToKafka,
-	pushInternalCacheDelete,
+	clearInternalCache,
 }

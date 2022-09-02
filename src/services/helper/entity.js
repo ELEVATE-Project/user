@@ -31,7 +31,7 @@ module.exports = class EntityHelper {
 			await entitiesData.createEntity(bodyData)
 			const key = 'entity_' + bodyData.type
 			await utils.internalDel(key)
-			await KafkaProducer.pushInternalCacheDelete(key)
+			await KafkaProducer.clearInternalCache(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -73,12 +73,12 @@ module.exports = class EntityHelper {
 			if (bodyData.type) {
 				key = 'entity_' + bodyData.type
 				await utils.internalDel(key)
-				await KafkaProducer.pushInternalCacheDelete(key)
+				await KafkaProducer.clearInternalCache(key)
 			} else {
 				const entities = await entitiesData.findOne(_id)
 				key = 'entity_' + entities.type
 				await utils.internalDel(key)
-				await KafkaProducer.pushInternalCacheDelete(key)
+				await KafkaProducer.clearInternalCache(key)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -145,7 +145,7 @@ module.exports = class EntityHelper {
 			const entities = await entitiesData.findOne(_id)
 			let key = 'entity_' + entities.type
 			await utils.internalDel(key)
-			await KafkaProducer.pushInternalCacheDelete(key)
+			await KafkaProducer.clearInternalCache(key)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
