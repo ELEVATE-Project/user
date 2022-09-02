@@ -25,7 +25,7 @@ module.exports = class FormsHelper {
 			}
 			await formsData.createForm(bodyData)
 			await utils.internalDel('formVersion')
-			await KafkaProducer.pushInternalCacheDelete('formVersion')
+			await KafkaProducer.clearInternalCache('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
@@ -74,7 +74,7 @@ module.exports = class FormsHelper {
 				})
 			}
 			await utils.internalDel('formVersion')
-			await KafkaProducer.pushInternalCacheDelete('formVersion')
+			await KafkaProducer.clearInternalCache('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'FORM_UPDATED_SUCCESSFULLY',
@@ -98,7 +98,7 @@ module.exports = class FormsHelper {
 			if (ObjectId.isValid(id)) {
 				filter = { _id: id }
 			} else {
-				filter = { bodyData }
+				filter = { ...bodyData }
 			}
 			const form = await formsData.findOneForm(filter)
 

@@ -45,7 +45,7 @@ module.exports = () => {
 			groupId: process.env.KAFKA_GROUP_ID,
 			autoCommit: true,
 		},
-		[process.env.RATING_KAFKA_TOPIC, process.env.INTERNAL_CACHE_UPDATE]
+		[process.env.RATING_KAFKA_TOPIC, process.env.CLEAR_INTERNAL_CACHE]
 	)
 
 	consumer.on('message', async function (message) {
@@ -53,7 +53,7 @@ module.exports = () => {
 			let streamingData = JSON.parse(message.value)
 			if (streamingData.type == 'MENTOR_RATING' && streamingData.value && streamingData.mentorId) {
 				profileService.ratingCalculation(streamingData)
-			} else if (streamingData.type == 'INTERNAL_CACHE_UPDATE') {
+			} else if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 				utils.internalDel(streamingData.value)
 			}
 		} catch (error) {

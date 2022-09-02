@@ -81,5 +81,37 @@ module.exports = {
 			})
 	},
 
-	read: (req) => {},
+	read: (req) => {
+		if (req.params.id) {
+			req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
+		} else {
+			req.checkBody('type')
+				.trim()
+				.notEmpty()
+				.withMessage('type field is empty')
+				.matches(/^[A-Za-z]+$/)
+				.withMessage('type is invalid')
+
+			req.checkBody('subType')
+				.trim()
+				.notEmpty()
+				.withMessage('subType field is empty')
+				.matches(/^[A-Za-z]+$/)
+				.withMessage('subType is invalid')
+
+			req.checkBody('action')
+				.trim()
+				.notEmpty()
+				.withMessage('action field is empty')
+				.matches(/^[A-Za-z]+$/)
+				.withMessage('action is invalid')
+
+			req.checkBody('templateName')
+				.trim()
+				.notEmpty()
+				.withMessage('templateName field is empty')
+				.matches(/^[A-Za-z]+$/)
+				.withMessage('templateName is invalid')
+		}
+	},
 }
