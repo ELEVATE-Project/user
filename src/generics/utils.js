@@ -92,13 +92,13 @@ function internalDel(key) {
 }
 
 function redisSet(key, value, exp) {
-	return RedisHelper.setKey(key, value, exp)
+	return RedisCache.setKey(key, value, exp)
 }
 function redisGet(key) {
-	return RedisHelper.getKey(key)
+	return RedisCache.getKey(key)
 }
 function redisDel(key) {
-	return RedisHelper.deleteKey(key)
+	return RedisCache.deleteKey(key)
 }
 
 module.exports = {
