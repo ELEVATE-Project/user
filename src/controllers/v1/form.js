@@ -38,7 +38,7 @@ module.exports = class Form {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedForm = await formsHelper.update(params)
+			const updatedForm = await formsHelper.update(req.params.id, params)
 			return updatedForm
 		} catch (error) {
 			return error
@@ -56,7 +56,7 @@ module.exports = class Form {
 	async read(req) {
 		const params = req.body
 		try {
-			const form = await formsHelper.read(params)
+			const form = await formsHelper.read(req.params.id, params)
 			return form
 		} catch (error) {
 			return error

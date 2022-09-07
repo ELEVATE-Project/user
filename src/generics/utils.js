@@ -11,7 +11,7 @@ const momentTimeZone = require('moment-timezone')
 const moment = require('moment')
 const path = require('path')
 const md5 = require('md5')
-const { RedisHelper, InternalCache } = require('elevate-node-cache')
+const { RedisCache, InternalCache } = require('elevate-node-cache')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -120,18 +120,6 @@ function md5Hash(value) {
 	return md5(value)
 }
 
-function compareVersion(dbValue, apiValue) {
-	const oldParts = dbValue.split('.')
-	const newParts = apiValue.split('.')
-	for (var i = 0; i < newParts.length; i++) {
-		const a = ~~newParts[i]
-		const b = ~~oldParts[i]
-		if (a > b) return true
-		if (a < b) return false
-	}
-	return false
-}
-
 function internalSet(key, value) {
 	return InternalCache.setKey(key, value)
 }
@@ -143,13 +131,13 @@ function internalDel(key) {
 }
 
 function redisSet(key, value, exp) {
-	return RedisHelper.setKey(key, value, exp)
+	return RedisCache.setKey(key, value, exp)
 }
 function redisGet(key) {
-	return RedisHelper.getKey(key)
+	return RedisCache.getKey(key)
 }
 function redisDel(key) {
-	return RedisHelper.deleteKey(key)
+	return RedisCache.deleteKey(key)
 }
 
 module.exports = {
@@ -164,7 +152,7 @@ module.exports = {
 	getTimeZone,
 	utcFormat: utcFormat,
 	md5Hash: md5Hash,
-	compareVersion: compareVersion,
+
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
