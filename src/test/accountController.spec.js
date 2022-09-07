@@ -16,7 +16,6 @@ describe('Sessions controller and helper test', () => {
 	let controller
 	let accountService
 	let userModel
-	let { RedisHelper } = require('elevate-node-cache')
 
 	beforeAll(async () => {
 		await loadMongo()

@@ -10,7 +10,7 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
-const { RedisHelper, InternalCache } = require('elevate-node-cache')
+const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
@@ -92,13 +92,13 @@ function internalDel(key) {
 }
 
 function redisSet(key, value, exp) {
-	return RedisHelper.setKey(key, value, exp)
+	return RedisCache.setKey(key, value, exp)
 }
 function redisGet(key) {
-	return RedisHelper.getKey(key)
+	return RedisCache.getKey(key)
 }
 function redisDel(key) {
-	return RedisHelper.deleteKey(key)
+	return RedisCache.deleteKey(key)
 }
 
 module.exports = {
