@@ -8,7 +8,7 @@ module.exports = {
 				type: 'termsAndConditions',
 				subType: 'termsAndConditionsForm',
 				action: 'termsAndConditionsFields',
-				ver: '1.0',
+				__v: 0,
 				data: {
 					templateName: 'defaultTemplate',
 					fields: {
