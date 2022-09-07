@@ -160,7 +160,7 @@ module.exports = {
 				type: 'profile',
 				subType: 'createProfile',
 				action: 'formFields',
-				ver: '1.0',
+				__v: 0,
 				data: {
 					templateName: 'defaultTemplate',
 					fields: {
