@@ -17,10 +17,8 @@ const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const { RedisHelper } = require('elevate-node-cache')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
-const { ConsumerGroup } = require('kafka-node')
 const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {

@@ -10,7 +10,7 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
-const { RedisHelper, InternalCache } = require('elevate-node-cache')
+const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
