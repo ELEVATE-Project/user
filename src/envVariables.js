@@ -127,6 +127,18 @@ let enviromentVariables = {
 		message: 'Redis Host Url',
 		optional: false,
 	},
+	ENABLE_EMAIL_FOR_REPORT_ISSUE: {
+		message: 'Required true or false',
+		optional: false,
+	},
+	SUPPORT_EMAIL_ID: {
+		message: 'Required email id of support',
+		optional: process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true' ? false : true,
+	},
+	REPORT_ISSUE_EMAIL_TEMPLATE_CODE: {
+		message: 'Required reported issue email template code',
+		optional: process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true' ? false : true,
+	},
 }
 
 let success = true
