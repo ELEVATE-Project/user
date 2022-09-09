@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "5b8388a8-e388-440f-a182-01775e345125",
+		"_postman_id": "ad7c5a99-6444-4917-a4d1-ddddc1bbbb2d",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21498549"
@@ -1099,6 +1099,39 @@
 									"value": "3"
 								}
 							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Issues",
+			"item": [
+				{
+					"name": "Create an issue.",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In hendrerit gravida rutrum quisque non tellus. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Accumsan sit amet nulla facilisi morbi tempus iaculis. Lobortis scelerisque fermentum dui faucibus in.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/issues/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "issues", "create"]
 						}
 					},
 					"response": []
