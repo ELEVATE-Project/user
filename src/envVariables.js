@@ -139,6 +139,10 @@ let enviromentVariables = {
 		message: 'Required reported issue email template code',
 		optional: process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true' ? false : true,
 	},
+	BIB_BLUE_BUTTON_SESSION_END_URL: {
+		message: 'Big blue button session end url.',
+		optional: false,
+	},
 }
 
 let success = true
