@@ -78,7 +78,7 @@ describe('Sessions controller and helper test', () => {
 				image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
 			},
 			meta: {
-				formsVersion: {},
+				formsVersion: [],
 			},
 		}
 

@@ -39,11 +39,7 @@ module.exports = class FormsData {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const formData = await Forms.find({}, projection)
-				let versions = {}
-				formData.forEach((version) => {
-					versions[version._id] = { __v: version.__v }
-				})
-				resolve(versions)
+				resolve(formData)
 			} catch (error) {
 				reject(error)
 			}
