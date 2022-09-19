@@ -16,6 +16,7 @@ module.exports = class FormsHelper {
 	static async create(bodyData) {
 		try {
 			const form = await formsData.findOneForm({ type: bodyData.type })
+			console.log('>>>>>>>>>>>>>', form)
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
