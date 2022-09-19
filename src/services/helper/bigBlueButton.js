@@ -26,7 +26,7 @@ module.exports = class BigBlueButtonHelper {
 	static async createMeeting(meetingId, meetingName, attendeePW, moderatorPW) {
 		try {
 			let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + '%2F' + meetingId
-			let sessionEndUrl = process.env.BIB_BLUE_BUTTON_SESSION_END_URL + meetingId
+			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL + meetingId
 
 			meetingName = encodeURI(meetingName)
 			let query =
