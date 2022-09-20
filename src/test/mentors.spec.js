@@ -152,7 +152,7 @@ describe('Sessions controller and helper test', () => {
 		mockMentorsSessionHosted.mockResolvedValueOnce(2)
 
 		const actual = await mentorsServices.profile('62a820225ff93f30cfe5f990')
-		expect(actual).toEqual(expectedResult)
+		expect(actual.result).toEqual(expectedResult.result)
 	})
 	test('should throw error on mentee profile', async () => {
 		const userProfileApiResponse = {
