@@ -811,39 +811,6 @@
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "issues",
-			"item": [
-				{
-					"name": "Create an issue.",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"description\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In hendrerit gravida rutrum quisque non tellus. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Accumsan sit amet nulla facilisi morbi tempus iaculis. Lobortis scelerisque fermentum dui faucibus in.\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/issues/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "issues", "create"]
-						}
-					},
-					"response": []
-				}
-			]
 		}
 	]
 }
