@@ -21,6 +21,7 @@ module.exports = class issuesHelper {
 		try {
 			const name = decodedToken.name
 			const role = decodedToken.isAMentor ? 'Mentor' : 'Mentee'
+			const userEmailId = decodedToken.email
 			const email = process.env.SUPPORT_EMAIL_ID
 
 			bodyData.userId = ObjectId(decodedToken._id) //Getting user id from tokenDetail.
@@ -38,6 +39,7 @@ module.exports = class issuesHelper {
 							body: utils.composeEmailBody(templateData.body, {
 								name,
 								role,
+								userEmailId,
 								description: bodyData.description,
 							}),
 						},
