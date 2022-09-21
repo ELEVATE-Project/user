@@ -16,6 +16,7 @@ module.exports = class FormsHelper {
 	static async create(bodyData) {
 		try {
 			const form = await formsData.findOneForm({ type: bodyData.type })
+
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -26,6 +27,7 @@ module.exports = class FormsHelper {
 			await formsData.createForm(bodyData)
 
 			await utils.internalDel('formVersion')
+
 			await KafkaProducer.clearInternalCache('formVersion')
 
 			return common.successResponse({
