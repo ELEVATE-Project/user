@@ -35,12 +35,15 @@ module.exports = class issuesHelper {
 						type: 'email',
 						email: {
 							to: email,
+							replyTo: userEmailId,
 							subject: templateData.subject,
 							body: utils.composeEmailBody(templateData.body, {
 								name,
 								role,
 								userEmailId,
 								description: bodyData.description,
+								deviceName: bodyData.metaData.deviceName,
+								androidVersion: bodyData.metaData.androidVersion,
 							}),
 						},
 					}
