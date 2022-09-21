@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "45394f3a-2caf-424c-b8a2-81674dd6bcf0",
+		"_postman_id": "e318392d-fcb8-4f78-a69c-fbebd346a868",
 		"name": "MentorED-Users",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "7997930"
 	},
 	"item": [
 		{
@@ -81,7 +81,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"type\": \"profile\",\n\t\"subType\": \"profileForm\",\n\t\"action\": \"profileFieldss\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"name\",\n\t\t\t\t\t\"label\": \"name\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 10\n}\n},\n{\n\t\t\t\t\t\"name\": \"roles\",\n\t\t\t\t\t\"label\": \"Select your role\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -112,7 +112,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"profile\",\n\t\"subType\": \"profileForm\",\n\t\"action\": \"profileFieldss\",\n    \"ver\": \"1.0\",\n    \"templateName\": \"defaultTemplate\"\n}",
+							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -120,9 +120,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/read",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/61ee56ebfc2b962cf281dd01",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "read"]
+							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
 						}
 					},
 					"response": []
@@ -140,7 +140,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"type\": \"profile\",\n\t\"subType\": \"profileForm\",\n\t\"action\": \"profileFieldss\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"name\",\n\t\t\t\t\t\"label\": \"name\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 10\n}\n},\n{\n\t\t\t\t\t\"name\": \"roles\",\n\t\t\t\t\t\"label\": \"Select your role\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n,{\n\t\t\t\t\t\"name\": \"age\",\n\t\t\t\t\t\"label\": \"Select your Age\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -148,9 +148,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/update",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/update/61ee56ebfc2b962cf281dd01",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "update"]
+							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
 						},
 						"description": "NOTE: Id is required in params and that should be objectId"
 					},
