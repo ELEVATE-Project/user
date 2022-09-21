@@ -2,7 +2,7 @@ let emailTemplates = [
 	{
 		code: 'user_issue_reported',
 		subject: 'Support request for MentorED',
-		body: '<div><p>Hi Team,</p>{role} {name} is facing issue in <b>{description}</b>-{userEmailId} in 2.1 version of MentorED.</div>',
+		body: '<div><p>Hi Team,</p>{role} {name} is facing issue in <b>{description}</b>-{userEmailId} in 2.1 version of MentorED.<p>Kindly look into it.</p><p>Device name:{deviceName}</p><p>Android Version:{androidVersion}</p></div>',
 	},
 
 	{
