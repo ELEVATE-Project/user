@@ -333,7 +333,7 @@ module.exports = class SessionsHelper {
 				}
 			}
 
-			if (sessionDetails.image && sessionDetails.image.length > 0) {
+			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
 					if (imgPath != '') {
 						return await utils.getDownloadableUrl(imgPath)
