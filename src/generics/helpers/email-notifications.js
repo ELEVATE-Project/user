@@ -38,6 +38,9 @@ async function sendEmail(params) {
 		if (params.cc) {
 			message['cc'] = params.cc.split(',')
 		}
+		if (params.replyTo) {
+			message['replyTo'] = params.replyTo
+		}
 		try {
 			await sgMail.send(message)
 		} catch (error) {
