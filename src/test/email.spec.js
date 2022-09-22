@@ -23,7 +23,7 @@ describe('Email Controller test', () => {
 		let response = await controllerResponse.send(request)
 
 		expect(response.statusCode).toBe(400)
-		expect(response.message).toBe('CLIENT_ERROR')
+		expect(response.message).toBe('failed to send email')
 		// expect(response.statusCode).toBe(200)
 		// expect(response.message).toBe('Email sent successfully.')
 	})
