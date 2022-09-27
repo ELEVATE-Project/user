@@ -68,6 +68,10 @@ const userSchema = new Schema({
 	rating: {
 		type: Object,
 	},
+	preferredLanguage: {
+		type: String,
+		default: 'en',
+	},
 })
 
 const Users = db.model('users', userSchema)
