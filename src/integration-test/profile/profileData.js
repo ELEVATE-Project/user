@@ -1,16 +1,18 @@
 const usersData = require('@db/users/queries')
 const utilsHelper = require('@generics/utils')
+const { faker } = require('@faker-js/faker')
 
 let bodyData
 
 const insertMentor = async () => {
 	try {
 		let email = 'nevil' + Math.random() + '@tunerlabs.com'
+		let password = faker.internet.password()
 
 		bodyData = {
 			name: 'Nevil',
 			email: { address: email, verified: false },
-			password: 'testing',
+			password: password,
 			isAMentor: true,
 		}
 		bodyData.password = utilsHelper.hashPassword(bodyData.password)
@@ -27,7 +29,6 @@ const insertMentor = async () => {
 			otpInfo: 0,
 		}
 		let user = await usersData.findOne({ 'email.address': email }, projection)
-		console.log(user._id)
 		return user._id.valueOf()
 	} catch (error) {
 		console.error(error)

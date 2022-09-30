@@ -7,16 +7,19 @@ let bodyData
 const insertUser = async () => {
 	try {
 		let email = 'nevil' + Math.random() + '@tunerlabs.com'
-
+		let password = faker.internet.password()
 		bodyData = {
 			name: 'Nevil',
 			email: { address: email, verified: false },
-			password: 'testing',
+			password: password,
 			isAMentor: false,
 		}
 		bodyData.password = utilsHelper.hashPassword(bodyData.password)
 		await usersData.createUser(bodyData)
-		return email
+		return {
+			email: email,
+			password: password,
+		}
 	} catch (error) {
 		console.error(error)
 	}

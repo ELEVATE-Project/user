@@ -21,7 +21,7 @@ describe('user/v1/systemUsers', function () {
 		let res = await request.post('/user/v1/systemUsers/create').send({
 			name: 'admin',
 			email: faker.internet.email(),
-			password: 'testing',
+			password: faker.internet.password(),
 			role: 'admin',
 		})
 
@@ -30,10 +30,10 @@ describe('user/v1/systemUsers', function () {
 		expect(res.body).toMatchSchema(createSystemUserSchema)
 	})
 	it('/login', async () => {
-		let email = await insertAdminUser()
+		let adminDetails = await insertAdminUser()
 		let res = await request.post('/user/v1/systemUsers/login').send({
-			email: email,
-			password: 'testing',
+			email: adminDetails.email,
+			password: adminDetails.password,
 		})
 
 		logError(res)

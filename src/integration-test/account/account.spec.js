@@ -13,15 +13,17 @@ const { insertUser } = require('./accountData')
 describe('/user/v1/account', function () {
 	let userEmail
 	let userDetails
+	let password
 	beforeAll(async () => {
 		userDetails = await logIn()
 		userEmail = faker.internet.email()
+		password = faker.internet.password()
 	})
 	it('/create', async () => {
 		let res = await request.post('/user/v1/account/create').send({
 			name: 'Nevil',
 			email: userEmail,
-			password: 'testing',
+			password: password,
 			isAMentor: false,
 		})
 
@@ -30,10 +32,10 @@ describe('/user/v1/account', function () {
 		expect(res.body).toMatchSchema(responseSchema.createProfileSchema)
 	})
 	it('/login', async () => {
-		let email = await insertUser()
+		let insertedUserDetails = await insertUser()
 		let res = await request.post('/user/v1/account/login').send({
-			email: email,
-			password: 'testing',
+			email: insertedUserDetails.email,
+			password: insertedUserDetails.password,
 		})
 
 		logError(res)

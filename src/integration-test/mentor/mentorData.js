@@ -6,7 +6,7 @@ const insertMentor = async () => {
 		bodyData = {
 			name: 'Nevil (Mentor)',
 			email: { address: faker.internet.email(), verified: false },
-			password: 'testing',
+			password: faker.internet.password(),
 			isAMentor: true,
 			secretCode: process.env.MENTOR_SECRET_CODE,
 		}
