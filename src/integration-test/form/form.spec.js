@@ -7,7 +7,7 @@
 
 const { request, logIn, logError } = require('../commonTests')
 const { formCreateSchema, formReadSchema, formUpdateSchema } = require('./responseSchema')
-const { insertForm } = require('./formData')
+const { insertForm, formBody } = require('./formData')
 const { faker } = require('@faker-js/faker')
 
 describe('user/v1/form', function () {
@@ -17,41 +17,7 @@ describe('user/v1/form', function () {
 	it('/create', async () => {
 		let res = await request.post('/user/v1/form/create').send({
 			type: faker.random.alpha(5),
-			subType: 'profileFormA',
-			action: 'profileFieldssA',
-			ver: '1.0',
-			data: {
-				templateName: 'defaultTemplate',
-				fields: {
-					controls: [
-						{
-							name: 'name',
-							label: 'name',
-							value: '',
-							class: 'ion-margin',
-							type: 'text',
-							position: 'floating',
-							validators: {
-								required: true,
-								minLength: 10,
-							},
-						},
-						{
-							name: 'roles',
-							label: 'Select your role',
-							value: '',
-							class: 'ion-margin',
-							type: 'chip',
-							position: '',
-							disabled: false,
-							showSelectAll: true,
-							validators: {
-								required: true,
-							},
-						},
-					],
-				},
-			},
+			...formBody,
 		})
 		logError(res)
 		expect(res.statusCode).toBe(201)
@@ -74,41 +40,7 @@ describe('user/v1/form', function () {
 		let type = await insertForm()
 		let res = await request.post('/user/v1/form/update').send({
 			type: type,
-			subType: 'profileForm',
-			action: 'profileFields',
-			ver: '1.0',
-			data: {
-				templateName: 'defaultTemplate',
-				fields: {
-					controls: [
-						{
-							name: 'name',
-							label: 'name',
-							value: '',
-							class: 'ion-margin',
-							type: 'text',
-							position: 'floating',
-							validators: {
-								required: true,
-								minLength: 10,
-							},
-						},
-						{
-							name: 'roles',
-							label: 'Select your role',
-							value: '',
-							class: 'ion-margin',
-							type: 'chip',
-							position: '',
-							disabled: false,
-							showSelectAll: true,
-							validators: {
-								required: true,
-							},
-						},
-					],
-				},
-			},
+			...formBody,
 		})
 		logError(res)
 		expect(res.statusCode).toBe(202)
