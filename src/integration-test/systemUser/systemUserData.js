@@ -1,11 +1,12 @@
 const systemUserData = require('@db/systemUsers/queries')
 const utilsHelper = require('@generics/utils')
 const { faker } = require('@faker-js/faker')
+const crypto = require('crypto')
 
 let bodyData
 const insertAdminUser = async () => {
 	try {
-		let email = 'nevil' + Math.random() + '@admin.com'
+		let email = 'nevil' + crypto.randomBytes(5).toString('hex') + '@admin.com'
 		let password = faker.internet.password()
 
 		bodyData = {
