@@ -2,6 +2,7 @@ const baseURL = 'http://localhost:3001'
 var supertest = require('supertest') //require supertest
 var defaults = require('superagent-defaults')
 const { faker } = require('@faker-js/faker')
+const crypto = require('crypto')
 
 const request = defaults(supertest(baseURL)) //supertest hits the HTTP server (your app)
 let defaultHeaders
@@ -15,7 +16,7 @@ const logIn = async () => {
 			timeout: 30000,
 		}
 		await waitOn(opts)
-		let email = 'nevil.' + Math.random() + '@tunerlabs.com'
+		let email = 'nevil' + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
 		let password = faker.internet.password()
 		let res = await request.post('/user/v1/account/create').send({
 			name: 'Nevil',
