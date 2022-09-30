@@ -1,14 +1,15 @@
-const createProfileSchema = {
-	type: 'object',
+let commonBody = {
 	properties: {
-		responseCode: {
-			type: 'string',
-		},
 		message: {
 			type: 'string',
 		},
-		result: {
+		meta: {
 			type: 'object',
+		},
+		responseCode: {
+			type: 'string',
+		},
+		result: {
 			properties: {
 				access_token: {
 					type: 'string',
@@ -17,10 +18,31 @@ const createProfileSchema = {
 					type: 'string',
 				},
 				user: {
-					type: 'object',
 					properties: {
+						__v: {
+							type: 'integer',
+						},
+						_id: {
+							type: 'string',
+						},
+						areasOfExpertise: {
+							items: {},
+							type: 'array',
+						},
+						createdAt: {
+							type: 'string',
+						},
+						deleted: {
+							type: 'boolean',
+						},
+						designation: {
+							items: {},
+							type: 'array',
+						},
+						educationQualification: {
+							type: 'null',
+						},
 						email: {
-							type: 'object',
 							properties: {
 								address: {
 									type: 'string',
@@ -30,49 +52,27 @@ const createProfileSchema = {
 								},
 							},
 							required: ['address', 'verified'],
-						},
-						_id: {
-							type: 'string',
-						},
-						name: {
-							type: 'string',
-						},
-						isAMentor: {
-							type: 'boolean',
+							type: 'object',
 						},
 						hasAcceptedTAndC: {
 							type: 'boolean',
 						},
-						deleted: {
+						isAMentor: {
 							type: 'boolean',
 						},
-						educationQualification: {
-							type: 'null',
-						},
-						designation: {
-							type: 'array',
+						languages: {
 							items: {},
+							type: 'array',
 						},
 						location: {
-							type: 'array',
 							items: {},
+							type: 'array',
 						},
-						areasOfExpertise: {
-							type: 'array',
-							items: {},
-						},
-						languages: {
-							type: 'array',
-							items: {},
+						name: {
+							type: 'string',
 						},
 						updatedAt: {
 							type: 'string',
-						},
-						createdAt: {
-							type: 'string',
-						},
-						__v: {
-							type: 'integer',
 						},
 					},
 					required: [
@@ -91,121 +91,26 @@ const createProfileSchema = {
 						'createdAt',
 						'__v',
 					],
+					type: 'object',
 				},
 			},
 			required: ['access_token', 'refresh_token', 'user'],
-		},
-		meta: {
 			type: 'object',
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
 }
+const createProfileSchema = {
+	type: 'object',
+	...commonBody,
+}
+commonBody.properties.result.properties.user.properties['lastLoggedInAt'] = {
+	type: 'string',
+}
+
 const loginSchema = {
 	type: 'object',
-	properties: {
-		responseCode: {
-			type: 'string',
-		},
-		message: {
-			type: 'string',
-		},
-		result: {
-			type: 'object',
-			properties: {
-				access_token: {
-					type: 'string',
-				},
-				refresh_token: {
-					type: 'string',
-				},
-				user: {
-					type: 'object',
-					properties: {
-						email: {
-							type: 'object',
-							properties: {
-								address: {
-									type: 'string',
-								},
-								verified: {
-									type: 'boolean',
-								},
-							},
-							required: ['address', 'verified'],
-						},
-						_id: {
-							type: 'string',
-						},
-						name: {
-							type: 'string',
-						},
-						isAMentor: {
-							type: 'boolean',
-						},
-						hasAcceptedTAndC: {
-							type: 'boolean',
-						},
-						deleted: {
-							type: 'boolean',
-						},
-						educationQualification: {
-							type: 'null',
-						},
-						designation: {
-							type: 'array',
-							items: {},
-						},
-						location: {
-							type: 'array',
-							items: {},
-						},
-						areasOfExpertise: {
-							type: 'array',
-							items: {},
-						},
-						languages: {
-							type: 'array',
-							items: {},
-						},
-						updatedAt: {
-							type: 'string',
-						},
-						createdAt: {
-							type: 'string',
-						},
-						__v: {
-							type: 'integer',
-						},
-						lastLoggedInAt: {
-							type: 'string',
-						},
-					},
-					required: [
-						'email',
-						'_id',
-						'name',
-						'isAMentor',
-						'hasAcceptedTAndC',
-						'deleted',
-						'educationQualification',
-						'designation',
-						'location',
-						'areasOfExpertise',
-						'languages',
-						'updatedAt',
-						'createdAt',
-						'__v',
-					],
-				},
-			},
-			required: ['access_token', 'refresh_token', 'user'],
-		},
-		meta: {
-			type: 'object',
-		},
-	},
-	required: ['responseCode', 'message', 'result', 'meta'],
+	...commonBody,
 }
 const generateTokenSchema = {
 	type: 'object',
