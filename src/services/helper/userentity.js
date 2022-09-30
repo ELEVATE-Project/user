@@ -38,13 +38,14 @@ module.exports = class UserEntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			await userEntitiesData.createEntity(bodyData)
+			let res = await userEntitiesData.createEntity(bodyData)
 			const key = 'entity_' + bodyData.type
 			await utils.internalDel(key)
 			await KafkaProducer.clearInternalCache(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENTITY_CREATED_SUCCESSFULLY',
+				result: res,
 			})
 		} catch (error) {
 			throw error
