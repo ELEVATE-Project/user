@@ -31,52 +31,7 @@ mongoose.plugin(mongoose_autopopulate)
 
 global.db = db
 
-beforeAll(async () => {
-	/* 	try {
-		let baseURL = 'http://localhost:' + process.env.APPLICATION_PORT
-		var waitOn = require('wait-on')
-		var opts = {
-			resources: [baseURL],
-			delay: 1000, // initial delay in ms, default 0
-			interval: 500, // poll interval in ms, default 250ms
-			timeout: 30000,
-			//log: true,
-		}
-		await waitOn(opts)
-		var supertest = require('supertest') //require supertest
-
-		const request = supertest(baseURL) //supertest hits the HTTP server (your app)
-
-		const getUserDetails = async () => {
-			let email = 'nevil.' + Math.random() + '@tunerlabs.com'
-
-			let res = await request.post('/user/v1/account/create').send({
-				name: 'Nevil',
-				email: email,
-				password: 'testing',
-				isAMentor: false,
-			})
-			res = await request.post('/user/v1/account/login').send({
-				email: email,
-				password: 'testing',
-			})
-			//console.log(res.body)
-			if (res.body?.result?.access_token && res.body?.result?.user?._id) {
-				return {
-					token: res.body.result.access_token,
-					userId: res.body.result.user._id,
-				}
-			} else {
-				return false
-			}
-		}
-		global.userDetails = await getUserDetails()
-		global.request = request
-		// once here, all resources are available
-	} catch (error) {
-		console.log(error)
-	} */
-})
+beforeAll(async () => {})
 
 afterAll(async () => {
 	try {
