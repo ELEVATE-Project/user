@@ -5,7 +5,7 @@
  * Description : Integration test for form controllers.
  */
 
-const { request, logIn, logError } = require('../commonTests')
+const { request, logIn, logError } = require('@commonTests')
 const { formCreateSchema, formReadSchema, formUpdateSchema } = require('./responseSchema')
 const { insertForm, formBody } = require('./formData')
 const { faker } = require('@faker-js/faker')

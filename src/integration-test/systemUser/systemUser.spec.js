@@ -5,7 +5,7 @@
  * Description : Integration test for systemUser controllers.
  */
 
-const { request, logIn, logError } = require('../commonTests')
+const { request, logIn, logError } = require('@commonTests')
 const { createSystemUserSchema, loginSchema } = require('./responseSchema')
 const { faker } = require('@faker-js/faker')
 

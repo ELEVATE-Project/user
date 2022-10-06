@@ -5,7 +5,7 @@
  * Description : Integration test for profile controllers.
  */
 
-const { request, logIn, logError } = require('../commonTests')
+const { request, logIn, logError } = require('@commonTests')
 const { profileDetailsSchema, profileUpdateSchema, profileShareSchema } = require('./responseSchema')
 const { insertMentor } = require('./profileData')
 

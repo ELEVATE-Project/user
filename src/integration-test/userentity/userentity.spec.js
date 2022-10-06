@@ -5,7 +5,7 @@
  * Description : Integration test for userEntity controllers.
  */
 
-const { request, logIn, logError } = require('../commonTests')
+const { request, logIn, logError } = require('@commonTests')
 const { faker } = require('@faker-js/faker')
 const { insertEntity } = require('./userentityData')
 

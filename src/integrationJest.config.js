@@ -14,6 +14,7 @@ module.exports = {
 		'@constants/(.*)': '<rootDir>/constants/$1',
 		'@configs/(.*)': '<rootDir>/configs/$1',
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
+		'@commonTests': '<rootDir>/integration-test/commonTests',
 	},
 	//reporters: ['default', 'jest-html-reporters'],
 }

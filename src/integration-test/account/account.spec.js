@@ -5,7 +5,7 @@
  * Description : Integration test for account controllers.
  */
 
-const { request, logIn, logError } = require('../commonTests')
+const { request, logIn, logError } = require('@commonTests')
 let responseSchema = require('./responseSchema')
 const { faker } = require('@faker-js/faker')
 const { insertUser } = require('./accountData')

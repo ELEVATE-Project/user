@@ -5,7 +5,7 @@
  * Description : Integration test for mentor controllers.
  */
 
-const { request, logIn, logError } = require('../commonTests')
+const { request, logIn, logError } = require('@commonTests')
 const { listMentorsSchema } = require('./responseSchema')
 const { insertMentor } = require('./mentorData')
 
