@@ -104,12 +104,11 @@ function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
 
-let key = process.env.KEY
-let iv = process.env.IV
-key = Buffer.from(key, 'base64')
-iv = Buffer.from(iv, 'base64')
+let key = Buffer.from(process.env.KEY, 'base64')
+let iv = Buffer.from(process.env.IV, 'base64')
+
 function encrypt(text) {
-	let cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'base64'), iv)
+	let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'base64'), iv)
 	let encrypted = cipher.update(text)
 	encrypted = Buffer.concat([encrypted, cipher.final()])
 	return encrypted.toString('base64')
@@ -118,7 +117,7 @@ function encrypt(text) {
 // Decrypting text
 function decrypt(text) {
 	let encryptedText = Buffer.from(text, 'base64')
-	let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv)
+	let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
 	let decrypted = decipher.update(encryptedText)
 	decrypted = Buffer.concat([decrypted, decipher.final()])
 	return decrypted.toString()
