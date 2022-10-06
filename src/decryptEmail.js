@@ -75,7 +75,8 @@ async function updateEmail(validEncryptedEmail) {
 
 async function main() {
 	const data = await getValidEncryptedEmails()
-	if (data.length > 1) {
+	console.log(data)
+	if (data.length >= 1) {
 		console.log('Updating Data')
 		updateEmail(data)
 	} else {

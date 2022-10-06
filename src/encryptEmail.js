@@ -73,7 +73,7 @@ async function updateEmail(validPlainEmail) {
 
 async function main() {
 	const data = await getValidPlainEmail()
-	if (data.length > 1) {
+	if (data.length >= 1) {
 		console.log('Updating Data')
 		updateEmail(data)
 	} else {
