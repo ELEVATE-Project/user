@@ -211,6 +211,7 @@ module.exports = class AccountHelper {
 			/* Mongoose schema is in strict mode, so can not delete password directly */
 			user = { ...user._doc }
 			delete user.password
+			user.email.address = utils.decrypt(user.email.address)
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({

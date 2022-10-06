@@ -12,6 +12,9 @@ const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
+const crypto = require('crypto')
+
+const algorithm = 'aes-256-cbc'
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -101,6 +104,26 @@ function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
 
+let key = process.env.KEY
+let iv = process.env.IV
+key = Buffer.from(key, 'base64')
+iv = Buffer.from(iv, 'base64')
+function encrypt(text) {
+	let cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'base64'), iv)
+	let encrypted = cipher.update(text)
+	encrypted = Buffer.concat([encrypted, cipher.final()])
+	return encrypted.toString('base64')
+}
+
+// Decrypting text
+function decrypt(text) {
+	let encryptedText = Buffer.from(text, 'base64')
+	let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv)
+	let decrypted = decipher.update(encryptedText)
+	decrypted = Buffer.concat([decrypted, decipher.final()])
+	return decrypted.toString()
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -116,4 +139,6 @@ module.exports = {
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
+	encrypt: encrypt,
+	decrypt: decrypt,
 }
