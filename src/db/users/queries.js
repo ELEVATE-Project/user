@@ -13,7 +13,10 @@ module.exports = class UsersData {
 	static findOne(filter, projection = {}) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const userData = await Users.findOne(filter, projection)
+				const userData = await Users.findOne(filter, projection).lean({
+					getters: true,
+				})
+
 				resolve(userData)
 			} catch (error) {
 				reject(error)

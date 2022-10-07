@@ -9,6 +9,8 @@
 const mongoose = require('mongoose')
 const { encrypt, decrypt } = require('@generics/utils')
 const Schema = mongoose.Schema
+// Adding the package
+const mongooseLeanGetter = require('mongoose-lean-getters')
 
 const userSchema = new Schema(
 	{
@@ -79,7 +81,7 @@ const userSchema = new Schema(
 		runSettersOnQuery: true,
 	}
 )
-
+userSchema.plugin(mongooseLeanGetter)
 const Users = db.model('users', userSchema)
 
 module.exports = Users

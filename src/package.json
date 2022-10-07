@@ -56,6 +56,7 @@
 		"mongoose": "^6.1.6",
 		"mongoose-autopopulate": "^0.16.0",
 		"mongoose-delete": "^0.5.4",
+		"mongoose-lean-getters": "^0.3.5",
 		"mongoose-paginate-v2": "^1.4.2",
 		"mongoose-timestamp": "^0.6.0",
 		"p-each-series": "^2.1.0",
