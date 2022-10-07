@@ -10,9 +10,7 @@ async function loadMongo() {
 	return
 }
 
-let mockData = require('./mock')
-
-describe('Sessions controller and helper test', () => {
+describe('Account controller and helper test', () => {
 	let controller
 	let accountService
 	let userModel

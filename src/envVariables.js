@@ -132,6 +132,14 @@ let enviromentVariables = {
 		message: 'Redis Host Url',
 		optional: false,
 	},
+	KEY: {
+		message: 'Key is missing for email encryption',
+		optional: false,
+	},
+	IV: {
+		message: 'iv is missing for email encryption',
+		optional: false,
+	},
 }
 
 let success = true

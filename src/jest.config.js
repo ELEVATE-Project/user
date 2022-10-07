@@ -13,3 +13,7 @@ module.exports = {
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
 	},
 }
+process.env = Object.assign(process.env, {
+	KEY: 'g5MQ7HG/r5gPCPQQCwfBBEduAt72ewJIY/gWc0RNoak=',
+	IV: '2lIctRkqzYMWbwlW1jCC9A==',
+})
