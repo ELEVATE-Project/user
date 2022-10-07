@@ -12,8 +12,8 @@ module.exports = class UserEntityData {
 	static createEntity(data) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				await new UserEntities(data).save()
-				resolve(true)
+				const userEntitiesData = await new UserEntities(data).save()
+				resolve(userEntitiesData)
 			} catch (error) {
 				reject(error)
 			}
