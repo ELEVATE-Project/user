@@ -19,9 +19,6 @@ let commonBody = {
 				},
 				user: {
 					properties: {
-						__v: {
-							type: 'integer',
-						},
 						_id: {
 							type: 'string',
 						},
@@ -89,7 +86,6 @@ let commonBody = {
 						'languages',
 						'updatedAt',
 						'createdAt',
-						'__v',
 					],
 					type: 'object',
 				},
