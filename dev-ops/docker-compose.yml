@@ -1,0 +1,68 @@
+version: '3'
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:3.8.0'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+  kafka:
+    image: 'bitnami/kafka:3.1.0'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper
+    networks:
+      - elevate_net
+
+    logging:
+      driver: none
+  mongo:
+    image: 'mongo:4.4.14'
+    restart: 'always'
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+  redis:
+    image: 'redis:7.0.0'
+    restart: 'always'
+    expose:
+      - '6379'
+    networks:
+      - elevate_net
+    logging:
+      driver: none
+  user_test:
+    build: '../'
+    image: elevate/user:1.0
+    volumes:
+      - ../src/:/var/src
+    ports:
+      - '3001:3001'
+    command: bash -c "npm i && npm run integration && npm run test:integration"
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
+      - KAFKA_URL=kafka:9092
+      - REDIS_HOST=redis://redis:6379
+      - ENABLE_LOG=false
+      - inContainer=true
+    env_file:
+      - integration_test.env
+    depends_on:
+      - kafka
+      - mongo
+      - redis
+    networks:
+      - elevate_net
+networks:
+  elevate_net:
+    external: false

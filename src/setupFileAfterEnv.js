@@ -5,14 +5,16 @@ const { matchers } = require('jest-json-schema')
 expect.extend(matchers)
 
 //Connect to database
-
-const db = mongoose.createConnection('mongodb://127.0.0.1:27017/elevate-mentoring', {
-	useNewUrlParser: true,
-})
-
-/* const db = mongoose.createConnection(process.env.MONGODB_URL, {
-	useNewUrlParser: true,
-}) */
+let db
+if (process.env.inContainer) {
+	db = mongoose.createConnection(process.env.MONGODB_URL, {
+		useNewUrlParser: true,
+	})
+} else {
+	db = mongoose.createConnection('mongodb://127.0.0.1:27017/elevate-mentoring', {
+		useNewUrlParser: true,
+	})
+}
 
 db.on('error', function () {
 	console.log('Database connection error:')

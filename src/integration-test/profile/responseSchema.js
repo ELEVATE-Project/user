@@ -15,7 +15,7 @@ const profileUpdateSchema = {
 			type: 'object',
 			properties: {
 				formsVersion: {
-					type: 'object',
+					type: 'array',
 				},
 			},
 			required: ['formsVersion'],
@@ -108,7 +108,6 @@ const profileDetailsSchema = {
 				'languages',
 				'updatedAt',
 				'createdAt',
-				'__v',
 				'lastLoggedInAt',
 			],
 		},
@@ -116,7 +115,7 @@ const profileDetailsSchema = {
 			type: 'object',
 			properties: {
 				formsVersion: {
-					type: 'object',
+					type: 'array',
 				},
 			},
 			required: ['formsVersion'],
