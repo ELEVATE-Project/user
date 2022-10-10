@@ -48,7 +48,7 @@ services:
       - ../src/:/var/src
     ports:
       - '3001:3001'
-    command: bash -c "npm i && npm run integration"
+    command: bash -c "npm i && npm run integration && npm run test:integration"
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
