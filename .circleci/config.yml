@@ -16,6 +16,9 @@ jobs:
           name: Running test cases in docker container
           command: |-
             cd dev-ops/ && docker-compose up
+      - run:
+          name: Executing unit test cases
+          command: cd src && npm run test
 workflows:
   build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
