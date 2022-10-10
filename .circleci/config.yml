@@ -12,6 +12,10 @@ jobs:
           name: Installing prerequisites
           command: |-
             docker-compose --version
+      - run:
+          name: Running test cases in docker container
+          command: |-
+            docker-compose --version
       - run: cd dev-ops/ && docker-compose up
 workflows:
   build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
