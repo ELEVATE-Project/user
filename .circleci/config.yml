@@ -14,9 +14,12 @@ jobs:
           command: |-
             docker-compose --version
       - run:
-          name: Running test cases in docker container
+          name: Setting up docker container
           command: |-
             cd dev-ops/ && docker-compose up
+      - run:
+          name: Running test cases
+          command: cd src && npm run test:integration circleci tests glob "src/integration-test/*.js" | circleci tests split --split-by=timings
       - run:
           name: Executing unit test cases
           command: cd src && npm run test
