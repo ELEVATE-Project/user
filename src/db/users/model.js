@@ -73,6 +73,10 @@ const userSchema = new Schema(
 		rating: {
 			type: Object,
 		},
+		preferredLanguage: {
+			type: String,
+			default: 'en',
+		},
 	},
 	{
 		versionKey: false,
