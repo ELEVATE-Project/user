@@ -5,7 +5,7 @@ jobs:
     working_directory: ~/ # Default working directory, where your project will be cloned
     steps:
       - checkout:
-          path: ~/dev-ops/
+          path: ~/
       - run: cd dev-ops/ && docker-compose up
 workflows:
   build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
