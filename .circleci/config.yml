@@ -1,7 +1,8 @@
 version: 2.1 # CircleCI version
 jobs:
   build:
-    machine: true # Use a Linux VM instead of docker environment
+    machine: # Use a Linux VM instead of docker environment
+      image: ubuntu-2004:202111-01
     working_directory: ~/user # Default working directory, where your project will be cloned
     steps:
       - checkout:
