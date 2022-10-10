@@ -13,7 +13,7 @@ jobs:
           command: |-
             docker-compose --version
       - run:
-          name: Running test cases in docker container
+          name: Running test cases in docker
           command: |-
             cd dev-ops/ && docker-compose up
       - run:
