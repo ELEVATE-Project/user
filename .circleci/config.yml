@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout:
           path: ~/dev-ops/
-      - run: pwd
+      - run: cd dev-ops/ && docker-compose up
 workflows:
   build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
