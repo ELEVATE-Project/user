@@ -17,12 +17,12 @@ jobs:
           name: Setting up docker container
           command: |-
             cd dev-ops/ && docker-compose up
-      - run:
-          name: Running test cases
-          command: cd src && npm run test:integration circleci tests glob "src/integration-test/*.js" | circleci tests split --split-by=timings
+
       - run:
           name: Executing unit test cases
-          command: cd src && npm run test
+          command: |-
+            TEST=$(circleci tests glob "src/__tests__/*.js" | circleci tests split --split-by=timings)
+            cd src && npm run test $TEST
 workflows:
   build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
