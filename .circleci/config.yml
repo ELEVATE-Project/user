@@ -2,10 +2,14 @@ version: 2.1 # CircleCI version
 jobs:
   build:
     machine: true # Use a Linux VM instead of docker environment
-    working_directory: ~/ # Default working directory, where your project will be cloned
+    working_directory: ~/user # Default working directory, where your project will be cloned
     steps:
       - checkout:
-          path: ~/
+          path: ~/user
+      - run:
+          name: Installing prerequisites
+          command: |-
+            docker-compose --version
       - run: cd dev-ops/ && docker-compose up
 workflows:
   build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
