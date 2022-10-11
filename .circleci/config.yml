@@ -4,12 +4,10 @@ jobs:
     machine: # Use a Linux VM instead of docker environment
       image: ubuntu-2004:202111-01
       docker_layer_caching: true
-    working_directory: ~/user # Default working directory, where your project will be cloned
+    working_directory: ~/user/src # Default working directory, where your project will be cloned
     steps:
-      - checkout:
-          path: ~/user/src
       - restore_cache:
-          key: cd src/ && v1-deps-{{ checksum "package.json" }}
+          key: v1-deps-{{ checksum "package.json" }}
       - run:
           name: Install dependencies
           command: cd src/ && npm install
