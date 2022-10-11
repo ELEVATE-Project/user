@@ -7,7 +7,7 @@ jobs:
     working_directory: ~/user # Default working directory, where your project will be cloned
     steps:
       - checkout:
-          path: ~/user
+          path: ~/user/src
       - restore_cache:
           key: cd src/ && v1-deps-{{ checksum "package.json" }}
       - run:
@@ -17,6 +17,8 @@ jobs:
           key: v1-deps-{{ checksum "package.json" }}
           paths:
             - src/node_modules
+      - checkout:
+          path: ~/user
       - run:
           name: Installing prerequisites
           command: |-
