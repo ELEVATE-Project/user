@@ -21,12 +21,10 @@ jobs:
             cd dev-ops/ && docker-compose up -d
       - run:
           name: Running test cases
-          environment:
-            JEST_JUNIT_OUTPUT_DIR: ./reports/
           command: |-
-            cd src/ &&  npm run test:integration -- --testResultsProcessor="jest-junit"
+            cd src/ &&  npm run test:integration"
       - store_test_results:
-          path: ./reports/
+          path: ./dev-ops/report
       - run:
           name: Executing unit test cases
           command: cd src && npm run test
