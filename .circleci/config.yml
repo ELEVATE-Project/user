@@ -8,17 +8,9 @@ jobs:
     steps:
       - checkout:
           path: ~/user
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "src/package.json" }}
-            - v1-dependencies-
       - run:
           name: Install dependencies
           command: cd src/ && npm install
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "src/package.json" }}
       - run:
           name: Installing prerequisites
           command: |-
