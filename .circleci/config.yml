@@ -10,7 +10,7 @@ jobs:
           path: ~/user
       - run:
           name: Install dependencies
-          command: npm install
+          command: cd src/ && npm install
       - run:
           name: Installing prerequisites
           command: |-
