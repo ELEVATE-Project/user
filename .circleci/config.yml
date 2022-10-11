@@ -7,13 +7,24 @@ jobs:
     working_directory: ~/user # Default working directory, where your project will be cloned
     steps:
       - checkout:
+          path: ~/user/src
+      - restore_cache:
+          key: v1-deps-{{ checksum "package.json" }}
+      - run:
+          name: Install dependencies
+          command: npm install
+      - save_cache:
+          key: v1-deps-{{ checksum "package.json" }}
+          paths:
+            - node_modules
+      - checkout:
           path: ~/user
       - run:
           name: Installing prerequisites
           command: |-
             docker-compose --version
       - run:
-          name: Running test cases in docker
+          name: Running test cases inside docker
           command: |-
             cd dev-ops/ && docker-compose up
       - run:
