@@ -1,0 +1,73 @@
+ ---
+- hosts: elevateDev
+  vars:
+    #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
+    project_path: /opt/backend/test
+  tasks:
+    - name: Slurp hosts file
+      slurp:
+        src: /opt/backend/test/.token
+      register: slurpfile
+    #- debug: msg="{{ slurpfile['content'] | b64decode }}"
+    #- debug: msg="the value of foo.txt is {{ contents }}"
+    - name: Run vault credentials
+      shell: "curl --location --request GET ' {{ vaultAddress }} /v1/elevate/data/mentoring' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
+}}/data2.json'"
+      register: vaultcurl
+    - name: Set some variable
+      set_fact:
+        release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
+        current_path: "{{ project_path }}/current"
+    - name: Retrieve current release folder
+      command: readlink -f current
+      register: current_release_path
+      ignore_errors: yes
+      args:
+        chdir: "{{ project_path }}"
+    - name: Create new folder
+      file:
+        dest={{ release_path }}
+        mode=0755
+        recurse=yes
+        state=directory
+    - name: Clone the repository
+      git:
+        repo: https://github.com/ELEVATE-Project/mentoring.git
+        dest: "{{ release_path }}"
+        version: dev
+    - name: Update npm
+      shell: cd {{release_path}}/src && npm i
+     # npm:
+     #   path="{{ release_path }}/src"
+    - name: generate .env 
+      #command:  sudo cat > '{{ project_path }}'/.env
+#      command: mv '{{current_path}}'/src/env.sample '{{current_path}}'/src/.env
+      shell: cat {{ project_path }}/data2.json | /opt/backend/scripts/json2env.sh > {{ current_path }}/src/.env
+      register: envConfig 
+    - debug: msg=" cred {{ envConfig }} "
+    
+    - name: Update symlink
+      file:
+        src={{ release_path }}
+        dest={{ current_path }}
+        state=link
+    - name: Delete old pm2 process
+      command: pm2 delete elevate-mentoring
+      ignore_errors: yes
+#    - name: Start pm2
+#      command: "chdir={{current_path}}/src pm2 start app.js --name node-app"
+#      register: pm2Info
+
+#    - name: Execute the script
+#      shell: sh /opt/backend/scripts/pm2start.sh
+
+    - name: Start pm2
+      command: "chdir={{current_path}}/src pm2 start app.js --name elevate-mentoring"
+      register: pm2Info
+
+    - name: debug info
+      debug:
+         msg: "Pm2 log {{pm2Info}}"
+    - name: Delete old dir
+      shell: rm -rf {{ current_release_path.stdout }}/
+      when: current_release_path.stdout != current_path
