@@ -7,10 +7,10 @@ jobs:
     working_directory: ~/user # Default working directory, where your project will be cloned
     steps:
       - checkout:
-          path: ~/user/src
+          path: ~/user
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-{{ checksum "src/package.json" }}
             - v1-dependencies-
       - run:
           name: Install dependencies
@@ -18,13 +18,11 @@ jobs:
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v1-dependencies-{{ checksum "src/package.json" }}
       - run:
           name: Installing prerequisites
           command: |-
             docker-compose --version
-      - checkout:
-          path: ~/user
       - run:
           name: Starting the docker containers
           command: |-
