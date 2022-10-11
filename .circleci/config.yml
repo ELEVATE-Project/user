@@ -22,9 +22,9 @@ jobs:
       - run:
           name: Running test cases
           environment:
-            JEST_JUNIT_OUTPUT: reports/junit/js-test-results.xml
+            JEST_JUNIT_OUTPUT: reports/junit/junit.xml
           command: |-
-            cd src/ &&  npm run test:integration
+            cd src/ &&  npm run test:integration -- --testResultsProcessor="jest-junit"
       - store_test_results:
           path: reports/junit
       - store_artifacts:
