@@ -3,7 +3,7 @@ jobs:
   build:
     machine: # Use a Linux VM instead of docker environment
       image: ubuntu-2004:202111-01
-      docker_layer_caching: true
+      docker_layer_caching: false
     working_directory: ~/user # Default working directory, where your project will be cloned
     steps:
       - checkout:
