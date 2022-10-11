@@ -15,7 +15,7 @@
 		"prepare": "cd .. && husky install src/.husky",
 		"elevate-migrations": "module/migrations/bin/migrations.js",
 		"integration": "node app.js",
-		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand"
+		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand --reporters=default --reporters=jest-junit"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
@@ -77,6 +77,7 @@
 		"husky": "^8.0.1",
 		"jest-html-reporters": "^3.0.11",
 		"jest-json-schema": "^6.1.0",
+		"jest-junit": "^14.0.1",
 		"lint-staged": "^12.4.1",
 		"mocha": "^10.0.0",
 		"nodemon": "^2.0.13",
