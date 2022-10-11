@@ -96,7 +96,7 @@ describe('/user/v1/account', function () {
 			refreshToken: userDetails.refreshToken,
 		})
 		logError(res)
-		expect(res.statusCode).toBe(201)
+		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(responseSchema.logoutSchema)
 	})
 })
