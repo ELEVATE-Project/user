@@ -50,13 +50,11 @@ services:
       - ../src/:/var/src
     ports:
       - '3001:3001'
-    command: bash -c "npm run integration"
+    command: [ 'nodemon', 'app.js' ]
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
       - REDIS_HOST=redis://redis:6379
-      - ENABLE_LOG=false
-      - inContainer=true
     env_file:
       - integration_test.env
     depends_on:
