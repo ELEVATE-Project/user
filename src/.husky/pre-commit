@@ -4,3 +4,9 @@
 cd src
 npx lint-staged
 npm test
+curl -s localhost:3001 >/dev/null && isUp=1 || isUp=0
+if [ $isUp = 1 ]; then
+    npm run test:integration
+else
+    echo "Please make sure that user service is running on port 3001"
+fi
