@@ -1,10 +1,10 @@
 version: 2.1 # CircleCI version
 jobs:
   build:
-    machine: # Use a Linux VM instead of docker environment
+    machine: #Linux machine instead of docker environment
       image: ubuntu-2004:202111-01
       docker_layer_caching: true
-    working_directory: ~/user # Default working directory, where your project will be cloned
+    working_directory: ~/user # Default working directory
     steps:
       - checkout:
           path: ~/user
@@ -29,7 +29,7 @@ jobs:
           name: Executing unit test cases
           command: cd src && npm run test
 workflows:
-  build-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
+  build-and-test: # This is the name of the workflow,
     # Inside the workflow, you define the jobs you want to run.
     jobs:
       - build
