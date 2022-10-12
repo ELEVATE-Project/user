@@ -10,8 +10,11 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
-const { RedisHelper, InternalCache } = require('elevate-node-cache')
+const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
+const crypto = require('crypto')
+
+const algorithm = 'aes-256-cbc'
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -81,18 +84,6 @@ function md5Hash(value) {
 	return md5(value)
 }
 
-function compareVersion(dbValue, apiValue) {
-	const oldParts = dbValue.split('.')
-	const newParts = apiValue.split('.')
-	for (var i = 0; i < newParts.length; i++) {
-		const a = ~~newParts[i]
-		const b = ~~oldParts[i]
-		if (a > b) return true
-		if (a < b) return false
-	}
-	return false
-}
-
 function internalSet(key, value) {
 	return InternalCache.setKey(key, value)
 }
@@ -104,13 +95,32 @@ function internalDel(key) {
 }
 
 function redisSet(key, value, exp) {
-	return RedisHelper.setKey(key, value, exp)
+	return RedisCache.setKey(key, value, exp)
 }
 function redisGet(key) {
-	return RedisHelper.getKey(key)
+	return RedisCache.getKey(key)
 }
 function redisDel(key) {
-	return RedisHelper.deleteKey(key)
+	return RedisCache.deleteKey(key)
+}
+
+let key = Buffer.from(process.env.KEY, 'base64')
+let iv = Buffer.from(process.env.IV, 'base64')
+
+function encrypt(text) {
+	let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'base64'), iv)
+	let encrypted = cipher.update(text)
+	encrypted = Buffer.concat([encrypted, cipher.final()])
+	return encrypted.toString('base64')
+}
+
+// Decrypting text
+function decrypt(text) {
+	let encryptedText = Buffer.from(text, 'base64')
+	let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
+	let decrypted = decipher.update(encryptedText)
+	decrypted = Buffer.concat([decrypted, decipher.final()])
+	return decrypted.toString()
 }
 
 module.exports = {
@@ -121,11 +131,13 @@ module.exports = {
 	composeEmailBody,
 	getDownloadableUrl,
 	md5Hash,
-	compareVersion: compareVersion,
+
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
+	encrypt: encrypt,
+	decrypt: decrypt,
 }

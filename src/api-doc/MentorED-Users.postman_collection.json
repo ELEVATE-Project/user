@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9bed289e-ead9-4ba1-887e-d905422365a3",
+		"_postman_id": "e318392d-fcb8-4f78-a69c-fbebd346a868",
 		"name": "MentorED-Users",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "7997930"
@@ -81,7 +81,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"type\": \"profile\",\n\t\"subType\": \"profileForm\",\n\t\"action\": \"profileFieldss\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"name\",\n\t\t\t\t\t\"label\": \"name\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 10\n}\n},\n{\n\t\t\t\t\t\"name\": \"roles\",\n\t\t\t\t\t\"label\": \"Select your role\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -112,7 +112,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"profile\",\n\t\"subType\": \"profileForm\",\n\t\"action\": \"profileFieldss\",\n    \"ver\": \"1.0\",\n    \"templateName\": \"defaultTemplate\"\n}",
+							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -120,9 +120,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/read",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/61ee56ebfc2b962cf281dd01",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "read"]
+							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
 						}
 					},
 					"response": []
@@ -140,7 +140,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"type\": \"profile\",\n\t\"subType\": \"profileForm\",\n\t\"action\": \"profileFieldss\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"name\",\n\t\t\t\t\t\"label\": \"name\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 10\n}\n},\n{\n\t\t\t\t\t\"name\": \"roles\",\n\t\t\t\t\t\"label\": \"Select your role\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n,{\n\t\t\t\t\t\"name\": \"age\",\n\t\t\t\t\t\"label\": \"Select your Age\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -148,9 +148,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/update",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/update/61ee56ebfc2b962cf281dd01",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "update"]
+							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
 						},
 						"description": "NOTE: Id is required in params and that should be objectId"
 					},
@@ -436,100 +436,7 @@
 							"path": ["v1", "account", "create"]
 						}
 					},
-					"response": [
-						{
-							"name": "Create Account Mentee",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"name": "Content-Type",
-										"value": "application/x-www-form-urlencoded",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"name\": \"Ankit\",\n    \"email\": \"ankitstar00786@mail.com\",\n    \"password\": \"testing\",\n    \"isAMentor\": false\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{mentoringDevBaseUrl}}user/v1/account/create",
-									"host": ["{{mentoringDevBaseUrl}}user"],
-									"path": ["v1", "account", "create"]
-								}
-							},
-							"_postman_previewlanguage": "json",
-							"header": null,
-							"cookie": [],
-							"body": "{\n    \"responseCode\": \"CLIENT_ERROR\",\n    \"message\": \"User already exists.\",\n    \"error\": []\n}"
-						},
-						{
-							"name": "Create Account Mentee",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"ankitstar00786@mail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{mentoringDevBaseUrl}}user/v1/account/create",
-									"host": ["{{mentoringDevBaseUrl}}user"],
-									"path": ["v1", "account", "create"]
-								}
-							},
-							"status": "Not Acceptable",
-							"code": 406,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "X-Powered-By",
-									"value": "Express"
-								},
-								{
-									"key": "Access-Control-Allow-Origin",
-									"value": "*"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json; charset=utf-8"
-								},
-								{
-									"key": "Content-Length",
-									"value": "75"
-								},
-								{
-									"key": "ETag",
-									"value": "W/\"4b-61/K9SPXpN+Tg4KvNfQKS14/5Jw\""
-								},
-								{
-									"key": "Date",
-									"value": "Wed, 18 May 2022 02:30:45 GMT"
-								},
-								{
-									"key": "Connection",
-									"value": "keep-alive"
-								},
-								{
-									"key": "Keep-Alive",
-									"value": "timeout=5"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"responseCode\": \"CLIENT_ERROR\",\n    \"message\": \"User already exists.\",\n    \"error\": []\n}"
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Account Mentor",

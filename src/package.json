@@ -7,13 +7,14 @@
 		"elevate-migrations": "module/migrations/bin/migrations.js"
 	},
 	"scripts": {
-		"test": "jest",
+		"test": "jest --verbose ./test --config=jest.config.js",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
 		"qa": "NODE_ENV=qa node app.js",
 		"prepare": "cd .. && husky install src/.husky",
-		"elevate-migrations": "module/migrations/bin/migrations.js"
+		"elevate-migrations": "module/migrations/bin/migrations.js",
+		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
@@ -29,9 +30,11 @@
 		"cli-table": "^0.3.11",
 		"commander": "^9.4.0",
 		"cors": "^2.8.5",
+		"crypto": "^1.0.1",
 		"csvtojson": "^2.0.10",
 		"dotenv": "^10.0.0",
-		"elevate-node-cache": "^1.0.2",
+		"elevate-node-cache": "^1.0.6",
+		"email-validator": "^2.0.4",
 		"express": "^4.17.1",
 		"express-fileupload": "^1.2.1",
 		"express-validator": "^5.3.1",
@@ -54,6 +57,7 @@
 		"mongoose": "^6.1.6",
 		"mongoose-autopopulate": "^0.16.0",
 		"mongoose-delete": "^0.5.4",
+		"mongoose-lean-getters": "^0.3.5",
 		"mongoose-paginate-v2": "^1.4.2",
 		"mongoose-timestamp": "^0.6.0",
 		"p-each-series": "^2.1.0",
@@ -66,12 +70,19 @@
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
+		"@faker-js/faker": "^7.4.0",
 		"@shelf/jest-mongodb": "^3.0.2",
 		"eslint": "^8.16.0",
 		"husky": "^8.0.1",
+		"jest-html-reporters": "^3.0.11",
+		"jest-json-schema": "^6.1.0",
 		"lint-staged": "^12.4.1",
+		"mocha": "^10.0.0",
 		"nodemon": "^2.0.13",
-		"prettier": "^2.6.2"
+		"prettier": "^2.6.2",
+		"superagent-defaults": "^0.1.14",
+		"supertest": "^6.2.4",
+		"wait-on": "^6.0.1"
 	},
 	"lint-staged": {
 		"../*": "prettier --ignore-unknown --write",

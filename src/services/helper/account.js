@@ -17,10 +17,8 @@ const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const { RedisHelper } = require('elevate-node-cache')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
-const { ConsumerGroup } = require('kafka-node')
 const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
@@ -209,9 +207,6 @@ module.exports = class AccountHelper {
 				lastLoggedInAt: new Date().getTime(),
 			}
 			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
-
-			/* Mongoose schema is in strict mode, so can not delete password directly */
-			user = { ...user._doc }
 			delete user.password
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -572,11 +567,10 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: user._id }, updateParams)
 
-			const deleteData = await utilsHelper.redisDel(bodyData.email.toLowerCase())
+			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
-			delete user._doc.password
-			user = { ...user._doc }
+			delete user.password
 			delete user.otpInfo
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }

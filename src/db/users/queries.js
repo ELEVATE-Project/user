@@ -13,7 +13,10 @@ module.exports = class UsersData {
 	static findOne(filter, projection = {}) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const userData = await Users.findOne(filter, projection)
+				const userData = await Users.findOne(filter, projection).lean({
+					getters: true,
+				})
+
 				resolve(userData)
 			} catch (error) {
 				reject(error)
@@ -24,7 +27,9 @@ module.exports = class UsersData {
 	static findAllUsers(filter, projection = {}) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const usersData = await Users.find(filter, projection)
+				const usersData = await Users.find(filter, projection).lean({
+					getters: true,
+				})
 				resolve(usersData)
 			} catch (error) {
 				reject(error)

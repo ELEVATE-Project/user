@@ -123,16 +123,21 @@ let enviromentVariables = {
 		message: 'Internal Cache Expiry Time',
 		optional: false,
 	},
-	REDIS_CACHE_EXP_TIME: {
-		message: 'Redis Cache Expiry Time',
-		optional: false,
-	},
+
 	RATING_KAFKA_TOPIC: {
 		message: 'Kafka Rating Topic',
 		optional: false,
 	},
 	REDIS_HOST: {
 		message: 'Redis Host Url',
+		optional: false,
+	},
+	KEY: {
+		message: 'Key is missing for email encryption',
+		optional: false,
+	},
+	IV: {
+		message: 'iv is missing for email encryption',
 		optional: false,
 	},
 }

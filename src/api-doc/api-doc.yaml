@@ -616,13 +616,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/createForm400Response'
-  '/user/v1/form/update':
+  '/user/v1/form/update/{formId}':
     patch:
       summary: Update form
       tags:
         - Form APIs
       description: "This API is associated with update form  \n - Then
-        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        Endpoint for update form `/user/v1/form/update/{formId}` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
@@ -633,6 +633,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: 'formId'
+          required: true
+          description: Please append a valid form Id to the Request URL.
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
       requestBody:
         content:
           application.json:
@@ -651,13 +658,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/updateForm400Response'
-  '/user/v1/form/read':
+  '/user/v1/form/read/{formId}':
     get:
       summary: Get form details
       tags:
         - Form APIs
       description: "This API is associated with update form  \n - Then
-        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        Endpoint for update form `/user/v1/form/update/{formId}` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
@@ -668,6 +675,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: 'formId'
+          required: true
+          description: Please append a valid form Id to the Request URL.
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
       requestBody:
         content:
           application.json:
@@ -901,6 +915,7 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
+
 components:
   schemas:
     user:
@@ -1889,7 +1904,6 @@ components:
           - type
           - subType
           - action
-          - ver
           - data
         properties:
           type:
@@ -1901,9 +1915,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           data:
             type: object
             properties:
@@ -1977,7 +1988,6 @@ components:
           - type
           - subType
           - action
-          - ver
           - data
         properties:
           type:
@@ -1989,9 +1999,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           data:
             type: object
             properties:
@@ -2071,9 +2078,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           templateName:
             type: string
             example: defaultTemplate
@@ -2099,9 +2103,6 @@ components:
               action:
                 type: string
                 example: profileFields
-              ver:
-                type: string
-                example: '1.0'
               updatedAt:
                 type: string
                 example: '2022-05-24T23:14:10.080Z'
@@ -2533,6 +2534,7 @@ components:
           error:
             type: array
             example: []
+
   securitySchemes:
     bearer:
       type: apiKey

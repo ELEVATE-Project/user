@@ -1,7 +1,10 @@
 module.exports = {
 	rootDir: '.',
 	roots: ['<rootDir>/'],
-	preset: '@shelf/jest-mongodb',
+	setupFiles: ['dotenv/config'],
+	//globalSetup: './__test__/databaseSetup.js',
+	//globalTeardown: './__test__/databaseTeardown.js',
+	setupFilesAfterEnv: ['./setupFileAfterEnv.js'],
 	moduleNameMapper: {
 		'@root/(.*)': '<rootDir>/$1',
 		'@services/(.*)': '<rootDir>/services/$1',
@@ -11,9 +14,7 @@ module.exports = {
 		'@constants/(.*)': '<rootDir>/constants/$1',
 		'@configs/(.*)': '<rootDir>/configs/$1',
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
+		'@commonTests': '<rootDir>/integration-test/commonTests',
 	},
+	//reporters: ['default', 'jest-html-reporters'],
 }
-process.env = Object.assign(process.env, {
-	KEY: 'g5MQ7HG/r5gPCPQQCwfBBEduAt72ewJIY/gWc0RNoak=',
-	IV: '2lIctRkqzYMWbwlW1jCC9A==',
-})
