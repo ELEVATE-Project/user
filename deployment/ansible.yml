@@ -49,6 +49,8 @@
       command: pm2 delete elevate-mentoring
       ignore_errors: yes
     
+    - name: set permission
+      shell: chmod 744 {{ current_path }}/src/scripts/json2env.sh  
       
     - name: generate .env 
       shell: cat {{ project_path }}/data2.json | {{ current_path }}/src/scripts/json2env.sh > {{ current_path }}/src/.env
