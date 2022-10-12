@@ -13,7 +13,7 @@ describe('Sessions controller and helper test', () => {
 	let sessionAttended
 	let sessionsData
 	let userProfile
-	let { RedisHelper } = require('elevate-node-cache')
+	let { RedisCache } = require('elevate-node-cache')
 
 	beforeAll(async () => {
 		await loadMongo()
@@ -78,7 +78,7 @@ describe('Sessions controller and helper test', () => {
 				image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
 			},
 			meta: {
-				formsVersion: {},
+				formsVersion: [],
 			},
 		}
 
@@ -137,10 +137,10 @@ describe('Sessions controller and helper test', () => {
 			},
 		}
 
-		const mockRedisClientGetKey = jest.spyOn(RedisHelper, 'getKey')
+		const mockRedisClientGetKey = jest.spyOn(RedisCache, 'getKey')
 		mockRedisClientGetKey.mockResolvedValueOnce(false)
 
-		const mockRedisClientSetKey = jest.spyOn(RedisHelper, 'setKey')
+		const mockRedisClientSetKey = jest.spyOn(RedisCache, 'setKey')
 		mockRedisClientSetKey.mockResolvedValueOnce(true)
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)
@@ -152,7 +152,7 @@ describe('Sessions controller and helper test', () => {
 		mockMentorsSessionHosted.mockResolvedValueOnce(2)
 
 		const actual = await mentorsServices.profile('62a820225ff93f30cfe5f990')
-		expect(actual).toEqual(expectedResult)
+		expect(actual.result).toEqual(expectedResult.result)
 	})
 	test('should throw error on mentee profile', async () => {
 		const userProfileApiResponse = {
@@ -210,9 +210,9 @@ describe('Sessions controller and helper test', () => {
 			},
 		}
 
-		const mockRedisClient = jest.spyOn(RedisHelper, 'getKey')
+		const mockRedisClient = jest.spyOn(RedisCache, 'getKey')
 		mockRedisClient.mockResolvedValueOnce(false)
-		const mockRedisClientSetKey = jest.spyOn(RedisHelper, 'setKey')
+		const mockRedisClientSetKey = jest.spyOn(RedisCache, 'setKey')
 		mockRedisClientSetKey.mockResolvedValueOnce(true)
 		const mockUserDetails = jest.spyOn(userProfile, 'details')
 		mockUserDetails.mockResolvedValueOnce(userProfileApiResponse)

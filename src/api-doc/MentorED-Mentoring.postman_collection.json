@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "5b8388a8-e388-440f-a182-01775e345125",
+		"_postman_id": "ad7c5a99-6444-4917-a4d1-ddddc1bbbb2d",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "7997930"
 	},
 	"item": [
 		{
@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"type\": \"session\",\n\t\"subType\": \"createSessionFormhd\",\n\t\"action\": \"sessionFields\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"title\",\n\t\t\t\t\t\"label\": \"title\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 5\n}\n},\n{\n\t\t\t\t\t\"name\": \"categories\",\n\t\t\t\t\t\"label\": \"Select categories\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -53,7 +53,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n\t\"subType\": \"createSessionFormhd\",\n\t\"action\": \"sessionFields\",\n\t\"ver\": \"1.0\",\n    \"templateName\": \"defaultTemplate\"\n}",
+							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -61,9 +61,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read/61ee56ebfc2b962cf281dd01",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "read"]
+							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
 						}
 					},
 					"response": []
@@ -81,7 +81,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"type\": \"session\",\n\t\"subType\": \"createSessionss\",\n\t\"action\": \"sessionField\",\n\t\"ver\": \"1.0\",\n\t\"data\": {\n\t\t\"templateName\": \"defaultTemplate\",\n\t\t\"fields\": {\n\t\t\t\"controls\": [\n\t\t\t\t{\n\t\t\t\t\t\"name\": \"title\",\n\t\t\t\t\t\"label\": \"title\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"text\",\n\t\t\t\t\t\"position\":\"floating\",\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true,\n\t\t\t\t\t\t\"minLength\": 5\n}\n},\n{\n\t\t\t\t\t\"name\": \"categories\",\n\t\t\t\t\t\"label\": \"Select categories\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n},\n{\n\t\t\t\t\t\"name\": \"ages\",\n\t\t\t\t\t\"label\": \"Select age\",\n\t\t\t\t\t\"value\": \"\",\n\t\t\t\t\t\"class\": \"ion-margin\",\n\t\t\t\t\t\"type\": \"chip\",\n\t\t\t\t\t\"position\": \"\",\n\t\t\t\t\t\"disabled\": false,\n\t\t\t\t\t\"showSelectAll\": true,\n\t\t\t\t\t\"validators\": {\n\t\t\t\t\t\t\"required\": true\n}\n}\n]\n}\n}\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -89,9 +89,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update/61ee56ebfc2b962cf281dd01",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "update"]
+							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
 						},
 						"description": "NOTE: Id is required in params and that should be objectId"
 					},
@@ -1099,6 +1099,39 @@
 									"value": "3"
 								}
 							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Issues",
+			"item": [
+				{
+					"name": "Create an issue.",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In hendrerit gravida rutrum quisque non tellus. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Accumsan sit amet nulla facilisi morbi tempus iaculis. Lobortis scelerisque fermentum dui faucibus in.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/issues/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "issues", "create"]
 						}
 					},
 					"response": []

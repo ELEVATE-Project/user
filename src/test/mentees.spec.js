@@ -74,7 +74,7 @@ describe('Sessions controller and helper test', () => {
 				image: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png',
 			},
 			meta: {
-				formsVersion: {},
+				formsVersion: [],
 			},
 		}
 
@@ -139,7 +139,7 @@ describe('Sessions controller and helper test', () => {
 		const menteeSessionAttended = jest.spyOn(sessionAttended, 'countAllSessionAttendees')
 		menteeSessionAttended.mockResolvedValueOnce(2)
 		const actual = await menteesServices.profile('62a820225ff93f30cfe5f990')
-		expect(actual).toEqual(expectedResult)
+		expect(actual.result).toEqual(expectedResult.result)
 	})
 
 	afterAll(async () => {

@@ -51,13 +51,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/createForm400Response'
-  '/mentoring/v1/form/update':
+  '/mentoring/v1/form/update/{formId}':
     patch:
       summary: Update form
       tags:
         - Form APIs
       description: "You can use this API to update a form.  \n -
-        The API Endpoint for updating a form is `/mentoring/v1/form/update` \n - It is mandatory to
+        The API Endpoint for updating a form is `/mentoring/v1/form/update/{formId}` \n - It is mandatory to
         provide values for parameters which are marked as `required` \n - This is a mandatory parameter
         and cannot be empty or null."
       parameters:
@@ -68,6 +68,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: 'formId'
+          required: true
+          description: Please append a valid form Id to the Request URL.
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
       requestBody:
         content:
           application.json:
@@ -86,13 +93,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/updateForm400Response'
-  '/mentoring/v1/form/read':
+  '/mentoring/v1/form/read/{formID}':
     get:
       summary: Get form data
       tags:
         - Form APIs
       description: "You can use this API to read data from a form.  \n -
-        The API Endpoint to read form data is `/mentoring/v1/form/read` \n - It is mandatory to
+        The API Endpoint to read form data is `/mentoring/v1/form/read/{formID}` \n - It is mandatory to
         provide values for parameters which are marked as `required` \n - This is a mandatory parameter
         and cannot be empty or null."
       parameters:
@@ -103,6 +110,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: 'formId'
+          required: true
+          description: Please append a valid form Id to the Request URL.
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
       requestBody:
         content:
           application.json:
@@ -1540,6 +1554,41 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/mentors/shareMentorProfile400Response'
+  '/mentoring/v1/issues/create':
+    post:
+      summary: Report an issue
+      tags:
+        - Issues APIs
+      description: "This Api is associated with reporting issues \n - The
+        Endpoint for creating an issue is `/mentoring/v1/issues/create` \n - It is mandatory to
+        provide values for parameter marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/issues/createRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/issues/createResponse'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/issues/create422Response'
 
 components:
   schemas:
@@ -1550,7 +1599,6 @@ components:
           - type
           - subType
           - action
-          - ver
           - data
         properties:
           type:
@@ -1562,9 +1610,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           data:
             type: object
             properties:
@@ -1638,7 +1683,6 @@ components:
           - type
           - subType
           - action
-          - ver
           - data
         properties:
           type:
@@ -1650,9 +1694,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           data:
             type: object
             properties:
@@ -1732,9 +1773,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           templateName:
             type: string
             example: defaultTemplate
@@ -1760,9 +1798,7 @@ components:
               action:
                 type: string
                 example: profileFields
-              ver:
-                type: string
-                example: '1.0'
+
               updatedAt:
                 type: string
                 example: '2022-05-24T23:14:10.080Z'
@@ -3916,6 +3952,38 @@ components:
           statusCode:
             type: number
             example: 400
+          error:
+            type: array
+            example: []
+    issues:
+      createRequest:
+        type: object
+        description: API for reporting an issue
+        required:
+          - description
+        properties:
+          description:
+            type: string
+            description: Description of the issue faced.
+            example: Sample description of the issue faced
+      createResponse:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Your issue was successfully reported.
+      create422Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Validation failed, Entered data is incorrect!.
           error:
             type: array
             example: []

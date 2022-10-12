@@ -1,5 +1,3 @@
-const endpoints = require('../constants/endpoints')
-const request = require('request')
 module.exports = {
 	async up(db) {
 		global.migrationMsg = 'Session Form Created'
@@ -96,13 +94,13 @@ module.exports = {
 				type: 'session',
 				subType: 'sessionForm',
 				action: 'sessionFields',
-				ver: '1.0',
 				data: {
 					templateName: 'defaultTemplate',
 					fields: {
 						controls: controls,
 					},
 				},
+				__v: 0,
 			}
 			await db.collection('forms').insertOne(formsData)
 		}
