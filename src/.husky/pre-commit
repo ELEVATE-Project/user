@@ -9,4 +9,5 @@ if [ $isUp = 1 ]; then
     npm run test:integration
 else
     echo "Please make sure that user service is running on port 3001"
+    exit 1
 fi
