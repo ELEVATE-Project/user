@@ -2,7 +2,7 @@
 - hosts: elevateDev
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
-    project_path: /opt/backend/test
+    project_path: /opt/backend/deployment
   tasks:
     - name: Slurp hosts file
       slurp:
@@ -64,4 +64,3 @@
          msg: "Pm2 log {{pm2Info}}"
     - name: Delete old dir
       shell: rm -rf {{ release_path }}
-      when: current_release_path.stdout != current_path
