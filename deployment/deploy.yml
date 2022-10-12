@@ -56,7 +56,7 @@
     - debug: msg=" cred {{ envConfig }} "
 
     - name: Start pm2
-      command: "chdir={{current_path}}/src pm2 start app.js --name elevate-mentoring -i 2"
+      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-mentoring"
       register: pm2Info
 
     - name: debug info
