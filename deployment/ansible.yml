@@ -1,0 +1,66 @@
+---
+- hosts: elevateDev
+  vars:
+    #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
+    project_path: /opt/backend/deployment
+  tasks:
+    - name: Slurp hosts file
+      slurp:
+        src: /opt/backend/test/.token
+      register: slurpfile
+    #- debug: msg="{{ slurpfile['content'] | b64decode }}"
+    #- debug: msg="the value of foo.txt is {{ contents }}"
+    - name: Run vault credentials
+      shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/users' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
+}}/data2.json'"
+      register: vaultCurl
+    - name: Set some variable
+      set_fact:
+        release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
+        current_path: "{{ project_path }}/users"
+    - name: Retrieve current release folder
+      command: readlink -f users
+      register: current_release_path
+      ignore_errors: yes
+      args:
+        chdir: "{{ project_path }}"
+    - name: Create new folder
+      file:
+        dest={{ release_path }}
+        mode=0755
+        recurse=yes
+        state=directory
+    - name: Clone the repository
+      git:
+        repo: https://github.com/ELEVATE-Project/user.git
+        dest: "{{ release_path }}"
+        clone: yes
+        update: yes
+        version: dev
+    - name: Update npm
+      shell: cd {{release_path}}/src && npm i
+    
+    - name: Update symlink
+      file:
+        src={{ release_path }}
+        dest={{ current_path }}
+        state=link
+    - name: Delete old pm2 process
+      command: pm2 delete elevate-mentoring
+      ignore_errors: yes
+    
+    - name: set permission
+      shell: chmod 744 {{ current_path }}/src/scripts/json2env.sh  
+      
+    - name: generate .env 
+      shell: cat {{ project_path }}/data2.json | {{ current_path }}/src/scripts/json2env.sh > {{ current_path }}/src/.env
+      register: envConfig 
+    - debug: msg=" cred {{ envConfig }} "
+
+    - name: Start pm2
+      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-notification"
+      register: pm2Info
+
+    - name: debug info
+      debug:
+         msg: "Pm2 log {{pm2Info}}"
