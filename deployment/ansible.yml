@@ -64,5 +64,3 @@
     - name: debug info
       debug:
          msg: "Pm2 log {{pm2Info}}"
-    - name: Delete old dir
-      shell: rm -rf {{ release_path }}
