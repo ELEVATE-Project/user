@@ -19,6 +19,7 @@ describe('/user/v1/account', function () {
 		userEmail = faker.internet.email()
 		password = faker.internet.password()
 	})
+
 	it('/create', async () => {
 		let res = await request.post('/user/v1/account/create').send({
 			name: 'Nevil',
