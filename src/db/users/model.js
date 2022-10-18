@@ -7,8 +7,6 @@
 
 // Dependencies
 const mongoose = require('mongoose')
-// const { encrypt, decrypt } = require('@generics/utils')
-
 const { aes256cbc } = require('elevate-encryption')
 const Schema = mongoose.Schema
 // Adding the package
