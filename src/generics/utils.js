@@ -104,25 +104,6 @@ function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
 
-let key = Buffer.from(process.env.KEY, 'base64')
-let iv = Buffer.from(process.env.IV, 'base64')
-
-function encrypt(text) {
-	let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'base64'), iv)
-	let encrypted = cipher.update(text)
-	encrypted = Buffer.concat([encrypted, cipher.final()])
-	return encrypted.toString('base64')
-}
-
-// Decrypting text
-function decrypt(text) {
-	let encryptedText = Buffer.from(text, 'base64')
-	let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
-	let decrypted = decipher.update(encryptedText)
-	decrypted = Buffer.concat([decrypted, decipher.final()])
-	return decrypted.toString()
-}
-
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -138,6 +119,4 @@ module.exports = {
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
-	encrypt: encrypt,
-	decrypt: decrypt,
 }
