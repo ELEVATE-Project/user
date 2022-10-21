@@ -8,8 +8,8 @@ let defaultHeaders
 const logIn = async () => {
 	try {
 		let request = defaults(supertest('http://localhost:3001'))
-		var waitOn = require('wait-on')
-		var opts = {
+		let waitOn = require('wait-on')
+		let opts = {
 			resources: [baseURL],
 			delay: 1000, // initial delay in ms, default 0
 			interval: 500, // poll interval in ms, default 250ms

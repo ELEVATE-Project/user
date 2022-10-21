@@ -33,6 +33,7 @@ afterAll(async () => {
 	try {
 		await db.dropDatabase()
 		await db.close()
+		mongoose.disconnect()
 	} catch (error) {
 		console.log(error)
 	}

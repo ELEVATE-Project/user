@@ -16,7 +16,6 @@ const insertEntity = async () => {
 		await entitiesData.createEntity(bodyData)
 		const entity = await entitiesData.findOneEntity(type, value)
 		return entity._id.valueOf()
-		console.log(entity)
 	} catch (error) {
 		console.error(error)
 	}
