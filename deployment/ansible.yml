@@ -6,7 +6,7 @@
   tasks:
     - name: Slurp hosts file
       slurp:
-        src: /opt/backend/test/.token
+        src: "{{ project_path }}/.token"
       register: slurpfile
     #- debug: msg="{{ slurpfile['content'] | b64decode }}"
     #- debug: msg="the value of foo.txt is {{ contents }}"
