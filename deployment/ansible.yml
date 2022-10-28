@@ -1,5 +1,5 @@
 ---
-- hosts: elevateDev
+- hosts: elevate
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
@@ -36,7 +36,7 @@
         dest: "{{ release_path }}"
         clone: yes
         update: yes
-        version: dev
+        version: {{ gitBranch }}
     - name: Update npm
       shell: cd {{release_path}}/src && npm i
     
