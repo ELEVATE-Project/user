@@ -46,7 +46,7 @@
         dest={{ current_path }}
         state=link
     - name: Delete old pm2 process
-      command: pm2 delete elevate-mentoring
+      command: pm2 delete elevate-user
       ignore_errors: yes
     
     - name: set permission
@@ -58,7 +58,7 @@
     - debug: msg=" cred {{ envConfig }} "
 
     - name: Start pm2
-      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-notification"
+      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-user"
       register: pm2Info
 
     - name: debug info
