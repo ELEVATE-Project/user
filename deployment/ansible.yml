@@ -36,7 +36,7 @@
         dest: "{{ release_path }}"
         clone: yes
         update: yes
-        version: {{ gitBranch }}
+        version: "{{ gitBranch }}"
     - name: Update npm
       shell: cd {{release_path}}/src && npm i
     
