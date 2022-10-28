@@ -1,5 +1,5 @@
 ---
-- hosts: elevateDev
+- hosts: elevate
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
@@ -36,7 +36,7 @@
         dest: "{{ release_path }}"
         clone: yes
         update: yes
-        version: dev
+        version: "{{ gitBranch }}"
     - name: Update npm
       shell: cd {{release_path}}/src && npm i
     
@@ -46,7 +46,7 @@
         dest={{ current_path }}
         state=link
     - name: Delete old pm2 process
-      command: pm2 delete elevate-mentoring
+      command: pm2 delete elevate-notification
       ignore_errors: yes
     
     - name: set permission
