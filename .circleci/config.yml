@@ -29,7 +29,7 @@ jobs:
           name: Executing unit test cases
           command: cd src && npm test -- --collectCoverage --collectCoverageFrom="services/helper/*"
       - store_artifacts:
-          path: coverage
+          path: src/coverage/
 workflows:
   build-and-test: # This is the name of the workflow,
     # Inside the workflow, you define the jobs you want to run.
