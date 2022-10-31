@@ -27,7 +27,7 @@ jobs:
           path: ./dev-ops/report
       - run:
           name: Executing unit test cases
-          command: cd src && npm run test
+          command: cd src && npm test -- --collectCoverage --collectCoverageFrom="services/helper/*"
 workflows:
   build-and-test: # This is the name of the workflow,
     # Inside the workflow, you define the jobs you want to run.
