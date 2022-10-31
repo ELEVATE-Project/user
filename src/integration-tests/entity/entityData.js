@@ -4,6 +4,7 @@ const { faker } = require('@faker-js/faker')
 let bodyData
 
 const insertEntity = async () => {
+	//insert an entity
 	try {
 		const [value, label, type] = [faker.random.alpha(5), faker.random.alpha(5), faker.random.alpha(5)]
 		bodyData = {
