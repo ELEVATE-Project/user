@@ -8,12 +8,12 @@ jobs:
     steps:
       - run:
           name: Cloning user service
-          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm i
+          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src &&
       - checkout:
           path: ~/src/
       - run:
           name: Install dependencies
-          command: cd ../src/ && ls && cd src/ && npm install
+          command: cd ../src/ && ls && cd src/ 
       - run:
           name: Checking prerequisites
           command: |-
