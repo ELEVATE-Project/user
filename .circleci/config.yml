@@ -25,7 +25,7 @@ jobs:
       - run:
           name: Running test cases
           command: |-
-            cd src/ &&  npm run test:integration
+            cd ../ && ls && cd src/ && pwd && cd src/ &&  npm run test:integration
       - store_test_results:
           path: ./dev-ops/report
       - run:
