@@ -73,10 +73,10 @@ services:
     env_file:
       - integration_test.mentoring.env
   user:
-    build: '../../user/'
+    build: '../../project/user/'
     image: elevate/user:1.0
     volumes:
-      - ../../user/src/:/var/src
+      - ../../project/user/src/:/var/src
     ports:
       - '3001:3001'
     command: [ 'nodemon', 'app.js' ]
