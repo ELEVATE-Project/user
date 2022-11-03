@@ -1,33 +1,38 @@
-# This config is equivalent to both the '.circleci/extended/orb-free.yml' and the base '.circleci/config.yml'
-version: 2.1
-
-# Orbs are reusable packages of CircleCI configuration that you may share across projects, enabling you to create encapsulated, parameterized commands, jobs, and executors that can be used across multiple projects.
-# See: https://circleci.com/docs/2.0/orb-intro/
-orbs:
-  node: circleci/node@4.7
-
+version: 2.1 # CircleCI version
 jobs:
-   test-cases:
-          docker:
-            - image: cimg/node:16.10
-          working_directory: ~/src/
-          steps:
-            - checkout:
-                path: ~/src/
-            - run: 
-                name: Installing prerequisites
-                command: |-
-                  node --version
-            - run:
-                name: Executing test cases
-                command: cd src && npm install && npm run test
-              
-
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+  build:
+    machine: #Linux machine instead of docker environment
+      image: ubuntu-2004:202111-01
+      docker_layer_caching: true
+    #working_directory: ~/src # Default working directory
+    steps:
+      - checkout:
+          path: ~/src/
+      - run:
+          name: Install dependencies
+          command: cd ../src/ && pwd && cd src/
+      - run:
+          name: Checking prerequisites
+          command: |-
+            docker-compose --version
+      - run:
+          name: Cloning user service
+          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && pwd
+      - run:
+          name: Starting the docker containers
+          command: |-
+            cd ../ && ls && cd src/ && pwd && cd dev-ops/ && ls && docker-compose up -d
+      - run:
+          name: Running test cases
+          command: |-
+            cd src/ &&  npm run test:integration
+      - store_test_results:
+          path: ./dev-ops/report
+      - run:
+          name: Executing unit test cases
+          command: cd src && npm run test
 workflows:
-  buil-and-test: # This is the name of the workflow, feel free to change it to better match your workflow.
+  build-and-test: # This is the name of the workflow,
     # Inside the workflow, you define the jobs you want to run.
     jobs:
-      - test-cases
-
+      - build
