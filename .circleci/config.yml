@@ -13,7 +13,7 @@ jobs:
           path: ~/mentoring
       - run:
           name: Install dependencies
-          command: cd src/ && npm install
+          command: pwd && ls && cd src/ && npm install
       - run:
           name: Checking prerequisites
           command: |-
