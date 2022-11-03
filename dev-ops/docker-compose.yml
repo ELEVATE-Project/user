@@ -59,7 +59,7 @@ services:
       - ../src/:/var/src
     ports:
       - '3000:3000'
-    command: ['node', 'app.js']
+    command: [ 'node', 'app.js' ]
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
@@ -70,6 +70,8 @@ services:
       - mongo
     networks:
       - elevate_net
+    env_file:
+      - integration_test.mentoring.env
   user:
     build: '../../user/'
     image: elevate/user:1.0
@@ -77,7 +79,7 @@ services:
       - ../../user/src/:/var/src
     ports:
       - '3001:3001'
-    command: ['nodemon', 'app.js']
+    command: [ 'nodemon', 'app.js' ]
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
@@ -88,21 +90,8 @@ services:
       - redis
     networks:
       - elevate_net
-  notification:
-    build: '../../notification/'
-    image: elevate/notification:1.0
-    volumes:
-      - ../../notification/src/:/var/src
-    ports:
-      - '3002:3002'
-    command: ['nodemon', 'app.js']
-    environment:
-      - KAFKA_HOST=kafka:9092
-    depends_on:
-      - kafka
-      - mongo
-    networks:
-      - elevate_net
+    env_file:
+      - integration_test.user.env
 networks:
   elevate_net:
     external: false
