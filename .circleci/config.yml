@@ -8,7 +8,7 @@ jobs:
     steps:
       - run:
           name: Cloning user service
-          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src &&
+          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src
       - checkout:
           path: ~/src/
       - run:
