@@ -21,7 +21,7 @@ jobs:
       - run:
           name: Starting the docker containers
           command: |-
-            cd ../ && ls && cd mentoring/ && cd ../mentoring/dev-ops/ && ls && docker-compose up -d
+            cd ../ && ls && cd mentoring/ && ls && cd ../mentoring/dev-ops/ && ls && docker-compose up -d
       - run:
           name: Running test cases
           command: |-
