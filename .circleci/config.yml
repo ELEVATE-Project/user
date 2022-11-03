@@ -6,9 +6,6 @@ jobs:
       docker_layer_caching: true
     #working_directory: ~/src # Default working directory
     steps:
-      - run:
-          name: Cloning user service
-          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src
       - checkout:
           path: ~/src/
       - run:
@@ -18,6 +15,9 @@ jobs:
           name: Checking prerequisites
           command: |-
             docker-compose --version
+      - run:
+          name: Cloning user service
+          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src
       - run:
           name: Starting the docker containers
           command: |-
