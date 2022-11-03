@@ -13,7 +13,7 @@ jobs:
                 path: ~/src/
       - run:
           name: Install dependencies
-          command: pwd && cd ../ && ls && cd src/ && npm install
+          command: cd ../src/ && ls && cd src/ && npm install
       - run:
           name: Checking prerequisites
           command: |-
