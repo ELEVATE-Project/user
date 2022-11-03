@@ -10,14 +10,14 @@ jobs:
           path: ~/src/
       - run:
           name: Install dependencies
-          command: cd ../src/ && pwd && cd src/
+          command: cd ../src/ && pwd && cd src/ && npm i
       - run:
           name: Checking prerequisites
           command: |-
             docker-compose --version
       - run:
           name: Cloning user service
-          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && pwd
+          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm i
       - run:
           name: Starting the docker containers
           command: |-
