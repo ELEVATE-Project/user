@@ -4,10 +4,10 @@ jobs:
     machine: #Linux machine instead of docker environment
       image: ubuntu-2004:202111-01
       docker_layer_caching: true
-    working_directory: ~/user # Default working directory
+    working_directory: ~/mentoring # Default working directory
     steps:
       - run:
-          name: Clone user service
+          name: Cloning user service
           command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm i
       - checkout:
           path: ~/src/
