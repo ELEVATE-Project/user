@@ -10,7 +10,7 @@ jobs:
           path: ~/mentoring/
       - run:
           name: Install dependencies
-          command: cd src/ && npm install #cd ../src/ && pwd && 
+          command: cd src/ && npm install #cd ../src/ && pwd &&
       - run:
           name: Checking prerequisites
           command: |-
@@ -20,17 +20,18 @@ jobs:
           command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm install
       - run:
           name: Starting the docker containers
-          command: |-
-            cd ../ && ls && cd src/ && pwd && cd dev-ops/ && ls && docker-compose up -d
+          command:
+            |- #cd ../ && ls && cd src/ && pwd && cd dev-ops/ && ls && docker-compose up -d
+            cd dev-ops/ && docker-compose up -d
       - run:
           name: Running test cases
           command: |-
-            cd ../ && ls && cd src/ && pwd && cd src/ &&  npm run test:integration
+            cd src/ &&  npm run test:integration
       - store_test_results:
           path: ./dev-ops/report
       - run:
           name: Executing unit test cases
-          command: cd ../ && ls && cd src/ && pwd && cd src/ && npm run test
+          command: cd src/ && npm run test
 workflows:
   build-and-test: # This is the name of the workflow,
     # Inside the workflow, you define the jobs you want to run.
