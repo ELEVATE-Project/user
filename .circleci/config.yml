@@ -4,13 +4,13 @@ jobs:
     machine: #Linux machine instead of docker environment
       image: ubuntu-2004:202111-01
       docker_layer_caching: true
-    #working_directory: ~/src # Default working directory
+    working_directory: ~/mentoring # Default working directory
     steps:
       - checkout:
-          path: ~/src/
+          path: ~/mentoring/
       - run:
           name: Install dependencies
-          command: cd ../src/ && pwd && cd src/ && npm install
+          command: cd src/ && npm install #cd ../src/ && pwd && 
       - run:
           name: Checking prerequisites
           command: |-
