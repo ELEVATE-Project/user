@@ -16,13 +16,9 @@ module.exports = {
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
 		'@commonTests': '<rootDir>/integration-tests/commonTests',
 	},
-
-	/* 	reporters: ['default', ['jest-junit', { suiteName: 'jest tests', outputDirectory: '../dev-ops/report' }]],
-	 */
+	reporters: ['default', ['jest-junit', { suiteName: 'jest tests', outputDirectory: '../dev-ops/report' }]],
 }
 /* Add env variables used by jest here because jest do not have access to app or docker env files.
 Make sure the values match with ./dev-ops/integration_test.env */
 
-process.env = Object.assign(process.env, {
-	APPLICATION_PORT: 3333,
-})
+process.env = Object.assign(process.env, {})
