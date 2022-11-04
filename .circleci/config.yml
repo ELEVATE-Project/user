@@ -17,7 +17,7 @@ jobs:
             docker-compose --version
       - run:
           name: Cloning user service
-          command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm install
+          command: pwd && git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm install
       - run:
           name: Starting the docker containers
           command: |-
