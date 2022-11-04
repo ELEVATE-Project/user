@@ -20,8 +20,7 @@ jobs:
           command: git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch && cd user/src && npm install
       - run:
           name: Starting the docker containers
-          command:
-            |- #cd ../ && ls && cd src/ && pwd && cd dev-ops/ && ls && docker-compose up -d
+          command: |-
             cd dev-ops/ && docker-compose up -d
       - run:
           name: Running test cases
