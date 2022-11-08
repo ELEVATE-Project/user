@@ -209,9 +209,9 @@ module.exports = class Sessions {
 	async getRecording(req) {
 		try {
 			const recording = await sessionsHelper.getRecording(req.params.id)
-			return resolve(recording)
+			return recording
 		} catch (error) {
-			return reject(error)
+			return error
 		}
 	}
 
