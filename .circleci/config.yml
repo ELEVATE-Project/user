@@ -1,4 +1,6 @@
 version: 2.1 # CircleCI version
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.1.1
 jobs:
   build:
     machine: #Linux machine instead of docker environment
@@ -11,6 +13,13 @@ jobs:
       - run:
           name: Install dependencies
           command: cd src/ && npm install
+      - run:
+          name: Executing unit test cases
+          command: cd src && npm test -- --collectCoverage --collectCoverageFrom="services/helper/*"
+      - store_artifacts:
+          path: src/coverage/
+          destination: /coverage/
+      - sonarcloud/scan
       - run:
           name: Installing prerequisites
           command: |-
@@ -25,11 +34,7 @@ jobs:
             cd src/ &&  npm run test:integration
       - store_test_results:
           path: ./dev-ops/report
-      - run:
-          name: Executing unit test cases
-          command: cd src && npm test -- --collectCoverage --collectCoverageFrom="services/helper/*"
-      - store_artifacts:
-          path: src/coverage/
+
 workflows:
   build-and-test: # This is the name of the workflow,
     # Inside the workflow, you define the jobs you want to run.
