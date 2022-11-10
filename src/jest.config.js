@@ -10,4 +10,13 @@ module.exports = {
 		'@generics/(.*)': '<rootDir>/generics/$1',
 		'@constants/(.*)': '<rootDir>/constants/$1',
 	},
+	/* 	collectCoverageFrom: ['./services/**'],
+	coverageThreshold: {
+		global: {
+			branches: 1,
+			functions: 1,
+			lines: 1,
+			statements: 1,
+		},
+	}, */
 }
