@@ -143,6 +143,26 @@ let enviromentVariables = {
 		message: 'Big blue button session end url.',
 		optional: false,
 	},
+	OCI_ACCESS_KEY_ID: {
+		message: 'Required oci access key id',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_SECRET_ACCESS_KEY: {
+		message: 'Required oci secret access key',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_BUCKET_REGION: {
+		message: 'Required oci bucket region',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_BUCKET_ENDPOINT: {
+		message: 'Required oci bucket endpoint',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	DEFAULT_OCI_BUCKET_NAME: {
+		message: 'Required oci bucket name',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	}
 }
 
 let success = true

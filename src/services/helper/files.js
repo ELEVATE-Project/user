@@ -12,7 +12,6 @@ module.exports = class FilesHelper {
 			} else {
 				destFilePath = `session/${_id}-${new Date().getTime()}-${fileName}`
 			}
-
 			let response
 			if (process.env.CLOUD_STORAGE === 'GCP') {
 				response = await cloudServices.getGcpSignedUrl(destFilePath)
@@ -20,7 +19,10 @@ module.exports = class FilesHelper {
 				response = await cloudServices.getAwsSignedUrl(destFilePath)
 			} else if (process.env.CLOUD_STORAGE === 'AZURE') {
 				response = await cloudServices.getAzureSignedUrl(destFilePath)
+			} else if (process.env.CLOUD_STORAGE === 'OCI') {
+				response = await cloudServices.getOciSignedUrl(destFilePath)
 			}
+
 			response.destFilePath = destFilePath
 
 			return common.successResponse({

@@ -16,6 +16,8 @@ module.exports = class CloudServices {
 	 */
 	async getSignedUrl(req) {
 		try {
+
+			console.log("req",req.params);
 			const signedUrlResponse = await filesHelpers.getSignedUrl(
 				req.query.fileName,
 				req.decodedToken._id,
