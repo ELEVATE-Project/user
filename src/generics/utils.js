@@ -9,7 +9,7 @@ const bcryptJs = require('bcryptjs')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
+const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
@@ -69,6 +69,13 @@ const getDownloadableUrl = async (imgPath) => {
 			accountKey: process.env.AZURE_ACCOUNT_KEY,
 		}
 		imgPath = await AzureFileHelper.getDownloadableUrl(options)
+	} else if (process.env.CLOUD_STORAGE === 'OCI') {
+		const options = {
+			destFilePath: imgPath,
+			bucketName: process.env.DEFAULT_OCI_BUCKET_NAME,
+			endpoint: process.env.OCI_BUCKET_ENDPOINT,
+		}
+		imgPath = await OciFileHelper.getDownloadableUrl(options)
 	}
 	return imgPath
 }
