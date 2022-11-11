@@ -11,12 +11,12 @@ jobs:
       - checkout:
           path: ~/mentoring/
       - restore_cache:
-          key: mentoring-dependency-cache-{{ checksum "package.json" }}
+          key: mentoring-dependency-cache-{{ checksum "src/package.json" }}
       - run:
           name: Install dependencies
           command: cd src/ && npm install #cd ../src/ && pwd &&
       - save_cache:
-          key: mentoring-dependency-cache-{{checksum "package.json"}}
+          key: mentoring-dependency-cache-{{checksum "src/package.json"}}
           paths:
             - ./src/node_modules
       - run:
