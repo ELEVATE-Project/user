@@ -32,7 +32,7 @@ jobs:
             docker-compose --version
       - run:
           name: Cloning user service
-          command: cd ../ && git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch #&& cd user/src && npm install
+          command: cd ../ && git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch
       - restore_cache:
           key: user-dependency-cache-{{ checksum "../user/src/package.json" }}
       - run:
