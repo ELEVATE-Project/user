@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const mock = require('./mock')
-
+const { aes256cbc } = require('elevate-encryption')
 async function loadMongo() {
 	let db = await mongoose.connect(global.__MONGO_URI__ + global.mongoDBName, {
 		useNewUrlParser: true,
@@ -20,6 +20,7 @@ describe('Account controller and helper test', () => {
 		accountService = require('@services/helper/account')
 		controller = require('@controllers/v1/account')
 		userModel = require('@db/users/queries')
+		aes256cbc.init(process.env.KEY, process.env.IV)
 		return
 	})
 
