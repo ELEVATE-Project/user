@@ -27,7 +27,7 @@ jobs:
           destination: /coverage/
       - sonarcloud/scan
       - run:
-          name: Installing prerequisites
+          name: Checking prerequisites
           command: |-
             docker-compose --version
       - run:
