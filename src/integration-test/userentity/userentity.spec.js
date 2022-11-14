@@ -19,7 +19,7 @@ describe('End point test for', function () {
 	})
 
 	it('creating user entity', async () => {
-		let value = faker.word.adjective()
+		let value = faker.random.alpha(5)
 
 		let res = await request
 			.post('/user/v1/userentity/create')
