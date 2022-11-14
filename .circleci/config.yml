@@ -10,9 +10,15 @@ jobs:
     steps:
       - checkout:
           path: ~/user
+      - restore_cache:
+          key: user-dependency-cache-{{ checksum "src/package.json" }}
       - run:
           name: Install dependencies
           command: cd src/ && npm install
+      - save_cache:
+          key: user-dependency-cache-{{checksum "src/package.json"}}
+          paths:
+            - ./src/node_modules
       - run:
           name: Executing unit test cases
           command: cd src && npm test -- --collectCoverage --collectCoverageFrom="services/helper/*"
