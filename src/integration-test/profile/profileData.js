@@ -18,18 +18,7 @@ const insertMentor = async () => {
 		}
 		bodyData.password = utilsHelper.hashPassword(bodyData.password)
 		await usersData.createUser(bodyData)
-		const projection = {
-			password: 0,
-			refreshTokens: 0,
-			'designation.deleted': 0,
-			'designation._id': 0,
-			'areasOfExpertise.deleted': 0,
-			'areasOfExpertise._id': 0,
-			'location.deleted': 0,
-			'location._id': 0,
-			otpInfo: 0,
-		}
-		let user = await usersData.findOne({ 'email.address': email }, projection)
+		let user = await usersData.findOne({ 'email.address': email }, {})
 		return user._id.valueOf()
 	} catch (error) {
 		console.error(error)

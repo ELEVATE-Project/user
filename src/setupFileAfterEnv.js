@@ -10,10 +10,6 @@ const db = mongoose.createConnection('mongodb://127.0.0.1:27017/elevate-mentorin
 	useNewUrlParser: true,
 })
 
-/* const db = mongoose.createConnection(process.env.MONGODB_URL, {
-	useNewUrlParser: true,
-}) */
-
 db.on('error', function () {
 	console.log('Database connection error:')
 })

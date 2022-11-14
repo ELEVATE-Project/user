@@ -5,8 +5,8 @@ let res, bodyData
 const insertEntity = async () => {
 	try {
 		bodyData = {
-			value: faker.word.adjective(),
-			label: faker.word.adjective(),
+			value: faker.random.alpha(5),
+			label: faker.random.alpha(5),
 			type: 'roles',
 			updatedBy: faker.database.mongodbObjectId(),
 			createdBy: faker.database.mongodbObjectId(),

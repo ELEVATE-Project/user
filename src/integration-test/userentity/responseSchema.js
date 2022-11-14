@@ -62,7 +62,7 @@ const createEntitySchema = {
 			type: 'object',
 			properties: {
 				formsVersion: {
-					type: 'object',
+					type: 'array',
 				},
 			},
 			required: ['formsVersion'],
