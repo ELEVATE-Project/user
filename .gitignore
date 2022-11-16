@@ -77,3 +77,4 @@ gcp1.json
 # Ignore jest config
 src/globalConfig.json
 
+dev-ops/report
