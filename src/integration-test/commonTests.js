@@ -3,6 +3,7 @@ var supertest = require('supertest') //require supertest
 var defaults = require('superagent-defaults')
 const { faker } = require('@faker-js/faker')
 const crypto = require('crypto')
+require('@configs/aes256cbc')()
 
 const request = defaults(supertest(baseURL)) //supertest hits the HTTP server (your app)
 let defaultHeaders
