@@ -6,65 +6,47 @@
  */
 
 const utils = require('@generics/utils')
-const Kafka = require('kafka-node')
+const { Kafka } = require('kafkajs')
 
 module.exports = () => {
-	const Producer = Kafka.Producer
-	const KafkaClient = new Kafka.KafkaClient({
-		kafkaHost: process.env.KAFKA_URL,
-	})
-	const producer = new Producer(KafkaClient)
 
-	/* Uncomment while writing consuming actions for this service */
-	// const Consumer = Kafka.Consumer;
-	// const consumer = new Consumer(KafkaClient, [ { topic: process.env.KAFKA_TOPIC } ], { autoCommit: true, groupId: process.env.KAFKA_GROUP_ID })
-
-	/* Registered events */
-
-	KafkaClient.on('error', (error) => {
-		console.log('Kafka connection error: ', error)
+	const kafkaIps = process.env.KAFKA_URL.split(',')
+	const KafkaClient = new Kafka({
+		clientId: 'mentoring',
+		brokers: kafkaIps,
 	})
 
-	KafkaClient.on('connect', () => {
-		console.log('Connected to kafka client')
+	const producer = KafkaClient.producer()
+	const consumer = KafkaClient.consumer({ groupId: process.env.KAFKA_GROUP_ID })
+
+	await producer.connect()
+	await consumer.connect()
+
+	producer.on('producer.connect', () => {
+		console.log(`KafkaProvider: connected`)
+	})
+	producer.on('producer.disconnect', () => {
+		console.log(`KafkaProvider: could not connect`)
 	})
 
-	producer.on('error', (error) => {
-		console.log('Kafka producer intialization error: ', error)
-	})
-
-	producer.on('ready', () => {
-		console.log('Producer intialized successfully')
-	})
-
-	const consumer = new Kafka.ConsumerGroup(
-		{
-			kafkaHost: process.env.KAFKA_URL,
-			groupId: process.env.KAFKA_GROUP_ID,
-			autoCommit: true,
-		},
-		process.env.CLEAR_INTERNAL_CACHE
-	)
-
-	consumer.on('message', async function (message) {
-		try {
-			let streamingData = JSON.parse(message.value)
-			if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
-				utils.internalDel(streamingData.value)
-			}
-		} catch (error) {
-			throw error
-		}
-	})
-
-	// consumer.on('error', error => {
-	//     console.log('Kafka consumer intialization error: ', error);
-	// });
-
-	// consumer.on('message', message => {
-	//     // perform action using message
-	// });
+	const subscribeToConsumer = async () => {
+		await consumer.subscribe({ topics: [ process.env.CLEAR_INTERNAL_CACHE] })
+		await consumer.run({
+			eachMessage: async ({ topic, partition, message }) => {
+				try {
+					let streamingData = JSON.parse(message.value)
+					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
+						utils.internalDel(streamingData.value)
+					}
+				} catch (error) {
+					throw error
+				}
+			},
+		})
+	}
+	subscribeToConsumer()
 
 	global.kafkaProducer = producer
 	global.kafkaClient = KafkaClient
+	
 }
