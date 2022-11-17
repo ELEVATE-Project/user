@@ -8,6 +8,7 @@
 // Dependencies
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const mongooseLeanGetter = require('mongoose-lean-getters')
 
 const userSchema = new Schema({
 	email: {
@@ -33,7 +34,7 @@ const userSchema = new Schema({
 	},
 	role: String,
 })
-
+userSchema.plugin(mongooseLeanGetter)
 const SystemUsers = db.model('systemUsers', userSchema, 'systemUsers')
 
 module.exports = SystemUsers
