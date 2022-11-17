@@ -8,7 +8,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const ObjectId = mongoose.Types.ObjectId
-
+const mongooseLeanGetter = require('mongoose-lean-getters')
 let sessionAttendeesSchema = new Schema({
 	userId: {
 		type: ObjectId,
@@ -44,6 +44,6 @@ let sessionAttendeesSchema = new Schema({
 		default: false,
 	},
 })
-
+sessionAttendeesSchema.plugin(mongooseLeanGetter)
 const SessionAttendes = db.model('sessionAttendees', sessionAttendeesSchema, 'sessionAttendees')
 module.exports = SessionAttendes

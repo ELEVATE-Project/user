@@ -8,7 +8,7 @@
 const mongoose = require('mongoose')
 const { feedback } = require('@services/helper/sessions')
 const Schema = mongoose.Schema
-
+const mongooseLeanGetter = require('mongoose-lean-getters')
 const questionsSetSchema = new Schema({
 	questions: {
 		type: Array,
@@ -28,7 +28,7 @@ const questionsSetSchema = new Schema({
 		default: 'published',
 	},
 })
-
+questionsSetSchema.plugin(mongooseLeanGetter)
 const QuestionsSet = db.model('questionSet', questionsSetSchema, 'questionSet')
 
 module.exports = QuestionsSet

@@ -7,7 +7,7 @@
 
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-
+const mongooseLeanGetter = require('mongoose-lean-getters')
 const formSchema = new Schema({
 	type: {
 		type: String,
@@ -33,7 +33,7 @@ const formSchema = new Schema({
 		},
 	},
 })
-
+formSchema.plugin(mongooseLeanGetter)
 formSchema.pre('updateOne', function () {
 	const update = this.getUpdate()
 

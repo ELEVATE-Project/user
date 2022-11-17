@@ -201,6 +201,7 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			console.log(sessionInfo)
 
 			if (isAMentor && feedbackAs === 'mentor') {
 				if (
