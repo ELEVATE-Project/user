@@ -1,16 +1,63 @@
+<div align="center">
+
 # Mentoring Service
 
-## Setup Options
+<a href="https://shikshalokam.org/elevate/">
+<img
+    src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
+    height="140"
+    width="300"
+  />
+</a>
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/mentoring/tree/dev.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/mentoring/tree/master)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=duplicated_lines_density&branch=master)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io)
+[![Docs](https://img.shields.io/badge/Docs-success-informational)](https://dev.elevate-apis.shikshalokam.org/user/api-doc)
+
+![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/user?filename=src%2Fpackage.json)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+<details><summary>dev</summary>
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/mentoring/tree/dev.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/mentoring/tree/dev)
+![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/user/dev?filename=src%2Fpackage.json)
+
+<!-- [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=duplicated_lines_density&branch=dev)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=coverage&branch=dev)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=vulnerabilities&branch=revert-77-integration-test)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring) -->
+
+</details>
+
+</br>
+The Mentoring building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities
+
+</div>
+<!-- [![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/mentoring/tree/dev.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/mentoring/tree/dev)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=duplicated_lines_density&branch=master)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+<a href="https://shikshalokam.org/elevate/">
+<img
+    src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
+    height="140"
+    width="300"
+   align="right"
+  />
+</a>
+(Dev)
+ -->
+
+# Setup Options
 
 Elevate services can be setup in local using three methods:
 
-1. Docker-Compose File (Easiest): Refer **Section A**.
-2. Dockerized service with local dependencies(Intermediate): Refer **Section B**.
-3. Local Service with local dependencies(Hardest): Refer **Section C**.
+<details><summary>Docker-Compose File (Easiest)</summary>
 
 ## A. Docker-Compose
 
-**Expectation**: Run all services at the same time with a common **Docker-Compose** file.
+**Expectation**: Run all services simultaneously with a common **Docker-Compose** file.
 
 ### Steps
 
@@ -31,15 +78,19 @@ Elevate services can be setup in local using three methods:
 
 4.  To remove all containers & networks:
 
-    ```
-    ELEVATE/mentoring$ docker-compose down
-    ```
+            ```
+            ELEVATE/mentoring$ docker-compose down
+            ```
 
-    Refer **Docker-Compose README** for more information.
+            Refer **Docker-Compose README** for more information.
 
-    **Note:** It isn't always necessary to run **down** command. Existing containers and networks can be stopped gracefully by using **Ctrl + C** key combination.
+            **Note:** It isn't always necessary to run **down** command. Existing containers and networks can be stopped gracefully by using **Ctrl + C** key combination.
 
-    **Warning:** Do not use docker-compose in production.
+            **Warning:** Do not use docker-compose in production.
+
+</details>
+
+<details><summary>Dockerized service with local dependencies(Intermediate)</summary>
 
 ## B. Dockerized Service With Local Dependencies
 
@@ -93,7 +144,7 @@ Elevate services can be setup in local using three methods:
 
 ### Remote Dependencies Steps
 
-1. Update dependency (Mongo, Kafka etc) Ip addresses in .env with respective remote server IPs.
+1.  Update dependency (Mongo, Kafka etc) Ip addresses in .env with respective remote server IPs.
 
     Eg:
 
@@ -105,25 +156,29 @@ Elevate services can be setup in local using three methods:
      KAFKA_URL = 11.2.3.45:9092
     ```
 
-2. Add Bind IP to **mongod.conf** in host:
+2.  Add Bind IP to **mongod.conf** in host:
 
-    Follow instructions given [here.](https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04)
+    Follow the instructions given [here.](https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04)
 
     Note: Instructions might differ based on MongoDB version and operating system.
 
-3. Build the docker image.
+3.  Build the docker image.
     ```
     /ELEVATE/mentoring$ docker build -t elevate/mentoring:1.0 .
     ```
-4. Run the docker container.
+4.  Run the docker container.
 
-    ```
-    $ docker run --name mentoring elevate/mentoring:1.0
-    ```
+        ```
+        $ docker run --name mentoring elevate/mentoring:1.0
+        ```
+
+</details>
+
+<details><summary>Local Service with local dependencies(Hardest)</summary>
 
 ## C. Local Service With Local Dependencies
 
-**Expectation**: Run single service with existing local dependencies in host (**Non-Docker Implementation**).
+**Expectation**: Run a single service with existing local dependencies in the host (**Non-Docker Implementation**).
 
 ### Steps
 
@@ -259,26 +314,137 @@ Elevate services can be setup in local using three methods:
 
 7. To set scheduler service job
 
-    Run the **schedulerScript** file from scripts directory:
+    Run the **schedulerScript** file from the scripts directory:
 
     ```
     ELEVATE/mentoring/src/scripts$ node schedulerScript.js
     ```
 
-## Migrations Commands
+</details>
+
+</br>
+
+# Tech stack
+
+-   Node
+-   Kafka
+-   Jest
+-   MongoDB
+-   Redis
+
+# Scripts
+
+## Scheduler
+
+To run the scheduler scripts
+
+```bash
+cd src/scripts
+```
+
+```bash
+node schedulerScript.js
+```
+
+We have a dedicated [scheduler](https://github.com/ELEVATE-Project/scheduler) service running.
+
+# Migrations Commands
 
 ### Check migrations
 
-    npm run elevate-migrations s
+```bash
+npm run elevate-migrations s
+```
 
 ### Create migrations
 
-    npm run elevate-migrations create <migration-name>
+```bash
+npm run elevate-migrations create categoryEntity #Where categoryEntity is the file name.
+```
+
+<details><summary>20220726145008-categoryEntity.js</summary>
+
+We have followed the following structure for migration files to reduce code duplication.
+
+```js
+let categories = [
+	{
+		value: 'sqaa',
+		label: 'SQAA',
+		image: 'entity/SQAA.jpg',
+	},
+	{
+		value: 'communication',
+		label: 'Communication',
+		image: 'entity/Communication.png',
+	},
+    ...
+]
+var moment = require('moment')
+
+module.exports = {
+	async up(db) {
+		global.migrationMsg = 'Uploaded categories entity'
+		let entityData = []
+		categories.forEach(async function (category) {
+			category['status'] = 'ACTIVE'
+			category['deleted'] = false
+			category['type'] = 'categories'
+			category['updatedAt'] = moment().format()
+			category['createdAt'] = moment().format()
+			category['createdBy'] = 'SYSTEM'
+			category['updatedBy'] = 'SYSTEM'
+			entityData.push(category)
+		})
+		await db.collection('entities').insertMany(entityData)
+	},
+
+	async down(db) {
+		db.collection('entities').deleteMany({
+			value: { $in: categories.map((category) => category.value) },
+		})
+	},
+}
+```
+
+</details>
 
 ### Run migrations
 
-    npm run elevate-migrations up
+```bash
+npm run elevate-migrations up
+```
 
-## Down migrations
+### Down migrations
 
-    npm run elevate-migrations down
+```bash
+npm run elevate-migrations down
+```
+
+# Run tests
+
+## Integration tests
+
+```
+npm run test:integration
+```
+
+To know more about integration tests and their implementation refer to the project [Wiki](https://github.com/ELEVATE-Project/user/wiki/Integration-and-Unit-testing).
+
+## Unit tests
+
+```
+npm test
+```
+
+# Dependencies
+
+This project is depended on a [user](https://github.com/ELEVATE-Project/user) , [notification](https://github.com/ELEVATE-Project/notification) and [scheduler](https://github.com/ELEVATE-Project/scheduler) service.
+Set up these services using the setup guide.
+You're free to use any micro-service that is optimal for the use case.
+
+# Team
+
+<a href="https://github.com/ELEVATE-Project/mentoring/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ELEVATE-Project/mentoring" />
+</a>
