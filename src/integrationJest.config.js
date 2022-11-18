@@ -20,4 +20,6 @@ module.exports = {
 /* Add env variables used by jest here because jest do not have access to app or docker env files.
 Make sure the values match with ./dev-ops/integration_test.env */
 
-process.env = Object.assign(process.env, {})
+process.env = Object.assign(process.env, {
+	INTERNAL_ACCESS_TOKEN: 'internal-access-token',
+})
