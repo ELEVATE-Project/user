@@ -326,11 +326,11 @@ Elevate services can be setup in local using three methods:
 
 # Tech stack
 
--   Node
--   Kafka
--   Jest
--   MongoDB
--   Redis
+-   Node - 16.0.0
+-   Kafka - 3.1.0
+-   Jest - 28.1.1
+-   MongoDB - 4.4.14
+-   Redis - 7.0.0
 
 # Scripts
 
@@ -448,3 +448,14 @@ You're free to use any micro-service that is optimal for the use case.
 <a href="https://github.com/ELEVATE-Project/mentoring/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ELEVATE-Project/mentoring" />
 </a>
+
+# Tools
+
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka)
+![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+![CircleCI](https://img.shields.io/badge/circle%20ci-%23161616.svg?style=for-the-badge&logo=circleci&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Jest](https://img.shields.io/badge/-jest-%23C21325?style=for-the-badge&logo=jest&logoColor=white)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
