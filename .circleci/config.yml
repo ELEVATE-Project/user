@@ -48,3 +48,6 @@ workflows:
       - build:
           context:
             - SonarCloud
+          filters:
+            tags:
+              only: ^integration
