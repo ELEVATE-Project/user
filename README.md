@@ -1,15 +1,5 @@
-<div align="center">
-
 # User Service
 
-<a href="https://shikshalokam.org/elevate/">
-<img
-    src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
-    height="140"
-    width="300"
-  />
-</a>
-</div>
 Elevate user services can be setup in local using two methods:
 
 A. Dockerized service with local dependencies(Intermediate): Refer **Section A**.
