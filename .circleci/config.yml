@@ -50,4 +50,4 @@ workflows:
             - SonarCloud
           filters:
             tags:
-              only: ^integration
+              only: ^dev
