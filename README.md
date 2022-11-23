@@ -29,7 +29,7 @@
 
 <details><summary>dev</summary>
 
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/user/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/user/tree/dev)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/user/tree/dev.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/user/tree/dev)
 ![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/user/dev?filename=src%2Fpackage.json)
 
 [![CircleCI](https://dl.circleci.com/insights-snapshot/gh/ELEVATE-Project/user/dev/buil-and-test/badge.svg?window=30d)](https://app.circleci.com/insights/github/ELEVATE-Project/user/workflows/buil-and-test/overview?branch=dev&reporting-window=last-30-days&insights-snapshot=true)
@@ -377,7 +377,8 @@ npm test
 
 This project was built to be used with [Mentoring Service](https://github.com/ELEVATE-Project/mentoring.git).
 
-Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git)
+Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git).
+
 The frontend/mobile application [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
 
 You can learn more about the full implementation of MentorEd [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
@@ -388,6 +389,8 @@ You can learn more about the full implementation of MentorEd [here](https://elev
 <a href="https://github.com/ELEVATE-Project/user/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=ELEVATE-Project/user" />
 </a>
+
+<br>
 
 # Open Source Dependencies
 
