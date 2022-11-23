@@ -1,12 +1,12 @@
 ---
-- hosts: elevateDev
+- hosts: elevate
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
   tasks:
     - name: Slurp hosts file
       slurp:
-        src: /opt/backend/test/.token
+        src: "{{ project_path }}/.token"
       register: slurpfile
     #- debug: msg="{{ slurpfile['content'] | b64decode }}"
     #- debug: msg="the value of foo.txt is {{ contents }}"
@@ -36,7 +36,7 @@
         dest: "{{ release_path }}"
         clone: yes
         update: yes
-        version: dev
+        version: "{{ gitBranch }}"
     - name: Update npm
       shell: cd {{release_path}}/src && npm i
     
@@ -64,5 +64,3 @@
     - name: debug info
       debug:
          msg: "Pm2 log {{pm2Info}}"
-    - name: Delete old dir
-      shell: rm -rf {{ release_path }}
