@@ -1,12 +1,56 @@
+<div align="center">
+
 # User Service
+
+<a href="https://shikshalokam.org/elevate/">
+<img
+    src="https://shikshalokam.org/wp-content/uploads/2021/06/elevate-logo.png"
+    height="140"
+    width="300"
+  />
+</a>
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/user/tree/master.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/user/tree/master)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_user&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_user)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_user&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_user)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_user&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_user)
+[![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io)
+[![Docs](https://img.shields.io/badge/Docs-success-informational)](https://elevate-docs.shikshalokam.org/mentorEd/intro)
+[![Docs](https://img.shields.io/badge/API-docs-informational)](https://dev.elevate-apis.shikshalokam.org/user/api-doc)
+
+![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/user?filename=src%2Fpackage.json)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+<details><summary>CircleCI insights</summary>
+
+[![CircleCI](https://dl.circleci.com/insights-snapshot/gh/ELEVATE-Project/user/master/buil-and-test/badge.svg?window=30d)](https://app.circleci.com/insights/github/ELEVATE-Project/user/workflows/buil-and-test/overview?branch=master&reporting-window=last-30-days&insights-snapshot=true)
+
+</details>
+
+<details><summary>dev</summary>
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/ELEVATE-Project/user/tree/dev.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/ELEVATE-Project/user/tree/dev)
+![GitHub package.json version (subfolder of monorepo)](https://img.shields.io/github/package-json/v/ELEVATE-Project/user/dev?filename=src%2Fpackage.json)
+
+[![CircleCI](https://dl.circleci.com/insights-snapshot/gh/ELEVATE-Project/user/dev/buil-and-test/badge.svg?window=30d)](https://app.circleci.com/insights/github/ELEVATE-Project/user/workflows/buil-and-test/overview?branch=dev&reporting-window=last-30-days&insights-snapshot=true)
+
+<!-- [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=duplicated_lines_density&branch=dev)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=coverage&branch=dev)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=ELEVATE-Project_mentoring&metric=vulnerabilities&branch=revert-77-integration-test)](https://sonarcloud.io/summary/new_code?id=ELEVATE-Project_mentoring) -->
+
+</details>
+
+</br>
+The Mentoring building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities.MentorED is an open source mentoring application that facilitates peer learning and professional development by creating a community of mentors and mentees.
+
+</div>
+<br>
+
+# Setup Options
 
 Elevate user services can be setup in local using two methods:
 
-A. Dockerized service with local dependencies(Intermediate): Refer **Section A**.
-
-B. Local Service with local dependencies(Hardest): Refer **Section B**.
-
-## A. Dockerized Service With Local Dependencies
+<details><summary>Dockerized service with local dependencies(Intermediate)</summary>
 
 **Expectation**: Run single docker containerized service with existing local (in host) or remote dependencies.
 
@@ -86,7 +130,9 @@ B. Local Service with local dependencies(Hardest): Refer **Section B**.
     $ docker run --name user elevate/user:1.0
     ```
 
-## B. Local Service With Local Dependencies
+</details>
+
+<details><summary>Local Service with local dependencies(Hardest)</summary>
 
 **Expectation**: Run single service with existing local dependencies in host (**Non-Docker Implementation**).
 
@@ -225,32 +271,134 @@ B. Local Service with local dependencies(Hardest): Refer **Section B**.
     ELEVATE/user/src$ npm start
     ```
 
-## API Documentation link
+</details>
+<br>
 
-https://dev.elevate-apis.shikshalokam.org/user/api-doc
+# Tech stack
 
-## Mentoring Services
+-   Node - 16.0.0
+-   Kafka - 3.1.0
+-   Jest - 28.1.1
+-   MongoDB - 4.4.14
+-   Redis - 7.0.0
 
-https://github.com/ELEVATE-Project/mentoring.git
-
-## Notification Services
-
-https://github.com/ELEVATE-Project/notification.git
-
-## Migrations Commands
+# Migrations Commands
 
 ### Check migrations
 
-    npm run elevate-migrations s
+```bash
+npm run elevate-migrations s
+```
 
 ### Create migrations
 
-    npm run elevate-migrations create <migration-name>
+```bash
+npm run elevate-migrations create categoryEntity #Where categoryEntity is the file name.
+```
+
+<details><summary>20220726145008-categoryEntity.js</summary>
+
+We have followed the following structure for migration files to reduce code duplication.
+
+```js
+let categories = [
+	{
+		value: 'sqaa',
+		label: 'SQAA',
+		image: 'entity/SQAA.jpg',
+	},
+	{
+		value: 'communication',
+		label: 'Communication',
+		image: 'entity/Communication.png',
+	},
+    ...
+]
+var moment = require('moment')
+
+module.exports = {
+	async up(db) {
+		global.migrationMsg = 'Uploaded categories entity'
+		let entityData = []
+		categories.forEach(async function (category) {
+			category['status'] = 'ACTIVE'
+			category['deleted'] = false
+			category['type'] = 'categories'
+			category['updatedAt'] = moment().format()
+			category['createdAt'] = moment().format()
+			category['createdBy'] = 'SYSTEM'
+			category['updatedBy'] = 'SYSTEM'
+			entityData.push(category)
+		})
+		await db.collection('entities').insertMany(entityData)
+	},
+
+	async down(db) {
+		db.collection('entities').deleteMany({
+			value: { $in: categories.map((category) => category.value) },
+		})
+	},
+}
+```
+
+</details>
 
 ### Run migrations
 
-    npm run elevate-migrations up
+```bash
+npm run elevate-migrations up
+```
 
-## Down migrations
+### Down migrations
 
-    npm run elevate-migrations down
+```bash
+npm run elevate-migrations down
+```
+
+To know more about migrations refer project [Wiki](https://github.com/ELEVATE-Project/mentoring/wiki/Migration)
+
+# Run tests
+
+## Integration tests
+
+```
+npm run test:integration
+```
+
+To know more about integration tests and their implementation refer to the project [Wiki](https://github.com/ELEVATE-Project/user/wiki/Integration-and-Unit-testing).
+
+## Unit tests
+
+```
+npm test
+```
+
+# Used in
+
+This project was built to be used with [Mentoring Service](https://github.com/ELEVATE-Project/mentoring.git).
+
+Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git)
+The frontend/mobile application [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
+
+You can learn more about the full implementation of MentorEd [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
+<br>
+
+# Team
+
+<a href="https://github.com/ELEVATE-Project/user/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ELEVATE-Project/user" />
+</a>
+
+# Open Source Dependencies
+
+Several open source dependencies that have aided user service development:
+
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-000?style=for-the-badge&logo=apachekafka)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![Jest](https://img.shields.io/badge/-jest-%23C21325?style=for-the-badge&logo=jest&logoColor=white)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
+
+<!-- ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+![CircleCI](https://img.shields.io/badge/circle%20ci-%23161616.svg?style=for-the-badge&logo=circleci&logoColor=white) -->
