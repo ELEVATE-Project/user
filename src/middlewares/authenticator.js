@@ -8,7 +8,6 @@
 const jwt = require('jsonwebtoken')
 
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const UsersData = require('@db/users/queries')
 
@@ -16,7 +15,7 @@ module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
 		await Promise.all(
-			common.uploadUrls.map(async function (path) {
+			common.internalAccessUrls.map(async function (path) {
 				if (req.path.includes(path)) {
 					if (
 						req.headers.internal_access_token &&
@@ -35,7 +34,7 @@ module.exports = async function (req, res, next) {
 			const authHeader = req.get('X-auth-token')
 			if (!authHeader) {
 				throw common.failureResponse({
-					message: apiResponses.UNAUTHORIZED_REQUEST,
+					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
@@ -51,7 +50,7 @@ module.exports = async function (req, res, next) {
 			const authHeaderArray = authHeader.split(' ')
 			if (authHeaderArray[0] !== 'bearer') {
 				throw common.failureResponse({
-					message: apiResponses.UNAUTHORIZED_REQUEST,
+					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
@@ -61,13 +60,13 @@ module.exports = async function (req, res, next) {
 			} catch (err) {
 				err.statusCode = httpStatusCode.unauthorized
 				err.responseCode = 'UNAUTHORIZED'
-				err.message = apiResponses.ACCESS_TOKEN_EXPIRED
+				err.message = 'ACCESS_TOKEN_EXPIRED'
 				throw err
 			}
 
 			if (!decodedToken) {
 				throw common.failureResponse({
-					message: apiResponses.UNAUTHORIZED_REQUEST,
+					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
@@ -78,7 +77,7 @@ module.exports = async function (req, res, next) {
 
 			if (user && user.isAMentor !== decodedToken.data.isAMentor) {
 				throw common.failureResponse({
-					message: apiResponses.USER_ROLE_UPDATED,
+					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})

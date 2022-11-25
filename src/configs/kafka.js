@@ -7,6 +7,8 @@
 
 //Dependencies
 const Kafka = require('kafka-node')
+const utils = require('@generics/utils')
+const profileService = require('@services/helper/profile')
 
 module.exports = () => {
 	const Producer = Kafka.Producer
@@ -17,7 +19,7 @@ module.exports = () => {
 
 	/* Uncomment while writing consuming actions for this service */
 	// const Consumer = Kafka.Consumer;
-	// const consumer = new Consumer(KafkaClient, [ { topic: process.env.KAFKA_TOPIC } ], { autoCommit: true, groupId: process.env.KAFKA_GROUP_ID })
+	// const consumer = new Consumer(KafkaClient, [ { topic: process.env.RATING_TOPIC } ], { autoCommit: true, groupId: process.env.KAFKA_GROUP_ID })
 
 	/* Registered events */
 
@@ -37,13 +39,31 @@ module.exports = () => {
 		console.log('Producer intialized successfully')
 	})
 
-	// consumer.on('error', error => {
-	//     console.log('Kafka consumer intialization error: ', error);
-	// });
+	const consumer = new Kafka.ConsumerGroup(
+		{
+			kafkaHost: process.env.KAFKA_URL,
+			groupId: process.env.KAFKA_GROUP_ID,
+			autoCommit: true,
+		},
+		[process.env.RATING_KAFKA_TOPIC, process.env.CLEAR_INTERNAL_CACHE]
+	)
 
-	// consumer.on('message', message => {
-	//     // perform action using message
-	// });
+	consumer.on('message', async function (message) {
+		try {
+			let streamingData = JSON.parse(message.value)
+			if (streamingData.type == 'MENTOR_RATING' && streamingData.value && streamingData.mentorId) {
+				profileService.ratingCalculation(streamingData)
+			} else if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
+				utils.internalDel(streamingData.value)
+			}
+		} catch (error) {
+			console.log('failed', error)
+		}
+	})
+
+	consumer.on('error', async function (error) {
+		console.log('kafka consumer intialization error', error)
+	})
 
 	global.kafkaProducer = producer
 	global.kafkaClient = KafkaClient

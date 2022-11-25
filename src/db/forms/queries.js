@@ -5,7 +5,6 @@
  * Description : Users database operations
  */
 
-// Dependencies
 const Forms = require('./model')
 
 module.exports = class FormsData {
@@ -37,6 +36,20 @@ module.exports = class FormsData {
 			} else {
 				return 'FORM_NOT_FOUND'
 			}
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllTypeFormVersion() {
+		const projection = {
+			_id: 1,
+			type: 1,
+			__v: 1,
+		}
+		try {
+			const formData = await Forms.find({}, projection)
+			return formData
 		} catch (error) {
 			return error
 		}

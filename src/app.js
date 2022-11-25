@@ -10,6 +10,10 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const expressFileUpload = require('express-fileupload')
 const path = require('path')
+const i18next = require('i18next')
+const Backend = require('i18next-fs-backend')
+const middleware = require('i18next-http-middleware')
+
 require('dotenv').config({ path: './.env' })
 
 let environmentData = require('./envVariables')()
@@ -21,12 +25,30 @@ if (!environmentData.success) {
 
 require('@configs')
 
+i18next
+	.use(Backend)
+	.use(middleware.LanguageDetector)
+	.init({
+		fallbackLng: 'en',
+		lng: 'en',
+		ns: ['translation'],
+		defaultNS: 'translation',
+		backend: {
+			loadPath: './locales/{{lng}}.json',
+		},
+		detection: {
+			lookupHeader: 'accept-language',
+		},
+	})
+
 const app = express()
 
 // Health check
 require('@health-checks')(app)
 
 app.use(cors())
+
+app.use(middleware.handle(i18next))
 
 app.use(expressFileUpload())
 app.get(process.env.API_DOC_URL, function (req, res) {

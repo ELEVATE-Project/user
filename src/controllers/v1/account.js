@@ -9,7 +9,6 @@
 const accountHelper = require('@services/helper/account')
 const csv = require('csvtojson')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Account {
@@ -33,7 +32,7 @@ module.exports = class Account {
 		try {
 			if (isAMentor && req.body.secretCode != process.env.MENTOR_SECRET_CODE) {
 				throw common.failureResponse({
-					message: apiResponses.INVALID_SECRET_CODE,
+					message: 'INVALID_SECRET_CODE',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -276,7 +275,7 @@ module.exports = class Account {
 		try {
 			if (isAMentor && req.body.secretCode != process.env.MENTOR_SECRET_CODE) {
 				throw common.failureResponse({
-					message: apiResponses.INVALID_SECRET_CODE,
+					message: 'INVALID_SECRET_CODE',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

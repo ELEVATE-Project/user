@@ -538,6 +538,49 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/profile/share/{userId}':
+    get:
+      summary: Share mentor profile
+      tags:
+        - Profile APIs
+      description: "This API is associated with Sharing mentor profile  \n - The
+        Endpoint for user profile details `/user/v1/profile/share/` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'userId '
+          required: true
+          description: Please append a valid User Id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/shareMentorProfile200Response'
+        '400':
+          description: Bad Request
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/shareMentorProfileBadRequest400Response'
+        '401':
+          description: Unauthorized
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
   '/user/v1/form/create':
     post:
       summary: Create form
@@ -573,13 +616,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/createForm400Response'
-  '/user/v1/form/update':
+  '/user/v1/form/update/{formId}':
     patch:
       summary: Update form
       tags:
         - Form APIs
       description: "This API is associated with update form  \n - Then
-        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        Endpoint for update form `/user/v1/form/update/{formId}` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
@@ -590,6 +633,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: 'formId'
+          required: true
+          description: Please append a valid form Id to the Request URL.
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
       requestBody:
         content:
           application.json:
@@ -608,13 +658,13 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/form/updateForm400Response'
-  '/user/v1/form/read':
+  '/user/v1/form/read/{formId}':
     get:
       summary: Get form details
       tags:
         - Form APIs
       description: "This API is associated with update form  \n - Then
-        Endpoint for update form `/user/v1/form/update` \n - It is mandatory to
+        Endpoint for update form `/user/v1/form/update/{formId}` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
       parameters:
@@ -625,6 +675,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: path
+          name: 'formId'
+          required: true
+          description: Please append a valid form Id to the Request URL.
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
       requestBody:
         content:
           application.json:
@@ -858,6 +915,7 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
+
 components:
   schemas:
     user:
@@ -1657,6 +1715,9 @@ components:
               name:
                 type: string
                 example: Ankit
+              educationQualification:
+                type: string
+                example: B.A.
               designation:
                 type: array
                 items:
@@ -1774,6 +1835,9 @@ components:
           hasAcceptedTAndC:
             type: boolean
             example: true
+          educationQualification:
+            type: string
+            example: B.A.
           gender:
             type: string
             example: MALE
@@ -1806,6 +1870,33 @@ components:
           error:
             type: array
             example: []
+      shareMentorProfile200Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Profile share link generated successfully.
+          result:
+            type: object
+            properties:
+              shareLink:
+                type: string
+                example: 52f076629b3749ebf7dcab23f22b30df
+      shareMentorProfileBadRequest400Response:
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: User doesn't exist.
+          error:
+            type: array
+            example: []
     form:
       createFormRequest:
         type: object
@@ -1813,7 +1904,6 @@ components:
           - type
           - subType
           - action
-          - ver
           - data
         properties:
           type:
@@ -1825,9 +1915,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           data:
             type: object
             properties:
@@ -1901,7 +1988,6 @@ components:
           - type
           - subType
           - action
-          - ver
           - data
         properties:
           type:
@@ -1913,9 +1999,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           data:
             type: object
             properties:
@@ -1995,9 +2078,6 @@ components:
           action:
             type: string
             example: profileFields
-          ver:
-            type: string
-            example: '1.0'
           templateName:
             type: string
             example: defaultTemplate
@@ -2023,9 +2103,6 @@ components:
               action:
                 type: string
                 example: profileFields
-              ver:
-                type: string
-                example: '1.0'
               updatedAt:
                 type: string
                 example: '2022-05-24T23:14:10.080Z'
@@ -2457,6 +2534,7 @@ components:
           error:
             type: array
             example: []
+
   securitySchemes:
     bearer:
       type: apiKey

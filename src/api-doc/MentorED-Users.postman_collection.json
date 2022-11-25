@@ -1,0 +1,816 @@
+{
+	"info": {
+		"_postman_id": "e318392d-fcb8-4f78-a69c-fbebd346a868",
+		"name": "MentorED-Users",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "7997930"
+	},
+	"item": [
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Profile Details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/profile/details/628483242d53327460469bec",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "profile", "details", "628483242d53327460469bec"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Ankit\",\n   \n    \"designation\": [{ \"value\": \"1\", \"label\": \"Teacher\" }, { \"value\": \"2\", \"label\": \"District Official\" }],\n    \"location\": [{ \"value\": \"1\", \"label\": \"Bangalore\" }],\n    \"about\": \"This is test about of mentee\",\n    \"areasOfExpertise\": [{ \"value\": \"1\", \"label\": \"Educational Leadership\" }, { \"value\": \"2\", \"label\": \"SQAA\" }],\n    \"experience\": 4.2,\n    \"hasAcceptedTAndC\": true,\n    \"gender\": \"MALE\",\n    \"educationQualification\": \"B.A.\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/profile/update",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "profile", "update"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "form",
+			"item": [
+				{
+					"name": "Create Form",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Form",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/61ee56ebfc2b962cf281dd01",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Form",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/update/61ee56ebfc2b962cf281dd01",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
+						},
+						"description": "NOTE: Id is required in params and that should be objectId"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System User",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"system\",\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\",\n    \"role\":\"admin\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/systemUsers/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "systemUsers", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/systemUsers/login",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "systemUsers", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "entity",
+			"item": [
+				{
+					"name": "Create User Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"DM\",\n    \"label\": \"DM\",\n    \"type\": \"roles\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userentity/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userentity", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read User Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userentity/read?type=roles&deleted=false&status=ACTIVE",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userentity", "read"],
+							"query": [
+								{
+									"key": "type",
+									"value": "roles"
+								},
+								{
+									"key": "deleted",
+									"value": "false"
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE"
+								}
+							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Entity",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userentity/delete/628d754878bfa4f6931d0ff8",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userentity", "delete", "628d754878bfa4f6931d0ff8"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Deletes User Entity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userentity/delete/6285a9a0cc79ec00165e71e3",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userentity", "delete", "6285a9a0cc79ec00165e71e3"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "mentors",
+			"item": [
+				{
+					"name": "Users list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/mentors/list?pageNo=1&pageSize=5&searchText=test",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "mentors", "list"],
+							"query": [
+								{
+									"key": "pageNo",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "5"
+								},
+								{
+									"key": "searchText",
+									"value": "test"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "file-upload",
+			"item": [
+				{
+					"name": "get Signed Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSignedUrl?fileName=laptop1.jpg",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSignedUrl"],
+							"query": [
+								{
+									"key": "fileName",
+									"value": "laptop1.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Signed Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSignedUrl?fileName=logo1.jpeg",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSignedUrl"],
+							"query": [
+								{
+									"key": "fileName",
+									"value": "logo1.jpeg"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "Create Account Mentee",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"vipin@gmail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Account Mentor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"shahu\",\n    \"email\":\"ankit.s@pacewisdomss.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":true,\n    \"secretCode\":\"4567\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonBody = JSON.parse(responseBody);",
+									"pm.environment.set(\"token\", jsonBody.result.access_token);",
+									"pm.environment.set(\"refreshToken\", jsonBody.result.refresh_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankitstar00786@yahoo.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "testing",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdomss.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "test123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/login",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Terms & Condition",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "acceptTermsAndCondition"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Role Copy",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdom.cdd",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/changeRole",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "changeRole"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Mentor",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/verifyMentor?userId=62a820225ff93f30cfe5f990",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "verifyMentor"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "62a820225ff93f30cfe5f990"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdomss.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "test123",
+									"type": "text"
+								},
+								{
+									"key": "otp",
+									"value": "336969",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/resetPassword",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "resetPassword"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Regenerate Access Token Copy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "refreshToken",
+									"value": "{{refreshToken}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/generateToken",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "generateToken"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdomss.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "\"\"",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "generateOtp"]
+						},
+						"description": "To generate and regenerate otp"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "refreshToken",
+									"value": "{{refreshToken}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/logout",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "logout"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List User Accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list?type=mentee&page=1&limit=2",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "list"],
+							"query": [
+								{
+									"key": "type",
+									"value": "mentee"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdom.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testing",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "Ankit",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/registrationOtp",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "registrationOtp"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

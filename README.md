@@ -1,277 +1,258 @@
-# User Service APIs
+# User Service
 
-## Setup User Services without docker
+Elevate user services can be setup in local using two methods:
 
-Recommend to,
+A. Dockerized service with local dependencies(Intermediate): Refer **Section A**.
 
-Install any IDE in your system(eg: VScode etc..)
+B. Local Service with local dependencies(Hardest): Refer **Section B**.
 
-Install nodejs from : https://nodejs.org/en/download/
+## A. Dockerized Service With Local Dependencies
 
-Install mongoDB: https://docs.mongodb.com/manual/installation/
+**Expectation**: Run single docker containerized service with existing local (in host) or remote dependencies.
 
-Install Robo 3T: ​​https://robomongo.org/
+### Local Dependencies Steps
 
-### 1. Cloning the User repository into your system
+1. Update dependency (Mongo, Kafka etc) IP addresses in .env with "**host.docker.internal**".
 
-Goto https://github.com/ELEVATE-Project/User From the code tab copy the link. Using that link clone the repository into your local machine.
+    Eg:
 
-Let's make it easier for you:
+    ```
+     #MongoDb Connectivity Url
+     MONGODB_URL = mongodb://host.docker.internal:27017/elevate-mentoring
 
-    1. Create a new folder where you want to clone the repository.
-    2. Goto that directory through the terminal and execute the commands.
+     #Kafka Host Server URL
+     KAFKA_URL = host.docker.external:9092
+    ```
 
-git clone https://github.com/ELEVATE-Project/User.git
+2. Find **host.docker.internal** IP address and added it to **mongod.conf** file in host.
 
-### 2. Add the .env file to the project directory
+    Eg: If **host.docker.internal** is **172.17.0.1**,
+    **mongod.conf:**
 
-    create a file named .env in the root directory of the project and copy the below code into that file.
-    Add fallowing enviorment configs
+    ```
+    # network interfaces
+    net:
+        port: 27017
+        bindIp: "127.0.0.1,172.17.0.1"
+    ```
 
-### 3. Run mongodb locally
+    Note: Steps to find **host.docker.internal** IP address & location of **mongod.conf** is operating system specific. Refer [this](https://stackoverflow.com/questions/22944631/how-to-get-the-ip-address-of-the-docker-host-from-inside-a-docker-container) for more information.
 
-spacify the mongo port and ip in .env
-application takes the db as specified in the .env
+3. Build the docker image.
+    ```
+    /ELEVATE/user$ docker build -t elevate/user:1.0 .
+    ```
+4. Run the docker container.
 
-#### Required Environment variables:
+    - For Mac & Windows with docker v18.03+:
 
-```
+        ```
+        $ docker run --name user elevate/user:1.0
+        ```
 
-#User Service Config
+    - For Linux:
+        ```
+        $ docker run --name user --add-host=host.docker.internal:host-gateway elevate/user:1.0`
+        ```
+        Refer [this](https://stackoverflow.com/a/24326540) for more information.
 
-# Port on which service runs
-APPLICATION_PORT = 3000
+### Remote Dependencies Steps
 
-# Service environment
-APPLICATION_ENV = development
+1. Update dependency (Mongo, Kafka etc) Ip addresses in .env with respective remote server IPs.
 
-# Database connectivity url
-MONGODB_URL = mongodb://localhost:27017/db-name
+    Eg:
 
-# Number of rounds for encryption
-SALT_ROUNDS = 10
+    ```
+     #MongoDb Connectivity Url
+     MONGODB_URL = mongodb://10.1.2.34:27017/elevate-mentoring
 
-# Token secret to generate access token
-ACCESS_TOKEN_SECRET = 'access-token-secret'
+     #Kafka Host Server URL
+     KAFKA_URL = 11.2.3.45:9092
+    ```
 
-# Token secret to generate refresh token
-REFRESH_TOKEN_SECRET = 'refresh-token-secret'
+2. Add Bind IP to **mongod.conf** in host:
 
-# Kafka hosted server url
-KAFKA_URL = localhost:9092
+    Follow instructions given [here.](https://www.digitalocean.com/community/tutorials/how-to-configure-remote-access-for-mongodb-on-ubuntu-20-04)
 
-# Kafka group to which consumer belongs
-KAFKA_GROUP_ID = userservice
+    Note: Instructions might differ based on MongoDB version and operating system.
 
-# Kafka topic to consume data from
-KAFKA_TOPIC = 'topic'
+3. Build the docker image.
+    ```
+    /ELEVATE/user$ docker build -t elevate/user:1.0 .
+    ```
+4. Run the docker container.
 
-# Kafka topic to push notification data
-NOTIFICATION_KAFKA_TOPIC = notificationtopic
+    ```
+    $ docker run --name user elevate/user:1.0
+    ```
 
-# Any one of three features available for cloud storage
-CLOUD_STORAGE = 'GCP/AWS/AZURE'
+## B. Local Service With Local Dependencies
 
-# Gcp json config file path
-GCP_PATH = 'gcp.json'
+**Expectation**: Run single service with existing local dependencies in host (**Non-Docker Implementation**).
 
-# Gcp bucket name which stores files
-DEFAULT_GCP_BUCKET_NAME = 'gcp-bucket-storage-name'
+### Steps
 
-# Gcp project id
-GCP_PROJECT_ID = 'project-id'
+1. Install required tools & dependencies
 
-# Aws access key id
-AWS_ACCESS_KEY_ID = 'aws-access-key-id'
+    Install any IDE (eg: VScode)
 
-# Aws secret access key
-AWS_SECRET_ACCESS_KEY = 'aws-secret-access-key'
+    Install Nodejs: https://nodejs.org/en/download/
 
-# Aws region where bucket will be located
-AWS_BUCKET_REGION = 'ap-south-1'
+    Install MongoDB: https://docs.mongodb.com/manual/installation/
 
-# Aws end point
-AWS_BUCKET_ENDPOINT = 's3.ap-south-1.amazonaws.com'
+    Install Robo-3T: ​​ https://robomongo.org/
 
-# Aws bucket name which stores files
-DEFAULT_AWS_BUCKET_NAME = 'aws-bucket-storage-name'
+2. Clone the **User service** repository.
 
-# Azure storage account name
-AZURE_ACCOUNT_NAME = 'account-name'
+    ```
+    git clone https://github.com/ELEVATE-Project/user.git
+    ```
 
-# Azure storage account key
-AZURE_ACCOUNT_KEY = 'azure-account-key'
+3. Add **.env** file to the project directory
 
-# Azure storage container which stores files
-DEFAULT_AZURE_CONTAINER_NAME = 'azure-container-storage-name'
+    Create a **.env** file in **src** directory of the project and copy these environment variables into it.
 
-# Internal access token for communicationcation between services via network call
-INTERNAL_ACCESS_TOKEN = 'internal-access-token'
+    ```
+    #User Service Config
 
-# Mentor screct code for registering
-MENTOR_SECRET_CODE = 'secret-code'
+    # Port on which service runs
+    APPLICATION_PORT = 3000
 
-#Enable logging of network request
-ENABLE_LOG = true
+    # Service environment
+    APPLICATION_ENV = development
 
-# JWT Access Token expiry In Days
-ACCESS_TOKEN_EXPIRY = '1'
+    # Database connectivity url
+    MONGODB_URL = mongodb://localhost:27017/db-name
 
-# JWT Refresh Token expiry In Days
-REFRESH_TOKEN_EXPIRY = '183'
+    # Number of rounds for encryption
+    SALT_ROUNDS = 10
 
-# Redis Host connectivity url
-REDIS_HOST = 'redis://localhost:6379'
+    # Token secret to generate access token
+    ACCESS_TOKEN_SECRET = 'access-token-secret'
 
-# Otp expiration time for forgetpassword or registration process
-OTP_EXP_TIME = 86400
+    # Token secret to generate refresh token
+    REFRESH_TOKEN_SECRET = 'refresh-token-secret'
 
-# Enable email based otp verification for registration process
-ENABLE_EMAIL_OTP_VERIFICATION = true
+    # Kafka hosted server url
+    KAFKA_URL = localhost:9092
 
-# Api doc url
-API_DOC_URL = '/api-doc'
-```
+    # Kafka group to which consumer belongs
+    KAFKA_GROUP_ID = userservice
 
-### 4. Install npm
+    # Kafka topic to consume data from
+    KAFKA_TOPIC = 'topic'
 
-    npm i
-    To install the dependencies in your local machine.
+    # Kafka topic to push notification data
+    NOTIFICATION_KAFKA_TOPIC = notificationtopic
 
-### 5. To Run the server
+    # Any one of three features available for cloud storage
+    CLOUD_STORAGE = 'GCP/AWS/AZURE'
 
-    npm start
+    # Gcp json config file path
+    GCP_PATH = 'gcp.json'
 
-## Setup User Service with Docker
+    # Gcp bucket name which stores files
+    DEFAULT_GCP_BUCKET_NAME = 'gcp-bucket-storage-name'
 
-Recommend to,
+    # Gcp project id
+    GCP_PROJECT_ID = 'project-id'
 
-Install any IDE in your system(eg: VScode etc..)
+    # Aws access key id
+    AWS_ACCESS_KEY_ID = 'aws-access-key-id'
 
-Install Docker Engine from: https://docs.docker.com/engine/install/
+    # Aws secret access key
+    AWS_SECRET_ACCESS_KEY = 'aws-secret-access-key'
 
-Install Docker Compose from: https://docs.docker.com/compose/install/
+    # Aws region where bucket will be located
+    AWS_BUCKET_REGION = 'ap-south-1'
 
-### 1. Cloning the User repository into your system
+    # Aws end point
+    AWS_BUCKET_ENDPOINT = 's3.ap-south-1.amazonaws.com'
 
-Go to https://github.com/ELEVATE-Project/User From the code tab copy the link. Using that link clone the repository into your local machine.
+    # Aws bucket name which stores files
+    DEFAULT_AWS_BUCKET_NAME = 'aws-bucket-storage-name'
 
-Let's make it easier for you:
+    # Azure storage account name
+    AZURE_ACCOUNT_NAME = 'account-name'
 
-    1. Create a new folder where you want to clone the repository.
-    2. Goto that directory through the terminal and execute the commands.
+    # Azure storage account key
+    AZURE_ACCOUNT_KEY = 'azure-account-key'
 
-git clone https://github.com/ELEVATE-Project/User.git
+    # Azure storage container which stores files
+    DEFAULT_AZURE_CONTAINER_NAME = 'azure-container-storage-name'
 
-### 2. Add the .env file to the project directory
+    # Internal access token for communicationcation between services via network call
+    INTERNAL_ACCESS_TOKEN = 'internal-access-token'
 
-    create a file named .env in the root directory of the project and copy the below code into that file.
-    Add the following environment configs
+    # Mentor screct code for registering
+    MENTOR_SECRET_CODE = 'secret-code'
 
-### 3. Required Environment variables
+    #Enable logging of network request
+    ENABLE_LOG = true
 
-```
+    # JWT Access Token expiry In Days
+    ACCESS_TOKEN_EXPIRY = '1'
 
-#User Service Config
+    # JWT Refresh Token expiry In Days
+    REFRESH_TOKEN_EXPIRY = '183'
 
-# Port on which service runs
-APPLICATION_PORT = 3000
+    # Redis Host connectivity url
+    REDIS_HOST = 'redis://localhost:6379'
 
-# Service environment
-APPLICATION_ENV = development
+    # Otp expiration time for forgetpassword or registration process
+    OTP_EXP_TIME = 86400
 
-# Database connectivity url
-MONGODB_URL = mongodb://localhost:27017/db-name
+    # Enable email based otp verification for registration process
+    ENABLE_EMAIL_OTP_VERIFICATION = true
 
-# Number of rounds for encryption
-SALT_ROUNDS = 10
+    # Api doc url
+    API_DOC_URL = '/api-doc'
+    ```
 
-# Token secret to generate access token
-ACCESS_TOKEN_SECRET = 'access-token-secret'
+4. Start MongoDB locally
 
-# Token secret to generate refresh token
-REFRESH_TOKEN_SECRET = 'refresh-token-secret'
+    Based on your host operating system and method used, start MongoDB.
 
-# Kafka hosted server url
-KAFKA_URL = localhost:9092
+5. Install Npm packages
 
-# Kafka group to which consumer belongs
-KAFKA_GROUP_ID = userservice
+    ```
+    ELEVATE/user/src$ npm install
+    ```
 
-# Kafka topic to consume data from
-KAFKA_TOPIC = 'topic'
+6. Start User server
 
-# Kafka topic to push notification data
-NOTIFICATION_KAFKA_TOPIC = notificationtopic
-
-# Any one of three features available for cloud storage
-CLOUD_STORAGE = 'GCP/AWS/AZURE'
-
-# Gcp json config file path
-GCP_PATH = 'gcp.json'
-
-# Gcp bucket name which stores files
-DEFAULT_GCP_BUCKET_NAME = 'gcp-bucket-storage-name'
-
-# Gcp project id
-GCP_PROJECT_ID = 'project-id'
-
-# Aws access key id
-AWS_ACCESS_KEY_ID = 'aws-access-key-id'
-
-# Aws secret access key
-AWS_SECRET_ACCESS_KEY = 'aws-secret-access-key'
-
-# Aws region where bucket will be located
-AWS_BUCKET_REGION = 'ap-south-1'
-
-# Aws end point
-AWS_BUCKET_ENDPOINT = 's3.ap-south-1.amazonaws.com'
-
-# Aws bucket name which stores files
-DEFAULT_AWS_BUCKET_NAME = 'aws-bucket-storage-name'
-
-# Azure storage account name
-AZURE_ACCOUNT_NAME = 'account-name'
-
-# Azure storage account key
-AZURE_ACCOUNT_KEY = 'azure-account-key'
-
-# Azure storage container which stores files
-DEFAULT_AZURE_CONTAINER_NAME = 'azure-container-storage-name'
-
-# Internal access token for communicationcation between services via network call
-INTERNAL_ACCESS_TOKEN = 'internal-access-token'
-
-# Mentor screct code for registering
-MENTOR_SECRET_CODE = 'secret-code'
-
-#Enable logging of network request
-ENABLE_LOG = true
-
-# JWT Access Token expiry In Days
-ACCESS_TOKEN_EXPIRY = '1'
-
-# JWT Refresh Token expiry In Days
-REFRESH_TOKEN_EXPIRY = '183'
-
-# Redis Host connectivity url
-REDIS_HOST = 'redis://localhost:6379'
-
-# Otp expiration time for forgetpassword or registration process
-OTP_EXP_TIME = 86400
-
-# Enable email based otp verification for registration process
-ENABLE_EMAIL_OTP_VERIFICATION = true
-
-# Api doc url
-API_DOC_URL = '/api-doc'
-```
-
-### 4. To Run Server
-
-    docker-compose up
+    ```
+    ELEVATE/user/src$ npm start
+    ```
 
 ## API Documentation link
 
 https://dev.elevate-apis.shikshalokam.org/user/api-doc
+
+## Mentoring Services
+
+https://github.com/ELEVATE-Project/mentoring.git
+
+## Notification Services
+
+https://github.com/ELEVATE-Project/notification.git
+
+## Migrations Commands
+
+### Check migrations
+
+    npm run elevate-migrations s
+
+### Create migrations
+
+    npm run elevate-migrations create <migration-name>
+
+### Run migrations
+
+    npm run elevate-migrations up
+
+## Down migrations
+
+    npm run elevate-migrations down
+
+<!-- test -->

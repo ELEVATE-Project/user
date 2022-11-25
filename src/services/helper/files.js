@@ -7,7 +7,6 @@
 
 // Dependencies
 const cloudServices = require('@generics/cloud-services')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const utils = require('@generics/utils')
@@ -38,10 +37,12 @@ module.exports = class FilesHelper {
 				response = await cloudServices.getAwsSignedUrl(destFilePath)
 			} else if (process.env.CLOUD_STORAGE === 'AZURE') {
 				response = await cloudServices.getAzureSignedUrl(destFilePath)
+			} else if (process.env.CLOUD_STORAGE === 'OCI') {
+				response = await cloudServices.getOciSignedUrl(destFilePath)
 			}
 			response.destFilePath = destFilePath
 			return common.successResponse({
-				message: apiResponses.SIGNED_URL_GENERATED_SUCCESSFULLY,
+				message: 'SIGNED_URL_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				responseCode: 'OK',
 				result: response,
@@ -55,7 +56,7 @@ module.exports = class FilesHelper {
 		try {
 			let response = await utils.getDownloadableUrl(path)
 			return common.successResponse({
-				message: apiResponses.DOWNLOAD_URL_GENERATED_SUCCESSFULLY,
+				message: 'DOWNLOAD_URL_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				responseCode: 'OK',
 				result: response,

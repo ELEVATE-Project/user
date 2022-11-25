@@ -1,51 +1,34 @@
-/**
- * name : form.js
- * author : Aman Gupta
- * created-date : 03-Nov-2021
- * Description : Form helper.
- */
-
-// Dependencies
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
-
+const utils = require('@generics/utils')
+const KafkaProducer = require('@generics/kafka-communication')
+const ObjectId = require('mongoose').Types.ObjectId
 module.exports = class FormsHelper {
 	/**
-	 * create form
+	 * Create Form.
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.type - form type.
-	 * @param {string} bodyData.subType -subtype of the form.
-	 * @param {string} bodyData.action -form action.
-	 * @param {string} bodyData.data -form data.
-	 * @param {string} bodyData.data.templateName -name of the template
-	 * @returns {JSON} - forms created object.
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Form creation data.
 	 */
 
 	static async create(bodyData) {
 		try {
-			const filter = {
-				type: bodyData.type,
-				subType: bodyData.subType,
-				action: bodyData.action,
-				ver: bodyData.ver,
-				'data.templateName': bodyData.data.templateName,
-			}
-			const form = await formsData.findOneForm(filter)
+			const form = await formsData.findOneForm({ type: bodyData.type })
 			if (form) {
 				return common.failureResponse({
-					message: apiResponses.FORM_ALREADY_EXISTS,
+					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			await formsData.createForm(bodyData)
+			await utils.internalDel('formVersion')
+			await KafkaProducer.clearInternalCache('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.FORM_CREATED_SUCCESSFULLY,
+				message: 'FORM_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -53,43 +36,48 @@ module.exports = class FormsHelper {
 	}
 
 	/**
-	 * update form
+	 * Update Form.
 	 * @method
 	 * @name update
-	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.type - form type.
-	 * @param {string} bodyData.subType -subtype of the form.
-	 * @param {string} bodyData.action -form action.
-	 * @param {string} bodyData.data -form data.
-	 * @param {string} bodyData.data.templateName -name of the template
-	 * @returns {JSON} - returns update form information
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Update form data.
 	 */
-	static async update(bodyData) {
+
+	static async update(id, bodyData) {
 		try {
-			const filter = {
-				type: bodyData.type,
-				subType: bodyData.subType,
-				action: bodyData.action,
-				ver: bodyData.ver,
-				'data.templateName': bodyData.data.templateName,
+			let filter = {}
+			if (ObjectId.isValid(id)) {
+				filter = {
+					_id: ObjectId(id),
+				}
+			} else {
+				filter = {
+					type: bodyData.type,
+					subType: bodyData.subType,
+					action: bodyData.action,
+					'data.templateName': bodyData.data.templateName,
+				}
 			}
 			const result = await formsData.updateOneForm(filter, bodyData)
-			if (result === 'FORM_ALREADY_EXISTS') {
+
+			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.FORM_ALREADY_EXISTS,
+					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} else if (result === 'FORM_NOT_FOUND') {
+			} else if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.FORM_NOT_FOUND,
+					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			await utils.internalDel('formVersion')
+			await KafkaProducer.clearInternalCache('formVersion')
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.FORM_UPDATED_SUCCESSFULLY,
+				message: 'FORM_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -97,38 +85,33 @@ module.exports = class FormsHelper {
 	}
 
 	/**
-	 * read form
+	 * Read Form.
 	 * @method
 	 * @name read
-	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.type - form type.
-	 * @param {string} bodyData.subType -subtype of the form.
-	 * @param {string} bodyData.action -form action.
-	 * @param {string} bodyData.data -form data.
-	 * @param {string} bodyData.data.templateName -name of the template
-	 * @returns {JSON} - returns the form data
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Read form data.
 	 */
 
-	static async read(bodyData) {
+	static async read(id, bodyData) {
 		try {
-			const filter = {
-				type: bodyData.type,
-				subType: bodyData.subType,
-				action: bodyData.action,
-				ver: bodyData.ver,
-				'data.templateName': bodyData.templateName,
+			let filter = {}
+			if (ObjectId.isValid(id)) {
+				filter = { _id: id }
+			} else {
+				filter = { ...bodyData }
 			}
 			const form = await formsData.findOneForm(filter)
+
 			if (!form) {
 				return common.failureResponse({
-					message: apiResponses.FORM_NOT_FOUND,
+					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.FORM_FETCHED_SUCCESSFULLY,
+				message: 'FORM_FETCHED_SUCCESSFULLY',
 				result: form ? form : {},
 			})
 		} catch (error) {

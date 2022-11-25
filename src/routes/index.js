@@ -80,7 +80,7 @@ module.exports = (app) => {
 		if (controllerResponse) {
 			res.status(controllerResponse.statusCode).json({
 				responseCode: controllerResponse.responseCode,
-				message: controllerResponse.message,
+				message: req.t(controllerResponse.message),
 				result: controllerResponse.result,
 				meta: controllerResponse.meta,
 			})
@@ -111,7 +111,7 @@ module.exports = (app) => {
 		}
 		res.status(status).json({
 			responseCode,
-			message,
+			message: req.t(message),
 			error: errorData,
 		})
 	})

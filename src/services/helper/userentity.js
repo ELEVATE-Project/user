@@ -7,11 +7,11 @@
 
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-
+const KafkaProducer = require('@generics/kafka-communication')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const common = require('@constants/common')
 const userEntitiesData = require('@db/userentities/query')
+const utils = require('@generics/utils')
 
 module.exports = class UserEntityHelper {
 	/**
@@ -29,19 +29,23 @@ module.exports = class UserEntityHelper {
 		bodyData.updatedBy = ObjectId(_id)
 		try {
 			const filter = { type: bodyData.type, value: bodyData.value }
-			console.log(filter)
 			const entity = await userEntitiesData.findOneEntity(filter)
+
 			if (entity) {
 				return common.failureResponse({
-					message: apiResponses.USER_ENTITY_ALREADY_EXISTS,
+					message: 'USER_ENTITY_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			await userEntitiesData.createEntity(bodyData)
+			let res = await userEntitiesData.createEntity(bodyData)
+			const key = 'entity_' + bodyData.type
+			await utils.internalDel(key)
+			await KafkaProducer.clearInternalCache(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.USER_ENTITY_CREATED_SUCCESSFULLY,
+				message: 'USER_ENTITY_CREATED_SUCCESSFULLY',
+				result: res,
 			})
 		} catch (error) {
 			throw error
@@ -64,20 +68,31 @@ module.exports = class UserEntityHelper {
 			const result = await userEntitiesData.updateOneEntity({ _id: ObjectId(_id) }, bodyData)
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.USER_ENTITY_ALREADY_EXISTS,
+					message: 'USER_ENTITY_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.USER_ENTITY_NOT_FOUND,
+					message: 'USER_ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			let key = ''
+			if (bodyData.type) {
+				key = 'entity_' + bodyData.type
+				await utils.internalDel(key)
+				await KafkaProducer.clearInternalCache(key)
+			} else {
+				const entities = await userEntitiesData.findOne(_id)
+				key = 'entity_' + entities.type
+				await utils.internalDel(key)
+				await KafkaProducer.clearInternalCache(key)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.USER_ENTITY_UPDATED_SUCCESSFULLY,
+				message: 'USER_ENTITY_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -97,10 +112,15 @@ module.exports = class UserEntityHelper {
 			bodyData.deleted = false
 		}
 		try {
-			const entities = await userEntitiesData.findAllEntities(bodyData, projection)
+			const key = 'entity_' + bodyData.type
+			let entities = (await utils.internalGet(key)) || false
+			if (!entities) {
+				entities = await userEntitiesData.findAllEntities(bodyData, projection)
+				await utils.internalSet(key, entities)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.USER_ENTITY_FETCHED_SUCCESSFULLY,
+				message: 'USER_ENTITY_FETCHED_SUCCESSFULLY',
 				result: entities,
 			})
 		} catch (error) {
@@ -121,20 +141,24 @@ module.exports = class UserEntityHelper {
 			const result = await userEntitiesData.updateOneEntity({ _id: ObjectId(_id) }, { deleted: true })
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
-					message: apiResponses.USER_ENTITY_ALREADY_DELETED,
+					message: 'USER_ENTITY_ALREADY_DELETED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.USER_ENTITY_NOT_FOUND,
+					message: 'USER_ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const entities = await userEntitiesData.findOne(_id)
+			let key = 'entity_' + entities.type
+			await utils.internalDel(key)
+			await KafkaProducer.clearInternalCache(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.USER_ENTITY_DELETED_SUCCESSFULLY,
+				message: 'USER_ENTITY_DELETED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error

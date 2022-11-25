@@ -12,14 +12,14 @@ const ObjectId = require('mongoose').Types.ObjectId
 
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
+
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const redisCommunication = require('@generics/redis-communication')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
+const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -52,17 +52,17 @@ module.exports = class AccountHelper {
 			let user = await usersData.findOne({ 'email.address': email })
 			if (user) {
 				return common.failureResponse({
-					message: apiResponses.USER_ALREADY_EXISTS,
+					message: 'USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await redisCommunication.getKey(email)
+				const redisData = await utilsHelper.redisGet(email)
 				if (!redisData || redisData.otp != bodyData.otp) {
 					return common.failureResponse({
-						message: apiResponses.OTP_INVALID,
+						message: 'OTP_INVALID',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -106,7 +106,7 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
 
-			await redisCommunication.deleteKey(email)
+			await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -133,7 +133,7 @@ module.exports = class AccountHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.USER_CREATED_SUCCESSFULLY,
+				message: 'USER_CREATED_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
@@ -166,7 +166,7 @@ module.exports = class AccountHelper {
 			let user = await usersData.findOne({ 'email.address': bodyData.email.toLowerCase() }, projection)
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.EMAIL_ID_NOT_REGISTERED,
+					message: 'EMAIL_ID_NOT_REGISTERED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -174,7 +174,7 @@ module.exports = class AccountHelper {
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return common.failureResponse({
-					message: apiResponses.USERNAME_OR_PASSWORD_IS_INVALID,
+					message: 'USERNAME_OR_PASSWORD_IS_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -207,15 +207,12 @@ module.exports = class AccountHelper {
 				lastLoggedInAt: new Date().getTime(),
 			}
 			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
-
-			/* Mongoose schema is in strict mode, so can not delete password directly */
-			user = { ...user._doc }
 			delete user.password
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.LOGGED_IN_SUCCESSFULLY,
+				message: 'LOGGED_IN_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
@@ -238,7 +235,7 @@ module.exports = class AccountHelper {
 			const user = await usersData.findOne({ _id: ObjectId(bodyData.loggedInId) })
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -255,7 +252,7 @@ module.exports = class AccountHelper {
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
 			if (!res) {
 				return common.failureResponse({
-					message: apiResponses.INVALID_REFRESH_TOKEN,
+					message: 'INVALID_REFRESH_TOKEN',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
@@ -263,7 +260,7 @@ module.exports = class AccountHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.LOGGED_OUT_SUCCESSFULLY,
+				message: 'LOGGED_OUT_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -286,7 +283,7 @@ module.exports = class AccountHelper {
 		} catch (error) {
 			/* If refresh token is expired */
 			error.statusCode = httpStatusCode.unauthorized
-			error.message = apiResponses.REFRESH_TOKEN_EXPIRED
+			error.message = 'REFRESH_TOKEN_EXPIRED'
 			throw error
 		}
 
@@ -295,7 +292,7 @@ module.exports = class AccountHelper {
 		/* Check valid user */
 		if (!user) {
 			return common.failureResponse({
-				message: apiResponses.USER_DOESNOT_EXISTS,
+				message: 'USER_DOESNOT_EXISTS',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
 			})
@@ -306,7 +303,7 @@ module.exports = class AccountHelper {
 			const token = user.refreshTokens.find((tokenData) => tokenData.token === bodyData.refreshToken)
 			if (!token) {
 				return common.failureResponse({
-					message: apiResponses.REFRESH_TOKEN_NOT_FOUND,
+					message: 'REFRESH_TOKEN_NOT_FOUND',
 					statusCode: httpStatusCode.internal_server_error,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -321,12 +318,12 @@ module.exports = class AccountHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.ACCESS_TOKEN_GENERATED_SUCCESSFULLY,
+				message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
 				result: { access_token: accessToken },
 			})
 		}
 		return common.failureResponse({
-			message: apiResponses.REFRESH_TOKEN_NOT_FOUND,
+			message: 'REFRESH_TOKEN_NOT_FOUND',
 			statusCode: httpStatusCode.bad_request,
 			responseCode: 'CLIENT_ERROR',
 		})
@@ -349,13 +346,13 @@ module.exports = class AccountHelper {
 			const user = await usersData.findOne({ 'email.address': bodyData.email })
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			const userData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 
 			if (userData && userData.action === 'forgetpassword') {
 				otp = userData.otp // If valid then get previuosly generated otp
@@ -367,7 +364,7 @@ module.exports = class AccountHelper {
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (isPasswordCorrect) {
 				return common.failureResponse({
-					message: apiResponses.RESET_PREVIOUS_PASSWORD,
+					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -380,14 +377,14 @@ module.exports = class AccountHelper {
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await redisCommunication.setKey(
+				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
 					redisData,
 					common.otpExpirationTime
 				)
 				if (res !== 'OK') {
 					return common.failureResponse({
-						message: apiResponses.UNABLE_TO_SEND_OTP,
+						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
 						responseCode: 'SERVER_ERROR',
 					})
@@ -414,7 +411,7 @@ module.exports = class AccountHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.OTP_SENT_SUCCESSFULLY,
+				message: 'OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -437,13 +434,13 @@ module.exports = class AccountHelper {
 			const user = await usersData.findOne({ 'email.address': bodyData.email })
 			if (user) {
 				return common.failureResponse({
-					message: apiResponses.USER_ALREADY_EXISTS,
+					message: 'USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			const userData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 
 			if (userData && userData.action === 'signup') {
 				otp = userData.otp // If valid then get previuosly generated otp
@@ -458,14 +455,14 @@ module.exports = class AccountHelper {
 					action: 'signup',
 					otp,
 				}
-				const res = await redisCommunication.setKey(
+				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
 					redisData,
 					common.otpExpirationTime
 				)
 				if (res !== 'OK') {
 					return common.failureResponse({
-						message: apiResponses.UNABLE_TO_SEND_OTP,
+						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
 						responseCode: 'SERVER_ERROR',
 					})
@@ -492,7 +489,7 @@ module.exports = class AccountHelper {
 			console.log(otp)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.REGISTRATION_OTP_SENT_SUCCESSFULLY,
+				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -524,16 +521,16 @@ module.exports = class AccountHelper {
 			let user = await usersData.findOne({ 'email.address': bodyData.email }, projection)
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			const redisData = await redisCommunication.getKey(bodyData.email.toLowerCase())
+			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
-					message: apiResponses.RESET_OTP_INVALID,
+					message: 'RESET_OTP_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -541,7 +538,7 @@ module.exports = class AccountHelper {
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (isPasswordCorrect) {
 				return common.failureResponse({
-					message: apiResponses.RESET_PREVIOUS_PASSWORD,
+					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -571,18 +568,17 @@ module.exports = class AccountHelper {
 			}
 			await usersData.updateOneUser({ _id: user._id }, updateParams)
 
-			await redisCommunication.deleteKey(bodyData.email.toLowerCase())
+			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
-			delete user._doc.password
-			user = { ...user._doc }
+			delete user.password
 			delete user.otpInfo
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.PASSWORD_RESET_SUCCESSFULLY,
+				message: 'PASSWORD_RESET_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
@@ -604,7 +600,7 @@ module.exports = class AccountHelper {
 
 			if (!systemUser) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -612,7 +608,7 @@ module.exports = class AccountHelper {
 
 			if (systemUser.role.toLowerCase() !== 'admin') {
 				return common.failureResponse({
-					message: apiResponses.NOT_AN_ADMIN,
+					message: 'NOT_AN_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -656,20 +652,20 @@ module.exports = class AccountHelper {
 			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1 })
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (user.isAMentor == true) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: apiResponses.USER_IS_A_MENTOR,
+					message: 'USER_IS_A_MENTOR',
 					result: user,
 				})
 			} else {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: apiResponses.USER_IS_NOT_A_MENTOR,
+					message: 'USER_IS_NOT_A_MENTOR',
 					result: user,
 				})
 			}
@@ -690,20 +686,20 @@ module.exports = class AccountHelper {
 			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1 })
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (user.isAMentor == true) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: apiResponses.USER_IS_A_MENTOR,
+					message: 'USER_IS_A_MENTOR',
 					result: user,
 				})
 			} else {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: apiResponses.USER_IS_NOT_A_MENTOR,
+					message: 'USER_IS_NOT_A_MENTOR',
 					result: user,
 				})
 			}
@@ -734,15 +730,34 @@ module.exports = class AccountHelper {
 		try {
 			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
 				const userIds = params.body.userIds
+
+				const userIdsNotFoundInRedis = []
+				const userDetailsFoundInRedis = []
+				for (let i = 0; i < userIds.length; i++) {
+					let userDetails = (await utilsHelper.redisGet(userIds[i])) || false
+
+					if (!userDetails) {
+						userIdsNotFoundInRedis.push(userIds[i])
+					} else {
+						userDetailsFoundInRedis.push(userDetails)
+					}
+				}
+
 				const users = await usersData.findAllUsers(
-					{ _id: { $in: userIds } },
+					{ _id: { $in: userIdsNotFoundInRedis } },
 					{ password: 0, refreshTokens: 0, otpInfo: 0 }
 				)
 
+				users.forEach(async (element) => {
+					if (element.isAMentor) {
+						await utilsHelper.redisSet(element._id.toString(), element)
+					}
+				})
+
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: apiResponses.USERS_FETCHED_SUCCESSFULLY,
-					result: users,
+					message: 'USERS_FETCHED_SUCCESSFULLY',
+					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
 				let users = await usersData.listUsers(
@@ -753,9 +768,9 @@ module.exports = class AccountHelper {
 				)
 				let message = ''
 				if (params.query.type === 'mentor') {
-					message = apiResponses.MENTOR_LIST
+					message = 'MENTOR_LIST'
 				} else if (params.query.type === 'mentee') {
-					message = apiResponses.MENTEE_LIST
+					message = 'MENTEE_LIST'
 				}
 
 				if (users[0].data.length < 1) {
@@ -829,7 +844,7 @@ module.exports = class AccountHelper {
 
 			if (!user) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -844,9 +859,10 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			await utils.redisDel(userId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.USER_UPDATED_SUCCESSFULLY,
+				message: 'USER_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -876,7 +892,7 @@ module.exports = class AccountHelper {
 			/* If user doc not updated  */
 			if (!res) {
 				return common.failureResponse({
-					message: apiResponses.USER_DOESNOT_EXISTS,
+					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -884,7 +900,7 @@ module.exports = class AccountHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.USER_ROLE_UPDATED_SUCCESSFULLY,
+				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error

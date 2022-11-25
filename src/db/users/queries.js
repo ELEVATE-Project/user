@@ -12,7 +12,9 @@ const Users = require('./model')
 module.exports = class UsersData {
 	static async findOne(filter, projection = {}) {
 		try {
-			const userData = await Users.findOne(filter, projection)
+			const userData = await Users.findOne(filter, projection).lean({
+				getters: true,
+			})
 			return userData
 		} catch (error) {
 			return error
@@ -21,7 +23,9 @@ module.exports = class UsersData {
 
 	static async findAllUsers(filter, projection = {}) {
 		try {
-			const usersData = await Users.find(filter, projection)
+			const usersData = await Users.find(filter, projection).lean({
+				getters: true,
+			})
 			return usersData
 		} catch (error) {
 			return error
