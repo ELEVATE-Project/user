@@ -38,7 +38,7 @@
         update: yes
         version: "{{ gitBranch }}"
     - name: Update npm
-      shell: cd {{release_path}}/src && npm i & npm i redoc-cli 
+      shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
     
     - name: Update symlink
       file:
