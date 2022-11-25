@@ -10,6 +10,46 @@ const mentorsHelper = require('@services/helper/mentors')
 
 module.exports = class Mentors {
 	/**
+	 * mentors profile
+	 * @method
+	 * @name profile
+	 * @param {Object} req - request data.
+	 * @param {String} req.params.id - mentor Id.
+	 * @param {String} req.pageNo - Page No.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - mentors upcoming session details
+	 */
+	async upcomingSessions(req) {
+		try {
+			return await mentorsHelper.upcomingSessions(
+				req.params.id,
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.decodedToken._id
+			)
+		} catch (error) {
+			return errors
+		}
+	}
+
+	/**
+	 * mentors profile
+	 * @method
+	 * @name profile
+	 * @param {Object} req - request data.
+	 * @param {String} req.params.id - mentor Id.
+	 * @returns {JSON} - mentors profile details
+	 */
+	async profile(req) {
+		try {
+			return await mentorsHelper.profile(req.params.id)
+		} catch (error) {
+			return errors
+		}
+	}
+	/**
 	 * Mentors reports
 	 * @method
 	 * @name reports
@@ -26,6 +66,24 @@ module.exports = class Mentors {
 		try {
 			const reports = await mentorsHelper.reports(req.decodedToken._id, req.query.filterType)
 			return reports
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Shareable mentor profile link.
+	 * @method
+	 * @name share
+	 * @param {Object} req - Request data.
+	 * @param {String} req.params.id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+
+	async share(req) {
+		try {
+			const shareLink = await mentorsHelper.share(req.params.id)
+			return shareLink
 		} catch (error) {
 			return error
 		}

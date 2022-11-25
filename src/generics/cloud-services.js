@@ -7,7 +7,7 @@
 
 const path = require('path')
 
-const { AwsFileHelper, AzureFileHelper, GcpFileHelper } = require('files-cloud-storage')
+const { AwsFileHelper, AzureFileHelper, GcpFileHelper,OciFileHelper } = require('elevate-cloud-storage')
 
 module.exports = class FilesHelper {
 	static async getGcpSignedUrl(destFilePath, actionType = 'write') {
@@ -69,6 +69,27 @@ module.exports = class FilesHelper {
 
 		try {
 			const signedUrl = await AzureFileHelper.getSignedUrl(options)
+			return signedUrl
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async getOciSignedUrl(destFilePath, actionType = 'putObject') {
+		const bucketName = process.env.DEFAULT_OCI_BUCKET_NAME
+		const options = {
+			destFilePath: destFilePath, // Stored file path - i.e location from bucket - ex - users/abc.png
+			bucketName: bucketName, // Oci storage bucket in which action is peformed over file
+			actionType: actionType, // signed url usage type - example ('putObject' | 'getObject')
+			expiry: 30 * 60, // signed url expiration time - In sec - type number
+			accessKeyId: process.env.OCI_ACCESS_KEY_ID, // Oci access key id
+			secretAccessKey: process.env.OCI_SECRET_ACCESS_KEY, // Oci secret access key
+			bucketRegion: process.env.OCI_BUCKET_REGION, // Oci region where bucket will be located, example - 'ap-south-1'
+			endpoint: process.env.OCI_BUCKET_ENDPOINT,
+		}
+
+		try {
+			let signedUrl = await OciFileHelper.getSignedUrl(options)
 			return signedUrl
 		} catch (error) {
 			throw error

@@ -2,11 +2,11 @@
 const sessionAttendees = require('@db/sessionAttendees/queries')
 const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const questionsSetData = require('@db/questionsSet/queries')
 const questionsData = require('@db/questions/queries')
 const ObjectId = require('mongoose').Types.ObjectId
+const kafkaCommunication = require('@generics/kafka-communication')
 
 module.exports = class MenteesHelper {
 	/**
@@ -26,6 +26,7 @@ module.exports = class MenteesHelper {
 				let filters = {
 					status: 'completed',
 					skippedFeedback: false,
+					isStarted: true,
 					feedbacks: {
 						$size: 0,
 					},
@@ -43,6 +44,7 @@ module.exports = class MenteesHelper {
 
 			let sessionAttendeesFilter = {
 				'sessionDetail.status': 'completed',
+				isSessionAttended: true,
 				skippedFeedback: false,
 				feedbacks: {
 					$size: 0,
@@ -106,7 +108,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.PENDING_FEEDBACK_FETCHED_SUCCESSFULLY,
+				message: 'PENDING_FEEDBACK_FETCHED_SUCCESSFULLY',
 				result: sessions,
 			})
 		} catch (error) {
@@ -136,7 +138,7 @@ module.exports = class MenteesHelper {
 			)
 			if (!sessioninfo) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -153,7 +155,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.FEEDBACKFORM_MESSAGE,
+				message: 'FEEDBACKFORM_MESSAGE',
 				result: {
 					form: formData,
 				},
@@ -189,11 +191,12 @@ module.exports = class MenteesHelper {
 					_id: 1,
 					skippedFeedback: 1,
 					feedbacks: 1,
+					userId: 1,
 				}
 			)
 			if (!sessionInfo) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -205,7 +208,7 @@ module.exports = class MenteesHelper {
 					(sessionInfo.feedbacks && sessionInfo.feedbacks.length > 0)
 				) {
 					return common.failureResponse({
-						message: apiResponses.FEEDBACK_ALREADY_SUBMITTED,
+						message: 'FEEDBACK_ALREADY_SUBMITTED',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -221,24 +224,24 @@ module.exports = class MenteesHelper {
 
 				if (result == 'SESSION_NOT_FOUND') {
 					return common.failureResponse({
-						message: apiResponses.SESSION_NOT_FOUND,
+						message: 'SESSION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				} else {
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: apiResponses.FEEDBACK_SUBMITTED,
+						message: 'FEEDBACK_SUBMITTED',
 					})
 				}
 			} else {
 				let sessionAttendesInfo = await sessionAttendees.findOneSessionAttendee(sessionId, userId)
 				if (
-					sessionAttendesInfo.skippedFeedback == true ||
+					(sessionAttendesInfo.skippedFeedback && sessionAttendesInfo.skippedFeedback == true) ||
 					(sessionAttendesInfo.feedbacks && sessionAttendesInfo.feedbacks.length > 0)
 				) {
 					return common.failureResponse({
-						message: apiResponses.FEEDBACK_ALREADY_SUBMITTED,
+						message: 'FEEDBACK_ALREADY_SUBMITTED',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -251,17 +254,30 @@ module.exports = class MenteesHelper {
 					},
 					updateData
 				)
+				if (!updateData.skippedFeedback) {
+					updateData.feedbacks.map(async function (feedbackInfo) {
+						let questionData = await questionsData.findOneQuestion({ _id: feedbackInfo.questionId })
+						if (questionData && questionData.evaluating == common.MENTOR_EVALUATING) {
+							let data = {
+								type: 'MENTOR_RATING',
+								mentorId: sessionInfo.userId,
+								...feedbackInfo,
+							}
+							kafkaCommunication.pushMentorRatingToKafka(data)
+						}
+					})
+				}
 
 				if (result == 'SESSION_ATTENDENCE_NOT_FOUND') {
 					return common.failureResponse({
-						message: apiResponses.SESSION_NOT_FOUND,
+						message: 'SESSION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				} else {
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: apiResponses.FEEDBACK_SUBMITTED,
+						message: 'FEEDBACK_SUBMITTED',
 					})
 				}
 			}

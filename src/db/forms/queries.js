@@ -4,7 +4,6 @@
  * Date : 07-Oct-2021
  * Description : Users database operations
  */
-
 const Forms = require('./model')
 
 module.exports = class FormsData {
@@ -13,33 +12,24 @@ module.exports = class FormsData {
 			await new Forms(data).save()
 			return true
 		} catch (error) {
-			console.log(error, '<]]]]]]]]]]]]]')
 			return error
 		}
 	}
 
-	static async findOneForm(type, subType, action, ver, templateName) {
-		const filter = { type, subType, action, ver, 'data.templateName': templateName }
+	
+	static async findOneForm(filter) {
 		const projection = {}
 
 		try {
 			const formData = await Forms.findOne(filter, projection)
 			return formData
 		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}
 
-	static async updateOneForm(update, options = {}) {
-		const filter = {
-			type: update.type,
-			subType: update.subType,
-			action: update.action,
-			ver: update.ver,
-			'data.templateName': update.data.templateName,
-		}
-
+	static async updateOneForm(filter,update, options = {}) {
+	
 		try {
 			const res = await Forms.updateOne(filter, update, options)
 			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
@@ -47,10 +37,26 @@ module.exports = class FormsData {
 			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
 				return 'ENTITY_ALREADY_EXISTS'
 			} else {
-				return 'ENTITY_NOT_FOUND'
-			}
+				return 'ENTITY_NOT_FOUND'}
 		} catch (error) {
 			return error
 		}
 	}
+	static async findAllTypeFormVersion() {
+		const projection = {
+			_id: 1,
+			type: 1,
+			__v: 1,
+		}
+	
+			try {
+				const formData = await Forms.find({}, projection)
+				return (formData)
+			} catch (error) {
+				return (error)
+			}
+		
+	}
+
+
 }

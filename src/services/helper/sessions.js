@@ -2,7 +2,6 @@
 const ObjectId = require('mongoose').Types.ObjectId
 const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
-const apiResponses = require('@constants/api-responses')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
 const sessionData = require('@db/sessions/queries')
@@ -17,6 +16,7 @@ const axios = require('axios')
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
+const sessionMentor = require('./mentors')
 
 module.exports = class SessionsHelper {
 	/**
@@ -35,7 +35,7 @@ module.exports = class SessionsHelper {
 
 			if (mentorStatus === false) {
 				return common.failureResponse({
-					message: apiResponses.INVALID_PERMISSION,
+					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -52,7 +52,7 @@ module.exports = class SessionsHelper {
 
 			if (elapsedMinutes < 30) {
 				return common.failureResponse({
-					message: apiResponses.SESSION__MINIMUM_DURATION_TIME,
+					message: 'SESSION__MINIMUM_DURATION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -60,7 +60,7 @@ module.exports = class SessionsHelper {
 
 			if (elapsedMinutes > 1440) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_DURATION_TIME,
+					message: 'SESSION_DURATION_TIME',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -73,7 +73,7 @@ module.exports = class SessionsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.SESSION_CREATED_SUCCESSFULLY,
+				message: 'SESSION_CREATED_SUCCESSFULLY',
 				result: data,
 			})
 		} catch (error) {
@@ -97,7 +97,7 @@ module.exports = class SessionsHelper {
 		try {
 			if (!(await this.verifyMentor(userId))) {
 				return common.failureResponse({
-					message: apiResponses.INVALID_PERMISSION,
+					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -107,7 +107,7 @@ module.exports = class SessionsHelper {
 
 			if (!sessionDetail) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -127,7 +127,7 @@ module.exports = class SessionsHelper {
 
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
-						message: apiResponses.SESSION__MINIMUM_DURATION_TIME,
+						message: 'SESSION__MINIMUM_DURATION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -135,7 +135,7 @@ module.exports = class SessionsHelper {
 
 				if (elapsedMinutes > 1440) {
 					return common.failureResponse({
-						message: apiResponses.SESSION_DURATION_TIME,
+						message: 'SESSION_DURATION_TIME',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
@@ -145,11 +145,13 @@ module.exports = class SessionsHelper {
 			let message
 			let updateData
 			if (method == common.DELETE_METHOD) {
-				updateData = { deleted: true }
-				message = apiResponses.SESSION_DELETED_SUCCESSFULLY
+				updateData = {
+					deleted: true,
+				}
+				message = 'SESSION_DELETED_SUCCESSFULLY'
 			} else {
 				updateData = bodyData
-				message = apiResponses.SESSION_UPDATED_SUCCESSFULLY
+				message = 'SESSION_UPDATED_SUCCESSFULLY'
 			}
 
 			updateData.updatedAt = new Date().getTime()
@@ -162,7 +164,7 @@ module.exports = class SessionsHelper {
 
 			if (result === 'SESSION_ALREADY_UPDATED') {
 				return common.failureResponse({
-					message: apiResponses.SESSION_ALREADY_UPDATED,
+					message: 'SESSION_ALREADY_UPDATED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -320,7 +322,7 @@ module.exports = class SessionsHelper {
 
 			if (!sessionDetails) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -334,7 +336,7 @@ module.exports = class SessionsHelper {
 				}
 			}
 
-			if (sessionDetails.image && sessionDetails.image.length > 0) {
+			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
 					if (imgPath != '') {
 						return await utils.getDownloadableUrl(imgPath)
@@ -342,10 +344,12 @@ module.exports = class SessionsHelper {
 				})
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
+			const mentorName = await userProfile.details('', sessionDetails.userId)
+			sessionDetails.mentorName = mentorName.data.result.name
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: sessionDetails,
 			})
 		} catch (error) {
@@ -370,9 +374,13 @@ module.exports = class SessionsHelper {
 			await sessionData.updateSession(
 				{
 					status: common.PUBLISHED_STATUS,
-					endDateUtc: { $lt: moment().utc().format() },
+					endDateUtc: {
+						$lt: moment().utc().format(),
+					},
 				},
-				{ status: common.COMPLETED_STATUS }
+				{
+					status: common.COMPLETED_STATUS,
+				}
 			)
 
 			let arrayOfStatus = []
@@ -384,11 +392,7 @@ module.exports = class SessionsHelper {
 				userId: ObjectId(loggedInUserId),
 			}
 			if (arrayOfStatus.length > 0) {
-				if (
-					arrayOfStatus.includes(common.PUBLISHED_STATUS) &&
-					arrayOfStatus.includes(common.COMPLETED_STATUS) &&
-					arrayOfStatus.includes(common.LIVE_STATUS)
-				) {
+				if (arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.length == 1) {
 					filters['endDateUtc'] = {
 						$lt: moment().utc().format(),
 					}
@@ -408,16 +412,18 @@ module.exports = class SessionsHelper {
 			const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters)
 			if (sessionDetails[0] && sessionDetails[0].data.length == 0 && search !== '') {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: [],
 				})
 			}
 
+			sessionDetails[0].data = await sessionMentor.sessionMentorDetails(sessionDetails[0].data)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: sessionDetails[0] ? sessionDetails[0] : [],
 			})
 		} catch (error) {
@@ -448,16 +454,19 @@ module.exports = class SessionsHelper {
 			console.log('==============>>>>>>', session)
 			if (!session) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
+			const mentorName = await userProfile.details('', session.userId)
+			session.mentorName = mentorName.data.result.name
+
 			const sessionAttendeeExist = await sessionAttendesData.findOneSessionAttendee(sessionId, userId)
 			if (sessionAttendeeExist) {
 				return common.failureResponse({
-					message: apiResponses.USER_ALREADY_ENROLLED,
+					message: 'USER_ALREADY_ENROLLED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -505,7 +514,7 @@ module.exports = class SessionsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: apiResponses.USER_ENROLLED_SUCCESSFULLY,
+				message: 'USER_ENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -533,16 +542,20 @@ module.exports = class SessionsHelper {
 			const session = await sessionData.findSessionById(sessionId)
 			if (!session) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const mentorName = await userProfile.details('', session.userId)
+			session.mentorName = mentorName.data.result.name
+
 			const response = await sessionAttendesData.unEnrollFromSession(sessionId, userId)
 
 			if (response === 'USER_NOT_ENROLLED') {
 				return common.failureResponse({
-					message: apiResponses.USER_NOT_ENROLLED,
+					message: 'USER_NOT_ENROLLED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -572,7 +585,7 @@ module.exports = class SessionsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: apiResponses.USER_UNENROLLED_SUCCESSFULLY,
+				message: 'USER_UNENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
@@ -602,7 +615,7 @@ module.exports = class SessionsHelper {
 					request.post(apiUrl, options, (err, data) => {
 						if (err) {
 							return reject({
-								message: apiResponses.USER_SERVICE_DOWN,
+								message: 'USER_SERVICE_DOWN',
 							})
 						} else {
 							data.body = JSON.parse(data.body)
@@ -635,7 +648,7 @@ module.exports = class SessionsHelper {
 			const session = await sessionData.findSessionById(sessionId)
 			if (!session) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -643,12 +656,21 @@ module.exports = class SessionsHelper {
 			let shareLink = session.shareLink
 			if (!shareLink) {
 				shareLink = utils.md5Hash(sessionId + '###' + session.userId.toString())
-				await sessionData.updateOneSession({ _id: ObjectId(sessionId) }, { shareLink })
+				await sessionData.updateOneSession(
+					{
+						_id: ObjectId(sessionId),
+					},
+					{
+						shareLink,
+					}
+				)
 			}
 			return common.successResponse({
-				message: apiResponses.SESSION_LINK_GENERATED_SUCCESSFULLY,
+				message: 'SESSION_LINK_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
-				result: { shareLink },
+				result: {
+					shareLink,
+				},
 			})
 		} catch (error) {
 			throw error
@@ -687,41 +709,45 @@ module.exports = class SessionsHelper {
 		try {
 			const mentor = await userProfile.details(token)
 
-			if (mentor.data.responseCode !== 'OK') {
-				return common.failureResponse({
-					message: apiResponses.MENTORS_NOT_FOUND,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+				if (mentor.data.responseCode !== 'OK') {
+					return common.failureResponse({
+						message: 'MENTORS_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 
 			const mentorDetails = mentor.data.result
 
-			if (!mentorDetails.isAMentor) {
-				return common.failureResponse({
-					message: apiResponses.NOT_A_MENTOR,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+				if (!mentorDetails.isAMentor) {
+					return common.failureResponse({
+						message: 'NOT_A_MENTOR',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 
 			const session = await sessionData.findSessionById(sessionId)
 
-			if (!session) {
-				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+				if (!session) {
+					return resolve(
+						common.failureResponse({
+							message: 'SESSION_NOT_FOUND',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					)
+				}
 
-			if (session.userId.toString() !== mentor.data.result._id) {
-				return common.failureResponse({
-					message: apiResponses.CANNOT_START_OTHER_MENTOR_SESSION,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+				if (session.userId.toString() !== mentor.data.result._id) {
+					return resolve(
+						common.failureResponse({
+							message: 'CANNOT_START_OTHER_MENTOR_SESSION',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					)
+				}
 
 			let link = ''
 			if (session.link) {
@@ -730,13 +756,15 @@ module.exports = class SessionsHelper {
 				let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
 				let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes')
 
-				if (elapsedMinutes > 10) {
-					return common.failureResponse({
-						message: apiResponses.SESSION_ESTIMATED_TIME,
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+					if (elapsedMinutes > 10) {
+						return resolve(
+							common.failureResponse({
+								message: 'SESSION_ESTIMATED_TIME',
+								statusCode: httpStatusCode.bad_request,
+								responseCode: 'CLIENT_ERROR',
+							})
+						)
+					}
 
 				const meetingDetails = await bigBlueButton.createMeeting(
 					session._id,
@@ -745,13 +773,15 @@ module.exports = class SessionsHelper {
 					session.mentorPassword
 				)
 
-				if (!meetingDetails.success) {
-					return common.failureResponse({
-						message: apiResponses.MEETING_NOT_CREATED,
-						statusCode: httpStatusCode.internal_server_error,
-						responseCode: 'SERVER_ERROR',
-					})
-				}
+					if (!meetingDetails.success) {
+						return resolve(
+							common.failureResponse({
+								message: apiResponses.MEETING_NOT_CREATED,
+								statusCode: httpStatusCode.internal_server_error,
+								responseCode: 'SERVER_ERROR',
+							})
+						)
+					}
 
 				const moderatorMeetingLink = await bigBlueButton.joinMeetingAsModerator(
 					session._id,
@@ -759,32 +789,36 @@ module.exports = class SessionsHelper {
 					session.mentorPassword
 				)
 
-				await sessionData.updateOneSession(
-					{
-						_id: session._id,
-					},
-					{
-						link: moderatorMeetingLink,
-						status: 'live',
-						startedAt: utils.utcFormat(),
-						internalMeetingId: meetingDetails.data.response.internalMeetingID,
-					}
-				)
+					await sessionData.updateOneSession(
+						{
+							_id: session._id,
+						},
+						{
+							link: moderatorMeetingLink,
+							status: 'live',
+							isStarted: true,
+							startedAt: utils.utcFormat(),
+							internalMeetingId: meetingDetails.data.response.internalMeetingID,
+						}
+					)
 
 				link = moderatorMeetingLink
 			}
 
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_START_LINK,
-				result: {
-					link: link,
-				},
-			})
-		} catch (error) {
-			return error
+				return resolve(
+					common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'SESSION_START_LINK',
+						result: {
+							link: link,
+						},
+					})
+				)
+			} catch (error) {
+				return reject(error)
+			}
 		}
-	}
+	
 
 	/**
 	 * Set mentor password in session collection..
@@ -877,16 +911,17 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Recording details.
 	 */
 
-	static async getRecording(sessionId) {
-		try {
-			const session = await sessionData.findSessionById(sessionId)
-			if (!session) {
-				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+	static getRecording(sessionId) {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const session = await sessionData.findSessionById(sessionId)
+				if (!session) {
+					return common.failureResponse({
+						message: 'SESSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 
 			const recordingInfo = await bigBlueButton.getRecordings(sessionId)
 
@@ -900,7 +935,7 @@ module.exports = class SessionsHelper {
 		} catch (error) {
 			return error
 		}
-	}
+	})}
 
 	/**
 	 * Get recording details.
@@ -912,11 +947,18 @@ module.exports = class SessionsHelper {
 
 	static async updateRecordingUrl(internalMeetingId, recordingUrl) {
 		try {
-			const updateStatus = await sessionData.updateOneSession({ internalMeetingId }, { recordingUrl })
+			const updateStatus = await sessionData.updateOneSession(
+				{
+					internalMeetingId,
+				},
+				{
+					recordingUrl,
+				}
+			)
 
 			if (updateStatus === 'SESSION_NOT_FOUND') {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -924,7 +966,7 @@ module.exports = class SessionsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_UPDATED_SUCCESSFULLY,
+				message: 'SESSION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error

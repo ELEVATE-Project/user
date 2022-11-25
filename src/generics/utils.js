@@ -6,11 +6,12 @@
  */
 
 const bcryptJs = require('bcryptjs')
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
+const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const momentTimeZone = require('moment-timezone')
 const moment = require('moment')
 const path = require('path')
 const md5 = require('md5')
+const { RedisCache, InternalCache } = require('elevate-node-cache')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -91,6 +92,13 @@ const getDownloadableUrl = async (imgPath) => {
 			accountKey: process.env.AZURE_ACCOUNT_KEY,
 		}
 		imgPath = await AzureFileHelper.getDownloadableUrl(options)
+	} else if (process.env.CLOUD_STORAGE === 'OCI') {
+		const options = {
+			destFilePath: imgPath,
+			bucketName: process.env.DEFAULT_OCI_BUCKET_NAME,
+			endpoint: process.env.OCI_BUCKET_ENDPOINT
+		}
+		imgPath = await OciFileHelper.getDownloadableUrl(options)
 	}
 	return imgPath
 }
@@ -119,6 +127,26 @@ function md5Hash(value) {
 	return md5(value)
 }
 
+function internalSet(key, value) {
+	return InternalCache.setKey(key, value)
+}
+function internalGet(key) {
+	return InternalCache.getKey(key)
+}
+function internalDel(key) {
+	return InternalCache.delKey(key)
+}
+
+function redisSet(key, value, exp) {
+	return RedisCache.setKey(key, value, exp)
+}
+function redisGet(key) {
+	return RedisCache.getKey(key)
+}
+function redisDel(key) {
+	return RedisCache.deleteKey(key)
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -131,4 +159,11 @@ module.exports = {
 	getTimeZone,
 	utcFormat: utcFormat,
 	md5Hash: md5Hash,
+
+	internalSet: internalSet,
+	internalDel: internalDel,
+	internalGet: internalGet,
+	redisSet: redisSet,
+	redisGet: redisGet,
+	redisDel: redisDel,
 }

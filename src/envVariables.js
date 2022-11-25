@@ -115,6 +115,54 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
+	RATING_KAFKA_TOPIC: {
+		message: 'Required kafka topic',
+		optional: false,
+	},
+	INTERNAL_CACHE_EXP_TIME: {
+		message: 'Internal Cache Expiry Time',
+		optional: false,
+	},
+	REDIS_HOST: {
+		message: 'Redis Host Url',
+		optional: false,
+	},
+	ENABLE_EMAIL_FOR_REPORT_ISSUE: {
+		message: 'Required true or false',
+		optional: false,
+	},
+	SUPPORT_EMAIL_ID: {
+		message: 'Required email id of support',
+		optional: process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true' ? false : true,
+	},
+	REPORT_ISSUE_EMAIL_TEMPLATE_CODE: {
+		message: 'Required reported issue email template code',
+		optional: process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true' ? false : true,
+	},
+	BIG_BLUE_BUTTON_SESSION_END_URL: {
+		message: 'Big blue button session end url.',
+		optional: false,
+	},
+	OCI_ACCESS_KEY_ID: {
+		message: 'Required oci access key id',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_SECRET_ACCESS_KEY: {
+		message: 'Required oci secret access key',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_BUCKET_REGION: {
+		message: 'Required oci bucket region',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_BUCKET_ENDPOINT: {
+		message: 'Required oci bucket endpoint',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	DEFAULT_OCI_BUCKET_NAME: {
+		message: 'Required oci bucket name',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	}
 }
 
 let success = true

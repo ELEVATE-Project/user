@@ -6,6 +6,7 @@
  */
 
 const Sessions = require('./model')
+const ObjectId = require('mongoose').Types.ObjectId
 
 module.exports = class SessionsData {
 	static async createSession(data) {
@@ -64,11 +65,11 @@ module.exports = class SessionsData {
 				{
 					$match: {
 						$and: [filters, { deleted: false }],
-						$or: [{ title: new RegExp(search, 'i') }, { mentorName: new RegExp(search, 'i') }],
+						$or: [{ title: new RegExp(search, 'i') }],
 					},
 				},
 				{
-					$sort: { _id: -1 },
+					$sort: { createdAt: -1 },
 				},
 				{
 					$project: {
@@ -81,6 +82,9 @@ module.exports = class SessionsData {
 						status: 1,
 						image: 1,
 						endDateUtc: 1,
+						userId: 1,
+							startDateUtc: 1,
+							createdAt: 1,
 					},
 				},
 				{
@@ -137,6 +141,120 @@ module.exports = class SessionsData {
 			} else {
 				return 'SESSION_NOT_FOUND'
 			}
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findSessionHosted(filter) {
+		try {
+			return await Sessions.count(filter)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async mentorsUpcomingSession(page, limit, search, filters) {
+		filters.userId = ObjectId(filters.userId)
+		try {
+			const sessionAttendeesData = await Sessions.aggregate([
+				{
+					$match: {
+						$and: [filters, { deleted: false }],
+						$or: [{ title: new RegExp(search, 'i') }],
+					},
+				},
+				{
+					$sort: { startDateUtc: 1 },
+				},
+				{
+					$project: {
+						_id: 1,
+						title: 1,
+						description: 1,
+						startDate: 1,
+						endDate: 1,
+						status: 1,
+						image: 1,
+						endDateUtc: 1,
+						startDateUtc: 1,
+						userId: 1,
+					},
+				},
+				{
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
+					},
+				},
+				{
+					$project: {
+						data: 1,
+						count: {
+							$arrayElemAt: ['$totalCount.count', 0],
+						},
+					},
+				},
+			])
+
+			return sessionAttendeesData
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findSessionHosted(filter) {
+		try {
+			return await Sessions.count(filter)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async mentorsUpcomingSession(page, limit, search, filters) {
+		filters.userId = ObjectId(filters.userId)
+		try {
+			const sessionAttendeesData = await Sessions.aggregate([
+				{
+					$match: {
+						$and: [filters, { deleted: false }],
+						$or: [{ title: new RegExp(search, 'i') }],
+					},
+				},
+				{
+					$sort: { startDateUtc: 1 },
+				},
+				{
+					$project: {
+						_id: 1,
+						title: 1,
+						description: 1,
+						startDate: 1,
+						endDate: 1,
+						status: 1,
+						image: 1,
+						endDateUtc: 1,
+						startDateUtc: 1,
+						userId: 1,
+					},
+				},
+				{
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
+					},
+				},
+				{
+					$project: {
+						data: 1,
+						count: {
+							$arrayElemAt: ['$totalCount.count', 0],
+						},
+					},
+				},
+			])
+
+			return sessionAttendeesData
 		} catch (error) {
 			return error
 		}

@@ -19,7 +19,7 @@ let sessionsSchema = new Schema({
 		type: mongoose.Types.ObjectId,
 		index: true,
 	},
-	mentorName: String,
+
 	sessionReschedule: Number,
 	status: {
 		type: String,
@@ -49,6 +49,10 @@ let sessionsSchema = new Schema({
 		},
 	],
 	skippedFeedback: {
+		type: Boolean,
+		default: false,
+	},
+	isStarted: {
 		type: Boolean,
 		default: false,
 	},

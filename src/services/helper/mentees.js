@@ -5,14 +5,32 @@ const sessionAttendees = require('@db/sessionAttendees/queries')
 const userProfile = require('./userProfile')
 const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
-const apiResponses = require('@constants/api-responses')
 const httpStatusCode = require('@generics/http-status')
 const bigBlueButton = require('./bigBlueButton')
 const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
 
+const { successResponse } = require('@constants/common')
 module.exports = class MenteesHelper {
+	/**
+	 * Profile.
+	 * @method
+	 * @name profile
+	 * @param {String} userId - user id.
+	 * @returns {JSON} - profile details
+	 */
+	static async profile(id) {
+		const menteeDetails = await userProfile.details('', id)
+		const filter = { userId: id, isSessionAttended: true }
+		const totalsession = await sessionAttendees.countAllSessionAttendees(filter)
+		return successResponse({
+			statusCode: httpStatusCode.ok,
+			message: 'PROFILE_FTECHED_SUCCESSFULLY',
+			result: { sessionsAttended: totalsession, ...menteeDetails.data.result },
+		})
+	}
+
 	/**
 	 * Sessions list. Includes upcoming and enrolled sessions.
 	 * @method
@@ -43,7 +61,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: sessions,
 			})
 		} catch (error) {
@@ -84,7 +102,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.MENTEES_REPORT_FETCHED_SUCCESSFULLY,
+				message: 'MENTEES_REPORT_FETCHED_SUCCESSFULLY',
 				result: { totalSessionEnrolled, totalsessionsAttended },
 			})
 		} catch (error) {
@@ -101,16 +119,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees homeFeed.
 	 */
 
-	static async homeFeed(userId, isAMentor) {
+	static async homeFeed(userId, isAMentor, page, limit, search) {
 		try {
 			/* All Sessions */
-			const page = 1
-			let limit = 4
-			let allSessions = await this.getAllSessions(page, limit, '', userId)
+
+			let allSessions = await this.getAllSessions(page, limit, search, userId)
 
 			/* My Sessions */
-			limit = 2
-			let mySessions = await this.getMySessions(page, limit, '', userId)
+
+			let mySessions = await this.getMySessions(page, limit, search, userId)
 
 			const result = {
 				allSessions: allSessions[0].data,
@@ -121,7 +138,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_FETCHED_SUCCESSFULLY,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: result,
 				meta: {
 					type: 'feedback',
@@ -129,6 +146,7 @@ module.exports = class MenteesHelper {
 				},
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -148,7 +166,7 @@ module.exports = class MenteesHelper {
 
 			if (mentee.data.responseCode !== 'OK') {
 				return common.failureResponse({
-					message: apiResponses.USER_NOT_FOUND,
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -158,7 +176,7 @@ module.exports = class MenteesHelper {
 
 			if (!session) {
 				return common.failureResponse({
-					message: apiResponses.SESSION_NOT_FOUND,
+					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -166,7 +184,7 @@ module.exports = class MenteesHelper {
 
 			if (session.status == 'completed') {
 				return common.failureResponse({
-					message: apiResponses.SESSION_ENDED,
+					message:  'SESSION_ENDED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -174,7 +192,7 @@ module.exports = class MenteesHelper {
 
 			if (session.status !== 'live') {
 				return common.failureResponse({
-					message: apiResponses.JOIN_ONLY_LIVE_SESSION,
+					message: 'JOIN_ONLY_LIVE_SESSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -186,7 +204,7 @@ module.exports = class MenteesHelper {
 
 			if (!sessionAttendee) {
 				return common.failureResponse({
-					message: apiResponses.USER_NOT_ENROLLED,
+					message: 'USER_NOT_ENROLLED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -218,7 +236,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: apiResponses.SESSION_START_LINK,
+				message: 'SESSION_START_LINK',
 				result: {
 					link: link,
 				},
@@ -240,8 +258,6 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async getAllSessions(page, limit, search, userId) {
-		const sessionIds = []
-
 		let filters = {
 			status: { $in: ['published', 'live'] },
 			endDateUtc: {
@@ -254,41 +270,8 @@ module.exports = class MenteesHelper {
 
 		const sessions = await sessionData.findAllSessions(page, limit, search, filters)
 
-		if (sessions[0].data.length > 0) {
-			sessions[0].data.forEach((session) => {
-				sessionIds.push(session._id)
-			})
-
-			filters = {
-				sessionId: {
-					$in: sessionIds,
-				},
-				userId,
-			}
-
-			const attendees = await sessionAttendees.findAllSessionAttendees(filters)
-
-			await Promise.all(
-				sessions[0].data.map(async (session) => {
-					const attendee = attendees.find(
-						(attendee) => attendee.sessionId.toString() === session._id.toString()
-					)
-					session.isEnrolled = false
-					if (attendee) {
-						session.isEnrolled = true
-					}
-
-					if (session.image && session.image.length > 0) {
-						session.image = session.image.map(async (imgPath) => {
-							if (imgPath && imgPath != '') {
-								return await utils.getDownloadableUrl(imgPath)
-							}
-						})
-						session.image = await Promise.all(session.image)
-					}
-				})
-			)
-		}
+		sessions[0].data = await this.menteeSessionDetails(sessions[0].data, userId)
+		sessions[0].data = await this.sessionMentorDetails(sessions[0].data)
 		return sessions
 	}
 
@@ -323,22 +306,84 @@ module.exports = class MenteesHelper {
 			userId,
 		}
 		const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters)
-		if (sessions[0].data && sessions[0].data.length > 0) {
-			sessions[0].data = sessions[0].data.map(async (session) => {
-				if (session.image && session.image.length > 0) {
-					session.image = session.image.map(async (imgPath) => {
-						if (imgPath && imgPath != '') {
-							return await utils.getDownloadableUrl(imgPath)
-						}
-					})
-					session.image = await Promise.all(session.image)
-				}
-				return session
-			})
 
-			sessions[0].data = await Promise.all(sessions[0].data)
-		}
+		sessions[0].data = await this.sessionMentorDetails(sessions[0].data)
 
 		return sessions
+	}
+
+	static async menteeSessionDetails(sessions, userId) {
+		try {
+			const sessionIds = []
+			if (sessions.length > 0) {
+				sessions.forEach((session) => {
+					sessionIds.push(session._id)
+				})
+
+				const filters = {
+					sessionId: {
+						$in: sessionIds,
+					},
+					userId,
+				}
+				const attendees = await sessionAttendees.findAllSessionAttendees(filters)
+				await Promise.all(
+					sessions.map(async (session) => {
+						if (attendees) {
+							const attendee = attendees.find(
+								(attendee) => attendee.sessionId.toString() === session._id.toString()
+							)
+							session.isEnrolled = false
+							if (attendee) {
+								session.isEnrolled = true
+							}
+						} else {
+							session.isEnrolled = false
+						}
+					})
+				)
+				return sessions
+			} else {
+				return sessions
+			}
+		} catch (err) {
+			return err
+		}
+	}
+
+	static async sessionMentorDetails(session) {
+		try {
+			if (session.length > 0) {
+				const userIds = session
+					.map((item) => item.userId.toString())
+					.filter((value, index, self) => self.indexOf(value) === index)
+
+				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
+				mentorDetails = mentorDetails.result
+				for (let i = 0; i < session.length; i++) {
+					let mentorIndex = mentorDetails.findIndex((x) => x._id === session[i].userId.toString())
+					session[i].mentorName = mentorDetails[mentorIndex].name
+				}
+
+				await Promise.all(
+					session.map(async (sessions) => {
+						if (sessions.image && sessions.image.length > 0) {
+							sessions.image = sessions.image.map(async (imgPath) => {
+								if (imgPath && imgPath != '') {
+									return await utils.getDownloadableUrl(imgPath)
+								}
+							})
+							sessions.image = await Promise.all(sessions.image)
+						}
+					})
+				)
+
+				return session
+			} else {
+				return session
+			}
+		} catch (error) {
+			throw error
+		}
 	}
 }
