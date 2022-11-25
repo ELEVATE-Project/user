@@ -20,7 +20,7 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
-
+const { logger } = require('../../log/logger')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -164,6 +164,7 @@ module.exports = class AccountHelper {
 		}
 		try {
 			let user = await usersData.findOne({ 'email.address': bodyData.email.toLowerCase() }, projection)
+			kafkaCommunication.pushkafka(user)
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -485,7 +486,7 @@ module.exports = class AccountHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			console.log(otp)
+			logger.info(otp)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',

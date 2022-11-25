@@ -7,6 +7,7 @@
 
 const utils = require('@generics/utils')
 const FormsData = require('@db/forms/queries')
+const correlationId = require('../log/correlation-id')
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
 	const formVersionData = (await utils.internalGet('formVersion')) || false
 	let versions = {}
@@ -21,7 +22,7 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 		responseCode,
 		message,
 		result,
-		meta: { ...meta, formsVersion: versions },
+		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
 	}
 }
 

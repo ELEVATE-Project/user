@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const UsersData = require('@db/users/queries')
+const { logger } = require('../log/logger')
 
 module.exports = async function (req, res, next) {
 	try {
@@ -32,7 +33,9 @@ module.exports = async function (req, res, next) {
 			return
 		} else if (!common.guestUrls.includes(req.url)) {
 			const authHeader = req.get('X-auth-token')
+
 			if (!authHeader) {
+				logger.info('recjected1')
 				throw common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
@@ -49,6 +52,7 @@ module.exports = async function (req, res, next) {
 
 			const authHeaderArray = authHeader.split(' ')
 			if (authHeaderArray[0] !== 'bearer') {
+				console.log('recjected2')
 				throw common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
@@ -57,6 +61,7 @@ module.exports = async function (req, res, next) {
 			}
 			try {
 				decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+				logger.info(decodedToken)
 			} catch (err) {
 				err.statusCode = httpStatusCode.unauthorized
 				err.responseCode = 'UNAUTHORIZED'

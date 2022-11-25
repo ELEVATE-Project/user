@@ -4,6 +4,7 @@
  * Date : 08-Nov-2021
  * Description : Kafka producer methods
  */
+const correlationId = require('../log/correlation-id')
 
 const pushEmailToKafka = async (message) => {
 	try {
@@ -39,7 +40,27 @@ const clearInternalCache = async (key) => {
 	}
 }
 
+const pushkafka = async (key) => {
+	try {
+		const data = { value: key }
+		const correlation = correlationId.getId
+		data.correlationId = correlation() || 'noCorrelationIdValue'
+		console.log(key.correlationId)
+		const payload = [
+			{
+				topic: 'logger',
+				messages: JSON.stringify({ message: JSON.parse(JSON.stringify(data)), type: 'logs' }),
+			},
+		]
+		console.log(payload)
+		return await pushPayloadToKafka(payload)
+	} catch (error) {
+		throw error
+	}
+}
+
 module.exports = {
 	pushEmailToKafka,
 	clearInternalCache,
+	pushkafka,
 }

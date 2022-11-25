@@ -19,6 +19,7 @@
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
 	"dependencies": {
+		"@azure/core-paging": "^1.4.0",
 		"@azure/storage-blob": "^12.8.0",
 		"@google-cloud/storage": "^5.15.6",
 		"@shelf/jest-mongodb": "^3.0.1",
@@ -28,6 +29,7 @@
 		"bcryptjs": "^2.4.3",
 		"body-parser": "^1.19.0",
 		"cli-table": "^0.3.11",
+		"cls-hooked": "^4.2.2",
 		"commander": "^9.4.0",
 		"cors": "^2.8.5",
 		"crypto": "^1.0.1",
@@ -37,11 +39,14 @@
 		"elevate-node-cache": "^1.0.6",
 		"email-validator": "^2.0.4",
 		"express": "^4.17.1",
+		"express-async-wrap": "1.0.0",
+		"express-correlation-id": "^2.0.1",
 		"express-fileupload": "^1.2.1",
 		"express-validator": "^5.3.1",
 		"files-cloud-storage": "^1.2.2",
 		"fn-args": "^4.0.0",
 		"fs-extra": "^9.0.1",
+		"graylog2": "^0.2.1",
 		"i18n": "^0.15.0",
 		"i18next": "^21.8.12",
 		"i18next-fs-backend": "^1.1.4",
@@ -61,14 +66,18 @@
 		"mongoose-lean-getters": "^0.3.5",
 		"mongoose-paginate-v2": "^1.4.2",
 		"mongoose-timestamp": "^0.6.0",
+		"morgan": "1.9.1",
 		"p-each-series": "^2.1.0",
 		"redis": "^4.0.3",
 		"redoc-cli": "^0.13.15",
 		"redoc-express": "^1.0.0",
+		"request": "2.88.0",
+		"request-promise-native": "1.0.7",
 		"require-all": "^3.0.0",
 		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
-		"uuid": "^8.3.2"
+		"uuid": "^8.3.2",
+		"winston": "^3.8.2"
 	},
 	"devDependencies": {
 		"@faker-js/faker": "^7.4.0",
@@ -101,6 +110,7 @@
 		"@public": "public",
 		"@routes": "routes",
 		"@services": "services",
-		"@validators": "validators"
+		"@validators": "validators",
+		"@logger": "logger"
 	}
 }

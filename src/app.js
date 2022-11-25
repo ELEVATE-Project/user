@@ -15,7 +15,7 @@ const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
 
 require('dotenv').config({ path: './.env' })
-
+const kafkaCommunication = require('@generics/kafka-communication')
 let environmentData = require('./envVariables')()
 
 if (!environmentData.success) {
@@ -43,6 +43,30 @@ i18next
 
 const app = express()
 
+const { requestLoggingMiddleware } = require(`./log/request-logging-middleware`)
+const { correlationIdMiddleware } = require(`./log/correlation-id-middleware`)
+const { logger } = require('./log/logger')
+// const logger = kafkaCommunication.pushkafka
+app.use(correlationIdMiddleware)
+app.use(requestLoggingMiddleware)
+
+// var graylog2 = require('graylog2')
+// var logger = new graylog2.graylog({
+// 	servers: [
+// 		{ host: '127.0.0.1', port: 12201 },
+// 		{ host: '127.0.0.2', port: 12201 },
+// 	],
+// 	hostname: 'users', // the name of this host
+// 	// (optional, default: os.hostname())
+// 	facility: 'Node.js', // the facility for these log messages
+// 	// (optional, default: "Node.js")
+// 	bufferSize: 1350, // max UDP packet size, should never exceed the
+// 	// MTU of your system (optional, default: 1400)
+// })
+
+// logger.on('error', function (error) {
+// 	console.error('Error while trying to write to graylog2:', error)
+// })
 // Health check
 require('@health-checks')(app)
 
@@ -63,11 +87,15 @@ app.use(express.static('public'))
 if (process.env.ENABLE_LOG === 'true') {
 	app.all('*', (req, res, next) => {
 		console.log('***User Service Logs Starts Here***')
-		console.log('Request Type %s for %s on %s from ', req.method, req.url, new Date())
-		console.log('Request Headers: ', req.headers)
-		console.log('Request Body: ', req.body)
-		console.log('Request Files: ', req.files)
-		console.log('***User Service Logs Ends Here***')
+		logger.info(`Request Type ${req.method} for ${req.url} on ${new Date()} from `)
+		logger.info(req.headers)
+		logger.info(`Request Body: ${req.body}`)
+		console.log(`Request Type ${req.method} for ${req.url} on ${new Date()} from `)
+		console.log(req.headers)
+		console.log('Request Body:', req.body)
+		// logger(`Request Body: ${req.body}`)
+		// logger('Request Files: ')
+		console.error('***User Service Logs Ends Here***', 'ankitshahu')
 		next()
 	})
 }
@@ -80,8 +108,8 @@ app.listen(process.env.APPLICATION_PORT, (res, err) => {
 	if (err) {
 		onError(err)
 	}
-	console.log('Environment: ' + process.env.APPLICATION_ENV)
-	console.log('Application is running on the port:' + process.env.APPLICATION_PORT)
+	// logger.info('Environment: ' + process.env.APPLICATION_ENV)
+	// logger.info('Application is running on the port:' + process.env.APPLICATION_PORT)
 })
 
 // Handles specific listen errors with friendly messages
