@@ -120,7 +120,7 @@ module.exports = class SessionsAttendees {
 
 	static async findAllUpcomingMenteesSession(page, limit, search, filters) {
 		filters.userId = ObjectId(filters.userId)
-		return new Promise(async (resolve, reject) => {
+		
 			try {
 				const sessionAttendeesData = await SessionAttendees.aggregate([
 					{
@@ -181,11 +181,11 @@ module.exports = class SessionsAttendees {
 						},
 					},
 				])
-				resolve(sessionAttendeesData)
+				return (sessionAttendeesData)
 			} catch (error) {
-				reject(error)
+				return (error)
 			}
-		})
+		
 	}
 
 	static async findPendingFeedbackSessions(filters) {
