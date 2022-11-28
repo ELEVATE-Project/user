@@ -7,7 +7,7 @@
 
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-
+const mongooseLeanGetter = require('mongoose-lean-getters')
 let sessionsSchema = new Schema({
 	title: String,
 	description: String,
@@ -74,6 +74,6 @@ let sessionsSchema = new Schema({
 		default: null,
 	},
 })
-
+sessionsSchema.plugin(mongooseLeanGetter)
 const Sessions = db.model('sessions', sessionsSchema)
 module.exports = Sessions

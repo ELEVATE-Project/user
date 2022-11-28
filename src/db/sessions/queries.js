@@ -47,8 +47,10 @@ module.exports = class SessionsData {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const sessionData = await Sessions.findOne(filter, projection).lean()
+
 				resolve(sessionData)
 			} catch (error) {
+				console.log(error)
 				reject(error)
 			}
 		})
