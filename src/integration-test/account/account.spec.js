@@ -49,6 +49,7 @@ describe('/user/v1/account', function () {
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.verifyMentor)
 	})
 
 	it('/verifyUser', async () => {
@@ -56,6 +57,7 @@ describe('/user/v1/account', function () {
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.verifyUser)
 	})
 
 	it('/acceptTermsAndCondition', async () => {
@@ -63,12 +65,14 @@ describe('/user/v1/account', function () {
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.acceptTermsAndConditionSchema)
 	})
 	it('/list', async () => {
 		let res = await request.patch('/user/v1/account/list').query({ type: 'mentee', page: 1, limit: 2 })
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.listSchema)
 	})
 	it('/generateToken', async () => {
 		let res = await request
