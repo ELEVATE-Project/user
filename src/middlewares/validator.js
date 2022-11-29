@@ -8,6 +8,7 @@ const fs = require('fs')
 
 module.exports = (req, res, next) => {
 	try {
+		//Checks path existence
 		let reqPath =
 			fs.existsSync(
 				PROJECT_ROOT_DIRECTORY +
