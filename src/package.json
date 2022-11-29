@@ -50,7 +50,7 @@
 		"jest": "^28.1.2",
 		"json2csv": "^5.0.6",
 		"jsonwebtoken": "^8.5.1",
-		"kafka-node": "^5.0.0",
+		"kafkajs": "^2.2.0",
 		"md5": "^2.3.0",
 		"module-alias": "^2.2.2",
 		"moment": "^2.29.1",
