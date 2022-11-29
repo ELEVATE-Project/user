@@ -50,4 +50,4 @@ workflows:
             - SonarCloud
           filters:
             tags:
-              only: \b(dev|develop|main)\b
+              only: \b(develop|dev|main)\b
