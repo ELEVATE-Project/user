@@ -49,5 +49,7 @@ workflows:
           context:
             - SonarCloud
           filters:
-            tags:
-              only: develop
+            branches:
+              only:
+                - develop
+                - main
