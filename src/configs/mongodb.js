@@ -16,7 +16,7 @@ module.exports = function () {
 	// mongoose.set('useFindAndModify', false) // Default is false in mongoose v6
 	// mongoose.set('useUnifiedTopology', true) // Default is true in mongoose v6
 
-	let parameters
+	let parameters = ''
 	if (process.env.REPLICA_SET_NAME) {
 		parameters = '?replicaSet=' + process.env.REPLICA_SET_NAME
 	}
@@ -24,9 +24,17 @@ module.exports = function () {
 		parameters = parameters + '&readPreference=' + process.env.REPLICA_SET_READ_PREFERENCE
 	}
 
-	var db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
-		useNewUrlParser: true,
-	})
+	let db
+	parameters
+		? (db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
+				useNewUrlParser: true,
+		  }))
+		: (db = mongoose.createConnection(process.env.MONGODB_URL, {
+				useNewUrlParser: true,
+		  }))
+	// var db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
+	// 	useNewUrlParser: true,
+	// })
 
 	db.on('error', function () {
 		console.log('connection error:')

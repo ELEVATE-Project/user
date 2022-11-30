@@ -85,7 +85,6 @@ const mentorLogIn = async () => {
 			email: email,
 			password: password,
 		})
-		//console.log(res.body)
 
 		if (res.body.result.access_token && res.body.result.user._id) {
 			defaultHeaders = {

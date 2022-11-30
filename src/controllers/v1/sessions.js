@@ -86,6 +86,7 @@ module.exports = class Sessions {
 
 	async list(req) {
 		try {
+			console.log(req)
 			const sessionDetails = await sessionsHelper.list(
 				req.decodedToken._id,
 				req.pageNo,
@@ -171,7 +172,6 @@ module.exports = class Sessions {
 	 */
 
 	async start(req) {
-		console.log('====================>')
 		try {
 			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token)
 			return sessionsStarted
