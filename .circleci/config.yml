@@ -5,7 +5,7 @@ jobs:
   build:
     machine: #Linux machine instead of docker environment
       image: ubuntu-2004:202111-01
-      docker_layer_caching: true
+      docker_layer_caching: false
     working_directory: ~/mentoring # Default working directory
     steps:
       - checkout:
