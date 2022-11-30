@@ -201,7 +201,6 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			if (isAMentor && feedbackAs === 'mentor') {
 				if (
 					sessionInfo.skippedFeedback == true ||

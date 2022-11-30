@@ -38,7 +38,7 @@
         update: yes
         version: "{{ gitBranch }}"
     - name: Update npm
-      shell: cd {{release_path}}/src && npm i
+      shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
     
     - name: Update symlink
       file:
@@ -56,6 +56,11 @@
       shell: cat {{ project_path }}/data2.json | {{ current_path }}/src/scripts/json2env.sh > {{ current_path }}/src/.env
       register: envConfig 
     - debug: msg=" cred {{ envConfig }} "
+
+    - name: generate api-doc 
+      shell: cd {{release_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
+      register: apiDocResponse 
+    - debug: msg=" Api-doc {{ apiDocResponse }} "
 
     - name: Start pm2
       command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-mentoring"
