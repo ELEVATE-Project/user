@@ -7,7 +7,9 @@
 
 // Dependencies
 const mongoose = require('mongoose')
+
 const Schema = mongoose.Schema
+const mongooseLeanGetter = require('mongoose-lean-getters')
 
 const userEntitySchema = new Schema({
 	value: {
@@ -42,7 +44,7 @@ const userEntitySchema = new Schema({
 		required: true,
 	},
 })
-
+userEntitySchema.plugin(mongooseLeanGetter)
 const UserEntities = db.model('userEntities', userEntitySchema, 'userEntities')
 
 module.exports = UserEntities

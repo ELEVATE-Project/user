@@ -8,6 +8,7 @@
 const { request, logIn, logError } = require('@commonTests')
 const { faker } = require('@faker-js/faker')
 const { insertEntity } = require('./userentityData')
+const schema = require('./responseSchema')
 
 describe('End point test for', function () {
 	let userDetails
@@ -32,6 +33,7 @@ describe('End point test for', function () {
 
 		logError(res)
 		expect(res.statusCode).toBe(201)
+		expect(res.body).toMatchSchema(schema.createEntitySchema)
 	})
 
 	it('reading user entity', async () => {
@@ -41,6 +43,7 @@ describe('End point test for', function () {
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(schema.readEntitySchema)
 	})
 	it('updating user entity', async () => {
 		let res = await request.patch('/user/v1/userentity/update/' + entityId).send({
@@ -49,12 +52,14 @@ describe('End point test for', function () {
 
 		logError(res)
 		expect(res.statusCode).toBe(202)
+		expect(res.body).toMatchSchema(schema.updateEntitySchema)
 	})
 	it('deleting user entity', async () => {
 		let res = await request.delete('/user/v1/userentity/delete/' + entityId)
 
 		logError(res)
 		expect(res.statusCode).toBe(202)
+		expect(res.body).toMatchSchema(schema.deleteEntitySchema)
 	})
 	afterAll(async () => {
 		//await deleteEntity()
