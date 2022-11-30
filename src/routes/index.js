@@ -19,7 +19,6 @@ module.exports = (app) => {
 	async function router(req, res, next) {
 		let controllerResponse
 		let validationError
-		console.log('rechecje')
 
 		/* Check for input validation error */
 		try {

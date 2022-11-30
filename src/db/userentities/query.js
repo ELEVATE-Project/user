@@ -11,8 +11,8 @@ const UserEntities = require('./model')
 module.exports = class UserEntityData {
 	static async createEntity(data) {
 		try {
-			await new UserEntities(data).save()
-			return true
+			const userEntityDataRes = await new UserEntities(data).save()
+			return userEntityDataRes
 		} catch (error) {
 			return error
 		}
