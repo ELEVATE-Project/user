@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Starting the docker containers
           command: |-
-            cd dev-ops/ && docker-compose up
+            cd dev-ops/ && docker-compose up -d
       - run:
           name: Running test cases
           command: |-
