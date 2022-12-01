@@ -6,20 +6,27 @@
  */
 
 // Dependencies
-const kafka = require('kafka-node')
+const kafka = require('kafkajs')
 
-async function health_check() {
-	const client = new kafka.KafkaClient({
-		kafkaHost: process.env.KAFKA_URL,
-	})
+function health_check() {
+	return new Promise(async (resolve, reject) => {
+		const kafkaIps = process.env.KAFKA_URL.split(',')
+		const KafkaClient = new Kafka({
+			clientId: 'mentoring',
+			brokers: kafkaIps,
+		})
 
-	const producer = new kafka.Producer(client)
+		const producer = KafkaClient.producer()
+		await producer.connect()
 
-	producer.on('error', function (err) {
-		return false
-	})
-	producer.on('ready', function () {
-		return true
+		producer.on('producer.connect', () => {
+			console.log(`KafkaProvider: connected`)
+			return resolve(true)
+		})
+		producer.on('producer.disconnect', () => {
+			console.log(`KafkaProvider: could not connect`)
+			return resolve(false)
+		})
 	})
 }
 
