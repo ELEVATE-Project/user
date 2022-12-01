@@ -24,9 +24,20 @@ module.exports = function () {
 		parameters = parameters + '&readPreference=' + process.env.REPLICA_SET_READ_PREFERENCE
 	}
 
-	var db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
-		useNewUrlParser: true,
-	})
+	let db
+	if (!parameters) {
+		db = mongoose.createConnection(process.env.MONGODB_URL, {
+			useNewUrlParser: true,
+		})
+	} else {
+		db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
+			useNewUrlParser: true,
+		})
+	}
+
+	// var db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
+	// 	useNewUrlParser: true,
+	// })
 
 	db.on('error', function () {
 		console.log('connection error:')
