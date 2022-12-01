@@ -8,8 +8,7 @@
 const utils = require('@generics/utils')
 const { Kafka } = require('kafkajs')
 
-module.exports = () => {
-
+module.exports = async () => {
 	const kafkaIps = process.env.KAFKA_URL.split(',')
 	const KafkaClient = new Kafka({
 		clientId: 'mentoring',
@@ -30,7 +29,7 @@ module.exports = () => {
 	})
 
 	const subscribeToConsumer = async () => {
-		await consumer.subscribe({ topics: [ process.env.CLEAR_INTERNAL_CACHE] })
+		await consumer.subscribe({ topics: [process.env.CLEAR_INTERNAL_CACHE] })
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
@@ -48,5 +47,4 @@ module.exports = () => {
 
 	global.kafkaProducer = producer
 	global.kafkaClient = KafkaClient
-	
 }
