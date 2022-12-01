@@ -35,10 +35,6 @@ module.exports = function () {
 		})
 	}
 
-	// var db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
-	// 	useNewUrlParser: true,
-	// })
-
 	db.on('error', function () {
 		console.log('connection error:')
 	})

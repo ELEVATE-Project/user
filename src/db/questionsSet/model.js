@@ -32,6 +32,3 @@ questionsSetSchema.plugin(mongooseLeanGetter)
 const QuestionsSet = db.model('questionSet', questionsSetSchema, 'questionSet')
 
 module.exports = QuestionsSet
-
-// skippedFeedback: true / false
-// feedback: []
