@@ -86,7 +86,6 @@ module.exports = class Sessions {
 
 	async list(req) {
 		try {
-			console.log(req)
 			const sessionDetails = await sessionsHelper.list(
 				req.decodedToken._id,
 				req.pageNo,
@@ -229,7 +228,6 @@ module.exports = class Sessions {
 	async feedback(req) {
 		try {
 			const sessionsFeedBack = await sessionsHelper.feedback(req.params.id, req.body)
-
 			return sessionsFeedBack
 		} catch (error) {
 			return error

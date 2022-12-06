@@ -12,7 +12,6 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('request')
 
-const axios = require('axios')
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
@@ -370,7 +369,6 @@ module.exports = class SessionsHelper {
 
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
-			console.log(loggedInUserId)
 			// update sessions which having status as published and  exceeds the current date and time
 			await sessionData.updateSession(
 				{
@@ -452,7 +450,6 @@ module.exports = class SessionsHelper {
 
 		try {
 			const session = await sessionData.findSessionById(sessionId)
-			console.log('==============>>>>>>', session)
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
