@@ -486,7 +486,9 @@ module.exports = class AccountHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			console.log(otp)
+			if (process.env.APPLICATION_ENV === 'development') {
+				console.log(otp)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
