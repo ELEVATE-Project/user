@@ -6,9 +6,7 @@
  */
 
 module.exports = {
-	pendingFeedbacks: (req) => {
-		// req.checkParams('id').notEmpty().withMessage('id param is empty')
-	},
+	pendingFeedbacks: (req) => {},
 
 	list: (req) => {
 		req.checkQuery('type').notEmpty().withMessage('type can not be null').isString()
