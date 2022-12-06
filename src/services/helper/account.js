@@ -839,7 +839,6 @@ module.exports = class AccountHelper {
 	 */
 	static async acceptTermsAndCondition(userId) {
 		try {
-			console.log('=======>', userId)
 			const user = await usersData.findOne({ _id: userId }, { _id: 1 })
 
 			if (!user) {
