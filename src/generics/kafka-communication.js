@@ -36,15 +36,13 @@ const clearInternalCache = async (key) => {
 	}
 }
 
-const pushPayloadToKafka = (payload) => {
-	return new Promise(async function (resolve, reject) {
+const pushPayloadToKafka = async (payload) => {
+	try {
 		let response = await kafkaProducer.send(payload)
-		if (response) {
-			resolve(response)
-		} else {
-			reject(false)
-		}
-	})
+		return response
+	} catch (error) {
+		return error
+	}
 }
 
 module.exports = {
