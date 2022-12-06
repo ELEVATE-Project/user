@@ -66,6 +66,7 @@ generics/helpers/credentials/*
 
 gcp.json
 
-#ignore jest db config 
+#ignore jest db config
 /src/globalConfig.json
 
+dev-ops/report

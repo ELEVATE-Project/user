@@ -1,5 +1,4 @@
 // Dependencies
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const questionsSetData = require('@db/questionsSet/queries')

@@ -8,95 +8,74 @@
 const Questions = require('./model')
 
 module.exports = class QuestionsData {
-	static createQuestion(data) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				let question = await new Questions(data).save()
-				resolve(question)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async createQuestion(data) {
+		try {
+			let question = await new Questions(data).save()
+			return question
+		} catch (error) {
+			return error
+		}
 	}
 
-	static findOneQuestion(filter, projection = {}) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const questionData = await Questions.findOne(filter, projection)
-				resolve(questionData)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async findOneQuestion(filter, projection = {}) {
+		try {
+			const questionData = await Questions.findOne(filter, projection)
+			return questionData
+		} catch (error) {
+			return error
+		}
 	}
 
-	static find(filter, projection = {}) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const questionData = await Questions.find(filter, projection).lean()
-				resolve(questionData)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async find(filter, projection = {}) {
+		try {
+			const questionData = await Questions.find(filter, projection).lean()
+			return questionData
+		} catch (error) {
+			return error
+		}
 	}
 
-	static updateOneQuestion(filter, update, options = {}) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const res = await Questions.updateOne(filter, update, options)
-				if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
-					resolve('QUESTION_UPDATED')
-				} else if (
-					(res.n === 1 && res.nModified === 0) ||
-					(res.matchedCount === 1 && res.modifiedCount === 0)
-				) {
-					resolve('QUESTION_ALREADY_EXISTS')
-				} else {
-					resolve('QUESTION_NOT_FOUND')
-				}
-			} catch (error) {
-				reject(error)
+	static async updateOneQuestion(filter, update, options = {}) {
+		try {
+			const res = await Questions.updateOne(filter, update, options)
+			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+				return 'QUESTION_UPDATED'
+			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
+				return 'QUESTION_ALREADY_EXISTS'
+			} else {
+				return 'QUESTION_NOT_FOUND'
 			}
-		})
+		} catch (error) {
+			return error
+		}
 	}
 
-	static update(filter, update, options = {}) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const res = await Questions.update(filter, update, options)
-				if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
-					resolve('QUESTION_UPDATED')
-				} else if (
-					(res.n === 1 && res.nModified === 0) ||
-					(res.matchedCount === 1 && res.modifiedCount === 0)
-				) {
-					resolve('QUESTION_ALREADY_EXISTS')
-				} else {
-					resolve('QUESTION_NOT_FOUND')
-				}
-			} catch (error) {
-				reject(error)
+	static async update(filter, update, options = {}) {
+		try {
+			const res = await Questions.update(filter, update, options)
+			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+				return 'QUESTION_UPDATED'
+			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
+				return 'QUESTION_ALREADY_EXISTS'
+			} else {
+				return 'QUESTION_NOT_FOUND'
 			}
-		})
+		} catch (error) {
+			return error
+		}
 	}
-	static updateData(filter, update, options = {}) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const res = await Questions.updateMany(filter, update, options)
-				if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
-					resolve('QUESTION_UPDATED')
-				} else if (
-					(res.n === 1 && res.nModified === 0) ||
-					(res.matchedCount === 1 && res.modifiedCount === 0)
-				) {
-					resolve('QUESTION_ALREADY_EXISTS')
-				} else {
-					resolve('QUESTION_NOT_FOUND')
-				}
-			} catch (error) {
-				reject(error)
+	static async updateData(filter, update, options = {}) {
+		try {
+			const res = await Questions.updateMany(filter, update, options)
+			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+				return 'QUESTION_UPDATED'
+			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
+				return 'QUESTION_ALREADY_EXISTS'
+			} else {
+				return 'QUESTION_NOT_FOUND'
 			}
-		})
+		} catch (error) {
+			return error
+		}
 	}
 }

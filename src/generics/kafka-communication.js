@@ -7,7 +7,7 @@
 
 const pushEmailToKafka = async (message) => {
 	try {
-		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [ { value: JSON.stringify(message) } ] }
+		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
 		throw error
@@ -16,7 +16,7 @@ const pushEmailToKafka = async (message) => {
 
 const pushMentorRatingToKafka = async (message) => {
 	try {
-		const payload = { topic: process.env.RATING_KAFKA_TOPIC, messages: [ { value: JSON.stringify(message) } ] }
+		const payload = { topic: process.env.RATING_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
 		throw error
@@ -25,27 +25,24 @@ const pushMentorRatingToKafka = async (message) => {
 
 const clearInternalCache = async (key) => {
 	try {
-		const payload =
-			{
-				topic: process.env.CLEAR_INTERNAL_CACHE,
-				messages: [ { value: JSON.stringify({ value: key, type: 'CLEAR_INTERNAL_CACHE' }) } ]
-			}
-		
+		const payload = {
+			topic: process.env.CLEAR_INTERNAL_CACHE,
+			messages: [{ value: JSON.stringify({ value: key, type: 'CLEAR_INTERNAL_CACHE' }) }],
+		}
+
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
 		throw error
 	}
 }
 
-const pushPayloadToKafka = (payload) => {
-	return new Promise(async function (resolve, reject) {
+const pushPayloadToKafka = async (payload) => {
+	try {
 		let response = await kafkaProducer.send(payload)
-		if (response) {
-			resolve(response)
-		} else {
-			reject(false)
-		}
-	})
+		return response
+	} catch (error) {
+		return error
+	}
 }
 
 module.exports = {
