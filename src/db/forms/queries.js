@@ -16,11 +16,10 @@ module.exports = class FormsData {
 		}
 	}
 
-	
 	static async findOneForm(filter) {
-		const projection = {}
-
 		try {
+			const projection = {}
+
 			const formData = await Forms.findOne(filter, projection)
 			return formData
 		} catch (error) {
@@ -28,8 +27,7 @@ module.exports = class FormsData {
 		}
 	}
 
-	static async updateOneForm(filter,update, options = {}) {
-	
+	static async updateOneForm(filter, update, options = {}) {
 		try {
 			const res = await Forms.updateOne(filter, update, options)
 			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
@@ -37,26 +35,23 @@ module.exports = class FormsData {
 			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
 				return 'ENTITY_ALREADY_EXISTS'
 			} else {
-				return 'ENTITY_NOT_FOUND'}
+				return 'ENTITY_NOT_FOUND'
+			}
 		} catch (error) {
 			return error
 		}
 	}
 	static async findAllTypeFormVersion() {
-		const projection = {
-			_id: 1,
-			type: 1,
-			__v: 1,
-		}
-	
-			try {
-				const formData = await Forms.find({}, projection)
-				return (formData)
-			} catch (error) {
-				return (error)
+		try {
+			const projection = {
+				_id: 1,
+				type: 1,
+				__v: 1,
 			}
-		
+			const formData = await Forms.find({}, projection)
+			return formData
+		} catch (error) {
+			return error
+		}
 	}
-
-
 }

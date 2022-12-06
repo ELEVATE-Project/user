@@ -6,7 +6,6 @@
  */
 
 const mongoose = require('mongoose')
-
 const Schema = mongoose.Schema
 const mongooseLeanGetter = require('mongoose-lean-getters')
 const questionsSetSchema = new Schema({

@@ -154,8 +154,8 @@ module.exports = class SessionsData {
 	}
 
 	static async mentorsUpcomingSession(page, limit, search, filters) {
-		filters.userId = ObjectId(filters.userId)
 		try {
+			filters.userId = ObjectId(filters.userId)
 			const sessionAttendeesData = await Sessions.aggregate([
 				{
 					$match: {

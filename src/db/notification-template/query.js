@@ -9,14 +9,13 @@ const NotificationTemplate = require('./model')
 
 module.exports = class NotificationTemplateData {
 	static async findOneEmailTemplate(code) {
-		const filter = {
-			code,
-			type: 'email',
-			deleted: false,
-			status: 'active',
-		}
-
 		try {
+			const filter = {
+				code,
+				type: 'email',
+				deleted: false,
+				status: 'active',
+			}
 			const templateData = await NotificationTemplate.findOne(filter).lean()
 
 			if (templateData && templateData.emailHeader) {

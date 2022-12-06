@@ -23,7 +23,6 @@ module.exports = class Form {
 			const createdForm = await formsHelper.create(params)
 			return createdForm
 		} catch (error) {
-			console.log(error, '</////////////')
 			return error
 		}
 	}

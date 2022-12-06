@@ -33,16 +33,15 @@ module.exports = class SessionsAttendees {
 	}
 
 	static async countSessionAttendees(filterStartDate, filterEndDate, userId) {
-		const filter = {
-			createdAt: {
-				$gte: filterStartDate.toISOString(),
-				$lte: filterEndDate.toISOString(),
-			},
-			userId: ObjectId(userId),
-			deleted: false,
-		}
-
 		try {
+			const filter = {
+				createdAt: {
+					$gte: filterStartDate.toISOString(),
+					$lte: filterEndDate.toISOString(),
+				},
+				userId: ObjectId(userId),
+				deleted: false,
+			}
 			const count = await SessionAttendees.countDocuments(filter)
 			return count
 		} catch (error) {
@@ -51,17 +50,17 @@ module.exports = class SessionsAttendees {
 	}
 
 	static async countSessionAttendeesThroughStartDate(filterStartDate, filterEndDate, userId) {
-		const filter = {
-			'sessionDetail.startDateUtc': {
-				$gte: filterStartDate.toISOString(),
-				$lte: filterEndDate.toISOString(),
-			},
-			userId: ObjectId(userId),
-			deleted: false,
-			isSessionAttended: true,
-		}
-
 		try {
+			const filter = {
+				'sessionDetail.startDateUtc': {
+					$gte: filterStartDate.toISOString(),
+					$lte: filterEndDate.toISOString(),
+				},
+				userId: ObjectId(userId),
+				deleted: false,
+				isSessionAttended: true,
+			}
+
 			const result = await SessionAttendees.aggregate([
 				{
 					$lookup: {
@@ -119,73 +118,71 @@ module.exports = class SessionsAttendees {
 	}
 
 	static async findAllUpcomingMenteesSession(page, limit, search, filters) {
-		filters.userId = ObjectId(filters.userId)
-		
-			try {
-				const sessionAttendeesData = await SessionAttendees.aggregate([
-					{
-						$lookup: {
-							from: 'sessions',
-							localField: 'sessionId',
-							foreignField: '_id',
-							as: 'sessionDetail',
+		try {
+			filters.userId = ObjectId(filters.userId)
+			const sessionAttendeesData = await SessionAttendees.aggregate([
+				{
+					$lookup: {
+						from: 'sessions',
+						localField: 'sessionId',
+						foreignField: '_id',
+						as: 'sessionDetail',
+					},
+				},
+				{
+					$match: {
+						$and: [filters, { deleted: false }],
+						$or: [
+							{ 'sessionDetail.title': new RegExp(search, 'i') },
+							{ 'sessionDetail.mentorName': new RegExp(search, 'i') },
+						],
+					},
+				},
+				{
+					$sort: { 'sessionDetail.startDateUtc': 1 },
+				},
+				{
+					$project: {
+						_id: 1,
+						sessionId: 1,
+						sessionDetail: {
+							$arrayElemAt: ['$sessionDetail', 0],
 						},
 					},
-					{
-						$match: {
-							$and: [filters, { deleted: false }],
-							$or: [
-								{ 'sessionDetail.title': new RegExp(search, 'i') },
-								{ 'sessionDetail.mentorName': new RegExp(search, 'i') },
-							],
+				},
+				{
+					$project: {
+						_id: 1,
+						sessionId: 1,
+						title: '$sessionDetail.title',
+						userId: '$sessionDetail.userId',
+						description: '$sessionDetail.description',
+						startDate: '$sessionDetail.startDate',
+						endDate: '$sessionDetail.endDate',
+						endDateUtc: '$sessionDetail.endDateUtc',
+						status: '$sessionDetail.status',
+						image: '$sessionDetail.image',
+					},
+				},
+				{
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
+					},
+				},
+				{
+					$project: {
+						data: 1,
+						count: {
+							$arrayElemAt: ['$totalCount.count', 0],
 						},
 					},
-					{
-						$sort: { 'sessionDetail.startDateUtc': 1 },
-					},
-					{
-						$project: {
-							_id: 1,
-							sessionId: 1,
-							sessionDetail: {
-								$arrayElemAt: ['$sessionDetail', 0],
-							},
-						},
-					},
-					{
-						$project: {
-							_id: 1,
-							sessionId: 1,
-							title: '$sessionDetail.title',
-							userId: '$sessionDetail.userId',
-							description: '$sessionDetail.description',
-							startDate: '$sessionDetail.startDate',
-							endDate: '$sessionDetail.endDate',
-							endDateUtc: '$sessionDetail.endDateUtc',
-							status: '$sessionDetail.status',
-							image: '$sessionDetail.image',
-						},
-					},
-					{
-						$facet: {
-							totalCount: [{ $count: 'count' }],
-							data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
-						},
-					},
-					{
-						$project: {
-							data: 1,
-							count: {
-								$arrayElemAt: ['$totalCount.count', 0],
-							},
-						},
-					},
-				])
-				return (sessionAttendeesData)
-			} catch (error) {
-				return (error)
-			}
-		
+				},
+			])
+			return sessionAttendeesData
+		} catch (error) {
+			return error
+		}
 	}
 
 	static async findPendingFeedbackSessions(filters) {
