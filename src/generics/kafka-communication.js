@@ -11,7 +11,6 @@ const pushEmailToKafka = async (message) => {
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
 		return error
-		throw error
 	}
 }
 
