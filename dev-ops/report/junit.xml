@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="22" failures="0" errors="0" time="32.013">
+  <testsuite name="/user/v1/account" errors="0" failures="0" skipped="0" timestamp="2022-11-29T16:21:28" time="10.378" tests="9">
+    <testcase classname="/user/v1/account /create" name="/user/v1/account /create" time="0.234">
+    </testcase>
+    <testcase classname="/user/v1/account /login" name="/user/v1/account /login" time="0.323">
+    </testcase>
+    <testcase classname="/user/v1/account /verifyMentor" name="/user/v1/account /verifyMentor" time="0.028">
+    </testcase>
+    <testcase classname="/user/v1/account /verifyUser" name="/user/v1/account /verifyUser" time="0.023">
+    </testcase>
+    <testcase classname="/user/v1/account /acceptTermsAndCondition" name="/user/v1/account /acceptTermsAndCondition" time="0.027">
+    </testcase>
+    <testcase classname="/user/v1/account /list" name="/user/v1/account /list" time="0.045">
+    </testcase>
+    <testcase classname="/user/v1/account /generateToken" name="/user/v1/account /generateToken" time="0.067">
+    </testcase>
+    <testcase classname="/user/v1/account /changeRole" name="/user/v1/account /changeRole" time="1.35">
+    </testcase>
+    <testcase classname="/user/v1/account /logout" name="/user/v1/account /logout" time="0.024">
+    </testcase>
+  </testsuite>
+  <testsuite name="user/v1/systemUsers" errors="0" failures="0" skipped="0" timestamp="2022-11-29T16:21:38" time="4.749" tests="2">
+    <testcase classname="user/v1/systemUsers /create" name="user/v1/systemUsers /create" time="0.214">
+    </testcase>
+    <testcase classname="user/v1/systemUsers /login" name="user/v1/systemUsers /login" time="0.307">
+    </testcase>
+  </testsuite>
+  <testsuite name="End point test for" errors="0" failures="0" skipped="0" timestamp="2022-11-29T16:21:43" time="4.108" tests="4">
+    <testcase classname="End point test for creating user entity" name="End point test for creating user entity" time="0.125">
+    </testcase>
+    <testcase classname="End point test for reading user entity" name="End point test for reading user entity" time="0.038">
+    </testcase>
+    <testcase classname="End point test for updating user entity" name="End point test for updating user entity" time="0.052">
+    </testcase>
+    <testcase classname="End point test for deleting user entity" name="End point test for deleting user entity" time="0.042">
+    </testcase>
+  </testsuite>
+  <testsuite name="End point test for profile" errors="0" failures="0" skipped="0" timestamp="2022-11-29T16:21:47" time="4.861" tests="3">
+    <testcase classname="End point test for profile details" name="End point test for profile details" time="0.104">
+    </testcase>
+    <testcase classname="End point test for profile update" name="End point test for profile update" time="0.033">
+    </testcase>
+    <testcase classname="End point test for profile /share" name="End point test for profile /share" time="0.209">
+    </testcase>
+  </testsuite>
+  <testsuite name="user/v1/mentors" errors="0" failures="0" skipped="0" timestamp="2022-11-29T16:21:52" time="3.671" tests="1">
+    <testcase classname="user/v1/mentors /list" name="user/v1/mentors /list" time="0.126">
+    </testcase>
+  </testsuite>
+  <testsuite name="user/v1/form" errors="0" failures="0" skipped="0" timestamp="2022-11-29T16:21:56" time="4.043" tests="3">
+    <testcase classname="user/v1/form /create" name="user/v1/form /create" time="0.143">
+    </testcase>
+    <testcase classname="user/v1/form /read" name="user/v1/form /read" time="0.087">
+    </testcase>
+    <testcase classname="user/v1/form /update" name="user/v1/form /update" time="0.06">
+    </testcase>
+  </testsuite>
+</testsuites>

@@ -48,7 +48,7 @@ const { correlationIdMiddleware } = require(`./log/correlation-id-middleware`)
 const { logger } = require('./log/logger')
 // const logger = kafkaCommunication.pushkafka
 app.use(correlationIdMiddleware)
-app.use(requestLoggingMiddleware)
+// app.use(requestLoggingMiddleware)
 
 // var graylog2 = require('graylog2')
 // var logger = new graylog2.graylog({
@@ -86,7 +86,7 @@ app.use(express.static('public'))
 /* Logs request info if environment is configured to enable log */
 if (process.env.ENABLE_LOG === 'true') {
 	app.all('*', (req, res, next) => {
-		console.log('***User Service Logs Starts Here***')
+		logger.info('User Service Logs Starts Here')
 		logger.info(`Request Type ${req.method} for ${req.url} on ${new Date()} from `)
 		logger.info(req.headers)
 		logger.info(`Request Body: ${req.body}`)

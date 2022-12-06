@@ -7,9 +7,9 @@ function correlationIdMiddleware(req, res, next) {
 
 	correlator.withId(() => {
 		const currentCorrelationId = correlator.getId()
-		res.set(`x-correlation-id`, currentCorrelationId)
+		res.set(`X-Request-Ids`, currentCorrelationId)
 		next()
-	}, req.get(`x-correlation-id`))
+	}, req.get(`X-Request-Ids`))
 }
 
 module.exports = { correlationIdMiddleware }
