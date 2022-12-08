@@ -43,30 +43,11 @@ i18next
 
 const app = express()
 
-const { requestLoggingMiddleware } = require(`./log/request-logging-middleware`)
-const { correlationIdMiddleware } = require(`./log/correlation-id-middleware`)
-const { logger } = require('./log/logger')
-// const logger = kafkaCommunication.pushkafka
+const { correlationIdMiddleware } = require(`@log/correlation-id-middleware`)
+const { logger } = require('@log/logger')
+
 app.use(correlationIdMiddleware)
-// app.use(requestLoggingMiddleware)
 
-// var graylog2 = require('graylog2')
-// var logger = new graylog2.graylog({
-// 	servers: [
-// 		{ host: '127.0.0.1', port: 12201 },
-// 		{ host: '127.0.0.2', port: 12201 },
-// 	],
-// 	hostname: 'users', // the name of this host
-// 	// (optional, default: os.hostname())
-// 	facility: 'Node.js', // the facility for these log messages
-// 	// (optional, default: "Node.js")
-// 	bufferSize: 1350, // max UDP packet size, should never exceed the
-// 	// MTU of your system (optional, default: 1400)
-// })
-
-// logger.on('error', function (error) {
-// 	console.error('Error while trying to write to graylog2:', error)
-// })
 // Health check
 require('@health-checks')(app)
 

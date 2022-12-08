@@ -15,14 +15,14 @@ function createLogger(opts = {}) {
 
 			winston.format.printf(({ timestamp, correlationId, level, message }) => {
 				console.log(message)
-				return `${timestamp} (${correlationId}) - ${level}: ${JSON.stringify(message)}`
+				return `${timestamp} 'user' (${correlationId}) - ${level}: ${JSON.stringify(message)}`
 			})
 		),
 		level,
 		transports: [
-			// new winston.transports.Console({
-			// 	handleExceptions: true,
-			// }),
+			new winston.transports.Console({
+				handleExceptions: true,
+			}),
 			new winston.transports.File({
 				filename: 'user.log',
 				format: winston.format.combine(
@@ -33,7 +33,7 @@ function createLogger(opts = {}) {
 					winston.format.timestamp(),
 					winston.format.errors({ stack: true }),
 					winston.format.printf(({ timestamp, correlationId, level, message }) => {
-						return `${timestamp} (${correlationId}) - ${level}: ${JSON.stringify(message)}`
+						return `${timestamp} 'user' (${correlationId}) - ${level}: ${JSON.stringify(message)}`
 					})
 				),
 			}),

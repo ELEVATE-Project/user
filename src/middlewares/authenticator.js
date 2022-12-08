@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const UsersData = require('@db/users/queries')
-const { logger } = require('../log/logger')
+const { logger } = require('@log/logger')
 
 module.exports = async function (req, res, next) {
 	try {

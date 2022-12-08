@@ -7,7 +7,6 @@
 
 // Dependencies
 const profileHelper = require('@services/helper/profile')
-const { logger } = require('../../log/logger')
 
 module.exports = class Profile {
 	/**
@@ -42,7 +41,6 @@ module.exports = class Profile {
 			const profileDetails = await profileHelper.details(req.params.id ? req.params.id : req.decodedToken._id)
 			return profileDetails
 		} catch (error) {
-			logger.error(error)
 			return error
 		}
 	}

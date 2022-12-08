@@ -113,6 +113,6 @@
 		"@routes": "routes",
 		"@services": "services",
 		"@validators": "validators",
-		"@logger": "logger"
+		"@log": "log"
 	}
 }

@@ -16,7 +16,8 @@
 			"@public*": ["./public*"],
 			"@routes*": ["./routes*"],
 			"@services*": ["./services*"],
-			"@validators*": ["./validators*"]
+			"@validators*": ["./validators*"],
+			"@log*": ["./log*"]
 		}
 	},
 	"exclude": ["node_modules"]

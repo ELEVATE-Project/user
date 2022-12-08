@@ -20,7 +20,7 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
-const { logger } = require('../../log/logger')
+const { logger } = require('@log/logger')
 module.exports = class AccountHelper {
 	/**
 	 * create account

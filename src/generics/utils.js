@@ -13,6 +13,7 @@ const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
+const { logger } = require('@log/logger')
 
 const algorithm = 'aes-256-cbc'
 
@@ -32,7 +33,7 @@ const comparePassword = (password1, password2) => {
 
 const clearFile = (filePath) => {
 	fs.unlink(filePath, (err) => {
-		if (err) console.log(err)
+		if (err) logger.info(err)
 	})
 }
 

@@ -4,8 +4,8 @@
  * Date : 08-Nov-2021
  * Description : Kafka producer methods
  */
-const correlationId = require('../log/correlation-id')
-
+const correlationId = require('@log/correlation-id')
+const { logger } = require('@log/logger')
 const pushEmailToKafka = async (message) => {
 	try {
 		const payload = [{ topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: JSON.stringify(message) }]
@@ -45,14 +45,14 @@ const pushkafka = async (key) => {
 		const data = { value: key }
 		const correlation = correlationId.getId
 		data.correlationId = correlation() || 'noCorrelationIdValue'
-		console.log(key.correlationId)
+		logger.info(key.correlationId)
 		const payload = [
 			{
 				topic: 'logger',
 				messages: JSON.stringify({ message: JSON.parse(JSON.stringify(data)), type: 'logs' }),
 			},
 		]
-		console.log(payload)
+		logger.info(payload)
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
 		throw error

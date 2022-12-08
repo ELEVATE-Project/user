@@ -9,8 +9,7 @@
 const mongoose = require('mongoose')
 const mongoose_autopopulate = require('mongoose-autopopulate')
 const mongoose_timestamp = require('mongoose-timestamp')
-
-
+const { logger } = require('@log/logger')
 module.exports = function () {
 	// Added to remove depreciation warnings from logs.
 
@@ -19,11 +18,11 @@ module.exports = function () {
 	})
 
 	db.on('error', function () {
-		console.log('Database connection error:')
+		logger.info('Database connection error:')
 	})
 
 	db.once('open', function () {
-		console.log('Connected to DB')
+		logger.info('Connected to DB')
 	})
 
 	mongoose.plugin(mongoose_timestamp, {
