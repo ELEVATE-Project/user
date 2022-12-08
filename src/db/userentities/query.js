@@ -54,7 +54,6 @@ module.exports = class UserEntityData {
 				) {
 					resolve('ENTITY_ALREADY_EXISTS')
 				} else {
-					x
 					resolve('ENTITY_NOT_FOUND')
 				}
 			} catch (error) {

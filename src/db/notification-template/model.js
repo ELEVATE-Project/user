@@ -10,6 +10,8 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
+const mongooseLeanGetter = require('mongoose-lean-getters')
+
 const notificationTemplateSchema = new Schema({
 	type: {
 		type: String,
@@ -53,7 +55,7 @@ const notificationTemplateSchema = new Schema({
 		type: String,
 	},
 })
-
+notificationTemplateSchema.plugin(mongooseLeanGetter)
 const Users = db.model('notificationtemplates', notificationTemplateSchema, 'notificationTemplates')
 
 module.exports = Users

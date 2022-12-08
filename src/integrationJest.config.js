@@ -16,5 +16,18 @@ module.exports = {
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
 		'@commonTests': '<rootDir>/integration-test/commonTests',
 	},
-	//reporters: ['default', 'jest-html-reporters'],
+	/* 	reporters: [
+		'default',
+		[
+			'jest-html-reporters',
+			{
+				publicPath: './integration-test',
+				filename: 'userServiceIntegrationTest.html',
+				pageTitle: 'User service test report',
+				inlineSource: true,
+			},
+		],
+	], */
+
+	reporters: ['default', ['jest-junit', { suiteName: 'jest tests', outputDirectory: '../dev-ops/report' }]],
 }
