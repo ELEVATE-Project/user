@@ -13,9 +13,11 @@ const path = require('path')
 const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
+const { logger } = require('@log/logger')
+const { correlationIdMiddleware } = require(`@log/correlation-id-middleware`)
 
 require('dotenv').config({ path: './.env' })
-const kafkaCommunication = require('@generics/kafka-communication')
+
 let environmentData = require('./envVariables')()
 
 if (!environmentData.success) {
@@ -43,18 +45,13 @@ i18next
 
 const app = express()
 
-const { correlationIdMiddleware } = require(`@log/correlation-id-middleware`)
-const { logger } = require('@log/logger')
-
-app.use(correlationIdMiddleware)
-
 // Health check
 require('@health-checks')(app)
 
 app.use(cors())
 
 app.use(middleware.handle(i18next))
-
+app.use(correlationIdMiddleware)
 app.use(expressFileUpload())
 app.get(process.env.API_DOC_URL, function (req, res) {
 	res.sendFile(path.join(__dirname, './api-doc/index.html'))
