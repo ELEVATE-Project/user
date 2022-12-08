@@ -217,6 +217,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
+			logger.error(error)
 			throw error
 		}
 	}

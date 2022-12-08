@@ -7,6 +7,7 @@
 
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
+const { logger } = require('../../log/logger')
 const Users = require('./model')
 
 module.exports = class UsersData {
@@ -19,6 +20,7 @@ module.exports = class UsersData {
 
 				resolve(userData)
 			} catch (error) {
+				logger.error(error)
 				reject(error)
 			}
 		})

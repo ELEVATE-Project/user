@@ -10,6 +10,7 @@ const accountHelper = require('@services/helper/account')
 const csv = require('csvtojson')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const { logger } = require('../../log/logger')
 
 module.exports = class Account {
 	/**
@@ -61,6 +62,7 @@ module.exports = class Account {
 			const loggedInAccount = await accountHelper.login(params)
 			return loggedInAccount
 		} catch (error) {
+			logger.error(error)
 			return error
 		}
 	}

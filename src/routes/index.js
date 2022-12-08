@@ -10,6 +10,7 @@ const authenticator = require('@middlewares/authenticator')
 const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
 const fs = require('fs')
+const { logger } = require('../log/logger')
 
 module.exports = (app) => {
 	app.use(authenticator)
@@ -62,6 +63,7 @@ module.exports = (app) => {
 				? await new controller()[req.params.method](req)
 				: next()
 		} catch (error) {
+			logger.error(error)
 			// If controller or service throws some random error
 			return next(error)
 		}

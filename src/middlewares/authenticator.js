@@ -52,7 +52,6 @@ module.exports = async function (req, res, next) {
 
 			const authHeaderArray = authHeader.split(' ')
 			if (authHeaderArray[0] !== 'bearer') {
-				console.log('recjected2')
 				throw common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
@@ -93,6 +92,7 @@ module.exports = async function (req, res, next) {
 
 		next()
 	} catch (err) {
+		logger.error(err)
 		next(err)
 	}
 }
