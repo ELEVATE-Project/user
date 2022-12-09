@@ -57,7 +57,7 @@ module.exports = {
 	internalAccessUrls: [
 		'bulkCreateMentors',
 		'/userlog/v1/account/verifyMentor',
-		'/userlog/v1/profile/details',
+		'profile/details',
 		'/userlog/v1/account/list',
 		'/profile/share',
 	],

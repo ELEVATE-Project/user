@@ -18,6 +18,7 @@ module.exports = async function (req, res, next) {
 		await Promise.all(
 			common.internalAccessUrls.map(async function (path) {
 				if (req.path.includes(path)) {
+					console.log('>>>>>>>>>>>>>>>>>>>>>>>', req.headers.internal_access_token)
 					if (
 						req.headers.internal_access_token &&
 						process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token
@@ -33,7 +34,7 @@ module.exports = async function (req, res, next) {
 			return
 		} else if (!common.guestUrls.includes(req.url)) {
 			const authHeader = req.get('X-auth-token')
-
+			console.log(authHeader)
 			if (!authHeader) {
 				logger.info('recjected1')
 				throw common.failureResponse({
