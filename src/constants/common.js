@@ -56,9 +56,9 @@ module.exports = {
 	],
 	internalAccessUrls: [
 		'bulkCreateMentors',
-		'/user/v1/account/verifyMentor',
-		'profile/details',
-		'/user/v1/account/list',
+		'/userlog/v1/account/verifyMentor',
+		'/userlog/v1/profile/details',
+		'/userlog/v1/account/list',
 		'/profile/share',
 	],
 	notificationEmailType: 'email',
