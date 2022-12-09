@@ -19,12 +19,12 @@ function health_check() {
 		const producer = KafkaClient.producer()
 		await producer.connect()
 
-		producer.on('producer.connect', () => {
+		producer.on('producer.connect',async () => {
 			console.log(`KafkaProvider: connected`)
 			await producer.disconnect()
 			return resolve(true)
 		})
-		producer.on('producer.disconnect', () => {
+		producer.on('producer.disconnect', async() => {
 			console.log(`KafkaProvider: could not connect`)
 			await producer.disconnect()
 			return resolve(false)

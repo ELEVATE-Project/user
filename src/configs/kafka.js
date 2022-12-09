@@ -9,7 +9,7 @@
 const { Kafka } = require('kafkajs')
 const emailNotifications = require('@generics/helpers/email-notifications')
 
-module.exports = function (config) {
+module.exports = async function (config) {
 
 	const kafkaIps = process.env.KAFKA_HOST.split(',')
 	const KafkaClient = new Kafka({
