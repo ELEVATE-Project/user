@@ -13,7 +13,7 @@ const mongoose_timestamp = require('mongoose-timestamp')
 module.exports = function () {
 	// Added to remove depreciation warnings from logs.
 
-	let parameters
+	let parameters = ''
 	if (process.env.REPLICA_SET_NAME) {
 		parameters = '?replicaSet=' + process.env.REPLICA_SET_NAME
 	}
@@ -21,15 +21,9 @@ module.exports = function () {
 		parameters = parameters + '&readPreference=' + process.env.REPLICA_SET_READ_PREFERENCE
 	}
 
-	if (parameters) {
-		const db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
-			useNewUrlParser: true,
-		})
-	} else {
-		const db = mongoose.createConnection(process.env.MONGODB_URL, {
-			useNewUrlParser: true,
-		})
-	}
+	const db = mongoose.createConnection(process.env.MONGODB_URL + parameters, {
+		useNewUrlParser: true,
+	})
 
 	db.on('error', function () {
 		console.log('Database connection error:')
