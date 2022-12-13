@@ -31,7 +31,7 @@
 	"OTP_SENT_SUCCESSFULLY": "आपके पंजीकृत ईमेल आईडी पर ओटीपी भेजा गया है। अपना पासवर्ड अपडेट करने के लिए कृपया नंबर दर्ज करें।",
 	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "आपके पंजीकृत ईमेल आईडी पर ओटीपी भेजा गया है। कृपया पंजीकरण प्रक्रिया को पूरा करने के लिए ओटीपी दर्ज करें।",
 	"PASSWORD_RESET_SUCCESSFULLY": "पासवर्ड सफलतापूर्वक बदला गया।",
-	"OTP_INVALID": " ओटीपी अमान्य है, कृपया पुनः प्रयास करें",
+	"OTP_INVALID": "आपके द्वारा दर्ज किया हुआ OTP गलत है।",
 	"RESET_OTP_INVALID": "कृपया सही ओटीपी दर्ज करें।",
 	"SYSTEM_USER_ALREADY_EXISTS": "System User already exists.",
 	"NOT_AN_ADMIN": "Not an admin",

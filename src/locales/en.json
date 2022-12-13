@@ -31,7 +31,7 @@
 	"OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
 	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the otp to complete the registration process.",
 	"PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully.",
-	"OTP_INVALID": "Wrong OTP, please try again.",
+	"OTP_INVALID": "The OTP you entered is wrong.",
 	"RESET_OTP_INVALID": "Please enter the correct OTP.",
 	"SYSTEM_USER_ALREADY_EXISTS": "System User already exists.",
 	"NOT_AN_ADMIN": "Not an admin",
