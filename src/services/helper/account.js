@@ -356,6 +356,7 @@ module.exports = class AccountHelper {
 
 			if (userData && userData.action === 'forgetpassword') {
 				otp = userData.otp // If valid then get previuosly generated otp
+				console.log(otp)
 			} else {
 				isValidOtpExist = false
 			}
@@ -485,7 +486,9 @@ module.exports = class AccountHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			console.log(otp)
+			if (process.env.APPLICATION_ENV === 'development') {
+				console.log(otp)
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
@@ -594,51 +597,49 @@ module.exports = class AccountHelper {
 	 * @returns {CSV} - created mentors.
 	 */
 	static async bulkCreateMentors(mentors, tokenInformation) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email)
+		try {
+			const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email)
 
-				if (!systemUser) {
-					return common.failureResponse({
-						message: 'USER_DOESNOT_EXISTS',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-
-				if (systemUser.role.toLowerCase() !== 'admin') {
-					return common.failureResponse({
-						message: 'NOT_AN_ADMIN',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-
-				const fileName = `mentors-creation`
-				let fileStream = new FILESTREAM(fileName)
-				let input = fileStream.initStream()
-
-				;(async function () {
-					await fileStream.getProcessorPromise()
-					return resolve({
-						isResponseAStream: true,
-						fileNameWithPath: fileStream.fileNameWithPath(),
-					})
-				})()
-
-				for (const mentor of mentors) {
-					mentor.isAMentor = true
-					const data = await this.create(mentor)
-					mentor.email = mentor.email.address
-					mentor.status = data.message
-					input.push(mentor)
-				}
-
-				input.push(null)
-			} catch (error) {
-				throw error
+			if (!systemUser) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-		})
+
+			if (systemUser.role.toLowerCase() !== 'admin') {
+				return common.failureResponse({
+					message: 'NOT_AN_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const fileName = 'mentors-creation'
+			let fileStream = new FILESTREAM(fileName)
+			let input = fileStream.initStream()
+
+			;(async function () {
+				await fileStream.getProcessorPromise()
+				return {
+					isResponseAStream: true,
+					fileNameWithPath: fileStream.fileNameWithPath(),
+				}
+			})()
+
+			for (const mentor of mentors) {
+				mentor.isAMentor = true
+				const data = await this.create(mentor)
+				mentor.email = mentor.email.address
+				mentor.status = data.message
+				input.push(mentor)
+			}
+
+			input.push(null)
+		} catch (error) {
+			throw error
+		}
 	}
 
 	/**

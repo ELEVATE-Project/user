@@ -86,14 +86,13 @@ app.listen(process.env.APPLICATION_PORT, (res, err) => {
 
 // Handles specific listen errors with friendly messages
 function onError(error) {
-	switch (error.code) {
-		case 'EACCES':
-			console.log(process.env.APPLICATION_PORT + ' requires elevated privileges')
-			process.exit(1)
-		case 'EADDRINUSE':
-			console.log(process.env.APPLICATION_PORT + ' is already in use')
-			process.exit(1)
-		default:
-			throw error
+	if (error.code === 'EACCES') {
+		console.log(process.env.APPLICATION_PORT + ' requires elevated privileges')
+		process.exit(1)
+	} else if (error.code === 'EADDRINUSE') {
+		console.log(process.env.APPLICATION_PORT + ' is already in use')
+		process.exit(1)
+	} else {
+		throw error
 	}
 }

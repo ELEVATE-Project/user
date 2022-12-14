@@ -160,6 +160,14 @@ let enviromentVariables = {
 		message: 'Required oci bucket name',
 		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
 	},
+	REPLICA_SET_NAME: {
+		message: 'Required replica set name',
+		optional: true,
+	},
+	REPLICA_SET_READ_PREFERENCE: {
+		message: 'Required replica read preferance',
+		optional: process.env.REPLICA_SET_NAME ? false : true,
+	},
 }
 
 let success = true

@@ -7,32 +7,29 @@
 
 const pushEmailToKafka = async (message) => {
 	try {
-		const payload = [{ topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: JSON.stringify(message) }]
+		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
-		throw error
+		return error
 	}
 }
 
-const pushPayloadToKafka = (payload) => {
-	return new Promise((resolve, reject) => {
-		kafkaProducer.send(payload, (error, data) => {
-			if (error) {
-				reject(error)
-			}
-			resolve(data)
-		})
-	})
+const pushPayloadToKafka = async (payload) => {
+	try {
+		let response = await kafkaProducer.send(payload)
+		return response
+	} catch (error) {
+		return error
+	}
 }
 
 const clearInternalCache = async (key) => {
 	try {
-		const payload = [
-			{
-				topic: process.env.CLEAR_INTERNAL_CACHE,
-				messages: JSON.stringify({ value: key, type: 'CLEAR_INTERNAL_CACHE' }),
-			},
-		]
+		const payload = {
+			topic: process.env.CLEAR_INTERNAL_CACHE,
+			messages: [{ value: JSON.stringify({ value: key, type: 'CLEAR_INTERNAL_CACHE' }) }],
+		}
+
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
 		throw error
