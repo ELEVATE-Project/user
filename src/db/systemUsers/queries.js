@@ -8,25 +8,21 @@
 const SystemUsers = require('./model')
 
 module.exports = class SystemUsersData {
-	static findUsersByEmail(email) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				const userData = await SystemUsers.findOne({ 'email.address': email }).lean()
-				resolve(userData)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async findUsersByEmail(email) {
+		try {
+			const userData = await SystemUsers.findOne({ 'email.address': email }).lean()
+			return userData
+		} catch (error) {
+			return error
+		}
 	}
 
-	static create(data) {
-		return new Promise(async (resolve, reject) => {
-			try {
-				await new SystemUsers(data).save()
-				resolve(true)
-			} catch (error) {
-				reject(error)
-			}
-		})
+	static async create(data) {
+		try {
+			await new SystemUsers(data).save()
+			return true
+		} catch (error) {
+			return error
+		}
 	}
 }

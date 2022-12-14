@@ -9,7 +9,6 @@
 const usersData = require('@db/users/queries')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-
 const utilsHelper = require('@generics/utils')
 
 module.exports = class MentorsHelper {

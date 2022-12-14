@@ -10,19 +10,17 @@ const pushEmailToKafka = async (message) => {
 		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
-		throw error
+		return error
 	}
 }
 
-const pushPayloadToKafka = (payload) => {
-	return new Promise(async function (resolve, reject) {
+const pushPayloadToKafka = async (payload) => {
+	try {
 		let response = await kafkaProducer.send(payload)
-		if (response) {
-			resolve(response)
-		} else {
-			reject(response)
-		}
-	})
+		return response
+	} catch (error) {
+		return error
+	}
 }
 
 const clearInternalCache = async (key) => {
