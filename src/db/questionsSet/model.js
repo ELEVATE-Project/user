@@ -6,7 +6,6 @@
  */
 
 const mongoose = require('mongoose')
-const { feedback } = require('@services/helper/sessions')
 const Schema = mongoose.Schema
 const mongooseLeanGetter = require('mongoose-lean-getters')
 const questionsSetSchema = new Schema({
@@ -32,6 +31,3 @@ questionsSetSchema.plugin(mongooseLeanGetter)
 const QuestionsSet = db.model('questionSet', questionsSetSchema, 'questionSet')
 
 module.exports = QuestionsSet
-
-skippedFeedback: true / false
-feedback: []

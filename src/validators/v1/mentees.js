@@ -14,7 +14,7 @@ module.exports = {
 			.withMessage('enrolled is invalid')
 			.toBoolean()
 	},
-	homefeed: (req) => {},
+	homeFeed: (req) => {},
 
 	reports: (req) => {
 		req.checkQuery('filterType')

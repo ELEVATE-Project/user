@@ -2,9 +2,24 @@ const request = require('request')
 const parser = require('xml2json')
 
 var get = function (url, token = '', internal_access_token = false) {
-	return new Promise(async (resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		try {
-			function callback(err, data) {
+			let headers = {
+				'content-type': 'application/json',
+			}
+			if (internal_access_token) {
+				headers['internal_access_token'] = process.env.INTERNAL_ACCESS_TOKEN
+			}
+
+			if (token) {
+				headers['x-auth-token'] = token
+			}
+
+			const options = {
+				headers: headers,
+			}
+
+			request.get(url, options, (err, data) => {
 				let result = {
 					success: true,
 				}
@@ -22,24 +37,7 @@ var get = function (url, token = '', internal_access_token = false) {
 				}
 
 				return resolve(result)
-			}
-
-			let headers = {
-				'content-type': 'application/json',
-			}
-			if (internal_access_token) {
-				headers['internal_access_token'] = process.env.INTERNAL_ACCESS_TOKEN
-			}
-
-			if (token) {
-				headers['x-auth-token'] = token
-			}
-
-			const options = {
-				headers: headers,
-			}
-
-			request.get(url, options, callback)
+			})
 		} catch (error) {
 			return reject(error)
 		}

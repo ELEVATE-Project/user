@@ -1,4 +1,3 @@
-const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const questionsData = require('@db/questions/queries')
