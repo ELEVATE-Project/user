@@ -128,7 +128,7 @@ module.exports = class FormsHelper {
 		try {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'FORM_FETCHED_SUCCESSFULLY',
+				message: 'FORM_VERSION_FETCHED_SUCCESSFULLY',
 				result: (await form.getAllFormsVersion) || {},
 			})
 		} catch (error) {
