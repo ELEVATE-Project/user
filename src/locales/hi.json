@@ -61,5 +61,6 @@
 	"PROFILE_FTECHED_SUCCESSFULLY": "Profile fetched successfully.",
 	"UPCOMING_SESSION_FETCHED": "Upcoming session fetched successfully.",
 	"UPDATE_FORM_VERSION": "फॉर्म के संस्करण को अपडेट करें।",
-	"ISSUE_REPORTED_SUCCESSFULLY": "Your issue is successfully reported."
+	"ISSUE_REPORTED_SUCCESSFULLY": "Your issue is successfully reported.",
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
 }

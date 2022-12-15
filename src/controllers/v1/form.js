@@ -56,8 +56,13 @@ module.exports = class Form {
 	async read(req) {
 		const params = req.body
 		try {
-			const form = await formsHelper.read(req.params.id, params)
-			return form
+			if (!req.params.id && Object.keys(req.body).length === 0) {
+				const form = await formsHelper.readAllFormsVersion()
+				return form
+			} else {
+				const form = await formsHelper.read(req.params.id, params)
+				return form
+			}
 		} catch (error) {
 			return error
 		}
