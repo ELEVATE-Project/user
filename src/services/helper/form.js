@@ -123,4 +123,20 @@ module.exports = class FormsHelper {
 			throw error
 		}
 	}
+	static async readAll() {
+		try {
+			let form = (await utils.internalGet('formVersion')) || false
+			if (!form) {
+				form = await formsData.findAllTypeFormVersion()
+				await utils.internalSet('formVersion', form)
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'FORM_FETCHED_SUCCESSFULLY',
+				result: form || {},
+			})
+		} catch (error) {
+			return error
+		}
+	}
 }

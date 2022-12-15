@@ -112,7 +112,7 @@ paths:
             type: string
         - in: path
           name: 'formId'
-          required: true
+          required: false
           description: Please append a valid form Id to the Request URL.
           schema:
             type: string
