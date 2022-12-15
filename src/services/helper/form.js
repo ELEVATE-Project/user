@@ -3,6 +3,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const formsData = require('@db/forms/queries')
 const utils = require('@generics/utils')
+const form = require('@generics/form')
 const KafkaProducer = require('@generics/kafka-communication')
 module.exports = class FormsHelper {
 	/**
@@ -123,17 +124,12 @@ module.exports = class FormsHelper {
 			throw error
 		}
 	}
-	static async readAll() {
+	static async readAllFormsVersion() {
 		try {
-			let form = (await utils.internalGet('formVersion')) || false
-			if (!form) {
-				form = await formsData.findAllTypeFormVersion()
-				await utils.internalSet('formVersion', form)
-			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_FETCHED_SUCCESSFULLY',
-				result: form || {},
+				result: (await form.getAllFormsVersion) || {},
 			})
 		} catch (error) {
 			return error
