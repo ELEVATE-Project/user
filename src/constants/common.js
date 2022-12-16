@@ -8,7 +8,7 @@
 const form = require('@generics/form')
 
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
-	const versions = await form.getAllFormsVersion
+	const versions = await form.getAllFormsVersion()
 
 	return {
 		statusCode,
