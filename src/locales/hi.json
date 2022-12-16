@@ -53,5 +53,6 @@
 	"RESET_PREVIOUS_PASSWORD": "कृपया एक नया पासवर्ड दर्ज करें, जिसका पहले उपयोग नहीं किया गया है",
 	"EMAIL_UPDATE_FAILED": "आप ईमेल अपडेट नहीं कर सकते हैं।",
 	"URL_NOT_FOUND": "Url नहीं मिला",
-	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "प्रोफ़ाइल शेयर लिंक सफलतापूर्वक जेनरेट किया गया"
+	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "प्रोफ़ाइल शेयर लिंक सफलतापूर्वक जेनरेट किया गया",
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
 }

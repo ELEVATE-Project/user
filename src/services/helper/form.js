@@ -4,6 +4,8 @@ const formsData = require('@db/forms/queries')
 const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const ObjectId = require('mongoose').Types.ObjectId
+const form = require('@generics/form')
+
 module.exports = class FormsHelper {
 	/**
 	 * Create Form.
@@ -116,6 +118,17 @@ module.exports = class FormsHelper {
 			})
 		} catch (error) {
 			throw error
+		}
+	}
+	static async readAllFormsVersion() {
+		try {
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'FORM_VERSION_FETCHED_SUCCESSFULLY',
+				result: (await form.getAllFormsVersion) || {},
+			})
+		} catch (error) {
+			return error
 		}
 	}
 }
