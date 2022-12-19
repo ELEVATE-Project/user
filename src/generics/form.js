@@ -8,4 +8,4 @@ async function getAllFormsVersion() {
 	}
 	return form
 }
-module.exports = { getAllFormsVersion: getAllFormsVersion() }
+module.exports = { getAllFormsVersion }
