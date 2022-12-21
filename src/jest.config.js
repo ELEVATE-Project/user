@@ -11,6 +11,7 @@ module.exports = {
 		'@constants/(.*)': '<rootDir>/constants/$1',
 		'@configs/(.*)': '<rootDir>/configs/$1',
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
+		'@log/(.*)': ['<rootDir>/log/$1'],
 	},
 }
 process.env = Object.assign(process.env, {

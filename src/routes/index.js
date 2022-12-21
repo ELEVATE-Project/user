@@ -63,7 +63,6 @@ module.exports = (app) => {
 				? await new controller()[req.params.method](req)
 				: next()
 		} catch (error) {
-			logger.error(error)
 			// If controller or service throws some random error
 			return next(error)
 		}
@@ -101,6 +100,9 @@ module.exports = (app) => {
 
 	// Global error handling middleware, should be present in last in the stack of a middleware's
 	app.use((error, req, res, next) => {
+		//console.log('global handler', error.stack)
+		logger.error(error.stack)
+
 		const status = error.statusCode || 500
 		const responseCode = error.responseCode || 'SERVER_ERROR'
 		const message = error.message || ''
