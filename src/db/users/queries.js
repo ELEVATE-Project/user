@@ -7,7 +7,7 @@
 
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
-const { logger } = require('../../log/logger')
+const { logger } = require('elevate-logger')
 const Users = require('./model')
 
 module.exports = class UsersData {

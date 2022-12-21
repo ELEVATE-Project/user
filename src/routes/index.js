@@ -10,7 +10,7 @@ const authenticator = require('@middlewares/authenticator')
 const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
 const fs = require('fs')
-const { logger } = require('@log/logger')
+const { logger } = require('elevate-logger')
 
 module.exports = (app) => {
 	app.use(authenticator)

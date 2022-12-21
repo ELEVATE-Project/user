@@ -13,8 +13,7 @@ const path = require('path')
 const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
-const { logger } = require('@log/logger')
-const { correlationIdMiddleware } = require(`@log/correlation-id-middleware`)
+const { logger, correlationIdMiddleware } = require('elevate-logger')
 
 require('dotenv').config({ path: './.env' })
 
