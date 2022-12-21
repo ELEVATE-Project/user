@@ -118,6 +118,7 @@ module.exports = class UserEntityHelper {
 				entities = await userEntitiesData.findAllEntities(bodyData, projection)
 				await utils.internalSet(key, entities)
 			}
+			console.logg(entities)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ENTITY_FETCHED_SUCCESSFULLY',
