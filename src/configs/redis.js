@@ -1,5 +1,5 @@
 const redis = require('redis')
-const { logger } = require('@log/logger')
+const { logger } = require('elevate-logger')
 module.exports = async function () {
 	const redisClient = redis.createClient({ url: process.env.REDIS_HOST })
 

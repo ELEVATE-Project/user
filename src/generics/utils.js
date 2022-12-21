@@ -13,7 +13,7 @@ const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
-const { logger } = require('@log/logger')
+const { logger } = require('elevate-logger')
 
 const algorithm = 'aes-256-cbc'
 

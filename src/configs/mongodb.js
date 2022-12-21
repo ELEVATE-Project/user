@@ -9,7 +9,7 @@
 const mongoose = require('mongoose')
 const mongoose_autopopulate = require('mongoose-autopopulate')
 const mongoose_timestamp = require('mongoose-timestamp')
-const { logger } = require('@log/logger')
+const { logger } = require('elevate-logger')
 module.exports = function () {
 	// Added to remove depreciation warnings from logs.
 

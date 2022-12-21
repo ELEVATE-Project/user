@@ -7,8 +7,7 @@
 
 const utils = require('@generics/utils')
 const FormsData = require('@db/forms/queries')
-const correlationId = require('@log/correlation-id')
-const { logger } = require('@log/logger')
+const { logger, correlationId } = require('elevate-logger')
 
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
 	// await new Promise((r) => setTimeout(r, 5000))

@@ -11,7 +11,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const utils = require('@generics/utils')
-const { logger } = require('@log/logger')
+const { logger } = require('elevate-logger')
 
 module.exports = class ProfileHelper {
 	/**

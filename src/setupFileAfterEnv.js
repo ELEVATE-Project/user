@@ -3,7 +3,7 @@ const mongoose_autopopulate = require('mongoose-autopopulate')
 const mongoose_timestamp = require('mongoose-timestamp')
 const { matchers } = require('jest-json-schema')
 expect.extend(matchers)
-const { logger } = require('@log/logger')
+const { logger } = require('elevate-logger')
 
 //Connect to database
 
