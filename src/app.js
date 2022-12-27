@@ -74,15 +74,14 @@ if (process.env.ENABLE_LOG === 'true') {
 		// // logger(`Request Body: ${req.body}`)
 		// // logger('Request Files: ')
 		// console.error('***User Service Logs Ends Here***', 'ankitshahu')
-		logger.info('<===User Service Logs Starts Here===>')
-		logger.info(`Request Type ${req.method} for ${req.url} on ${new Date()} from `)
-		logger.info('Request Headers: ')
-		logger.info(req.headers)
-		logger.info('Request Body: ')
-		logger.info(req.body)
-		logger.info('Request Files: ')
-		logger.info(req.files)
-		logger.info('<===User Service Logs Ends Here===>')
+		logger.info('***User Service Request Log***', {
+			request: {
+				requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from `,
+				requestHeaders: req.headers,
+				requestBody: req.body,
+				requestFiles: req.files,
+			},
+		})
 		next()
 	})
 }

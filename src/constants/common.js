@@ -25,7 +25,7 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 		result,
 		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
 	}
-	logger.info('---Request Response---', { message: JSON.stringify(response) })
+	logger.info('Request Response', { response: response })
 
 	return response
 }
