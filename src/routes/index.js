@@ -10,8 +10,8 @@ const authenticator = require('@middlewares/authenticator')
 const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
 const fs = require('fs')
-const { logger, correlationId } = require('elevate-logger')
-
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 module.exports = (app) => {
 	app.use(authenticator)
 	app.use(pagination)
@@ -100,9 +100,7 @@ module.exports = (app) => {
 
 	// Global error handling middleware, should be present in last in the stack of a middleware's
 	app.use((error, req, res, next) => {
-		//console.log('global handler', error.stack)
 		logger.error(error.stack)
-
 		const status = error.statusCode || 500
 		const responseCode = error.responseCode || 'SERVER_ERROR'
 		const message = error.message || ''

@@ -33,7 +33,7 @@ const comparePassword = (password1, password2) => {
 
 const clearFile = (filePath) => {
 	fs.unlink(filePath, (err) => {
-		if (err) logger.info(err)
+		if (err) logger.error(err)
 	})
 }
 

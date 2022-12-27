@@ -13,8 +13,9 @@ const path = require('path')
 const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
-const { logger, correlationIdMiddleware } = require('elevate-logger')
-
+const { elevateLog, correlationIdMiddleware } = require('elevate-logger')
+elevateLog.config(process.env.ERROR_LOG_LEVEL, 'user', process.env.DISABLE_LOG)
+const logger = elevateLog.init()
 require('dotenv').config({ path: './.env' })
 
 let environmentData = require('./envVariables')()

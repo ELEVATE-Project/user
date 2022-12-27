@@ -20,7 +20,7 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
-const { logger } = require('elevate-logger')
+//const { logger } = require('elevate-logger')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -216,7 +216,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
-			logger.error(error)
+			//logger.error(error)
 			throw error
 		}
 	}
@@ -486,7 +486,7 @@ module.exports = class AccountHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			logger.info(otp)
+			//logger.info(otp)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',

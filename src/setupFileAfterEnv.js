@@ -3,7 +3,6 @@ const mongoose_autopopulate = require('mongoose-autopopulate')
 const mongoose_timestamp = require('mongoose-timestamp')
 const { matchers } = require('jest-json-schema')
 expect.extend(matchers)
-const { logger } = require('elevate-logger')
 
 //Connect to database
 
@@ -12,11 +11,11 @@ const db = mongoose.createConnection('mongodb://127.0.0.1:27017/elevate-mentorin
 })
 
 db.on('error', function () {
-	logger.info('Database connection error:')
+	console.log('Database connection error:')
 })
 
 db.once('open', function () {
-	//console.log('Connected to DB')
+	console.log('Connected to DB')
 })
 
 mongoose.plugin(mongoose_timestamp, {
@@ -35,7 +34,7 @@ afterAll(async () => {
 		//console.log('runs afterAll')
 		//await db.dropDatabase()
 	} catch (error) {
-		logger.info(error)
+		console.log(error)
 	}
 	mongoose.disconnect()
 })

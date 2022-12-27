@@ -9,7 +9,8 @@
 const Kafka = require('kafka-node')
 const utils = require('@generics/utils')
 const profileService = require('@services/helper/profile')
-const { logger } = require('elevate-logger')
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 module.exports = () => {
 	const Producer = Kafka.Producer
 	const KafkaClient = new Kafka.KafkaClient({
@@ -24,7 +25,7 @@ module.exports = () => {
 	/* Registered events */
 
 	KafkaClient.on('error', (error) => {
-		logger.info('Kafka connection error: ', error)
+		logger.error('Kafka connection error: ', error)
 	})
 
 	KafkaClient.on('connect', () => {
@@ -32,11 +33,11 @@ module.exports = () => {
 	})
 
 	producer.on('error', (error) => {
-		logger.info('Kafka producer intialization error: ', error)
+		logger.error('Kafka producer initialization error: ', error)
 	})
 
 	producer.on('ready', () => {
-		logger.info('Producer intialized successfully')
+		logger.info('Producer initialized successfully')
 	})
 
 	const consumer = new Kafka.ConsumerGroup(
@@ -57,12 +58,12 @@ module.exports = () => {
 				utils.internalDel(streamingData.value)
 			}
 		} catch (error) {
-			logger.info('failed', error)
+			logger.error('failed', error)
 		}
 	})
 
 	consumer.on('error', async function (error) {
-		logger.info('kafka consumer intialization error', error)
+		logger.error('kafka consumer initialization error', error)
 	})
 
 	global.kafkaProducer = producer

@@ -7,10 +7,9 @@
 
 const utils = require('@generics/utils')
 const FormsData = require('@db/forms/queries')
-const { logger, correlationId } = require('elevate-logger')
-
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
-	// await new Promise((r) => setTimeout(r, 5000))
 	const formVersionData = (await utils.internalGet('formVersion')) || false
 	let versions = {}
 	if (formVersionData) {
@@ -19,20 +18,23 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 		versions = await FormsData.findAllTypeFormVersion()
 		await utils.internalSet('formVersion', versions)
 	}
-	return {
+	let response = {
 		statusCode,
 		responseCode,
 		message,
 		result,
 		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
 	}
+	logger.info('---Request Response---', { message: JSON.stringify(response) })
+
+	return response
 }
 
 const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode }) => {
 	const error = new Error(message)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
-	logger.warn(error)
+	//logger.error(error)
 	return error
 }
 
