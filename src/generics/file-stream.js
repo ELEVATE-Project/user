@@ -11,6 +11,8 @@ const stream = require('stream')
 const fs = require('fs')
 const moment = require('moment-timezone')
 
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 /**
  * FileStream
  * @class
@@ -60,7 +62,7 @@ let FileStream = class FileStream {
 		try {
 			fs.mkdirSync(filePath, { recursive: true })
 		} catch (err) {
-			console.log(err)
+			logger.error(err)
 			if (err.code !== 'EEXIST') throw err
 		}
 	}

@@ -6,6 +6,8 @@
  */
 
 const utils = require('@generics/utils')
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 const { Kafka } = require('kafkajs')
 
 module.exports = async () => {
@@ -22,10 +24,10 @@ module.exports = async () => {
 	await consumer.connect()
 
 	producer.on('producer.connect', () => {
-		console.log(`KafkaProvider: connected`)
+		logger.info(`KafkaProvider: connected`)
 	})
 	producer.on('producer.disconnect', () => {
-		console.log(`KafkaProvider: could not connect`)
+		logger.error(`KafkaProvider: could not connect`)
 	})
 
 	const subscribeToConsumer = async () => {
