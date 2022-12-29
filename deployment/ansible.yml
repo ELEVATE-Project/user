@@ -46,11 +46,18 @@
     - name: Update npm
       shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
     
-    - name: Update symlink
-      file:
-        src={{ release_path }}
-        dest={{ current_path }}
-        state=link
+    - name: Delete Old Folder 
+      shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir users
+    
+    - name: Move code
+      shell: mv {{ release_path }} {{ current_path }}
+
+   # - name: Update symlink
+    #  file:
+     #   src={{ release_path }}
+      #  dest={{ current_path }}
+       # state=link
+
     - name: Delete old pm2 process
       command: pm2 delete elevate-user
       ignore_errors: yes
