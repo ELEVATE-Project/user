@@ -50,7 +50,7 @@
       shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir users
     
     - name: Move code
-      shell: mv {{ release_path }} {{ current_path }}
+      shell: mv "{{ release_path }}"/* {{ current_path }}/
 
    # - name: Update symlink
     #  file:
