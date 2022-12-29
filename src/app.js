@@ -42,12 +42,6 @@ app.get(process.env.API_DOC_URL, function (req, res) {
 /* Logs request info if environment is not development*/
 if (process.env.ENABLE_LOG === 'true') {
 	app.all('*', (req, res, next) => {
-		/* 		console.log('***Notification Service Logs Starts Here***')
-		console.log('%s %s on %s from ', req.method, req.url, new Date(), req.headers['user-agent'])
-		console.log('Request Headers: ', req.headers)
-		console.log('Request Body: ', req.body)
-		console.log('Request Files: ', req.files)
-		console.log('***Notification Service Logs Ends Here***') */
 		logger.info('***Notification Service Request Log***', {
 			request: {
 				requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from `,
