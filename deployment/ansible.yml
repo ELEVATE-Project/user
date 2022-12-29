@@ -14,6 +14,7 @@
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/users' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
 }}/data2.json'"
       register: credentials
+    - debug: msg="{{ credentials }}"
 
     - name: Get gcp credentials
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
