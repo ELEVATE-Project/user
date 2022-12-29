@@ -68,7 +68,7 @@
       shell: mv {{ project_path }}/gcp.json  {{ current_path }}/src/
 
     - name: generate api-doc 
-      shell: cd {{release_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
+      shell: cd {{current_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
       register: apiDocResponse 
     - debug: msg=" Api-doc {{ apiDocResponse }} "
 
