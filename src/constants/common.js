@@ -6,17 +6,20 @@
  */
 
 const form = require('@generics/form')
-
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
 	const versions = await form.getAllFormsVersion()
-
-	return {
+	let response = {
 		statusCode,
 		responseCode,
 		message,
 		result,
-		meta: { ...meta, formsVersion: versions },
+		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
 	}
+	logger.info('Request Response', { response: response })
+
+	return response
 }
 
 const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode }) => {
