@@ -17,7 +17,7 @@
 
     - name: Print vault response
       debug:
-        var: (credentials.stdout|from_json).data.data.CLOUD_STORAGE
+        var: (credentials.stdout|from_json).data.CLOUD_STORAGE
 
     - name: Get gcp credentials
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
