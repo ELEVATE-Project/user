@@ -10,10 +10,18 @@
       register: slurpfile
     #- debug: msg="{{ slurpfile['content'] | b64decode }}"
     #- debug: msg="the value of foo.txt is {{ contents }}"
-    - name: Run vault credentials
+    - name: Get vault credentials
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/users' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
 }}/data2.json'"
-      register: vaultCurl
+      register: credentials
+
+    - name: Print vault response
+      debug:
+        var: (credentials.stdout|from_json).data.data.CLOUD_STORAGE
+
+    - name: Get gcp credentials
+      shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
+}}/gcp.json'"
     - name: Set some variable
       set_fact:
         release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
@@ -56,6 +64,9 @@
       shell: cat {{ project_path }}/data2.json | {{ current_path }}/src/scripts/json2env.sh > {{ current_path }}/src/.env
       register: envConfig 
     - debug: msg=" cred {{ envConfig }} "
+    
+    - name: move gcp credentials 
+      shell: mv {{ project_path }}/gcp.json  {{ current_path }}/src/
 
     - name: generate api-doc 
       shell: cd {{release_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
