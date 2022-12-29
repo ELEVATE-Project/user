@@ -20,7 +20,7 @@ module.exports = class FilesHelper {
 			expiry: Date.now() + 1000 * 60 * 30, // signed url expiration time - In ms from current time - type number | string | Date
 			gcpProjectId: process.env.GCP_PROJECT_ID, // google cloud storage project id
 			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH), // google cloud storage json configuration file absolute path for connectivity
-			contentType: 'multipart/form-data', // content type of file, example multipart/form-data, image/png, csv/text etc
+			contentType: 'image/png', // content type of file, example multipart/form-data, image/png, csv/text etc
 		}
 
 		try {

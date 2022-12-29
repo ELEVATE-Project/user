@@ -14,13 +14,12 @@
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/users' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
 }}/data2.json'"
       register: credentials
-    - debug: msg="{{ credentials }}"
 
     - name: Get gcp credentials
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data.data' > '{{ project_path 
 }}/gcp.json'"
 
-    - name: Set some variable
+    - name: Create Release folder
       set_fact:
         release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
         current_path: "{{ project_path }}/users"
@@ -49,14 +48,8 @@
     - name: Delete Old Folder 
       shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir users
     
-    - name: Move code
+    - name: Move code from release  to service folder
       shell: mv "{{ release_path }}"/* {{ current_path }}/
-
-   # - name: Update symlink
-    #  file:
-     #   src={{ release_path }}
-      #  dest={{ current_path }}
-       # state=link
 
     - name: Delete old pm2 process
       command: pm2 delete elevate-user
