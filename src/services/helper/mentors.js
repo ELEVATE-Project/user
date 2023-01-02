@@ -65,7 +65,6 @@ module.exports = class MentorsHelper {
 				})
 			}
 		} catch (err) {
-			console.log(err)
 			return err
 		}
 	}

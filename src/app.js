@@ -14,9 +14,11 @@ const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
 let environmentData = require('./envVariables')()
-
+const { elevateLog, correlationIdMiddleware } = require('elevate-logger')
+elevateLog.config(process.env.ERROR_LOG_LEVEL, 'mentoring', process.env.DISABLE_LOG)
+const logger = elevateLog.init()
 if (!environmentData.success) {
-	console.log('Server could not start . Not all environment variable is provided')
+	logger.error('Server could not start . Not all environment variable is provided')
 	process.exit()
 }
 
@@ -45,6 +47,7 @@ require('@health-checks')(app)
 
 app.use(cors())
 app.use(middleware.handle(i18next))
+app.use(correlationIdMiddleware)
 
 app.use(bodyParser.urlencoded({ extended: true, limit: '50MB' }))
 app.use(bodyParser.json({ limit: '50MB' }))
@@ -58,12 +61,17 @@ app.get(process.env.API_DOC_URL, function (req, res) {
 /* Logs request info if environment is not development*/
 if (process.env.ENABLE_LOG === 'true') {
 	app.all('*', (req, res, next) => {
-		console.log('***Mentoring Service Logs Starts Here***')
-		console.log('%s %s on %s from ', req.method, req.url, new Date(), req.headers['user-agent'])
-		console.log('Request Headers: ', req.headers)
-		console.log('Request Body: ', req.body)
-		console.log('Request Files: ', req.files)
-		console.log('***Mentoring Service Logs Ends Here***')
+		logger.info('***Mentoring Service Request Log***', {
+			request: {
+				requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from ${
+					req.headers['user-agent']
+				}`,
+				requestHeaders: req.headers,
+				requestBody: req.body,
+				requestFiles: req.files,
+			},
+		})
+
 		next()
 	})
 }
@@ -76,17 +84,17 @@ app.listen(process.env.APPLICATION_PORT, (res, err) => {
 	if (err) {
 		onError(err)
 	}
-	console.log('Environment: ' + process.env.APPLICATION_ENV)
-	console.log('Application is running on the port:' + process.env.APPLICATION_PORT)
+	logger.info('Environment: ' + process.env.APPLICATION_ENV)
+	logger.info('Application is running on the port:' + process.env.APPLICATION_PORT)
 })
 
 // Handles specific listen errors with friendly messages
 function onError(error) {
 	if (error.code === 'EACCES') {
-		console.log(process.env.APPLICATION_PORT + ' requires elevated privileges')
+		logger.error(process.env.APPLICATION_PORT + ' requires elevated privileges')
 		process.exit(1)
 	} else if (error.code === 'EADDRINUSE') {
-		console.log(process.env.APPLICATION_PORT + ' is already in use')
+		logger.error(process.env.APPLICATION_PORT + ' is already in use')
 		process.exit(1)
 	} else {
 		throw error
