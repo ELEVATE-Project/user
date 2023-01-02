@@ -64,21 +64,17 @@ app.use(bodyParser.json({ limit: '50MB' }))
 app.use(express.static('public'))
 
 /* Logs request info if environment is configured to enable log */
-if (process.env.ENABLE_LOG === 'true') {
-	app.all('*', (req, res, next) => {
-		logger.info('***User Service Request Log***', {
-			request: {
-				requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from ${
-					req.headers['user-agent']
-				}`,
-				requestHeaders: req.headers,
-				requestBody: req.body,
-				requestFiles: req.files,
-			},
-		})
-		next()
+app.all('*', (req, res, next) => {
+	logger.info('***User Service Request Log***', {
+		request: {
+			requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from ${req.headers['user-agent']}`,
+			requestHeaders: req.headers,
+			requestBody: req.body,
+			requestFiles: req.files,
+		},
 	})
-}
+	next()
+})
 
 /* Registered routes here */
 require('./routes')(app)
