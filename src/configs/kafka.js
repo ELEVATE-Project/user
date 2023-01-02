@@ -8,9 +8,9 @@
 //Dependencies
 const { Kafka } = require('kafkajs')
 const emailNotifications = require('@generics/helpers/email-notifications')
-
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 module.exports = async function (config) {
-
 	const kafkaIps = process.env.KAFKA_HOST.split(',')
 	const KafkaClient = new Kafka({
 		clientId: 'mentoring',
@@ -24,14 +24,14 @@ module.exports = async function (config) {
 	await consumer.connect()
 
 	producer.on('producer.connect', () => {
-		console.log(`KafkaProvider: connected`)
+		logger.info(`KafkaProvider: connected`)
 	})
 	producer.on('producer.disconnect', () => {
-		console.log(`KafkaProvider: could not connect`)
+		logger.error(`KafkaProvider: could not connect`)
 	})
 
 	const subscribeToConsumer = async () => {
-		await consumer.subscribe({ topics: [ process.env.KAFKA_TOPIC ] })
+		await consumer.subscribe({ topics: [process.env.KAFKA_TOPIC] })
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
@@ -40,7 +40,7 @@ module.exports = async function (config) {
 						emailNotifications.sendEmail(notificationData.email)
 					}
 				} catch (error) {
-					console.log('failed', error)
+					logger.error('failed', error)
 				}
 			},
 		})
@@ -49,6 +49,6 @@ module.exports = async function (config) {
 
 	global.kafkaClient = {
 		kafkaProducer: producer,
-		kafkaClient: KafkaClient
+		kafkaClient: KafkaClient,
 	}
 }
