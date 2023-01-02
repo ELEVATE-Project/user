@@ -52,6 +52,7 @@ require('@health-checks')(app)
 app.use(cors())
 
 app.use(middleware.handle(i18next))
+app.use(correlationIdMiddleware)
 
 app.use(expressFileUpload())
 app.get(process.env.API_DOC_URL, function (req, res) {
