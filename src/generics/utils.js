@@ -14,6 +14,9 @@ const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
 
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
+
 const algorithm = 'aes-256-cbc'
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
@@ -32,7 +35,7 @@ const comparePassword = (password1, password2) => {
 
 const clearFile = (filePath) => {
 	fs.unlink(filePath, (err) => {
-		if (err) console.log(err)
+		if (err) logger.error(err)
 	})
 }
 

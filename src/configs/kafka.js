@@ -11,6 +11,9 @@ const { Kafka } = require('kafkajs')
 const utils = require('@generics/utils')
 const profileService = require('@services/helper/profile')
 
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
+
 module.exports = async () => {
 	const kafkaIps = process.env.KAFKA_URL.split(',')
 	const KafkaClient = new Kafka({
@@ -25,10 +28,10 @@ module.exports = async () => {
 	await consumer.connect()
 
 	producer.on('producer.connect', () => {
-		console.log(`KafkaProvider: connected`)
+		logger.info(`KafkaProvider: connected`)
 	})
 	producer.on('producer.disconnect', () => {
-		console.log(`KafkaProvider: could not connect`)
+		logger.error(`KafkaProvider: could not connect`)
 	})
 
 	const subscribeToConsumer = async () => {
@@ -43,7 +46,7 @@ module.exports = async () => {
 						utils.internalDel(streamingData.value)
 					}
 				} catch (error) {
-					console.log('failed', error)
+					logger.error('failed', error)
 				}
 			},
 		})
