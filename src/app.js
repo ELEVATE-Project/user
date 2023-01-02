@@ -58,23 +58,17 @@ app.get(process.env.API_DOC_URL, function (req, res) {
 	res.sendFile(path.join(__dirname, './api-doc/index.html'))
 })
 
-/* Logs request info if environment is not development*/
-if (process.env.ENABLE_LOG === 'true') {
-	app.all('*', (req, res, next) => {
-		logger.info('***Mentoring Service Request Log***', {
-			request: {
-				requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from ${
-					req.headers['user-agent']
-				}`,
-				requestHeaders: req.headers,
-				requestBody: req.body,
-				requestFiles: req.files,
-			},
-		})
-
-		next()
+app.all('*', (req, res, next) => {
+	logger.info('***Mentoring Service Request Log***', {
+		request: {
+			requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from ${req.headers['user-agent']}`,
+			requestHeaders: req.headers,
+			requestBody: req.body,
+			requestFiles: req.files,
+		},
 	})
-}
+	next()
+})
 
 /* Registered routes here */
 require('./routes')(app)
