@@ -39,29 +39,19 @@ app.use(express.static('public'))
 app.get(process.env.API_DOC_URL, function (req, res) {
 	res.sendFile(path.join(__dirname, './api-doc/index.html'))
 })
+
 /* Logs request info if environment is not development*/
-if (process.env.ENABLE_LOG === 'true') {
-	app.all('*', (req, res, next) => {
-		logger.info('***Notification Service Request Log***', {
-			request: {
-				requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from `,
-				requestHeaders: req.headers,
-				requestBody: req.body,
-				requestFiles: req.files,
-			},
-		})
-		/* 		logger.info('***Notification Service Logs Starts Here***')
-		logger.info(`Request Type ${req.method} for ${req.url} on ${new Date()} from `)
-		logger.info('Request Headers: ')
-		logger.info(req.headers)
-		logger.info('Request Body: ')
-		logger.info(req.body)
-		logger.info('Request Files: ')
-		logger.info(req.files)
-		logger.info('***Notification Service Logs Ends Here***') */
-		next()
+app.all('*', (req, res, next) => {
+	logger.info('***Notification Service Request Log***', {
+		request: {
+			requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from `,
+			requestHeaders: req.headers,
+			requestBody: req.body,
+			requestFiles: req.files,
+		},
 	})
-}
+	next()
+})
 
 /* Registered routes here */
 require('./routes')(app)
