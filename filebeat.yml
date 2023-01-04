@@ -1,0 +1,17 @@
+filebeat.inputs:
+  - type: filestream
+    paths:
+      - /usr/share/filebeat/*.log
+      - /info/logs/*.log
+
+setup.template.settings:
+  index.number_of_shards: 1
+setup.kibana:
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+
+output.logstash:
+  hosts: ['graylog:5044']
