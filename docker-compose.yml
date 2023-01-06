@@ -180,7 +180,7 @@ services:
     image: docker.elastic.co/beats/filebeat:8.5.3
     volumes:
       #Mount the filebeat configuration so users can make edit
-      - ./filebeatTemp.yml:/usr/share/filebeat/filebeat.yml
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
       #Named volume fsdata. This is used to persist the registry file between restarts, so to avoid data duplication
       - fbdata:/usr/share/filebeat/data/
       - logs:/info/logs
