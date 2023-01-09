@@ -91,7 +91,7 @@ module.exports = (app) => {
 			error.message === 'UNAUTHORIZED_REQUEST'
 		) {
 			logger.info(error.message, { message: error })
-		} else logger.error('Global error handling middleware', { message: error })
+		} else logger.error('Global error handling middleware', { message: error, triggerNotification: true })
 		const status = error.statusCode || 500
 		const responseCode = error.responseCode || 'SERVER_ERROR'
 		const message = error.message || ''
