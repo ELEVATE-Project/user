@@ -133,6 +133,7 @@ services:
     networks:
       - elevate_net
 
+  #The below services can be disable safely. Only enable if graylog service is needed.
   elasticsearch:
     image: 'docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2'
     environment:
@@ -210,17 +211,6 @@ services:
       - elasticsearch
       - mentoring
       - user
-  # kafdrop:
-  #   image: obsidiandynamics/kafdrop:3.28.0
-  #   restart: "no"
-  #   ports:
-  #     - "9001:9000"
-  #   environment:
-  #     KAFKA_BROKERCONNECT: "kafka:9092"
-  #   depends_on:
-  #     - "kafka"
-  #   networks:
-  #     - elevate_net
 
 networks:
   elevate_net:
