@@ -86,8 +86,12 @@ module.exports = (app) => {
 
 	// Global error handling middleware, should be present in last in the stack of a middleware's
 	app.use((error, req, res, next) => {
-		logger.error('Global error handling middleware', { message: JSON.stringify(error) })
-
+		if (
+			error.message === 'Validation failed, Entered data is incorrect!' ||
+			error.message === 'UNAUTHORIZED_REQUEST'
+		) {
+			logger.info(error.message, { message: error })
+		} else logger.error('Global error handling middleware', { message: error, triggerNotification: true })
 		const status = error.statusCode || 500
 		const responseCode = error.responseCode || 'SERVER_ERROR'
 		const message = error.message || ''

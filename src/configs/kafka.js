@@ -27,7 +27,9 @@ module.exports = async () => {
 		logger.info(`KafkaProvider: connected`)
 	})
 	producer.on('producer.disconnect', () => {
-		logger.error(`KafkaProvider: could not connect`)
+		logger.error(`KafkaProvider: could not connect`, {
+			triggerNotification: true,
+		})
 	})
 
 	const subscribeToConsumer = async () => {
