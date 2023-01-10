@@ -45,7 +45,9 @@ module.exports = function () {
 	})
 
 	db.once('open', function () {
-		logger.info('Connected to DB')
+		logger.info('Connected to DB', {
+			triggerNotification: true,
+		})
 	})
 
 	mongoose.plugin(mongoose_timestamp, {
