@@ -36,7 +36,9 @@ module.exports = function () {
 	}
 
 	db.on('error', function () {
-		logger.error('Database connection error:')
+		logger.error('Database connection error:', {
+			triggerNotification: true,
+		})
 	})
 
 	db.once('open', function () {
