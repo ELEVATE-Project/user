@@ -23,7 +23,7 @@
 		"cli-table": "^0.3.11",
 		"cors": "^2.8.5",
 		"dotenv": "^10.0.0",
-		"elevate-logger": "^2.0.8",
+		"elevate-logger": "^3.1.0",
 		"express": "^4.17.1",
 		"express-validator": "^5.3.1",
 		"jsonwebtoken": "^8.5.1",
