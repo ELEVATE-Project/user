@@ -70,21 +70,21 @@ Elevate services can be setup in local using three methods:
 ### Steps
 
 1.  Install **Docker** & **Docker-Compose**.
-2.  Clone all elevate services into a common directory.
-    ```
-    ./ELEVATE/
-    ├── mentoring
-    ├── notification
-    ├── scheduler
-    └── user
-    ```
-3.  To create/start all containers:
+
+2.  To create/start all containers:
 
     ```
     ELEVATE/mentoring$ docker-compose up
     ```
 
-4.  To remove all containers & networks:
+    You can pass .env file to docker images of elevate service by using the below command
+
+    ```
+    ELEVATE/mentoring$ mentoring_env=".env path" users_env=".env path" notification_env=".env path" scheduler=".env path"  docker-compose up
+
+    ```
+
+3.  To remove all containers & networks:
 
             ```
             ELEVATE/mentoring$ docker-compose down

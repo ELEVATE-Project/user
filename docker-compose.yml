@@ -1,35 +1,32 @@
 version: '3'
 services:
   zookeeper:
-    image: 'bitnami/zookeeper:3.8.0'
+    image: 'confluentinc/cp-zookeeper:7.3.0'
     ports:
       - '2181:2181'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
     networks:
       - elevate_net
-    volumes:
-      - zookeeper-data:/bitnami/zookeeper
     logging:
       driver: none
   kafka:
-    image: 'bitnami/kafka:3.1.0'
+    image: 'confluentinc/cp-kafka:7.3.0'
     ports:
       - '9092:9092'
     environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     depends_on:
       - zookeeper
     networks:
       - elevate_net
-    volumes:
-      - kafka-data:/bitnami/kafka
     logging:
       driver: gelf
       options:
@@ -48,7 +45,6 @@ services:
     volumes:
       - mongo-data:/data/db
       - logs:/var/log/mongodb
-
   redis:
     image: 'redis:7.0.0'
     restart: 'always'
@@ -64,10 +60,7 @@ services:
         gelf-address: 'udp://0.0.0.0:12201'
         tag: 'redis-logs'
   mentoring:
-    build: './'
-    image: elevate/mentoring:1.0
-    volumes:
-      - ./src/:/var/src
+    image: shikshalokamqa/elevate-mentoring:2.2
     ports:
       - '3000:3000'
     command: ['nodemon', 'app.js']
@@ -82,11 +75,10 @@ services:
       - redis
     networks:
       - elevate_net
+    env_file:
+      - ${mentoring_env}
   user:
-    build: '../user/'
-    image: elevate/user:1.0
-    volumes:
-      - ../user/src/:/var/src
+    image: shikshalokamqa/elevate-user:2.2
     ports:
       - '3001:3001'
     command: ['nodemon', 'app.js']
@@ -100,11 +92,10 @@ services:
       - redis
     networks:
       - elevate_net
+    env_file:
+      - ${users_env}
   notification:
-    build: '../notification/'
-    image: elevate/notification:1.0
-    volumes:
-      - ../notification/src/:/var/src
+    image: shikshalokamqa/elevate-notification:2.2
     ports:
       - '3002:3002'
     command: ['nodemon', 'app.js']
@@ -112,21 +103,21 @@ services:
       - KAFKA_HOST=kafka:9092
     depends_on:
       - kafka
-      - mongo
     networks:
       - elevate_net
+    env_file:
+      - ${notification_env}
 
   scheduler:
-    build: '../scheduler/'
-    image: elevate/scheduler:1.0
-    volumes:
-      - ../scheduler/src/:/var/src
+    image: shikshalokamqa/elevate-scheduler:2.2
     ports:
       - '4000:4000'
     command: ['nodemon', 'app.js']
     environment:
       - KAFKA_URL=kafka:9092
       - MONGODB_URL=mongodb://mongo:27017/elevate-scheduler
+    env_file:
+      - ${scheduler_env}
     depends_on:
       - kafka
       - mongo
@@ -211,13 +202,12 @@ services:
       - elasticsearch
       - mentoring
       - user
-
-networks:
-  elevate_net:
-    external: false
-volumes:
-  zookeeper-data:
-  kafka-data:
-  mongo-data:
-  fbdata:
-  logs:
+  networks:
+    elevate_net:
+      external: false
+  volumes:
+    zookeeper-data:
+    kafka-data:
+    mongo-data:
+    fbdata:
+    logs:
