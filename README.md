@@ -80,7 +80,7 @@ Elevate services can be setup in local using three methods:
     You can pass .env file to docker images of elevate service by using the below command
 
     ```
-    ELEVATE/mentoring$ mentoring_env=".env path" users_env=".env path" notification_env=".env file path"  docker-compose up
+    ELEVATE/mentoring$ mentoring_env=".env path" users_env=".env path" notification_env=".env path" scheduler=".env path"  docker-compose up
 
     ```
 

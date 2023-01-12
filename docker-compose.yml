@@ -45,7 +45,6 @@ services:
     volumes:
       - mongo-data:/data/db
       - logs:/var/log/mongodb
-
   redis:
     image: 'redis:7.0.0'
     restart: 'always'
@@ -108,17 +107,17 @@ services:
       - elevate_net
     env_file:
       - ${notification_env}
+
   scheduler:
-    build: '../scheduler/'
-    image: elevate/scheduler:1.0
-    volumes:
-      - ../scheduler/src/:/var/src
+    image: shikshalokamqa/elevate-scheduler:2.2
     ports:
       - '4000:4000'
     command: ['nodemon', 'app.js']
     environment:
       - KAFKA_URL=kafka:9092
       - MONGODB_URL=mongodb://mongo:27017/elevate-scheduler
+    env_file:
+      - ${scheduler_env}
     depends_on:
       - kafka
       - mongo
@@ -203,12 +202,12 @@ services:
       - elasticsearch
       - mentoring
       - user
-networks:
-  elevate_net:
-    external: false
-volumes:
-  zookeeper-data:
-  kafka-data:
-  mongo-data:
-  fbdata:
-  logs:
+  networks:
+    elevate_net:
+      external: false
+  volumes:
+    zookeeper-data:
+    kafka-data:
+    mongo-data:
+    fbdata:
+    logs:
