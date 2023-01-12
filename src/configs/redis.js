@@ -9,11 +9,17 @@ module.exports = async function () {
 	try {
 		await redisClient.connect()
 	} catch (error) {
-		logger.error('Error while making connection to redis client: ', error)
+		logger.error('Error while making connection to redis client: ', {
+			triggerNotification: true,
+			err: error,
+		})
 	}
 
 	redisClient.on('error', (err) => {
-		logger.error('Error while making connection to redis client: ', err)
+		logger.error('Error while making connection to redis client: ', {
+			triggerNotification: true,
+			error: err,
+		})
 	})
 
 	global.redisClient = redisClient

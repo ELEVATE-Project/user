@@ -31,7 +31,9 @@ module.exports = async () => {
 		logger.info(`KafkaProvider: connected`)
 	})
 	producer.on('producer.disconnect', () => {
-		logger.error(`KafkaProvider: could not connect`)
+		logger.error(`KafkaProvider: could not connect`, {
+			triggerNotification: true,
+		})
 	})
 
 	const subscribeToConsumer = async () => {
@@ -46,7 +48,9 @@ module.exports = async () => {
 						utils.internalDel(streamingData.value)
 					}
 				} catch (error) {
-					logger.error('failed', error)
+					logger.error('Subscribe to consumer failed:' + error, {
+						triggerNotification: true,
+					})
 				}
 			},
 		})
