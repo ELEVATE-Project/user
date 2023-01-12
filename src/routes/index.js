@@ -9,6 +9,8 @@ const validator = require('@middlewares/validator')
 const authenticator = require('@middlewares/authenticator')
 const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 
 module.exports = (app) => {
 	app.use(authenticator)
@@ -84,6 +86,12 @@ module.exports = (app) => {
 
 	// Global error handling middleware, should be present in last in the stack of a middleware's
 	app.use((error, req, res, next) => {
+		if (
+			error.message === 'Validation failed, Entered data is incorrect!' ||
+			error.message === 'UNAUTHORIZED_REQUEST'
+		) {
+			logger.info(error.message, { message: error })
+		} else logger.error('Global error handling middleware', { message: error, triggerNotification: true })
 		const status = error.statusCode || 500
 		const responseCode = error.responseCode || 'SERVER_ERROR'
 		const message = error.message || ''
@@ -96,6 +104,7 @@ module.exports = (app) => {
 			responseCode,
 			message: req.t(message),
 			error: errorData,
+			meta: { correlation: correlationId.getId() },
 		})
 	})
 }

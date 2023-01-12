@@ -146,7 +146,6 @@ module.exports = class MenteesHelper {
 				},
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -184,7 +183,7 @@ module.exports = class MenteesHelper {
 
 			if (session.status == 'completed') {
 				return common.failureResponse({
-					message:  'SESSION_ENDED',
+					message: 'SESSION_ENDED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

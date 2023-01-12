@@ -13,11 +13,17 @@
     - name: Run vault credentials
       shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/mentoring' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
 }}/data2.json'"
-      register: vaultCurl
-    - name: Set some variable
+      register: credentials
+
+    - name: Get gcp credentials
+      shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/gcp' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data.data' > '{{ project_path 
+}}/gcp.json'"
+
+    - name: Create release folder
       set_fact:
         release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
         current_path: "{{ project_path }}/mentoring"
+    
     - name: Retrieve current release folder
       command: readlink -f mentoring
       register: current_release_path
@@ -39,12 +45,13 @@
         version: "{{ gitBranch }}"
     - name: Update npm
       shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
-    
-    - name: Update symlink
-      file:
-        src={{ release_path }}
-        dest={{ current_path }}
-        state=link
+
+    - name: Delete Old Folder & create folder
+      shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir mentoring
+
+    - name: Move code from release  to service folder
+      shell: mv "{{ release_path }}"/* {{ current_path }}/
+
     - name: Delete old pm2 process
       command: pm2 delete elevate-mentoring
       ignore_errors: yes
@@ -57,10 +64,16 @@
       register: envConfig 
     - debug: msg=" cred {{ envConfig }} "
 
+    - name: move gcp credentials 
+      shell: mv {{ project_path }}/gcp.json  {{ current_path }}/src/
+
     - name: generate api-doc 
-      shell: cd {{release_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
+      shell: cd {{current_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
       register: apiDocResponse 
     - debug: msg=" Api-doc {{ apiDocResponse }} "
+
+    - name: Delete release folder
+      shell: rm -rf  {{ release_path }}
 
     - name: Start pm2
       command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-mentoring"

@@ -171,6 +171,14 @@ let enviromentVariables = {
 		message: 'Required replica read preferance',
 		optional: process.env.REPLICA_SET_NAME ? false : true,
 	},
+	ERROR_LOG_LEVEL: {
+		message: 'Required Error log level',
+		optional: false,
+	},
+	DISABLE_LOG: {
+		message: 'Required disable log level',
+		optional: false,
+	},
 }
 
 let success = true
