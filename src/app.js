@@ -19,7 +19,9 @@ const logger = elevateLog.init()
 let environmentData = require('./envVariables')()
 
 if (!environmentData.success) {
-	logger.error('Server could not start . Not all environment variable is provided')
+	logger.error('Server could not start . Not all environment variable is provided', {
+		triggerNotification: true,
+	})
 	process.exit()
 }
 
@@ -69,10 +71,14 @@ app.listen(process.env.APPLICATION_PORT, (res, err) => {
 function onError(error) {
 	switch (error.code) {
 		case 'EACCES':
-			logger.error(process.env.APPLICATION_PORT + ' requires elevated privileges')
+			logger.error(process.env.APPLICATION_PORT + ' requires elevated privileges', {
+				triggerNotification: true,
+			})
 			process.exit(1)
 		case 'EADDRINUSE':
-			logger.error(process.env.APPLICATION_PORT + ' is already in use')
+			logger.error(process.env.APPLICATION_PORT + ' is already in use', {
+				triggerNotification: true,
+			})
 			process.exit(1)
 		default:
 			throw error
