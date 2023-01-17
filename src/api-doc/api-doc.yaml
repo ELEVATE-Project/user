@@ -915,7 +915,149 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
+  '/user/v1/organisations/create':
+    post:
+      summary: Create organisation
+      tags:
+        - Organisation APIs
+      description: "This API is associated with organisation creation  \n - Then
+        Endpoint for create entity `/user/v1/organisations/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/organisation/createOrganisationRequest'
+      responses:
+        '201':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $ref: '#/components/schemas/organisation/createOrganisation201Response'
+        400:
+          description: Bad Request. Organisation alrady exist
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/createOrganisation400Response'
+  '/user/v1/organisations/update/{id}':
+    patch:
+      summary: Update Organisations
+      tags:
+        - Organisation APIs
+      description: "This API is associated with update Organisatio  \n - Then
+        Endpoint for update organisation `/user/v1/organisations/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid organisation id to the request url
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      requestBody:
+        content:
+          application.json:
+            schema:
+              '$ref': '#/components/schemas/organisation/updateOrganisationRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/updateOrganisation202Response'
+        '400':
+          description: Bad Request. Organisation Not Found
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/updateOrganisation400Response'
+  '/user/v1/organisations/details/{id}':
+    get:
+      summary: Get organisation
+      tags:
+        - Organisation APIs
+      description: "This API is associated with getting Organisation based on conditions  \n - Then
+        Endpoint for getting organisation details `/user/v1/organisations/details` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid organisation id to the request url
 
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/readOrganisation200Response'
+  '/user/v1/organisations/delete/{id}':
+    patch:
+      summary: Delete organisation
+      tags:
+        - Organisation APIs
+      description: "This API is associated with delete Organisation  \n - Then
+        Endpoint for delete organisation `/user/v1/organisations/delete` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid Organisation id to the request url
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/deleteOrganisation202Response'
+        '400':
+          description: Bad Request. Organisation Already Deleted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/deleteOrganisation400Response'
 components:
   schemas:
     user:
@@ -2534,7 +2676,149 @@ components:
           error:
             type: array
             example: []
+    organisation:
+      createOrganisationRequest:
+        type: object
+        required:
+          - name
+          - code
+          - description
+        properties:
+          name:
+            type: string
+            example: shikshalokam
+          code:
+            type: string
+            example: org1
+          description:
+            type: string
+            example: organisation description
 
+      createOrganisation201Response:
+        type: object
+        description: Organisation created
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organisation created successfully
+
+      createOrganisation400Response:
+        type: object
+        description: Organisation already exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Organisation already exist
+          error:
+            type: array
+            example: []
+
+      updateOrganisationRequest:
+        type: object
+        required:
+          - name
+          - code
+          - description
+        properties:
+          name:
+            type: string
+            example: shikshalokam
+          code:
+            type: string
+            example: org1
+          description:
+            type: string
+            example: organisation description
+
+      updateOrganisation202Response:
+        type: object
+        description: Organisation Updated
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organisation updated successfully
+          result:
+            type: array
+            example: []
+
+      updateOrganisation400Response:
+        type: object
+        description: Organisation Not Found
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Organisation not found
+          error:
+            type: array
+            example: []
+
+      readOrganisation200Response:
+        description: Organisation fetched
+        type: object
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organisation fetched successfully
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: shikshalokam
+                code:
+                  type: string
+                  example: shikshalokam_org
+                description:
+                  type: string
+                  example: organisation info here
+                deleted:
+                  type: boolean
+                  example: false
+
+      deleteOrganisation202Response:
+        type: object
+        description: Organisation Deleted
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organisation deleted successfully
+          result:
+            type: array
+            example: []
+
+      deleteOrganisation400Response:
+        type: object
+        description: Organisation Deleted
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Organisation already deleted
+          error:
+            type: array
+            example: []
   securitySchemes:
     bearer:
       type: apiKey

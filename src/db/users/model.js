@@ -11,6 +11,7 @@ const { aes256cbc } = require('elevate-encryption')
 const Schema = mongoose.Schema
 // Adding the package
 const mongooseLeanGetter = require('mongoose-lean-getters')
+const { ObjectId } = require('mongodb')
 
 const userSchema = new Schema(
 	{
@@ -76,6 +77,9 @@ const userSchema = new Schema(
 		preferredLanguage: {
 			type: String,
 			default: 'en',
+		},
+		organisationId: {
+			type: ObjectId,
 		},
 	},
 	{

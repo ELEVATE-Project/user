@@ -54,5 +54,12 @@
 	"EMAIL_UPDATE_FAILED": "You can not update email.",
 	"URL_NOT_FOUND": "Url not found",
 	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "Profile share link generated successfully",
-	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
+	"ORGANISATION_NOT_FOUND": "Organisation not found",
+	"ORGANISATION_ALREADY_EXISTS": "Organisation already exists",
+	"ORGANISATION_ALREADY_DELETED": "Organisation already deleted",
+	"ORGANISATION_CREATED_SUCCESSFULLY": "Organisation created successfully",
+	"ORGANISATION_UPDATED_SUCCESSFULLY": "Organisation updated successfully",
+	"ORGANISATION_DELETED_SUCCESSFULLY": "Organisation deleted successfully",
+	"ORGANISATION_FETCHED_SUCCESSFULLY": "Organisation fetched successfully"
 }
