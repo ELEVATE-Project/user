@@ -52,6 +52,7 @@ module.exports = {
 		'profile/details',
 		'/user/v1/account/list',
 		'/profile/share',
+		'/organisations/details',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
