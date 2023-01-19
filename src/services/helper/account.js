@@ -72,12 +72,14 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 			bodyData.email = { address: email, verified: false }
 
-			const organisationInfo = await db
-				.collection('organisations')
-				.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
+			if (!bodyData.organisationId) {
+				const organisationInfo = await db
+					.collection('organisations')
+					.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
 
-			if (organisationInfo) {
-				bodyData['organisationId'] = organisationInfo._id
+				if (organisationInfo) {
+					bodyData['organisationId'] = organisationInfo._id
+				}
 			}
 
 			await usersData.createUser(bodyData)

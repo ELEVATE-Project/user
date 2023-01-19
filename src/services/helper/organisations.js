@@ -179,4 +179,36 @@ module.exports = class OrganisationHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Organisation list.
+	 * @method
+	 * @name list
+	 * @param {Number} page - page no.
+	 * @param {Number} limit - page size.
+	 * @param {String} search - search text.
+	 * @returns {JSON} - List of sessions
+	 */
+	static async list(page, limit, search) {
+		try {
+			const organisations = await organisationData.findAllOrganisations(page, limit, search, {})
+			console.log('organisations', organisations)
+			if (organisations[0] && organisations[0].data.length == 0 && search !== '') {
+				return common.failureResponse({
+					message: 'ORGANISATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: [],
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORGANISATION_FETCHED_SUCCESSFULLY',
+				result: organisations[0] ? organisations[0] : [],
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

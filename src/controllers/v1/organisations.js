@@ -70,4 +70,22 @@ module.exports = class Organisations {
 			return error
 		}
 	}
+
+	/**
+	 * List of Organisations
+	 * @method
+	 * @name list
+	 * @param {Object} req - request data.
+	 * @param {string} req.params.id - Organisation id.
+	 * @returns {JSON} - Organisation deletion response.
+	 */
+
+	async list(req) {
+		try {
+			const organisationList = await OrganisationsHelper.list(req.pageNo, req.pageSize, req.searchText)
+			return organisationList
+		} catch (error) {
+			return error
+		}
+	}
 }
