@@ -72,6 +72,9 @@ module.exports = class UsersData {
 						name: 1,
 						image: 1,
 						areasOfExpertise: 1,
+						about: 1,
+						designation: 1,
+						rating: 1,
 					},
 				},
 				{
