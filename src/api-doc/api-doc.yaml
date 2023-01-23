@@ -1058,6 +1058,55 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/organisation/deleteOrganisation400Response'
+  '/user/v1/organisations/list?page={page}&limit={limit}&search={search}':
+    patch:
+      summary: list of organisation
+      tags:
+        - Organisation APIs
+      description: "This API is associated with delete Organisation  \n - Then
+        Endpoint for organisations list `/user/v1/organisations/list` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          schema:
+            type: number
+          example: 2
+        - in: path
+          name: search
+          description: Please search for name of the organisation.
+          schema:
+            type: string
+          example: org
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/listOrganisation202Response'
+        '400':
+          description: Bad Request. Organisation Already Deleted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/organisation/listOrganisation400Response'
+
 components:
   schemas:
     user:
@@ -2816,6 +2865,55 @@ components:
           message:
             type: string
             example: Organisation already deleted
+          error:
+            type: array
+            example: []
+
+      listOrganisation202Response:
+        type: object
+        description: Organisation fetched
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organisation fetched successfully
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: 63c133360845b6c15c744f77
+                    name:
+                      type: string
+                      example: name of organisation
+                    code:
+                      type: string
+                      example: org_code
+                    description:
+                      type: string
+                      example: organisations description
+
+              count:
+                type: number
+                example: 1
+
+      listOrganisation400Response:
+        type: object
+        description: Organisation Not Found
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Organisation not found
           error:
             type: array
             example: []

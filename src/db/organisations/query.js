@@ -19,6 +19,47 @@ module.exports = class organisationData {
 		}
 	}
 
+	static async findAllOrganisations(page, limit, search, filters) {
+		try {
+			let organisationData = await Organisation.aggregate([
+				{
+					$match: {
+						$and: [{ deleted: false }],
+						$or: [{ name: new RegExp(search, 'i') }],
+					},
+				},
+				{
+					$sort: { name: 1 },
+				},
+				{
+					$project: {
+						_id: 1,
+						code: 1,
+						name: 1,
+						description: 1,
+					},
+				},
+				{
+					$facet: {
+						totalCount: [{ $count: 'count' }],
+						data: [{ $skip: limit * (page - 1) }, { $limit: limit }],
+					},
+				},
+				{
+					$project: {
+						data: 1,
+						count: {
+							$arrayElemAt: ['$totalCount.count', 0],
+						},
+					},
+				},
+			])
+			return organisationData
+		} catch (error) {
+			return error
+		}
+	}
+
 	static async findOneOrganisation(filter, projection = {}) {
 		try {
 			const organisationData = await Organisation.findOne(filter, projection)
