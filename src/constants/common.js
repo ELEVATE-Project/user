@@ -49,9 +49,9 @@ module.exports = {
 	],
 	internalAccessUrls: [
 		'bulkCreateMentors',
-		'/user/v1/account/verifyMentor',
+		'/dsep-user/v1/account/verifyMentor',
 		'profile/details',
-		'/user/v1/account/list',
+		'/dsep-user/v1/account/list',
 		'/profile/share',
 		'/organisations/details',
 	],
