@@ -45,6 +45,7 @@ module.exports = {
 		'/user/v1/account/resetPassword',
 		'/user/v1/systemUsers/create',
 		'/user/v1/systemUsers/login',
+		'/v1/organisations/details',
 	],
 	internalAccessUrls: [
 		'bulkCreateMentors',

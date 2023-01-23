@@ -35,8 +35,13 @@ module.exports = class Organisations {
 
 	async details(req) {
 		try {
-			const Organisation = await OrganisationsHelper.read(req.params.id)
-			return Organisation
+			if (req.params.id) {
+				const Organisation = await OrganisationsHelper.read(req.params.id)
+				return Organisation
+			} else {
+				const Organisation = await OrganisationsHelper.readAll()
+				return Organisation
+			}
 		} catch (error) {
 			return error
 		}
