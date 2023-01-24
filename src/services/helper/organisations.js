@@ -143,34 +143,6 @@ module.exports = class OrganisationHelper {
 			throw error
 		}
 	}
-	/**
-	 * read organisation
-	 * @method
-	 * @name read
-	 * @param {Object} bodyData - organisation information
-	 * @returns {JSON} - returns organisation information
-	 */
-	static async readAll() {
-		try {
-			const organisation = await organisationData.findAll({ deleted: false })
-
-			if (organisation) {
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'ORGANISATION_FETCHED_SUCCESSFULLY',
-					result: organisation,
-				})
-			} else {
-				return common.failureResponse({
-					message: 'ORGANISATION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-		} catch (error) {
-			throw error
-		}
-	}
 
 	/**
 	 * delete organisation

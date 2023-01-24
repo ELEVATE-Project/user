@@ -45,7 +45,7 @@ module.exports = {
 		'/dsep-user/v1/account/resetPassword',
 		'/dsep-user/v1/systemUsers/create',
 		'/dsep-user/v1/systemUsers/login',
-		'/dsep-user/v1/organisations/details',
+		'/dsep-user/v1/organisations/list',
 	],
 	internalAccessUrls: [
 		'bulkCreateMentors',
