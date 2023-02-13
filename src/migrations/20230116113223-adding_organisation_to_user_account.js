@@ -3,9 +3,22 @@ let _ = require('lodash')
 module.exports = {
 	async up(db) {
 		global.migrationMsg = 'Include collectionName and what does it update'
-		const organisationInfo = await db
+		let organisationInfo = await db
 			.collection('organisations')
 			.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
+
+		if (!organisationInfo) {
+			const organisation = await db.collection('organisations').insertOne({
+				code: process.env.DEFAULT_ORGANISATION_CODE,
+				name: process.env.DEFAULT_ORGANISATION_CODE,
+				description: 'default organisation',
+			})
+
+			organisationInfo = {
+				_id: organisation.insertedId,
+			}
+		}
+
 		const users = await db.collection('users').find({}).toArray()
 
 		let chunkUserData = _.chunk(users, 100)
