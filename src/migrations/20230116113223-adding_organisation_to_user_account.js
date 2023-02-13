@@ -7,7 +7,6 @@ module.exports = {
 			.collection('organisations')
 			.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
 
-		console.log('organisationInfo', organisationInfo)
 		if (!organisationInfo) {
 			const organisation = await db.collection('organisations').insertOne({
 				code: process.env.DEFAULT_ORGANISATION_CODE,
