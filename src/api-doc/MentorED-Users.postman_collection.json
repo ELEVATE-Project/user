@@ -811,6 +811,129 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "organisations",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\":\"og\",\n    \"name\":\"og\",\n    \"description\":\"organisation details\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organisations/create",
+							"protocol": "http",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"port": "3001",
+							"path": ["user", "v1", "organisations", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "details",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organisations/details/63c62f574f7036ffd0da6f73",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organisations", "details", "63c62f574f7036ffd0da6f73"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\":\"og1\",\n    \"name\":\"og\",\n    \"description\":\"organisation details\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organisations/update/63c62f574f7036ffd0da6f73",
+							"protocol": "http",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"port": "3001",
+							"path": ["user", "v1", "organisations", "update", "63c62f574f7036ffd0da6f73"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organisations/delete/63c62f574f7036ffd0da6f73",
+							"protocol": "http",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"port": "3001",
+							"path": ["user", "v1", "organisations", "delete", "63c62f574f7036ffd0da6f73"]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
