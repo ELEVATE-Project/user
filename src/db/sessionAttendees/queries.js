@@ -131,7 +131,7 @@ module.exports = class SessionsAttendees {
 				},
 				{
 					$match: {
-						$and: [filters, { deleted: false }],
+						$and: [filters, { deleted: false }, { 'sessionDetail.deleted': false }],
 						$or: [
 							{ 'sessionDetail.title': new RegExp(search, 'i') },
 							{ 'sessionDetail.mentorName': new RegExp(search, 'i') },
