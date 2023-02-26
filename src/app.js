@@ -67,6 +67,7 @@ app.use(express.static('public'))
 
 /* Logs request info if environment is configured to enable log */
 app.all('*', (req, res, next) => {
+	console.log(`Request Type ${req.method} for ${req.url} on ${new Date()} from ${req.headers['user-agent']}`)
 	logger.info('***User Service Request Log***', {
 		request: {
 			requestType: `Request Type ${req.method} for ${req.url} on ${new Date()} from ${req.headers['user-agent']}`,
@@ -86,6 +87,8 @@ app.listen(process.env.APPLICATION_PORT, (res, err) => {
 	if (err) {
 		onError(err)
 	}
+	console.log('Environment: ' + process.env.APPLICATION_ENV)
+	console.log('Application is running on the port:' + process.env.APPLICATION_PORT)
 	logger.info('Environment: ' + process.env.APPLICATION_ENV)
 	logger.info('Application is running on the port:' + process.env.APPLICATION_PORT)
 })

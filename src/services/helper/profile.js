@@ -11,7 +11,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const utils = require('@generics/utils')
-
+const credentialsData = require('@db/credentials/queries')
 module.exports = class ProfileHelper {
 	/**
 	 * update profile
@@ -79,7 +79,12 @@ module.exports = class ProfileHelper {
 					user.image = await utils.getDownloadableUrl(user.image)
 				}
 				if (ObjectId.isValid(_id) && user.isAMentor) {
-					await utils.redisSet(_id, user)
+					let credentials = await credentialsData.find({ userId: user._id })
+					credentials = credentials.map((credential) => {
+						return credential.data
+					})
+					user.credentials = credentials
+					await await utils.redisSet(_id, user)
 				}
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
