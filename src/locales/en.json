@@ -61,5 +61,6 @@
 	"ORGANISATION_CREATED_SUCCESSFULLY": "Organisation created successfully",
 	"ORGANISATION_UPDATED_SUCCESSFULLY": "Organisation updated successfully",
 	"ORGANISATION_DELETED_SUCCESSFULLY": "Organisation deleted successfully",
-	"ORGANISATION_FETCHED_SUCCESSFULLY": "Organisation fetched successfully"
+	"ORGANISATION_FETCHED_SUCCESSFULLY": "Organisation fetched successfully",
+	"CREDENTIAL_CREATED_SUCCESSFULLY": "credentials created successfully"
 }

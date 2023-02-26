@@ -38,6 +38,10 @@ const userSchema = new Schema(
 			type: String,
 			required: true,
 		},
+		isMentorVerified: {
+			type: Boolean,
+			default: false,
+		},
 		gender: String,
 		designation: [{ value: String, label: String }],
 		location: [{ value: String, label: String }],
