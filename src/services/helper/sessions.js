@@ -201,6 +201,9 @@ module.exports = class SessionsHelper {
 					templateData = await notificationTemplateData.findOneEmailTemplate(
 						process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE
 					)
+					console.log('Session rescheduled email code:', process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE)
+
+					console.log('Session rescheduled Template Data:', templateData)
 				}
 
 				sessionAttendees.forEach(async (attendee) => {
@@ -278,8 +281,9 @@ module.exports = class SessionsHelper {
 								}),
 							},
 						}
-
-						await kafkaCommunication.pushEmailToKafka(payload)
+						let kafkaRes = await kafkaCommunication.pushEmailToKafka(payload)
+						console.log('Kafka payload:', payload)
+						console.log('Session attendee mapped, isSessionReschedule true and kafka res: ', kafkaRes)
 					}
 				})
 			}
