@@ -51,7 +51,7 @@
 	"PENDING_FEEDBACK_FETCHED_SUCCESSFULLY": "Pending feedbacks fetched successfully.",
 	"FEEDBACKFORM_MESSAGE": "Thank you for hosting the session, please rate us   on the following to help us improve.",
 	"FEEDBACK_ALREADY_SUBMITTED": "Feedback form has already been submitted.",
-	"SESSION_ESTIMATED_TIME": "You can start the session 10 minutes before the schedued time.",
+	"SESSION_ESTIMATED_TIME": "You can start the session 10 minutes before the scheduled time.",
 	"MENTEES_REPORT_FETCHED_SUCCESSFULLY": "Mentees report fetched successfully.",
 	"MENTORS_REPORT_FETCHED_SUCCESSFULLY": "Mentors report fetched successfully.",
 	"USER_ROLE_UPDATED": "User role was updated, please login again.",
@@ -62,5 +62,6 @@
 	"UPCOMING_SESSION_FETCHED": "Upcoming session fetched successfully.",
 	"UPDATE_FORM_VERSION": "Update form version.",
 	"ISSUE_REPORTED_SUCCESSFULLY": "Your issue is successfully reported.",
-	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
+	"ACCESS_TOKEN_EXPIRED": "Session expired. Please login again."
 }
