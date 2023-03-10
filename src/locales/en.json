@@ -63,5 +63,5 @@
 	"UPDATE_FORM_VERSION": "Update form version.",
 	"ISSUE_REPORTED_SUCCESSFULLY": "Your issue is successfully reported.",
 	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
-	"ACCESS_TOKEN_EXPIRED": "Access token expired"
+	"ACCESS_TOKEN_EXPIRED": "Session expired. Please login again."
 }
