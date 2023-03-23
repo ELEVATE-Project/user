@@ -7,6 +7,8 @@
 
 module.exports = {
 	update: (req) => {
+		console.log('--------')
+
 		if (req.body.preferredLanguage) {
 			req.checkBody('preferredLanguage')
 				.trim()
@@ -38,7 +40,7 @@ module.exports = {
 				.isArray()
 				.withMessage('location is invalid')
 
-			req.checkBody('about').notEmpty().withMessage('about field is empty')
+			req.checkBody('about').trim().notEmpty().withMessage('about field is empty')
 
 			req.checkBody('areasOfExpertise')
 				.notEmpty()
