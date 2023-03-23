@@ -8,9 +8,9 @@
 module.exports = {
 	update: (req) => {
 		if (!req.params.id) {
-			req.checkBody('title').notEmpty().withMessage('title field is empty')
+			req.checkBody('title').trim().notEmpty().withMessage('title field is empty')
 
-			req.checkBody('description').notEmpty().withMessage('description field is empty')
+			req.checkBody('description').trim().notEmpty().withMessage('description field is empty')
 
 			req.checkBody('startDate').notEmpty().withMessage('startDate field is empty')
 
@@ -22,9 +22,9 @@ module.exports = {
 
 			req.checkBody('medium').notEmpty().withMessage('medium field is empty')
 		} else {
-			req.checkBody('title').optional().withMessage('title field is empty')
+			req.checkBody('title').trim().optional().withMessage('title field is empty')
 
-			req.checkBody('description').optional().withMessage('description field is empty')
+			req.checkBody('description').trim().optional().withMessage('description field is empty')
 		}
 	},
 	details: (req) => {
