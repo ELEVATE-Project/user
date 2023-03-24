@@ -7,8 +7,6 @@
 
 module.exports = {
 	update: (req) => {
-		console.log('--------')
-
 		if (req.body.preferredLanguage) {
 			req.checkBody('preferredLanguage')
 				.trim()
