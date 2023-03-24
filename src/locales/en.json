@@ -64,8 +64,8 @@
 	"ISSUE_REPORTED_SUCCESSFULLY": "Your issue is successfully reported.",
 	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
 	"ACCESS_TOKEN_EXPIRED": "Session expired. Please login again.",
-	"INVALID_START_TIME_SELECTION": "Start date overlap with existing sessions. Please update the start date.",
-	"INVALID_END_TIME_SELECTION": "End date overlap with existing sessions. Please update the End date.",
-	"INVALID_TIME_SELECTION": "Start and End date overlap with existing sessions. Please update the start and end date.",
+	"INVALID_START_TIME_SELECTION": "You already have a session scheduled at this time. Please select a different time. ",
+	"INVALID_END_TIME_SELECTION": "You already have a session scheduled at this time. Please select a different time. ",
+	"INVALID_TIME_SELECTION": "You already have a session scheduled at this time. Please select a different time. ",
 	"SESSION_DELETION_FAILED": "Session can't be deleted"
 }
