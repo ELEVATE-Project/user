@@ -199,10 +199,22 @@ module.exports = class SessionsHelper {
 			let message
 			let updateData
 			if (method == common.DELETE_METHOD) {
-				updateData = {
-					deleted: true,
+				let statTime = moment.unix(sessionDetail.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
+				let current = moment.utc().format(common.UTC_DATE_TIME_FORMAT)
+				let diff = moment(statTime).diff(current, 'minutes')
+
+				if (sessionDetail.status == common.PUBLISHED_STATUS && diff > 10) {
+					updateData = {
+						deleted: true,
+					}
+					message = 'SESSION_DELETED_SUCCESSFULLY'
+				} else {
+					return common.failureResponse({
+						message: 'SESSION_DELETION_FAILED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
 				}
-				message = 'SESSION_DELETED_SUCCESSFULLY'
 			} else {
 				updateData = bodyData
 				message = 'SESSION_UPDATED_SUCCESSFULLY'

@@ -66,5 +66,6 @@
 	"ACCESS_TOKEN_EXPIRED": "Session expired. Please login again.",
 	"INVALID_START_TIME_SELECTION": "Start date overlap with existing sessions. Please update the start date.",
 	"INVALID_END_TIME_SELECTION": "End date overlap with existing sessions. Please update the End date.",
-	"INVALID_TIME_SELECTION": "Start and End date overlap with existing sessions. Please update the start and end date."
+	"INVALID_TIME_SELECTION": "Start and End date overlap with existing sessions. Please update the start and end date.",
+	"SESSION_DELETION_FAILED": "Session can't be deleted"
 }
