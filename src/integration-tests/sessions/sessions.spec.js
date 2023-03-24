@@ -57,7 +57,7 @@ describe('mentor flow - mentoring/v1/sessions', function () {
 		let sessionId = await sessionsData.insertSession()
 		let res = await request
 			.post('/mentoring/v1/sessions/update/' + sessionId)
-			.send({ startDate: Math.floor(Date.now()) + 600, endDate: Math.floor(Date.now()) + 4200 })
+			.send({ startDate: Math.floor(Date.now()) + 6000, endDate: Math.floor(Date.now()) + 8000 })
 
 		//console.log(res.body)
 		expect(res.statusCode).toBe(202)
