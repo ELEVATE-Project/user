@@ -6,10 +6,19 @@ const common = require('@constants/common')
 
 let bodyData
 
-const insertSession = async () => {
+const insertSession = async (now, sessionStatus) => {
 	try {
-		const startDate = faker.random.numeric(10)
-		const endDate = startDate + 2000
+		let startDate
+		let endDate
+		if (now) {
+			;[startDate, endDate] = [Math.floor(Date.now() / 1000), Math.floor(Date.now() / 1000) + 4200]
+		} else {
+			startDate = faker.datatype.number({
+				min: 1585048659,
+				max: 3794037459,
+			})
+			endDate = Number(startDate) + 2000
+		}
 		bodyData = {
 			title: faker.random.alpha(5),
 			description: faker.lorem.sentence(),
@@ -39,7 +48,7 @@ const insertSession = async () => {
 			mentorPassword: 'test',
 			userId: userId,
 			internalMeetingId: 'c321be68f93837188a2e8a8cb679d217a24c18b7-1657692090254',
-			status: 'live',
+			status: sessionStatus || 'published',
 			startDateUtc: moment.unix(startDate).utc().format(common.UTC_DATE_TIME_FORMAT),
 			endDateUtc: moment.unix(endDate).utc().format(common.UTC_DATE_TIME_FORMAT),
 		}

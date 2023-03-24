@@ -39,7 +39,7 @@ describe('mentor flow - mentoring/v1/sessions', function () {
 				},
 			],
 			timeZone: 'Asia/Calcutta',
-			image: ['users/1232s2133sdd1-12e2dasd3123.png'],
+			image: ['users/1232s2133sdd1.png'],
 		})
 		//console.log(res.body)
 		expect(res.statusCode).toBe(201)
@@ -64,7 +64,7 @@ describe('mentor flow - mentoring/v1/sessions', function () {
 		expect(res.body).toMatchSchema(schema.updateSchema)
 	})
 	it('/start', async () => {
-		let sessionId = await sessionsData.insertSession()
+		let sessionId = await sessionsData.insertSession((now = true))
 		let res = await request.get('/mentoring/v1/sessions/start/' + sessionId)
 
 		//console.log(res.body)
