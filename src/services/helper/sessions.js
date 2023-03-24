@@ -47,6 +47,33 @@ module.exports = class SessionsHelper {
 				bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 			}
 
+			const timeSlot = await this.isTimeSlotAvailable(
+				loggedInUserId,
+				bodyData?.startDateUtc,
+				bodyData?.endDateUtc
+			)
+			if (timeSlot === 'START_DATE_OVERLAP') {
+				return common.failureResponse({
+					message: 'INVALID_START_TIME_SELECTION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (timeSlot === 'END_DATE_OVERLAP') {
+				return common.failureResponse({
+					message: 'INVALID_END_TIME_SELECTION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (timeSlot === 'STAR_AND_END_DATE_OVERLAP') {
+				return common.failureResponse({
+					message: 'INVALID_TIME_SELECTION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
 
 			if (elapsedMinutes < 30) {
@@ -119,6 +146,34 @@ module.exports = class SessionsHelper {
 			if (bodyData.endDate) {
 				bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 				isSessionReschedule = true
+			}
+			const timeSlot = await this.isTimeSlotAvailable(
+				userId,
+				bodyData?.startDateUtc,
+				bodyData?.endDateUtc,
+				sessionId
+			)
+			console.log(timeSlot)
+			if (timeSlot === 'START_DATE_OVERLAP') {
+				return common.failureResponse({
+					message: 'INVALID_START_TIME_SELECTION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (timeSlot === 'END_DATE_OVERLAP') {
+				return common.failureResponse({
+					message: 'INVALID_END_TIME_SELECTION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (timeSlot === 'STAR_AND_END_DATE_OVERLAP') {
+				return common.failureResponse({
+					message: 'INVALID_TIME_SELECTION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			if (method != common.DELETE_METHOD) {
@@ -974,6 +1029,32 @@ module.exports = class SessionsHelper {
 			})
 		} catch (error) {
 			throw error
+		}
+	}
+	/**
+	 * Verify if time slot is available for the mentor
+	 * @method
+	 * @name isTimeSlotAvailable
+	 * @param {String} id - user id.
+	 * @param {String} startDate - start date in utc.
+	 * @param {String} endDate - end date in utc.
+	 * @returns {String} - STAR_AND_END_DATE_OVERLAP/START_DATE_OVERLAP/END_DATE_OVERLAP.
+	 */
+
+	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
+		try {
+			console.log(startDate, endDate)
+			const sessions = await sessionData.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
+			console.log(sessions)
+			if (sessions?.startDateResponse?.length > 0 && sessions?.endDateResponse?.length > 0) {
+				return 'STAR_AND_END_DATE_OVERLAP'
+			} else if (sessions?.startDateResponse?.length > 0) {
+				return 'START_DATE_OVERLAP'
+			} else if (sessions?.endDateResponse?.length > 0) {
+				return 'END_DATE_OVERLAP'
+			} else return true
+		} catch (error) {
+			return error
 		}
 	}
 }

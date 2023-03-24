@@ -201,4 +201,35 @@ module.exports = class SessionsData {
 			return error
 		}
 	}
+	static async getSessionByUserIdAndTime(userId, startDate, endDate, sessionId) {
+		try {
+			let startDateResponse, endDateResponse
+
+			const query = { userId: userId }
+
+			if (startDate) {
+				query.$and = [{ startDateUtc: { $lte: startDate } }, { endDateUtc: { $gte: startDate } }]
+				if (sessionId) {
+					// check if sessionId is truthy (i.e. not undefined or empty)
+					query._id = { $ne: sessionId }
+				}
+				startDateResponse = await Sessions.find(query)
+			}
+			if (endDate) {
+				query.$and = [{ startDateUtc: { $lte: endDate } }, { endDateUtc: { $gte: endDate } }]
+				if (sessionId) {
+					// check if sessionId is truthy (i.e. not undefined or empty)
+					query._id = { $ne: sessionId }
+				}
+				endDateResponse = await Sessions.find(query)
+			}
+			return {
+				startDateResponse,
+				endDateResponse,
+			}
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
 }
