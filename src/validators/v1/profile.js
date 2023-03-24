@@ -49,6 +49,7 @@ module.exports = {
 				.withMessage('areasOfExpertise is invalid')
 
 			req.checkBody('experience')
+				.trim()
 				.notEmpty()
 				.withMessage('experience field is empty')
 				.isFloat()
