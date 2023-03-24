@@ -8,7 +8,8 @@ let bodyData
 
 const insertSession = async () => {
 	try {
-		const [startDate, endDate] = [Math.floor(Date.now() / 1000) + 600, Math.floor(Date.now() / 1000) + 4200]
+		const startDate = faker.random.numeric(10)
+		const endDate = startDate + 2000
 		bodyData = {
 			title: faker.random.alpha(5),
 			description: faker.lorem.sentence(),
