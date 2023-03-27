@@ -53,7 +53,6 @@ module.exports = {
 				.isFloat()
 				.withMessage('experience is invalid')
 
-			console.log('------------------------------')
 			req.checkBody('educationQualification')
 				.optional()
 				.trim()
