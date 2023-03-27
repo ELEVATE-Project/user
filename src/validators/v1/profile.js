@@ -53,9 +53,11 @@ module.exports = {
 				.isFloat()
 				.withMessage('experience is invalid')
 
+			console.log('------------------------------')
 			req.checkBody('educationQualification')
-				.trim()
 				.optional()
+				.trim()
+				.notEmpty()
 				.withMessage('Education Qualification field is empty')
 
 			req.checkBody('hasAcceptedTAndC').optional().isBoolean().withMessage('hasAcceptedTAndC field is invalid')
