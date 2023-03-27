@@ -19,12 +19,7 @@ module.exports = {
 				.isIn(['MALE', 'FEMALE', 'OTHER'])
 				.withMessage('gender is invalid, must be either MALE, FEMALE or OTHER')
 
-			req.checkBody('name')
-				.trim()
-				.notEmpty()
-				.withMessage('name field is empty')
-				.matches(/^[A-Za-z ]+$/)
-				.withMessage('name is invalid')
+			req.checkBody('name').trim().notEmpty().withMessage('name field is empty')
 
 			req.checkBody('designation')
 				.notEmpty()
