@@ -1021,29 +1021,29 @@ module.exports = class SessionsHelper {
 	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
 		try {
 			const sessions = await sessionData.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
-			if (sessions?.startDateResponse?.length > 0 && sessions?.endDateResponse?.length > 0) {
-				if (!sessions?.startDateResponse[0]?._id.equals(sessions?.endDateResponse[0]?._id)) {
-					return {
-						isTimeSlotAvailable: false,
-						sessionName:
-							sessions?.startDateResponse[0]?.title + ' and ' + sessions?.endDateResponse[0]?.title,
-					}
-				} else
-					return {
-						isTimeSlotAvailable: false,
-						sessionName: sessions?.startDateResponse[0]?.title,
-					}
-			} else if (sessions?.startDateResponse?.length > 0) {
+			console.log(sessions)
+			if (!sessions) {
+				return true
+			}
+
+			const startDateResponse = sessions.startDateResponse?.[0]
+			const endDateResponse = sessions.endDateResponse?.[0]
+
+			if (startDateResponse && endDateResponse && !startDateResponse._id.equals(endDateResponse._id)) {
 				return {
 					isTimeSlotAvailable: false,
-					sessionName: sessions?.startDateResponse[0]?.title,
+					sessionName: `${startDateResponse.title} and ${endDateResponse.title}`,
 				}
-			} else if (sessions?.endDateResponse?.length > 0) {
+			}
+
+			if (startDateResponse || endDateResponse) {
 				return {
 					isTimeSlotAvailable: false,
-					sessionName: sessions?.endDateResponse[0]?.title,
+					sessionName: (startDateResponse || endDateResponse).title,
 				}
-			} else return true
+			}
+
+			return true
 		} catch (error) {
 			return error
 		}
