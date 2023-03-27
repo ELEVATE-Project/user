@@ -52,23 +52,12 @@ module.exports = class SessionsHelper {
 				bodyData?.startDateUtc,
 				bodyData?.endDateUtc
 			)
-			if (timeSlot === 'START_DATE_OVERLAP') {
+			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
-					message: 'INVALID_START_TIME_SELECTION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			if (timeSlot === 'END_DATE_OVERLAP') {
-				return common.failureResponse({
-					message: 'INVALID_END_TIME_SELECTION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			if (timeSlot === 'STAR_AND_END_DATE_OVERLAP') {
-				return common.failureResponse({
-					message: 'INVALID_TIME_SELECTION',
+					message:
+						'You already have a session (' +
+						timeSlot.sessionName +
+						') scheduled at this time. Please select a different time.',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -153,24 +142,12 @@ module.exports = class SessionsHelper {
 				bodyData?.endDateUtc,
 				sessionId
 			)
-			console.log(timeSlot)
-			if (timeSlot === 'START_DATE_OVERLAP') {
+			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
-					message: 'INVALID_START_TIME_SELECTION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			if (timeSlot === 'END_DATE_OVERLAP') {
-				return common.failureResponse({
-					message: 'INVALID_END_TIME_SELECTION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			if (timeSlot === 'STAR_AND_END_DATE_OVERLAP') {
-				return common.failureResponse({
-					message: 'INVALID_TIME_SELECTION',
+					message:
+						'You already have a session (' +
+						timeSlot.sessionName +
+						') scheduled at this time. Please select a different time.',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -1043,15 +1020,29 @@ module.exports = class SessionsHelper {
 
 	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
 		try {
-			console.log(startDate, endDate)
 			const sessions = await sessionData.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
-			console.log(sessions)
 			if (sessions?.startDateResponse?.length > 0 && sessions?.endDateResponse?.length > 0) {
-				return 'STAR_AND_END_DATE_OVERLAP'
+				if (!sessions?.startDateResponse[0]?._id.equals(sessions?.endDateResponse[0]?._id)) {
+					return {
+						isTimeSlotAvailable: false,
+						sessionName:
+							sessions?.startDateResponse[0]?.title + ' and ' + sessions?.endDateResponse[0]?.title,
+					}
+				} else
+					return {
+						isTimeSlotAvailable: false,
+						sessionName: sessions?.startDateResponse[0]?.title,
+					}
 			} else if (sessions?.startDateResponse?.length > 0) {
-				return 'START_DATE_OVERLAP'
+				return {
+					isTimeSlotAvailable: false,
+					sessionName: sessions?.startDateResponse[0]?.title,
+				}
 			} else if (sessions?.endDateResponse?.length > 0) {
-				return 'END_DATE_OVERLAP'
+				return {
+					isTimeSlotAvailable: false,
+					sessionName: sessions?.endDateResponse[0]?.title,
+				}
 			} else return true
 		} catch (error) {
 			return error
