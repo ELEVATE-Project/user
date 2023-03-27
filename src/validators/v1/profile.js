@@ -57,8 +57,6 @@ module.exports = {
 				.trim()
 				.optional()
 				.withMessage('Education Qualification field is empty')
-				.isFloat()
-				.withMessage('Education Qualification is invalid')
 
 			req.checkBody('hasAcceptedTAndC').optional().isBoolean().withMessage('hasAcceptedTAndC field is invalid')
 
