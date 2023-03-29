@@ -54,10 +54,7 @@ module.exports = class SessionsHelper {
 			)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
-					message:
-						'You already have a session (' +
-						timeSlot.sessionName +
-						') scheduled at this time. Please select a different time.',
+					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -144,10 +141,7 @@ module.exports = class SessionsHelper {
 			)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
-					message:
-						'You already have a session (' +
-						timeSlot.sessionName +
-						') scheduled at this time. Please select a different time.',
+					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -1021,7 +1015,6 @@ module.exports = class SessionsHelper {
 	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
 		try {
 			const sessions = await sessionData.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
-			console.log(sessions)
 			if (!sessions) {
 				return true
 			}
