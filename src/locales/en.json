@@ -3,7 +3,7 @@
 	"PASSWORD_INVALID": "Password is invalid.",
 	"USER_ALREADY_EXISTS": "User already exists.",
 	"USER_DOESNOT_EXISTS": "Invalid email address.",
-	"USERNAME_OR_PASSWORD_IS_INVALID": "Username or password is invalid.",
+	"USERNAME_OR_PASSWORD_IS_INVALID": "Please enter the correct login ID and Password.",
 	"EMAIL_ID_NOT_REGISTERED": "Please enter the correct login ID and Password.",
 	"USER_CREATED_SUCCESSFULLY": "Sign-up successful, Please wait while logging in.",
 	"LOGGED_IN_SUCCESSFULLY": "User logged in successfully.",
