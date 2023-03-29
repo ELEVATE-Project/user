@@ -7,6 +7,7 @@
 
 const Sessions = require('./model')
 const ObjectId = require('mongoose').Types.ObjectId
+const common = require('@constants/common')
 
 module.exports = class SessionsData {
 	static async createSession(data) {
@@ -205,7 +206,7 @@ module.exports = class SessionsData {
 		try {
 			let startDateResponse, endDateResponse
 
-			const query = { userId: userId }
+			const query = { userId: userId, status: { $ne: common.COMPLETED_STATUS } }
 
 			if (startDate) {
 				query.$and = [{ startDateUtc: { $lte: startDate } }, { endDateUtc: { $gte: startDate } }]
