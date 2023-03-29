@@ -99,11 +99,16 @@ module.exports = (app) => {
 		} else {
 			logger.info(message, { message: error })
 		}
-		res.status(status).json({
+		const options = {
 			responseCode,
-			message: req.t(message),
 			error: errorData,
 			meta: { correlation: correlationId.getId() },
-		})
+		}
+
+		error.interpolation
+			? (options.message = req.t(message, error?.interpolation))
+			: (options.message = req.t(message))
+
+		res.status(status).json(options)
 	})
 }
