@@ -104,6 +104,7 @@ module.exports = (app) => {
 			error: errorData,
 			meta: { correlation: correlationId.getId() },
 		}
+
 		error.interpolation
 			? (options.message = req.t(message, error?.interpolation))
 			: (options.message = req.t(message))
