@@ -49,7 +49,7 @@ module.exports = class BigBlueButtonHelper {
 				sessionDuration +
 				'&meetingExpireWhenLastUserLeftInMinutes=' +
 				lastUserTimeout
-			console.log(query)
+
 			let checkSumGeneration = 'create' + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY
 			const checksum = this.generateCheckSum(checkSumGeneration)
 
