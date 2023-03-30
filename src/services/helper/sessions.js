@@ -801,14 +801,15 @@ module.exports = class SessionsHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
+				let sessionDuration = moment(session.endDateUtc).diff(session.startDateUtc, 'minutes')
 
 				const meetingDetails = await bigBlueButton.createMeeting(
 					session._id,
 					session.title,
 					session.menteePassword,
-					session.mentorPassword
+					session.mentorPassword,
+					sessionDuration
 				)
-
 				if (!meetingDetails.success) {
 					return common.failureResponse({
 						message: apiResponses.MEETING_NOT_CREATED,
