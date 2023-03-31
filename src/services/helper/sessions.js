@@ -929,7 +929,10 @@ module.exports = class SessionsHelper {
 				}
 			)
 
-			return result
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				result: result,
+			})
 		} catch (error) {
 			return error
 		}
