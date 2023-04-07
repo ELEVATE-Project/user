@@ -23,7 +23,7 @@ module.exports = {
 				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 			)
 			.withMessage('email is invalid')
-			.normalizeEmail()
+			.normalizeEmail({ gmail_remove_dots: false })
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 
@@ -37,7 +37,7 @@ module.exports = {
 			.withMessage('email field is empty')
 			.isEmail()
 			.withMessage('email is invalid')
-			.normalizeEmail()
+			.normalizeEmail({ gmail_remove_dots: false })
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
