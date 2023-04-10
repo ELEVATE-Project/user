@@ -206,7 +206,7 @@ module.exports = class SessionsData {
 		try {
 			let startDateResponse, endDateResponse
 
-			const query = { userId: userId, status: { $ne: common.COMPLETED_STATUS } }
+			const query = { userId: userId, status: { $ne: common.COMPLETED_STATUS }, deleted: false }
 
 			if (startDate) {
 				query.$and = [{ startDateUtc: { $lte: startDate } }, { endDateUtc: { $gte: startDate } }]
