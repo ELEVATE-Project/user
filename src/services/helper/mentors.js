@@ -22,9 +22,9 @@ module.exports = class MentorsHelper {
 	 * @param {string} userId - logged in user id.
 	 * @returns {Array} - Mentors list
 	 */
-	static async list(page, limit, search, userId) {
+	static async list(page, limit, search, userId, match) {
 		try {
-			const mentors = await usersData.searchMentors(page, limit, search, userId)
+			const mentors = await usersData.searchMentors(page, limit, search, userId, match)
 
 			if (mentors[0].data.length < 1) {
 				return common.successResponse({
