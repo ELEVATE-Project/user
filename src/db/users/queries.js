@@ -56,9 +56,9 @@ module.exports = class UsersData {
 
 	static async searchMentors(page, limit, search, userId, match) {
 		try {
-			if (match == 'startWith') {
+			if (match == 'startsWith') {
 				search = '^' + search
-			} else if (match == 'endWith') {
+			} else if (match == 'endsWith') {
 				search = search + '$'
 			}
 
