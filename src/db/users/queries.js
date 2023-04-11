@@ -54,8 +54,14 @@ module.exports = class UsersData {
 		}
 	}
 
-	static async searchMentors(page, limit, search, userId) {
+	static async searchMentors(page, limit, search, userId, match) {
 		try {
+			if (match == 'startsWith') {
+				search = '^' + search
+			} else if (match == 'endsWith') {
+				search = search + '$'
+			}
+
 			let users = await Users.aggregate([
 				{
 					$match: {
