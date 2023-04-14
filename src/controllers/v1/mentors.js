@@ -27,7 +27,7 @@ module.exports = class Mentors {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.decodedToken._id
+				req.params.menteeId ? req.params.menteeId : req.decodedToken._id
 			)
 		} catch (error) {
 			return errors
