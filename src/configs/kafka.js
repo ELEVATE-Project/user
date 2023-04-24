@@ -6,64 +6,56 @@
  */
 
 //Dependencies
-const Kafka = require('kafka-node')
+const { Kafka } = require('kafkajs')
+
 const utils = require('@generics/utils')
 const profileService = require('@services/helper/profile')
 
-module.exports = () => {
-	const Producer = Kafka.Producer
-	const KafkaClient = new Kafka.KafkaClient({
-		kafkaHost: process.env.KAFKA_URL,
-	})
-	const producer = new Producer(KafkaClient)
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 
-	/* Uncomment while writing consuming actions for this service */
-	// const Consumer = Kafka.Consumer;
-	// const consumer = new Consumer(KafkaClient, [ { topic: process.env.RATING_TOPIC } ], { autoCommit: true, groupId: process.env.KAFKA_GROUP_ID })
-
-	/* Registered events */
-
-	KafkaClient.on('error', (error) => {
-		console.log('Kafka connection error: ', error)
+module.exports = async () => {
+	const kafkaIps = process.env.KAFKA_URL.split(',')
+	const KafkaClient = new Kafka({
+		clientId: 'mentoring',
+		brokers: kafkaIps,
 	})
 
-	KafkaClient.on('connect', () => {
-		console.log('Connected to kafka client')
+	const producer = KafkaClient.producer()
+	const consumer = KafkaClient.consumer({ groupId: process.env.KAFKA_GROUP_ID })
+
+	await producer.connect()
+	await consumer.connect()
+
+	producer.on('producer.connect', () => {
+		logger.info(`KafkaProvider: connected`)
+	})
+	producer.on('producer.disconnect', () => {
+		logger.error(`KafkaProvider: could not connect`, {
+			triggerNotification: true,
+		})
 	})
 
-	producer.on('error', (error) => {
-		console.log('Kafka producer intialization error: ', error)
-	})
-
-	producer.on('ready', () => {
-		console.log('Producer intialized successfully')
-	})
-
-	const consumer = new Kafka.ConsumerGroup(
-		{
-			kafkaHost: process.env.KAFKA_URL,
-			groupId: process.env.KAFKA_GROUP_ID,
-			autoCommit: true,
-		},
-		[process.env.RATING_KAFKA_TOPIC, process.env.CLEAR_INTERNAL_CACHE]
-	)
-
-	consumer.on('message', async function (message) {
-		try {
-			let streamingData = JSON.parse(message.value)
-			if (streamingData.type == 'MENTOR_RATING' && streamingData.value && streamingData.mentorId) {
-				profileService.ratingCalculation(streamingData)
-			} else if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
-				utils.internalDel(streamingData.value)
-			}
-		} catch (error) {
-			console.log('failed', error)
-		}
-	})
-
-	consumer.on('error', async function (error) {
-		console.log('kafka consumer intialization error', error)
-	})
+	const subscribeToConsumer = async () => {
+		await consumer.subscribe({ topics: [process.env.RATING_KAFKA_TOPIC, process.env.CLEAR_INTERNAL_CACHE] })
+		await consumer.run({
+			eachMessage: async ({ topic, partition, message }) => {
+				try {
+					let streamingData = JSON.parse(message.value)
+					if (streamingData.type == 'MENTOR_RATING' && streamingData.value && streamingData.mentorId) {
+						profileService.ratingCalculation(streamingData)
+					} else if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
+						utils.internalDel(streamingData.value)
+					}
+				} catch (error) {
+					logger.error('Subscribe to consumer failed:' + error, {
+						triggerNotification: true,
+					})
+				}
+			},
+		})
+	}
+	subscribeToConsumer()
 
 	global.kafkaProducer = producer
 	global.kafkaClient = KafkaClient

@@ -19,12 +19,7 @@ module.exports = {
 				.isIn(['MALE', 'FEMALE', 'OTHER'])
 				.withMessage('gender is invalid, must be either MALE, FEMALE or OTHER')
 
-			req.checkBody('name')
-				.trim()
-				.notEmpty()
-				.withMessage('name field is empty')
-				.matches(/^[A-Za-z ]+$/)
-				.withMessage('name is invalid')
+			req.checkBody('name').trim().notEmpty().withMessage('name field is empty')
 
 			req.checkBody('designation')
 				.notEmpty()
@@ -38,7 +33,7 @@ module.exports = {
 				.isArray()
 				.withMessage('location is invalid')
 
-			req.checkBody('about').notEmpty().withMessage('about field is empty')
+			req.checkBody('about').trim().notEmpty().withMessage('about field is empty')
 
 			req.checkBody('areasOfExpertise')
 				.notEmpty()
@@ -47,10 +42,17 @@ module.exports = {
 				.withMessage('areasOfExpertise is invalid')
 
 			req.checkBody('experience')
+				.trim()
 				.notEmpty()
 				.withMessage('experience field is empty')
 				.isFloat()
 				.withMessage('experience is invalid')
+
+			req.checkBody('educationQualification')
+				.optional()
+				.trim()
+				.notEmpty()
+				.withMessage('Education Qualification field is empty')
 
 			req.checkBody('hasAcceptedTAndC').optional().isBoolean().withMessage('hasAcceptedTAndC field is invalid')
 

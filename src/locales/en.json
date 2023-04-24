@@ -2,8 +2,8 @@
 	"EMAIL_INVALID": "Email Id is invalid.",
 	"PASSWORD_INVALID": "Password is invalid.",
 	"USER_ALREADY_EXISTS": "User already exists.",
-	"USER_DOESNOT_EXISTS": "User doesn't exist.",
-	"USERNAME_OR_PASSWORD_IS_INVALID": "Username or password is invalid.",
+	"USER_DOESNOT_EXISTS": "Invalid email address.",
+	"USERNAME_OR_PASSWORD_IS_INVALID": "Please enter the correct login ID and Password.",
 	"EMAIL_ID_NOT_REGISTERED": "Please enter the correct login ID and Password.",
 	"USER_CREATED_SUCCESSFULLY": "Sign-up successful, Please wait while logging in.",
 	"LOGGED_IN_SUCCESSFULLY": "User logged in successfully.",
@@ -31,7 +31,7 @@
 	"OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
 	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the otp to complete the registration process.",
 	"PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully.",
-	"OTP_INVALID": "Wrong OTP, please try again.",
+	"OTP_INVALID": "The OTP you entered is wrong.",
 	"RESET_OTP_INVALID": "Please enter the correct OTP.",
 	"SYSTEM_USER_ALREADY_EXISTS": "System User already exists.",
 	"NOT_AN_ADMIN": "Not an admin",
@@ -50,8 +50,9 @@
 	"INVALID_SECRET_CODE": "Incorrect code. Please try again.",
 	"USER_ROLE_UPDATED": "You have been logged out of your account due to change in platform role. Please login again.",
 	"UNABLE_TO_SEND_OTP": "Unable to send otp, may be redis server is down.",
-	"RESET_PREVIOUS_PASSWORD": "Please enter a new password, that has not been used before",
+	"RESET_PREVIOUS_PASSWORD": "New password cannot be same as old password",
 	"EMAIL_UPDATE_FAILED": "You can not update email.",
 	"URL_NOT_FOUND": "Url not found",
-	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "Profile share link generated successfully"
+	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "Profile share link generated successfully",
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
 }

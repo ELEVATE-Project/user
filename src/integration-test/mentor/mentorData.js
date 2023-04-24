@@ -8,7 +8,7 @@ const insertMentor = async () => {
 			email: { address: faker.internet.email(), verified: false },
 			password: faker.internet.password(),
 			isAMentor: true,
-			secretCode: process.env.MENTOR_SECRET_CODE,
+			secretCode: 'secret-code',
 		}
 		await usersData.createUser(bodyData)
 	} catch (error) {

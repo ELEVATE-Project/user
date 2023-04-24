@@ -7,7 +7,7 @@
 
 // Dependencies
 const mongoose = require('mongoose')
-const { encrypt, decrypt } = require('@generics/utils')
+const { aes256cbc } = require('elevate-encryption')
 const Schema = mongoose.Schema
 // Adding the package
 const mongooseLeanGetter = require('mongoose-lean-getters')
@@ -17,8 +17,8 @@ const userSchema = new Schema(
 		email: {
 			address: {
 				type: String,
-				set: encrypt,
-				get: decrypt,
+				set: aes256cbc.encrypt,
+				get: aes256cbc.decrypt,
 				index: {
 					unique: true,
 				},

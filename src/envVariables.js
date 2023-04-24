@@ -140,6 +140,42 @@ let enviromentVariables = {
 		message: 'iv is missing for email encryption',
 		optional: false,
 	},
+	OCI_ACCESS_KEY_ID: {
+		message: 'Required oci access key id',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_SECRET_ACCESS_KEY: {
+		message: 'Required oci secret access key',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_BUCKET_REGION: {
+		message: 'Required oci bucket region',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	OCI_BUCKET_ENDPOINT: {
+		message: 'Required oci bucket endpoint',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	DEFAULT_OCI_BUCKET_NAME: {
+		message: 'Required oci bucket name',
+		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	},
+	REPLICA_SET_NAME: {
+		message: 'Required replica set name',
+		optional: true,
+	},
+	REPLICA_SET_READ_PREFERENCE: {
+		message: 'Required replica read preferance',
+		optional: process.env.REPLICA_SET_NAME ? false : true,
+	},
+	ERROR_LOG_LEVEL: {
+		message: 'Required Error log level',
+		optional: false,
+	},
+	DISABLE_LOG: {
+		message: 'Required disable log level',
+		optional: false,
+	},
 }
 
 let success = true

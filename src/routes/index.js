@@ -10,6 +10,8 @@ const authenticator = require('@middlewares/authenticator')
 const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
 const fs = require('fs')
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 
 module.exports = (app) => {
 	app.use(authenticator)
@@ -107,10 +109,17 @@ module.exports = (app) => {
 		if (error.data) {
 			errorData = error.data
 		}
+		if (status == 500) {
+			logger.error('Server error!', { message: error, triggerNotification: true })
+		} else {
+			logger.info(message, { message: error })
+		}
+
 		res.status(status).json({
 			responseCode,
 			message: req.t(message),
 			error: errorData,
+			meta: { correlation: correlationId.getId() },
 		})
 	})
 }

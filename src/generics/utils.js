@@ -9,10 +9,13 @@ const bcryptJs = require('bcryptjs')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper } = require('files-cloud-storage')
+const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
+
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 
 const algorithm = 'aes-256-cbc'
 
@@ -32,7 +35,7 @@ const comparePassword = (password1, password2) => {
 
 const clearFile = (filePath) => {
 	fs.unlink(filePath, (err) => {
-		if (err) console.log(err)
+		if (err) logger.error(err)
 	})
 }
 
@@ -69,6 +72,13 @@ const getDownloadableUrl = async (imgPath) => {
 			accountKey: process.env.AZURE_ACCOUNT_KEY,
 		}
 		imgPath = await AzureFileHelper.getDownloadableUrl(options)
+	} else if (process.env.CLOUD_STORAGE === 'OCI') {
+		const options = {
+			destFilePath: imgPath,
+			bucketName: process.env.DEFAULT_OCI_BUCKET_NAME,
+			endpoint: process.env.OCI_BUCKET_ENDPOINT,
+		}
+		imgPath = await OciFileHelper.getDownloadableUrl(options)
 	}
 	return imgPath
 }
@@ -104,25 +114,6 @@ function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
 
-let key = Buffer.from(process.env.KEY, 'base64')
-let iv = Buffer.from(process.env.IV, 'base64')
-
-function encrypt(text) {
-	let cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key, 'base64'), iv)
-	let encrypted = cipher.update(text)
-	encrypted = Buffer.concat([encrypted, cipher.final()])
-	return encrypted.toString('base64')
-}
-
-// Decrypting text
-function decrypt(text) {
-	let encryptedText = Buffer.from(text, 'base64')
-	let decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
-	let decrypted = decipher.update(encryptedText)
-	decrypted = Buffer.concat([decrypted, decipher.final()])
-	return decrypted.toString()
-}
-
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -138,6 +129,4 @@ module.exports = {
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
-	encrypt: encrypt,
-	decrypt: decrypt,
 }

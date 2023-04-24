@@ -257,6 +257,7 @@ describe('Form controller and service file', () => {
 	})
 	afterAll(async () => {
 		try {
+			mongoose.connection.close()
 		} catch (error) {
 			console.log(`
             You did something wrong
