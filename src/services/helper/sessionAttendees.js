@@ -25,9 +25,7 @@ module.exports = class SessionAttendeesHelper {
 
 			const apiUrl = apiBaseUrl + apiEndpoints.LIST_ACCOUNTS
 			try {
-				request.post(apiUrl, options, callback)
-
-				function callback(err, data) {
+				request.post(apiUrl, options, (err, data) => {
 					if (err) {
 						reject({
 							message: 'USER_SERVICE_DOWN',
@@ -36,7 +34,7 @@ module.exports = class SessionAttendeesHelper {
 						data.body = JSON.parse(data.body)
 						resolve(data.body)
 					}
-				}
+				})
 			} catch (error) {
 				reject(error)
 			}

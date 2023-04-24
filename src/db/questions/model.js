@@ -7,7 +7,7 @@
 
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
-
+const mongooseLeanGetter = require('mongoose-lean-getters')
 const questionsSchema = new Schema({
 	name: {
 		type: String,
@@ -64,7 +64,7 @@ const questionsSchema = new Schema({
 		type: String,
 	},
 })
-
+questionsSchema.plugin(mongooseLeanGetter)
 const Questions = db.model('questions', questionsSchema)
 
 module.exports = Questions

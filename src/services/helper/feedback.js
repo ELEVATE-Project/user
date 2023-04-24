@@ -201,7 +201,6 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			if (isAMentor && feedbackAs === 'mentor') {
 				if (
 					sessionInfo.skippedFeedback == true ||
@@ -295,35 +294,33 @@ module.exports = class MenteesHelper {
  * @returns {JSON} - Feedback forms.
  */
 
-getFeedbackQuestions = function (formCode) {
-	return new Promise(async (resolve, reject) => {
-		try {
-			let questionsSet = await questionsSetData.findOneQuestionsSet({
-				code: formCode,
+const getFeedbackQuestions = async function (formCode) {
+	try {
+		let questionsSet = await questionsSetData.findOneQuestionsSet({
+			code: formCode,
+		})
+
+		let result = {}
+		if (questionsSet && questionsSet.questions) {
+			let questions = await questionsData.find({
+				_id: {
+					$in: questionsSet.questions,
+				},
 			})
 
-			let result = {}
-			if (questionsSet && questionsSet.questions) {
-				let questions = await questionsData.find({
-					_id: {
-						$in: questionsSet.questions,
-					},
+			if (questions && questions.length > 0) {
+				questions.map((data) => {
+					if (data.question) {
+						data['label'] = data.question
+						delete data.question
+						return data
+					}
 				})
-
-				if (questions && questions.length > 0) {
-					questions.map((data) => {
-						if (data.question) {
-							data['label'] = data.question
-							delete data.question
-							return data
-						}
-					})
-					result = questions
-				}
+				result = questions
 			}
-			resolve(result)
-		} catch (error) {
-			reject(error)
 		}
-	})
+		return result
+	} catch (error) {
+		return error
+	}
 }

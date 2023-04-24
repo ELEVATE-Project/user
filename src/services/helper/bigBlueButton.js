@@ -23,10 +23,11 @@ module.exports = class BigBlueButtonHelper {
 	 * @returns {String} - Meeting success message.
 	 */
 
-	static async createMeeting(meetingId, meetingName, attendeePW, moderatorPW) {
+	static async createMeeting(meetingId, meetingName, attendeePW, moderatorPW, sessionDuration) {
 		try {
 			let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + '%2F' + meetingId
-			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL + meetingId
+			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL
+			let lastUserTimeout = process.env.BIG_BLUE_BUTTON_LAST_USER_TIMEOUT_MINUTES || 15
 
 			meetingName = encodeURI(meetingName)
 			let query =
@@ -43,7 +44,12 @@ module.exports = class BigBlueButtonHelper {
 				'&moderatorPW=' +
 				moderatorPW +
 				'&logoutURL=' +
-				sessionEndUrl
+				sessionEndUrl +
+				'&meetingExpireIfNoUserJoinedInMinutes=' +
+				sessionDuration +
+				'&meetingExpireWhenLastUserLeftInMinutes=' +
+				lastUserTimeout
+
 			let checkSumGeneration = 'create' + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY
 			const checksum = this.generateCheckSum(checkSumGeneration)
 

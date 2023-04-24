@@ -1,4 +1,6 @@
-src/node_modules
+/src/node_modules
 .env.sample
-src/.env
 .env
+src/node_modules
+src/.env
+

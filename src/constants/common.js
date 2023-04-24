@@ -5,30 +5,30 @@
  * Description : All commonly used constants through out the service
  */
 
-const FormsData = require('@db/forms/queries')
-const utils = require('@generics/utils')
+const form = require('@generics/form')
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
-	const formVersionData = (await utils.internalGet('formVersion')) || false
-	let versions = {}
-	if (formVersionData) {
-		versions = formVersionData
-	} else {
-		versions = await FormsData.findAllTypeFormVersion()
-		await utils.internalSet('formVersion', versions)
-	}
-	return {
+	const versions = await form.getAllFormsVersion()
+	let response = {
 		statusCode,
 		responseCode,
 		message,
 		result,
-		meta: { ...meta, formsVersion: versions },
+		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
 	}
+	logger.info('Request Response', { response: response })
+
+	return response
 }
 
 const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode }) => {
-	const error = new Error(message)
+	const errorMessage = message.key || message
+
+	const error = new Error(errorMessage)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
+	error.interpolation = message?.interpolation || false
 
 	return error
 }
@@ -40,7 +40,13 @@ module.exports = {
 	},
 	successResponse,
 	failureResponse,
-	guestUrls: ['/sessions/completed', '/sessions/updateRecordingUrl', '/sessions/details'],
+	guestUrls: [
+		'/sessions/completed',
+		'/sessions/updateRecordingUrl',
+		'/sessions/details',
+		'/mentors/profile/',
+		'/mentors/upcomingSessions/',
+	],
 	DELETE_METHOD: 'DELETE',
 	dateFormat: 'dddd, Do MMMM YYYY',
 	timeFormat: 'hh:mm A',

@@ -9,6 +9,8 @@ const validator = require('@middlewares/validator')
 const authenticator = require('@middlewares/authenticator')
 const pagination = require('@middlewares/pagination')
 const expressValidator = require('express-validator')
+const { elevateLog, correlationId } = require('elevate-logger')
+const logger = elevateLog.init()
 
 module.exports = (app) => {
 	app.use(authenticator)
@@ -60,12 +62,14 @@ module.exports = (app) => {
 			/* If error obtained then global error handler gets executed */
 			return next(controllerResponse)
 		}
-		res.status(controllerResponse.statusCode).json({
-			responseCode: controllerResponse.responseCode,
-			message: req.t(controllerResponse.message),
-			result: controllerResponse.result,
-			meta: controllerResponse.meta,
-		})
+		if (controllerResponse) {
+			res.status(controllerResponse.statusCode).json({
+				responseCode: controllerResponse.responseCode,
+				message: req.t(controllerResponse.message),
+				result: controllerResponse.result,
+				meta: controllerResponse.meta,
+			})
+		}
 	}
 
 	app.all(process.env.APPLICATION_BASE_URL + ':version/:controller/:method', validator, router)
@@ -90,10 +94,24 @@ module.exports = (app) => {
 		if (error.data) {
 			errorData = error.data
 		}
-		res.status(status).json({
+		if (status == 500) {
+			logger.error('Server error!', { message: error, triggerNotification: true })
+		} else {
+			logger.info(message, { message: error })
+		}
+		const options = {
 			responseCode,
-			message: req.t(message),
 			error: errorData,
-		})
+			meta: { correlation: correlationId.getId() },
+		}
+		let interpolationOptions = {
+			...error?.interpolation,
+			interpolation: { escapeValue: false },
+		}
+		error.interpolation
+			? (options.message = req.t(message, interpolationOptions))
+			: (options.message = req.t(message))
+
+		res.status(status).json(options)
 	})
 }
