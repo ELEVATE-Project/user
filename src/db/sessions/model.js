@@ -8,6 +8,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const mongooseLeanGetter = require('mongoose-lean-getters')
+
 let sessionsSchema = new Schema({
 	title: String,
 	description: String,
@@ -71,6 +72,7 @@ let sessionsSchema = new Schema({
 	meetingInfo: {
 		platform: {
 			type: String,
+			default: process.env.DEFAULT_MEETING_SERVICE,
 		},
 		link: String,
 		meta: {

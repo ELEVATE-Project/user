@@ -210,7 +210,7 @@ module.exports = class MenteesHelper {
 			}
 
 			let meetingInfo
-			if (session.meetingInfo.platform !== 'BBB') {
+			if (session?.meetingInfo?.platform !== 'BBB') {
 				meetingInfo = session.meetingInfo
 				await sessionAttendees.updateOne(
 					{
@@ -353,13 +353,13 @@ module.exports = class MenteesHelper {
 								session.isEnrolled = true
 							} else {
 								session.isEnrolled = false
-								delete session.meetingInfo.link
-								delete session.meetingInfo.meta
+								delete session?.meetingInfo?.link
+								delete session?.meetingInfo?.meta
 							}
 						} else {
 							session.isEnrolled = false
-							delete session.meetingInfo.link
-							delete session.meetingInfo.meta
+							delete session?.meetingInfo?.link
+							delete session?.meetingInfo?.meta
 						}
 					})
 				)
