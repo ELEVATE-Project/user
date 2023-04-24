@@ -1,3 +1,6 @@
 /src/node_modules
 .env.sample
 .env
+src/node_modules
+src/.env
+
