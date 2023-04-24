@@ -59,7 +59,7 @@ services:
       - ../src/:/var/src
     ports:
       - '3000:3000'
-    command: [ 'nodemon', 'app.js' ]
+    command: [ 'node', 'app.js' ]
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
