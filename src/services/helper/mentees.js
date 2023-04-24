@@ -224,16 +224,13 @@ module.exports = class MenteesHelper {
 				)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: 'SESSION_START_LINKk',
+					message: 'SESSION_START_LINK',
 					result: meetingInfo,
 				})
 			}
 			if (sessionAttendee?.meetingInfo?.link) {
-				console.log('ddddddddddddddddd')
 				meetingInfo = sessionAttendee.meetingInfo
 			} else {
-				console.log('ssssssssssss')
-
 				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
 					sessionId,
 					menteeDetails.name,
@@ -257,7 +254,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'SESSION_START_LINKaaa',
+				message: 'SESSION_START_LINK',
 				result: meetingInfo,
 			})
 		} catch (error) {
