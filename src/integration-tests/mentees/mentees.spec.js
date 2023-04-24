@@ -14,7 +14,7 @@ describe('mentoring/v1/mentees', function () {
 		await commonHelper.logIn()
 	})
 	it('/joinSession', async () => {
-		let sessionId = await sessionsData.insertSession((now = true), (sessionStatus = 'live'))
+		let sessionId = await sessionsData.insertSession((now = true), (sessionStatus = 'live'), (meetingInfo = true))
 		await sessionsData.insertSessionAttendee(sessionId)
 		let res = await request.post('/mentoring/v1/mentees/joinSession/' + sessionId)
 		console.log(res.body)
