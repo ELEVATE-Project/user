@@ -15,7 +15,12 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 		responseCode,
 		message,
 		result,
-		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
+		meta: {
+			...meta,
+			formsVersion: versions,
+			correlation: correlationId.getId(),
+			meetingPlatform: process.env.DEFAULT_MEETING_SERVICE,
+		},
 	}
 	logger.info('Request Response', { response: response })
 

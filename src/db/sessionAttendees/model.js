@@ -31,7 +31,6 @@ let sessionAttendeesSchema = new Schema({
 	timeZone: String,
 	joinedAt: Date,
 	leftAt: Date,
-	link: String,
 	feedbacks: [
 		{
 			questionId: mongoose.Types.ObjectId,
@@ -42,6 +41,14 @@ let sessionAttendeesSchema = new Schema({
 	skippedFeedback: {
 		type: Boolean,
 		default: false,
+	},
+	meetingInfo: {
+		platform: String,
+		link: String,
+		meta: {
+			meetingId: String,
+			password: String,
+		},
 	},
 })
 sessionAttendeesSchema.plugin(mongooseLeanGetter)

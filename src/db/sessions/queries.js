@@ -85,6 +85,7 @@ module.exports = class SessionsData {
 						userId: 1,
 						startDateUtc: 1,
 						createdAt: 1,
+						meetingInfo: 1,
 					},
 				},
 				{

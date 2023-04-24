@@ -35,7 +35,6 @@ let sessionsSchema = new Schema({
 	endDate: String,
 	startDateUtc: String,
 	endDateUtc: String,
-	link: String,
 	menteePassword: String,
 	mentorPassword: String,
 	startedAt: Date,
@@ -69,9 +68,15 @@ let sessionsSchema = new Schema({
 		type: String,
 		default: null,
 	},
-	internalMeetingId: {
-		type: String,
-		default: null,
+	meetingInfo: {
+		platform: {
+			type: String,
+		},
+		link: String,
+		meta: {
+			meetingId: String,
+			password: String,
+		},
 	},
 })
 sessionsSchema.plugin(mongooseLeanGetter)
