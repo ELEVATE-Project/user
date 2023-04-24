@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const kafka = require('kafkajs')
+const Kafka = require('kafkajs')
 
 function health_check() {
 	return new Promise(async (resolve, reject) => {
