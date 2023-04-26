@@ -210,7 +210,7 @@ module.exports = class MenteesHelper {
 			}
 
 			let meetingInfo
-			if (session?.meetingInfo?.platform !== 'BBB') {
+			if (session?.meetingInfo?.platform !== common.BBB_CODE) {
 				meetingInfo = session.meetingInfo
 				await sessionAttendees.updateOne(
 					{
@@ -237,7 +237,7 @@ module.exports = class MenteesHelper {
 					session.menteePassword
 				)
 				meetingInfo = {
-					platform: 'BBB',
+					platform: common.BBB_CODE,
 					link: attendeeLink,
 				}
 				await sessionAttendees.updateOne(

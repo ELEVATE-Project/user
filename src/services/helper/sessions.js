@@ -793,7 +793,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 			let meetingInfo
-			if (session?.meetingInfo?.platform !== 'BBB' && !session.isStarted) {
+			if (session?.meetingInfo?.platform !== common.BBB_CODE && !session.isStarted) {
 				await sessionData.updateOneSession(
 					{
 						_id: session._id,
@@ -841,7 +841,7 @@ module.exports = class SessionsHelper {
 					session.mentorPassword
 				)
 				meetingInfo = {
-					platform: 'BBB',
+					platform: common.BBB_CODE,
 					link: moderatorMeetingLink,
 					meta: {
 						meetingId: meetingDetails.data.response.internalMeetingID,
