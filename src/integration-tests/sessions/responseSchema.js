@@ -114,9 +114,6 @@ const createSchema = {
 				recordingUrl: {
 					type: 'null',
 				},
-				internalMeetingId: {
-					type: 'null',
-				},
 				_id: {
 					type: 'string',
 				},
@@ -154,7 +151,6 @@ const createSchema = {
 				'menteeFeedbackForm',
 				'mentorFeedbackForm',
 				'recordingUrl',
-				'internalMeetingId',
 				'_id',
 				'feedbacks',
 				'updatedAt',
@@ -473,9 +469,6 @@ const detailsSchema = {
 				recordingUrl: {
 					type: 'null',
 				},
-				internalMeetingId: {
-					type: 'string',
-				},
 				feedbacks: {
 					type: 'array',
 					items: {},
@@ -517,7 +510,6 @@ const detailsSchema = {
 				'menteeFeedbackForm',
 				'mentorFeedbackForm',
 				'recordingUrl',
-				'internalMeetingId',
 				'feedbacks',
 				'updatedAt',
 				'createdAt',

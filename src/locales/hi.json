@@ -63,5 +63,9 @@
 	"UPDATE_FORM_VERSION": "फॉर्म के संस्करण को अपडेट करें।",
 	"ISSUE_REPORTED_SUCCESSFULLY": "Your issue is successfully reported.",
 	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
-	"ACCESS_TOKEN_EXPIRED": "Session expired. Please login again."
+	"ACCESS_TOKEN_EXPIRED": "Session expired. Please login again.",
+	"INVALID_TIME_SELECTION": "You already have a session '{{sessionName}}' scheduled at this time. Please select a different time.",
+	"SESSION_DELETION_FAILED": "Session can't be deleted",
+	"MEETING_SERVICE_INFO_NOT_FOUND": "BBB is currently disabled. Please provide an alternative meeting platform.",
+	"SESSION_EDIT_WINDOW": "Session editing is only allowed up to {{editWindow}} minutes before the session start time."
 }

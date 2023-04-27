@@ -15,7 +15,12 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 		responseCode,
 		message,
 		result,
-		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
+		meta: {
+			...meta,
+			formsVersion: versions,
+			correlation: correlationId.getId(),
+			meetingPlatform: process.env.DEFAULT_MEETING_SERVICE,
+		},
 	}
 	logger.info('Request Response', { response: response })
 
@@ -61,4 +66,5 @@ module.exports = {
 	MENTOR_EVALUATING: 'mentor',
 	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
+	BBB_CODE: 'BBB', // BigBlueButton name
 }

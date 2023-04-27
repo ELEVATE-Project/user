@@ -93,7 +93,7 @@ describe('mentor flow - mentoring/v1/sessions', function () {
 		expect(res.body).toMatchSchema(schema.shareSchema)
 	})
 	it('/updateRecordingUrl', async () => {
-		await sessionsData.insertSession()
+		await sessionsData.insertSession(false, 'published', true)
 		let res = await request
 			.patch('/mentoring/v1/sessions/updateRecordingUrl/c321be68f93837188a2e8a8cb679d217a24c18b7-1657692090254')
 			.send({

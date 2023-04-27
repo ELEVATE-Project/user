@@ -125,6 +125,19 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES === 0
+			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+			let elapsedMinutes = moment(sessionDetail.startDateUtc).diff(currentDate, 'minutes')
+			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
+				return common.failureResponse({
+					message: {
+						key: 'SESSION_EDIT_WINDOW',
+						interpolation: { editWindow: process.env.SESSION_EDIT_WINDOW_MINUTES },
+					},
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			if (bodyData.startDate) {
 				bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 				isSessionReschedule = true
@@ -785,9 +798,28 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let link = ''
-			if (session.link) {
-				link = session.link
+			if (process.env.DEFAULT_MEETING_SERVICE == 'OFF' && !session?.meetingInfo?.link) {
+				return common.failureResponse({
+					message: 'MEETING_SERVICE_INFO_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let meetingInfo
+			if (session?.meetingInfo?.platform !== common.BBB_CODE && !session.isStarted) {
+				await sessionData.updateOneSession(
+					{
+						_id: session._id,
+					},
+					{
+						status: 'live',
+						isStarted: true,
+						startedAt: utils.utcFormat(),
+					}
+				)
+			}
+			if (session?.meetingInfo?.link) {
+				meetingInfo = session.meetingInfo
 			} else {
 				let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
 				let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes')
@@ -821,29 +853,30 @@ module.exports = class SessionsHelper {
 					mentorDetails.name,
 					session.mentorPassword
 				)
-
+				meetingInfo = {
+					platform: common.BBB_CODE,
+					link: moderatorMeetingLink,
+					meta: {
+						meetingId: meetingDetails.data.response.internalMeetingID,
+					},
+				}
 				await sessionData.updateOneSession(
 					{
 						_id: session._id,
 					},
 					{
-						link: moderatorMeetingLink,
 						status: 'live',
 						isStarted: true,
 						startedAt: utils.utcFormat(),
-						internalMeetingId: meetingDetails.data.response.internalMeetingID,
+						meetingInfo,
 					}
 				)
-
-				link = moderatorMeetingLink
 			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_START_LINK',
-				result: {
-					link: link,
-				},
+				result: meetingInfo,
 			})
 		} catch (error) {
 			throw error
@@ -981,7 +1014,7 @@ module.exports = class SessionsHelper {
 		try {
 			const updateStatus = await sessionData.updateOneSession(
 				{
-					internalMeetingId,
+					'meetingInfo.meta.meetingId': internalMeetingId,
 				},
 				{
 					recordingUrl,

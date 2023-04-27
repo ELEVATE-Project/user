@@ -6,7 +6,7 @@ const common = require('@constants/common')
 
 let bodyData
 
-const insertSession = async (now, sessionStatus) => {
+const insertSession = async (now, sessionStatus, meetingInfo) => {
 	try {
 		let startDate
 		let endDate
@@ -47,10 +47,17 @@ const insertSession = async (now, sessionStatus) => {
 			menteePassword: 'test',
 			mentorPassword: 'test',
 			userId: userId,
-			internalMeetingId: 'c321be68f93837188a2e8a8cb679d217a24c18b7-1657692090254',
 			status: sessionStatus || 'published',
 			startDateUtc: moment.unix(startDate).utc().format(common.UTC_DATE_TIME_FORMAT),
 			endDateUtc: moment.unix(endDate).utc().format(common.UTC_DATE_TIME_FORMAT),
+		}
+		if (meetingInfo) {
+			bodyData.meetingInfo = {
+				platform: 'BBB',
+				meta: {
+					meetingId: 'c321be68f93837188a2e8a8cb679d217a24c18b7-1657692090254',
+				},
+			}
 		}
 		let session = await sessionData.createSession(bodyData)
 		return session._id.valueOf()

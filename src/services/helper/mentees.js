@@ -209,38 +209,56 @@ module.exports = class MenteesHelper {
 				})
 			}
 
-			let link = ''
-			if (sessionAttendee.link) {
-				link = sessionAttendee.link
+			let meetingInfo
+			if (session?.meetingInfo?.platform !== common.BBB_CODE) {
+				meetingInfo = session.meetingInfo
+				await sessionAttendees.updateOne(
+					{
+						_id: sessionAttendee._id,
+					},
+					{
+						meetingInfo,
+						joinedAt: utils.utcFormat(),
+						isSessionAttended: true,
+					}
+				)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'SESSION_START_LINK',
+					result: meetingInfo,
+				})
+			}
+			if (sessionAttendee?.meetingInfo?.link) {
+				meetingInfo = sessionAttendee.meetingInfo
 			} else {
 				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
 					sessionId,
 					menteeDetails.name,
 					session.menteePassword
 				)
-
+				meetingInfo = {
+					platform: common.BBB_CODE,
+					link: attendeeLink,
+				}
 				await sessionAttendees.updateOne(
 					{
 						_id: sessionAttendee._id,
 					},
 					{
-						link: attendeeLink,
+						meetingInfo,
 						joinedAt: utils.utcFormat(),
 						isSessionAttended: true,
 					}
 				)
-
-				link = attendeeLink
 			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_START_LINK',
-				result: {
-					link: link,
-				},
+				result: meetingInfo,
 			})
 		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}
@@ -332,12 +350,17 @@ module.exports = class MenteesHelper {
 							const attendee = attendees.find(
 								(attendee) => attendee.sessionId.toString() === session._id.toString()
 							)
-							session.isEnrolled = false
 							if (attendee) {
 								session.isEnrolled = true
+							} else {
+								session.isEnrolled = false
+								delete session?.meetingInfo?.link
+								delete session?.meetingInfo?.meta
 							}
 						} else {
 							session.isEnrolled = false
+							delete session?.meetingInfo?.link
+							delete session?.meetingInfo?.meta
 						}
 					})
 				)
@@ -346,6 +369,7 @@ module.exports = class MenteesHelper {
 				return sessions
 			}
 		} catch (err) {
+			console.log(err)
 			return err
 		}
 	}

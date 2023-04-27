@@ -8,6 +8,7 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const mongooseLeanGetter = require('mongoose-lean-getters')
+
 let sessionsSchema = new Schema({
 	title: String,
 	description: String,
@@ -35,7 +36,6 @@ let sessionsSchema = new Schema({
 	endDate: String,
 	startDateUtc: String,
 	endDateUtc: String,
-	link: String,
 	menteePassword: String,
 	mentorPassword: String,
 	startedAt: Date,
@@ -69,9 +69,16 @@ let sessionsSchema = new Schema({
 		type: String,
 		default: null,
 	},
-	internalMeetingId: {
-		type: String,
-		default: null,
+	meetingInfo: {
+		platform: {
+			type: String,
+			default: process.env.DEFAULT_MEETING_SERVICE,
+		},
+		link: String,
+		meta: {
+			meetingId: String,
+			password: String,
+		},
 	},
 })
 sessionsSchema.plugin(mongooseLeanGetter)
