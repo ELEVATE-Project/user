@@ -162,7 +162,6 @@ module.exports = class SessionsHelper {
 
 			if (method != common.DELETE_METHOD && (bodyData.endDateUtc || bodyData.startDateUtc)) {
 				let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
-				console.log(bodyData.endDateUtc)
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
 						message: 'SESSION__MINIMUM_DURATION_TIME',
