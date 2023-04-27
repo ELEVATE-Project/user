@@ -125,6 +125,19 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES === 0
+			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+			let elapsedMinutes = moment(sessionDetail.startDateUtc).diff(currentDate, 'minutes')
+			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
+				return common.failureResponse({
+					message: {
+						key: 'SESSION_EDIT_WINDOW',
+						interpolation: { editWindow: process.env.SESSION_EDIT_WINDOW_MINUTES },
+					},
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			if (bodyData.startDate) {
 				bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 				isSessionReschedule = true
