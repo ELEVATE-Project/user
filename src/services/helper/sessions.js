@@ -125,7 +125,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES === 0
+			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
 			let elapsedMinutes = moment(sessionDetail.startDateUtc).diff(currentDate, 'minutes')
 			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
@@ -160,9 +160,8 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD) {
+			if (method != common.DELETE_METHOD && (bodyData.endDateUtc || bodyData.startDateUtc)) {
 				let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
-
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
 						message: 'SESSION__MINIMUM_DURATION_TIME',
