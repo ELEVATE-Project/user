@@ -7,6 +7,7 @@ const sessionAttendesData = require('@db/sessionAttendees/queries')
 const sessionAttendeesHelper = require('./sessionAttendees')
 const ObjectId = require('mongoose').Types.ObjectId
 const kafkaCommunication = require('@generics/kafka-communication')
+const utils = require('@generics/utils')
 
 module.exports = class Notifications {
 	/**
@@ -42,7 +43,16 @@ module.exports = class Notifications {
 				if (userAccounts && userAccounts.result.length > 0) {
 					await Promise.all(
 						sessions.map(async function (session) {
-							let emailBody = emailTemplate.body.replace('{sessionTitle}', session.title)
+							let emailBody = emailTemplate.body
+							if (
+								process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != 'BBB' &&
+								!session.meetingInfo?.link
+							) {
+								emailBody = utils.extractEmailTemplate(emailBody, ['default', 'linkWarning'])
+							} else {
+								emailBody = utils.extractEmailTemplate(emailBody, ['default'])
+							}
+							emailBody = emailBody.replace('{sessionTitle}', session.title)
 							var foundElement = userAccounts.result.find((e) => e._id === session.userId.toString())
 
 							if (foundElement && foundElement.email.address && foundElement.name) {
@@ -172,7 +182,16 @@ module.exports = class Notifications {
 				if (userAccounts && userAccounts.result.length > 0) {
 					await Promise.all(
 						sessions.map(async function (session) {
-							let emailBody = emailTemplate.body.replace('{sessionTitle}', session.title)
+							let emailBody = emailTemplate.body
+							if (
+								process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != 'BBB' &&
+								!session.meetingInfo?.link
+							) {
+								emailBody = utils.extractEmailTemplate(emailBody, ['default', 'linkWarning'])
+							} else {
+								emailBody = utils.extractEmailTemplate(emailBody, ['default'])
+							}
+							emailBody = emailBody.replace('{sessionTitle}', session.title)
 							var foundElement = userAccounts.result.find((e) => e._id === session.userId.toString())
 
 							if (foundElement && foundElement.email.address && foundElement.name) {
