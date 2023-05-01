@@ -10,7 +10,7 @@ let emailTemplates = [
 	{
 		code: 'mentor_one_hour_before_session_reminder',
 		subject: 'MentorED - Your scheduled session starts in 1 hour',
-		body: '<div><p>Dear {name},</p> The live session scheduled by you - {sessionTitle} begins in 1 hour. Please ensure that you join at least 10 minutes before for the set time to allow Mentees to settle in.</div>',
+		body: "{{default}}<div><p>Dear {name},</p> The live session scheduled by you - {sessionTitle} begins in 1 hour. Please ensure that you join at least 10 minutes before for the set time to allow Mentees to settle in.</div>{{/default}}{{linkWarning}}<div><p>Please add meeting link for your scheduled session that starts in less than 1 hour. To add a meeting link, click on the 'edit session' option in session details page of MentorED.</div></p>{{/linkWarning}}",
 	},
 	{
 		code: 'mentee_session_reminder',
@@ -20,7 +20,7 @@ let emailTemplates = [
 	{
 		code: 'mentor_session_reminder',
 		subject: 'MentorED - Your scheduled session starts in 24 hours',
-		body: '<p>Dear {name},</p> The live session scheduled by you - {sessionTitle} is scheduled in 24 hours from now. Please ensure that you join at least ten minutes before the set time to allow Mentees to settle in.',
+		body: "{{default}}<p>Dear {name},</p> The live session scheduled by you - {sessionTitle} is scheduled in 24 hours from now. Please ensure that you join at least ten minutes before the set time to allow Mentees to settle in.{{/default}}{{linkWarning}}<div><p>Please add meeting link for your scheduled session that starts in less than 24 hours. To add a meeting link, click on the 'edit session' option in session details page of MentorED.</div></p>{{/linkWarning}}",
 	},
 	{
 		code: 'mentor_session_delete',
