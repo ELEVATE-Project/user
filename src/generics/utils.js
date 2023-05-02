@@ -66,6 +66,17 @@ const composeEmailBody = (body, params) => {
 	})
 }
 
+const extractEmailTemplate = (input, conditions) => {
+	const allConditionsRegex = /{{(.*?)}}(.*?){{\/\1}}/g
+	let result = input
+
+	for (const match of input.matchAll(allConditionsRegex)) {
+		result = conditions.includes(match[1]) ? result.replace(match[0], match[2]) : result.replace(match[0], '')
+	}
+
+	return result
+}
+
 const getDownloadableUrl = async (imgPath) => {
 	if (process.env.CLOUD_STORAGE === 'GCP') {
 		const options = {
@@ -96,7 +107,7 @@ const getDownloadableUrl = async (imgPath) => {
 		const options = {
 			destFilePath: imgPath,
 			bucketName: process.env.DEFAULT_OCI_BUCKET_NAME,
-			endpoint: process.env.OCI_BUCKET_ENDPOINT
+			endpoint: process.env.OCI_BUCKET_ENDPOINT,
 		}
 		imgPath = await OciFileHelper.getDownloadableUrl(options)
 	}
@@ -166,4 +177,5 @@ module.exports = {
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
+	extractEmailTemplate,
 }

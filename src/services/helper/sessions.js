@@ -388,7 +388,10 @@ module.exports = class SessionsHelper {
 					sessionDetails.isEnrolled = true
 				}
 			}
-
+			if (userId != sessionDetails.userId) {
+				delete sessionDetails?.meetingInfo?.link
+				delete sessionDetails?.meetingInfo?.meta
+			}
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
 					if (imgPath != '') {
