@@ -162,6 +162,7 @@ module.exports = class SessionsAttendees {
 						endDateUtc: '$sessionDetail.endDateUtc',
 						status: '$sessionDetail.status',
 						image: '$sessionDetail.image',
+						'meetingInfo.platform': '$sessionDetail.meetingInfo.platform',
 					},
 				},
 				{
