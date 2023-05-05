@@ -95,7 +95,7 @@ module.exports = (app) => {
 			errorData = error.data
 		}
 		if (status == 500) {
-			logger.error('Server error!', { message: error, triggerNotification: true })
+			logger.error('Server error!', { message: error.stack, triggerNotification: true })
 		} else {
 			logger.info(message, { message: error })
 		}
