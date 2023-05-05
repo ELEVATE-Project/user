@@ -24,7 +24,7 @@ module.exports = class MentorsHelper {
 		try {
 			const mentorsDetails = await userProfile.details('', id)
 
-			if (mentorsDetails.data.result.isAMentor) {
+			if (mentorsDetails?.data?.result?.isAMentor) {
 				const filterUpcomingSession = {
 					$and: [
 						{
@@ -49,7 +49,7 @@ module.exports = class MentorsHelper {
 				)
 
 				upcomingSessions[0].data = await this.sessionMentorDetails(upcomingSessions[0].data)
-				if (id != menteeUserId) {
+				if (menteeUserId && id != menteeUserId) {
 					upcomingSessions[0].data = await this.menteeSessionDetails(upcomingSessions[0].data, menteeUserId)
 				}
 				return common.successResponse({
