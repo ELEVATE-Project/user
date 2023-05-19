@@ -439,7 +439,7 @@ module.exports = class SessionsHelper {
 						{
 							status: common.LIVE_STATUS,
 							'meetingInfo.platform': {
-								$ne: 'BBB',
+								$ne: common.BBB_CODE,
 							},
 							endDateUtc: {
 								$lt: moment().utc().format(),
