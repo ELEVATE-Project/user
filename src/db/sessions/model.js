@@ -70,10 +70,8 @@ let sessionsSchema = new Schema({
 		default: null,
 	},
 	meetingInfo: {
-		platform: {
-			type: String,
-			default: process.env.DEFAULT_MEETING_SERVICE,
-		},
+		platform: String,
+		value: String,
 		link: String,
 		meta: {
 			meetingId: String,
