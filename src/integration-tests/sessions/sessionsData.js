@@ -53,7 +53,8 @@ const insertSession = async (now, sessionStatus, meetingInfo) => {
 		}
 		if (meetingInfo) {
 			bodyData.meetingInfo = {
-				platform: 'BBB',
+				value: 'BBB',
+				platform: 'Big blue button (Default)',
 				meta: {
 					meetingId: 'c321be68f93837188a2e8a8cb679d217a24c18b7-1657692090254',
 				},
