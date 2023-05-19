@@ -42,8 +42,8 @@ module.exports = class issuesHelper {
 								role,
 								userEmailId,
 								description: bodyData.description,
-								deviceName: bodyData.metaData.deviceName,
-								androidVersion: bodyData.metaData.androidVersion,
+								deviceName: bodyData?.metaData?.deviceName || 'Not available',
+								androidVersion: bodyData?.metaData?.androidVersion || 'Not available',
 							}),
 						},
 					}
@@ -58,6 +58,7 @@ module.exports = class issuesHelper {
 				message: 'ISSUE_REPORTED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
