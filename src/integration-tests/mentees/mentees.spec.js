@@ -17,7 +17,6 @@ describe('mentoring/v1/mentees', function () {
 		let sessionId = await sessionsData.insertSession((now = true), (sessionStatus = 'live'), (meetingInfo = true))
 		await sessionsData.insertSessionAttendee(sessionId)
 		let res = await request.post('/mentoring/v1/mentees/joinSession/' + sessionId)
-		console.log(res.body)
 		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(schema.joinSessionSchema)
 	})
