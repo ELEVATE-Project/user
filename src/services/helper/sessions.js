@@ -429,10 +429,23 @@ module.exports = class SessionsHelper {
 			// update sessions which having status as published and  exceeds the current date and time
 			await sessionData.updateSession(
 				{
-					status: common.PUBLISHED_STATUS,
-					endDateUtc: {
-						$lt: moment().utc().format(),
-					},
+					$or: [
+						{
+							status: common.PUBLISHED_STATUS,
+							endDateUtc: {
+								$lt: moment().utc().format(),
+							},
+						},
+						{
+							status: common.LIVE_STATUS,
+							'meetingInfo.platform': {
+								$ne: 'BBB',
+							},
+							endDateUtc: {
+								$lt: moment().utc().format(),
+							},
+						},
+					],
 				},
 				{
 					status: common.COMPLETED_STATUS,
