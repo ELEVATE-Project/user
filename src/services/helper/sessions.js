@@ -426,7 +426,7 @@ module.exports = class SessionsHelper {
 
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
-			// update sessions which having status as published and  exceeds the current date and time
+			// update sessions which having status as published/live and  exceeds the current date and time
 			await sessionData.updateSession(
 				{
 					$or: [
