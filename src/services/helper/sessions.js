@@ -77,10 +77,10 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_CODE) {
+			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
 				bodyData.meetingInfo = {
-					platform: common.BBB_VALUE,
-					value: common.BBB_CODE,
+					platform: common.BBB_PLATFORM,
+					value: common.BBB_VALUE,
 				}
 			}
 
@@ -445,7 +445,7 @@ module.exports = class SessionsHelper {
 						{
 							status: common.LIVE_STATUS,
 							'meetingInfo.value': {
-								$ne: common.BBB_CODE,
+								$ne: common.BBB_VALUE,
 							},
 							endDateUtc: {
 								$lt: moment().utc().format(),
@@ -827,7 +827,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 			let meetingInfo
-			if (session?.meetingInfo?.value !== common.BBB_CODE && !session.isStarted) {
+			if (session?.meetingInfo?.value !== common.BBB_VALUE && !session.isStarted) {
 				await sessionData.updateOneSession(
 					{
 						_id: session._id,
@@ -875,8 +875,8 @@ module.exports = class SessionsHelper {
 					session.mentorPassword
 				)
 				meetingInfo = {
-					platform: common.BBB_VALUE,
-					value: common.BBB_CODE,
+					platform: common.BBB_PLATFORM,
+					value: common.BBB_VALUE,
 					link: moderatorMeetingLink,
 					meta: {
 						meetingId: meetingDetails.data.response.internalMeetingID,

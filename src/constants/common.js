@@ -66,6 +66,6 @@ module.exports = {
 	MENTOR_EVALUATING: 'mentor',
 	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
-	BBB_CODE: 'BBB', // BigBlueButton code
-	BBB_VALUE: 'Big blue button (Default)',
+	BBB_VALUE: 'BBB', // BigBlueButton code
+	BBB_PLATFORM: 'Big blue button (Default)',
 }
