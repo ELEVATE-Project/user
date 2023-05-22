@@ -163,6 +163,7 @@ module.exports = class SessionsAttendees {
 						status: '$sessionDetail.status',
 						image: '$sessionDetail.image',
 						'meetingInfo.platform': '$sessionDetail.meetingInfo.platform',
+						'meetingInfo.value': '$sessionDetail.meetingInfo.value',
 					},
 				},
 				{

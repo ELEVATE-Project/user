@@ -45,7 +45,7 @@ module.exports = class Notifications {
 						sessions.map(async function (session) {
 							let emailBody = emailTemplate.body
 							if (
-								process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != 'BBB' &&
+								process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != common.BBB_VALUE &&
 								!session.meetingInfo?.link
 							) {
 								emailBody = utils.extractEmailTemplate(emailBody, ['default', 'linkWarning'])

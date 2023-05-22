@@ -77,6 +77,12 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
+				bodyData.meetingInfo = {
+					platform: common.BBB_PLATFORM,
+					value: common.BBB_VALUE,
+				}
+			}
 
 			let data = await sessionData.createSession(bodyData)
 
@@ -426,13 +432,26 @@ module.exports = class SessionsHelper {
 
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
-			// update sessions which having status as published and  exceeds the current date and time
+			// update sessions which having status as published/live and  exceeds the current date and time
 			await sessionData.updateSession(
 				{
-					status: common.PUBLISHED_STATUS,
-					endDateUtc: {
-						$lt: moment().utc().format(),
-					},
+					$or: [
+						{
+							status: common.PUBLISHED_STATUS,
+							endDateUtc: {
+								$lt: moment().utc().format(),
+							},
+						},
+						{
+							status: common.LIVE_STATUS,
+							'meetingInfo.value': {
+								$ne: common.BBB_VALUE,
+							},
+							endDateUtc: {
+								$lt: moment().utc().format(),
+							},
+						},
+					],
 				},
 				{
 					status: common.COMPLETED_STATUS,
@@ -808,7 +827,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 			let meetingInfo
-			if (session?.meetingInfo?.platform !== common.BBB_CODE && !session.isStarted) {
+			if (session?.meetingInfo?.value !== common.BBB_VALUE && !session.isStarted) {
 				await sessionData.updateOneSession(
 					{
 						_id: session._id,
@@ -856,7 +875,8 @@ module.exports = class SessionsHelper {
 					session.mentorPassword
 				)
 				meetingInfo = {
-					platform: common.BBB_CODE,
+					platform: common.BBB_PLATFORM,
+					value: common.BBB_VALUE,
 					link: moderatorMeetingLink,
 					meta: {
 						meetingId: meetingDetails.data.response.internalMeetingID,
