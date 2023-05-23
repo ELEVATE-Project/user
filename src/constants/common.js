@@ -67,5 +67,5 @@ module.exports = {
 	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
 	BBB_VALUE: 'BBB', // BigBlueButton code
-	BBB_PLATFORM: 'Big blue button (Default)',
+	BBB_PLATFORM: 'BigBlueButton (Default)',
 }
