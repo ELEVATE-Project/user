@@ -188,7 +188,7 @@ let enviromentVariables = {
 		optional: false,
 	},
 	SESSION_MENTEE_LIMIT: {
-		message: 'Required session edit window timeout',
+		message: 'Required session mentee limit',
 		optional: false,
 	},
 }
