@@ -527,6 +527,7 @@ module.exports = class SessionsHelper {
 		const name = userTokenData.name
 
 		try {
+			const sessionMenteeLimit = parseInt(process.env.SESSION_MENTEE_LIMIT)
 			const session = await sessionData.findSessionById(sessionId)
 			if (!session) {
 				return common.failureResponse({
@@ -543,6 +544,17 @@ module.exports = class SessionsHelper {
 			if (sessionAttendeeExist) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_ENROLLED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const enrolledAttendeeCount = await sessionAttendesData.countAllSessionAttendees({
+				sessionId,
+			})
+			if (sessionMenteeLimit !== 0 && enrolledAttendeeCount >= sessionMenteeLimit) {
+				return common.failureResponse({
+					message: 'SESSION_SEAT_FULL',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

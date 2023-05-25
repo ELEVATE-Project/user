@@ -67,5 +67,6 @@
 	"INVALID_TIME_SELECTION": "You already have a session '{{sessionName}}' scheduled at this time. Please select a different time.",
 	"SESSION_DELETION_FAILED": "Session can't be deleted",
 	"MEETING_SERVICE_INFO_NOT_FOUND": "BBB is currently disabled. Please provide an alternative meeting platform.",
-	"SESSION_EDIT_WINDOW": "Session editing is only allowed up to {{editWindow}} minutes before the session start time."
+	"SESSION_EDIT_WINDOW": "Session editing is only allowed up to {{editWindow}} minutes before the session start time.",
+	"SESSION_SEAT_FULL": "Session Seats Full"
 }
