@@ -77,6 +77,10 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			bodyData.meetingInfo = {
+				platform: process.env.DEFAULT_MEETING_SERVICE,
+				value: process.env.DEFAULT_MEETING_SERVICE,
+			}
 			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
 				bodyData.meetingInfo = {
 					platform: common.BBB_PLATFORM,
