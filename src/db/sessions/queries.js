@@ -235,4 +235,16 @@ module.exports = class SessionsData {
 			return error
 		}
 	}
+	static async incrementEnrollmentCount(sessionId) {
+		try {
+			const result = await Sessions.updateOne(
+				{ _id: sessionId },
+				{ $inc: { 'enrollmentInfo.enrollmentCount': 1 } }
+			)
+			return result
+		} catch (error) {
+			console.error(error)
+			return error
+		}
+	}
 }

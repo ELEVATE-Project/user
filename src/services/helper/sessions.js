@@ -527,7 +527,6 @@ module.exports = class SessionsHelper {
 		const name = userTokenData.name
 
 		try {
-			const sessionMenteeLimit = parseInt(process.env.SESSION_MENTEE_LIMIT)
 			const session = await sessionData.findSessionById(sessionId)
 			if (!session) {
 				return common.failureResponse({
@@ -549,25 +548,21 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const enrolledAttendeeCount = await sessionAttendesData.countAllSessionAttendees({
-				sessionId,
-			})
-			if (sessionMenteeLimit !== 0 && enrolledAttendeeCount >= sessionMenteeLimit) {
-				return common.failureResponse({
-					message: 'SESSION_SEAT_FULL',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const attendee = {
 				userId,
 				sessionId,
 				timeZone,
 			}
 
-			await sessionAttendesData.create(attendee)
-
+			const res = await sessionAttendesData.create(attendee)
+			console.log(res)
+			if (res == 'SESSION_SEAT_FULL') {
+				return common.failureResponse({
+					message: 'SESSION_SEAT_FULL',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
 			)
@@ -599,12 +594,13 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
+			await sessionData.incrementEnrollmentCount(sessionId)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
