@@ -51,6 +51,7 @@ module.exports = {
 		'/sessions/details',
 		'/mentors/profile/',
 		'/mentors/upcomingSessions/',
+		'/config/getConfig',
 	],
 	DELETE_METHOD: 'DELETE',
 	dateFormat: 'dddd, Do MMMM YYYY',
