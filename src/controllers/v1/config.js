@@ -8,7 +8,7 @@ module.exports = class Config {
 	 * @returns {JSON} - returns success response.
 	 */
 
-	async getConfig() {
+	async get() {
 		try {
 			const config = await configHelper.getConfig()
 			return config
