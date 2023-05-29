@@ -555,7 +555,7 @@ module.exports = class SessionsHelper {
 			}
 
 			const res = await sessionAttendesData.create(attendee)
-			console.log(res)
+
 			if (res == 'SESSION_SEAT_FULL') {
 				return common.failureResponse({
 					message: 'SESSION_SEAT_FULL',
@@ -594,7 +594,7 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			await sessionData.incrementEnrollmentCount(sessionId)
+			await sessionData.updateEnrollmentCount(sessionId)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENROLLED_SUCCESSFULLY',
@@ -666,6 +666,8 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
+
+			await sessionData.updateEnrollmentCount(sessionId, false)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
