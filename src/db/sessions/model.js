@@ -78,15 +78,13 @@ let sessionsSchema = new Schema({
 			password: String,
 		},
 	},
-	enrollmentInfo: {
-		enrollmentCount: {
-			type: Number,
-			default: 0,
-		},
-		maxEnrollment: {
-			type: Number,
-			default: process.env.SESSION_MENTEE_LIMIT,
-		},
+	seatsFilled: {
+		type: Number,
+		default: 0,
+	},
+	seatsLimit: {
+		type: Number,
+		default: process.env.SESSION_MENTEE_LIMIT,
 	},
 })
 sessionsSchema.plugin(mongooseLeanGetter)
