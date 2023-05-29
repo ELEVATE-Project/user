@@ -78,9 +78,9 @@ let sessionsSchema = new Schema({
 			password: String,
 		},
 	},
-	seatsFilled: {
+	seatsRemaining: {
 		type: Number,
-		default: 0,
+		default: process.env.SESSION_MENTEE_LIMIT,
 	},
 	seatsLimit: {
 		type: Number,

@@ -238,7 +238,7 @@ module.exports = class SessionsData {
 	static async updateEnrollmentCount(sessionId, increment = true) {
 		try {
 			const updateQuery = { _id: sessionId }
-			const updateFields = increment ? { $inc: { seatsFilled: 1 } } : { $inc: { seatsFilled: -1 } }
+			const updateFields = increment ? { $inc: { seatsRemaining: 1 } } : { $inc: { seatsRemaining: -1 } }
 			const result = await Sessions.updateOne(updateQuery, updateFields)
 			return result
 		} catch (error) {
