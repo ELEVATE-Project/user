@@ -12,6 +12,7 @@ const moment = require('moment')
 const path = require('path')
 const md5 = require('md5')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
+const startCase = require('lodash/startCase')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -157,7 +158,9 @@ function redisGet(key) {
 function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
-
+const capitalize = (str) => {
+	return startCase(str)
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -178,4 +181,5 @@ module.exports = {
 	redisGet: redisGet,
 	redisDel: redisDel,
 	extractEmailTemplate,
+	capitalize,
 }
