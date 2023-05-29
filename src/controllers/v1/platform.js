@@ -1,4 +1,4 @@
-const configHelper = require('@services/helper/config')
+const platformHelper = require('@services/helper/platform')
 
 module.exports = class Config {
 	/**
@@ -10,7 +10,7 @@ module.exports = class Config {
 
 	async config() {
 		try {
-			const config = await configHelper.getConfig()
+			const config = await platformHelper.getConfig()
 			return config
 		} catch (error) {
 			return error

@@ -1,7 +1,7 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 
-module.exports = class issuesHelper {
+module.exports = class platformHelper {
 	/**
 	 * Get app related config details
 	 * @method
