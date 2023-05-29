@@ -235,4 +235,15 @@ module.exports = class SessionsData {
 			return error
 		}
 	}
+	static async updateEnrollmentCount(sessionId, increment = true) {
+		try {
+			const updateQuery = { _id: sessionId }
+			const updateFields = increment ? { $inc: { seatsRemaining: 1 } } : { $inc: { seatsRemaining: -1 } }
+			const result = await Sessions.updateOne(updateQuery, updateFields)
+			return result
+		} catch (error) {
+			console.error(error)
+			return error
+		}
+	}
 }

@@ -12,8 +12,7 @@ const SessionAttendees = require('./model')
 module.exports = class SessionsAttendees {
 	static async create(data) {
 		try {
-			await new SessionAttendees(data).save()
-			return true
+			return await new SessionAttendees(data).save()
 		} catch (error) {
 			return error
 		}

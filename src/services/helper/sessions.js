@@ -554,8 +554,15 @@ module.exports = class SessionsHelper {
 				timeZone,
 			}
 
-			await sessionAttendesData.create(attendee)
+			const res = await sessionAttendesData.create(attendee)
 
+			if (res == 'SESSION_SEAT_FULL') {
+				return common.failureResponse({
+					message: 'SESSION_SEAT_FULL',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
 			)
@@ -587,12 +594,13 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
+			await sessionData.updateEnrollmentCount(sessionId, false)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -658,6 +666,8 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
+
+			await sessionData.updateEnrollmentCount(sessionId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,

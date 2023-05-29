@@ -78,6 +78,14 @@ let sessionsSchema = new Schema({
 			password: String,
 		},
 	},
+	seatsRemaining: {
+		type: Number,
+		default: process.env.SESSION_MENTEE_LIMIT,
+	},
+	seatsLimit: {
+		type: Number,
+		default: process.env.SESSION_MENTEE_LIMIT,
+	},
 })
 sessionsSchema.plugin(mongooseLeanGetter)
 const Sessions = db.model('sessions', sessionsSchema)
