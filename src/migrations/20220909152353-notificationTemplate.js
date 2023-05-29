@@ -42,11 +42,6 @@ let emailTemplates = [
 		subject: 'MentorED - Session Enrollment Details',
 		body: "<p>Dear {name},</p> Thank you for enrolling for the session - {sessionTitle} by {mentorName}, The session is scheduled on {startDate} at {startTime} You will be able to join from 'My sessions' on the app once the host starts the meeting.",
 	},
-	{
-		code: 'user_issue_reported',
-		subject: 'Support request for MentorED',
-		body: '<div><p>Hi Team,</p>{role} {name} is facing issue in <b>{description}</b>-{userEmailId} in 2.1 version of MentorED.<p>Kindly look into it.</p><p>Device name:{deviceName}</p><p>Android Version:{androidVersion}</p></div>',
-	},
 ]
 var moment = require('moment')
 

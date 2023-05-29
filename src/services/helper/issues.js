@@ -30,6 +30,14 @@ module.exports = class issuesHelper {
 				const templateData = await notificationTemplateData.findOneEmailTemplate(
 					process.env.REPORT_ISSUE_EMAIL_TEMPLATE_CODE
 				)
+
+				let metaItems = ''
+				if (bodyData.metaData) {
+					for (const [key, value] of Object.entries(bodyData.metaData)) {
+						metaItems += `<li><b>${utils.capitalize(key)}:</b> ${value}</li>\n`
+					}
+				}
+
 				if (templateData) {
 					const payload = {
 						type: 'email',
@@ -42,8 +50,7 @@ module.exports = class issuesHelper {
 								role,
 								userEmailId,
 								description: bodyData.description,
-								deviceName: bodyData?.metaData?.deviceName || 'Not available',
-								androidVersion: bodyData?.metaData?.androidVersion || 'Not available',
+								metaItems: metaItems || 'Not available',
 							}),
 						},
 					}

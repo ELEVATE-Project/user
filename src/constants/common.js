@@ -51,6 +51,7 @@ module.exports = {
 		'/sessions/details',
 		'/mentors/profile/',
 		'/mentors/upcomingSessions/',
+		'/platform/config',
 	],
 	DELETE_METHOD: 'DELETE',
 	dateFormat: 'dddd, Do MMMM YYYY',
@@ -68,4 +69,5 @@ module.exports = {
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
 	BBB_VALUE: 'BBB', // BigBlueButton code
 	BBB_PLATFORM: 'BigBlueButton (Default)',
+	REPORT_EMAIL_SUBJECT: 'Having issue in logging in',
 }

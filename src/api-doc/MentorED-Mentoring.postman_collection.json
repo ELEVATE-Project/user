@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "ad7c5a99-6444-4917-a4d1-ddddc1bbbb2d",
+		"_postman_id": "20e62c5f-5d56-4114-aa06-e7f4eb2904c5",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7997930"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -1132,6 +1132,24 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/issues/create",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "issues", "create"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Config",
+			"item": [
+				{
+					"name": "Get config",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "platform", "config"]
 						}
 					},
 					"response": []
