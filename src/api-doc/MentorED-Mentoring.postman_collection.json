@@ -1147,9 +1147,9 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/config/get",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "config", "get"]
+							"path": ["v1", "platform", "config"]
 						}
 					},
 					"response": []

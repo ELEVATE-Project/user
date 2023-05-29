@@ -1693,7 +1693,7 @@ paths:
   /mentoring/v1/config/get:
     get:
       description: ''
-      operationId: /mentoring/v1/config/get
+      operationId: /mentoring/v1/platform/config
       tags:
         - Config APIs
       parameters: []
