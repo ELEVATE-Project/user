@@ -32,8 +32,10 @@ module.exports = class issuesHelper {
 				)
 
 				let metaItems = ''
-				for (const [key, value] of Object.entries(bodyData.metaData)) {
-					metaItems += `<li><b>${utils.capitalize(key)}:</b> ${value}</li>\n`
+				if (bodyData.metaData) {
+					for (const [key, value] of Object.entries(bodyData.metaData)) {
+						metaItems += `<li><b>${utils.capitalize(key)}:</b> ${value}</li>\n`
+					}
 				}
 
 				if (templateData) {
