@@ -69,5 +69,5 @@ module.exports = {
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
 	BBB_VALUE: 'BBB', // BigBlueButton code
 	BBB_PLATFORM: 'BigBlueButton (Default)',
-	REPORT_EMAIL_SUBJECT: 'Having issue in logging in',
+	REPORT_EMAIL_SUBJECT: 'Having issue in logging in/signing up',
 }
