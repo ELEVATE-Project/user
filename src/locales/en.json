@@ -68,6 +68,6 @@
 	"SESSION_DELETION_FAILED": "Session can't be deleted",
 	"MEETING_SERVICE_INFO_NOT_FOUND": "BBB is currently disabled. Please provide an alternative meeting platform.",
 	"SESSION_EDIT_WINDOW": "Session editing is only allowed up to {{editWindow}} minutes before the session start time.",
-	"SESSION_SEAT_FULL": "Session Seats Full",
-	"APP_CONFIG_FETCHED_SUCCESSFULLY": "App config fetched successfully"
+	"SESSION_SEAT_FULL": "Session seats full.",
+	"APP_CONFIG_FETCHED_SUCCESSFULLY": "App config fetched successfully."
 }
