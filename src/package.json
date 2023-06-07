@@ -15,7 +15,8 @@
 		"prepare": "cd .. && husky install src/.husky",
 		"elevate-migrations": "module/migrations/bin/migrations.js",
 		"integration": "node app.js",
-		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand"
+		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
+		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate && sequelize-cli db:seed:all"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
@@ -64,10 +65,14 @@
 		"mongoose-paginate-v2": "^1.4.2",
 		"mongoose-timestamp": "^0.6.0",
 		"p-each-series": "^2.1.0",
+		"pg": "^8.11.0",
+		"pg-hstore": "^2.3.4",
 		"redis": "^4.0.3",
 		"redoc-cli": "^0.13.15",
 		"redoc-express": "^1.0.0",
 		"require-all": "^3.0.0",
+		"sequelize": "^6.31.1",
+		"sequelize-cli": "^6.6.0",
 		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
 		"uuid": "^8.3.2"
