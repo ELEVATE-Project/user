@@ -20,7 +20,8 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
-const userQueries = require('../../database/queries/users')
+
+//const userQueries = require('../../database/queries/users')
 
 module.exports = class AccountHelper {
 	/**
@@ -72,7 +73,7 @@ module.exports = class AccountHelper {
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 			bodyData.email = { address: email, verified: false }
-			let pgObject = {
+			/* 			let pgObject = {
 				name: bodyData.name,
 				email: bodyData.email.address,
 				password: bodyData.password,
@@ -80,7 +81,7 @@ module.exports = class AccountHelper {
 			}
 			console.log(pgObject)
 
-			await userQueries.create(pgObject)
+			await userQueries.create(pgObject) */
 
 			await usersData.createUser(bodyData)
 			/* FLOW STARTED: user login after registration */
