@@ -9,7 +9,8 @@
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const systemUserData = require('@db/systemUsers/queries')
+const systemUserData = require('../../database/queries/system_users')
+
 
 module.exports = class SystemUsersHelper {
 	/**
@@ -23,8 +24,10 @@ module.exports = class SystemUsersHelper {
 	 */
 	static async create(bodyData) {
 		try {
+
 			const email = bodyData.email
 			const user = await systemUserData.findUsersByEmail(email)
+
 			if (user) {
 				return common.failureResponse({
 					message: 'SYSTEM_USER_ALREADY_EXISTS',
@@ -34,7 +37,6 @@ module.exports = class SystemUsersHelper {
 			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
-			bodyData.email = { address: email, verified: false }
 			await systemUserData.create(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
