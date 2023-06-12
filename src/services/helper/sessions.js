@@ -77,6 +77,16 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			bodyData.meetingInfo = {
+				platform: process.env.DEFAULT_MEETING_SERVICE,
+				value: process.env.DEFAULT_MEETING_SERVICE,
+			}
+			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
+				bodyData.meetingInfo = {
+					platform: common.BBB_PLATFORM,
+					value: common.BBB_VALUE,
+				}
+			}
 
 			let data = await sessionData.createSession(bodyData)
 
@@ -125,6 +135,19 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
+			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
+			let elapsedMinutes = moment(sessionDetail.startDateUtc).diff(currentDate, 'minutes')
+			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
+				return common.failureResponse({
+					message: {
+						key: 'SESSION_EDIT_WINDOW',
+						interpolation: { editWindow: process.env.SESSION_EDIT_WINDOW_MINUTES },
+					},
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			if (bodyData.startDate) {
 				bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
 				isSessionReschedule = true
@@ -147,9 +170,8 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD) {
+			if (method != common.DELETE_METHOD && (bodyData.endDateUtc || bodyData.startDateUtc)) {
 				let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
-
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
 						message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -376,7 +398,10 @@ module.exports = class SessionsHelper {
 					sessionDetails.isEnrolled = true
 				}
 			}
-
+			if (userId != sessionDetails.userId) {
+				delete sessionDetails?.meetingInfo?.link
+				delete sessionDetails?.meetingInfo?.meta
+			}
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
 					if (imgPath != '') {
@@ -411,13 +436,26 @@ module.exports = class SessionsHelper {
 
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
-			// update sessions which having status as published and  exceeds the current date and time
+			// update sessions which having status as published/live and  exceeds the current date and time
 			await sessionData.updateSession(
 				{
-					status: common.PUBLISHED_STATUS,
-					endDateUtc: {
-						$lt: moment().utc().format(),
-					},
+					$or: [
+						{
+							status: common.PUBLISHED_STATUS,
+							endDateUtc: {
+								$lt: moment().utc().format(),
+							},
+						},
+						{
+							status: common.LIVE_STATUS,
+							'meetingInfo.value': {
+								$ne: common.BBB_VALUE,
+							},
+							endDateUtc: {
+								$lt: moment().utc().format(),
+							},
+						},
+					],
 				},
 				{
 					status: common.COMPLETED_STATUS,
@@ -516,8 +554,15 @@ module.exports = class SessionsHelper {
 				timeZone,
 			}
 
-			await sessionAttendesData.create(attendee)
+			const res = await sessionAttendesData.create(attendee)
 
+			if (res == 'SESSION_SEAT_FULL') {
+				return common.failureResponse({
+					message: 'SESSION_SEAT_FULL',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
 			)
@@ -549,12 +594,13 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
+			await sessionData.updateEnrollmentCount(sessionId, false)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -620,6 +666,8 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
+
+			await sessionData.updateEnrollmentCount(sessionId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -785,9 +833,28 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let link = ''
-			if (session.link) {
-				link = session.link
+			if (process.env.DEFAULT_MEETING_SERVICE == 'OFF' && !session?.meetingInfo?.link) {
+				return common.failureResponse({
+					message: 'MEETING_SERVICE_INFO_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let meetingInfo
+			if (session?.meetingInfo?.value !== common.BBB_VALUE && !session.isStarted) {
+				await sessionData.updateOneSession(
+					{
+						_id: session._id,
+					},
+					{
+						status: 'live',
+						isStarted: true,
+						startedAt: utils.utcFormat(),
+					}
+				)
+			}
+			if (session?.meetingInfo?.link) {
+				meetingInfo = session.meetingInfo
 			} else {
 				let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
 				let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes')
@@ -821,29 +888,31 @@ module.exports = class SessionsHelper {
 					mentorDetails.name,
 					session.mentorPassword
 				)
-
+				meetingInfo = {
+					platform: common.BBB_PLATFORM,
+					value: common.BBB_VALUE,
+					link: moderatorMeetingLink,
+					meta: {
+						meetingId: meetingDetails.data.response.internalMeetingID,
+					},
+				}
 				await sessionData.updateOneSession(
 					{
 						_id: session._id,
 					},
 					{
-						link: moderatorMeetingLink,
 						status: 'live',
 						isStarted: true,
 						startedAt: utils.utcFormat(),
-						internalMeetingId: meetingDetails.data.response.internalMeetingID,
+						meetingInfo,
 					}
 				)
-
-				link = moderatorMeetingLink
 			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_START_LINK',
-				result: {
-					link: link,
-				},
+				result: meetingInfo,
 			})
 		} catch (error) {
 			throw error
@@ -981,7 +1050,7 @@ module.exports = class SessionsHelper {
 		try {
 			const updateStatus = await sessionData.updateOneSession(
 				{
-					internalMeetingId,
+					'meetingInfo.meta.meetingId': internalMeetingId,
 				},
 				{
 					recordingUrl,

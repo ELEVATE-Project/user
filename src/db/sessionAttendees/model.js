@@ -31,7 +31,6 @@ let sessionAttendeesSchema = new Schema({
 	timeZone: String,
 	joinedAt: Date,
 	leftAt: Date,
-	link: String,
 	feedbacks: [
 		{
 			questionId: mongoose.Types.ObjectId,
@@ -43,7 +42,33 @@ let sessionAttendeesSchema = new Schema({
 		type: Boolean,
 		default: false,
 	},
+	meetingInfo: {
+		platform: String,
+		link: String,
+		meta: {
+			meetingId: String,
+			password: String,
+		},
+	},
 })
+
+sessionAttendeesSchema.post('save', async function (doc, next) {
+	try {
+		const sessionId = doc.sessionId
+		const sessionMenteeLimit = parseInt(process.env.SESSION_MENTEE_LIMIT)
+
+		const count = await this.model('sessionAttendees').countDocuments({ sessionId, deleted: false }).exec()
+
+		if (sessionMenteeLimit !== 0 && count > sessionMenteeLimit) {
+			await doc.remove()
+			return next('SESSION_SEAT_FULL')
+		}
+		next()
+	} catch (err) {
+		next(err)
+	}
+})
+
 sessionAttendeesSchema.plugin(mongooseLeanGetter)
 const SessionAttendes = db.model('sessionAttendees', sessionAttendeesSchema, 'sessionAttendees')
 module.exports = SessionAttendes

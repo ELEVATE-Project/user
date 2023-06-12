@@ -15,7 +15,12 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 		responseCode,
 		message,
 		result,
-		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
+		meta: {
+			...meta,
+			formsVersion: versions,
+			correlation: correlationId.getId(),
+			meetingPlatform: process.env.DEFAULT_MEETING_SERVICE,
+		},
 	}
 	logger.info('Request Response', { response: response })
 
@@ -46,6 +51,7 @@ module.exports = {
 		'/sessions/details',
 		'/mentors/profile/',
 		'/mentors/upcomingSessions/',
+		'/platform/config',
 	],
 	DELETE_METHOD: 'DELETE',
 	dateFormat: 'dddd, Do MMMM YYYY',
@@ -61,4 +67,7 @@ module.exports = {
 	MENTOR_EVALUATING: 'mentor',
 	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
+	BBB_VALUE: 'BBB', // BigBlueButton code
+	BBB_PLATFORM: 'BigBlueButton (Default)',
+	REPORT_EMAIL_SUBJECT: 'Having issue in logging in/signing up',
 }

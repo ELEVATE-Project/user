@@ -85,6 +85,8 @@ module.exports = class SessionsData {
 						userId: 1,
 						startDateUtc: 1,
 						createdAt: 1,
+						'meetingInfo.platform': 1,
+						'meetingInfo.value': 1,
 					},
 				},
 				{
@@ -230,6 +232,17 @@ module.exports = class SessionsData {
 			}
 		} catch (error) {
 			console.log(error)
+			return error
+		}
+	}
+	static async updateEnrollmentCount(sessionId, increment = true) {
+		try {
+			const updateQuery = { _id: sessionId }
+			const updateFields = increment ? { $inc: { seatsRemaining: 1 } } : { $inc: { seatsRemaining: -1 } }
+			const result = await Sessions.updateOne(updateQuery, updateFields)
+			return result
+		} catch (error) {
+			console.error(error)
 			return error
 		}
 	}

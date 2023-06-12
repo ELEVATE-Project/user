@@ -12,8 +12,7 @@ const SessionAttendees = require('./model')
 module.exports = class SessionsAttendees {
 	static async create(data) {
 		try {
-			await new SessionAttendees(data).save()
-			return true
+			return await new SessionAttendees(data).save()
 		} catch (error) {
 			return error
 		}
@@ -162,6 +161,8 @@ module.exports = class SessionsAttendees {
 						endDateUtc: '$sessionDetail.endDateUtc',
 						status: '$sessionDetail.status',
 						image: '$sessionDetail.image',
+						'meetingInfo.platform': '$sessionDetail.meetingInfo.platform',
+						'meetingInfo.value': '$sessionDetail.meetingInfo.value',
 					},
 				},
 				{

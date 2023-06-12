@@ -1,13 +1,15 @@
----
 openapi: 3.0.0
 info:
   title: Elevate Mentoring
   version: 1.0.0
   description: >-
-    - The Mentoring Service is a centralized service that supports other services. Application Programming Interfaces (APIs) exposed by the Mentoring Service can be used to perform operations related to other entities such as users, mentors, mentees, and sessions.  
+    - The Mentoring Service is a centralized service that supports other
+    services. Application Programming Interfaces (APIs) exposed by the Mentoring
+    Service can be used to perform operations related to other entities such as
+    users, mentors, mentees, and sessions.  
 
-    - The URL to access the Mentoring API(s) is `{context}/mentoring/v1`
-    - <b>Note:</b> These resources can be used in other services.
+    - The URL to access the Mentoring API(s) is `{context}/mentoring/v1` -
+    <b>Note:</b> These resources can be used in other services.
   contact:
     email: tech-infra@shikshalokam.org
 servers:
@@ -16,20 +18,22 @@ servers:
   - url: https://dev.elevate-apis.shikshalokam.org
     description: dev server
 paths:
-  '/mentoring/v1/form/create':
+  /mentoring/v1/form/create:
     post:
       summary: Create form
       tags:
         - Form APIs
-      description: "You can use this API to create a form  \n -
-        The API Endpoint for creating a form is `/mentoring/v1/form/create` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null."
+      description: |-
+        You can use this API to create a form  
+         - The API Endpoint for creating a form is `/mentoring/v1/form/create` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token. This token is available
-            in the login API Response.
+          description: >-
+            To use this API, you require an X-auth-token. This token is
+            available in the login API Response.
           required: true
           schema:
             type: string
@@ -37,39 +41,41 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/form/createFormRequest'
+              $ref: '#/components/schemas/form/createFormRequest'
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/form/createForm200Response'
+                $ref: '#/components/schemas/form/createForm200Response'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/form/createForm400Response'
-  '/mentoring/v1/form/update/{formId}':
+                $ref: '#/components/schemas/form/createForm400Response'
+  /mentoring/v1/form/update/{formId}:
     patch:
       summary: Update form
       tags:
         - Form APIs
-      description: "You can use this API to update a form.  \n -
-        The API Endpoint for updating a form is `/mentoring/v1/form/update/{formId}` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null."
+      description: |-
+        You can use this API to update a form.  
+         - The API Endpoint for updating a form is `/mentoring/v1/form/update/{formId}` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token. This token is available
-            in the login API Response.
+          description: >-
+            To use this API, you require an X-auth-token. This token is
+            available in the login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: 'formId'
+          name: formId
           required: true
           description: Please append a valid form Id to the Request URL.
           schema:
@@ -79,39 +85,41 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/form/updateFormRequest'
+              $ref: '#/components/schemas/form/updateFormRequest'
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/form/updateForm200Response'
+                $ref: '#/components/schemas/form/updateForm200Response'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/form/updateForm400Response'
-  '/mentoring/v1/form/read/{formID}':
+                $ref: '#/components/schemas/form/updateForm400Response'
+  /mentoring/v1/form/read/{formID}:
     get:
       summary: Get form data
       tags:
         - Form APIs
-      description: "You can use this API to read data from a form.  \n -
-        The API Endpoint to read form data is `/mentoring/v1/form/read/{formID}` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null."
+      description: |-
+        You can use this API to read data from a form.  
+         - The API Endpoint to read form data is `/mentoring/v1/form/read/{formID}` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token. This token is available
-            in the login API Response.
+          description: >-
+            To use this API, you require an X-auth-token. This token is
+            available in the login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: 'formId'
+          name: formId
           required: false
           description: Please append a valid form Id to the Request URL.
           schema:
@@ -121,34 +129,36 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/form/readFormRequest'
+              $ref: '#/components/schemas/form/readFormRequest'
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/form/readForm200Response'
+                $ref: '#/components/schemas/form/readForm200Response'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/form/readForm400Response'
-  '/mentoring/v1/entity/create':
+                $ref: '#/components/schemas/form/readForm400Response'
+  /mentoring/v1/entity/create:
     post:
       summary: Create user entity
       tags:
         - Entity APIs
-      description: "You can use this API to create a user entity  \n -
-        The API Endpoint for creating a user entity is `/mentoring/v1/entity/create` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null."
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for creating a user entity is `/mentoring/v1/entity/create` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token. This is available
-            in the login API Response.
+          description: >-
+            To use this API, you require an X-auth-token. This is available in
+            the login API Response.
           required: true
           schema:
             type: string
@@ -156,34 +166,36 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/entity/createUserEntityRequest'
+              $ref: '#/components/schemas/entity/createUserEntityRequest'
       responses:
         '201':
           description: Created
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/createUserEntity201Response'
+                $ref: '#/components/schemas/entity/createUserEntity201Response'
         '400':
           description: Bad Request. User Entity already exists.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/createUserEntity400Response'
-  '/mentoring/v1/entity/update/{id}':
+                $ref: '#/components/schemas/entity/createUserEntity400Response'
+  /mentoring/v1/entity/update/{id}:
     patch:
       summary: Update user entity
       tags:
         - Entity APIs
-      description: "Use this API to update a user entity.   \n -
-        The API Endpoint to update a user entity is `/mentoring/v1/entity/update` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null."
+      description: |-
+        Use this API to update a user entity.   
+         - The API Endpoint to update a user entity is `/mentoring/v1/entity/update` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token, which is available
-            in the login API response.
+          description: >-
+            To use this API, you require an X-auth-token, which is available in
+            the login API response.
           required: true
           schema:
             type: string
@@ -198,34 +210,36 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/entity/updateUserEntityRequest'
+              $ref: '#/components/schemas/entity/updateUserEntityRequest'
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/updateUserEntity202Response'
+                $ref: '#/components/schemas/entity/updateUserEntity202Response'
         '400':
           description: Bad Request. User Entity Not Found
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/updateUserEntity400Response'
-  '/mentoring/v1/entity/read?type={type}&deleted={deleted}&status={Status}':
+                $ref: '#/components/schemas/entity/updateUserEntity400Response'
+  /mentoring/v1/entity/read?type={type}&deleted={deleted}&status={Status}:
     get:
       summary: Get user entity details
       tags:
         - Entity APIs
-      description: "Use this API to read the details of a user entity.   \n -
-        The API Endpoint for reading the details of the user entity is `/mentoring/v1/entity/read` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null."
+      description: |-
+        Use this API to read the details of a user entity.   
+         - The API Endpoint for reading the details of the user entity is `/mentoring/v1/entity/read` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token, which is available
-            in the login API Response.
+          description: >-
+            To use this API, you require an X-auth-token, which is available in
+            the login API Response.
           required: true
           schema:
             type: string
@@ -238,13 +252,19 @@ paths:
           example: roles
         - in: path
           name: deleted
-          description: Please append a deleted type. For example, for a deleted user, the type could be `true` while for an existing user, the type could be `false`.
+          description: >-
+            Please append a deleted type. For example, for a deleted user, the
+            type could be `true` while for an existing user, the type could be
+            `false`.
           schema:
             type: string
           example: 'false'
         - in: path
           name: status
-          description: Please append a status of the user. For example, for an active user, specify the value  `ACTIVE` while for a disabled user, specify the value `DISABLED`.
+          description: >-
+            Please append a status of the user. For example, for an active user,
+            specify the value  `ACTIVE` while for a disabled user, specify the
+            value `DISABLED`.
           schema:
             type: string
           example: ACTIVE
@@ -254,21 +274,23 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/readUserEntity200Response'
-  '/mentoring/v1/entity/delete/{id}':
+                $ref: '#/components/schemas/entity/readUserEntity200Response'
+  /mentoring/v1/entity/delete/{id}:
     patch:
       summary: Delete user entity
       tags:
         - Entity APIs
-      description: "You can use this API to delete a user entity.   \n -
-        The API Endpoint for deleting a user entity is `/mentoring/v1/entity/delete` \n - It is mandatory to
-        provide values for parameters which are marked as `required` \n - This is a mandatory parameter
-        and cannot be empty or null"
+      description: |-
+        You can use this API to delete a user entity.   
+         - The API Endpoint for deleting a user entity is `/mentoring/v1/entity/delete` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: To use this API, you require an X-auth-token. This token is available
-            in the login API Response.
+          description: >-
+            To use this API, you require an X-auth-token. This token is
+            available in the login API Response.
           required: true
           schema:
             type: string
@@ -285,27 +307,30 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/deleteUserEntity202Response'
+                $ref: '#/components/schemas/entity/deleteUserEntity202Response'
         '400':
           description: Bad Request. User Entity has already been deleted.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/entity/deleteUserEntity400Response'
-  '/mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}':
+                $ref: '#/components/schemas/entity/deleteUserEntity400Response'
+  /mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}:
     get:
       summary: Get list of sessions
       tags:
         - Session APIs
-      description: "You can use this API to get a list of session based on certain conditions \n -
-        The API Endpoint for getting a list of sessions is `/mentoring/v1/sessions/list` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: >-
+        You can use this API to get a list of session based on certain
+        conditions 
+         - The API Endpoint for getting a list of sessions is `/mentoring/v1/sessions/list` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           required: true
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           schema:
             type: string
@@ -323,14 +348,18 @@ paths:
           example: 2
         - in: path
           name: status
-          description: Please append a status. For example, for published user append the value `published` and
-            for completed user, append the value `completed`.
+          description: >-
+            Please append a status. For example, for published user append the
+            value `published` and for completed user, append the value
+            `completed`.
           schema:
             type: string
           example: published, completed
         - in: path
           name: search
-          description: Please search for information such as author name or title of session.
+          description: >-
+            Please search for information such as author name or title of
+            session.
           schema:
             type: string
           example: John
@@ -340,26 +369,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/getSessionList200Response'
+                $ref: '#/components/schemas/sessions/getSessionList200Response'
         '400':
           description: Bad Request. Session Not Found
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/getSessionList400Response'
-  '/mentoring/v1/sessions/details/{sessionId}':
+                $ref: '#/components/schemas/sessions/getSessionList400Response'
+  /mentoring/v1/sessions/details/{sessionId}:
     get:
       summary: Get session details
       tags:
         - Session APIs
-      description: "You can use this API to get details of the session \n -
-        The API Endpoint for getting the details of the session is `/mentoring/v1/sessions/details` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to get details of the session 
+         - The API Endpoint for getting the details of the session is `/mentoring/v1/sessions/details` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -377,26 +408,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/getSessionDetails200Response'
+                $ref: '#/components/schemas/sessions/getSessionDetails200Response'
         '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/getSessionDetails400Response'
-  '/mentoring/v1/sessions/share/{sessionId}':
+                $ref: '#/components/schemas/sessions/getSessionDetails400Response'
+  /mentoring/v1/sessions/share/{sessionId}:
     get:
       summary: Share session details
       tags:
         - Session APIs
-      description: "You can use this API to share session \n -
-        The API Endpoint for sharing a session is: `/mentoring/v1/sessions/share` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to share session 
+         - The API Endpoint for sharing a session is: `/mentoring/v1/sessions/share` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -414,27 +447,29 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/shareSession200Response'
+                $ref: '#/components/schemas/sessions/shareSession200Response'
         '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/shareSession400Response'
-  '/mentoring/v1/sessions/enroll/{sessionId}':
+                $ref: '#/components/schemas/sessions/shareSession400Response'
+  /mentoring/v1/sessions/enroll/{sessionId}:
     post:
       summary: Enroll for a session
       tags:
         - Session APIs
-      description: "You can use this API to enroll for a session \n -
-        The API Endpoint to enroll for a session is: `/mentoring/v1/sessions/enroll` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to enroll for a session 
+         - The API Endpoint to enroll for a session is: `/mentoring/v1/sessions/enroll` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API., which is available
-            in the login API Response.
+          description: >-
+            You require an X-auth-token to use this API., which is available in
+            the login API Response.
           required: true
           schema:
             type: string
@@ -451,26 +486,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/enrollSession200Response'
+                $ref: '#/components/schemas/sessions/enrollSession200Response'
         '400':
           description: Bad Request. The user is already enrolled for the session.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/enrollSession400Response'
-  '/mentoring/v1/sessions/unenroll/{sessionId}':
+                $ref: '#/components/schemas/sessions/enrollSession400Response'
+  /mentoring/v1/sessions/unenroll/{sessionId}:
     post:
       summary: Cancel enrollment from a session
       tags:
         - Session APIs
-      description: "You can use this API to cancel the enrollment for a session \n -
-        The API Endpoint for cancelling enrollment for a session is `/mentoring/v1/sessions/unenroll` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to cancel the enrollment for a session 
+         - The API Endpoint for cancelling enrollment for a session is `/mentoring/v1/sessions/unenroll` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -488,26 +525,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/unenrollSession200Response'
+                $ref: '#/components/schemas/sessions/unenrollSession200Response'
         '400':
           description: Bad Request. The user is not enrolled for the session.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/unenrollSession400Response'
-  '/mentoring/v1/sessions/start/{sessionId}':
+                $ref: '#/components/schemas/sessions/unenrollSession400Response'
+  /mentoring/v1/sessions/start/{sessionId}:
     get:
       summary: Start Session
       tags:
         - Session APIs
-      description: "You can use this API to start a session \n -
-        The API Endpoint for starting a session is: `/mentoring/v1/sessions/start` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to start a session 
+         - The API Endpoint for starting a session is: `/mentoring/v1/sessions/start` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -525,32 +564,34 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/startSession200Response'
+                $ref: '#/components/schemas/sessions/startSession200Response'
         '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/startSession400Response'
+                $ref: '#/components/schemas/sessions/startSession400Response'
         '500':
           description: Bad Request. Unable to create a meeting.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/startSession500Response'
-  '/mentoring/v1/sessions/update':
+                $ref: '#/components/schemas/sessions/startSession500Response'
+  /mentoring/v1/sessions/update:
     post:
       summary: Create Session
       tags:
         - Session APIs
-      description: "You can use this API to create a session \n -
-        The API Endpoint for creating a session is: `/mentoring/v1/sessions/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to create a session 
+         - The API Endpoint for creating a session is: `/mentoring/v1/sessions/update` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -559,33 +600,35 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/sessions/createSessionRequest'
+              $ref: '#/components/schemas/sessions/createSessionRequest'
       responses:
         '201':
           description: created
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/createSession201Response'
+                $ref: '#/components/schemas/sessions/createSession201Response'
         '400':
           description: Bad Request. Create Session Error
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/createSession400Response'
-  '/mentoring/v1/sessions/update/{sessionId}':
+                $ref: '#/components/schemas/sessions/createSession400Response'
+  /mentoring/v1/sessions/update/{sessionId}:
     delete:
       summary: Delete session
       tags:
         - Session APIs
-      description: "You can use this API to delete a session \n -
-        The API Endpoint for deleting a session is: `/mentoring/v1/sessions/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to delete a session 
+         - The API Endpoint for deleting a session is: `/mentoring/v1/sessions/update` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -603,25 +646,27 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/deleteSession202Response'
+                $ref: '#/components/schemas/sessions/deleteSession202Response'
         '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/deleteSession400Response'
+                $ref: '#/components/schemas/sessions/deleteSession400Response'
     post:
       summary: Update session
       tags:
         - Session APIs
-      description: "You can use this API to update a session \n -
-        The API Endpoint for updating a session `/mentoring/v1/sessions/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to update a session 
+         - The API Endpoint for updating a session `/mentoring/v1/sessions/update` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -630,33 +675,37 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/sessions/updateSessionRequest'
+              $ref: '#/components/schemas/sessions/updateSessionRequest'
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/updateSession202Response'
+                $ref: '#/components/schemas/sessions/updateSession202Response'
         '400':
-          description: Bad Request. Encountered an Error while trying to update the session.
+          description: >-
+            Bad Request. Encountered an Error while trying to update the
+            session.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/updateSession400Response'
-  'mentoring/v1/sessions/getRecording/{sessionId}':
+                $ref: '#/components/schemas/sessions/updateSession400Response'
+  mentoring/v1/sessions/getRecording/{sessionId}:
     get:
       summary: Get session recording
       tags:
         - Session APIs
-      description: "You can use this API to get the recording of a session \n -
-        The API Endpoint to get the recording of a session is: `/mentoring/v1/sessions/getRecording` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null."
+      description: |-
+        You can use this API to get the recording of a session 
+         - The API Endpoint to get the recording of a session is: `/mentoring/v1/sessions/getRecording` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null.
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -674,26 +723,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/sessionRecording200Response'
+                $ref: '#/components/schemas/sessions/sessionRecording200Response'
         '400':
           description: Bad Request.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/sessionRecording400Response'
-  '/mentoring/v1/sessions/completed/{sessionId}':
+                $ref: '#/components/schemas/sessions/sessionRecording400Response'
+  /mentoring/v1/sessions/completed/{sessionId}:
     patch:
       summary: Update session status
       tags:
         - Session APIs
-      description: "You can use this API to update session status \n -
-        Endpoint for update session `/mentoring/v1/sessions/completed` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        You can use this API to update session status 
+         - Endpoint for update session `/mentoring/v1/sessions/completed` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -711,20 +762,22 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/sessionCompleted200Response'
-  '/mentoring/v1/sessions/updateRecordingUrl/{internalSessionId}':
+                $ref: '#/components/schemas/sessions/sessionCompleted200Response'
+  /mentoring/v1/sessions/updateRecordingUrl/{internalSessionId}:
     patch:
       summary: Update session recording url
       tags:
         - Session APIs
-      description: "You can use this API to update session recording url \n -
-        Endpoint for update session recording url `/mentoring/v1/sessions/updateRecordingUrl` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        You can use this API to update session recording url 
+         - Endpoint for update session recording url `/mentoring/v1/sessions/updateRecordingUrl` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -742,27 +795,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/updateRecordingUrl200Response'
+                $ref: '#/components/schemas/sessions/updateRecordingUrl200Response'
         '400':
           description: Bad Request.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/sessions/updateRecordingUrl400Response'
-
-  '/mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}':
+                $ref: '#/components/schemas/sessions/updateRecordingUrl400Response'
+  /mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}:
     get:
       summary: Get list of session
       tags:
         - Mentee APIs
-      description: "This API is associated with listing session based on condition  \n -
-        Endpoint for list session `/mentoring/v1/mentees/sessions` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with listing session based on condition  
+         - Endpoint for list session `/mentoring/v1/mentees/sessions` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -791,26 +845,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/menteeSessionList200Response'
+                $ref: '#/components/schemas/mentees/menteeSessionList200Response'
         '400':
           description: Bad Request. Session Not Found
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/menteeSession400Response'
-  '/mentoring/v1/mentees/joinSession/{sessionId}':
+                $ref: '#/components/schemas/mentees/menteeSession400Response'
+  /mentoring/v1/mentees/joinSession/{sessionId}:
     get:
       summary: Join session as mentee
       tags:
         - Mentee APIs
-      description: "This API is associated with join session as mentee \n -
-        The API Endpoint forjoin session `/mentoring/v1/mentees/joinSession` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with join session as mentee 
+         - The API Endpoint forjoin session `/mentoring/v1/mentees/joinSession` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -828,26 +884,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/menteeSessionList200Response'
+                $ref: '#/components/schemas/mentees/menteeSessionList200Response'
         '400':
           description: Bad Request. join session error
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/menteeJoinSession400Response'
-  '/mentoring/v1/mentees/reports?filterType={filterType}':
+                $ref: '#/components/schemas/mentees/menteeJoinSession400Response'
+  /mentoring/v1/mentees/reports?filterType={filterType}:
     get:
       summary: Mentee reports
       tags:
         - Mentee APIs
-      description: "This API is associated with mentee report based on condition \n -
-        The API Endpoint formentee report `/mentoring/v1/mentees/joinSession` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with mentee report based on condition 
+         - The API Endpoint formentee report `/mentoring/v1/mentees/joinSession` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -855,8 +913,9 @@ paths:
         - in: path
           name: 'filterType '
           required: true
-          description: Please append a valid filter type for reports such as `MONTHLY`
-            or `QUARTERLY`
+          description: >-
+            Please append a valid filter type for reports such as `MONTHLY` or
+            `QUARTERLY`
           schema:
             type: string
           example: QUARTERLY
@@ -866,20 +925,22 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/menteeSessionReport200Response'
-  '/mentoring/v1/mentees/homeFeed':
+                $ref: '#/components/schemas/mentees/menteeSessionReport200Response'
+  /mentoring/v1/mentees/homeFeed:
     get:
       summary: Get list of sessions
       tags:
         - Mentee APIs
-      description: "This API is associated with list of session \n -
-        The API Endpoint forlist session `/mentoring/v1/mentees/homeFeed` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with list of session 
+         - The API Endpoint forlist session `/mentoring/v1/mentees/homeFeed` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -890,20 +951,22 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/homefeed200Response'
-  '/mentoring/v1/mentees/profile':
+                $ref: '#/components/schemas/mentees/homefeed200Response'
+  /mentoring/v1/mentees/profile:
     get:
       summary: Mentee profile
       tags:
         - Mentee APIs
-      description: "This API is associated with mentee profile \n -
-        Endpoint for list session `/mentoring/v1/mentees/profile` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with mentee profile 
+         - Endpoint for list session `/mentoring/v1/mentees/profile` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Available
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -914,20 +977,22 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentees/menteeProfile200Response'
-  '/mentoring/v1/mentors/profile/{mentorId}':
+                $ref: '#/components/schemas/mentees/menteeProfile200Response'
+  /mentoring/v1/mentors/profile/{mentorId}:
     get:
       summary: Mentor profile
       tags:
         - Mentor APIs
-      description: "This API is associated with mentor profile \n -
-        Endpoint for list session `/mentoring/v1/mentors/profile` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with mentor profile 
+         - Endpoint for list session `/mentoring/v1/mentors/profile` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Available
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -945,26 +1010,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/mentorProfile200Response'
+                $ref: '#/components/schemas/mentors/mentorProfile200Response'
         '400':
           description: Bad request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/mentorProfile400Response'
-  '/mentoring/v1/mentors/reports?filterType={filterType}':
+                $ref: '#/components/schemas/mentors/mentorProfile400Response'
+  /mentoring/v1/mentors/reports?filterType={filterType}:
     get:
       summary: Mentors reports
       tags:
         - Mentor APIs
-      description: "This API is associated with mentor reports \n -
-        The API Endpoint forlist session `/mentoring/v1/mentors/reports` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with mentor reports 
+         - The API Endpoint forlist session `/mentoring/v1/mentors/reports` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -972,8 +1039,9 @@ paths:
         - in: path
           name: 'filterType '
           required: true
-          description: Please append a valid filter Type for reports like `MONTHLY`
-            or `QUARTERLY`
+          description: >-
+            Please append a valid filter Type for reports like `MONTHLY` or
+            `QUARTERLY`
           schema:
             type: string
           example: QUARTERLY
@@ -983,21 +1051,24 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/mentorSessionReport200Response'
-  '/mentoring/v1/mentors/upcomingSessions/{mentorId}?page={page}&limit={limit}&search={search}':
+                $ref: '#/components/schemas/mentors/mentorSessionReport200Response'
+  /mentoring/v1/mentors/upcomingSessions/{mentorId}?page={page}&limit={limit}&search={search}:
     get:
       summary: Upcoming sessions of mentor
       tags:
         - Mentor APIs
-      description: "This API is associated with the listing of upcoming sessions of one mentor \n -
-        Endpoint for listing session `/mentoring/v1/mentors/upcomingSessions/` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentors/upcomingSessions/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           required: true
           in: header
-          description: To make use of the API, you require X-auth-token. This is Available
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           schema:
             type: string
@@ -1032,26 +1103,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/upcomingSession200Response'
+                $ref: '#/components/schemas/mentors/upcomingSession200Response'
         '400':
           description: Bad Request. Mentor Not Found
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/upcomingSession400Response'
-  '/mentoring/v1/questions/create':
+                $ref: '#/components/schemas/mentors/upcomingSession400Response'
+  /mentoring/v1/questions/create:
     post:
       summary: Create questions
       tags:
         - Question APIs
-      description: "This API is associated with creating questions \n -
-        The API Endpoint forcreate question `/mentoring/v1/questions/create` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with creating questions 
+         - The API Endpoint forcreate question `/mentoring/v1/questions/create` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1060,27 +1133,29 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/questions/createQuestionRequest'
+              $ref: '#/components/schemas/questions/createQuestionRequest'
       responses:
         '201':
           description: Created
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questions/createQuestionResponse201'
-  '/mentoring/v1/questions/update/{QuestionId}':
+                $ref: '#/components/schemas/questions/createQuestionResponse201'
+  /mentoring/v1/questions/update/{QuestionId}:
     patch:
       summary: Update questions
       tags:
         - Question APIs
-      description: "This API is associated with updating questions \n -
-        The API Endpoint forupdate question `/mentoring/v1/questions/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with updating questions 
+         - The API Endpoint forupdate question `/mentoring/v1/questions/update` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1096,33 +1171,35 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/questions/updateQuestionRequest'
+              $ref: '#/components/schemas/questions/updateQuestionRequest'
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questions/updateQuestionResponse202'
+                $ref: '#/components/schemas/questions/updateQuestionResponse202'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questions/updateQuestionResponse400'
-  '/mentoring/v1/questions/read/{QuestionId}':
+                $ref: '#/components/schemas/questions/updateQuestionResponse400'
+  /mentoring/v1/questions/read/{QuestionId}:
     get:
       summary: Get questions
       tags:
         - Question APIs
-      description: "This API is associated with getting questions \n -
-        The API Endpoint forget question `/mentoring/v1/questions/read` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with getting questions 
+         - The API Endpoint forget question `/mentoring/v1/questions/read` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1140,26 +1217,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questions/readQuestionResponse200'
+                $ref: '#/components/schemas/questions/readQuestionResponse200'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questions/readQuestionResponse400'
-  '/mentoring/v1/questionsSet/create':
+                $ref: '#/components/schemas/questions/readQuestionResponse400'
+  /mentoring/v1/questionsSet/create:
     post:
       summary: Create question set
       tags:
         - Question Set APIs
-      description: "This API is associated with creating questions set \n -
-        The API Endpoint forcreate question set `/mentoring/v1/questionsSet/create` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with creating questions set 
+         - The API Endpoint forcreate question set `/mentoring/v1/questionsSet/create` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1168,33 +1247,35 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/questionset/createQuestionSetRequest'
+              $ref: '#/components/schemas/questionset/createQuestionSetRequest'
       responses:
         '201':
           description: Created
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questionset/createQuestionSetResponse201'
+                $ref: '#/components/schemas/questionset/createQuestionSetResponse201'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questionset/createQuestionSetResponse400'
-  '/mentoring/v1/questionsSet/update/{QuestionSetId}':
+                $ref: '#/components/schemas/questionset/createQuestionSetResponse400'
+  /mentoring/v1/questionsSet/update/{QuestionSetId}:
     patch:
       summary: Update question set
       tags:
         - Question Set APIs
-      description: "This API is associated with updating questions set \n -
-        The API Endpoint forupdating question set `/mentoring/v1/questionsSet/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with updating questions set 
+         - The API Endpoint forupdating question set `/mentoring/v1/questionsSet/update` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1210,33 +1291,35 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/questionset/updateQuestionSetRequest'
+              $ref: '#/components/schemas/questionset/updateQuestionSetRequest'
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questionset/updateQuestionSetResponse202'
+                $ref: '#/components/schemas/questionset/updateQuestionSetResponse202'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questionset/updateQuestionSetResponse400'
-  '/mentoring/v1/questionsSet/read/{QuestionSetId}':
+                $ref: '#/components/schemas/questionset/updateQuestionSetResponse400'
+  /mentoring/v1/questionsSet/read/{QuestionSetId}:
     get:
       summary: Get question set
       tags:
         - Question Set APIs
-      description: "This API is associated with getting questions set \n -
-        The API Endpoint forget question set `/mentoring/v1/questionsSet/read` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with getting questions set 
+         - The API Endpoint forget question set `/mentoring/v1/questionsSet/read` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1254,26 +1337,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questionset/readQuestionSetResponse200'
+                $ref: '#/components/schemas/questionset/readQuestionSetResponse200'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/questionset/readQuestionSetResponse400'
-  '/mentoring/v1/feedback/forms/{SessionId}':
+                $ref: '#/components/schemas/questionset/readQuestionSetResponse400'
+  /mentoring/v1/feedback/forms/{SessionId}:
     get:
       summary: Get feedback form
       tags:
         - Feedback Form APIs
-      description: "This API is associated with getting feedback forms of the session.  \n -
-        The API Endpoint forget feedback form `/mentoring/v1/feedback/forms` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with getting feedback forms of the session.  
+         - The API Endpoint forget feedback form `/mentoring/v1/feedback/forms` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1291,26 +1376,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/feedback/getFeedbackFromResponse200'
+                $ref: '#/components/schemas/feedback/getFeedbackFromResponse200'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/feedback/getFeedbackFormResponse400'
-  '/mentoring/v1/feedback/submit/{SessionId}':
+                $ref: '#/components/schemas/feedback/getFeedbackFormResponse400'
+  /mentoring/v1/feedback/submit/{SessionId}:
     post:
       summary: Submit feedback
       tags:
         - Feedback Form APIs
-      description: "This API is associated with submitting feedback forms of a session.  \n -
-        The API Endpoint forsubmit feedback form `/mentoring/v1/feedback/submit` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with submitting feedback forms of a session.  
+         - The API Endpoint forsubmit feedback form `/mentoring/v1/feedback/submit` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1326,39 +1413,41 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/feedback/submitFeedbackRequest'
+              $ref: '#/components/schemas/feedback/submitFeedbackRequest'
       responses:
         '200':
           description: OK
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/feedback/submitFeedbackResponse200'
+                $ref: '#/components/schemas/feedback/submitFeedbackResponse200'
         '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/feedback/submitFeedbackResponse400'
+                $ref: '#/components/schemas/feedback/submitFeedbackResponse400'
         '422':
           description: Unprocessable Entity
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/feedback/submitFeedbackResponse422'
-  '/mentoring/v1/users/pendingFeedbacks':
+                $ref: '#/components/schemas/feedback/submitFeedbackResponse422'
+  /mentoring/v1/users/pendingFeedbacks:
     get:
       summary: Users pending feedback
       tags:
         - Users APIs
-      description: "This API is associated with fetching users pending feedback form \n -
-        The API Endpoint forfetching feedback form `/mentoring/v1/users/pendingFeedbacks` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with fetching users pending feedback form 
+         - The API Endpoint forfetching feedback form `/mentoring/v1/users/pendingFeedbacks` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1369,26 +1458,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/users/feedbackResponse200'
-  '/user/v1/cloud-services/getSignedUrl?fileName={fileName}':
+                $ref: '#/components/schemas/users/feedbackResponse200'
+  /user/v1/cloud-services/getSignedUrl?fileName={fileName}:
     get:
       summary: Cloud services get signed url
       tags:
         - Cloud Services APIs
-      description: "This API is associated with the cloud services for getting signed URL  \n - Then
-        The API Endpoint forcloud services `/user/v1/cloud-services/file/getSignedUrl` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with the cloud services for getting signed URL  
+         - Then The API Endpoint forcloud services `/user/v1/cloud-services/file/getSignedUrl` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: 'fileName'
+          name: fileName
           required: true
           description: Please append a valid file name to url which has to be uploaded
           schema:
@@ -1400,26 +1491,29 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
-  '/user/v1/cloud-services/getDownloadableUrl?filePath={filePath}':
+                $ref: '#/components/schemas/cloudServices/cloudServicesResponse200'
+  /user/v1/cloud-services/getDownloadableUrl?filePath={filePath}:
     get:
       summary: Cloud services get download url
       tags:
         - Cloud Services APIs
-      description: "This API is associated with the cloud services for getting downloadable URL  \n - Then
-        The API Endpoint forcloud services `/user/v1/cloud-services/file/getDownloadableUrl` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: >-
+        This API is associated with the cloud services for getting downloadable
+        URL  
+         - Then The API Endpoint forcloud services `/user/v1/cloud-services/file/getDownloadableUrl` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
             type: string
         - in: path
-          name: 'filePath'
+          name: filePath
           required: true
           description: Please append a valid file path to url which has to be downloaded
           schema:
@@ -1431,17 +1525,18 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/cloudServices/cloudServicesDownloadResponse200'
-  '/notification/v1/email/send':
+                $ref: >-
+                  #/components/schemas/cloudServices/cloudServicesDownloadResponse200
+  /notification/v1/email/send:
     post:
       summary: Send email
       tags:
         - Email APIs
-      description: "This API is associated with sending email through API \n - Then
-        The API Endpoint forsending email `/notification/v1/email/send` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-
+      description: |-
+        This API is associated with sending email through API 
+         - Then The API Endpoint forsending email `/notification/v1/email/send` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: internal_access_token
           in: header
@@ -1454,33 +1549,35 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/email/emailSendRequest'
+              $ref: '#/components/schemas/email/emailSendRequest'
       responses:
         '200':
           description: OK. Email sent successfully.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/email/emailSendResponse200'
+                $ref: '#/components/schemas/email/emailSendResponse200'
         '400':
           description: Bad Request.
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/email/emailSendResponse400'
-  '/mentoring/v1/users/list?type={userType}&page={page}&limit={limit}&search={search}':
+                $ref: '#/components/schemas/email/emailSendResponse400'
+  /mentoring/v1/users/list?type={userType}&page={page}&limit={limit}&search={search}:
     get:
       summary: List user
       tags:
         - Users APIs
-      description: "This API is associated with the listing of users based on condition  \n -
-        The API Endpoint forlist user `/mentoring/v1/users/list` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with the listing of users based on condition  
+         - The API Endpoint forlist user `/mentoring/v1/users/list` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: You require an X-auth-token to use this API. This token is available
+          description: >-
+            You require an X-auth-token to use this API. This token is available
             in the login API Response.
           required: true
           schema:
@@ -1516,20 +1613,22 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/users/userList200Response'
-  'mentoring/v1/mentors/share/{mentorId}':
+                $ref: '#/components/schemas/users/userList200Response'
+  mentoring/v1/mentors/share/{mentorId}:
     get:
       summary: Share mentor profile
       tags:
         - Mentor APIs
-      description: "This API is associated with mentor profile \n -
-        Endpoint for share mentor profile is `/mentoring/v1/mentors/share` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This API is associated with mentor profile 
+         - Endpoint for share mentor profile is `/mentoring/v1/mentors/share` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Available
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -1547,26 +1646,28 @@ paths:
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/shareMentorProfile200Response'
+                $ref: '#/components/schemas/mentors/shareMentorProfile200Response'
         '400':
           description: Bad request
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/mentors/shareMentorProfile400Response'
-  '/mentoring/v1/issues/create':
+                $ref: '#/components/schemas/mentors/shareMentorProfile400Response'
+  /mentoring/v1/issues/create:
     post:
       summary: Report an issue
       tags:
         - Issues APIs
-      description: "This Api is associated with reporting issues \n - The
-        Endpoint for creating an issue is `/mentoring/v1/issues/create` \n - It is mandatory to
-        provide values for parameter marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |-
+        This Api is associated with reporting issues 
+         - The Endpoint for creating an issue is `/mentoring/v1/issues/create` 
+         - It is mandatory to provide values for parameter marked with `required` 
+         - Mandatory parameter cannot be empty or null
       parameters:
         - name: X-auth-token
           in: header
-          description: To make use of the API, you require X-auth-token. This is Available
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
             in login API Response.
           required: true
           schema:
@@ -1575,21 +1676,59 @@ paths:
         content:
           application.json:
             schema:
-              '$ref': '#/components/schemas/issues/createRequest'
+              $ref: '#/components/schemas/issues/createRequest'
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/issues/createResponse'
+                $ref: '#/components/schemas/issues/createResponse'
         '422':
           description: Unprocessable Entity
           content:
             application.json:
               schema:
-                '$ref': '#/components/schemas/issues/create422Response'
-
+                $ref: '#/components/schemas/issues/create422Response'
+  /mentoring/v1/config/get:
+    get:
+      description: ''
+      operationId: /mentoring/v1/platform/config
+      tags:
+        - Config APIs
+      parameters: []
+      requestBody: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/config'
+              examples:
+                Success  Response:
+                  value:
+                    responseCode: OK
+                    message: App config fetched successfully
+                    result:
+                      meetingPlatform: 'OFF'
+                      reportIssue:
+                        to: support@xyz.com,team@xyz.com
+                        subject: Support request for MentorED
+                    meta:
+                      formsVersion:
+                        - _id: 6473b164c4a896503f61fda2
+                          type: session
+                        - _id: 6473b164c4a896503f61fda3
+                          type: profile
+                        - _id: 6473b164c4a896503f61fda4
+                          type: termsAndConditions
+                        - _id: 6473b164c4a896503f61fda5
+                          type: faq
+                        - _id: 6473b164c4a896503f61fda6
+                          type: helpVideos
+                      correlation: a677494a-b89c-441c-8bdf-70fc91c7136d
+                      meetingPlatform: 'OFF'
+      summary: Get app config
 components:
   schemas:
     form:
@@ -1798,7 +1937,6 @@ components:
               action:
                 type: string
                 example: profileFields
-
               updatedAt:
                 type: string
                 example: '2022-05-24T23:14:10.080Z'
@@ -2146,10 +2284,10 @@ components:
                 example: mentorQS2
               recordingUrl:
                 type: string
-                example:
+                example: null
               internalMeetingId:
                 type: string
-                example:
+                example: null
               feedbacks: []
               updatedAt:
                 type: string
@@ -2274,7 +2412,8 @@ components:
             properties:
               link:
                 type: string
-                example: https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed
+                example: >-
+                  https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed
           meta: {}
       startSession400Response:
         description: Session not found.
@@ -2448,10 +2587,10 @@ components:
                 example: mentorQS2
               recordingUrl:
                 type: string
-                example:
+                example: null
               internalMeetingId:
                 type: string
-                example:
+                example: null
               _id:
                 type: string
                 example: 628ee25e4b9243687f68431d
@@ -2479,8 +2618,9 @@ components:
             example:
               - User does not have the requisite permissions.
               - End time should be atleast 30 minutes after the start time.
-              - Session cannot be created! Session duration should be less than 24
-                hours.
+              - >-
+                Session cannot be created! Session duration should be less than
+                24 hours.
           error:
             type: array
             example: []
@@ -2652,7 +2792,8 @@ components:
                         example: false
                       endcallbackurl:
                         type: string
-                        example: https://elevate-apis.shikshalokam.org/mentoring/v1/sessions/completed/626267aa2832e6cea85aa435
+                        example: >-
+                          https://elevate-apis.shikshalokam.org/mentoring/v1/sessions/completed/626267aa2832e6cea85aa435
                       meetingId:
                         type: string
                         example: 626267aa2832e6cea85aa435
@@ -2670,7 +2811,8 @@ components:
                             example: video
                           url:
                             type: string
-                            example: https://mentoring.shikshalokam.org/presentation/26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241/meeting.mp4
+                            example: >-
+                              https://mentoring.shikshalokam.org/presentation/26254f85cea8aa71d38c11f10acdbf5951ddbf5f-1650616238241/meeting.mp4
                           processingTime:
                             type: string
                             example: 576
@@ -2807,7 +2949,8 @@ components:
             properties:
               link:
                 type: string
-                example: https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed
+                example: >-
+                  https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=628dae0fce0ce9359aeb8b23&password=$2a$10$PI3yKdwMSbPkl5hn1043n.L3ooeRqnlx024h2EmGfSxxrGy76cwW2&fullName=Ankit&checksum=02261702f22f1c405d39e8bb3dd1f1b88646a4ed
           meta: {}
       menteeJoinSession400Response:
         description: Session not found.
@@ -3243,7 +3386,6 @@ components:
           error:
             type: array
             example: []
-
     questions:
       createQuestionRequest:
         type: object
@@ -3629,7 +3771,8 @@ components:
             example: OK
           message:
             type: string
-            example: Thank you for hosting the session. Please rate us on the following
+            example: >-
+              Thank you for hosting the session. Please rate us on the following
               to help us improve.
           result:
             type: object
@@ -3687,7 +3830,9 @@ components:
                       example: 629978caf0cf0901d7d74d12
                     label:
                       type: string
-                      example: How would you rate the audio and video quality of the session
+                      example: >-
+                        How would you rate the audio and video quality of the
+                        session
           meta:
             type: object
             example: {}
@@ -3726,7 +3871,9 @@ components:
                   example: '1'
                 question:
                   type: string
-                  example: How would you rate the audio and video quality of the session
+                  example: >-
+                    How would you rate the audio and video quality of the
+                    session
           feedbackAs:
             type: string
             example: mentee
@@ -3784,7 +3931,8 @@ components:
             properties:
               signedUrl:
                 type: string
-                example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+                example: >-
+                  https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
               filePath:
                 type: string
                 example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
@@ -3802,7 +3950,8 @@ components:
             example: Download URL Generated Successfully.
           result:
             type: string
-            example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
+            example: >-
+              https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
     users:
       feedbackResponse200:
         type: object
@@ -3880,7 +4029,8 @@ components:
                                   example: 628d422029034b105806b906
                           image:
                             type: string
-                            example: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png'
+                            example: >-
+                              https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png
               count:
                 type: number
                 example: 1
@@ -3906,12 +4056,16 @@ components:
             properties:
               to:
                 type: string
-                description: Email ID of the recipient. To specify multiple email IDs, separate the IDs using `,`
+                description: >-
+                  Email ID of the recipient. To specify multiple email IDs,
+                  separate the IDs using `,`
                 example: example@mail.com
                 required: true
               cc:
                 type: string
-                description: Email ID of the recipient. To specify multiple email IDs, separate the IDs using `,`
+                description: >-
+                  Email ID of the recipient. To specify multiple email IDs,
+                  separate the IDs using `,`
                 example: ccexample@mail.com
               subject:
                 type: string
@@ -3920,8 +4074,12 @@ components:
                 required: true
               body:
                 type: string
-                description: Body of the Email Message. To enhance the formatting of the message, use HTML tags.
-                example: "Dear John, \n Welcome to Notification"
+                description: >-
+                  Body of the Email Message. To enhance the formatting of the
+                  message, use HTML tags.
+                example: |-
+                  Dear John, 
+                   Welcome to Notification
                 required: true
       emailSendResponse200:
         description: Email Sent response
@@ -3987,9 +4145,48 @@ components:
           error:
             type: array
             example: []
-
+    config:
+      $schema: http://json-schema.org/draft-04/schema#
+      type: object
+      properties:
+        responseCode:
+          type: string
+        message:
+          type: string
+        result:
+          type: object
+          properties:
+            meetingPlatform:
+              type: string
+            reportIssue:
+              type: object
+              properties:
+                to:
+                  type: string
+                subject:
+                  type: string
+        meta:
+          type: object
+          properties:
+            formsVersion:
+              type: array
+              items:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  type:
+                    type: string
+            correlation:
+              type: string
   securitySchemes:
     bearer:
       type: apiKey
       name: X-auth-token
       in: header
+tags:
+  - name: Config APIs
+    description: You can use this API to get config related to the service
+    externalDocs:
+      description: ''
+      url: ''
