@@ -84,6 +84,9 @@ app.listen(process.env.APPLICATION_PORT, (res, err) => {
 	logger.info('Application is running on the port:' + process.env.APPLICATION_PORT)
 })
 
+//For debugging
+const test = require('./database/queries/questions')
+
 // Handles specific listen errors with friendly messages
 function onError(error) {
 	if (error.code === 'EACCES') {
