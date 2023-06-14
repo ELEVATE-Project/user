@@ -22,5 +22,8 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{ sequelize, modelName: 'EntityType', tableName: 'entity_types', freezeTableName: true, paranoid: true }
 	)
+	EntityType.associate = (models) => {
+		EntityType.hasMany(models.Entity, { foreignKey: 'entity_type_id' })
+	}
 	return EntityType
 }

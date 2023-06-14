@@ -1,7 +1,7 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const Entities = sequelize.define(
-		'Entities',
+	const Entity = sequelize.define(
+		'Entity',
 		{
 			id: {
 				allowNull: false,
@@ -17,7 +17,10 @@ module.exports = (sequelize, DataTypes) => {
 			created_by: { type: DataTypes.INTEGER, allowNull: false },
 			updated_by: { type: DataTypes.INTEGER, allowNull: false },
 		},
-		{ sequelize, modelName: 'Entities', tableName: 'entities', freezeTableName: true, paranoid: true }
+		{ sequelize, modelName: 'Entity', tableName: 'entities', freezeTableName: true, paranoid: true }
 	)
-	return Entities
+	Entity.associate = (models) => {
+		Entity.belongsTo(models.EntityType, { foreignKey: 'id' })
+	}
+	return Entity
 }
