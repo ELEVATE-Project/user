@@ -1,6 +1,7 @@
+'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const users = sequelize.define(
-		'users',
+	const User = sequelize.define(
+		'User',
 		{
 			id: {
 				type: DataTypes.INTEGER,
@@ -45,24 +46,10 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			organization_id: DataTypes.INTEGER,
 		},
-		{ freezeTableName: true, paranoid: true }
+		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
-	users.associate = (models) => {
-		users.belongsTo(models.organizations, { foreignKey: 'organization_id' })
+	User.associate = (models) => {
+		User.belongsTo(models.Organization, { foreignKey: 'id' })
 	}
-	/* 	Users.associate = function (models) {
-		// associations can be defined here
-		Users.hasMany(models.Post, {
-			foreignKey: 'userId',
-			as: 'posts',
-			onDelete: 'CASCADE',
-		})
-
-		Users.hasMany(models.Comment, {
-			foreignKey: 'userId',
-			as: 'comments',
-			onDelete: 'CASCADE',
-		})
-	} */
-	return users
+	return User
 }

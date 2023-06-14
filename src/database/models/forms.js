@@ -1,20 +1,26 @@
+'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const forms = sequelize.define('forms', {
-		id: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			primaryKey: true,
-			autoIncrement: true,
+	const Form = sequelize.define(
+		'Form',
+		{
+			id: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				primaryKey: true,
+				autoIncrement: true,
+			},
+			type: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				unique: true,
+			},
+			sub_type: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			data: DataTypes.JSON,
 		},
-		type: {
-			type: DataTypes.STRING,
-			allowNull: false,
-		},
-		sub_type: {
-			type: DataTypes.STRING,
-			allowNull: false,
-		},
-		data: DataTypes.JSON,
-	})
-	return forms
+		{ sequelize, modelName: 'Form', tableName: 'forms', freezeTableName: true, paranoid: true }
+	)
+	return Form
 }

@@ -1,7 +1,7 @@
 'use strict'
-
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-	up: async (queryInterface, Sequelize) => {
+	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable('notification_templates', {
 			id: {
 				type: Sequelize.INTEGER,
@@ -10,19 +10,21 @@ module.exports = {
 				autoIncrement: true,
 			},
 			type: {
-				allowNull: false,
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			code: {
-				allowNull: false,
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
-			subject: { type: Sequelize.STRING },
+			subject: { type: Sequelize.STRING, allowNull: false },
 			body: {
 				type: Sequelize.TEXT,
+				allowNull: false,
 			},
 			status: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			email_header: {
 				type: Sequelize.STRING,
@@ -32,9 +34,11 @@ module.exports = {
 			},
 			created_by: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			updated_by: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			created_at: {
 				allowNull: false,
@@ -50,7 +54,7 @@ module.exports = {
 		})
 	},
 
-	down: async (queryInterface, Sequelize) => {
+	async down(queryInterface, Sequelize) {
 		await queryInterface.dropTable('notification_templates')
 	},
 }

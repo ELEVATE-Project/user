@@ -1,7 +1,8 @@
 'use strict'
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-	up: async (queryInterface, Sequelize) => {
+	async up(queryInterface, Sequelize) {
 		await queryInterface.addConstraint('users', {
 			fields: ['organization_id'],
 			type: 'foreign key',
@@ -15,7 +16,7 @@ module.exports = {
 		})
 	},
 
-	down: async (queryInterface, Sequelize) => {
+	async down(queryInterface, Sequelize) {
 		await queryInterface.removeConstraint('users', 'fk_users_organization_id')
 	},
 }

@@ -5,7 +5,6 @@
  * Description : System Users database operations
  */
 
-// const SystemUsers = require('./model')
 const SystemUsers = require('../../database/models/system_users')
 
 module.exports = class SystemUsersData {

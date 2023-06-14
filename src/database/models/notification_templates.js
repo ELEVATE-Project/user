@@ -1,6 +1,7 @@
+'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const notification_templates = sequelize.define(
-		'notification_templates',
+	const NotificationTemplate = sequelize.define(
+		'NotificationTemplate',
 		{
 			id: {
 				type: DataTypes.INTEGER,
@@ -15,19 +16,38 @@ module.exports = (sequelize, DataTypes) => {
 			code: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				unique: true,
 			},
-			subject: DataTypes.STRING,
-			body: DataTypes.TEXT,
-			status: DataTypes.STRING,
+			subject: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			body: {
+				type: DataTypes.TEXT,
+				allowNull: false,
+			},
+			status: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
 			email_header: DataTypes.STRING,
 			email_footer: DataTypes.STRING,
-			created_by: DataTypes.STRING,
-			updated_by: DataTypes.STRING,
+			created_by: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			updated_by: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
 		},
 		{
+			sequelize,
+			modelName: 'NotificationTemplate',
+			tableName: 'notification_templates',
 			freezeTableName: true,
 			paranoid: true,
 		}
 	)
-	return notification_templates
+	return NotificationTemplate
 }

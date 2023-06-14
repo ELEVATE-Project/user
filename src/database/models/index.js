@@ -7,8 +7,8 @@ const process = require('process')
 const basename = path.basename(__filename)
 const env = process.env.NODE_ENV || 'development'
 const config = require(__dirname + '/../config/config.js')[env]
-const dbPsql = {}
-let sequelize;
+const db = {}
+let sequelize
 
 if (config.url) {
 	sequelize = new Sequelize(config.url, config)
@@ -24,23 +24,16 @@ fs.readdirSync(__dirname)
 	})
 	.forEach((file) => {
 		const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes)
-		dbPsql[model.name] = model
+		db[model.name] = model
 	})
 
-Object.keys(dbPsql).forEach((modelName) => {
-
-	if (dbPsql[modelName].associate) {
-		dbPsql[modelName].associate(dbPsql)
+Object.keys(db).forEach((modelName) => {
+	if (db[modelName].associate) {
+		db[modelName].associate(db)
 	}
-
-	dbPsql.modelName = require('./'+modelName);
 })
 
-sequelize.sync()
+db.sequelize = sequelize
+db.Sequelize = Sequelize
 
-dbPsql.sequelize = sequelize
-dbPsql.Sequelize = Sequelize
-
-
-module.exports = dbPsql
-
+module.exports = db
