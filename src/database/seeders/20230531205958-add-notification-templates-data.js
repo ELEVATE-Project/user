@@ -5,8 +5,8 @@ module.exports = {
 		const emailTemplates = [
 			{
 				code: 'registration',
-				subject: 'MentorED - Registration Successful!',
-				body: '<p>Dear {name},</p> Welcome to {appName}. You have taken your first step towards connecting, learning, and solving with members of your community and we are excited to have you here!',
+				subject: 'MentorED - Registration Successful!', 
+				body: '<p>Dear {name},</p> Welcome to {appName}. You have taken your first step towards connecting, learning, and solving with members of your community and we are excited to have you here!'
 			},
 			{
 				code: 'emailotp',

@@ -9,7 +9,7 @@
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const systemUserData = require('../../database/queries/system_users')
+const systemUserData = require('@db/systemUsers/queries')
 
 
 module.exports = class SystemUsersHelper {

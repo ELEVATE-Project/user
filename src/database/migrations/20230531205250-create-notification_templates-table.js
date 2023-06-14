@@ -17,14 +17,13 @@ module.exports = {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
-			subject: { type: Sequelize.STRING, allowNull: false },
+			subject: { type: Sequelize.STRING },
 			body: {
 				type: Sequelize.TEXT,
 				allowNull: false,
 			},
 			status: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			email_header: {
 				type: Sequelize.STRING,

@@ -21,8 +21,6 @@ const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
 
-//const userQueries = require('../../database/queries/users')
-
 module.exports = class AccountHelper {
 	/**
 	 * create account
