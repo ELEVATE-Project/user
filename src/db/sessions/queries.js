@@ -181,6 +181,10 @@ module.exports = class SessionsData {
 						endDateUtc: 1,
 						startDateUtc: 1,
 						userId: 1,
+						meetingInfo: {
+							platform: 1,
+							value: 1,
+						},
 					},
 				},
 				{
