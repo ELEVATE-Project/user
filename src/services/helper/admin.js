@@ -31,17 +31,11 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let updateParams = {
-				deleted: true,
-				deletedAt: new Date().getTime(),
-				name: 'Anonymous User',
-				email: utils.md5Hash(userId) + '@' + 'deletedUser',
-			}
+			let updateParams = _generateUpdateParams(userId)
+			const removeKeys = _.omit(user, _removeUserKeys())
+			const update = _.merge(removeKeys, updateParams)
 
-			user = _.omit(user, _removeUserKeys())
-			const update = _.merge(user, updateParams)
-
-			await usersData.updateOneUser({ _id: userId }, update)
+			await usersData.findOneAndReplace({ _id: userId }, update)
 			await utils.redisDel(userId)
 
 			//code for remove user folder from cloud
@@ -59,19 +53,40 @@ module.exports = class AdminHelper {
 function _removeUserKeys() {
 	let removedFields = [
 		'gender',
-		'designation',
-		'location',
 		'about',
 		'shareLink',
-		'areasOfExpertise',
 		'experience',
 		'lastLoggedInAt',
 		'educationQualification',
-		'refreshTokens',
 		'otpInfo',
-		'languages',
 		'rating',
 		'preferredLanguage',
+		'designation',
+		'location',
+		'areasOfExpertise',
+		'languages',
+		'educationQualification',
+		'refreshTokens',
 	]
 	return removedFields
+}
+
+function _generateUpdateParams(userId) {
+	const updateUser = {
+		deleted: true,
+		deletedAt: new Date().getTime(),
+		name: 'Anonymous User',
+		email: {
+			address: utils.md5Hash(userId) + '@' + 'deletedUser',
+			verified: false,
+		},
+		refreshTokens: [],
+		educationQualification: null,
+		preferredLanguage: 'en',
+		designation: [],
+		location: [],
+		areasOfExpertise: [],
+		languages: [],
+	}
+	return updateUser
 }

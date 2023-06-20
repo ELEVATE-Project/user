@@ -298,6 +298,14 @@ module.exports = class AccountHelper {
 			})
 		}
 
+		if (user.deleted) {
+			return common.failureResponse({
+				message: 'UNAUTHORIZED_REQUEST',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'UNAUTHORIZED',
+			})
+		}
+
 		/* Check valid refresh token stored in db */
 		if (user.refreshTokens.length) {
 			const token = user.refreshTokens.find((tokenData) => tokenData.token === bodyData.refreshToken)
@@ -651,20 +659,28 @@ module.exports = class AccountHelper {
 	 */
 	static async verifyMentor(userId) {
 		try {
-			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1 })
+			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1, deleted: 1 })
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			} else if (user.deleted == true) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
 			} else if (user.isAMentor == true) {
+				delete user.deleted
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_IS_A_MENTOR',
 					result: user,
 				})
 			} else {
+				delete user.deleted
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_IS_NOT_A_MENTOR',
@@ -685,20 +701,28 @@ module.exports = class AccountHelper {
 	 */
 	static async verifyUser(userId) {
 		try {
-			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1 })
+			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1, deleted: 1 })
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			} else if (user.deleted == true) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
 			} else if (user.isAMentor == true) {
+				delete user.deleted
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_IS_A_MENTOR',
 					result: user,
 				})
 			} else {
+				delete user.deleted
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_IS_NOT_A_MENTOR',
@@ -746,7 +770,7 @@ module.exports = class AccountHelper {
 				}
 
 				const users = await usersData.findAllUsers(
-					{ _id: { $in: userIdsNotFoundInRedis } },
+					{ _id: { $in: userIdsNotFoundInRedis }, deleted: false },
 					{ password: 0, refreshTokens: 0, otpInfo: 0 }
 				)
 
@@ -841,13 +865,21 @@ module.exports = class AccountHelper {
 	 */
 	static async acceptTermsAndCondition(userId) {
 		try {
-			const user = await usersData.findOne({ _id: userId }, { _id: 1 })
+			const user = await usersData.findOne({ _id: userId }, { _id: 1, deleted: 1 })
 
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (user.deleted) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
 				})
 			}
 
