@@ -72,10 +72,21 @@ module.exports = async function (req, res, next) {
 				})
 			}
 
+			//check for admin user
+			if (decodedToken.data.role == common.roleAdmin) {
+				req.decodedToken = decodedToken.data
+				return next()
+			}
+
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
 			const user = await UsersData.findOne({ _id: decodedToken.data._id })
-
-			if (user && user.isAMentor !== decodedToken.data.isAMentor) {
+			if (!user) {
+				throw common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			} else if (user && user.isAMentor !== decodedToken.data.isAMentor) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
