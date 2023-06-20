@@ -24,7 +24,7 @@ module.exports = class SystemUsers {
 	async create(req) {
 		const params = req.body
 		try {
-			if (req.body.adminSecretCode != process.env.ADMIN_SECRET_CODE) {
+			if (req.body.secretCode != process.env.ADMIN_SECRET_CODE) {
 				throw common.failureResponse({
 					message: 'INVALID_SECRET_CODE',
 					statusCode: httpStatusCode.bad_request,

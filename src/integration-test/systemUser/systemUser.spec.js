@@ -23,6 +23,7 @@ describe('user/v1/systemUsers', function () {
 			email: faker.internet.email(),
 			password: faker.internet.password(),
 			role: 'admin',
+			secretCode: 'W5bF7gesuS0xsNWmpsKy',
 		})
 
 		logError(res)
