@@ -11,7 +11,7 @@
     #- debug: msg="{{ slurpfile['content'] | b64decode }}"
     #- debug: msg="the value of foo.txt is {{ contents }}"
     - name: Run vault credentials
-      shell: "curl --location --request GET '{{ vaultAddress }}v1/elevate/data/notification' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
+      shell: "curl --location --request GET '{{ vaultAddress }}notification' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
 }}/data2.json'"
       register: vaultCurl
     - name: Set some variable
