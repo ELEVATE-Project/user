@@ -83,7 +83,7 @@ module.exports = class MentorsHelper {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
 				const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
-				const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true }
+				const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true, delete: false }
 				const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,

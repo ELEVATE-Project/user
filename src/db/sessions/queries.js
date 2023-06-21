@@ -43,7 +43,7 @@ module.exports = class SessionsData {
 
 	static async findOneSession(filter, projection = {}) {
 		try {
-			const sessionData = await Sessions.findOne(filter, projection).lean()
+			const sessionData = await Sessions.findOne({ ...filter, deleted: false }, projection).lean()
 			return sessionData
 		} catch (error) {
 			return error
