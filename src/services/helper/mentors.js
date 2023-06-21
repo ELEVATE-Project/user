@@ -79,7 +79,7 @@ module.exports = class MentorsHelper {
 	static async profile(id) {
 		try {
 			const mentorsDetails = await userProfile.details('', id)
-			if (mentorsDetails.data.result.isAMentor) {
+			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
 				const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)

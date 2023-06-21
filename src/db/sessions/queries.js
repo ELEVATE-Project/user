@@ -8,6 +8,7 @@
 const Sessions = require('./model')
 const ObjectId = require('mongoose').Types.ObjectId
 const common = require('@constants/common')
+const moment = require('moment')
 
 module.exports = class SessionsData {
 	static async createSession(data) {
@@ -244,6 +245,52 @@ module.exports = class SessionsData {
 		} catch (error) {
 			console.error(error)
 			return error
+		}
+	}
+	static async removeMentorsUpcomingSessions(userId) {
+		const currentEpochTime = moment().unix()
+		const currentDate = moment()
+
+		try {
+			const foundDocuments = await Sessions.find({
+				startDate: { $gt: currentEpochTime },
+				userId: userId,
+				deleted: false,
+			}).exec()
+
+			const sessionIdAndTitle = foundDocuments.map((document) => {
+				return { _id: document._id, title: document.title }
+			})
+
+			const sessionIds = foundDocuments.map((document) => document._id)
+
+			const updatedSessions = await Sessions.updateMany(
+				{
+					_id: { $in: sessionIds },
+				},
+				{ $set: { deleted: true, deletedAt: currentDate } }
+			).exec()
+
+			const removedSessions = updatedSessions.modifiedCount == sessionIds.length ? sessionIdAndTitle : []
+
+			return removedSessions
+		} catch (err) {
+			console.error('An error occurred:', err)
+			throw err
+		}
+	}
+	static async getAllUpcomingSessions() {
+		const currentEpochTime = moment().unix()
+		try {
+			const upcomingSessions = await Sessions.find({
+				startDate: { $gt: currentEpochTime },
+				deleted: false,
+			}).exec()
+
+			return upcomingSessions
+		} catch (err) {
+			console.error('An error occurred:', err)
+			throw err
 		}
 	}
 }

@@ -50,6 +50,7 @@ let sessionAttendeesSchema = new Schema({
 			password: String,
 		},
 	},
+	deletedAt: Date,
 })
 
 sessionAttendeesSchema.post('save', async function (doc, next) {
