@@ -67,6 +67,7 @@ function _removeUserKeys() {
 		'languages',
 		'educationQualification',
 		'refreshTokens',
+		'image',
 	]
 	return removedFields
 }
@@ -74,14 +75,13 @@ function _removeUserKeys() {
 function _generateUpdateParams(userId) {
 	const updateUser = {
 		deleted: true,
-		deletedAt: new Date().getTime(),
+		deletedAt: new Date(),
 		name: 'Anonymous User',
 		email: {
 			address: utils.md5Hash(userId) + '@' + 'deletedUser',
 			verified: false,
 		},
 		refreshTokens: [],
-		educationQualification: null,
 		preferredLanguage: 'en',
 		designation: [],
 		location: [],
