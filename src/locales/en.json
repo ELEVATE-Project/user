@@ -54,5 +54,7 @@
 	"EMAIL_UPDATE_FAILED": "You can not update email.",
 	"URL_NOT_FOUND": "Url not found",
 	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "Profile share link generated successfully",
-	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
+	"USER_IS_NOT_A_ADMIN": "User does't have admin access.",
+	"USER_DELETED_SUCCESSFULLY": "User deleted successfully"
 }

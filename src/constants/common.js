@@ -43,7 +43,6 @@ module.exports = {
 		'/user/v1/account/generateOtp',
 		'/user/v1/account/registrationOtp',
 		'/user/v1/account/resetPassword',
-		'/user/v1/systemUsers/create',
 		'/user/v1/systemUsers/login',
 	],
 	internalAccessUrls: [
@@ -52,10 +51,12 @@ module.exports = {
 		'profile/details',
 		'/user/v1/account/list',
 		'/profile/share',
+		'/user/v1/systemUsers/create',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
-	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds
+	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
+	roleAdmin: 'admin',
 }
