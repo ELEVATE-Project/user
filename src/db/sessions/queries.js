@@ -253,9 +253,13 @@ module.exports = class SessionsData {
 
 		try {
 			const foundDocuments = await Sessions.find({
-				startDate: { $gt: currentEpochTime },
-				userId: userId,
-				deleted: false,
+				$and: [
+					{ userId: userId },
+					{ deleted: false },
+					{
+						$or: [{ startDate: { $gt: currentEpochTime } }, { status: common.PUBLISHED_STATUS }],
+					},
+				],
 			}).exec()
 
 			const sessionIdAndTitle = foundDocuments.map((document) => {
