@@ -49,6 +49,7 @@ module.exports = class issuesHelper {
 								name,
 								role,
 								userEmailId,
+								userId: bodyData.userId.toString(),
 								description: bodyData.description,
 								metaItems: metaItems || 'Not available',
 							}),
