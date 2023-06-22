@@ -6,7 +6,6 @@ const sessionAttendeesData = require('@db/sessionAttendees/queries')
 const sessionAttendeesHelper = require('./sessionAttendees')
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
-const sessionsHelper = require('@services/helper/sessions')
 
 module.exports = class AdminHelper {
 	/**
@@ -28,17 +27,12 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			const isAMentor = await sessionsHelper.verifyMentor(userId)
-
 			let result = {}
-			let isAttendeesNotified = true
 
-			if (isAMentor) {
-				const removedSessionsDetail = await sessionData.removeMentorsUpcomingSessions(userId) // Remove all upcoming sessions by the user if any
+			const removedSessionsDetail = await sessionData.removeMentorsUpcomingSessions(userId) // Remove all upcoming sessions by the user if any
 
-				isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(removedSessionsDetail) //Notify the removed sessions attendees if any
-				result.isAttendeesNotified = isAttendeesNotified
-			}
+			const isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(removedSessionsDetail) //Notify the removed sessions attendees if any
+			result.isAttendeesNotified = isAttendeesNotified
 
 			const isUnenrolledFromSessions = await this.unenrollFromUpcomingSessions(userId) //Unenroll the user if enrolled into any upcoming sessions
 			result.isUnenrolledFromSessions = isUnenrolledFromSessions
