@@ -769,10 +769,17 @@ module.exports = class AccountHelper {
 					}
 				}
 
-				const users = await usersData.findAllUsers(
-					{ _id: { $in: userIdsNotFoundInRedis }, deleted: false },
-					{ password: 0, refreshTokens: 0, otpInfo: 0 }
-				)
+				let filterQuery = {
+					_id: { $in: userIdsNotFoundInRedis },
+					deleted: false,
+				}
+
+				//returning deleted user if internal token is passing
+				if (params.headers.internal_access_token) {
+					delete filterQuery.deleted
+				}
+
+				const users = await usersData.findAllUsers(filterQuery, { password: 0, refreshTokens: 0, otpInfo: 0 })
 
 				users.forEach(async (element) => {
 					if (element.isAMentor) {
