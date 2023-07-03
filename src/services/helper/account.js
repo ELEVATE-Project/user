@@ -14,10 +14,8 @@ const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 
 const common = require('@constants/common')
-// const usersData = require('@db/users/queries')
-const usersData="";
-// const userQueries = require('@database/queries/users')
-const userQueries = require('../../database/queries/users')
+const usersData = require('@db/users/queries')
+const userQueries = require('@database/queries/users')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 // const systemUserData = require('@db/systemUsers/queries')
@@ -42,19 +40,12 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
+		const projection = ['password', 'refresh_token', 'location', 'otpInfo']
 
-		const projection = [
-			'password',
-			'refresh_token',
-			'location',
-			'otpInfo'
-		]
-			
 		try {
 			const email = bodyData.email.toLowerCase()
 			let user = await userQueries.findOne({ where: { email: email } })
-			// console.log(user,"jjjjjjjjjjjjjjjjjjjjjjjj") 
-			// logger.info('user------------------: ' +user)
+
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -76,20 +67,22 @@ module.exports = class AccountHelper {
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 			bodyData.organization_id = 3
-			
-			let created = await userQueries.create(bodyData)
-			// logger.info('created------------------: ' +created)
+
+			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
-			user = await userQueries.findOne({ where: { email: email }, attributes: {
-				exclude: projection
-			}, })
+			user = await userQueries.findOne({
+				where: { email: email },
+				attributes: {
+					exclude: projection,
+				},
+			})
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					email: user.email,
-					name: user.name
+					name: user.name,
 				},
 			}
 
@@ -103,38 +96,21 @@ module.exports = class AccountHelper {
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
 			)
-			// logger.info(refreshToken+"refreshTokennnnnnnnnnnnnnnnnnnnn")
-			let tokenData = new Array;
-			// logger.info(typeof(tokenData)+"typppppppppppppe"+tokenData+"tokenData             fresh Arrayyyyyyyyy")
-			tokenData.push({
-				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoyLCJlbWFpbCI6InByaXlhbmthQHR1bmVybGFicy5jb2",
-				exp: new Date().getTime() + common.refreshTokenExpiryInMs
+
+			let refresh_token = new Array()
+			refresh_token.push({
+				token: refreshToken,
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
 			})
-			tokenData.push({
-				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-				exp: new Date().getTime() + common.refreshTokenExpiryInMs
-			})
-			// const refresh_token = [{
-			// 	token: refreshToken,
-			// 	exp: new Date().getTime() + common.refreshTokenExpiryInMs,
-			// }]
-			// logger.info(typeof(tokenData)+"typppppppppppppe after"+ JSON.stringify(tokenData)+"tokenDataaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-			// logger.info(refresh_token+"refresh_tokearrayyyyyyyyyyyyyyyyyyyy")
-			// const update = {
-			// 	refresh_token : refresh_token,
-			// 	last_logged_in_at: new Date().getTime()
-			// }
+
 			const update = {
-				"refresh_token" : tokenData,
-				"last_logged_in_at": new Date().getTime()
+				refresh_token: refresh_token,
+				last_logged_in_at: new Date().getTime(),
 			}
 
-			
-
-			logger.info('userId------------------: ' +user.id)
-			logger.info(JSON.stringify(update)+"updatevvvvvvvvvvvvvvvvvvvvvvvvvupdate")
+			console.log('userId------------------: ' + user.id)
+			console.log(JSON.stringify(update) + 'updatevvvvvvvvvvvvvvvvvvvvvvvvvupdate')
 			const filterQuery = { where: { id: user.id } }
-
 
 			// const update = {
 			// 	refresh_token: sequelize.fn('array_append', sequelize.col('refresh_token'), {
@@ -144,15 +120,13 @@ module.exports = class AccountHelper {
 			// 	last_logged_in_at: new Date().getTime(),
 			// }
 
-			// let updateUser = await userQueries.update(update,{ id: user.id},{ multi: true })
-			let updateUser = await userQueries.updateOneUser(update,filterQuery)
-			logger.info('updateUser------------------: ' +updateUser)
+			let updateUser = await userQueries.updateOneUser(update, filterQuery)
+			console.log('updateUser------------------: ', updateUser)
 
 			// await utilsHelper.redisDel(email)
 
-
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-			logger.info('result------------------: ' +JSON.stringify(result))
+			logger.info('result------------------: ' + JSON.stringify(result))
 			// const templateData = await notificationTemplateData.findOneEmailTemplate(
 			// 	process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
 			// )
@@ -179,10 +153,8 @@ module.exports = class AccountHelper {
 				message: 'USER_CREATED_SUCCESSFULLY',
 				result,
 			})
-
-
 		} catch (error) {
-			logger.error('errorrrrrrrrrrrrrrrrrrrrrr from helper------------------: ' +error)
+			console.log('errorrrrrrrrrrrrrrrrrrrrrr from helper------------------: ' + error)
 			throw error
 		}
 	}
