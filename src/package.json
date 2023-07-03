@@ -109,6 +109,7 @@
 		"@public": "public",
 		"@routes": "routes",
 		"@services": "services",
-		"@validators": "validators"
+		"@validators": "validators",
+		"@database": "database"
 	}
 }

@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				defaultValue: 'active'
 			},
 			org_admin: DataTypes.ARRAY(DataTypes.INTEGER),
 			parent_id: DataTypes.INTEGER,

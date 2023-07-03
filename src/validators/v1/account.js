@@ -27,7 +27,6 @@ module.exports = {
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 
-		req.checkBody('isAMentor').optional().isBoolean().withMessage('isAMentor is invalid')
 	},
 
 	login: (req) => {

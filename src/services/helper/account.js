@@ -14,12 +14,18 @@ const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 
 const common = require('@constants/common')
-const usersData = require('@db/users/queries')
+// const usersData = require('@db/users/queries')
+const usersData="";
+// const userQueries = require('@database/queries/users')
+const userQueries = require('../../database/queries/users')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const systemUserData = require('@db/systemUsers/queries')
+// const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
+
+const { elevateLog } = require('elevate-logger')
+const logger = elevateLog.init()
 
 module.exports = class AccountHelper {
 	/**
@@ -36,20 +42,19 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
-		const projection = {
-			password: 0,
-			refreshTokens: 0,
-			'designation.deleted': 0,
-			'designation._id': 0,
-			'areasOfExpertise.deleted': 0,
-			'areasOfExpertise._id': 0,
-			'location.deleted': 0,
-			'location._id': 0,
-			otpInfo: 0,
-		}
+
+		const projection = [
+			'password',
+			'refresh_token',
+			'location',
+			'otpInfo'
+		]
+			
 		try {
 			const email = bodyData.email.toLowerCase()
-			let user = await usersData.findOne({ 'email.address': email })
+			let user = await userQueries.findOne({ where: { email: email } })
+			// console.log(user,"jjjjjjjjjjjjjjjjjjjjjjjj") 
+			// logger.info('user------------------: ' +user)
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -58,40 +63,33 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(email)
-				if (!redisData || redisData.otp != bodyData.otp) {
-					return common.failureResponse({
-						message: 'OTP_INVALID',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-			}
+			// if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
+			// 	const redisData = await utilsHelper.redisGet(email)
+			// 	if (!redisData || redisData.otp != bodyData.otp) {
+			// 		return common.failureResponse({
+			// 			message: 'OTP_INVALID',
+			// 			statusCode: httpStatusCode.bad_request,
+			// 			responseCode: 'CLIENT_ERROR',
+			// 		})
+			// 	}
+			// }
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
-			bodyData.email = { address: email, verified: false }
-			/* 			let pgObject = {
-				name: bodyData.name,
-				email: bodyData.email.address,
-				password: bodyData.password,
-				organization_id: 1,
-			}
-			console.log(pgObject)
+			bodyData.organization_id = 3
+			
+			let created = await userQueries.create(bodyData)
+			// logger.info('created------------------: ' +created)
 
-			await userQueries.create(pgObject) */
-
-			await usersData.createUser(bodyData)
 			/* FLOW STARTED: user login after registration */
-
-			user = await usersData.findOne({ 'email.address': email }, projection)
+			user = await userQueries.findOne({ where: { email: email }, attributes: {
+				exclude: projection
+			}, })
 
 			const tokenDetail = {
 				data: {
-					_id: user._id,
-					email: user.email.address,
-					name: user.name,
-					isAMentor: user.isAMentor,
+					id: user.id,
+					email: user.email,
+					name: user.name
 				},
 			}
 
@@ -105,47 +103,86 @@ module.exports = class AccountHelper {
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
 			)
-
+			// logger.info(refreshToken+"refreshTokennnnnnnnnnnnnnnnnnnnn")
+			let tokenData = new Array;
+			// logger.info(typeof(tokenData)+"typppppppppppppe"+tokenData+"tokenData             fresh Arrayyyyyyyyy")
+			tokenData.push({
+				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoyLCJlbWFpbCI6InByaXlhbmthQHR1bmVybGFicy5jb2",
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs
+			})
+			tokenData.push({
+				token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs
+			})
+			// const refresh_token = [{
+			// 	token: refreshToken,
+			// 	exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+			// }]
+			// logger.info(typeof(tokenData)+"typppppppppppppe after"+ JSON.stringify(tokenData)+"tokenDataaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+			// logger.info(refresh_token+"refresh_tokearrayyyyyyyyyyyyyyyyyyyy")
+			// const update = {
+			// 	refresh_token : refresh_token,
+			// 	last_logged_in_at: new Date().getTime()
+			// }
 			const update = {
-				$push: {
-					refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs },
-				},
-				lastLoggedInAt: new Date().getTime(),
+				"refresh_token" : tokenData,
+				"last_logged_in_at": new Date().getTime()
 			}
-			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
 
-			await utilsHelper.redisDel(email)
+			
+
+			logger.info('userId------------------: ' +user.id)
+			logger.info(JSON.stringify(update)+"updatevvvvvvvvvvvvvvvvvvvvvvvvvupdate")
+			const filterQuery = { where: { id: user.id } }
+
+
+			// const update = {
+			// 	refresh_token: sequelize.fn('array_append', sequelize.col('refresh_token'), {
+			// 		token: refreshToken,
+			// 		exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+			// 	}),
+			// 	last_logged_in_at: new Date().getTime(),
+			// }
+
+			// let updateUser = await userQueries.update(update,{ id: user.id},{ multi: true })
+			let updateUser = await userQueries.updateOneUser(update,filterQuery)
+			logger.info('updateUser------------------: ' +updateUser)
+
+			// await utilsHelper.redisDel(email)
+
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
+			logger.info('result------------------: ' +JSON.stringify(result))
+			// const templateData = await notificationTemplateData.findOneEmailTemplate(
+			// 	process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
+			// )
 
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
-				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
-			)
+			// if (templateData) {
+			// 	// Push successfull registration email to kafka
+			// 	const payload = {
+			// 		type: common.notificationEmailType,
+			// 		email: {
+			// 			to: email,
+			// 			subject: templateData.subject,
+			// 			body: utilsHelper.composeEmailBody(templateData.body, {
+			// 				name: bodyData.name,
+			// 				appName: process.env.APP_NAME,
+			// 			}),
+			// 		},
+			// 	}
 
-			if (templateData) {
-				// Push successfull registration email to kafka
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: email,
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: bodyData.name,
-							appName: process.env.APP_NAME,
-						}),
-					},
-				}
-
-				await kafkaCommunication.pushEmailToKafka(payload)
-			}
+			// 	await kafkaCommunication.pushEmailToKafka(payload)
+			// }
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
 				result,
 			})
+
+
 		} catch (error) {
-			console.error(error)
+			logger.error('errorrrrrrrrrrrrrrrrrrrrrr from helper------------------: ' +error)
 			throw error
 		}
 	}

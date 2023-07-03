@@ -31,14 +31,17 @@ module.exports = (sequelize, DataTypes) => {
 			location: DataTypes.ARRAY(DataTypes.STRING),
 			about: DataTypes.STRING,
 			share_link: DataTypes.STRING,
-			status: DataTypes.STRING,
+			status: {
+				type: DataTypes.STRING,
+				defaultValue: 'active',
+			},
 			image: DataTypes.STRING,
 			last_logged_in_at: DataTypes.DATE,
 			has_accepted_terms_and_conditions: {
 				type: DataTypes.BOOLEAN,
 				defaultValue: false,
 			},
-			refresh_token: DataTypes.ARRAY(DataTypes.STRING),
+			refresh_token: DataTypes.ARRAY(DataTypes.JSONB),
 			languages: DataTypes.ARRAY(DataTypes.STRING),
 			preferred_language: {
 				type: DataTypes.STRING,
