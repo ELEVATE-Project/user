@@ -54,7 +54,7 @@ module.exports = {
 				defaultValue: false,
 			},
 			refresh_token: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
+				type: Sequelize.ARRAY(Sequelize.JSONB),
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),

@@ -16,14 +16,12 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const usersData = require('@db/users/queries')
 const userQueries = require('@database/queries/users')
+const organizationQueries = require('@database/queries/organizations')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 // const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
 const utils = require('@generics/utils')
-
-const { elevateLog } = require('elevate-logger')
-const logger = elevateLog.init()
 
 module.exports = class AccountHelper {
 	/**
@@ -54,19 +52,23 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-			// 	const redisData = await utilsHelper.redisGet(email)
-			// 	if (!redisData || redisData.otp != bodyData.otp) {
-			// 		return common.failureResponse({
-			// 			message: 'OTP_INVALID',
-			// 			statusCode: httpStatusCode.bad_request,
-			// 			responseCode: 'CLIENT_ERROR',
-			// 		})
-			// 	}
-			// }
+			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
+				const redisData = await utilsHelper.redisGet(email)
+				if (!redisData || redisData.otp != bodyData.otp) {
+					return common.failureResponse({
+						message: 'OTP_INVALID',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
-			bodyData.organization_id = 3
+
+			if (!bodyData.organization_id) {
+				let organization = await organizationQueries.findOne({}, { limit: 1 })
+				bodyData.organization_id = organization.id
+			}
 
 			await userQueries.create(bodyData)
 
@@ -83,6 +85,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					//add role here
 				},
 			}
 
@@ -101,6 +104,7 @@ module.exports = class AccountHelper {
 			refresh_token.push({
 				token: refreshToken,
 				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+				userId: user.id,
 			})
 
 			const update = {
@@ -108,45 +112,32 @@ module.exports = class AccountHelper {
 				last_logged_in_at: new Date().getTime(),
 			}
 
-			console.log('userId------------------: ' + user.id)
-			console.log(JSON.stringify(update) + 'updatevvvvvvvvvvvvvvvvvvvvvvvvvupdate')
 			const filterQuery = { where: { id: user.id } }
 
-			// const update = {
-			// 	refresh_token: sequelize.fn('array_append', sequelize.col('refresh_token'), {
-			// 		token: refreshToken,
-			// 		exp: new Date().getTime() + common.refreshTokenExpiryInMs,
-			// 	}),
-			// 	last_logged_in_at: new Date().getTime(),
-			// }
-
-			let updateUser = await userQueries.updateOneUser(update, filterQuery)
-			console.log('updateUser------------------: ', updateUser)
-
-			// await utilsHelper.redisDel(email)
+			await userQueries.updateUser(update, filterQuery)
+			await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-			logger.info('result------------------: ' + JSON.stringify(result))
-			// const templateData = await notificationTemplateData.findOneEmailTemplate(
-			// 	process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
-			// )
+			const templateData = await notificationTemplateData.findOneEmailTemplate(
+				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
+			)
 
-			// if (templateData) {
-			// 	// Push successfull registration email to kafka
-			// 	const payload = {
-			// 		type: common.notificationEmailType,
-			// 		email: {
-			// 			to: email,
-			// 			subject: templateData.subject,
-			// 			body: utilsHelper.composeEmailBody(templateData.body, {
-			// 				name: bodyData.name,
-			// 				appName: process.env.APP_NAME,
-			// 			}),
-			// 		},
-			// 	}
+			if (templateData) {
+				// Push successfull registration email to kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: email,
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, {
+							name: bodyData.name,
+							appName: process.env.APP_NAME,
+						}),
+					},
+				}
 
-			// 	await kafkaCommunication.pushEmailToKafka(payload)
-			// }
+				await kafkaCommunication.pushEmailToKafka(payload)
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -154,7 +145,6 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
-			console.log('errorrrrrrrrrrrrrrrrrrrrrr from helper------------------: ' + error)
 			throw error
 		}
 	}

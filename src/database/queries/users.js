@@ -1,10 +1,7 @@
 'use strict'
-// const database = require('@database/models/index')
-const database = require('../../database/models/index')
-const { Op } = require('sequelize')
+const database = require('@database/models/index')
 
-const { elevateLog } = require('elevate-logger')
-const logger = elevateLog.init()
+const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
@@ -22,13 +19,11 @@ exports.findOne = async (filter) => {
 	}
 }
 
-exports.updateOneUser = async (update, filter, options) => {
+exports.updateUser = async (update, filter, options) => {
 	try {
 		let data = await database.User.update(update, filter, options)
-		logger.info('updatedeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
 		return data
 	} catch (error) {
-		logger.info('err-----------------' + error)
 		return error
 	}
 }
