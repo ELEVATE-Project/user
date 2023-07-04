@@ -160,18 +160,10 @@ module.exports = class AccountHelper {
 	 */
 
 	static async login(bodyData) {
-		const projection = {
-			refreshTokens: 0,
-			'designation.deleted': 0,
-			'designation._id': 0,
-			'areasOfExpertise.deleted': 0,
-			'areasOfExpertise._id': 0,
-			'location.deleted': 0,
-			'location._id': 0,
-			otpInfo: 0,
-		}
 		try {
-			let user = await usersData.findOne({ 'email.address': bodyData.email.toLowerCase() }, projection)
+			let user = await userQueries.findOne({
+				where: { email: bodyData.email.toLowerCase() },
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -179,6 +171,8 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			user = JSON.parse(JSON.stringify(user))
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return common.failureResponse({
@@ -193,7 +187,7 @@ module.exports = class AccountHelper {
 					_id: user._id,
 					email: user.email.address,
 					name: user.name,
-					isAMentor: user.isAMentor,
+					//role
 				},
 			}
 
@@ -208,14 +202,38 @@ module.exports = class AccountHelper {
 				common.refreshTokenExpiry
 			)
 
-			const update = {
-				$push: {
-					refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs },
-				},
-				lastLoggedInAt: new Date().getTime(),
+			let currentToken = {
+				token: refreshToken,
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+				userId: user.id,
 			}
-			await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
+
+			let userTokens = user.refresh_token ? user.refresh_token : []
+			let noOfTokensToKeep = 2
+			let refreshTokens = []
+
+			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
+				console.log('if condition ', userTokens.length, common.refreshTokenLimit)
+				refreshTokens = userTokens.splice(-noOfTokensToKeep)
+			} else {
+				refreshTokens = userTokens
+				console.log('else less than')
+			}
+
+			refreshTokens.push(currentToken)
+
+			const update = {
+				refresh_token: refreshTokens,
+				last_logged_in_at: new Date().getTime(),
+			}
+
+			const filterQuery = { where: { id: user.id } }
+
+			await userQueries.updateUser(update, filterQuery)
+
 			delete user.password
+			delete user.refresh_token
+
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({

@@ -58,4 +58,5 @@ module.exports = {
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds
+	refreshTokenLimit: 3
 }
