@@ -42,6 +42,7 @@ module.exports = {
 			status: {
 				type: Sequelize.STRING,
 				allowNull: false,
+				defaultValue: 'active'
 			},
 			image: {
 				type: Sequelize.STRING,
@@ -77,6 +78,11 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
+			role: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: 'user',
+			}
 		})
 	},
 	async down(queryInterface, Sequelize) {

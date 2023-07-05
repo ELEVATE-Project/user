@@ -48,6 +48,11 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 'en',
 			},
 			organization_id: DataTypes.INTEGER,
+			role: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: 'user',
+			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
