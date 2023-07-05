@@ -1,7 +1,7 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const questionsData = require('@db/questions/queries')
-
+const questionQueries = require('../../database/queries/questions')
 module.exports = class questionsHelper {
 	/**
 	 * Create questions.
@@ -13,7 +13,7 @@ module.exports = class questionsHelper {
 
 	static async create(bodyData) {
 		try {
-			let data = await questionsData.createQuestion(bodyData)
+			let data = await questionQueries.createQuestion(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'QUESTION_CREATED_SUCCESSFULLY',

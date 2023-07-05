@@ -1,62 +1,75 @@
 const db = require('../models/index')
-const Questions = db.questions
-const createQuestion = async () => {
-	try {
-		const questionData = {
-			name: 'Dummy Question',
-			question: 'What is your favorite color?',
-			options: ['Red', 'Blue', 'Green'],
-			type: 'Multiple Choice',
-			no_of_stars: null,
-			status: 'Active',
-			category: null,
-			rendering_data: null,
-			meta: null,
-		}
+const Question = db.Question
 
-		const newQuestion = await Questions.create(questionData)
-		console.log('Question created successfully', newQuestion.id)
-	} catch (error) {
-		console.error('Error creating question:', error)
+module.exports = class QuestionsData {
+	static async createQuestion(data) {
+		try {
+			const question = await Question.create(data)
+			return question
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findOneQuestion(filter, projection = {}) {
+		try {
+			const questionData = await Questions.findOne(filter, projection)
+			return questionData
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async find(filter, projection = {}) {
+		try {
+			const questionData = await Questions.find(filter, projection).lean()
+			return questionData
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async updateOneQuestion(filter, update, options = {}) {
+		try {
+			const res = await Questions.updateOne(filter, update, options)
+			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+				return 'QUESTION_UPDATED'
+			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
+				return 'QUESTION_ALREADY_EXISTS'
+			} else {
+				return 'QUESTION_NOT_FOUND'
+			}
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async update(filter, update, options = {}) {
+		try {
+			const res = await Questions.update(filter, update, options)
+			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+				return 'QUESTION_UPDATED'
+			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
+				return 'QUESTION_ALREADY_EXISTS'
+			} else {
+				return 'QUESTION_NOT_FOUND'
+			}
+		} catch (error) {
+			return error
+		}
+	}
+	static async updateData(filter, update, options = {}) {
+		try {
+			const res = await Questions.updateMany(filter, update, options)
+			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+				return 'QUESTION_UPDATED'
+			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
+				return 'QUESTION_ALREADY_EXISTS'
+			} else {
+				return 'QUESTION_NOT_FOUND'
+			}
+		} catch (error) {
+			return error
+		}
 	}
 }
-const deleteQuestion = async (questionId) => {
-	try {
-		const deletedQuestion = await Questions.destroy({
-			where: { id: questionId },
-			force: false,
-		})
-
-		if (deletedQuestion > 0) {
-			console.log('Question deleted successfully.')
-		} else {
-			console.log('Question not found.')
-		}
-	} catch (error) {
-		console.error('Error deleting question:', error)
-	}
-}
-
-const findQuestion = async (questionId) => {
-	try {
-		const question = await Questions.findOne({
-			where: { id: questionId },
-			attributes: { include: ['created_at', 'updatedAt', 'deletedAt'] },
-			raw: true,
-		})
-
-		if (question) {
-			console.log('Question found:', question)
-		} else {
-			console.log('Question not found.Please enter a valid question IDI')
-		}
-	} catch (error) {
-		console.error('Error finding question:', error)
-	}
-}
-
-createQuestion()
-
-findQuestion(3) // Specify the question ID to find here
-
-deleteQuestion(1) // Specify the question ID to delete here
