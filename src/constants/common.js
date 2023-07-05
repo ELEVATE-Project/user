@@ -74,7 +74,7 @@ module.exports = {
 	roleValidationPaths: [
 		'/sessions/enroll/',
 		'/sessions/unEnroll/',
-		'/sessions/update/',
+		'/sessions/update',
 		'/feedback/submit/',
 		'/sessions/start/',
 		'/mentors/share/',

@@ -41,7 +41,7 @@ module.exports = async function (req, res, next) {
 				roleValidation = true
 			}
 		})
-		console.log(roleValidation)
+
 		if ((internalAccess || guestUrl) && !authHeader) {
 			next()
 			return
@@ -90,7 +90,7 @@ module.exports = async function (req, res, next) {
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
 
 			const user = await requests.get(profileUrl, null, true)
-			console.log(user)
+
 			if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
