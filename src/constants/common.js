@@ -61,10 +61,10 @@ module.exports = {
 	roleAdmin: 'admin',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
-		'/user/v1/accounts/verifyUser/',
-		'/user/v1/accounts/changeRole/',
-		'/user/v1/profile/update/',
-		'/user/v1/profile/share/',
-		'/user/v1/profile/details/',
+		'/user/v1/accounts/verifyUser',
+		'/user/v1/accounts/changeRole',
+		'/user/v1/profile/update',
+		'/user/v1/profile/share',
+		'/user/v1/profile/details',
 	],
 }
