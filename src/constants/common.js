@@ -80,5 +80,6 @@ module.exports = {
 		'/mentors/share/',
 		'/mentees/joinSession/',
 		'/mentors/upcomingSessions/',
+		'/issues/create',
 	],
 }
