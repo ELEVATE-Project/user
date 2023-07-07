@@ -35,7 +35,7 @@ module.exports = class ProfileHelper {
 			let update = await usersData.updateOneUser({ _id: ObjectId(_id), deleted: false }, bodyData)
 			if (!update) {
 				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
