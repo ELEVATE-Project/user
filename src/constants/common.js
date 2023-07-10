@@ -48,7 +48,7 @@ module.exports = {
 	internalAccessUrls: [
 		'bulkCreateMentors',
 		'/user/v1/account/verifyMentor',
-		'profile/details',
+		'/user/v1/profile/details',
 		'/user/v1/account/list',
 		'/profile/share',
 		'/user/v1/systemUsers/create',
@@ -59,4 +59,12 @@ module.exports = {
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
 	roleAdmin: 'admin',
+	roleValidationPaths: [
+		'/user/v1/account/verifyMentor',
+		'/user/v1/accounts/verifyUser',
+		'/user/v1/accounts/changeRole',
+		'/user/v1/profile/update',
+		'/user/v1/profile/share',
+		'/user/v1/profile/details',
+	],
 }
