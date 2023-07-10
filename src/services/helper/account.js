@@ -21,7 +21,6 @@ const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 // const systemUserData = require('@db/systemUsers/queries')
 const FILESTREAM = require('@generics/file-stream')
-const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -184,8 +183,8 @@ module.exports = class AccountHelper {
 
 			const tokenDetail = {
 				data: {
-					_id: user._id,
-					email: user.email.address,
+					id: user.id,
+					email: user.email,
 					name: user.name,
 					role: user.role,
 				},
@@ -209,27 +208,25 @@ module.exports = class AccountHelper {
 			}
 
 			let userTokens = user.refresh_token ? user.refresh_token : []
-			let noOfTokensToKeep = 2
+			let noOfTokensToKeep = common.refreshTokenLimit - 1
 			let refreshTokens = []
 
 			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
-				console.log('if condition ', userTokens.length, common.refreshTokenLimit)
 				refreshTokens = userTokens.splice(-noOfTokensToKeep)
 			} else {
 				refreshTokens = userTokens
-				console.log('else less than')
 			}
 
 			refreshTokens.push(currentToken)
 
-			const update = {
+			const updateParams = {
 				refresh_token: refreshTokens,
 				last_logged_in_at: new Date().getTime(),
 			}
 
 			const filterQuery = { where: { id: user.id } }
 
-			await userQueries.updateUser(update, filterQuery)
+			await userQueries.updateUser(updateParams, filterQuery)
 
 			delete user.password
 			delete user.refresh_token
@@ -258,7 +255,7 @@ module.exports = class AccountHelper {
 
 	static async logout(bodyData) {
 		try {
-			const user = await usersData.findOne({ _id: ObjectId(bodyData.loggedInId) })
+			const user = await userQueries.findByPk(bodyData.loggedInId)
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -267,13 +264,13 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const update = {
-				$pull: {
-					refreshTokens: { token: bodyData.refreshToken },
-				},
-			}
+			let refreshTokens = user.refresh_token ? user.refresh_token : []
+			refreshTokens = refreshTokens.filter(function (tokenData) {
+				return tokenData.token !== bodyData.refreshToken
+			})
+
 			/* Destroy refresh token for user */
-			const res = await usersData.updateOneUser({ _id: ObjectId(user._id) }, update)
+			const res = await userQueries.updateUser({ refresh_token: refreshTokens }, { where: { id: user.id } })
 
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
 			if (!res) {
@@ -313,7 +310,7 @@ module.exports = class AccountHelper {
 			throw error
 		}
 
-		const user = await usersData.findOne({ _id: ObjectId(decodedToken.data._id) })
+		const user = await userQueries.findOne({ where: { id: decodedToken.data.id } })
 
 		/* Check valid user */
 		if (!user) {
@@ -325,8 +322,8 @@ module.exports = class AccountHelper {
 		}
 
 		/* Check valid refresh token stored in db */
-		if (user.refreshTokens.length) {
-			const token = user.refreshTokens.find((tokenData) => tokenData.token === bodyData.refreshToken)
+		if (user.refresh_token.length) {
+			const token = user.refresh_token.find((tokenData) => tokenData.token === bodyData.refreshToken)
 			if (!token) {
 				return common.failureResponse({
 					message: 'REFRESH_TOKEN_NOT_FOUND',
@@ -369,7 +366,7 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await usersData.findOne({ 'email.address': bodyData.email })
+			const user = await userQueries.findOne({ where: { email: bodyData.email } })
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -536,17 +533,14 @@ module.exports = class AccountHelper {
 	 */
 
 	static async resetPassword(bodyData) {
-		const projection = {
-			refreshTokens: 0,
-			'designation.deleted': 0,
-			'designation._id': 0,
-			'areasOfExpertise.deleted': 0,
-			'areasOfExpertise._id': 0,
-			'location.deleted': 0,
-			'location._id': 0,
-		}
+		const projection = ['location']
 		try {
-			let user = await usersData.findOne({ 'email.address': bodyData.email }, projection)
+			let user = await userQueries.findOne({
+				where: { email: bodyData.email },
+				attributes: {
+					exclude: projection,
+				},
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -555,6 +549,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
+			user = JSON.parse(JSON.stringify(user))
 			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
@@ -577,25 +572,41 @@ module.exports = class AccountHelper {
 
 			const tokenDetail = {
 				data: {
-					_id: user._id,
-					email: user.email.address,
+					id: user.id,
+					email: user.email,
 					name: user.name,
-					isAMentor: user.isAMentor,
+					role: user.role,
 				},
 			}
 
 			const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
 			const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
 
+			let currentToken = {
+				token: refreshToken,
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+				userId: user.id,
+			}
+
+			let userTokens = user.refresh_token ? user.refresh_token : []
+			let noOfTokensToKeep = common.refreshTokenLimit - 1
+			let refreshTokens = []
+
+			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
+				refreshTokens = userTokens.splice(-noOfTokensToKeep)
+			} else {
+				refreshTokens = userTokens
+			}
+
+			refreshTokens.push(currentToken)
 			const updateParams = {
-				$push: {
-					refreshTokens: { token: refreshToken, exp: new Date().getTime() + common.refreshTokenExpiryInMs },
-				},
+				refresh_token: refreshTokens,
 				lastLoggedInAt: new Date().getTime(),
 				password: bodyData.password,
 			}
-			await usersData.updateOneUser({ _id: user._id }, updateParams)
 
+			const filterQuery = { where: { id: user.id } }
+			await userQueries.updateUser(updateParams, filterQuery)
 			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
@@ -711,7 +722,10 @@ module.exports = class AccountHelper {
 	 */
 	static async verifyUser(userId) {
 		try {
-			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1 })
+			let user = await userQueries.findOne({
+				where: { id: userId },
+				attributes: ['role'],
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -867,7 +881,7 @@ module.exports = class AccountHelper {
 	 */
 	static async acceptTermsAndCondition(userId) {
 		try {
-			const user = await usersData.findOne({ _id: userId }, { _id: 1 })
+			const user = await userQueries.findByPk(userId)
 
 			if (!user) {
 				return common.failureResponse({
@@ -877,16 +891,9 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			await usersData.updateOneUser(
-				{
-					_id: userId,
-				},
-				{
-					hasAcceptedTAndC: true,
-				}
-			)
-
-			await utils.redisDel(userId)
+			await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
+			await utilsHelper.redisDel(user.email)
+			// await utils.redisDel(userId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_UPDATED_SUCCESSFULLY',

@@ -9,6 +9,10 @@ module.exports = {
 				primaryKey: true,
 				autoIncrement: true,
 			},
+			name: {
+				type: Sequelize.STRING,
+				allowNull: false,
+			},
 			email: {
 				type: Sequelize.STRING,
 				allowNull: false,
@@ -19,43 +23,35 @@ module.exports = {
 				allowNull: false,
 				defaultValue: false,
 			},
-			password: {
+			role: {
 				type: Sequelize.STRING,
 				allowNull: false,
-			},
-			name: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			gender: {
-				type: Sequelize.STRING,
-			},
-			location: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
-			},
-			about: {
-				type: Sequelize.STRING,
-			},
-			share_link: {
-				type: Sequelize.STRING,
+				defaultValue: 'user',
 			},
 			status: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				defaultValue: 'active'
+				defaultValue: 'active',
 			},
-			image: {
+			password: {
 				type: Sequelize.STRING,
+				allowNull: false,
 			},
-			last_logged_in_at: {
-				type: Sequelize.DATE,
+			organization_id: {
+				type: Sequelize.INTEGER,
 			},
 			has_accepted_terms_and_conditions: {
 				type: Sequelize.BOOLEAN,
 				defaultValue: false,
 			},
-			refresh_token: {
-				type: Sequelize.ARRAY(Sequelize.JSONB),
+			gender: {
+				type: Sequelize.STRING,
+			},
+			about: {
+				type: Sequelize.STRING,
+			},
+			location: {
+				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
@@ -64,8 +60,17 @@ module.exports = {
 				type: Sequelize.STRING,
 				defaultValue: 'en',
 			},
-			organization_id: {
-				type: Sequelize.INTEGER,
+			share_link: {
+				type: Sequelize.STRING,
+			},
+			last_logged_in_at: {
+				type: Sequelize.DATE,
+			},
+			refresh_token: {
+				type: Sequelize.ARRAY(Sequelize.JSONB),
+			},
+			image: {
+				type: Sequelize.STRING,
 			},
 			created_at: {
 				allowNull: false,
@@ -78,11 +83,6 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
-			role: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				defaultValue: 'user',
-			}
 		})
 	},
 	async down(queryInterface, Sequelize) {

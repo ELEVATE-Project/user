@@ -71,7 +71,7 @@ module.exports = class Account {
 
 	async logout(req) {
 		const params = req.body
-		params.loggedInId = req.decodedToken._id
+		params.loggedInId = req.decodedToken.id
 		try {
 			const loggedOutAccount = await accountHelper.logout(params)
 			return loggedOutAccount
@@ -200,7 +200,7 @@ module.exports = class Account {
 	 */
 	async acceptTermsAndCondition(req) {
 		try {
-			const result = await accountHelper.acceptTermsAndCondition(req.decodedToken._id)
+			const result = await accountHelper.acceptTermsAndCondition(req.decodedToken.id)
 			return result
 		} catch (error) {
 			return error

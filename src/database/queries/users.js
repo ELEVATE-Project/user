@@ -27,3 +27,11 @@ exports.updateUser = async (update, filter, options) => {
 		return error
 	}
 }
+
+exports.findByPk = async (id) => {
+	try {
+		return await database.User.findByPk(id)
+	} catch (error) {
+		return error
+	}
+}
