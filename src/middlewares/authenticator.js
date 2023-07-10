@@ -97,7 +97,7 @@ module.exports = async function (req, res, next) {
 			const user = await UsersData.findOne({ _id: decodedToken.data._id, deleted: false })
 			if (!user) {
 				throw common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
