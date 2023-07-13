@@ -908,21 +908,12 @@ module.exports = class AccountHelper {
 	 * @method
 	 * @name changeRole
 	 * @param {string} bodyData.email - email of user.
+	 * @param {string} bodyData.role - role of user.
 	 * @returns {JSON} change role success response
 	 */
 	static async changeRole(bodyData) {
 		try {
-			const update = [
-				{
-					$set: {
-						isAMentor: { $not: '$isAMentor' },
-						refreshTokens: [],
-					},
-				},
-			]
-
-			const res = await usersData.updateOneUser({ 'email.address': bodyData.email }, update)
-
+			const res = await userQueries.updateUser({ role: bodyData.role }, { where: { email: bodyData.email } })
 			/* If user doc not updated  */
 			if (!res) {
 				return common.failureResponse({

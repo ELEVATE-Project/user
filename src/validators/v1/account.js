@@ -77,6 +77,7 @@ module.exports = {
 
 	changeRole: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
+		req.checkBody('role').notEmpty().withMessage('role field is empty')
 	},
 
 	listUser: (req) => {

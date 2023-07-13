@@ -5,7 +5,7 @@
  * Description : System Users database operations
  */
 
-const SystemUsers = require('../../database/models/system_users')
+const SystemUsers = require('./model')
 
 module.exports = class SystemUsersData {
 	static async findUsersByEmail(email) {

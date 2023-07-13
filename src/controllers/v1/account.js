@@ -238,6 +238,7 @@ module.exports = class Account {
 	 * @name changeRole
 	 * @param {Object} req -request data.
 	 * @param {string} req.body.email - email
+	 * @param {string} req.body.role - role
 	 * @returns {JSON} access token info
 	 */
 
