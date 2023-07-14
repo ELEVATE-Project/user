@@ -98,12 +98,25 @@ module.exports = class FormsHelper {
 	static async read(id, bodyData) {
 		try {
 			let filter = {}
-			if (ObjectId.isValid(id)) {
-				filter = { _id: id }
+
+			if (id) {
+				filter = { where: { id: id } }
 			} else {
-				filter = { ...bodyData }
+				filter = {
+					where: {},
+				}
+				if (bodyData.type) {
+					filter.where.type = bodyData.type
+				}
+				if (bodyData.sub_type) {
+					filter.where.sub_type = bodyData.sub_type
+				}
+				if (bodyData.templateName) {
+					filter.where['data.templateName'] = bodyData.templateName
+				}
 			}
-			const form = await formsData.findOneForm(filter)
+
+			const form = await formQueries.findOne(filter)
 
 			if (!form) {
 				return common.failureResponse({

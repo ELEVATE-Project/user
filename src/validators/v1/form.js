@@ -41,6 +41,7 @@ module.exports = {
 			.withMessage('type is invalid')
 
 		req.checkBody('sub_type')
+			.trim()
 			.notEmpty()
 			.withMessage('sub_type field is empty')
 			.matches(/^[A-Za-z]+$/)
@@ -74,8 +75,6 @@ module.exports = {
 				req.checkParams('id')
 					.notEmpty()
 					.withMessage('id param is empty')
-					.isMongoId()
-					.withMessage('id is invalid')
 			} else {
 				req.checkBody('type')
 					.trim()
@@ -84,19 +83,12 @@ module.exports = {
 					.matches(/^[A-Za-z]+$/)
 					.withMessage('type is invalid')
 
-				req.checkBody('subType')
+				req.checkBody('sub_type')
 					.trim()
 					.notEmpty()
-					.withMessage('subType field is empty')
+					.withMessage('sub_type field is empty')
 					.matches(/^[A-Za-z]+$/)
-					.withMessage('subType is invalid')
-
-				req.checkBody('action')
-					.trim()
-					.notEmpty()
-					.withMessage('action field is empty')
-					.matches(/^[A-Za-z]+$/)
-					.withMessage('action is invalid')
+					.withMessage('sub_type is invalid')
 
 				req.checkBody('templateName')
 					.trim()
