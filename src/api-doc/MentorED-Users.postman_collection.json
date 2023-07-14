@@ -165,10 +165,16 @@
 					"name": "Create",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"system\",\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\",\n    \"role\":\"admin\"\n\n}",
+							"raw": "{\n    \"name\":\"system\",\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\",\n,    \"role\":\"admin\"\n\n, \"secretCode\":\"W5bF7gesuS0xsNWmpsKy\"\n\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -806,6 +812,34 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/account/registrationOtp",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "account", "registrationOtp"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/628483242d53327460469bec",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "deleteUser", "628483242d53327460469bec"]
 						}
 					},
 					"response": []

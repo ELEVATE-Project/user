@@ -77,6 +77,7 @@ const userSchema = new Schema(
 			type: String,
 			default: 'en',
 		},
+		deletedAt: Date,
 	},
 	{
 		versionKey: false,

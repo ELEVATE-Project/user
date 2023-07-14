@@ -915,7 +915,43 @@ paths:
             application.json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
-
+  '/user/v1/admin/deleteUser/{id}':
+    patch:
+      summary: Delete user
+      tags:
+        - Admin APIs
+      description: "This API is associated with delete user  \n - Then
+        Endpoint for delete user `/user/v1/admin/deleteUser` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id '
+          required: true
+          description: Please append a valid user id to the request url
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/admin/deleteUser202Response'
+        '400':
+          description: Bad Request. User Entity Already Deleted
+          content:
+            application.json:
+              schema:
+                '$ref': '#/components/schemas/admin/deleteUser400Response'
 components:
   schemas:
     user:
@@ -2534,7 +2570,33 @@ components:
           error:
             type: array
             example: []
-
+    admin:
+      deleteUser202Response:
+        type: object
+        description: User Entity Deleted
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User entity deleted successfully
+          result:
+            type: array
+            example: []
+      deleteUser400Response:
+        type: object
+        description: User Deleted
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Please enter correct ID
+          error:
+            type: array
+            example: []
   securitySchemes:
     bearer:
       type: apiKey

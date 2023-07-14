@@ -154,4 +154,13 @@ module.exports = class UsersData {
 			return error
 		}
 	}
+
+	static async findOneAndReplace(filter, update) {
+		try {
+			const res = await Users.findOneAndReplace(filter, update)
+			return res
+		} catch (error) {
+			return error
+		}
+	}
 }

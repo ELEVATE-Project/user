@@ -52,6 +52,7 @@
 		"json2csv": "^5.0.6",
 		"jsonwebtoken": "^8.5.1",
 		"kafkajs": "^2.2.0",
+		"lodash": "^4.17.21",
 		"md5": "^2.3.0",
 		"module-alias": "^2.2.2",
 		"moment": "^2.29.1",
