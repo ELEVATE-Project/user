@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "20e62c5f-5d56-4114-aa06-e7f4eb2904c5",
+		"_postman_id": "822d6a3b-72c8-485f-964b-f0cf4c778d9a",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21498549"
@@ -1150,6 +1150,45 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "platform", "config"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin APIs",
+			"item": [
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/userDelete?userId",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "admin", "userDelete"],
+							"query": [
+								{
+									"key": "userId",
+									"value": null
+								}
+							]
 						}
 					},
 					"response": []

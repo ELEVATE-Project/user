@@ -70,4 +70,16 @@ module.exports = {
 	BBB_VALUE: 'BBB', // BigBlueButton code
 	BBB_PLATFORM: 'BigBlueButton (Default)',
 	REPORT_EMAIL_SUBJECT: 'Having issue in logging in/signing up',
+	ADMIN_ROLE: 'admin',
+	roleValidationPaths: [
+		'/sessions/enroll/',
+		'/sessions/unEnroll/',
+		'/sessions/update',
+		'/feedback/submit/',
+		'/sessions/start/',
+		'/mentors/share/',
+		'/mentees/joinSession/',
+		'/mentors/upcomingSessions/',
+		'/issues/create',
+	],
 }

@@ -86,6 +86,7 @@ let sessionsSchema = new Schema({
 		type: Number,
 		default: process.env.SESSION_MENTEE_LIMIT,
 	},
+	deletedAt: Date,
 })
 sessionsSchema.plugin(mongooseLeanGetter)
 const Sessions = db.model('sessions', sessionsSchema)
