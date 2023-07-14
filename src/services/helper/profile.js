@@ -32,7 +32,15 @@ module.exports = class ProfileHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			await usersData.updateOneUser({ _id: ObjectId(_id) }, bodyData)
+			let update = await usersData.updateOneUser({ _id: ObjectId(_id), deleted: false }, bodyData)
+			if (!update) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+
 			if (await utils.redisGet(_id)) {
 				await utils.redisDel(_id)
 			}
@@ -114,6 +122,13 @@ module.exports = class ProfileHelper {
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (user.deleted) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
 				})
 			}
 			let shareLink = user.shareLink
