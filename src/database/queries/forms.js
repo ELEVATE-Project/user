@@ -1,16 +1,39 @@
 'use strict'
-// const model = require('../models/index')
-const db = require('../models/index')
-const Forms = db.forms
-// const { Op } = require('sequelize')
+const database = require('../models/index')
+const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		// return await model.forms.create(data)
-		const form = await Forms.create(data)
-		console.log('form created successfully', form)
-		return form
-	} catch (err) {
-		console.log(err)
+		return await database.Form.create(data)
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findOne = async (filter) => {
+	try {
+		return await database.Form.findOne(filter)
+	} catch (error) {
+		return error
+	}
+}
+
+exports.updateOneForm = async (update, filter, options) => {
+	try {
+		let data = await database.Form.update(update, filter, options)
+		return data
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAllTypeFormVersion = async () => {
+	try {
+		const formData = await database.Form.findAll({
+			attributes: ['id', 'type'],
+		})
+		return formData
+	} catch (error) {
+		return error
 	}
 }

@@ -14,19 +14,12 @@ module.exports = {
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('type is invalid')
 
-		req.checkBody('subType')
+		req.checkBody('sub_type')
 			.trim()
 			.notEmpty()
-			.withMessage('subType field is empty')
+			.withMessage('sub_type field is empty')
 			.matches(/^[A-Za-z]+$/)
-			.withMessage('subType is invalid')
-
-		req.checkBody('action')
-			.trim()
-			.notEmpty()
-			.withMessage('action field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('action is invalid')
+			.withMessage('sub_type is invalid')
 
 		req.checkBody('data').notEmpty().withMessage('data field is empty')
 

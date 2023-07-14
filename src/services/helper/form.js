@@ -1,10 +1,10 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const formsData = require('@db/forms/queries')
+const formQueries = require('@database/queries/forms')
 const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const ObjectId = require('mongoose').Types.ObjectId
-const form = require('@generics/form')
+// const form = require('@generics/form')
 
 module.exports = class FormsHelper {
 	/**
@@ -17,7 +17,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData) {
 		try {
-			const form = await formsData.findOneForm({ type: bodyData.type })
+			const form = await formQueries.findOne({ where: { type: bodyData.type } })
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -25,7 +25,7 @@ module.exports = class FormsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			await formsData.createForm(bodyData)
+			await formQueries.create(bodyData)
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
 			return common.successResponse({
