@@ -20,8 +20,7 @@ exports.findOne = async (filter) => {
 
 exports.updateOneForm = async (update, filter, options) => {
 	try {
-		let data = await database.Form.update(update, filter, options)
-		return data
+		return await database.Form.update(update, filter, options)
 	} catch (error) {
 		return error
 	}

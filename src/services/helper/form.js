@@ -48,19 +48,20 @@ module.exports = class FormsHelper {
 	static async update(id, bodyData) {
 		try {
 			let filter = {}
-			if (ObjectId.isValid(id)) {
-				filter = {
-					_id: ObjectId(id),
-				}
+
+			if (id) {
+				filter = { where: { id: id } }
 			} else {
 				filter = {
-					type: bodyData.type,
-					subType: bodyData.subType,
-					action: bodyData.action,
-					'data.templateName': bodyData.data.templateName,
+					where: {
+						type: bodyData.type,
+						sub_type: bodyData.sub_type,
+						'data.templateName': bodyData.data.templateName,
+					},
 				}
 			}
-			const result = await formsData.updateOneForm(filter, bodyData)
+
+			const result = await formQueries.updateOneForm(bodyData, filter)
 
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
