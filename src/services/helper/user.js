@@ -113,13 +113,14 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			const user = await userQueries.findOne({
-				where: { id: userId },
-				attributes: ['role', 'deleted'],
+			let user = await userQueries.findOne({
+				where: { id: userId, role: common.roleMentor },
+				attributes: ['deleted', 'share_link'],
 			})
+
 			if (!user) {
 				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -131,7 +132,7 @@ module.exports = class UserHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			let shareLink = user.shareLink
+			let shareLink = user.share_link
 			if (!shareLink) {
 				shareLink = utils.md5Hash(userId)
 				await userQueries.updateUser({ share_link: shareLink }, { where: { id: userId } })

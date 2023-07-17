@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'active',
 			},
+			deleted: {
+				type: DataTypes.BOOLEAN,
+				defaultValue: false,
+			},
 			image: DataTypes.STRING,
 			last_logged_in_at: DataTypes.DATE,
 			has_accepted_terms_and_conditions: {
@@ -53,6 +57,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: 'user',
 			},
+
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)

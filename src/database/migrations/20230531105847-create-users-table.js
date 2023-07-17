@@ -69,6 +69,10 @@ module.exports = {
 			refresh_token: {
 				type: Sequelize.ARRAY(Sequelize.JSONB),
 			},
+			deleted: {
+				type: Sequelize.BOOLEAN,
+				defaultValue: false,
+			},
 			image: {
 				type: Sequelize.STRING,
 			},
