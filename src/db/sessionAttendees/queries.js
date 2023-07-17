@@ -6,6 +6,7 @@
  */
 
 const ObjectId = require('mongoose').Types.ObjectId
+const moment = require('moment')
 
 const SessionAttendees = require('./model')
 
@@ -84,7 +85,13 @@ module.exports = class SessionsAttendees {
 
 	static async updateOne(filter, update) {
 		try {
-			const updateResponse = await SessionAttendees.updateOne(filter, update)
+			const updateResponse = await SessionAttendees.updateOne(
+				{
+					...filter,
+					deleted: false,
+				},
+				update
+			)
 			if (
 				(updateResponse.n === 1 && updateResponse.nModified === 1) ||
 				(updateResponse.matchedCount === 1 && updateResponse.modifiedCount === 1)
@@ -249,6 +256,60 @@ module.exports = class SessionsAttendees {
 			return sessionAttendeesData
 		} catch (error) {
 			return error
+		}
+	}
+
+	static async unenrollFromUpcomingSessions(userId, sessionIds) {
+		try {
+			const unenrolledAttendees = await SessionAttendees.updateMany(
+				{
+					sessionId: { $in: sessionIds },
+					userId: userId,
+				},
+				{ $set: { deleted: true, deletedAt: new Date() } }
+			).exec()
+
+			const isUnenrolledSessions =
+				unenrolledAttendees.modifiedCount > 0 || unenrolledAttendees.matchedCount == 0 ? true : false
+
+			return isUnenrolledSessions
+		} catch (error) {
+			console.error('An error occurred:', error)
+			throw error
+		}
+	}
+
+	static async unEnrollAllAttendeesOfSessions(sessionDetails) {
+		try {
+			const currentDate = moment()
+
+			const sessionIds = sessionDetails.map((session) => session._id)
+
+			const unenrolledAttendees = await SessionAttendees.updateMany(
+				{ sessionId: { $in: sessionIds } },
+				{ $set: { deleted: true, deletedAt: currentDate } }
+			).exec()
+
+			const isUnenrolledAttendee =
+				unenrolledAttendees.modifiedCount > 0 || unenrolledAttendees.matchedCount == 0 ? true : false
+
+			return isUnenrolledAttendee
+		} catch (error) {
+			console.error('An error occurred:', error)
+			throw error
+		}
+	}
+	static async usersUpcomingSessions(userId, sessionIds) {
+		try {
+			const usersUpcomingSessions = await SessionAttendees.find({
+				sessionId: { $in: sessionIds },
+				userId: userId,
+			}).exec()
+
+			return usersUpcomingSessions
+		} catch (error) {
+			console.error('An error occurred:', error)
+			throw error
 		}
 	}
 }

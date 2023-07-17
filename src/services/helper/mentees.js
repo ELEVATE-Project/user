@@ -284,6 +284,7 @@ module.exports = class MenteesHelper {
 			userId: {
 				$ne: ObjectId(userId),
 			},
+			deleted: false,
 		}
 
 		const sessions = await sessionData.findAllSessions(page, limit, search, filters)
