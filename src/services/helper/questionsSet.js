@@ -122,7 +122,6 @@ module.exports = class questionsSetHelper {
 				result: questionSet,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
