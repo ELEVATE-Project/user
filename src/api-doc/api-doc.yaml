@@ -1133,14 +1133,165 @@ paths:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/questions/createQuestionRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                name:
+                  type: string
+                question:
+                  type: string
+                type:
+                  type: string
+                options:
+                  type: 'null'
+                no_of_stars:
+                  type: number
+                status:
+                  type: string
+                category:
+                  type: 'null'
+                rendering_data:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                    class:
+                      type: string
+                    disabled:
+                      type: boolean
+                    noOfstars:
+                      type: string
+                    position:
+                      type: string
+                    validation:
+                      type: object
+                      properties:
+                        required:
+                          type: boolean
+                meta:
+                  type: 'null'
+            examples:
+              example1:
+                value:
+                  name: keyvalue
+                  question: >-
+                    To what extent did you feel comfortable sharing your
+                    thoughts in the session?
+                  type: rating
+                  options: null
+                  no_of_stars: 5
+                  status: active
+                  category: null
+                  rendering_data:
+                    value: ''
+                    class: ion-margin
+                    disabled: false
+                    noOfstars: '5'
+                    position: floating
+                    validation:
+                      required: false
+                  meta: null
       responses:
         '201':
           description: Created
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/questions/createQuestionResponse201'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      question:
+                        type: string
+                      type:
+                        type: string
+                      options:
+                        type: 'null'
+                      no_of_stars:
+                        type: number
+                      status:
+                        type: string
+                      category:
+                        type: 'null'
+                      rendering_data:
+                        type: object
+                        properties:
+                          value:
+                            type: string
+                          class:
+                            type: string
+                          disabled:
+                            type: boolean
+                          noOfstars:
+                            type: string
+                          position:
+                            type: string
+                          validation:
+                            type: object
+                            properties:
+                              required:
+                                type: boolean
+                      meta:
+                        type: 'null'
+                      updatedAt:
+                        type: string
+                      createdAt:
+                        type: string
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Question created successfully
+                    result:
+                      id: 2
+                      name: keyvalue
+                      question: >-
+                        To what extent did you feel comfortable sharing your
+                        thoughts in the session?
+                      type: rating
+                      options: null
+                      no_of_stars: 5
+                      status: active
+                      category: null
+                      rendering_data:
+                        value: ''
+                        class: ion-margin
+                        disabled: false
+                        noOfstars: '5'
+                        position: floating
+                        validation:
+                          required: false
+                      meta: null
+                      updatedAt: '2023-07-17T09:43:01.614Z'
+                      createdAt: '2023-07-17T09:43:01.614Z'
+                      deletedAt: null
+                    meta:
+                      formsVersion: []
+                      correlation: c1987eb0-c58a-415c-99bc-a9de62518318
+                      meetingPlatform: BBB
   /mentoring/v1/questions/update/{QuestionId}:
     patch:
       summary: Update questions
@@ -1162,23 +1313,96 @@ paths:
             type: string
         - in: path
           name: QuestionId
-          required: true
-          description: Please append a valid question id in url
+          description: ''
           schema:
-            type: string
-          example: 629978caf0cf0901d7d74d12
+            type: number
+          required: true
       requestBody:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/questions/updateQuestionRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                name:
+                  type: string
+                question:
+                  type: string
+                type:
+                  type: string
+                options:
+                  type: 'null'
+                no_of_stars:
+                  type: number
+                status:
+                  type: string
+                category:
+                  type: 'null'
+                rendering_data:
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                    class:
+                      type: string
+                    disabled:
+                      type: boolean
+                    noOfstars:
+                      type: string
+                    position:
+                      type: string
+                    validation:
+                      type: object
+                      properties:
+                        required:
+                          type: boolean
+                meta:
+                  type: 'null'
+            examples:
+              example1:
+                value:
+                  name: keyvalue
+                  question: >-
+                    To what extent did you feel comfortable sharing your
+                    thoughts in the session
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/questions/updateQuestionResponse202'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Question updated successfully
+                    result: []
+                    meta:
+                      formsVersion: []
+                      correlation: 91339881-7ac2-45b5-a8a1-12ed6b06da99
+                      meetingPlatform: BBB
         '400':
           description: Bad Request
           content:
@@ -1206,18 +1430,111 @@ paths:
             type: string
         - in: path
           name: QuestionId
-          required: true
           description: Please append a valid question id in url
           schema:
-            type: string
-          example: 629978caf0cf0901d7d74d12
+            type: number
+          required: true
       responses:
         '200':
           description: Ok
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/questions/readQuestionResponse200'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      question:
+                        type: string
+                      options:
+                        type: 'null'
+                      type:
+                        type: string
+                      no_of_stars:
+                        type: number
+                      status:
+                        type: string
+                      category:
+                        type: 'null'
+                      rendering_data:
+                        type: object
+                        properties:
+                          value:
+                            type: string
+                          class:
+                            type: string
+                          disabled:
+                            type: boolean
+                          noOfstars:
+                            type: string
+                          position:
+                            type: string
+                          validation:
+                            type: object
+                            properties:
+                              required:
+                                type: boolean
+                      meta:
+                        type: 'null'
+                      createdAt:
+                        type: string
+                      updatedAt:
+                        type: string
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Question fetched successfully
+                    result:
+                      id: 1
+                      name: keyvalue
+                      question: >-
+                        To what extent did you feel comfortable sharing your
+                        thoughts in the session
+                      options: null
+                      type: rating
+                      no_of_stars: 5
+                      status: active
+                      category: null
+                      rendering_data:
+                        value: ''
+                        class: ion-margin
+                        disabled: false
+                        noOfstars: '5'
+                        position: floating
+                        validation:
+                          required: false
+                      meta: null
+                      createdAt: '2023-07-17T09:29:10.942Z'
+                      updatedAt: '2023-07-17T09:46:51.744Z'
+                      deletedAt: null
+                    meta:
+                      formsVersion: []
+                      correlation: fe922367-b03f-4164-a2c4-fba10a577dee
+                      meetingPlatform: BBB
         '400':
           description: Bad Request
           content:
@@ -1247,14 +1564,85 @@ paths:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/questionset/createQuestionSetRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                questions:
+                  type: array
+                  items:
+                    type: number
+                code:
+                  type: string
+            examples:
+              example1:
+                value:
+                  questions:
+                    - 1
+                  code: feedback
       responses:
         '201':
           description: Created
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/questionset/createQuestionSetResponse201'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      id:
+                        type: number
+                      questions:
+                        type: array
+                        items:
+                          type: string
+                      code:
+                        type: string
+                      updatedAt:
+                        type: string
+                      createdAt:
+                        type: string
+                      meta:
+                        type: 'null'
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Questions set created successfully
+                    result:
+                      status: published
+                      id: 2
+                      questions:
+                        - '1'
+                      code: feedback
+                      updatedAt: '2023-07-17T09:55:06.660Z'
+                      createdAt: '2023-07-17T09:55:06.660Z'
+                      meta: null
+                      deletedAt: null
+                    meta:
+                      formsVersion: []
+                      correlation: c7d0d434-25e7-41d4-8384-496e8786a7a1
+                      meetingPlatform: BBB
         '400':
           description: Bad Request
           content:
@@ -1282,23 +1670,67 @@ paths:
             type: string
         - in: path
           name: QuestionSetId
+          description: ''
+          schema: &ref_0
+            type: number
           required: true
-          description: Please append a valid question set id in url
-          schema:
-            type: string
-          example: 629978caf0cf0901d7d74d12
       requestBody:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/questionset/updateQuestionSetRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                questions:
+                  type: array
+                  items:
+                    type: number
+                code:
+                  type: string
+            examples:
+              example1:
+                value:
+                  questions:
+                    - 1
+                  code: UpdatedFeedbackCode
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/questionset/updateQuestionSetResponse202'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Questions set updated successfully
+                    result: []
+                    meta:
+                      formsVersion: []
+                      correlation: 767facf7-c809-4a7e-940b-09b8e981a1d4
+                      meetingPlatform: BBB
         '400':
           description: Bad Request
           content:
@@ -1326,18 +1758,57 @@ paths:
             type: string
         - in: path
           name: QuestionSetId
+          description: ''
+          schema: *ref_0
           required: true
-          description: Please append a valid question set id in url
-          schema:
-            type: string
-          example: 629978caf0cf0901d7d74d12
       responses:
         '200':
           description: Ok
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/questionset/readQuestionSetResponse200'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      questions:
+                        type: array
+                        items:
+                          type: string
+                      code:
+                        type: string
+                      status:
+                        type: string
+                      meta:
+                        type: 'null'
+                      createdAt:
+                        type: string
+                      updatedAt:
+                        type: string
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value: ''
         '400':
           description: Bad Request
           content:

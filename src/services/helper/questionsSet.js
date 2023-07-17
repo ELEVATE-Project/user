@@ -1,8 +1,8 @@
-// Dependencies
+//Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const questionsSetData = require('@db/questionsSet/queries')
-const questionData = require('@db/questions/queries')
+const questionsSetQueries = require('../../database/queries/questionSet')
+const questionQueries = require('../../database/queries/questions')
 
 module.exports = class questionsSetHelper {
 	/**
@@ -15,44 +15,32 @@ module.exports = class questionsSetHelper {
 
 	static async create(bodyData) {
 		try {
-			let questionInfo = await questionData.find({
-				_id: {
-					$in: bodyData.questions,
-				},
-				questionsSetId: {
-					$exists: false,
-				},
-			})
-
-			if (questionInfo.length == 0 || bodyData.questions.length != questionInfo.length) {
+			let questions = await questionQueries.find({ id: bodyData.questions })
+			if (questions.length != bodyData.questions.length) {
 				return common.failureResponse({
-					message: 'QUESTION_ALREADY_BEEN_USED',
+					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			let data = await questionsSetData.createQuestionsSet(bodyData)
-			if (data) {
-				await questionData.updateData(
-					{
-						_id: {
-							$in: bodyData.questions,
-						},
-					},
-					{
-						questionsSetId: data._id,
-					}
-				)
+			let questionSet = await questionsSetQueries.findOneQuestionsSet(bodyData)
+			if (questionSet) {
+				return common.failureResponse({
+					message: 'QUESTIONS_SET_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
+			questionSet = await questionsSetQueries.createQuestionsSet(bodyData)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'QUESTIONS_SET_CREATED_SUCCESSFULLY',
-				result: data,
+				result: questionSet,
 			})
 		} catch (error) {
-			throw error
+			return error
 		}
 	}
 
@@ -68,81 +56,42 @@ module.exports = class questionsSetHelper {
 	static async update(questionSetId, bodyData) {
 		try {
 			if (bodyData.questions) {
-				let update = true
-				let questionInfo = await questionData.find({
-					_id: {
-						$in: bodyData.questions,
-					},
-				})
-
-				if (questionInfo && questionInfo.length != bodyData.questions.length) {
+				let questionInfo = await questionQueries.find({ id: bodyData.questions })
+				if (questionInfo.length != bodyData.questions.length) {
 					return common.failureResponse({
 						message: 'QUESTION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-
-				await Promise.all(
-					questionInfo.map(async function (question) {
-						if (question.questionsSetId && question.questionsSetId != questionSetId) {
-							update = false
-						}
-					})
-				)
-
-				if (update == false) {
-					return common.failureResponse({
-						message: 'QUESTION_ALREADY_BEEN_USED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
 			}
 			const filter = {
-				_id: questionSetId,
+				id: questionSetId,
 			}
-			const result = await questionsSetData.updateOneQuestionsSet(filter, bodyData)
-
-			if (result === 'QUESTIONS_SET_ALREADY_EXISTS') {
+			let questionSet = await questionsSetQueries.findOneQuestionsSet(bodyData)
+			if (questionSet) {
 				return common.failureResponse({
 					message: 'QUESTIONS_SET_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} else if (result === 'QUESTIONS_SET_NOT_FOUND') {
+			}
+			questionSet = await questionsSetQueries.updateOneQuestionsSet(filter, bodyData)
+
+			if (questionSet === 'QUESTIONS_SET_NOT_FOUND') {
 				return common.failureResponse({
 					message: 'QUESTIONS_SET_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} else {
-				if (bodyData.questions) {
-					await questionData.updateData(
-						{
-							questionsSetId: questionSetId,
-						},
-						{ $unset: { questionsSetId: 1 } }
-					)
-
-					await questionData.updateData(
-						{
-							_id: {
-								$in: bodyData.questions,
-							},
-						},
-						{
-							questionsSetId: questionSetId,
-						}
-					)
-				}
 			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'QUESTIONS_SET_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			throw error
+			return error
 		}
 	}
 
@@ -157,10 +106,10 @@ module.exports = class questionsSetHelper {
 	static async read(questionsSetId) {
 		try {
 			const filter = {
-				_id: questionsSetId,
+				id: questionsSetId,
 			}
-			const QuestionsSet = await questionsSetData.findOneQuestionsSet(filter)
-			if (!QuestionsSet) {
+			const questionSet = await questionsSetQueries.findOneQuestionsSet(filter)
+			if (!questionSet) {
 				return common.failureResponse({
 					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -170,10 +119,10 @@ module.exports = class questionsSetHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'QUESTIONS_SET_FETCHED_SUCCESSFULLY',
-				result: QuestionsSet ? QuestionsSet : {},
+				result: questionSet ? questionSet : {},
 			})
 		} catch (error) {
-			throw error
+			return error
 		}
 	}
 }

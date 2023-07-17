@@ -13,14 +13,14 @@ module.exports = class questionsHelper {
 
 	static async create(bodyData) {
 		try {
-			let data = await questionQueries.createQuestion(bodyData)
+			let question = await questionQueries.createQuestion(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'QUESTION_CREATED_SUCCESSFULLY',
-				result: data,
+				result: question,
 			})
 		} catch (error) {
-			throw error
+			return error
 		}
 	}
 
@@ -35,15 +35,10 @@ module.exports = class questionsHelper {
 
 	static async update(questionId, bodyData) {
 		try {
-			const filter = { _id: questionId }
-			const result = await questionsData.updateOneQuestion(filter, bodyData)
-			if (result === 'QUESTION_ALREADY_EXISTS') {
-				return common.failureResponse({
-					message: 'QUESTION_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else if (result === 'QUESTION_NOT_FOUND') {
+			const filter = { id: questionId }
+			const result = await questionQueries.updateOneQuestion(filter, bodyData)
+
+			if (result === 'QUESTION_NOT_FOUND') {
 				return common.failureResponse({
 					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -55,7 +50,7 @@ module.exports = class questionsHelper {
 				message: 'QUESTION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			throw error
+			return error
 		}
 	}
 
@@ -69,9 +64,9 @@ module.exports = class questionsHelper {
 
 	static async read(questionId) {
 		try {
-			const filter = { _id: questionId }
-			const Questions = await questionsData.findOneQuestion(filter)
-			if (!Questions) {
+			const filter = { id: questionId }
+			const question = await questionQueries.findOneQuestion(filter)
+			if (!question) {
 				return common.failureResponse({
 					message: 'QUESTION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -81,10 +76,10 @@ module.exports = class questionsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'QUESTION_FETCHED_SUCCESSFULLY',
-				result: Questions ? Questions : {},
+				result: question ? question : {},
 			})
 		} catch (error) {
-			throw error
+			return error
 		}
 	}
 }

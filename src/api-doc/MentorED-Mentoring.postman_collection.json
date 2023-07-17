@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "20e62c5f-5d56-4114-aa06-e7f4eb2904c5",
+		"_postman_id": "30976341-d211-4422-aabd-318b65bde8ea",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21498549"
@@ -892,7 +892,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"question\": \"How much you rate the audio/video quality of session\",\n    \"options\": [\"1\",\"2\"],\n    \"deleted\": false,\n    \"responseType\": \"radio\",\n    \"value\": \"1\",\n    \"hint\": \"\"\n}",
+							"raw": "{\n    \"name\": \"keyvalue\",\n    \"question\": \"To what extent did you feel comfortable sharing your thoughts in the session?\",\n    \"type\": \"rating\",\n    \"options\": null,\n    \"no_of_stars\": 5,\n    \"status\": \"active\",\n    \"category\": null,\n    \"rendering_data\": {\n        \"value\": \"\",\n        \"class\": \"ion-margin\",\n        \"disabled\": false,\n        \"noOfstars\": \"5\",\n        \"position\": \"floating\",\n        \"validation\": {\n            \"required\": false\n        }\n    },\n    \"meta\": null\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -920,7 +920,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{   \"question\": \"How much you rate the audio/video quality of session\",\n    \"options\": [\"1\",\"2\",\"3\"],\n    \"deleted\": false,\n    \"responseType\": \"radio\",\n    \"value\": \"1\",\n    \"hint\": \"1\"\n}",
+							"raw": "{\n    \"name\": \"keyvalue\",\n    \"question\": \"To what extent did you feel comfortable sharing your thoughts in the session?\",\n    \"type\": \"rating\",\n    \"options\": null,\n    \"no_of_stars\": 5,\n    \"status\": \"active\",\n    \"category\": null,\n    \"rendering_data\": {\n        \"noOfstars\": \"10\",\n        \"position\": \"floating\",\n        \"validation\": {\n            \"required\": false\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -928,9 +928,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/update/6296e6892fdc1f037cbf4529",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/update/9",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions", "update", "6296e6892fdc1f037cbf4529"]
+							"path": ["v1", "questions", "update", "9"]
 						}
 					},
 					"response": []
@@ -947,9 +947,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/read/6296e6892fdc1f037cbf4529",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/read/9",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions", "read", "6296e6892fdc1f037cbf4529"]
+							"path": ["v1", "questions", "read", "9"]
 						}
 					},
 					"response": []
@@ -972,7 +972,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"questions\": [\"6296e6892fdc1f037cbf4529\"],\n    \"code\": \"feedback\"\n}",
+							"raw": "{\n    \"questions\": [\n        1,\n        2,\n        9\n    ],\n    \"code\": \"feedback\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1000,7 +1000,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"questions\": [\"6296e6892fdc1f037cbf4529\",\"6296e65c2fdc1f037cbf4527\",\"6296e6522fdc1f037cbf4525\"],\n    \"code\": \"feedback\"\n}",
+							"raw": "{\n    \"questions\": [\n        1,\n        9\n    ],\n    \"code\": \"feedback\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1008,9 +1008,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/update/629978caf0cf0901d7d74d12",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/update/13",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "update", "629978caf0cf0901d7d74d12"]
+							"path": ["v1", "questionsSet", "update", "13"]
 						}
 					},
 					"response": []
@@ -1039,9 +1039,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/read/629978caf0cf0901d7d74d12",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/read/13",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "read", "629978caf0cf0901d7d74d12"]
+							"path": ["v1", "questionsSet", "read", "13"]
 						}
 					},
 					"response": []

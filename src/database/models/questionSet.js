@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				defaultValue: 'published',
 			},
 			meta: {
 				type: DataTypes.JSON,
