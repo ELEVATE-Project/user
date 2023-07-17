@@ -20,7 +20,7 @@ module.exports = class questionsHelper {
 				result: question,
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
@@ -50,7 +50,7 @@ module.exports = class questionsHelper {
 				message: 'QUESTION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
@@ -79,7 +79,7 @@ module.exports = class questionsHelper {
 				result: question ? question : {},
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 }

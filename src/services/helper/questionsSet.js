@@ -40,7 +40,7 @@ module.exports = class questionsSetHelper {
 				result: questionSet,
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
@@ -91,7 +91,7 @@ module.exports = class questionsSetHelper {
 				message: 'QUESTIONS_SET_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
@@ -122,7 +122,8 @@ module.exports = class questionsSetHelper {
 				result: questionSet ? questionSet : {},
 			})
 		} catch (error) {
-			return error
+			console.log(error)
+			throw error
 		}
 	}
 }
