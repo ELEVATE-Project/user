@@ -10,19 +10,19 @@ const userHelper = require('@services/helper/user')
 
 module.exports = class User {
 	/**
-	 * Updates user profile
+	 * Updates user data
 	 * @method
 	 * @name update
 	 * @param {Object} req -request data.
 	 * @param {Object} req.body - contains user data.
-	 * @returns {JSON} - profile updated data.
+	 * @returns {JSON} - user updated data.
 	 */
 
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedProfile = await profileHelper.update(params, req.decodedToken._id)
-			return updatedProfile
+			const updatedUser = await userHelper.update(params, req.decodedToken.id)
+			return updatedUser
 		} catch (error) {
 			return error
 		}

@@ -16,13 +16,13 @@ module.exports = class UserHelper {
 	 * update profile
 	 * @method
 	 * @name update
-	 * @param {Object} bodyData - it contains profile infomration
+	 * @param {Object} bodyData - it contains user infomration
 	 * @param {string} pageSize -request data.
 	 * @param {string} searchText - search text.
-	 * @returns {JSON} - update profile response
+	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, _id) {
-		bodyData.updatedAt = new Date().getTime()
+	static async update(bodyData, id) {
+		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return common.failureResponse({
@@ -31,7 +31,7 @@ module.exports = class UserHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let update = await usersData.updateOneUser({ _id: ObjectId(_id), deleted: false }, bodyData)
+			let update = await userQueries.updateUser(bodyData, { where: { id: id } })
 			if (!update) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -40,8 +40,8 @@ module.exports = class UserHelper {
 				})
 			}
 
-			if (await utils.redisGet(_id)) {
-				await utils.redisDel(_id)
+			if (await utils.redisGet(id.toString())) {
+				await utils.redisDel(id.toString())
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -71,7 +71,7 @@ module.exports = class UserHelper {
 				filter = { where: { shareLink: id } }
 			}
 
-			const userDetails = (await utils.redisGet(id)) || false
+			const userDetails = (await utils.redisGet(id.toString())) || false
 			if (!userDetails) {
 				const user = await userQueries.findOne({
 					filter,
@@ -84,7 +84,7 @@ module.exports = class UserHelper {
 					user.image = await utils.getDownloadableUrl(user.image)
 				}
 				if (user.role === common.roleMentor) {
-					await utils.redisSet(id, user)
+					await utils.redisSet(id.toString(), user)
 				}
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,

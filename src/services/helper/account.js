@@ -932,8 +932,7 @@ module.exports = class AccountHelper {
 			}
       
       await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
-			await utilsHelper.redisDel(user.email)
-			// await utils.redisDel(userId)
+			await utils.redisDel(userId.toString())
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

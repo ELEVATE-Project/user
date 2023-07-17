@@ -51,7 +51,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			location: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
+				type: Sequelize.ARRAY(Sequelize.JSONB),
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
