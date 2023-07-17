@@ -1,6 +1,5 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const questionsData = require('@db/questions/queries')
 const questionQueries = require('../../database/queries/questions')
 module.exports = class questionsHelper {
 	/**
