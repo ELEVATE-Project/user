@@ -119,7 +119,7 @@ module.exports = class questionsSetHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'QUESTIONS_SET_FETCHED_SUCCESSFULLY',
-				result: questionSet ? questionSet : {},
+				result: questionSet,
 			})
 		} catch (error) {
 			console.log(error)

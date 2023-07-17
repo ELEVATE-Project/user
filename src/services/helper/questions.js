@@ -75,7 +75,7 @@ module.exports = class questionsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'QUESTION_FETCHED_SUCCESSFULLY',
-				result: question ? question : {},
+				result: question,
 			})
 		} catch (error) {
 			throw error
