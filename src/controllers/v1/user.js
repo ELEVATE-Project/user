@@ -1,14 +1,14 @@
 /**
- * name : profile.js
- * author : Aman
- * created-date : 02-Nov-2021
- * Description : User Profile.
+ * name : users.js
+ * author : Priyanka Pradeep
+ * created-date : 17-July-2023
+ * Description : User.
  */
 
 // Dependencies
-const profileHelper = require('@services/helper/profile')
+const userHelper = require('@services/helper/user')
 
-module.exports = class Profile {
+module.exports = class User {
 	/**
 	 * Updates user profile
 	 * @method
@@ -29,17 +29,17 @@ module.exports = class Profile {
 	}
 
 	/**
-	 * User profile details
+	 * User details
 	 * @method
-	 * @name details
+	 * @name read
 	 * @param {Object} req -request data.
 	 * @param {string} req.params._id - user id.
-	 * @returns {JSON} - returns profile details.
+	 * @returns {JSON} - returns user details.
 	 */
-	async details(req) {
+	async read(req) {
 		try {
-			const profileDetails = await profileHelper.details(req.params.id ? req.params.id : req.decodedToken._id)
-			return profileDetails
+			const userDetails = await userHelper.read(req.params.id ? req.params.id : req.decodedToken.id)
+			return userDetails
 		} catch (error) {
 			return error
 		}

@@ -68,4 +68,5 @@ module.exports = {
 		'/user/v1/profile/share',
 		'/user/v1/profile/details',
 	],
+	roleMentor:"mentor"
 }

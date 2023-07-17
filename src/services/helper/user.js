@@ -1,18 +1,17 @@
 /**
- * name : services/helper/profile.js
- * author : Aman
- * created-date : 02-Nov-2021
- * Description : User Profile Service Helper.
+ * name : services/helper/users.js
+ * author : Priyanka Pradeep
+ * created-date : 17-July-2023
+ * Description : User Service Helper.
  */
 
 // Dependencies
-const ObjectId = require('mongoose').Types.ObjectId
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const usersData = require('@db/users/queries')
+const userQueries = require('@database/queries/users')
 const utils = require('@generics/utils')
 
-module.exports = class ProfileHelper {
+module.exports = class UserHelper {
 	/**
 	 * update profile
 	 * @method
@@ -54,40 +53,38 @@ module.exports = class ProfileHelper {
 	}
 
 	/**
-	 * profile details
+	 * user details
 	 * @method
-	 * @name details
+	 * @name read
 	 * @param {string} _id -userId.
 	 * @param {string} searchText - search text.
-	 * @returns {JSON} - user profile information
+	 * @returns {JSON} - user information
 	 */
-	static async details(_id) {
-		const projection = {
-			password: 0,
-			'designation.deleted': 0,
-			'designation._id': 0,
-			'areasOfExpertise.deleted': 0,
-			'areasOfExpertise._id': 0,
-			'location.deleted': 0,
-			'location._id': 0,
-			refreshTokens: 0,
-		}
+	static async read(id) {
+		const projection = ['password', 'location', 'refresh_token']
 		try {
-			const filter = {}
-			if (ObjectId.isValid(_id)) {
-				filter._id = ObjectId(_id)
+			let filter = {}
+
+			if (id) {
+				filter = { where: { id: id } }
 			} else {
-				filter.shareLink = _id
+				filter = { where: { shareLink: id } }
 			}
 
-			const userDetails = (await utils.redisGet(_id)) || false
+			const userDetails = (await utils.redisGet(id)) || false
 			if (!userDetails) {
-				const user = await usersData.findOne(filter, projection)
+				const user = await userQueries.findOne({
+					filter,
+					attributes: {
+						exclude: projection,
+					},
+				})
+
 				if (user && user.image) {
 					user.image = await utils.getDownloadableUrl(user.image)
 				}
-				if (ObjectId.isValid(_id) && user.isAMentor) {
-					await utils.redisSet(_id, user)
+				if (user.role === common.roleMentor) {
+					await utils.redisSet(id, user)
 				}
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,

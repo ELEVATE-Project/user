@@ -1,8 +1,8 @@
 /**
- * name : validators/v1/profile.js
- * author : Aman Gupta
- * Date : 01-Nov-2021
- * Description : Validations of profiles controller
+ * name : validators/v1/users.js
+ * author : Priyanka Pradeep
+ * Date : 17-July-2023
+ * Description : Validations of user controller
  */
 
 module.exports = {
@@ -60,7 +60,7 @@ module.exports = {
 		}
 	},
 
-	details: (req) => {},
+	read: (req) => {},
 
 	share: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
