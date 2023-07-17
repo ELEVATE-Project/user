@@ -21,15 +21,15 @@ paths:
   /mentoring/v1/form/create:
     post:
       summary: Create form
-      tags:
-        - Form APIs
+      tags: []
       description: |-
         You can use this API to create a form  
          - The API Endpoint for creating a form is `/mentoring/v1/form/create` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - name: X-auth-token
+        - &ref_0
+          name: X-auth-token
           in: header
           description: >-
             To use this API, you require an X-auth-token. This token is
@@ -49,7 +49,7 @@ paths:
             application.json:
               schema:
                 $ref: '#/components/schemas/form/createForm200Response'
-        '400':
+        '400': &ref_1
           description: Bad Request
           content:
             application.json:
@@ -2200,6 +2200,91 @@ paths:
                       correlation: a677494a-b89c-441c-8bdf-70fc91c7136d
                       meetingPlatform: 'OFF'
       summary: Get app config
+  /mentoring/v1/admin/userDelete?userId={UUID}:
+    post:
+      summary: Delete user related data from mentoring service
+      tags:
+        - Admin APIs
+      description: |-
+        You can use this API to delete user-related data. 
+         - The API Endpoint for creating a form is `/mentoring/v1/admin/userDelete?userId=` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - *ref_0
+        - in: query
+          name: userId
+          description: uuid of the user
+          schema:
+            type: string
+          required: true
+      requestBody:
+        content: {}
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      isUnenrolledFromSessions:
+                        type: boolean
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                            type:
+                              type: string
+                            __v:
+                              type: number
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                Mentee:
+                  value:
+                    responseCode: OK
+                    message: User details removed successfully.
+                    result:
+                      isUnenrolledFromSessions: true
+                    meta:
+                      formsVersion:
+                        - _id: 6490347c24c08e1c0e450b27
+                          type: session
+                          __v: 0
+                      correlation: 98a6964f-3be9-4aff-95f3-96536957304a
+                      meetingPlatform: BBB
+                Mentor:
+                  value:
+                    responseCode: OK
+                    message: User details removed successfully.
+                    result:
+                      isAttendeesNotified: true
+                      isUnenrolledFromSessions: true
+                    meta:
+                      formsVersion:
+                        - _id: 6490347c24c08e1c0e450b27
+                          type: session
+                          __v: 0
+                      correlation: d9a6f5c1-2f6b-4bf9-a195-9fe9946f86c8
+                      meetingPlatform: BBB
+        '400': *ref_1
 components:
   schemas:
     form:
@@ -4658,6 +4743,11 @@ components:
 tags:
   - name: Config APIs
     description: You can use this API to get config related to the service
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Admin APIs
+    description: ''
     externalDocs:
       description: ''
       url: ''

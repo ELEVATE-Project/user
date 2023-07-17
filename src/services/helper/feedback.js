@@ -31,6 +31,7 @@ module.exports = class MenteesHelper {
 						$size: 0,
 					},
 					userId: ObjectId(userId),
+					deleted: false,
 				}
 				let mentorSessions = await sessionData.findSessions(filters, {
 					_id: 1,
