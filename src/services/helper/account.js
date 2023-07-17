@@ -236,8 +236,8 @@ module.exports = class AccountHelper {
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
 				})
 			}
 
