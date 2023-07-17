@@ -54,7 +54,7 @@ module.exports = class User {
 	 */
 	async share(req) {
 		try {
-			const shareLink = await profileHelper.share(req.params.id)
+			const shareLink = await userHelper.share(req.params.id)
 			return shareLink
 		} catch (error) {
 			return error

@@ -107,13 +107,16 @@ module.exports = class UserHelper {
 	 * Share a mentor Profile.
 	 * @method
 	 * @name share
-	 * @param {String} profileId - Profile id.
+	 * @param {String} userId - User id.
 	 * @returns {JSON} - Shareable profile link.
 	 */
 
-	static async share(profileId) {
+	static async share(userId) {
 		try {
-			const user = await usersData.findOne({ _id: ObjectId(profileId), isAMentor: true })
+			const user = await userQueries.findOne({
+				where: { id: userId },
+				attributes: ['role', 'deleted'],
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -130,8 +133,8 @@ module.exports = class UserHelper {
 			}
 			let shareLink = user.shareLink
 			if (!shareLink) {
-				shareLink = utils.md5Hash(profileId)
-				await usersData.updateOneUser({ _id: ObjectId(profileId) }, { shareLink })
+				shareLink = utils.md5Hash(userId)
+				await userQueries.updateUser({ share_link: shareLink }, { where: { id: userId } })
 			}
 			return common.successResponse({
 				message: 'PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY',
