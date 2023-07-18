@@ -21,15 +21,15 @@ paths:
   /mentoring/v1/form/create:
     post:
       summary: Create form
-      tags: []
+      tags:
+        - Form APIs
       description: |-
         You can use this API to create a form  
          - The API Endpoint for creating a form is `/mentoring/v1/form/create` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters:
-        - &ref_0
-          name: X-auth-token
+        - name: X-auth-token
           in: header
           description: >-
             To use this API, you require an X-auth-token. This token is
@@ -41,15 +41,242 @@ paths:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/form/createFormRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                sub_type:
+                  type: string
+                action:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    template_name:
+                      type: string
+                    fields:
+                      type: object
+                      properties:
+                        controls:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              label:
+                                type: string
+                              value:
+                                type: string
+                              class:
+                                type: string
+                              type:
+                                type: string
+                              position:
+                                type: string
+                              validators:
+                                type: object
+                                properties:
+                                  required:
+                                    type: boolean
+                                  min_length:
+                                    type: number
+                              disabled:
+                                type: boolean
+                              show_select_all:
+                                type: boolean
+                            required:
+                              - name
+                              - label
+                              - value
+                              - class
+                              - type
+                              - position
+                              - validators
+                              - disabled
+                              - show_select_all
+            examples:
+              example1:
+                value:
+                  type: session
+                  sub_type: createSessions
+                  action: sessionField
+                  data:
+                    template_name: defaultTemplate
+                    fields:
+                      controls:
+                        - name: title
+                          label: title
+                          value: ''
+                          class: ion-margin
+                          type: text
+                          position: floating
+                          validators:
+                            required: true
+                            min_length: 5
+                        - name: categories
+                          label: Select categories
+                          value: ''
+                          class: ion-margin
+                          type: chip
+                          position: ''
+                          disabled: false
+                          show_select_all: true
+                          validators:
+                            required: true
+                        - name: ages
+                          label: Select age
+                          value: ''
+                          class: ion-margin
+                          type: chip
+                          position: ''
+                          disabled: false
+                          show_select_all: true
+                          validators:
+                            required: true
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/form/createForm200Response'
-        '400': &ref_1
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      type:
+                        type: string
+                      sub_type:
+                        type: string
+                      data:
+                        type: object
+                        properties:
+                          template_name:
+                            type: string
+                          fields:
+                            type: object
+                            properties:
+                              controls:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    name:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                    class:
+                                      type: string
+                                    type:
+                                      type: string
+                                    position:
+                                      type: string
+                                    validators:
+                                      type: object
+                                      properties:
+                                        required:
+                                          type: boolean
+                                        min_length:
+                                          type: number
+                                    disabled:
+                                      type: boolean
+                                    show_select_all:
+                                      type: boolean
+                                  required:
+                                    - name
+                                    - label
+                                    - value
+                                    - class
+                                    - type
+                                    - position
+                                    - validators
+                                    - disabled
+                                    - show_select_all
+                      updatedAt:
+                        type: string
+                      createdAt:
+                        type: string
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Form created successfully
+                    result:
+                      id: 16
+                      type: session
+                      sub_type: createSessions
+                      data:
+                        template_name: defaultTemplate
+                        fields:
+                          controls:
+                            - name: title
+                              label: title
+                              value: ''
+                              class: ion-margin
+                              type: text
+                              position: floating
+                              validators:
+                                required: true
+                                min_length: 5
+                            - name: categories
+                              label: Select categories
+                              value: ''
+                              class: ion-margin
+                              type: chip
+                              position: ''
+                              disabled: false
+                              show_select_all: true
+                              validators:
+                                required: true
+                            - name: ages
+                              label: Select age
+                              value: ''
+                              class: ion-margin
+                              type: chip
+                              position: ''
+                              disabled: false
+                              show_select_all: true
+                              validators:
+                                required: true
+                      updatedAt: '2023-07-18T20:48:10.492Z'
+                      createdAt: '2023-07-18T20:48:10.492Z'
+                      deletedAt: null
+                    meta:
+                      formsVersion:
+                        - id: 16
+                          type: session
+                      correlation: d244be75-c5ec-4286-9498-af2fe6f853e5
+                      meetingPlatform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
@@ -76,23 +303,153 @@ paths:
             type: string
         - in: path
           name: formId
-          required: true
           description: Please append a valid form Id to the Request URL.
-          schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
+          schema: &ref_0
+            type: number
+          required: true
       requestBody:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/form/updateFormRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                sub_type:
+                  type: string
+                action:
+                  type: string
+                data:
+                  type: object
+                  properties:
+                    template_name:
+                      type: string
+                    fields:
+                      type: object
+                      properties:
+                        controls:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                              label:
+                                type: string
+                              value:
+                                type: string
+                              class:
+                                type: string
+                              type:
+                                type: string
+                              position:
+                                type: string
+                              validators:
+                                type: object
+                                properties:
+                                  required:
+                                    type: boolean
+                                  min_length:
+                                    type: number
+                              disabled:
+                                type: boolean
+                              show_select_all:
+                                type: boolean
+                            required:
+                              - name
+                              - label
+                              - value
+                              - class
+                              - type
+                              - position
+                              - validators
+                              - disabled
+                              - show_select_all
+            examples:
+              example1:
+                value:
+                  type: session
+                  sub_type: createSessionsNew
+                  action: sessionField
+                  data:
+                    template_name: Test
+                    fields:
+                      controls:
+                        - name: title
+                          label: title
+                          value: ''
+                          class: ion-margin
+                          type: text
+                          position: floating
+                          validators:
+                            required: true
+                            min_length: 5
+                        - name: categories
+                          label: Select categories
+                          value: ''
+                          class: ion-margin
+                          type: chip
+                          position: ''
+                          disabled: false
+                          show_select_all: true
+                          validators:
+                            required: true
+                        - name: ages
+                          label: Select age
+                          value: ''
+                          class: ion-margin
+                          type: chip
+                          position: ''
+                          disabled: false
+                          show_select_all: true
+                          validators:
+                            required: true
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/form/updateForm200Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Form updated successfully
+                    result: []
+                    meta:
+                      formsVersion:
+                        - id: 16
+                          type: session
+                      correlation: 37517055-d4f5-4578-ac57-25a10e541603
+                      meetingPlatform: BBB
         '400':
           description: Bad Request
           content:
@@ -120,23 +477,166 @@ paths:
             type: string
         - in: path
           name: formId
-          required: false
           description: Please append a valid form Id to the Request URL.
-          schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
+          schema: *ref_0
+          required: false
       requestBody:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/form/readFormRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                type:
+                  type: string
+                sub_type:
+                  type: string
+            examples:
+              example1:
+                value:
+                  type: session
+                  sub_type: createSessionsNew
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/form/readForm200Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      type:
+                        type: string
+                      sub_type:
+                        type: string
+                      data:
+                        type: object
+                        properties:
+                          template_name:
+                            type: string
+                          fields:
+                            type: object
+                            properties:
+                              controls:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    name:
+                                      type: string
+                                    label:
+                                      type: string
+                                    value:
+                                      type: string
+                                    class:
+                                      type: string
+                                    type:
+                                      type: string
+                                    position:
+                                      type: string
+                                    validators:
+                                      type: object
+                                      properties:
+                                        required:
+                                          type: boolean
+                                        min_length:
+                                          type: number
+                                    disabled:
+                                      type: boolean
+                                    show_select_all:
+                                      type: boolean
+                                  required:
+                                    - name
+                                    - label
+                                    - value
+                                    - class
+                                    - type
+                                    - position
+                                    - validators
+                                    - disabled
+                                    - show_select_all
+                      createdAt:
+                        type: string
+                      updatedAt:
+                        type: string
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Form fetched successfully
+                    result:
+                      id: 16
+                      type: session
+                      sub_type: createSessions
+                      data:
+                        template_name: defaultTemplate
+                        fields:
+                          controls:
+                            - name: title
+                              label: title
+                              value: ''
+                              class: ion-margin
+                              type: text
+                              position: floating
+                              validators:
+                                required: true
+                                min_length: 5
+                            - name: categories
+                              label: Select categories
+                              value: ''
+                              class: ion-margin
+                              type: chip
+                              position: ''
+                              disabled: false
+                              show_select_all: true
+                              validators:
+                                required: true
+                            - name: ages
+                              label: Select age
+                              value: ''
+                              class: ion-margin
+                              type: chip
+                              position: ''
+                              disabled: false
+                              show_select_all: true
+                              validators:
+                                required: true
+                      createdAt: '2023-07-18T20:48:10.492Z'
+                      updatedAt: '2023-07-18T20:48:10.492Z'
+                      deletedAt: null
+                    meta:
+                      formsVersion:
+                        - id: 16
+                          type: session
+                      correlation: c5e5bc75-0f4d-4e8e-9ab6-2e6b0b2febda
+                      meetingPlatform: BBB
         '400':
           description: Bad Request
           content:
@@ -1671,7 +2171,7 @@ paths:
         - in: path
           name: QuestionSetId
           description: ''
-          schema: &ref_0
+          schema: &ref_1
             type: number
           required: true
       requestBody:
@@ -1759,7 +2259,7 @@ paths:
         - in: path
           name: QuestionSetId
           description: ''
-          schema: *ref_0
+          schema: *ref_1
           required: true
       responses:
         '200':
@@ -2200,91 +2700,6 @@ paths:
                       correlation: a677494a-b89c-441c-8bdf-70fc91c7136d
                       meetingPlatform: 'OFF'
       summary: Get app config
-  /mentoring/v1/admin/userDelete?userId={UUID}:
-    post:
-      summary: Delete user related data from mentoring service
-      tags:
-        - Admin APIs
-      description: |-
-        You can use this API to delete user-related data. 
-         - The API Endpoint for creating a form is `/mentoring/v1/admin/userDelete?userId=` 
-         - It is mandatory to provide values for parameters which are marked as `required` 
-         - This is a mandatory parameter and cannot be empty or null.
-      parameters:
-        - *ref_0
-        - in: query
-          name: userId
-          description: uuid of the user
-          schema:
-            type: string
-          required: true
-      requestBody:
-        content: {}
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                $schema: http://json-schema.org/draft-04/schema#
-                type: object
-                properties:
-                  responseCode:
-                    type: string
-                  message:
-                    type: string
-                  result:
-                    type: object
-                    properties:
-                      isUnenrolledFromSessions:
-                        type: boolean
-                  meta:
-                    type: object
-                    properties:
-                      formsVersion:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            _id:
-                              type: string
-                            type:
-                              type: string
-                            __v:
-                              type: number
-                      correlation:
-                        type: string
-                      meetingPlatform:
-                        type: string
-              examples:
-                Mentee:
-                  value:
-                    responseCode: OK
-                    message: User details removed successfully.
-                    result:
-                      isUnenrolledFromSessions: true
-                    meta:
-                      formsVersion:
-                        - _id: 6490347c24c08e1c0e450b27
-                          type: session
-                          __v: 0
-                      correlation: 98a6964f-3be9-4aff-95f3-96536957304a
-                      meetingPlatform: BBB
-                Mentor:
-                  value:
-                    responseCode: OK
-                    message: User details removed successfully.
-                    result:
-                      isAttendeesNotified: true
-                      isUnenrolledFromSessions: true
-                    meta:
-                      formsVersion:
-                        - _id: 6490347c24c08e1c0e450b27
-                          type: session
-                          __v: 0
-                      correlation: d9a6f5c1-2f6b-4bf9-a195-9fe9946f86c8
-                      meetingPlatform: BBB
-        '400': *ref_1
 components:
   schemas:
     form:
@@ -4743,11 +5158,6 @@ components:
 tags:
   - name: Config APIs
     description: You can use this API to get config related to the service
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Admin APIs
-    description: ''
     externalDocs:
       description: ''
       url: ''

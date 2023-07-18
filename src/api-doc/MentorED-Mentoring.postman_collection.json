@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
+							"raw": "{\n    \"type\": \"session\",\n    \"sub_type\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"min_length\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"show_select_all\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"show_select_all\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -53,7 +53,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
+							"raw": "{\n    \"type\": \"session\",\n    \"sub_type\": \"createSessionsNew\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -61,9 +61,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read/61ee56ebfc2b962cf281dd01",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read/16",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
+							"path": ["v1", "form", "read", "16"]
 						}
 					},
 					"response": []
@@ -81,7 +81,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
+							"raw": "{\n  \"type\": \"session\",\n  \"sub_type\": \"createSessionsNew\",\n  \"action\": \"sessionField\",\n  \"data\": {\n    \"template_name\": \"Test\",\n    \"fields\": {\n      \"controls\": [\n        {\n          \"name\": \"title\",\n          \"label\": \"title\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"text\",\n          \"position\": \"floating\",\n          \"validators\": {\n            \"required\": true,\n            \"min_length\": 5\n          }\n        },\n        {\n          \"name\": \"categories\",\n          \"label\": \"Select categories\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"chip\",\n          \"position\": \"\",\n          \"disabled\": false,\n          \"show_select_all\": true,\n          \"validators\": {\n            \"required\": true\n          }\n        },\n        {\n          \"name\": \"ages\",\n          \"label\": \"Select age\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"chip\",\n          \"position\": \"\",\n          \"disabled\": false,\n          \"show_select_all\": true,\n          \"validators\": {\n            \"required\": true\n          }\n        }\n      ]\n    }\n  }\n}\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -89,9 +89,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update/61ee56ebfc2b962cf281dd01",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update/16",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
+							"path": ["v1", "form", "update", "16"]
 						},
 						"description": "NOTE: Id is required in params and that should be objectId"
 					},
@@ -102,6 +102,99 @@
 		{
 			"name": "entity",
 			"item": [
+				{
+					"name": "form Copy",
+					"item": [
+						{
+							"name": "Create Form",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"session\",\n    \"sub_type\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"min_length\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"show_select_all\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"show_select_all\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/form/create",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "form", "create"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Read Form",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"type\": \"session\",\n    \"sub_type\": \"createSessionsNew\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read/16",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "form", "read", "16"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Form",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"type\": \"session\",\n  \"sub_type\": \"createSessionsNew\",\n  \"action\": \"sessionField\",\n  \"data\": {\n    \"template_name\": \"Test\",\n    \"fields\": {\n      \"controls\": [\n        {\n          \"name\": \"title\",\n          \"label\": \"title\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"text\",\n          \"position\": \"floating\",\n          \"validators\": {\n            \"required\": true,\n            \"min_length\": 5\n          }\n        },\n        {\n          \"name\": \"categories\",\n          \"label\": \"Select categories\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"chip\",\n          \"position\": \"\",\n          \"disabled\": false,\n          \"show_select_all\": true,\n          \"validators\": {\n            \"required\": true\n          }\n        },\n        {\n          \"name\": \"ages\",\n          \"label\": \"Select age\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"chip\",\n          \"position\": \"\",\n          \"disabled\": false,\n          \"show_select_all\": true,\n          \"validators\": {\n            \"required\": true\n          }\n        }\n      ]\n    }\n  }\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update/16",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "form", "update", "16"]
+								},
+								"description": "NOTE: Id is required in params and that should be objectId"
+							},
+							"response": []
+						}
+					]
+				},
 				{
 					"name": "Create Entity",
 					"request": {
