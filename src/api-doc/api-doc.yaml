@@ -28,28 +28,29 @@ paths:
         provide values for parameter marked with `required` \n - Mandatory parameter
         cannot be empty or null \n - secretCode is required only for mentor"
       requestBody:
+        required: true
         description: Request body consist of metadata and accepts payload as JSON
         content:
-          application.json:
-            schema:
-              '$ref': '#/components/schemas/user/userCreateUserRequest'
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/user/userCreateUserRequest'
       responses:
         '200':
           description: OK. User created.
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userCreateUserRsponse'
         '400':
           description: Bad Request. Refrral code is invalid
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userCreateUser400Response'
         '406':
           description: Not Acceptable. User already exists.
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userCreateUser406Exist'
   '/user/v1/account/login':
@@ -63,20 +64,20 @@ paths:
         cannot be empty or null"
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/user/userLoginRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userLoginResponse'
         '400':
           description: Bad Request. Invalid Email or Password
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userLoginResponse400'
   '/user/v1/account/acceptTermsAndCondition':
@@ -97,13 +98,13 @@ paths:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse'
         '400':
           description: Bad Request. User Does not exist.
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/acceptTermsAndConditionResponse400'
   '/user/v1/account/verifyUser?userId={userId}':
@@ -124,7 +125,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'userId '
+          name: 'userId'
           required: true
           description: Please append a valid User Id To the Request URL
           schema:
@@ -134,13 +135,13 @@ paths:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userverifyUser200'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userverifyUser400'
   '/user/v1/account/changeRole':
@@ -162,26 +163,26 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/user/userChangeRoleRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userChangeRoleResponse'
         '400':
           description: Bad Request.
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userChangeRoleResponse400'
         '401':
           description: Unauthorized
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userChangeRoleResponse401'
   '/user/v1/account/generateToken':
@@ -203,32 +204,32 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/user/generateTokenRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse200'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse400'
         '401':
           description: Unauthorized
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse401'
         '500':
           description: Internal Server Error
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateTokenResponse500'
   '/user/v1/account/generateOtp':
@@ -250,26 +251,26 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/user/genrateOtpRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateOtpResponse200'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateOtpResponse400'
         '500':
           description: Internal Server Error
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/generateOtpResponse500'
   '/user/v1/account/resetPassword':
@@ -291,26 +292,26 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/user/resetPasswordRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/resetPasswordResponse200'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/resetPasswordResponse400'
         '401':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/resetPasswordResponse401'
   '/user/v1/account/list?type={userType}&page={page}&limit={limit}&search={search}':
@@ -340,18 +341,21 @@ paths:
         - in: path
           name: page
           description: Please add page number
+          required: false
           schema:
             type: number
           example: 1
         - in: path
           name: limit
           description: number of record to limit
+          required: false
           schema:
             type: number
           example: 2
         - in: path
           name: search
           description: Please search for name or title of user etc.
+          required: false
           schema:
             type: string
           example: jhon
@@ -359,9 +363,124 @@ paths:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/userList200Response'
+  '/user/v1/user/read/{userId}':
+    get:
+      summary: User details
+      tags:
+        - Users APIs
+      description: "This API is associated with the user's profile details  \n - Then
+        Endpoint for user profile details `/user/v1/user/read/` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'userId'
+          required: true
+          description: Please append a valid User Id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/profileDetailsResponse200'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/user/update':
+    patch:
+      summary: Update user
+      tags:
+        - Users APIs
+      description: "This API is associated with update user profile  \n - Then
+        Endpoint for update user profile `/user/v1/user/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/profile/updateRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/updateRequest200Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/user/share/{userId}':
+    get:
+      summary: Share mentor profile
+      tags:
+        - Users APIs
+      description: "This API is associated with Sharing mentor profile  \n - The
+        Endpoint for user profile details `/user/v1/user/share/` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'userId'
+          required: true
+          description: Please append a valid User Id To the Request URL
+          schema:
+            type: string
+          example: 62832531a05cbd57b273aebb
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/shareMentorProfile200Response'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/shareMentorProfileBadRequest400Response'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
   '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
     get:
       summary: Cloud services get signed url
@@ -390,7 +509,7 @@ paths:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
   '/user/v1/cloud-services/file/getDownloadableUrl?filePath={filePath}':
@@ -421,7 +540,7 @@ paths:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/cloudServices/cloudServicesDownloadResponse200'
 
@@ -444,143 +563,28 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/user/logoutRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/logoutResponse200'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/logoutResponse400'
         '401':
           description: Unauthorized
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/user/logoutResponse401'
-  '/user/v1/profile/details/{userId}':
-    get:
-      summary: User details
-      tags:
-        - Profile APIs
-      description: "This API is associated with the user's profile details  \n - Then
-        Endpoint for user profile details `/user/v1/profile/details/` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: 'userId '
-          required: true
-          description: Please append a valid User Id To the Request URL
-          schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/profileDetailsResponse200'
-        '401':
-          description: Unauthorized
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/Unauthorized401Response'
-  '/user/v1/profile/update':
-    patch:
-      summary: Update user
-      tags:
-        - Profile APIs
-      description: "This API is associated with update user profile  \n - Then
-        Endpoint for update user profile `/user/v1/profile/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application.json:
-            schema:
-              '$ref': '#/components/schemas/profile/updateRequest'
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/updateRequest200Response'
-        '401':
-          description: Unauthorized
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/Unauthorized401Response'
-  '/user/v1/profile/share/{userId}':
-    get:
-      summary: Share mentor profile
-      tags:
-        - Profile APIs
-      description: "This API is associated with Sharing mentor profile  \n - The
-        Endpoint for user profile details `/user/v1/profile/share/` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: 'userId '
-          required: true
-          description: Please append a valid User Id To the Request URL
-          schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/shareMentorProfile200Response'
-        '400':
-          description: Bad Request
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/shareMentorProfileBadRequest400Response'
-        '401':
-          description: Unauthorized
-          content:
-            application.json:
-              schema:
-                '$ref': '#/components/schemas/profile/Unauthorized401Response'
   '/user/v1/form/create':
     post:
       summary: Create form
@@ -600,20 +604,20 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/form/createFormRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/form/createForm200Response'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/form/createForm400Response'
   '/user/v1/form/update/{formId}':
@@ -642,24 +646,24 @@ paths:
           example: 62832531a05cbd57b273aebb
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/form/updateFormRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/form/updateForm200Response'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/form/updateForm400Response'
   '/user/v1/form/read/{formId}':
-    get:
+    post:
       summary: Get form details
       tags:
         - Form APIs
@@ -684,20 +688,20 @@ paths:
           example: 62832531a05cbd57b273aebb
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/form/readFormRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/form/readForm200Response'
         '400':
           description: Bad Request
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/form/readForm400Response'
   '/user/v1/userentity/create':
@@ -719,20 +723,20 @@ paths:
             type: string
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/userentity/createUserEntityRequest'
       responses:
         '201':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/userentity/createUserEntity201Response'
         400:
           description: Bad Request. User Entity alrady exist
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/createUserEntity400Response'
   '/user/v1/userentity/update/{id}':
@@ -753,7 +757,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'id '
+          name: 'id'
           required: true
           description: Please append a valid user entity id to the request url
           schema:
@@ -761,23 +765,23 @@ paths:
           example: 62832531a05cbd57b273aebb
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
       responses:
         '202':
           description: Accepted
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
         '400':
           description: Bad Request. User Entity Not Found
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
-  '/user/v1/userentity/read?type={type}&deleted={deleted}&status={Status}':
+  '/user/v1/userentity/read?type={type}&deleted={deleted}&status={status}':
     get:
       summary: Get user entity
       tags:
@@ -821,7 +825,7 @@ paths:
         '200':
           description: Accepted
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/readUserEntity200Response'
   '/user/v1/userentity/delete/{id}':
@@ -842,7 +846,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'id '
+          name: 'id'
           required: true
           description: Please append a valid user entity id to the request url
           schema:
@@ -852,13 +856,13 @@ paths:
         '202':
           description: Accepted
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/deleteUserEntity202Response'
         '400':
           description: Bad Request. User Entity Already Deleted
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
   '/user/v1/systemUsers/create':
@@ -872,20 +876,20 @@ paths:
         cannot be empty or null"
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/systemuser/createSystemUserRequest'
       responses:
         '201':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/systemuser/createSystemUser201Response'
         '406':
           description: Bad Request. System User alrady exist
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/systemuser/createSystemUser406Response'
   '/user/v1/systemUsers/login':
@@ -899,20 +903,20 @@ paths:
         cannot be empty or null"
       requestBody:
         content:
-          application.json:
+          application/json:
             schema:
               '$ref': '#/components/schemas/systemuser/loginSystemUserRequest'
       responses:
         '200':
           description: ok
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser200Response'
         '400':
           description: Bad Request. System User doesn't exist
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/systemuser/loginSystemUser400Response'
   '/user/v1/admin/deleteUser/{id}':
@@ -933,7 +937,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'id '
+          name: 'id'
           required: true
           description: Please append a valid user id to the request url
           schema:
@@ -943,13 +947,13 @@ paths:
         '202':
           description: Accepted
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/admin/deleteUser202Response'
         '400':
           description: Bad Request. User Entity Already Deleted
           content:
-            application.json:
+            application/json:
               schema:
                 '$ref': '#/components/schemas/admin/deleteUser400Response'
 components:
@@ -982,6 +986,7 @@ components:
             example: OTP has been sent to your registered email ID. Please enter the number to update your password.
           result:
             type: array
+            items:
             example: []
       generateOtpResponse400:
         description: Internal Server Error
@@ -995,6 +1000,7 @@ components:
             example: Unable to send otp, may be redis server is down.
           error:
             type: array
+            items:
             example: []
       generateOtpResponse500:
         description:
@@ -1008,6 +1014,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
       resetPasswordRequest:
         type: object
@@ -1155,6 +1162,7 @@ components:
             example: Please enter a new password, that has not been used before
           error:
             type: array
+            items:
             example: []
       resetPasswordResponse401:
         description: Bad Request
@@ -1168,6 +1176,7 @@ components:
             example: Please enter the correct OTP.
           error:
             type: array
+            items:
             example: []
       userCreateUserRequest:
         description: User program and solution request
@@ -1252,15 +1261,19 @@ components:
                     example: John Deo
                   designation:
                     type: array
+                    items:
                     example: []
                   location:
                     type: array
+                    items:
                     example: []
                   areasOfExpertise:
                     type: array
+                    items:
                     example: []
                   languages:
                     type: array
+                    items:
                     example: []
                   updatedAt:
                     type: datetime
@@ -1283,6 +1296,7 @@ components:
             example: User already exists.
           error:
             type: array
+            items:
             example: []
       userCreateUser400Response:
         description: Reffral Code is Invalid
@@ -1296,6 +1310,7 @@ components:
             example: Incorrect code. Please try again.
           error:
             type: array
+            items:
             example: []
       userLoginRequest:
         type: object
@@ -1438,6 +1453,7 @@ components:
             example: Please enter the correct login ID and Password.
           error:
             type: array
+            items:
             example: []
       acceptTermsAndConditionResponse:
         description: OK, User Accepted Terms.
@@ -1451,6 +1467,7 @@ components:
             example: User successfully updated.
           result:
             type: array
+            items:
             example: []
       acceptTermsAndConditionResponse400:
         description: OK, User Does not exist
@@ -1464,6 +1481,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
       userChangeRoleRequest:
         type: object
@@ -1487,6 +1505,7 @@ components:
             example: User role successfully updated.
           result:
             type: array
+            items:
             example: []
       userChangeRoleResponse400:
         description: Bad Request
@@ -1500,6 +1519,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
       userChangeRoleResponse401:
         description: UNAUTHORIZED
@@ -1514,6 +1534,7 @@ components:
               role. Please login again.
           error:
             type: array
+            items:
             example: []
       generateTokenRequest:
         type: object
@@ -1553,6 +1574,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
       generateTokenResponse401:
         description: Unauthorized
@@ -1566,6 +1588,7 @@ components:
             example: Refresh token expired
           error:
             type: array
+            items:
             example: []
       generateTokenResponse500:
         description: Internal Server Error
@@ -1579,6 +1602,7 @@ components:
             example: Refresh token not found
           error:
             type: array
+            items:
             example: []
       logoutRequest:
         type: object
@@ -1602,6 +1626,7 @@ components:
             example: User logged out successfully.
           result:
             type: array
+            items:
             example: []
       logoutResponse400:
         description: Bad Request
@@ -1615,6 +1640,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
       logoutResponse401:
         description: Unauthorized
@@ -1628,6 +1654,7 @@ components:
             example: Invalid refresh token
           error:
             type: array
+            items:
             example: []
       userverifyUser200:
         description: OK, User logout successfully
@@ -1660,6 +1687,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
       userList200Response:
         type: object
@@ -1728,43 +1756,26 @@ components:
             type: object
             properties:
               email:
-                type: object
-                properties:
-                  verified:
-                    type: boolean
-                    example: false
-                  address:
-                    type: string
-                    example: example@mail.com
-              isAMentor:
+                type: string
+                example: example@mail.com
+              role:
+                type: string
+                example: mentee
+              email_verified:
                 type: boolean
                 example: false
-              hasAcceptedTAndC:
+              has_accepted_terms_and_conditions:
                 type: boolean
                 example: false
               deleted:
                 type: boolean
                 example: false
-              _id:
+              id:
                 type: string
-                example: 62832531a05cbd57b273aebb
+                example: 1
               name:
                 type: string
                 example: Ankit
-              educationQualification:
-                type: string
-                example: B.A.
-              designation:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    value:
-                      type: number
-                      example: 1
-                    lable:
-                      type: string
-                      example: Teacher
               location:
                 type: array
                 items:
@@ -1776,17 +1787,6 @@ components:
                     lable:
                       type: string
                       example: Bangalore
-              areasOfExpertise:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    value:
-                      type: number
-                      example: 1
-                    lable:
-                      type: string
-                      example: Educational Leadership
               languages:
                 type: array
                 items:
@@ -1798,24 +1798,30 @@ components:
                     lable:
                       type: string
                       example: English
+              organization_id:
+                type: number
+                example: 2
+              preferred_language:
+                type: string
+                example: en
+              status:
+                type: string
+                example: active
+              share_link:
+                type: string
+                example: null
               updatedAt:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
               createdAt:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
-              __v:
-                type: number
-                example: 0
-              lastLoggedInAt:
+              last_logged_in_at:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
               about:
                 type: string
                 example: This is test about of mentee
-              experience:
-                type: string
-                example: '4.2'
               gender:
                 type: string
                 example: MALE
@@ -1829,17 +1835,6 @@ components:
           name:
             type: string
             example: Jhon
-          designation:
-            type: array
-            items:
-              type: object
-              properties:
-                value:
-                  type: number
-                  example: 1
-                label:
-                  type: string
-                  example: Teacher
           location:
             type: array
             items:
@@ -1854,26 +1849,9 @@ components:
           about:
             type: string
             example: This is test about of mentee
-          areasOfExpertise:
-            type: array
-            items:
-              type: object
-              properties:
-                value:
-                  type: number
-                  example: 1
-                label:
-                  type: string
-                  example: Educational Leadership
-          experience:
-            type: string
-            example: 4.2
-          hasAcceptedTAndC:
+          has_accepted_terms_and_conditions:
             type: boolean
             example: true
-          educationQualification:
-            type: string
-            example: B.A.
           gender:
             type: string
             example: MALE
@@ -1892,6 +1870,7 @@ components:
             example: Profile updated successfully.
           result:
             type: array
+            items:
             example: []
       Unauthorized401Response:
         description: UNAUTHORIZED
@@ -1905,6 +1884,7 @@ components:
             example: Access token expired
           error:
             type: array
+            items:
             example: []
       shareMentorProfile200Response:
         type: object
@@ -1932,6 +1912,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
     form:
       createFormRequest:
@@ -2004,6 +1985,7 @@ components:
             example: Form created successfully
           result:
             type: array
+            items:
             example: []
       createForm400Response:
         description: Bad Request. Form Already Exist
@@ -2017,6 +1999,7 @@ components:
             example: Form already exists
           error:
             type: array
+            items:
             example: []
       updateFormRequest:
         type: object
@@ -2088,6 +2071,7 @@ components:
             example: Form updated successfully
           result:
             type: array
+            items:
             example: []
       updateForm400Response:
         description: Bad Request. Form Already Exist
@@ -2101,6 +2085,7 @@ components:
             example: Form already exists
           error:
             type: array
+            items:
             example: []
       readFormRequest:
         type: object
@@ -2204,6 +2189,7 @@ components:
             example: Form not found
           error:
             type: array
+            items:
             example: []
     mentor:
       getMentorList200Resposne:
@@ -2287,6 +2273,7 @@ components:
             example: User entity created successfully
           result:
             type: array
+            items:
             example: []
       createUserEntity400Response:
         type: object
@@ -2300,6 +2287,7 @@ components:
             example: User entity already exists
           error:
             type: array
+            items:
             example: []
       updateUserEntityRequest:
         type: object
@@ -2334,6 +2322,7 @@ components:
             example: User entity updated successfully
           result:
             type: array
+            items:
             example: []
       updateUserEntity400Response:
         type: object
@@ -2347,6 +2336,7 @@ components:
             example: User entity not found
           error:
             type: array
+            items:
             example: []
       readUserEntity200Response:
         description: User Entity fetched
@@ -2381,6 +2371,7 @@ components:
             example: User entity deleted successfully
           result:
             type: array
+            items:
             example: []
       deleteUserEntity400Response:
         type: object
@@ -2394,6 +2385,7 @@ components:
             example: User entity already deleted
           error:
             type: array
+            items:
             example: []
     cloudServices:
       cloudServicesResponse200:
@@ -2469,6 +2461,7 @@ components:
             example: Sign-up successful, Please wait while logging in.
           result:
             type: array
+            items:
             example: []
       createSystemUser406Response:
         type: object
@@ -2482,6 +2475,7 @@ components:
             example: System User already exists.
           error:
             type: array
+            items:
             example: []
       loginSystemUserRequest:
         type: object
@@ -2569,6 +2563,7 @@ components:
             example: User doesn't exist.
           error:
             type: array
+            items:
             example: []
     admin:
       deleteUser202Response:
@@ -2583,6 +2578,7 @@ components:
             example: User entity deleted successfully
           result:
             type: array
+            items:
             example: []
       deleteUser400Response:
         type: object
@@ -2596,6 +2592,7 @@ components:
             example: Please enter correct ID
           error:
             type: array
+            items:
             example: []
   securitySchemes:
     bearer:
