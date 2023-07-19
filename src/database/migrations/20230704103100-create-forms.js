@@ -18,6 +18,11 @@ module.exports = {
 				allowNull: false,
 			},
 			data: Sequelize.JSON,
+			version: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+				defaultValue: 0,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,

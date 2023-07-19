@@ -27,6 +27,7 @@ module.exports = class FormsData {
 			const [rowsAffected] = await Form.update(update, {
 				where: filter,
 				...options,
+				individualHooks: true, // Pass 'individualHooks: true' option to ensure proper triggering of 'beforeUpdate' hook.
 			})
 
 			if (rowsAffected > 0) {
@@ -42,7 +43,7 @@ module.exports = class FormsData {
 	static async findAllTypeFormVersion() {
 		try {
 			const formData = await Form.findAll({
-				attributes: ['id', 'type'],
+				attributes: ['id', 'type', 'version'],
 			})
 			return formData
 		} catch (error) {
