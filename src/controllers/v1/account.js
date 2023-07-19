@@ -20,7 +20,7 @@ module.exports = class Account {
 	 * @param {Object} req.body -request body contains user creation deatils.
 	 * @param {String} req.body.secretCode - secrate code to create mentor.
 	 * @param {String} req.body.name - name of the user.
-	 * @param {Boolean} req.body.isAMentor - is a mentor or not .
+	 * @param {Boolean} req.body.role - mentor or mentee .
 	 * @param {String} req.body.email - user email.
 	 * @param {String} req.body.password - user password.
 	 * @returns {JSON} - response contains account creation details.

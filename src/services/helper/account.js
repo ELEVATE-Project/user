@@ -8,7 +8,6 @@
 // Dependencies
 const bcryptJs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const ObjectId = require('mongoose').Types.ObjectId
 
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
@@ -19,7 +18,7 @@ const userQueries = require('@database/queries/users')
 const organizationQueries = require('@database/queries/organizations')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-// const systemUserData = require('@db/systemUsers/queries')
+const roleQueries = require('@database/queries/roles')
 const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
@@ -51,16 +50,16 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(email)
-				if (!redisData || redisData.otp != bodyData.otp) {
-					return common.failureResponse({
-						message: 'OTP_INVALID',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-			}
+			// if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
+			// 	const redisData = await utilsHelper.redisGet(email)
+			// 	if (!redisData || redisData.otp != bodyData.otp) {
+			// 		return common.failureResponse({
+			// 			message: 'OTP_INVALID',
+			// 			statusCode: httpStatusCode.bad_request,
+			// 			responseCode: 'CLIENT_ERROR',
+			// 		})
+			// 	}
+			// }
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
@@ -69,22 +68,42 @@ module.exports = class AccountHelper {
 				bodyData.organization_id = organization.id
 			}
 
+			let role
+			if (bodyData.role) {
+				role = await roleQueries.findOne({ where: { name: bodyData.role.toLowerCase() } })
+			} else {
+				role = await roleQueries.findOne({ where: { name: common.roleUser } })
+			}
+
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			bodyData.role_id = role.id
+			delete bodyData.role
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
-			user = await userQueries.findOne({
-				where: { email: email },
-				attributes: {
-					exclude: projection,
+			user = await userQueries.findOneWithAssociation(
+				{
+					where: { email: email },
+					attributes: {
+						exclude: projection,
+					},
 				},
-			})
+				common.roleAssociationModel,
+				common.roleAssociationName
+			)
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role,
+					role: user.role.name,
 				},
 			}
 
@@ -160,9 +179,13 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({
-				where: { email: bodyData.email.toLowerCase() },
-			})
+			let user = await userQueries.findOneWithAssociation(
+				{
+					where: { email: bodyData.email.toLowerCase() },
+				},
+				common.roleAssociationModel,
+				common.roleAssociationName
+			)
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -186,7 +209,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role,
+					role: user.role.name,
 				},
 			}
 
@@ -543,12 +566,16 @@ module.exports = class AccountHelper {
 	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
-			let user = await userQueries.findOne({
-				where: { email: bodyData.email },
-				attributes: {
-					exclude: projection,
+			let user = await userQueries.findOneWithAssociation(
+				{
+					where: { email: bodyData.email },
+					attributes: {
+						exclude: projection,
+					},
 				},
-			})
+				common.roleAssociationModel,
+				common.roleAssociationName
+			)
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -583,7 +610,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role,
+					role: user.role.name,
 				},
 			}
 
@@ -740,7 +767,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				where: { id: userId },
-				attributes: ['role','deleted'],
+				attributes: ['role', 'deleted'],
 			})
 
 			if (!user) {
@@ -930,8 +957,8 @@ module.exports = class AccountHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-      
-      await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
+
+			await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
 			await utilsHelper.redisDel(user.email)
 			// await utils.redisDel(userId)
 
@@ -954,7 +981,16 @@ module.exports = class AccountHelper {
 	 */
 	static async changeRole(bodyData) {
 		try {
-			const res = await userQueries.updateUser({ role: bodyData.role }, { where: { email: bodyData.email } })
+			let role = await roleQueries.findOne({ where: { name: bodyData.role.toLowerCase() } })
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const res = await userQueries.updateUser({ role_id: role.id }, { where: { email: bodyData.email } })
 			/* If user doc not updated  */
 			if (!res) {
 				return common.failureResponse({

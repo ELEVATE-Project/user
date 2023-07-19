@@ -48,16 +48,16 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 'en',
 			},
 			organization_id: DataTypes.INTEGER,
-			role: {
-				type: DataTypes.STRING,
+			role_id: {
+				type: DataTypes.INTEGER,
 				allowNull: false,
-				defaultValue: 'user',
 			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
 	User.associate = (models) => {
-		User.belongsTo(models.Organization, { foreignKey: 'id' })
+		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' }),
+		User.belongsTo(models.Role, { foreignKey: 'role_id', as: 'role' })
 	}
 	return User
 }

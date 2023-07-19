@@ -57,5 +57,6 @@
 	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
 	"USER_IS_NOT_A_ADMIN": "User does't have admin access",
 	"USER_DELETED_SUCCESSFULLY": "User deleted successfully",
-	"USER_NOT_FOUND": "User not found."
+	"USER_NOT_FOUND": "User not found.",
+	"ROLE_NOT_FOUND": "Role not found."
 }

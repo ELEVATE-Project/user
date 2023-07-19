@@ -60,6 +60,7 @@ module.exports = {
 	refreshTokenLimit: 3,
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
 	roleAdmin: 'admin',
+	roleUser: 'user',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
 		'/user/v1/accounts/verifyUser',
@@ -68,4 +69,6 @@ module.exports = {
 		'/user/v1/profile/share',
 		'/user/v1/profile/details',
 	],
+	roleAssociationModel: 'Role',
+	roleAssociationName: 'role'
 }

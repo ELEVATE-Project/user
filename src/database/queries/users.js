@@ -35,3 +35,12 @@ exports.findByPk = async (id) => {
 		return error
 	}
 }
+
+exports.findOneWithAssociation = async (filter, associationTable, associatioName) => {
+	try {
+		filter.include = [{ model: database[associationTable], as: associatioName }]
+		return await database.User.findOne(filter)
+	} catch (error) {
+		return error
+	}
+}
