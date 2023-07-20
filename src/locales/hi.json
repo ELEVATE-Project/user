@@ -33,7 +33,7 @@
 	"PASSWORD_RESET_SUCCESSFULLY": "पासवर्ड सफलतापूर्वक बदला गया।",
 	"OTP_INVALID": "आपके द्वारा दर्ज किया हुआ OTP गलत है।",
 	"RESET_OTP_INVALID": "कृपया सही ओटीपी दर्ज करें।",
-	"SYSTEM_USER_ALREADY_EXISTS": "System User already exists.",
+	"ADMIN_USER_ALREADY_EXISTS": "Admin User already exists.",
 	"NOT_AN_ADMIN": "Not an admin",
 	"MENTOR_LIST": "Mentor list fetched successfully.",
 	"MENTEE_LIST": "Mentee list fetched successfully.",

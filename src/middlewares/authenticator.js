@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken')
 
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const UsersData = require('@db/users/queries')
+const userQueries = require('@database/queries/users')
 
 module.exports = async function (req, res, next) {
 	try {
@@ -54,6 +54,7 @@ module.exports = async function (req, res, next) {
 				responseCode: 'UNAUTHORIZED',
 			})
 		}
+
 		// let splittedUrl = req.url.split('/');
 		// if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
 		//     if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
@@ -94,21 +95,27 @@ module.exports = async function (req, res, next) {
 
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-// 			const user = await UsersData.findOne({ _id: decodedToken.data._id, deleted: false })
-// 			if (!user) {
-// 				throw common.failureResponse({
-// 					message: 'USER_NOT_FOUND',
-// 					statusCode: httpStatusCode.unauthorized,
-// 					responseCode: 'UNAUTHORIZED',
-// 				})
+			const user = await userQueries.findOneWithAssociation(
+				{
+					where: { id: decodedToken.data.id, deleted: false },
+				},
+				common.roleAssociationModel,
+				common.roleAssociationName
+			)
 
-// 			} else if (user && user.isAMentor !== decodedToken.data.isAMentor) {
-// 				throw common.failureResponse({
-// 					message: 'USER_ROLE_UPDATED',
-// 					statusCode: httpStatusCode.unauthorized,
-// 					responseCode: 'UNAUTHORIZED',
-// 				})
-// 			}
+			if (!user) {
+				throw common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			} else if (user && user.role.name !== decodedToken.data.role) {
+				throw common.failureResponse({
+					message: 'USER_ROLE_UPDATED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 		req.decodedToken = decodedToken.data
 		next()

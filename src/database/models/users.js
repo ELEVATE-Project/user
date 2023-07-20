@@ -52,6 +52,14 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
+			deleted: {
+				type: DataTypes.BOOLEAN,
+				defaultValue: false
+			},
+			deleted_at: {
+				type: DataTypes.DATE,
+			},
+			
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
