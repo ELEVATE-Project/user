@@ -462,7 +462,7 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await usersData.findOne({ 'email.address': bodyData.email })
+			const user = await userQueries.findOne({ where: { email: bodyData.email } })
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
