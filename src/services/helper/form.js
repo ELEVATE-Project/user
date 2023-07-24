@@ -1,10 +1,12 @@
-const ObjectId = require('mongoose').Types.ObjectId
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const formsData = require('@db/forms/queries')
 const utils = require('@generics/utils')
 const form = require('@generics/form')
 const KafkaProducer = require('@generics/kafka-communication')
+
+const formQueries = require('../../database/queries/form')
+const { UniqueConstraintError } = require('sequelize')
+
 module.exports = class FormsHelper {
 	/**
 	 * Create Form.
@@ -16,16 +18,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData) {
 		try {
-			const form = await formsData.findOneForm({ type: bodyData.type })
-
-			if (form) {
-				return common.failureResponse({
-					message: 'FORM_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			await formsData.createForm(bodyData)
+			const form = await formQueries.createForm(bodyData)
 
 			await utils.internalDel('formVersion')
 
@@ -34,8 +27,16 @@ module.exports = class FormsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
+				result: form,
 			})
 		} catch (error) {
+			if (error instanceof UniqueConstraintError) {
+				return common.failureResponse({
+					message: 'FORM_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
@@ -51,20 +52,18 @@ module.exports = class FormsHelper {
 	static async update(id, bodyData) {
 		try {
 			let filter = {}
-			if (ObjectId.isValid(id)) {
+			if (id) {
 				filter = {
-					_id: ObjectId(id),
+					id: id,
 				}
 			} else {
 				filter = {
 					type: bodyData.type,
-					subType: bodyData.subType,
-					action: bodyData.action,
-					'data.templateName': bodyData.data.templateName,
+					sub_type: bodyData.sub_type,
 				}
 			}
 
-			const result = await formsData.updateOneForm(filter, bodyData)
+			const result = await formQueries.updateOneForm(filter, bodyData)
 
 			if (result === 'ENTITY_ALREADY_EXISTS') {
 				return common.failureResponse({
@@ -86,6 +85,13 @@ module.exports = class FormsHelper {
 				message: 'FORM_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			if (error instanceof UniqueConstraintError) {
+				return common.failureResponse({
+					message: 'FORM_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
@@ -101,12 +107,12 @@ module.exports = class FormsHelper {
 	static async read(id, bodyData) {
 		try {
 			let filter = {}
-			if (ObjectId.isValid(id)) {
-				filter = { _id: id }
+			if (id) {
+				filter = { id: id }
 			} else {
 				filter = { ...bodyData }
 			}
-			const form = await formsData.findOneForm(filter)
+			const form = await formQueries.findOneForm(filter)
 
 			if (!form) {
 				return common.failureResponse({
@@ -118,7 +124,7 @@ module.exports = class FormsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_FETCHED_SUCCESSFULLY',
-				result: form ? form : {},
+				result: form,
 			})
 		} catch (error) {
 			throw error
