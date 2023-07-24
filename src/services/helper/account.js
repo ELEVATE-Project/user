@@ -258,9 +258,9 @@ module.exports = class AccountHelper {
 			const user = await userQueries.findByPk(bodyData.loggedInId)
 			if (!user) {
 				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
 				})
 			}
 
