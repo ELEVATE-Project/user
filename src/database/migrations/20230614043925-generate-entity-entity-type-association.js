@@ -4,7 +4,7 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.addConstraint('entities', {
-			fields: ['id'],
+			fields: ['entity_type_id'],
 			type: 'foreign key',
 			name: 'fk_entity_entity_type_id',
 			references: {
@@ -17,11 +17,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		/**
-		 * Add reverting commands here.
-		 *
-		 * Example:
-		 * await queryInterface.dropTable('users');
-		 */
+		await queryInterface.removeConstraint('entities', 'fk_entity_entity_type_id')
 	},
 }

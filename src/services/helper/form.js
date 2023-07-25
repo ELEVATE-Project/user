@@ -7,6 +7,8 @@ const KafkaProducer = require('@generics/kafka-communication')
 const formQueries = require('../../database/queries/form')
 const { UniqueConstraintError } = require('sequelize')
 
+const entityTypeQueries = require('../../database/queries/entityType')
+
 module.exports = class FormsHelper {
 	/**
 	 * Create Form.
@@ -121,6 +123,8 @@ module.exports = class FormsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			form.entities = await entityTypeQueries.findAllEntities(filter)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_FETCHED_SUCCESSFULLY',

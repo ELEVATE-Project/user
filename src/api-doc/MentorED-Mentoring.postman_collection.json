@@ -103,99 +103,6 @@
 			"name": "entity",
 			"item": [
 				{
-					"name": "form Copy",
-					"item": [
-						{
-							"name": "Create Form",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "X-auth-token",
-										"value": "bearer {{token}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"type\": \"session\",\n    \"sub_type\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"min_length\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"show_select_all\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"show_select_all\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{MentoringBaseUrl}}mentoring/v1/form/create",
-									"host": ["{{MentoringBaseUrl}}mentoring"],
-									"path": ["v1", "form", "create"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Read Form",
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "X-auth-token",
-										"value": "bearer {{token}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n    \"type\": \"session\",\n    \"sub_type\": \"createSessionsNew\"\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read/16",
-									"host": ["{{MentoringBaseUrl}}mentoring"],
-									"path": ["v1", "form", "read", "16"]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Update Form",
-							"request": {
-								"method": "PUT",
-								"header": [
-									{
-										"key": "X-auth-token",
-										"value": "bearer {{token}}",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"type\": \"session\",\n  \"sub_type\": \"createSessionsNew\",\n  \"action\": \"sessionField\",\n  \"data\": {\n    \"template_name\": \"Test\",\n    \"fields\": {\n      \"controls\": [\n        {\n          \"name\": \"title\",\n          \"label\": \"title\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"text\",\n          \"position\": \"floating\",\n          \"validators\": {\n            \"required\": true,\n            \"min_length\": 5\n          }\n        },\n        {\n          \"name\": \"categories\",\n          \"label\": \"Select categories\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"chip\",\n          \"position\": \"\",\n          \"disabled\": false,\n          \"show_select_all\": true,\n          \"validators\": {\n            \"required\": true\n          }\n        },\n        {\n          \"name\": \"ages\",\n          \"label\": \"Select age\",\n          \"value\": \"\",\n          \"class\": \"ion-margin\",\n          \"type\": \"chip\",\n          \"position\": \"\",\n          \"disabled\": false,\n          \"show_select_all\": true,\n          \"validators\": {\n            \"required\": true\n          }\n        }\n      ]\n    }\n  }\n}\n",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update/16",
-									"host": ["{{MentoringBaseUrl}}mentoring"],
-									"path": ["v1", "form", "update", "16"]
-								},
-								"description": "NOTE: Id is required in params and that should be objectId"
-							},
-							"response": []
-						}
-					]
-				},
-				{
 					"name": "Create Entity",
 					"request": {
 						"method": "POST",
@@ -208,7 +115,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"ELDS\",\n    \"label\": \"Education Leadership\",\n    \"type\": \"categories\"\n}",
+							"raw": "{\n    \"value\": \"enFnase\",\n    \"label\": \"Englishh\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -236,13 +143,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/read?type=role",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/read?value=role_one",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "entity", "read"],
 							"query": [
 								{
-									"key": "type",
-									"value": "role"
+									"key": "value",
+									"value": "role_one"
 								},
 								{
 									"key": "deleted",
@@ -273,7 +180,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"ELDS\",\n    \"label\": \"Educational Leaderships\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"role\"\n}",
+							"raw": "{\n    \"value\": \"enFnase\",\n    \"label\": \"Englishh\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -281,9 +188,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/update/629b8d923be3e3fe4004661a",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/update/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity", "update", "629b8d923be3e3fe4004661a"]
+							"path": ["v1", "entity", "update", "1"]
 						},
 						"description": "NOET: All body req parameters are optional to update."
 					},
@@ -301,9 +208,163 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/delete/6285debe4d63b82bd1859a76",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/delete/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity", "delete", "6285debe4d63b82bd1859a76"]
+							"path": ["v1", "entity", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "entity-type",
+			"item": [
+				{
+					"name": "Create Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"role_one\",\n    \"label\": \"role_one\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity-type", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read?value=role_one",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity-type", "read"],
+							"query": [
+								{
+									"key": "value",
+									"value": "role_one"
+								},
+								{
+									"key": "deleted",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Read all Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read?value=role_one",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity-type", "read"],
+							"query": [
+								{
+									"key": "value",
+									"value": "role_one"
+								},
+								{
+									"key": "deleted",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"role_one\",\n    \"label\": \"role_one\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/update/1",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity-type", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/delete/1",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity-type", "delete", "1"]
 						}
 					},
 					"response": []
@@ -1243,45 +1304,6 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "platform", "config"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Admin APIs",
-			"item": [
-				{
-					"name": "Delete User",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/userDelete?userId",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "admin", "userDelete"],
-							"query": [
-								{
-									"key": "userId",
-									"value": null
-								}
-							]
 						}
 					},
 					"response": []

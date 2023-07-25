@@ -4,9 +4,8 @@ const common = require('@constants/common')
 const KafkaProducer = require('@generics/kafka-communication')
 const utils = require('@generics/utils')
 
-const entityTypeQueries = require('../../database/queries/entity')
-const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
-const { Op } = require('sequelize')
+const entityTypeQueries = require('../../database/queries/entityType')
+const { UniqueConstraintError } = require('sequelize')
 
 module.exports = class EntityHelper {
 	/**
@@ -23,6 +22,9 @@ module.exports = class EntityHelper {
 		bodyData.updated_by = '0' || id
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
+			const key = 'entityType_' + bodyData.value
+			await utils.internalDel(key)
+			await KafkaProducer.clearInternalCache(key)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -32,13 +34,6 @@ module.exports = class EntityHelper {
 			if (error instanceof UniqueConstraintError) {
 				return common.failureResponse({
 					message: 'ENTITY_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			if (error instanceof ForeignKeyConstraintError) {
-				return common.failureResponse({
-					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -72,7 +67,7 @@ module.exports = class EntityHelper {
 			}
 			let key = ''
 			if (bodyData.type) {
-				key = 'entity_' + bodyData.value
+				key = 'entityType_' + bodyData.value
 			} else {
 				const entityType = await entityTypeQueries.findEntityTypeById(id)
 				key = 'entityType_' + entityType.value
@@ -105,14 +100,14 @@ module.exports = class EntityHelper {
 
 	static async read(bodyData) {
 		try {
-			const key = 'entity_' + bodyData.value
-			let entities = /*  (await utils.internalGet(key)) ||  */ false
+			const key = 'entityType_' + bodyData.value
+			let entities = (await utils.internalGet(key)) || false
 
 			if (!entities) {
-				const filter = { entity_type_id: bodyData.entity_type_id, created_by: 0 }
+				const filter = { value: bodyData.value }
 
-				entities = await entityTypeQueries.findAllEntities(filter)
-				console.log(entities, 'sssssss')
+				entities = await entityTypeQueries.findOneEntityType(filter)
+
 				await utils.internalSet(key, entities)
 			}
 			if (!entities) {
@@ -132,26 +127,16 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readUserEntity(bodyData, userId) {
+	static async readAll() {
 		try {
-			userId = 1
-			const key = 'entity_' + bodyData.value + '_' + userId
-			let entities = /*  (await utils.internalGet(key)) ||  */ false
+			const key = 'all_entityType'
+			let entities = (await utils.internalGet(key)) || false
 
 			if (!entities) {
-				const filter = {
-					[Op.or]: [
-						{
-							entity_type_id: bodyData.entity_type_id,
-							created_by: 0,
-						},
-						{
-							entity_type_id: bodyData.entity_type_id,
-							created_by: userId,
-						},
-					],
-				}
+				const filter = { type: 'SYSTEM' }
+
 				entities = await entityTypeQueries.findAllEntities(filter)
+
 				await utils.internalSet(key, entities)
 			}
 			if (!entities) {
@@ -170,7 +155,6 @@ module.exports = class EntityHelper {
 			throw error
 		}
 	}
-
 	/**
 	 * Delete entity.
 	 * @method

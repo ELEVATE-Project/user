@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const entityHelper = require('@services/helper/entity')
+const entityHelper = require('@services/helper/entity-type')
 
 module.exports = class Entity {
 	/**
@@ -57,10 +57,10 @@ module.exports = class Entity {
 	async read(req) {
 		const params = req.query
 		try {
-			if (req.query.readUserEntity === 'true') {
-				return await entityHelper.readUserEntity(params, req.decodedToken._id)
+			if (Object.keys(params).length !== 0) {
+				return await entityHelper.read(params)
 			}
-			return await entityHelper.read(params)
+			return await entityHelper.readAll()
 		} catch (error) {
 			return error
 		}
