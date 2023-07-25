@@ -21,7 +21,13 @@ module.exports = class Admin {
 
 	async deleteUser(req) {
 		try {
-			if (!req.decodedToken.role && req.body.role != common.roleAdmin) {
+			let isAdmin = false
+			const roles = decodedToken.data.roles
+			if (roles && roles.length > 0) {
+				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+			}
+
+			if (!isAdmin) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,

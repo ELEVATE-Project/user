@@ -109,7 +109,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: [role],
+					roles: [role],
 				},
 			}
 
@@ -230,7 +230,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: [roles],
+					roles: roles,
 				},
 			}
 

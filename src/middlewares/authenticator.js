@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
+const roleQueries = require('@database/queries/user_roles')
 
 module.exports = async function (req, res, next) {
 	try {
@@ -88,20 +89,20 @@ module.exports = async function (req, res, next) {
 		}
 
 		//check for admin user
-		if (decodedToken.data.role == common.roleAdmin) {
-			req.decodedToken = decodedToken.data
-			return next()
+		let isAdmin = false
+		if (decodedToken.data.roles) {
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			if (isAdmin) {
+				req.decodedToken = decodedToken.data
+				return next()
+			}
 		}
 
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const user = await userQueries.findOneWithAssociation(
-				{
-					where: { id: decodedToken.data.id, deleted: false },
-				},
-				common.roleAssociationModel,
-				common.roleAssociationName
-			)
+			const user = await userQueries.findOne({
+				where: { id: decodedToken.data.id, deleted: false },
+			})
 
 			if (!user) {
 				throw common.failureResponse({
@@ -109,7 +110,15 @@ module.exports = async function (req, res, next) {
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
-			} else if (user && user.role.name !== decodedToken.data.role) {
+			}
+
+			const roles = await roleQueries.findAll({
+				where: { id: user.roles, status: common.activeStatus },
+				attributes: ['title'],
+			})
+
+			//for the time being user have one role
+			if (roles && roles[0].title !== decodedToken.data.roles[0].title) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
