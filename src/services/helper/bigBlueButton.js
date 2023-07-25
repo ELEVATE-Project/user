@@ -29,7 +29,7 @@ module.exports = class BigBlueButtonHelper {
 			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL
 			let lastUserTimeout = process.env.BIG_BLUE_BUTTON_LAST_USER_TIMEOUT_MINUTES || 15
 
-			meetingName = encodeURI(meetingName)
+			meetingName = encodeURIComponent(meetingName)
 			let query =
 				'name=' +
 				meetingName +
