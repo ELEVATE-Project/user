@@ -12,7 +12,8 @@ const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/roles')
+const roleQueries = require('@database/queries/user_roles')
+const organizationQueries = require('@database/queries/organizations')
 
 module.exports = class AdminHelper {
 	/**
@@ -73,9 +74,22 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ where: { name: common.roleAdmin } })
-			bodyData.role_id = role.id
-			delete bodyData.role
+			let roles = []
+			let role = await roleQueries.findOne({ where: { title: common.roleAdmin } })
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			roles.push(role.id)
+			bodyData.roles = roles
+
+			if (!bodyData.organization_id) {
+				let organization = await organizationQueries.findOne({}, { limit: 1 })
+				bodyData.organization_id = organization.id
+			}
 
 			bodyData.password = utils.hashPassword(bodyData.password)
 			await userQueries.create(bodyData)
@@ -100,13 +114,9 @@ module.exports = class AdminHelper {
 	 */
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOneWithAssociation(
-				{
-					where: { email: bodyData.email.toLowerCase() },
-				},
-				common.roleAssociationModel,
-				common.roleAssociationName
-			)
+			let user = await userQueries.findOne({
+				where: { email: bodyData.email.toLowerCase() },
+			})
 
 			if (!user) {
 				return common.failureResponse({
@@ -124,14 +134,31 @@ module.exports = class AdminHelper {
 				})
 			}
 
+			let roles = await roleQueries.findAll({
+				where: { id: user.roles },
+				attributes: {
+					exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+				},
+			})
+			if (!roles) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
 					email: user.email,
-					role: user.role.name,
+					roles: roles,
 				},
 			}
+
+			user = user.toJSON()
+			user.user_roles = roles
 
 			const accessToken = utils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
 			const refreshToken = utils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')

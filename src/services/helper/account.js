@@ -18,7 +18,7 @@ const userQueries = require('@database/queries/users')
 const organizationQueries = require('@database/queries/organizations')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-const roleQueries = require('@database/queries/roles')
+const roleQueries = require('@database/queries/user_roles')
 const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
@@ -68,11 +68,18 @@ module.exports = class AccountHelper {
 				bodyData.organization_id = organization.id
 			}
 
+			let roles = []
 			let role
+
 			if (bodyData.role) {
-				role = await roleQueries.findOne({ where: { name: bodyData.role.toLowerCase() } })
+				role = await roleQueries.findOne({
+					where: { title: bodyData.role.toLowerCase(), status: common.activeStatus },
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+					},
+				})
 			} else {
-				role = await roleQueries.findOne({ where: { name: common.roleUser } })
+				role = await roleQueries.findOne({ where: { title: common.roleUser } })
 			}
 
 			if (!role) {
@@ -82,30 +89,32 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			bodyData.role_id = role.id
+
+			roles.push(role.id)
+			bodyData.roles = roles
 			delete bodyData.role
+
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
-			user = await userQueries.findOneWithAssociation(
-				{
-					where: { email: email },
-					attributes: {
-						exclude: projection,
-					},
+			user = await userQueries.findOne({
+				where: { email: email },
+				attributes: {
+					exclude: projection,
 				},
-				common.roleAssociationModel,
-				common.roleAssociationName
-			)
+			})
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role.name,
+					role: [role],
 				},
 			}
+
+			user = user.toJSON()
+			user.user_roles = [role]
 
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
@@ -179,13 +188,9 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOneWithAssociation(
-				{
-					where: { email: bodyData.email.toLowerCase() },
-				},
-				common.roleAssociationModel,
-				common.roleAssociationName
-			)
+			let user = await userQueries.findOne({
+				where: { email: bodyData.email.toLowerCase() },
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -194,7 +199,23 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			user = JSON.parse(JSON.stringify(user))
+			let roles = await roleQueries.findAll({
+				where: { id: user.roles, status: common.activeStatus },
+				attributes: {
+					exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+				},
+			})
+			if (!roles) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user = user.toJSON()
+			user.user_roles = roles
+
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return common.failureResponse({
@@ -209,7 +230,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role.name,
+					role: [roles],
 				},
 			}
 
@@ -566,16 +587,12 @@ module.exports = class AccountHelper {
 	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
-			let user = await userQueries.findOneWithAssociation(
-				{
-					where: { email: bodyData.email },
-					attributes: {
-						exclude: projection,
-					},
+			let user = await userQueries.findOne({
+				where: { email: bodyData.email },
+				attributes: {
+					exclude: projection,
 				},
-				common.roleAssociationModel,
-				common.roleAssociationName
-			)
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -584,7 +601,18 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			user = JSON.parse(JSON.stringify(user))
+			let roles = await roleQueries.findAll({ where: { id: user.roles, status: common.activeStatus } })
+			if (!roles) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user = user.toJSON()
+			user.user_roles = roles
+
 			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
@@ -610,7 +638,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role.name,
+					role: roles,
 				},
 			}
 
@@ -709,94 +737,6 @@ module.exports = class AccountHelper {
 			}
 
 			input.push(null)
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
-	 * Verify the mentor or not
-	 * @method
-	 * @name verifyMentor
-	 * @param {Object} userId - userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	static async verifyMentor(userId) {
-		try {
-			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1, deleted: 1 })
-			if (!user) {
-				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else if (user.deleted == true) {
-				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			} else if (user.isAMentor == true) {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_A_MENTOR',
-					result: user,
-				})
-			} else {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_NOT_A_MENTOR',
-					result: user,
-				})
-			}
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
-	 * Verify user is mentor or not
-	 * @method
-	 * @name verifyUser
-	 * @param {Object} userId - userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	static async verifyUser(userId) {
-		try {
-			let user = await userQueries.findOne({
-				where: { id: userId },
-				attributes: ['role', 'deleted'],
-			})
-
-			if (!user) {
-				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else if (user.deleted == true) {
-				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			} else if (user.isAMentor == true) {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_A_MENTOR',
-					result: user,
-				})
-			} else {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_NOT_A_MENTOR',
-					result: user,
-				})
-			}
 		} catch (error) {
 			throw error
 		}

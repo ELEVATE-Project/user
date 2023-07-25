@@ -44,6 +44,8 @@ module.exports = {
 		'/user/v1/account/registrationOtp',
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
+		'/user/v1/userRole/list',
+		'/user/v1/organization/create',
 	],
 	internalAccessUrls: [
 		'bulkCreateMentors',
@@ -52,6 +54,7 @@ module.exports = {
 		'/user/v1/account/list',
 		'/profile/share',
 		'/user/v1/admin/create',
+		'/user/v1/organization/update',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
@@ -69,7 +72,7 @@ module.exports = {
 		'/user/v1/profile/share',
 		'/user/v1/profile/details',
 	],
-	roleAssociationModel: 'Role',
-	roleAssociationName: 'role',
-
+	roleAssociationModel: 'UserRole',
+	roleAssociationName: 'user_roles',
+	activeStatus: 'active',
 }

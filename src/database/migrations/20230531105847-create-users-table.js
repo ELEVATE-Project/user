@@ -23,8 +23,8 @@ module.exports = {
 				allowNull: false,
 				defaultValue: false,
 			},
-			role_id: {
-				type: Sequelize.INTEGER,
+			roles: {
+				type: Sequelize.ARRAY(Sequelize.INTEGER),
 				allowNull: false,
 			},
 			status: {

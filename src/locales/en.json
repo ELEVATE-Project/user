@@ -58,5 +58,10 @@
 	"USER_IS_NOT_A_ADMIN": "User does't have admin access.",
 	"USER_DELETED_SUCCESSFULLY": "User deleted successfully",
 	"USER_NOT_FOUND": "User not found.",
-	"ROLE_NOT_FOUND": "Role not found."
+	"ROLE_NOT_FOUND": "Role not found.",
+	"USER_ROLE_LIST": "User Role list fetched successfully.",
+	"ORGANIZATION_ALREADY_EXISTS": "Organization already exists.",
+	"ORGANIZATION_CREATED_SUCCESSFULLY": "Organization created successfully",
+	"ORGANIZATION_UPDATED_SUCCESSFULLY": "Organization updated successfully",
+	"ORGANIZATION_NOT_FOUND": "Organization not found."
 }

@@ -28,13 +28,6 @@ module.exports = {
 			.normalizeEmail()
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
-
-		req.checkBody('role')
-			.trim()
-			.notEmpty()
-			.withMessage('role field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('role is invalid, and should not contain spaces')
 	},
 
 	login: (req) => {

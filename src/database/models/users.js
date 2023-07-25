@@ -48,8 +48,8 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 'en',
 			},
 			organization_id: DataTypes.INTEGER,
-			role_id: {
-				type: DataTypes.INTEGER,
+			roles: {
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
 			},
 			deleted: {
@@ -64,8 +64,8 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
 	User.associate = (models) => {
-		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' }),
-		User.belongsTo(models.Role, { foreignKey: 'role_id', as: 'role' })
+		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
+		// User.belongsToMany(models.UserRole,{ foreignKey: 'roles', as: 'user_role' })
 	}
 	return User
 }
