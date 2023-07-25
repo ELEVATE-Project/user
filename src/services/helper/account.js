@@ -232,12 +232,12 @@ module.exports = class AccountHelper {
 
 	static async logout(bodyData) {
 		try {
-			const user = await usersData.findOne({ _id: ObjectId(bodyData.loggedInId) })
+			const user = await usersData.findOne({ _id: ObjectId(bodyData.loggedInId), deleted: false })
 			if (!user) {
 				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
 				})
 			}
 
