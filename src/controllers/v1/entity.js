@@ -55,12 +55,11 @@ module.exports = class Entity {
 	 */
 
 	async read(req) {
-		const params = req.query
 		try {
-			if (req.query.readUserEntity === 'true') {
-				return await entityHelper.readUserEntity(params, req.decodedToken._id)
+			if (req.body.readUserEntity) {
+				return await entityHelper.readUserEntity(req.body, req.decodedToken._id)
 			}
-			return await entityHelper.read(params)
+			return await entityHelper.read(req.body)
 		} catch (error) {
 			return error
 		}

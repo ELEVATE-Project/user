@@ -18,9 +18,6 @@ module.exports = {
 			status: {
 				type: Sequelize.STRING,
 			},
-			type: {
-				type: Sequelize.STRING,
-			},
 			created_by: {
 				type: Sequelize.INTEGER,
 			},

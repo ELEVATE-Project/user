@@ -1,9 +1,11 @@
-const EntityType = require('../models/index').Entity
+const Entity = require('../models/index').Entity
+const EntityType = require('../models/index').EntityType
+const { Op } = require('sequelize')
 
 module.exports = class UserEntityData {
 	static async createEntityType(data) {
 		try {
-			return await EntityType.create(data, { returning: true })
+			return await Entity.create(data, { returning: true })
 		} catch (error) {
 			console.log(error)
 			throw error
@@ -13,9 +15,17 @@ module.exports = class UserEntityData {
 	static async findAllEntities(filter) {
 		try {
 			filter.status = 'ACTIVE'
-			return await EntityType.findAll({ where: filter })
+			return await Entity.findAll({
+				include: [
+					{
+						model: EntityType,
+						as: 'entity_type',
+						attributes: ['id', 'value', 'label'], // Specify the fields you want to include
+					},
+				],
+			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
@@ -34,7 +44,7 @@ module.exports = class UserEntityData {
 			const filter = {
 				id: id,
 			}
-			const [rowsAffected] = await EntityType.update(update, {
+			const [rowsAffected] = await Entity.update(update, {
 				where: filter,
 				...options,
 			})
@@ -51,7 +61,7 @@ module.exports = class UserEntityData {
 
 	static async deleteOneEntityType(id) {
 		try {
-			const rowsAffected = await EntityType.destroy({
+			const rowsAffected = await Entity.destroy({
 				where: {
 					id: id,
 				},
@@ -65,7 +75,7 @@ module.exports = class UserEntityData {
 
 	static async findEntityTypeById(filter) {
 		try {
-			const entityData = await EntityType.findByPk(filter)
+			const entityData = await Entity.findByPk(filter)
 			return entityData
 		} catch (error) {
 			return error

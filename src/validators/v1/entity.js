@@ -56,7 +56,7 @@ module.exports = {
 	},
 
 	read: (req) => {
-		req.checkQuery('entity_type_id')
+		req.checkBody('entity_type_id')
 			.trim()
 			.notEmpty()
 			.withMessage('Entity type field is empty')

@@ -12,7 +12,6 @@ module.exports = (sequelize, DataTypes) => {
 			value: { type: DataTypes.STRING, allowNull: false, unique: true },
 			label: { type: DataTypes.STRING, allowNull: false },
 			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
-			type: { type: DataTypes.STRING, allowNull: false },
 			created_by: { type: DataTypes.INTEGER, allowNull: false },
 			updated_by: { type: DataTypes.INTEGER, allowNull: false },
 			allow_filtering: {

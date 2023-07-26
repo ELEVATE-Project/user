@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'Entity', tableName: 'entities', freezeTableName: true, paranoid: true }
 	)
 	Entity.associate = (models) => {
-		Entity.belongsTo(models.EntityType, { foreignKey: 'id' })
+		Entity.belongsTo(models.EntityType, { foreignKey: 'entity_type_id', as: 'entity_type' })
 	}
 	return Entity
 }

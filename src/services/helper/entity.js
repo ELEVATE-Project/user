@@ -152,6 +152,14 @@ module.exports = class EntityHelper {
 					],
 				}
 				entities = await entityTypeQueries.findAllEntities(filter)
+				entities = entities.reduce((acc, entity) => {
+					const entityTypeValue = entity.entity_type.value
+					if (!acc[entityTypeValue]) {
+						acc[entityTypeValue] = []
+					}
+					acc[entityTypeValue].push(entity)
+					return acc
+				}, {})
 				await utils.internalSet(key, entities)
 			}
 			if (!entities) {
