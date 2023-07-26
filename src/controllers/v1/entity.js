@@ -56,7 +56,7 @@ module.exports = class Entity {
 
 	async read(req) {
 		try {
-			if (req.body.readUserEntity) {
+			if (req.body.read_user_entity) {
 				return await entityHelper.readUserEntity(req.body, req.decodedToken._id)
 			}
 			return await entityHelper.read(req.body)
