@@ -99,6 +99,7 @@ module.exports = class AccountHelper {
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findOne({
 				where: { email: email },
+				raw: true,
 				attributes: {
 					exclude: projection,
 				},
@@ -113,7 +114,6 @@ module.exports = class AccountHelper {
 				},
 			}
 
-			user = user.toJSON()
 			user.user_roles = [role]
 
 			const accessToken = utilsHelper.generateToken(
@@ -190,6 +190,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				where: { email: bodyData.email.toLowerCase() },
+				raw: true,
 			})
 			if (!user) {
 				return common.failureResponse({
@@ -213,7 +214,6 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			user = user.toJSON()
 			user.user_roles = roles
 
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
@@ -589,6 +589,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				where: { email: bodyData.email },
+				raw: true,
 				attributes: {
 					exclude: projection,
 				},
@@ -610,7 +611,6 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			user = user.toJSON()
 			user.user_roles = roles
 
 			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
@@ -768,7 +768,7 @@ module.exports = class AccountHelper {
 				const userIdsNotFoundInRedis = []
 				const userDetailsFoundInRedis = []
 				for (let i = 0; i < userIds.length; i++) {
-					let userDetails = (await utilsHelper.redisGet(userIds[i])) || false
+					let userDetails = (await utilsHelper.redisGet(userIds[i].toString())) || false
 
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])
@@ -778,20 +778,31 @@ module.exports = class AccountHelper {
 				}
 
 				let filterQuery = {
-					_id: { $in: userIdsNotFoundInRedis },
-					deleted: false,
+					where: { id: userIdsNotFoundInRedis, deleted: false },
+					raw: true,
+					attributes: {
+						exclude: ['password', 'refresh_token'],
+					},
 				}
 
 				//returning deleted user if internal token is passing
 				if (params.headers.internal_access_token) {
-					delete filterQuery.deleted
+					filterQuery.where = { id: userIdsNotFoundInRedis }
 				}
 
-				const users = await usersData.findAllUsers(filterQuery, { password: 0, refreshTokens: 0, otpInfo: 0 })
+				let users = await userQueries.findAll(filterQuery)
+				let roles = await roleQueries.findAll({
+					raw: true,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+					},
+				})
 
-				users.forEach(async (element) => {
-					if (element.isAMentor) {
-						await utilsHelper.redisSet(element._id.toString(), element)
+				users.forEach(async (user) => {
+					if (user.roles && user.roles.length > 0) {
+						let roleData = roles.filter((role) => user.roles.includes(role.id))
+						user['user_roles'] = roleData
+						// await utilsHelper.redisSet(element._id.toString(), element)
 					}
 				})
 
@@ -801,23 +812,23 @@ module.exports = class AccountHelper {
 					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
-				let users = await usersData.listUsers(
-					params.query.type,
+				let role = await roleQueries.findOne({
+					where: { title: params.query.type },
+					raw: true,
+					attributes: ['id'],
+				})
+
+				let users = await userQueries.listUsers(
+					role && role.id ? role.id : '',
 					params.pageNo,
 					params.pageSize,
 					params.searchText
 				)
-				let message = ''
-				if (params.query.type === 'mentor') {
-					message = 'MENTOR_LIST'
-				} else if (params.query.type === 'mentee') {
-					message = 'MENTEE_LIST'
-				}
 
-				if (users[0].data.length < 1) {
+				if (users.rows.length < 1) {
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: message,
+						message: 'USER_LIST',
 						result: {
 							data: [],
 							count: 0,
@@ -832,7 +843,7 @@ module.exports = class AccountHelper {
                 it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
-					users[0].data.map(async (user) => {
+					users.rows.map(async (user) => {
 						/* Assigned image url from the stored location */
 						if (user.image) {
 							user.image = await utilsHelper.getDownloadableUrl(user.image)
@@ -841,7 +852,7 @@ module.exports = class AccountHelper {
 					})
 				)
 
-				for (let user of users[0].data) {
+				for (let user of users.rows) {
 					let firstChar = user.name.charAt(0)
 					firstChar = firstChar.toUpperCase()
 
@@ -859,14 +870,15 @@ module.exports = class AccountHelper {
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: message,
+					message: 'USER_LIST',
 					result: {
 						data: result,
-						count: users[0].count,
+						count: users.count,
 					},
 				})
 			}
 		} catch (error) {
+			console.log(error, 'error')
 			throw error
 		}
 	}

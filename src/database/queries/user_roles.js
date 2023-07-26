@@ -22,7 +22,6 @@ exports.findAll = async (filter) => {
 	try {
 		return await database.UserRole.findAll(filter)
 	} catch (error) {
-		console.log(error,"error")
 		return error
 	}
 }

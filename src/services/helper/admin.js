@@ -116,6 +116,7 @@ module.exports = class AdminHelper {
 		try {
 			let user = await userQueries.findOne({
 				where: { email: bodyData.email.toLowerCase() },
+				raw: true,
 			})
 
 			if (!user) {
@@ -157,7 +158,6 @@ module.exports = class AdminHelper {
 				},
 			}
 
-			user = user.toJSON()
 			user.user_roles = roles
 
 			const accessToken = utils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
