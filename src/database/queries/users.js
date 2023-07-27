@@ -11,18 +11,26 @@ exports.create = async (data) => {
 	}
 }
 
-exports.findOne = async (filter) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
-		return await database.User.findOne(filter)
+		return await database.User.findOne({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}
 }
 
-exports.updateUser = async (update, filter, options) => {
+exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		let data = await database.User.update(update, filter, options)
-		return data
+		let res = await database.User.update(update, {
+			where: filter,
+			...options,
+			individualHooks: true,
+		})
+		return res
 	} catch (error) {
 		return error
 	}
@@ -36,9 +44,13 @@ exports.findByPk = async (id) => {
 	}
 }
 
-exports.findAll = async (filter) => {
+exports.findAll = async (filter, options = {}) => {
 	try {
-		return await database.User.findAll(filter)
+		return await database.User.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}

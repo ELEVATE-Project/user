@@ -2,9 +2,13 @@
 const database = require('@database/models/index')
 
 const { Op } = require('sequelize')
-exports.findOne = async (filter) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
-		return await database.UserRole.findOne(filter)
+		return await database.UserRole.findOne({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}
@@ -18,9 +22,13 @@ exports.findByPk = async (id) => {
 	}
 }
 
-exports.findAll = async (filter) => {
+exports.findAll = async (filter, options = {}) => {
 	try {
-		return await database.UserRole.findAll(filter)
+		return await database.UserRole.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}

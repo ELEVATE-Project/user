@@ -40,8 +40,7 @@ module.exports = class AccountHelper {
 
 		try {
 			const email = bodyData.email.toLowerCase()
-			let user = await userQueries.findOne({ where: { email: email } })
-
+			let user = await userQueries.findOne({ email: email })
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -72,14 +71,16 @@ module.exports = class AccountHelper {
 			let role
 
 			if (bodyData.role) {
-				role = await roleQueries.findOne({
-					where: { title: bodyData.role.toLowerCase(), status: common.activeStatus },
-					attributes: {
-						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
-					},
-				})
+				role = await roleQueries.findOne(
+					{ title: bodyData.role.toLowerCase(), status: common.activeStatus },
+					{
+						attributes: {
+							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						},
+					}
+				)
 			} else {
-				role = await roleQueries.findOne({ where: { title: common.roleUser } })
+				role = await roleQueries.findOne({ title: common.roleUser })
 			}
 
 			if (!role) {
@@ -97,13 +98,14 @@ module.exports = class AccountHelper {
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
-			user = await userQueries.findOne({
-				where: { email: email },
-				raw: true,
-				attributes: {
-					exclude: projection,
-				},
-			})
+			user = await userQueries.findOne(
+				{ email: email },
+				{
+					attributes: {
+						exclude: projection,
+					},
+				}
+			)
 
 			const tokenDetail = {
 				data: {
@@ -139,9 +141,7 @@ module.exports = class AccountHelper {
 				last_logged_in_at: new Date().getTime(),
 			}
 
-			const filterQuery = { where: { id: user.id } }
-
-			await userQueries.updateUser(update, filterQuery)
+			await userQueries.updateUser({ id: user.id }, update)
 			await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
@@ -188,10 +188,7 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({
-				where: { email: bodyData.email.toLowerCase() },
-				raw: true,
-			})
+			let user = await userQueries.findOne({ email: bodyData.email.toLowerCase() })
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -200,12 +197,14 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			let roles = await roleQueries.findAll({
-				where: { id: user.roles, status: common.activeStatus },
-				attributes: {
-					exclude: ['createdAt', 'updatedAt', 'deletedAt'],
-				},
-			})
+			let roles = await roleQueries.findAll(
+				{ id: user.roles, status: common.activeStatus },
+				{
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+					},
+				}
+			)
 			if (!roles) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -268,9 +267,7 @@ module.exports = class AccountHelper {
 				last_logged_in_at: new Date().getTime(),
 			}
 
-			const filterQuery = { where: { id: user.id } }
-
-			await userQueries.updateUser(updateParams, filterQuery)
+			await userQueries.updateUser({ id: user.id }, updateParams)
 
 			delete user.password
 			delete user.refresh_token
@@ -314,7 +311,7 @@ module.exports = class AccountHelper {
 			})
 
 			/* Destroy refresh token for user */
-			const res = await userQueries.updateUser({ refresh_token: refreshTokens }, { where: { id: user.id } })
+			const res = await userQueries.updateUser({ id: user.id }, { refresh_token: refreshTokens })
 
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
 			if (!res) {
@@ -354,7 +351,7 @@ module.exports = class AccountHelper {
 			throw error
 		}
 
-		const user = await userQueries.findOne({ where: { id: decodedToken.data.id } })
+		const user = await userQueries.findOne({ id: decodedToken.data.id })
 
 		/* Check valid user */
 		if (!user) {
@@ -418,7 +415,7 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ where: { email: bodyData.email } })
+			const user = await userQueries.findOne({ email: bodyData.email })
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -506,7 +503,7 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ where: { email: bodyData.email } })
+			const user = await userQueries.findOne({ email: bodyData.email })
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -587,13 +584,15 @@ module.exports = class AccountHelper {
 	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
-			let user = await userQueries.findOne({
-				where: { email: bodyData.email },
-				raw: true,
-				attributes: {
-					exclude: projection,
-				},
-			})
+			let user = await userQueries.findOne(
+				{ email: bodyData.email },
+				{
+					attributes: {
+						exclude: projection,
+					},
+				}
+			)
+
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -602,7 +601,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			let roles = await roleQueries.findAll({ where: { id: user.roles, status: common.activeStatus } })
+			let roles = await roleQueries.findAll({ id: user.roles, status: common.activeStatus })
 			if (!roles) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -668,8 +667,7 @@ module.exports = class AccountHelper {
 				password: bodyData.password,
 			}
 
-			const filterQuery = { where: { id: user.id } }
-			await userQueries.updateUser(updateParams, filterQuery)
+			await userQueries.updateUser({ id: user.id }, updateParams)
 			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
@@ -778,25 +776,29 @@ module.exports = class AccountHelper {
 				}
 
 				let filterQuery = {
-					where: { id: userIdsNotFoundInRedis, deleted: false },
-					raw: true,
-					attributes: {
-						exclude: ['password', 'refresh_token'],
-					},
+					id: userIdsNotFoundInRedis,
+					deleted: false,
 				}
 
 				//returning deleted user if internal token is passing
 				if (params.headers.internal_access_token) {
-					filterQuery.where = { id: userIdsNotFoundInRedis }
+					filterQuery = { id: userIdsNotFoundInRedis }
 				}
 
-				let users = await userQueries.findAll(filterQuery)
-				let roles = await roleQueries.findAll({
-					raw: true,
+				let users = await userQueries.findAll(filterQuery, {
 					attributes: {
-						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						exclude: ['password', 'refresh_token'],
 					},
 				})
+
+				let roles = await roleQueries.findAll(
+					{},
+					{
+						attributes: {
+							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						},
+					}
+				)
 
 				users.forEach(async (user) => {
 					if (user.roles && user.roles.length > 0) {
@@ -812,11 +814,12 @@ module.exports = class AccountHelper {
 					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
-				let role = await roleQueries.findOne({
-					where: { title: params.query.type },
-					raw: true,
-					attributes: ['id'],
-				})
+				let role = await roleQueries.findOne(
+					{ title: params.query.type },
+					{
+						attributes: ['id'],
+					}
+				)
 
 				let users = await userQueries.listUsers(
 					role && role.id ? role.id : '',
@@ -878,7 +881,6 @@ module.exports = class AccountHelper {
 				})
 			}
 		} catch (error) {
-			console.log(error, 'error')
 			throw error
 		}
 	}
@@ -910,8 +912,8 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
-			await utilsHelper.redisDel(user.email)
+			await userQueries.updateUser({ id: userId }, { has_accepted_terms_and_conditions: true })
+			await utilsHelper.redisDel(userId.toString())
 			// await utils.redisDel(userId)
 
 			return common.successResponse({
@@ -933,7 +935,7 @@ module.exports = class AccountHelper {
 	 */
 	static async changeRole(bodyData) {
 		try {
-			let role = await roleQueries.findOne({ where: { name: bodyData.role.toLowerCase() } })
+			let role = await roleQueries.findOne({ title: bodyData.role.toLowerCase() })
 			if (!role) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -942,7 +944,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const res = await userQueries.updateUser({ role_id: role.id }, { where: { email: bodyData.email } })
+			const res = await userQueries.updateUser({ email: bodyData.email }, { role_id: role.id })
 			/* If user doc not updated  */
 			if (!res) {
 				return common.failureResponse({

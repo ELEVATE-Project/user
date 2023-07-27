@@ -38,7 +38,7 @@ module.exports = class AdminHelper {
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
 
-			await userQueries.updateUser(update, { where: { id: userId } })
+			await userQueries.updateUser({ id: userId }, update)
 			await utils.redisDel(userId.toString())
 
 			//code for remove user folder from cloud
@@ -64,7 +64,7 @@ module.exports = class AdminHelper {
 	static async create(bodyData) {
 		try {
 			const email = bodyData.email.toLowerCase()
-			const user = await userQueries.findOne({ where: { email: email } })
+			const user = await userQueries.findOne({ email: email })
 
 			if (user) {
 				return common.failureResponse({
@@ -75,7 +75,7 @@ module.exports = class AdminHelper {
 			}
 
 			let roles = []
-			let role = await roleQueries.findOne({ where: { title: common.roleAdmin } })
+			let role = await roleQueries.findOne({{ title: common.roleAdmin })
 			if (!role) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -114,10 +114,7 @@ module.exports = class AdminHelper {
 	 */
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({
-				where: { email: bodyData.email.toLowerCase() },
-				raw: true,
-			})
+			let user = await userQueries.findOne({ email: bodyData.email.toLowerCase() })
 
 			if (!user) {
 				return common.failureResponse({
@@ -135,11 +132,11 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let roles = await roleQueries.findAll({
-				where: { id: user.roles },
-				attributes: {
+			let roles = await roleQueries.findAll({ id: user.roles },
+				{
+					attributes: {
 					exclude: ['createdAt', 'updatedAt', 'deletedAt'],
-				},
+				}
 			})
 			if (!roles) {
 				return common.failureResponse({

@@ -21,8 +21,6 @@ module.exports = class userRoleHelper {
 	static async list() {
 		try {
 			let roles = await roleQueries.findAll()
-            console.log(roles,"roles")
-            // roles = JSON.stringify(roles)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

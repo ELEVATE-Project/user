@@ -100,9 +100,7 @@ module.exports = async function (req, res, next) {
 
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const user = await userQueries.findOne({
-				where: { id: decodedToken.data.id, deleted: false },
-			})
+			const user = await userQueries.findOne({ id: decodedToken.data.id, deleted: false })
 
 			if (!user) {
 				throw common.failureResponse({
@@ -112,10 +110,10 @@ module.exports = async function (req, res, next) {
 				})
 			}
 
-			const roles = await roleQueries.findAll({
-				where: { id: user.roles, status: common.activeStatus },
-				attributes: ['title'],
-			})
+			const roles = await roleQueries.findAll(
+				{ id: user.roles, status: common.activeStatus },
+				{ attributes: ['title'] }
+			)
 
 			//for the time being user have one role
 			if (roles && roles[0].title !== decodedToken.data.roles[0].title) {
