@@ -75,7 +75,7 @@ module.exports = class AdminHelper {
 			}
 
 			let roles = []
-			let role = await roleQueries.findOne({{ title: common.roleAdmin })
+			let role = await roleQueries.findOne({ title: common.roleAdmin })
 			if (!role) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
