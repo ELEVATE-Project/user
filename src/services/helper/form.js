@@ -3,8 +3,7 @@ const common = require('@constants/common')
 const formQueries = require('@database/queries/forms')
 const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
-const ObjectId = require('mongoose').Types.ObjectId
-// const form = require('@generics/form')
+const form = require('@generics/form')
 
 module.exports = class FormsHelper {
 	/**
@@ -17,7 +16,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData) {
 		try {
-			const form = await formQueries.findOne({ where: { type: bodyData.type } })
+			const form = await formQueries.findOne({ type: bodyData.type })
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -50,32 +49,23 @@ module.exports = class FormsHelper {
 			let filter = {}
 
 			if (id) {
-				filter = { where: { id: id } }
+				filter = { id: id }
 			} else {
 				filter = {
-					where: {
-						type: bodyData.type,
-						sub_type: bodyData.sub_type,
-						'data.templateName': bodyData.data.templateName,
-					},
+					type: bodyData.type,
+					sub_type: bodyData.sub_type,
 				}
 			}
 
-			const result = await formQueries.updateOneForm(bodyData, filter)
-
-			if (result === 'ENTITY_ALREADY_EXISTS') {
-				return common.failureResponse({
-					message: 'FORM_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else if (result === 'ENTITY_NOT_FOUND') {
+			const result = await formQueries.updateOneForm(filter, bodyData)
+			if (result == 0) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
 			return common.successResponse({
@@ -100,24 +90,12 @@ module.exports = class FormsHelper {
 			let filter = {}
 
 			if (id) {
-				filter = { where: { id: id } }
+				filter = { id: id }
 			} else {
-				filter = {
-					where: {},
-				}
-				if (bodyData.type) {
-					filter.where.type = bodyData.type
-				}
-				if (bodyData.sub_type) {
-					filter.where.sub_type = bodyData.sub_type
-				}
-				if (bodyData.templateName) {
-					filter.where['data.templateName'] = bodyData.templateName
-				}
+				filter = { ...bodyData }
 			}
 
 			const form = await formQueries.findOne(filter)
-
 			if (!form) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',

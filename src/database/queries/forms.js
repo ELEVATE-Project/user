@@ -12,15 +12,24 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter) => {
 	try {
-		return await database.Form.findOne(filter)
+		return await database.Form.findOne({
+			where: filter,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}
 }
 
-exports.updateOneForm = async (update, filter, options) => {
+exports.updateOneForm = async (filter, update, options = {}) => {
 	try {
-		return await database.Form.update(update, filter, options)
+		const [res] = await database.Form.update(update, {
+			where: filter,
+			...options,
+			individualHooks: true,
+		})
+
+		return res
 	} catch (error) {
 		return error
 	}
@@ -29,7 +38,8 @@ exports.updateOneForm = async (update, filter, options) => {
 exports.findAllTypeFormVersion = async () => {
 	try {
 		const formData = await database.Form.findAll({
-			attributes: ['id', 'type'],
+			attributes: ['id', 'type', 'version'],
+			raw: true,
 		})
 		return formData
 	} catch (error) {
