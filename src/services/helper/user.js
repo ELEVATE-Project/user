@@ -31,7 +31,7 @@ module.exports = class UserHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let update = await userQueries.updateUser(bodyData, { where: { id: id } })
+			let update = await userQueries.updateUser({ id: id }, bodyData)
 			if (!update) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -66,15 +66,14 @@ module.exports = class UserHelper {
 			let filter = {}
 
 			if (id) {
-				filter = { where: { id: id } }
+				filter = { id: id }
 			} else {
-				filter = { where: { shareLink: id } }
+				filter = { shareLink: id }
 			}
 
 			const userDetails = (await utils.redisGet(id.toString())) || false
 			if (!userDetails) {
-				const user = await userQueries.findOne({
-					filter,
+				const user = await userQueries.findOne(filter, {
 					attributes: {
 						exclude: projection,
 					},
@@ -113,10 +112,10 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			let user = await userQueries.findOne({
-				where: { id: userId, role: common.roleMentor },
-				attributes: ['deleted', 'share_link'],
-			})
+			let user = await userQueries.findOne(
+				{ id: userId, role: common.roleMentor },
+				{ attributes: ['deleted', 'share_link'] }
+			)
 
 			if (!user) {
 				return common.failureResponse({
@@ -135,7 +134,7 @@ module.exports = class UserHelper {
 			let shareLink = user.share_link
 			if (!shareLink) {
 				shareLink = utils.md5Hash(userId)
-				await userQueries.updateUser({ share_link: shareLink }, { where: { id: userId } })
+				await userQueries.updateUser({ id: userId }, { share_link: shareLink })
 			}
 			return common.successResponse({
 				message: 'PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY',
