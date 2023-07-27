@@ -23,10 +23,9 @@ module.exports = {
 				allowNull: false,
 				defaultValue: false,
 			},
-			role: {
-				type: Sequelize.STRING,
+			roles: {
+				type: Sequelize.ARRAY(Sequelize.INTEGER),
 				allowNull: false,
-				defaultValue: 'user',
 			},
 			status: {
 				type: Sequelize.STRING,
@@ -83,6 +82,10 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
+			deleted: {
+				type: Sequelize.BOOLEAN,
+				defaultValue: false,
+			}
 		})
 	},
 	async down(queryInterface, Sequelize) {

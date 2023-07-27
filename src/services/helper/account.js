@@ -8,7 +8,6 @@
 // Dependencies
 const bcryptJs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const ObjectId = require('mongoose').Types.ObjectId
 
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
@@ -19,7 +18,7 @@ const userQueries = require('@database/queries/users')
 const organizationQueries = require('@database/queries/organizations')
 const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
-// const systemUserData = require('@db/systemUsers/queries')
+const roleQueries = require('@database/queries/user_roles')
 const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
@@ -69,11 +68,38 @@ module.exports = class AccountHelper {
 				bodyData.organization_id = organization.id
 			}
 
+			let roles = []
+			let role
+
+			if (bodyData.role) {
+				role = await roleQueries.findOne({
+					where: { title: bodyData.role.toLowerCase(), status: common.activeStatus },
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+					},
+				})
+			} else {
+				role = await roleQueries.findOne({ where: { title: common.roleUser } })
+			}
+
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			roles.push(role.id)
+			bodyData.roles = roles
+			delete bodyData.role
+
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findOne({
 				where: { email: email },
+				raw: true,
 				attributes: {
 					exclude: projection,
 				},
@@ -84,9 +110,11 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role,
+					roles: [role],
 				},
 			}
+
+			user.user_roles = [role]
 
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
@@ -162,6 +190,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				where: { email: bodyData.email.toLowerCase() },
+				raw: true,
 			})
 			if (!user) {
 				return common.failureResponse({
@@ -171,7 +200,22 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			user = JSON.parse(JSON.stringify(user))
+			let roles = await roleQueries.findAll({
+				where: { id: user.roles, status: common.activeStatus },
+				attributes: {
+					exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+				},
+			})
+			if (!roles) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user.user_roles = roles
+
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return common.failureResponse({
@@ -186,7 +230,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role,
+					roles: roles,
 				},
 			}
 
@@ -545,6 +589,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				where: { email: bodyData.email },
+				raw: true,
 				attributes: {
 					exclude: projection,
 				},
@@ -557,7 +602,17 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			user = JSON.parse(JSON.stringify(user))
+			let roles = await roleQueries.findAll({ where: { id: user.roles, status: common.activeStatus } })
+			if (!roles) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user.user_roles = roles
+
 			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
@@ -583,7 +638,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
-					role: user.role,
+					role: roles,
 				},
 			}
 
@@ -688,94 +743,6 @@ module.exports = class AccountHelper {
 	}
 
 	/**
-	 * Verify the mentor or not
-	 * @method
-	 * @name verifyMentor
-	 * @param {Object} userId - userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	static async verifyMentor(userId) {
-		try {
-			let user = await usersData.findOne({ _id: userId }, { isAMentor: 1, deleted: 1 })
-			if (!user) {
-				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else if (user.deleted == true) {
-				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			} else if (user.isAMentor == true) {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_A_MENTOR',
-					result: user,
-				})
-			} else {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_NOT_A_MENTOR',
-					result: user,
-				})
-			}
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
-	 * Verify user is mentor or not
-	 * @method
-	 * @name verifyUser
-	 * @param {Object} userId - userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	static async verifyUser(userId) {
-		try {
-			let user = await userQueries.findOne({
-				where: { id: userId },
-				attributes: ['role','deleted'],
-			})
-
-			if (!user) {
-				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else if (user.deleted == true) {
-				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			} else if (user.isAMentor == true) {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_A_MENTOR',
-					result: user,
-				})
-			} else {
-				delete user.deleted
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_IS_NOT_A_MENTOR',
-					result: user,
-				})
-			}
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
 	 * Account List
 	 * @method
 	 * @name list method post
@@ -801,7 +768,7 @@ module.exports = class AccountHelper {
 				const userIdsNotFoundInRedis = []
 				const userDetailsFoundInRedis = []
 				for (let i = 0; i < userIds.length; i++) {
-					let userDetails = (await utilsHelper.redisGet(userIds[i])) || false
+					let userDetails = (await utilsHelper.redisGet(userIds[i].toString())) || false
 
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])
@@ -811,20 +778,31 @@ module.exports = class AccountHelper {
 				}
 
 				let filterQuery = {
-					_id: { $in: userIdsNotFoundInRedis },
-					deleted: false,
+					where: { id: userIdsNotFoundInRedis, deleted: false },
+					raw: true,
+					attributes: {
+						exclude: ['password', 'refresh_token'],
+					},
 				}
 
 				//returning deleted user if internal token is passing
 				if (params.headers.internal_access_token) {
-					delete filterQuery.deleted
+					filterQuery.where = { id: userIdsNotFoundInRedis }
 				}
 
-				const users = await usersData.findAllUsers(filterQuery, { password: 0, refreshTokens: 0, otpInfo: 0 })
+				let users = await userQueries.findAll(filterQuery)
+				let roles = await roleQueries.findAll({
+					raw: true,
+					attributes: {
+						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+					},
+				})
 
-				users.forEach(async (element) => {
-					if (element.isAMentor) {
-						await utilsHelper.redisSet(element._id.toString(), element)
+				users.forEach(async (user) => {
+					if (user.roles && user.roles.length > 0) {
+						let roleData = roles.filter((role) => user.roles.includes(role.id))
+						user['user_roles'] = roleData
+						// await utilsHelper.redisSet(element._id.toString(), element)
 					}
 				})
 
@@ -834,23 +812,23 @@ module.exports = class AccountHelper {
 					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
-				let users = await usersData.listUsers(
-					params.query.type,
+				let role = await roleQueries.findOne({
+					where: { title: params.query.type },
+					raw: true,
+					attributes: ['id'],
+				})
+
+				let users = await userQueries.listUsers(
+					role && role.id ? role.id : '',
 					params.pageNo,
 					params.pageSize,
 					params.searchText
 				)
-				let message = ''
-				if (params.query.type === 'mentor') {
-					message = 'MENTOR_LIST'
-				} else if (params.query.type === 'mentee') {
-					message = 'MENTEE_LIST'
-				}
 
-				if (users[0].data.length < 1) {
+				if (users.rows.length < 1) {
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
-						message: message,
+						message: 'USER_LIST',
 						result: {
 							data: [],
 							count: 0,
@@ -865,7 +843,7 @@ module.exports = class AccountHelper {
                 it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
-					users[0].data.map(async (user) => {
+					users.rows.map(async (user) => {
 						/* Assigned image url from the stored location */
 						if (user.image) {
 							user.image = await utilsHelper.getDownloadableUrl(user.image)
@@ -874,7 +852,7 @@ module.exports = class AccountHelper {
 					})
 				)
 
-				for (let user of users[0].data) {
+				for (let user of users.rows) {
 					let firstChar = user.name.charAt(0)
 					firstChar = firstChar.toUpperCase()
 
@@ -892,14 +870,15 @@ module.exports = class AccountHelper {
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: message,
+					message: 'USER_LIST',
 					result: {
 						data: result,
-						count: users[0].count,
+						count: users.count,
 					},
 				})
 			}
 		} catch (error) {
+			console.log(error, 'error')
 			throw error
 		}
 	}
@@ -930,8 +909,8 @@ module.exports = class AccountHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-      
-      await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
+
+			await userQueries.updateUser({ has_accepted_terms_and_conditions: true }, { where: { id: userId } })
 			await utilsHelper.redisDel(user.email)
 			// await utils.redisDel(userId)
 
@@ -954,7 +933,16 @@ module.exports = class AccountHelper {
 	 */
 	static async changeRole(bodyData) {
 		try {
-			const res = await userQueries.updateUser({ role: bodyData.role }, { where: { email: bodyData.email } })
+			let role = await roleQueries.findOne({ where: { name: bodyData.role.toLowerCase() } })
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const res = await userQueries.updateUser({ role_id: role.id }, { where: { email: bodyData.email } })
 			/* If user doc not updated  */
 			if (!res) {
 				return common.failureResponse({

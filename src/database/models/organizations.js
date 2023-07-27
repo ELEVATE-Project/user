@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'Organization', tableName: 'organizations', freezeTableName: true, paranoid: true }
 	)
 	Organization.associate = (models) => {
-		Organization.hasMany(models.User, { foreignKey: 'organization_id' })
+		Organization.hasMany(models.User, { foreignKey: 'organization_id' },{ as: 'users' })
 	}
 	return Organization
 }

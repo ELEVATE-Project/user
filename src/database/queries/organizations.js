@@ -18,9 +18,10 @@ exports.findOne = async (filter, options) => {
 	}
 }
 
-exports.findByPk = async (id) => {
+exports.updateOrg = async (update, filter, options) => {
 	try {
-		return await database.Organization.findByPk(id)
+		const res = await database.Organization.update(update, filter, options)
+		return res
 	} catch (error) {
 		return error
 	}

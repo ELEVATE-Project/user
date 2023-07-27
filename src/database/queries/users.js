@@ -35,3 +35,47 @@ exports.findByPk = async (id) => {
 		return error
 	}
 }
+
+exports.findAll = async (filter) => {
+	try {
+		return await database.User.findAll(filter)
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findOneWithAssociation = async (filter, associationTable, associatioName) => {
+	try {
+		filter.include = [{ model: database[associationTable], as: associatioName }]
+		return await database.User.findOne(filter)
+	} catch (error) {
+		return error
+	}
+}
+
+exports.listUsers = async (roleId, page, limit, search) => {
+	try {
+		let filterQuery = {
+			where: { deleted: false },
+			raw: true,
+			attributes: ['id', 'name', 'image'],
+			offset: parseInt((page - 1) * limit, 10),
+			limit: parseInt(limit, 10),
+			order: [['name', 'ASC']],
+		}
+
+		if (search) {
+			filterQuery.where.name = {
+				[Op.iLike]: search + '%',
+			}
+		}
+
+		if (roleId) {
+			filterQuery.where.roles = { [Op.contains]: [roleId] }
+		}
+
+		return await database.User.findAndCountAll(filterQuery)
+	} catch (error) {
+		return error
+	}
+}
