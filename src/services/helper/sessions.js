@@ -877,7 +877,7 @@ module.exports = class SessionsHelper {
 				)
 				if (!meetingDetails.success) {
 					return common.failureResponse({
-						message: apiResponses.MEETING_NOT_CREATED,
+						message: 'MEETING_NOT_CREATED',
 						statusCode: httpStatusCode.internal_server_error,
 						responseCode: 'SERVER_ERROR',
 					})
