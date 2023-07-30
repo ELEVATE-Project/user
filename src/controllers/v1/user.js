@@ -1,45 +1,45 @@
 /**
- * name : profile.js
- * author : Aman
- * created-date : 02-Nov-2021
- * Description : User Profile.
+ * name : users.js
+ * author : Priyanka Pradeep
+ * created-date : 17-July-2023
+ * Description : User.
  */
 
 // Dependencies
-const profileHelper = require('@services/helper/profile')
+const userHelper = require('@services/helper/user')
 
-module.exports = class Profile {
+module.exports = class User {
 	/**
-	 * Updates user profile
+	 * Updates user data
 	 * @method
 	 * @name update
 	 * @param {Object} req -request data.
 	 * @param {Object} req.body - contains user data.
-	 * @returns {JSON} - profile updated data.
+	 * @returns {JSON} - user updated data.
 	 */
 
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedProfile = await profileHelper.update(params, req.decodedToken._id)
-			return updatedProfile
+			const updatedUser = await userHelper.update(params, req.decodedToken.id)
+			return updatedUser
 		} catch (error) {
 			return error
 		}
 	}
 
 	/**
-	 * User profile details
+	 * User details
 	 * @method
-	 * @name details
+	 * @name read
 	 * @param {Object} req -request data.
 	 * @param {string} req.params._id - user id.
-	 * @returns {JSON} - returns profile details.
+	 * @returns {JSON} - returns user details.
 	 */
-	async details(req) {
+	async read(req) {
 		try {
-			const profileDetails = await profileHelper.details(req.params.id ? req.params.id : req.decodedToken._id)
-			return profileDetails
+			const userDetails = await userHelper.read(req.params.id ? req.params.id : req.decodedToken.id)
+			return userDetails
 		} catch (error) {
 			return error
 		}
@@ -54,7 +54,7 @@ module.exports = class Profile {
 	 */
 	async share(req) {
 		try {
-			const shareLink = await profileHelper.share(req.params.id)
+			const shareLink = await userHelper.share(req.params.id)
 			return shareLink
 		} catch (error) {
 			return error

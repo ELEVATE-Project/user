@@ -75,4 +75,5 @@ module.exports = {
 	roleAssociationModel: 'UserRole',
 	roleAssociationName: 'user_roles',
 	activeStatus: 'active',
+	roleMentor: 'mentor',
 }

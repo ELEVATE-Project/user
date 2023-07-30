@@ -50,7 +50,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			location: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
+				type: Sequelize.ARRAY(Sequelize.JSONB),
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
@@ -67,6 +67,10 @@ module.exports = {
 			},
 			refresh_token: {
 				type: Sequelize.ARRAY(Sequelize.JSONB),
+			},
+			deleted: {
+				type: Sequelize.BOOLEAN,
+				defaultValue: false,
 			},
 			image: {
 				type: Sequelize.STRING,

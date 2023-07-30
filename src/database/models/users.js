@@ -28,12 +28,16 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			gender: DataTypes.STRING,
-			location: DataTypes.ARRAY(DataTypes.STRING),
+			location: DataTypes.ARRAY(DataTypes.JSONB),
 			about: DataTypes.STRING,
 			share_link: DataTypes.STRING,
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: 'active',
+			},
+			deleted: {
+				type: DataTypes.BOOLEAN,
+				defaultValue: false,
 			},
 			image: DataTypes.STRING,
 			last_logged_in_at: DataTypes.DATE,
@@ -54,12 +58,11 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			deleted: {
 				type: DataTypes.BOOLEAN,
-				defaultValue: false
+				defaultValue: false,
 			},
 			deleted_at: {
 				type: DataTypes.DATE,
 			},
-			
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
