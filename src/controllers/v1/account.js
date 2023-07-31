@@ -20,7 +20,7 @@ module.exports = class Account {
 	 * @param {Object} req.body -request body contains user creation deatils.
 	 * @param {String} req.body.secretCode - secrate code to create mentor.
 	 * @param {String} req.body.name - name of the user.
-	 * @param {Boolean} req.body.isAMentor - is a mentor or not .
+	 * @param {Boolean} req.body.role - mentor or mentee .
 	 * @param {String} req.body.email - user email.
 	 * @param {String} req.body.password - user password.
 	 * @returns {JSON} - response contains account creation details.
@@ -28,15 +28,7 @@ module.exports = class Account {
 
 	async create(req) {
 		const params = req.body
-		const isAMentor = params.isAMentor ? true : false
 		try {
-			if (isAMentor && req.body.secretCode != process.env.MENTOR_SECRET_CODE) {
-				throw common.failureResponse({
-					message: 'INVALID_SECRET_CODE',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const createdAccount = await accountHelper.create(params)
 			return createdAccount
 		} catch (error) {
@@ -79,7 +71,7 @@ module.exports = class Account {
 
 	async logout(req) {
 		const params = req.body
-		params.loggedInId = req.decodedToken._id
+		params.loggedInId = req.decodedToken.id
 		try {
 			const loggedOutAccount = await accountHelper.logout(params)
 			return loggedOutAccount
@@ -208,7 +200,7 @@ module.exports = class Account {
 	 */
 	async acceptTermsAndCondition(req) {
 		try {
-			const result = await accountHelper.acceptTermsAndCondition(req.decodedToken._id)
+			const result = await accountHelper.acceptTermsAndCondition(req.decodedToken.id)
 			return result
 		} catch (error) {
 			return error
@@ -246,6 +238,7 @@ module.exports = class Account {
 	 * @name changeRole
 	 * @param {Object} req -request data.
 	 * @param {string} req.body.email - email
+	 * @param {string} req.body.role - role
 	 * @returns {JSON} access token info
 	 */
 
