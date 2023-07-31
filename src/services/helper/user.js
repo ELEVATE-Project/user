@@ -65,7 +65,7 @@ module.exports = class UserHelper {
 		try {
 			let filter = {}
 
-			if (id) {
+			if (utils.isNumeric(id)) {
 				filter = { id: id }
 			} else {
 				filter = { share_link: id }

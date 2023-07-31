@@ -55,6 +55,7 @@ module.exports = {
 		'/profile/share',
 		'/user/v1/admin/create',
 		'/user/v1/organization/update',
+		'/user/v1/user/read',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,

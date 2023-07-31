@@ -113,7 +113,9 @@ function redisGet(key) {
 function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
-
+function isNumeric(value) {
+    return /^\d+$/.test(value);
+}
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -128,4 +130,5 @@ module.exports = {
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
+	isNumeric: isNumeric
 }
