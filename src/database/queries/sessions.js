@@ -21,6 +21,14 @@ exports.findOne = async (filter, options = {}) => {
 	}
 }
 
+exports.findById = async (id) => {
+	try {
+		return await Session.findByPk(id)
+	} catch (error) {
+		return error
+	}
+}
+
 exports.updateOne = async (filter, update, options = {}) => {
 	try {
 		const [rowsAffected] = await Session.update(update, {

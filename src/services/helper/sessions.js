@@ -737,7 +737,7 @@ module.exports = class SessionsHelper {
 
 	static async share(sessionId) {
 		try {
-			const session = await sessionData.findSessionById(sessionId)
+			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -745,16 +745,14 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let shareLink = session.shareLink
+			let shareLink = session.share_link
 			if (!shareLink) {
-				shareLink = utils.md5Hash(sessionId + '###' + session.userId.toString())
-				await sessionData.updateOneSession(
+				shareLink = utils.md5Hash(sessionId + '###' + session.mentor_id)
+				await sessionQueries.updateOne(
 					{
-						_id: ObjectId(sessionId),
+						id: sessionId,
 					},
-					{
-						shareLink,
-					}
+					{ share_link: shareLink }
 				)
 			}
 			return common.successResponse({
