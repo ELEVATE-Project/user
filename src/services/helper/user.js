@@ -68,7 +68,7 @@ module.exports = class UserHelper {
 			if (id) {
 				filter = { id: id }
 			} else {
-				filter = { shareLink: id }
+				filter = { share_link: id }
 			}
 
 			const userDetails = (await utils.redisGet(id.toString())) || false
