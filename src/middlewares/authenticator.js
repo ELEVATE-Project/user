@@ -100,7 +100,7 @@ module.exports = async function (req, res, next) {
 
 			const user = await requests.get(profileUrl, null, true)
 
-			if (user.data.result.roles[0].title !== decodedToken.data.roles[0].title) {
+			if (user.data.result.user_roles[0].title !== decodedToken.data.roles[0].title) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
@@ -119,7 +119,6 @@ module.exports = async function (req, res, next) {
 		req.decodedToken = {
 			id: decodedToken.data.id,
 			email: decodedToken.data.email,
-			// isAMentor: decodedToken.data.isAMentor,
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,

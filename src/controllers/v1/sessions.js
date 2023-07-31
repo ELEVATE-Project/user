@@ -25,23 +25,23 @@ module.exports = class Sessions {
 		try {
 			if (req.params.id) {
 				if (req.headers.timezone) {
-					req.body['timeZone'] = req.headers.timezone
+					req.body['time_zone'] = req.headers.timezone
 				}
 
 				const sessionUpdated = await sessionsHelper.update(
 					req.params.id,
 					req.body,
-					req.decodedToken._id,
+					req.decodedToken.id,
 					req.method
 				)
 
 				return sessionUpdated
 			} else {
 				if (req.headers.timezone) {
-					req.body['timeZone'] = req.headers.timezone
+					req.body['time_zone'] = req.headers.timezone
 				}
 
-				const sessionCreated = await sessionsHelper.create(req.body, req.decodedToken._id)
+				const sessionCreated = await sessionsHelper.create(req.body, req.decodedToken.id)
 
 				return sessionCreated
 			}
@@ -133,7 +133,7 @@ module.exports = class Sessions {
 			const enrolledSession = await sessionsHelper.enroll(
 				req.params.id,
 				req.decodedToken,
-				req.headers['timeZone']
+				req.headers['timezone']
 			)
 			return enrolledSession
 		} catch (error) {

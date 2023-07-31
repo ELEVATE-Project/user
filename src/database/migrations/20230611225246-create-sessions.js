@@ -1,5 +1,5 @@
 'use strict'
-
+require('dotenv').config({ path: '../../.env' })
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.createTable('sessions', {
@@ -80,6 +80,7 @@ module.exports = {
 			is_feedback_skipped: {
 				type: Sequelize.BOOLEAN,
 				allowNull: false,
+				defaultValue: false,
 			},
 			mentee_feedback_question_set: {
 				type: Sequelize.STRING,
@@ -109,6 +110,14 @@ module.exports = {
 				type: Sequelize.INTEGER,
 				allowNull: true,
 			},
+			seats_remaining: {
+				type: Sequelize.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
+			},
+			seats_limit: {
+				type: Sequelize.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
@@ -119,6 +128,10 @@ module.exports = {
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
+			},
+			deleted: {
+				type: Sequelize.BOOLEAN,
+				defaultValue: false,
 			},
 		})
 	},

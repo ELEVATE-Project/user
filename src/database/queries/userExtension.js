@@ -8,10 +8,11 @@ exports.create = async (data) => {
 	}
 }
 
-exports.findOne = async (filter) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
 		const res = await UserExtension.findOne({
 			where: filter,
+			...options,
 			raw: true,
 		})
 		return res

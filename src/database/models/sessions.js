@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '../../.env' })
 module.exports = (sequelize, DataTypes) => {
 	const Session = sequelize.define(
 		'Session',
@@ -107,6 +108,14 @@ module.exports = (sequelize, DataTypes) => {
 			mentor_org_id: {
 				type: DataTypes.INTEGER,
 				allowNull: true,
+			},
+			seats_remaining: {
+				type: DataTypes.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
+			},
+			seats_limit: {
+				type: DataTypes.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
 			},
 		},
 		{ sequelize, modelName: 'Session', tableName: 'sessions', freezeTableName: true, paranoid: true }

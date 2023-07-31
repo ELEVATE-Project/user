@@ -82,4 +82,5 @@ module.exports = {
 		'/mentors/upcomingSessions/',
 		'/issues/create',
 	],
+	MENTOR_ROLE: 'mentor',
 }

@@ -46,3 +46,27 @@ exports.updateOne = async (filter, update, options = {}) => {
 		return error
 	}
 }
+
+exports.updateEnrollmentCount = async (sessionId, increment = true) => {
+	try {
+		const options = increment ? { by: 1 } : { by: -1 }
+		const result = this.incrementOrDecrement(
+			{
+				where: { id: sessionId },
+				...options,
+			},
+			'seats_remaining'
+		)
+		return result
+	} catch (error) {
+		return error
+	}
+}
+
+exports.incrementOrDecrement = async (filterWithOptions, incrementFields = []) => {
+	try {
+		return await Session.increment(incrementFields, filterWithOptions)
+	} catch (error) {
+		return error
+	}
+}

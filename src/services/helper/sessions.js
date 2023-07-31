@@ -120,15 +120,17 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method) {
 		let isSessionReschedule = false
 		try {
-			if (!(await this.verifyMentor(userId))) {
+			let userExtension = await userExtensionQueries.findOne({
+				user_id: userId,
+			})
+			if (!userExtension || userExtension.user_type != common.MENTOR_ROLE) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const sessionDetail = await sessionData.findSessionById(ObjectId(sessionId))
+			const sessionDetail = await sessionQueries.findById(sessionId)
 
 			if (!sessionDetail) {
 				return common.failureResponse({
@@ -393,11 +395,10 @@ module.exports = class SessionsHelper {
 			}
 
 			if (userId) {
-				let filterQuery = {
+				let sessionAttendee = await sessionAttendeesQueries.findOne({
 					session_id: sessionDetails.id,
 					mentee_id: userId,
-				}
-				let sessionAttendee = await sessionAttendeesQueries.findOne(filterQuery)
+				})
 				sessionDetails.is_enrolled = false
 				if (sessionAttendee) {
 					sessionDetails.is_enrolled = true
@@ -520,7 +521,7 @@ module.exports = class SessionsHelper {
 	 * @name enroll
 	 * @param {String} sessionId - Session id.
 	 * @param {Object} userTokenData
-	 * @param {String} userTokenData._id - user id.
+	 * @param {String} userTokenData.id - user id.
 	 * @param {String} userTokenData.email - user email.
 	 * @param {String} userTokenData.name - user name.
 	 * @param {String} timeZone - timezone.
@@ -528,12 +529,12 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async enroll(sessionId, userTokenData, timeZone) {
-		const userId = userTokenData._id
+		const userId = userTokenData.id
 		const email = userTokenData.email
 		const name = userTokenData.name
 
 		try {
-			const session = await sessionData.findSessionById(sessionId)
+			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -542,10 +543,15 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userProfile.details('', session.userId)
-			session.mentorName = mentorName.data.result.name
+			const mentorName = await userProfile.details('', session.mentor_id)
+			session.mentor_name = mentorName.data.result.name
 
-			const sessionAttendeeExist = await sessionAttendesData.findOneSessionAttendee(sessionId, userId)
+			const sessionAttendeeExist = await sessionAttendeesQueries.findOne({
+				session_id: sessionId,
+				mentee_id: userId,
+				deleted: false,
+			})
+
 			if (sessionAttendeeExist) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_ENROLLED',
@@ -554,21 +560,22 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const attendee = {
-				userId,
-				sessionId,
-				timeZone,
-			}
-
-			const res = await sessionAttendesData.create(attendee)
-
-			if (res == 'SESSION_SEAT_FULL') {
+			if (session.seats_remaining <= 0) {
 				return common.failureResponse({
 					message: 'SESSION_SEAT_FULL',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const attendee = {
+				session_id: sessionId,
+				mentee_id: userId,
+				time_zone: timeZone,
+			}
+
+			await sessionAttendeesQueries.create(attendee)
+
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
 			)
@@ -583,24 +590,17 @@ module.exports = class SessionsHelper {
 						body: utils.composeEmailBody(templateData.body, {
 							name,
 							sessionTitle: session.title,
-							mentorName: session.mentorName,
-							startDate: utils.getTimeZone(
-								session.startDateUtc ? session.startDateUtc : session.startDate,
-								common.dateFormat,
-								session.timeZone
-							),
-							startTime: utils.getTimeZone(
-								session.startDateUtc ? session.startDateUtc : session.startDate,
-								common.timeFormat,
-								session.timeZone
-							),
+							mentorName: session.mentor_name,
+							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
+							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
 						}),
 					},
 				}
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			await sessionData.updateEnrollmentCount(sessionId, false)
+			await sessionQueries.updateEnrollmentCount(sessionId, false)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_ENROLLED_SUCCESSFULLY',
