@@ -7,6 +7,8 @@
 
 // Dependencies
 const systemUsersHelper = require('@services/helper/systemUsers')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class SystemUsers {
 	/**
@@ -22,6 +24,13 @@ module.exports = class SystemUsers {
 	async create(req) {
 		const params = req.body
 		try {
+			if (req.body.secretCode != process.env.ADMIN_SECRET_CODE) {
+				throw common.failureResponse({
+					message: 'INVALID_SECRET_CODE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const createdAccount = await systemUsersHelper.create(params)
 			return createdAccount
 		} catch (error) {

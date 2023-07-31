@@ -122,7 +122,6 @@ module.exports = {
 	composeEmailBody,
 	getDownloadableUrl,
 	md5Hash,
-
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,

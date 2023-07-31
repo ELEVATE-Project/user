@@ -54,5 +54,8 @@
 	"EMAIL_UPDATE_FAILED": "आप ईमेल अपडेट नहीं कर सकते हैं।",
 	"URL_NOT_FOUND": "Url नहीं मिला",
 	"PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY": "प्रोफ़ाइल शेयर लिंक सफलतापूर्वक जेनरेट किया गया",
-	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully"
+	"FORM_VERSION_FETCHED_SUCCESSFULLY": "Form versions fetched successfully",
+	"USER_IS_NOT_A_ADMIN": "User does't have admin access",
+	"USER_DELETED_SUCCESSFULLY": "User deleted successfully",
+	"USER_NOT_FOUND": "User not found."
 }
