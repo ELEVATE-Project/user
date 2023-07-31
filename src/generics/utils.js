@@ -161,6 +161,9 @@ function redisDel(key) {
 const capitalize = (str) => {
 	return startCase(str)
 }
+function isNumeric(value) {
+	return /^\d+$/.test(value)
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -182,4 +185,5 @@ module.exports = {
 	redisDel: redisDel,
 	extractEmailTemplate,
 	capitalize,
+	isNumeric: isNumeric,
 }

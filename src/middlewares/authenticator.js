@@ -79,25 +79,35 @@ module.exports = async function (req, res, next) {
 			})
 		}
 
-		if (decodedToken.data.role === common.ADMIN_ROLE) {
-			req.decodedToken = decodedToken.data
-			return next()
+		// if (decodedToken.data.role === common.ADMIN_ROLE) {
+		// 	req.decodedToken = decodedToken.data
+		// 	return next()
+		// }
+
+		let isAdmin = false
+		if (decodedToken.data.roles) {
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			if (isAdmin) {
+				req.decodedToken = decodedToken.data
+				return next()
+			}
 		}
 
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
 			const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
+			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 
 			const user = await requests.get(profileUrl, null, true)
 
-			if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
+			if (user.data.result.roles[0].title !== decodedToken.data.roles[0].title) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
 			if (user.data.result.deleted) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -107,9 +117,10 @@ module.exports = async function (req, res, next) {
 			}
 		}
 		req.decodedToken = {
-			_id: decodedToken.data._id,
+			id: decodedToken.data.id,
 			email: decodedToken.data.email,
-			isAMentor: decodedToken.data.isAMentor,
+			// isAMentor: decodedToken.data.isAMentor,
+			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
 		}

@@ -16,6 +16,9 @@ const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
+const sessionQueries = require('@database/queries/sessions')
+const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
+const userExtensionQueries = require('@database/queries/userExtension')
 
 module.exports = class SessionsHelper {
 	/**
@@ -368,20 +371,18 @@ module.exports = class SessionsHelper {
 
 	static async details(id, userId = '') {
 		try {
-			const filter = {}
-			const projection = {
-				shareLink: 0,
-				menteePassword: 0,
-				mentorPassword: 0,
-			}
-
-			if (ObjectId.isValid(id)) {
-				filter._id = id
+			let filter = {}
+			if (utils.isNumeric(id)) {
+				filter.id = id
 			} else {
-				filter.shareLink = id
+				filter.share_link = id
 			}
 
-			const sessionDetails = await sessionData.findOneSession(filter, projection)
+			const sessionDetails = await sessionQueries.findOne(filter, {
+				attributes: {
+					exclude: ['share_link', 'mentee_password', 'mentor_password'],
+				},
+			})
 
 			if (!sessionDetails) {
 				return common.failureResponse({
@@ -392,15 +393,19 @@ module.exports = class SessionsHelper {
 			}
 
 			if (userId) {
-				let sessionAttendee = await sessionAttendesData.findOneSessionAttendee(sessionDetails._id, userId)
-				sessionDetails.isEnrolled = false
+				let filterQuery = {
+					session_id: sessionDetails.id,
+					mentee_id: userId,
+				}
+				let sessionAttendee = await sessionAttendeesQueries.findOne(filterQuery)
+				sessionDetails.is_enrolled = false
 				if (sessionAttendee) {
-					sessionDetails.isEnrolled = true
+					sessionDetails.is_enrolled = true
 				}
 			}
-			if (userId != sessionDetails.userId) {
-				delete sessionDetails?.meetingInfo?.link
-				delete sessionDetails?.meetingInfo?.meta
+			if (userId != sessionDetails.mentor_id) {
+				delete sessionDetails?.meeting_info?.link
+				delete sessionDetails?.meeting_info?.meta
 			}
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
@@ -410,8 +415,9 @@ module.exports = class SessionsHelper {
 				})
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
-			const mentorName = await userProfile.details('', sessionDetails.userId)
-			sessionDetails.mentorName = mentorName.data.result.name
+
+			const mentorName = await userProfile.details('', sessionDetails.mentor_id)
+			sessionDetails.mentor_name = mentorName.data.result.name
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
