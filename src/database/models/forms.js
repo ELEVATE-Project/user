@@ -19,8 +19,16 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			data: DataTypes.JSON,
+			version: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				defaultValue: 0,
+			},
 		},
 		{ sequelize, modelName: 'Form', tableName: 'forms', freezeTableName: true, paranoid: true }
 	)
+	Form.beforeUpdate(async (form, options) => {
+		form.version += 1
+	})
 	return Form
 }
