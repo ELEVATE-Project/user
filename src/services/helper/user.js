@@ -10,6 +10,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
 const utils = require('@generics/utils')
+const roleQueries = require('@database/queries/user_roles')
 
 module.exports = class UserHelper {
 	/**
@@ -82,9 +83,35 @@ module.exports = class UserHelper {
 				if (user && user.image) {
 					user.image = await utils.getDownloadableUrl(user.image)
 				}
-				if (user.role === common.roleMentor) {
+
+				let roles = await roleQueries.findAll(
+					{ id: user.roles, status: common.activeStatus },
+					{
+						attributes: {
+							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						},
+					}
+				)
+
+				if (!roles) {
+					return common.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				user.user_roles = roles
+
+				let isAMentor = false
+				if (roles && roles.length > 0) {
+					isAMentor = roles.some((role) => role.title === common.roleMentor)
+				}
+
+				if (isAMentor) {
 					await utils.redisSet(id.toString(), user)
 				}
+
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
