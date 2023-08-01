@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
 			email_header: DataTypes.STRING,
 			email_footer: DataTypes.STRING,
 			created_by: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			updated_by: {

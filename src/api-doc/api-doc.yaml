@@ -1251,6 +1251,14 @@ components:
                     type: boolean
                   languages: 
                     type: string
+                    example: John Deo
+                  designation:
+                    type: array
+                    items:
+                    example: []
+                  location:
+                    type: array
+                    items:
                     example: []
                   preferred_language: 
                     type: string
@@ -1313,6 +1321,21 @@ components:
               correlation: 
                 type: string
                 example: 0c418f35-4f8e-4255-a500-cb1a56f10a87
+                    items:
+                    example: []
+              languages:
+                type: array
+                items:
+                example: []
+              updatedAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              createdAt:
+                type: datetime
+                example: '2022-05-18T05:24:52.431Z'
+              __v:
+                type: number
+                example: 0
       userCreateUser406Exist:
         description: User solutions response
         type: object
@@ -1325,7 +1348,8 @@ components:
             example: User already exists.
           error:
             type: array
-            example: []          
+            items:
+            example: []
       userCreateUser400Response:
         description: Reffral Code is Invalid
         type: object

@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			gender: DataTypes.STRING,
-			location: DataTypes.ARRAY(DataTypes.STRING),
+			location: DataTypes.ARRAY(DataTypes.JSONB),
 			about: DataTypes.STRING,
 			share_link: DataTypes.STRING,
 			status: {
@@ -52,14 +52,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
 			},
-			deleted: {
-				type: DataTypes.BOOLEAN,
-				defaultValue: false
-			},
-			deleted_at: {
-				type: DataTypes.DATE,
-			},
-			
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)

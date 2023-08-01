@@ -75,7 +75,7 @@ module.exports = class AccountHelper {
 					{ title: bodyData.role.toLowerCase(), status: common.activeStatus },
 					{
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)
@@ -201,7 +201,7 @@ module.exports = class AccountHelper {
 				{ id: user.roles, status: common.activeStatus },
 				{
 					attributes: {
-						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
 					},
 				}
 			)
@@ -356,17 +356,9 @@ module.exports = class AccountHelper {
 		/* Check valid user */
 		if (!user) {
 			return common.failureResponse({
-				message: 'USER_DOESNOT_EXISTS',
+				message: 'USER_NOT_FOUND',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
-			})
-		}
-
-		if (user.deleted) {
-			return common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
 			})
 		}
 
@@ -777,25 +769,26 @@ module.exports = class AccountHelper {
 
 				let filterQuery = {
 					id: userIdsNotFoundInRedis,
-					deleted: false,
+				}
+
+				let options = {
+					attributes: {
+						exclude: ['password', 'refresh_token'],
+					},
 				}
 
 				//returning deleted user if internal token is passing
 				if (params.headers.internal_access_token) {
-					filterQuery = { id: userIdsNotFoundInRedis }
+					options.paranoid = false
 				}
 
-				let users = await userQueries.findAll(filterQuery, {
-					attributes: {
-						exclude: ['password', 'refresh_token'],
-					},
-				})
+				let users = await userQueries.findAll(filterQuery, options)
 
 				let roles = await roleQueries.findAll(
 					{},
 					{
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)
@@ -904,17 +897,8 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			if (user.deleted) {
-				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
-
 			await userQueries.updateUser({ id: userId }, { has_accepted_terms_and_conditions: true })
 			await utilsHelper.redisDel(userId.toString())
-			// await utils.redisDel(userId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
