@@ -624,12 +624,12 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async unEnroll(sessionId, userTokenData) {
-		const userId = userTokenData._id
+		const userId = userTokenData.id
 		const name = userTokenData.name
 		const email = userTokenData.email
 
 		try {
-			const session = await sessionData.findSessionById(sessionId)
+			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -638,10 +638,10 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userProfile.details('', session.userId)
-			session.mentorName = mentorName.data.result.name
+			const mentorName = await userProfile.details('', session.mentor_id)
+			session.mentor_name = mentorName.data.result.name
 
-			const response = await sessionAttendesData.unEnrollFromSession(sessionId, userId)
+			const response = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
 
 			if (response === 'USER_NOT_ENROLLED') {
 				return common.failureResponse({
@@ -665,7 +665,7 @@ module.exports = class SessionsHelper {
 						body: utils.composeEmailBody(templateData.body, {
 							name,
 							sessionTitle: session.title,
-							mentorName: session.mentorName,
+							mentorName: session.mentor_name,
 						}),
 					},
 				}
@@ -673,7 +673,7 @@ module.exports = class SessionsHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
-			await sessionData.updateEnrollmentCount(sessionId)
+			await sessionQueries.updateEnrollmentCount(sessionId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,

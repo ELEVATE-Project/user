@@ -37,3 +37,22 @@ exports.updateOne = async (filter, update, options = {}) => {
 		return error
 	}
 }
+
+exports.unEnrollFromSession = async (sessionId, userId) => {
+	try {
+		const result = await SessionAttendee.destroy({
+			where: {
+				session_id: sessionId,
+				mentee_id: userId,
+			},
+		})
+
+		if (result === 1) {
+			return 'USER_UNENROLLED'
+		} else {
+			return 'USER_NOT_ENROLLED'
+		}
+	} catch (error) {
+		return error
+	}
+}
