@@ -68,10 +68,6 @@ module.exports = {
 			refresh_token: {
 				type: Sequelize.ARRAY(Sequelize.JSONB),
 			},
-			deleted: {
-				type: Sequelize.BOOLEAN,
-				defaultValue: false,
-			},
 			image: {
 				type: Sequelize.STRING,
 			},
@@ -86,10 +82,6 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
-			deleted: {
-				type: Sequelize.BOOLEAN,
-				defaultValue: false,
-			}
 		})
 	},
 	async down(queryInterface, Sequelize) {

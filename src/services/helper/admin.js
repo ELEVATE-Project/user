@@ -132,12 +132,14 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let roles = await roleQueries.findAll({ id: user.roles },
+			let roles = await roleQueries.findAll(
+				{ id: user.roles },
 				{
 					attributes: {
-					exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
+					},
 				}
-			})
+			)
 			if (!roles) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -191,7 +193,6 @@ function _removeUserKeys() {
 
 function _generateUpdateParams(userId) {
 	const updateUser = {
-		deleted: true,
 		deleted_at: new Date(),
 		name: 'Anonymous User',
 		email: utils.md5Hash(userId) + '@' + 'deletedUser',

@@ -88,7 +88,7 @@ module.exports = class UserHelper {
 					{ id: user.roles, status: common.activeStatus },
 					{
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)
@@ -141,7 +141,7 @@ module.exports = class UserHelper {
 		try {
 			let user = await userQueries.findOne(
 				{ id: userId, role: common.roleMentor },
-				{ attributes: ['deleted', 'share_link'] }
+				{ attributes: ['share_link'] }
 			)
 
 			if (!user) {
@@ -151,13 +151,7 @@ module.exports = class UserHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (user.deleted) {
-				return common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+
 			let shareLink = user.share_link
 			if (!shareLink) {
 				shareLink = utils.md5Hash(userId)

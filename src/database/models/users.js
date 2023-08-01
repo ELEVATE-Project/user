@@ -35,10 +35,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'active',
 			},
-			deleted: {
-				type: DataTypes.BOOLEAN,
-				defaultValue: false,
-			},
 			image: DataTypes.STRING,
 			last_logged_in_at: DataTypes.DATE,
 			has_accepted_terms_and_conditions: {
@@ -55,13 +51,6 @@ module.exports = (sequelize, DataTypes) => {
 			roles: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
-			},
-			deleted: {
-				type: DataTypes.BOOLEAN,
-				defaultValue: false,
-			},
-			deleted_at: {
-				type: DataTypes.DATE,
 			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
