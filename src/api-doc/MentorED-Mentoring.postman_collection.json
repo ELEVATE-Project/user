@@ -115,7 +115,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"enFnase\",\n    \"label\": \"Englishh\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"raw": "{\n    \"value\": \"ml\",\n    \"label\": \"Malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -133,6 +133,9 @@
 				},
 				{
 					"name": "Read Entity",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -142,28 +145,40 @@
 								"type": "text"
 							}
 						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"hm\",\n    \"label\": \"malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/read?value=role_one",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/read?read_user_entity=true",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "entity", "read"],
 							"query": [
 								{
+									"key": "id",
+									"value": "2",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
 									"key": "value",
-									"value": "role_one"
-								},
-								{
-									"key": "deleted",
-									"value": "false",
+									"value": "ml",
+									"description": "User value or id",
 									"disabled": true
 								},
 								{
-									"key": "status",
-									"value": "ACTIVE",
-									"disabled": true
+									"key": "read_user_entity",
+									"value": "true",
+									"description": "use this param to get all entities, including user created entities."
 								}
 							]
 						},
-						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
 				},
@@ -180,7 +195,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"enFnase\",\n    \"label\": \"Englishh\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"raw": "{\n    \"value\": \"english\",\n    \"label\": \"English\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -221,7 +236,7 @@
 			"name": "entity-type",
 			"item": [
 				{
-					"name": "Create Entity",
+					"name": "Create Entity Type",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -233,7 +248,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"role_one\",\n    \"label\": \"role_one\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true\n}",
+							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"string\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -250,7 +265,7 @@
 					"response": []
 				},
 				{
-					"name": "Read Entity",
+					"name": "Read All System Entity Type",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -261,13 +276,46 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read?value=role_one",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "entity-type", "read"]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity Types with entities",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": [\n        \"ln\"\n    ],\n    \"read_user_entity\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "entity-type", "read"],
 							"query": [
 								{
 									"key": "value",
-									"value": "role_one"
+									"value": "role_one",
+									"disabled": true
 								},
 								{
 									"key": "deleted",
@@ -286,43 +334,7 @@
 					"response": []
 				},
 				{
-					"name": "Read all Entity",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read?value=role_one",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity-type", "read"],
-							"query": [
-								{
-									"key": "value",
-									"value": "role_one"
-								},
-								{
-									"key": "deleted",
-									"value": "false",
-									"disabled": true
-								},
-								{
-									"key": "status",
-									"value": "ACTIVE",
-									"disabled": true
-								}
-							]
-						},
-						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Entity",
+					"name": "Update Entity Types",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -334,7 +346,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"role_one\",\n    \"label\": \"role_one\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\"\n}",
+							"raw": "{\n    \"value\": \"roles\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"string\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -351,7 +363,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Entity",
+					"name": "Delete Entity Type",
 					"request": {
 						"method": "DELETE",
 						"header": [
