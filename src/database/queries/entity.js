@@ -1,9 +1,6 @@
 const Entity = require('../models/index').Entity
-const EntityType = require('../models/index').EntityType
-const { Op } = require('sequelize')
-
 module.exports = class UserEntityData {
-	static async createEntityType(data) {
+	static async createEntity(data) {
 		try {
 			return await Entity.create(data, { returning: true })
 		} catch (error) {
@@ -15,29 +12,11 @@ module.exports = class UserEntityData {
 	static async findAllEntities(filter) {
 		try {
 			filter.status = 'ACTIVE'
-			return await Entity.findAll({
-				include: [
-					{
-						model: EntityType,
-						as: 'entity_type',
-						attributes: ['id', 'value', 'label'], // Specify the fields you want to include
-					},
-				],
-			})
+			return await Entity.findAll({ where: filter })
 		} catch (error) {
 			throw error
 		}
 	}
-
-	/* 	static async findAllEntities(filter) {
-		try {
-			const projection = { value: 1, label: 1, _id: 0 }
-			const userEntitiesData = await Entities.find(filter, projection)
-			return userEntitiesData
-		} catch (error) {
-			return error
-		}
-	} */
 
 	static async updateOneEntity(id, update, options = {}) {
 		try {
@@ -59,11 +38,12 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async deleteOneEntityType(id) {
+	static async deleteOneEntityType(id, userId) {
 		try {
 			const rowsAffected = await Entity.destroy({
 				where: {
 					id: id,
+					created_by: userId,
 				},
 			})
 

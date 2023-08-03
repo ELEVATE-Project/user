@@ -10,6 +10,7 @@ module.exports = {
 			references: {
 				table: 'entity_types',
 				field: 'id',
+				as: 'entities',
 			},
 			onDelete: 'cascade',
 			onUpdate: 'cascade',

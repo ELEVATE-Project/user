@@ -42,7 +42,7 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 		})
-		await queryInterface.addIndex('entities', ['value'], {
+		await queryInterface.addIndex('entities', ['value', 'entity_type_id'], {
 			unique: true,
 			name: 'unique_entities_value',
 			where: {

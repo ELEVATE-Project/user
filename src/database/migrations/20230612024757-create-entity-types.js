@@ -27,6 +27,9 @@ module.exports = {
 			allow_filtering: {
 				type: Sequelize.BOOLEAN,
 			},
+			data_type: {
+				type: Sequelize.STRING,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,

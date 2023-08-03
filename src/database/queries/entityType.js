@@ -1,4 +1,6 @@
 const EntityType = require('../models/index').EntityType
+const Entity = require('../models/index').Entity
+const { Op } = require('sequelize')
 
 module.exports = class UserEntityData {
 	static async createEntityType(data) {
@@ -17,9 +19,8 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntities(filter) {
+	static async findAllEntityTypes(filter) {
 		try {
-			console.log(filter)
 			const attributes = ['value', 'label', 'id']
 			const entityData = await EntityType.findAll({
 				where: filter,
@@ -30,8 +31,35 @@ module.exports = class UserEntityData {
 			return error
 		}
 	}
+	static async findAllUserEntityTypes(filter, userId) {
+		try {
+			filter.status = 'ACTIVE'
+			return await EntityType.findAll({
+				where: filter,
+				include: [
+					{
+						model: Entity,
+						required: false,
+						where: {
+							[Op.or]: [
+								{
+									created_by: 0,
+								},
+								{
+									created_by: userId,
+								},
+							],
+						},
+						as: 'entities',
+					},
+				],
+			})
+		} catch (error) {
+			return error
+		}
+	}
 
-	static async updateOneEntity(id, update, options = {}) {
+	static async updateOneEntityType(id, update, options = {}) {
 		try {
 			const filter = {
 				id: id,
@@ -57,6 +85,7 @@ module.exports = class UserEntityData {
 				where: {
 					id: id,
 				},
+				individualHooks: true,
 			})
 
 			return rowsAffected > 0 ? 'ENTITY_UPDATED' : 'ENTITY_NOT_FOUND'

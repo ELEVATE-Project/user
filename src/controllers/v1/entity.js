@@ -56,10 +56,10 @@ module.exports = class Entity {
 
 	async read(req) {
 		try {
-			if (req.body.read_user_entity) {
-				return await entityHelper.readUserEntity(req.body, req.decodedToken._id)
+			if (req.query.id || req.query.value) {
+				return await entityHelper.read(req.query, '0' || req.params.id)
 			}
-			return await entityHelper.read(req.body)
+			return await entityHelper.readAll(req.query, '0' || req.params.id)
 		} catch (error) {
 			return error
 		}
@@ -74,9 +74,8 @@ module.exports = class Entity {
 	 */
 
 	async delete(req) {
-		const _id = req.params.id
 		try {
-			const updatedEntity = await entityHelper.delete(_id)
+			const updatedEntity = await entityHelper.delete(req.params.id, '0' /* userId */)
 			return updatedEntity
 		} catch (error) {
 			return error
