@@ -11,6 +11,9 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
 const _ = require('lodash')
+const userQueries = require('@database/queries/users')
+const roleQueries = require('@database/queries/user_roles')
+const organizationQueries = require('@database/queries/organizations')
 
 module.exports = class AdminHelper {
 	/**
@@ -22,10 +25,10 @@ module.exports = class AdminHelper {
 	 */
 	static async deleteUser(userId) {
 		try {
-			let user = await usersData.findOne({ _id: userId })
+			let user = await userQueries.findByPk(userId)
 			if (!user) {
 				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -35,8 +38,8 @@ module.exports = class AdminHelper {
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
 
-			await usersData.findOneAndReplace({ _id: userId }, update)
-			await utils.redisDel(userId)
+			await userQueries.updateUser({ id: userId }, update)
+			await utils.redisDel(userId.toString())
 
 			//code for remove user folder from cloud
 
@@ -48,25 +51,141 @@ module.exports = class AdminHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * create admin users
+	 * @method
+	 * @name create
+	 * @param {Object} bodyData - user create information
+	 * @param {string} bodyData.email - email.
+	 * @param {string} bodyData.password - email.
+	 * @returns {JSON} - returns created user information
+	 */
+	static async create(bodyData) {
+		try {
+			const email = bodyData.email.toLowerCase()
+			const user = await userQueries.findOne({ email: email })
+
+			if (user) {
+				return common.failureResponse({
+					message: 'ADMIN_USER_ALREADY_EXISTS',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let roles = []
+			let role = await roleQueries.findOne({ title: common.roleAdmin })
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			roles.push(role.id)
+			bodyData.roles = roles
+
+			if (!bodyData.organization_id) {
+				let organization = await organizationQueries.findOne({}, { limit: 1 })
+				bodyData.organization_id = organization.id
+			}
+
+			bodyData.password = utils.hashPassword(bodyData.password)
+			await userQueries.create(bodyData)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'USER_CREATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * login admin user
+	 * @method
+	 * @name login
+	 * @param {Object} bodyData - user login data.
+	 * @param {string} bodyData.email - email.
+	 * @param {string} bodyData.password - email.
+	 * @returns {JSON} - returns login response
+	 */
+	static async login(bodyData) {
+		try {
+			let user = await userQueries.findOne({ email: bodyData.email.toLowerCase() })
+
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const isPasswordCorrect = utils.comparePassword(bodyData.password, user.password)
+			if (!isPasswordCorrect) {
+				return common.failureResponse({
+					message: 'PASSWORD_INVALID',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let roles = await roleQueries.findAll(
+				{ id: user.roles },
+				{
+					attributes: {
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
+					},
+				}
+			)
+			if (!roles) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const tokenDetail = {
+				data: {
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					roles: roles,
+				},
+			}
+
+			user.user_roles = roles
+
+			const accessToken = utils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
+			const refreshToken = utils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
+
+			delete user.password
+			const result = { access_token: accessToken, refresh_token: refreshToken, user }
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'LOGGED_IN_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }
 
 function _removeUserKeys() {
 	let removedFields = [
 		'gender',
 		'about',
-		'shareLink',
-		'experience',
-		'lastLoggedInAt',
-		'educationQualification',
-		'otpInfo',
-		'rating',
-		'preferredLanguage',
-		'designation',
+		'share_link',
+		'last_logged_in_at',
+		'preferred_language',
 		'location',
-		'areasOfExpertise',
 		'languages',
-		'educationQualification',
-		'refreshTokens',
+		'refresh_token',
 		'image',
 	]
 	return removedFields
@@ -74,18 +193,12 @@ function _removeUserKeys() {
 
 function _generateUpdateParams(userId) {
 	const updateUser = {
-		deleted: true,
-		deletedAt: new Date(),
+		deleted_at: new Date(),
 		name: 'Anonymous User',
-		email: {
-			address: utils.md5Hash(userId) + '@' + 'deletedUser',
-			verified: false,
-		},
-		refreshTokens: [],
-		preferredLanguage: 'en',
-		designation: [],
+		email: utils.md5Hash(userId) + '@' + 'deletedUser',
+		refresh_token: [],
+		preferred_language: 'en',
 		location: [],
-		areasOfExpertise: [],
 		languages: [],
 	}
 	return updateUser

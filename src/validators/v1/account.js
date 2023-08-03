@@ -4,7 +4,7 @@
  * Date : 20-Oct-2021
  * Description : Validations of accounts controller
  */
-
+const common = require('@constants/common')
 module.exports = {
 	create: (req) => {
 		req.checkBody('name')
@@ -27,7 +27,9 @@ module.exports = {
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 
-		req.checkBody('isAMentor').optional().isBoolean().withMessage('isAMentor is invalid')
+		if (req.body.role) {
+			req.checkBody('role').trim().not().isIn([common.roleAdmin]).withMessage("User does't have admin access")
+		}
 	},
 
 	login: (req) => {
@@ -78,6 +80,7 @@ module.exports = {
 
 	changeRole: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
+		req.checkBody('role').notEmpty().withMessage('role field is empty')
 	},
 
 	listUser: (req) => {
