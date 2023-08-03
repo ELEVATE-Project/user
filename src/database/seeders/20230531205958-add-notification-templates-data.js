@@ -39,8 +39,6 @@ module.exports = {
 			emailTemplate['type'] = 'email'
 			emailTemplate['updated_at'] = moment().format()
 			emailTemplate['created_at'] = moment().format()
-			emailTemplate['created_by'] = 'SYSTEM'
-			emailTemplate['updated_by'] = 'SYSTEM'
 			if (emailTemplate.code == 'email_footer') {
 				emailTemplate['type'] = 'emailFooter'
 			} else if (emailTemplate.code == 'email_header') {

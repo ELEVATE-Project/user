@@ -14,7 +14,7 @@ module.exports = class OrganizationsHelper {
 
 	static async create(bodyData) {
 		try {
-			let organization = await organizationQueries.findOne({ where: { code: bodyData.code } })
+			let organization = await organizationQueries.findOne({ code: bodyData.code })
 
 			if (organization) {
 				return common.failureResponse({
@@ -25,7 +25,7 @@ module.exports = class OrganizationsHelper {
 			}
 
 			let createOrg = await organizationQueries.create(bodyData)
-			const cacheKey = 'org_' + createOrg.id.toString()
+			const cacheKey = common.redisOrgPrefix + createOrg.id.toString()
 			await utils.internalDel(cacheKey)
 			// await KafkaProducer.clearInternalCache(cacheKey)
 			let result = {
@@ -52,8 +52,8 @@ module.exports = class OrganizationsHelper {
 
 	static async update(id, bodyData) {
 		try {
-			const result = await organizationQueries.updateOrg(bodyData, { where: { id: id } })
-			if (result == 0) {
+			const rowsUpdated = await organizationQueries.update({ id: id }, bodyData)
+			if (rowsUpdated == 0) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -61,7 +61,7 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 
-			const cacheKey = 'org_' + id.toString()
+			const cacheKey = common.redisOrgPrefix + id.toString()
 			await utils.internalDel(cacheKey)
 			// await KafkaProducer.clearInternalCache(cacheKey)
 			return common.successResponse({

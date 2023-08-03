@@ -3,12 +3,12 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.addConstraint('users', {
-			fields: ['organization_id'],
+		await queryInterface.addConstraint('entities', {
+			fields: ['entity_type_id'],
 			type: 'foreign key',
-			name: 'fk_user_organization',
+			name: 'fk_entity_entity_type',
 			references: {
-				table: 'organizations',
+				table: 'entity_types',
 				field: 'id',
 			},
 			onDelete: 'cascade',
@@ -17,6 +17,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.removeConstraint('users', 'fk_user_organization')
+		await queryInterface.removeConstraint('entities', 'fk_entity_entity_type')
 	},
 }

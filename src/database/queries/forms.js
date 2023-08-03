@@ -10,10 +10,11 @@ exports.create = async (data) => {
 	}
 }
 
-exports.findOne = async (filter) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
 		return await database.Form.findOne({
 			where: filter,
+			...options,
 			raw: true,
 		})
 	} catch (error) {

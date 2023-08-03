@@ -2,58 +2,51 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable('notification_templates', {
+		await queryInterface.createTable('entity_types', {
 			id: {
-				type: Sequelize.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
+				primaryKey: true,
+				type: Sequelize.INTEGER,
 			},
-			type: {
+			value: {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
-			code: {
+			label: {
 				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			subject: { type: Sequelize.STRING },
-			body: {
-				type: Sequelize.TEXT,
 				allowNull: false,
 			},
 			status: {
 				type: Sequelize.STRING,
-				allowNull: false,
 				defaultValue: 'active',
 			},
-			email_header: {
-				type: Sequelize.STRING,
-			},
-			email_footer: {
-				type: Sequelize.STRING,
+			data_type: {
+				type: Sequelize.STRING, //numeric, alphaNumeric etc
 			},
 			created_by: {
-				type: Sequelize.STRING,
+				type: Sequelize.INTEGER,
 			},
 			updated_by: {
-				type: Sequelize.STRING,
+				type: Sequelize.INTEGER,
+			},
+			allow_filtering: {
+				type: Sequelize.BOOLEAN,
 			},
 			created_at: {
-				allowNull: false,
 				type: Sequelize.DATE,
+				allowNull: false,
 			},
 			updated_at: {
-				allowNull: false,
 				type: Sequelize.DATE,
+				allowNull: false,
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
 		})
 	},
-
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable('notification_templates')
+		await queryInterface.dropTable('entity_types')
 	},
 }

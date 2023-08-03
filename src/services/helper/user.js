@@ -41,8 +41,9 @@ module.exports = class UserHelper {
 				})
 			}
 
-			if (await utils.redisGet(id.toString())) {
-				await utils.redisDel(id.toString())
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			if (await utils.redisGet(redisUserKey)) {
+				await utils.redisDel(redisUserKey)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -62,7 +63,7 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - user information
 	 */
 	static async read(id) {
-		const projection = ['password', 'location', 'refresh_token']
+		const projection = ['password', 'location', 'refresh_tokens']
 		try {
 			let filter = {}
 
@@ -72,7 +73,8 @@ module.exports = class UserHelper {
 				filter = { share_link: id }
 			}
 
-			const userDetails = (await utils.redisGet(id.toString())) || false
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			const userDetails = (await utils.redisGet(redisUserKey)) || false
 			if (!userDetails) {
 				const user = await userQueries.findOne(filter, {
 					attributes: {
@@ -88,7 +90,7 @@ module.exports = class UserHelper {
 					{ id: user.roles, status: common.activeStatus },
 					{
 						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
+							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
 						},
 					}
 				)
@@ -109,7 +111,7 @@ module.exports = class UserHelper {
 				}
 
 				if (isAMentor) {
-					await utils.redisSet(id.toString(), user)
+					await utils.redisSet(redisUserKey, user)
 				}
 
 				return common.successResponse({

@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			gender: DataTypes.STRING,
-			location: DataTypes.ARRAY(DataTypes.JSONB),
+			location: DataTypes.ARRAY(DataTypes.STRING),
 			about: DataTypes.STRING,
 			share_link: DataTypes.STRING,
 			status: {
@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.BOOLEAN,
 				defaultValue: false,
 			},
-			refresh_token: DataTypes.ARRAY(DataTypes.JSONB),
+			refresh_tokens: DataTypes.ARRAY(DataTypes.JSONB),
 			languages: DataTypes.ARRAY(DataTypes.STRING),
 			preferred_language: {
 				type: DataTypes.STRING,

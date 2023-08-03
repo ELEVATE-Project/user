@@ -28,16 +28,15 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				defaultValue: 'active',
 			},
 			email_header: DataTypes.STRING,
 			email_footer: DataTypes.STRING,
 			created_by: {
 				type: DataTypes.STRING,
-				allowNull: false,
 			},
 			updated_by: {
 				type: DataTypes.INTEGER,
-				allowNull: false,
 			},
 		},
 		{

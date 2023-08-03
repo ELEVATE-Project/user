@@ -2,24 +2,23 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable('notification_templates', {
+		await queryInterface.createTable('entities', {
 			id: {
+				allowNull: false,
+				autoIncrement: true,
+				primaryKey: true,
+				type: Sequelize.INTEGER,
+			},
+			entity_type_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
-				primaryKey: true,
-				autoIncrement: true,
 			},
-			type: {
+			value: {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
-			code: {
+			label: {
 				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			subject: { type: Sequelize.STRING },
-			body: {
-				type: Sequelize.TEXT,
 				allowNull: false,
 			},
 			status: {
@@ -27,17 +26,15 @@ module.exports = {
 				allowNull: false,
 				defaultValue: 'active',
 			},
-			email_header: {
+			type: {
 				type: Sequelize.STRING,
-			},
-			email_footer: {
-				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			created_by: {
-				type: Sequelize.STRING,
+				type: Sequelize.INTEGER,
 			},
 			updated_by: {
-				type: Sequelize.STRING,
+				type: Sequelize.INTEGER,
 			},
 			created_at: {
 				allowNull: false,
@@ -52,8 +49,7 @@ module.exports = {
 			},
 		})
 	},
-
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable('notification_templates')
+		await queryInterface.dropTable('entities')
 	},
 }

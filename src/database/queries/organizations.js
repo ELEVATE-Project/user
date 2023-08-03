@@ -12,15 +12,23 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options) => {
 	try {
-		return await database.Organization.findOne(filter, options)
+		return await database.Organization.findOne({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}
 }
 
-exports.updateOrg = async (update, filter, options) => {
+exports.update = async (filter, update, options) => {
 	try {
-		const res = await database.Organization.update(update, filter, options)
+		const [res] = await database.Organization.update(update, {
+			where: filter,
+			...options,
+			individualHooks: true,
+		})
 		return res
 	} catch (error) {
 		return error

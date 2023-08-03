@@ -25,7 +25,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		let res = await database.User.update(update, {
+		const [res] = await database.User.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -68,7 +68,7 @@ exports.findOneWithAssociation = async (filter, associationTable, associatioName
 exports.listUsers = async (roleId, page, limit, search) => {
 	try {
 		let filterQuery = {
-			where: { deleted: false },
+			where: {},
 			raw: true,
 			attributes: ['id', 'name', 'image'],
 			offset: parseInt((page - 1) * limit, 10),
