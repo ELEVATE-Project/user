@@ -1,5 +1,5 @@
 /**
- * name : validators/v1/userentity.js
+ * name : validators/v1/entity.js
  * author : Aman Gupta
  * Date : 04-Nov-2021
  * Description : Validations of user entities controller
@@ -30,7 +30,7 @@ module.exports = {
 	},
 
 	update: (req) => {
-		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
 
 		req.checkBody('value')
 			.optional()
@@ -56,23 +56,26 @@ module.exports = {
 	},
 
 	read: (req) => {
-		req.checkQuery('type')
-			.trim()
-			.notEmpty()
-			.withMessage('type field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
+		console.log()
+		if (req.query.type) {
+			req.checkQuery('type')
+				.trim()
+				.notEmpty()
+				.withMessage('type field is empty')
+				.matches(/^[A-Za-z]+$/)
+				.withMessage('type is invalid, must not contain spaces')
 
-		req.checkQuery('deleted').optional().isBoolean().withMessage('deleted is invalid')
+			req.checkQuery('deleted').optional().isBoolean().withMessage('deleted is invalid')
 
-		req.checkQuery('status')
-			.optional()
-			.trim()
-			.matches(/^[A-Z]+$/)
-			.withMessage('status is invalid, must be in all caps')
+			req.checkQuery('status')
+				.optional()
+				.trim()
+				.matches(/^[A-Z]+$/)
+				.withMessage('status is invalid, must be in all caps')
+		}
 	},
 
 	delete: (req) => {
-		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 }

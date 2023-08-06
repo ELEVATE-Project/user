@@ -1,10 +1,10 @@
 'use strict'
-const database = require('@database/models/index')
+const NotificationTemplate = require('@database/models/index').NotificationTemplate
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		return await database.NotificationTemplate.create(data)
+		return await NotificationTemplate.create(data)
 	} catch (error) {
 		return error
 	}
@@ -12,7 +12,7 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await database.NotificationTemplate.findOne({
+		return await NotificationTemplate.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -30,7 +30,7 @@ exports.findOneEmailTemplate = async (code) => {
 			status: 'active',
 		}
 
-		let templateData = await database.NotificationTemplate.findOne({
+		let templateData = await NotificationTemplate.findOne({
 			where: filter,
 			raw: true,
 		})
@@ -62,7 +62,7 @@ exports.getEmailHeader = async (filter) => {
 			status: 'active',
 		}
 
-		const headerData = await database.NotificationTemplate.findOne({
+		const headerData = await NotificationTemplate.findOne({
 			where: filterEmailHeader,
 			raw: true,
 		})
@@ -80,7 +80,7 @@ exports.getEmailFooter = async (filter) => {
 			status: 'active',
 		}
 
-		const headerData = await database.NotificationTemplate.findOne({
+		const headerData = await NotificationTemplate.findOne({
 			where: filterEmailFooter,
 			raw: true,
 		})

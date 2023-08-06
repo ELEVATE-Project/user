@@ -1,10 +1,10 @@
 'use strict'
-const database = require('@database/models/index')
+const Organization = require('@database/models/index').Organization
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		return await database.Organization.create(data)
+		return await Organization.create(data)
 	} catch (error) {
 		return error
 	}
@@ -12,7 +12,7 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options) => {
 	try {
-		return await database.Organization.findOne({
+		return await Organization.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -24,7 +24,7 @@ exports.findOne = async (filter, options) => {
 
 exports.update = async (filter, update, options) => {
 	try {
-		const [res] = await database.Organization.update(update, {
+		const [res] = await Organization.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,

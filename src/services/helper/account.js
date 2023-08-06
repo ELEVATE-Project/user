@@ -79,7 +79,7 @@ module.exports = class AccountHelper {
 					{ title: bodyData.role.toLowerCase(), status: common.activeStatus },
 					{
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)
@@ -205,7 +205,7 @@ module.exports = class AccountHelper {
 				{ id: user.roles, status: common.activeStatus },
 				{
 					attributes: {
-						exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
 					},
 				}
 			)
@@ -791,7 +791,7 @@ module.exports = class AccountHelper {
 					{},
 					{
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)

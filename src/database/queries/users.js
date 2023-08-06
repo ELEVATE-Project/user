@@ -1,11 +1,11 @@
 'use strict'
-const database = require('@database/models/index')
+const User = require('@database/models/index').User
 
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		return await database.User.create(data)
+		return await User.create(data)
 	} catch (error) {
 		return error
 	}
@@ -13,7 +13,7 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await database.User.findOne({
+		return await User.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -25,7 +25,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		const [res] = await database.User.update(update, {
+		const [res] = await User.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -38,7 +38,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await database.User.findByPk(id)
+		return await User.findByPk(id)
 	} catch (error) {
 		return error
 	}
@@ -46,7 +46,7 @@ exports.findByPk = async (id) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		return await database.User.findAll({
+		return await User.findAll({
 			where: filter,
 			...options,
 			raw: true,
@@ -86,7 +86,7 @@ exports.listUsers = async (roleId, page, limit, search) => {
 			filterQuery.where.roles = { [Op.contains]: [roleId] }
 		}
 
-		return await database.User.findAndCountAll(filterQuery)
+		return await User.findAndCountAll(filterQuery)
 	} catch (error) {
 		return error
 	}

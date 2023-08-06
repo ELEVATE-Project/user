@@ -90,7 +90,7 @@ module.exports = class UserHelper {
 					{ id: user.roles, status: common.activeStatus },
 					{
 						attributes: {
-							exclude: ['createdAt', 'updatedAt', 'deletedAt'],
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)

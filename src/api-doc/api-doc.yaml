@@ -1109,15 +1109,15 @@ components:
                   deleted_at: 
                     type: string
                     example: null
-                  createdAt: 
+                  created_at: 
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  updatedAt: 
+                  updated_at: 
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  deletedAt: 
+                  deleted_at: 
                     type: string
                     example: null
                   user_roles: 
@@ -1276,15 +1276,15 @@ components:
                   deleted_at: 
                     type: string
                     example: null
-                  createdAt: 
+                  created_at: 
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  updatedAt: 
+                  updated_at: 
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  deletedAt: 
+                  deleted_at: 
                     type: string
                     example: null
                   user_roles: 
@@ -1327,10 +1327,10 @@ components:
                 type: array
                 items:
                 example: []
-              updatedAt:
+              updated_at:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
-              createdAt:
+              created_at:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
               __v:
@@ -1456,15 +1456,15 @@ components:
                   deleted_at: 
                     type: string
                     example: null
-                  createdAt: 
+                  created_at: 
                     type: string
                     format: date-time
                     example: 2023-07-24T14:37:56.393Z
-                  updatedAt: 
+                  updated_at: 
                     type: string
                     format: date-time
                     example: 2023-07-25T11:50:35.044Z
-                  deletedAt: 
+                  deleted_at: 
                     type: string
                     format: nullable
                   user_roles: 
@@ -1871,10 +1871,10 @@ components:
               share_link:
                 type: string
                 example: null
-              updatedAt:
+              updated_at:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
-              createdAt:
+              created_at:
                 type: datetime
                 example: '2022-05-18T05:24:52.431Z'
               last_logged_in_at:
@@ -2171,10 +2171,10 @@ components:
               sub_type:
                 type: string
                 example: profileForm
-              updatedAt:
+              updated_at:
                 type: string
                 example: '2022-05-24T23:14:10.080Z'
-              createdAt:
+              created_at:
                 type: string
                 example: '2022-05-24T23:14:10.080Z'
               id:
@@ -2609,15 +2609,15 @@ components:
                   deleted_at: 
                     type: string
                     example: null
-                  createdAt: 
+                  created_at: 
                     type: string
                     format: date-time
                     example: 2023-07-24T14:37:56.393Z
-                  updatedAt: 
+                  updated_at: 
                     type: string
                     format: date-time
                     example: 2023-07-25T11:50:35.044Z
-                  deletedAt: 
+                  deleted_at: 
                     type: string
                     format: nullable
                   user_roles: 
