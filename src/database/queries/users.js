@@ -1,11 +1,10 @@
 'use strict'
-const User = require('@database/models/index').User
-
+const database = require('@database/models/index')
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		return await User.create(data)
+		return await database.User.create(data)
 	} catch (error) {
 		return error
 	}
@@ -13,7 +12,7 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await User.findOne({
+		return await database.User.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -25,7 +24,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		const [res] = await User.update(update, {
+		const [res] = await database.User.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -38,7 +37,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await User.findByPk(id)
+		return await database.User.findByPk(id)
 	} catch (error) {
 		return error
 	}
@@ -46,7 +45,7 @@ exports.findByPk = async (id) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		return await User.findAll({
+		return await database.User.findAll({
 			where: filter,
 			...options,
 			raw: true,
@@ -56,10 +55,15 @@ exports.findAll = async (filter, options = {}) => {
 	}
 }
 
-exports.findOneWithAssociation = async (filter, associationTable, associatioName) => {
+exports.findOneWithAssociation = async (filter, options = {}, associationTable, associatioName) => {
 	try {
-		filter.include = [{ model: database[associationTable], as: associatioName }]
-		return await database.User.findOne(filter)
+		options.include = [{ model: database[associationTable], as: associatioName }]
+		return await database.User.findOne({
+			where: filter,
+			...options,
+			raw: true,
+			nest: true,
+		})
 	} catch (error) {
 		return error
 	}
@@ -86,7 +90,7 @@ exports.listUsers = async (roleId, page, limit, search) => {
 			filterQuery.where.roles = { [Op.contains]: [roleId] }
 		}
 
-		return await User.findAndCountAll(filterQuery)
+		return await database.User.findAndCountAll(filterQuery)
 	} catch (error) {
 		return error
 	}

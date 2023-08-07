@@ -49,12 +49,14 @@ module.exports = class Admin {
 	 * @param {Object} bodyData - user create information
 	 * @param {string} bodyData.email - email.
 	 * @param {string} bodyData.password - email.
+	 * @param {string} bodyData.secret_code - secret code for admin creation.
+	 * @param {string} headers.internal_access_token - internal access token
 	 * @returns {JSON} - returns created user information
 	 */
 
 	async create(req) {
 		try {
-			if (req.body.secretCode != process.env.ADMIN_SECRET_CODE) {
+			if (req.body.secret_code != process.env.ADMIN_SECRET_CODE) {
 				throw common.failureResponse({
 					message: 'INVALID_SECRET_CODE',
 					statusCode: httpStatusCode.bad_request,

@@ -64,9 +64,12 @@
 	"ORGANIZATION_CREATED_SUCCESSFULLY": "Organization created successfully",
 	"ORGANIZATION_UPDATED_SUCCESSFULLY": "Organization updated successfully",
 	"ORGANIZATION_NOT_FOUND": "Organization not found.",
+	"ORGANIZATION_FETCHED_SUCCESSFULLY": "Organization fetched successfully.",
 	"USER_LIST": "User list fetched successfully.",
-	"ENTITY_TYPE_NOT_FOUND":"Entity type not found.",
+	"ENTITY_TYPE_NOT_FOUND": "Entity type not found.",
 	"ENTITY_TYPE_CREATED_SUCCESSFULLY": "Entity type created successfully.",
 	"ENTITY_TYPE_ALREADY_EXISTS": "Entity type already exists.",
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
+	"LOCATION_UPDATE_FAILED": "Location update failed",
+	"LANGUAGE_UPDATE_FAILED": "Language update failed"
 }

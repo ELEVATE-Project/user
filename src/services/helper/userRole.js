@@ -8,7 +8,7 @@
 // Dependencies
 
 const httpStatusCode = require('@generics/http-status')
-const roleQueries = require('@database/queries/user_roles')
+const roleQueries = require('@database/queries/userRole')
 const common = require('@constants/common')
 
 module.exports = class userRoleHelper {

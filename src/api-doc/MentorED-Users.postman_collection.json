@@ -1,16 +1,17 @@
 {
 	"info": {
-		"_postman_id": "e318392d-fcb8-4f78-a69c-fbebd346a868",
-		"name": "MentorED-Users",
+		"_postman_id": "49d7c04a-de94-4706-be1f-02b97ba62d98",
+		"name": "MentorED-Users DEV",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7997930"
+		"_exporter_id": "6350183",
+		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-49d7c04a-de94-4706-be1f-02b97ba62d98?action=share&creator=6350183&source=collection_link"
 	},
 	"item": [
 		{
-			"name": "Profile",
+			"name": "User",
 			"item": [
 				{
-					"name": "Profile Details",
+					"name": "Read User",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -28,15 +29,15 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/profile/details/628483242d53327460469bec",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "profile", "details", "628483242d53327460469bec"]
+							"raw": "{{UserDevBaseUrl}}/v1/user/read/3",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["v1", "user", "read", "3"]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Profile Update",
+					"name": "Update User",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -48,7 +49,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n   \n    \"designation\": [{ \"value\": \"1\", \"label\": \"Teacher\" }, { \"value\": \"2\", \"label\": \"District Official\" }],\n    \"location\": [{ \"value\": \"1\", \"label\": \"Bangalore\" }],\n    \"about\": \"This is test about of mentee\",\n    \"areasOfExpertise\": [{ \"value\": \"1\", \"label\": \"Educational Leadership\" }, { \"value\": \"2\", \"label\": \"SQAA\" }],\n    \"experience\": 4.2,\n    \"hasAcceptedTAndC\": true,\n    \"gender\": \"MALE\",\n    \"educationQualification\": \"B.A.\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
+							"raw": "{\n    \"name\": \"Ankit\",\n    \"location\": [\"AP\",\"KL\"],\n    \"about\": \"This is test about of mentee\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -56,9 +57,35 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/profile/update",
+							"raw": "{{UserDevBaseUrl}}user/v1/user/update",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "profile", "update"]
+							"path": ["v1", "user", "update"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Share User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/share/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "share", "1"]
 						}
 					},
 					"response": []
@@ -66,7 +93,7 @@
 			]
 		},
 		{
-			"name": "form",
+			"name": "Form",
 			"item": [
 				{
 					"name": "Create Form",
@@ -81,7 +108,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
+							"raw": "{\n    \"type\": \"profile\",\n    \"sub_type\": \"profileForm\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"name\",\n                    \"label\": \"Your name\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Please enter your full name\",\n                    \"errorMessage\": \"This field can only contain alphabets\",\n                    \"showValidationError\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"pattern\": \"^[^0-9!@#%$&()\\\\-`.+,/\\\"]*$\"\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"location\",\n                    \"label\": \"Select your location\",\n                    \"value\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        }\n                    ],\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"select\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Location\",\n                    \"errorMessage\": \"Please select your location\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        },\n                        {\n                            \"value\": \"AR\",\n                            \"label\": \"Arunachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"As\",\n                            \"label\": \"Assam\"\n                        },\n                        {\n                            \"value\": \"BR\",\n                            \"label\": \"Bihar\"\n                        },\n                        {\n                            \"value\": \"CG\",\n                            \"label\": \"Chhattisgarh\"\n                        },\n                        {\n                            \"value\": \"GA\",\n                            \"label\": \"Goa\"\n                        },\n                        {\n                            \"value\": \"GJ\",\n                            \"label\": \"Gujarat\"\n                        },\n                        {\n                            \"value\": \"HR\",\n                            \"label\": \"Haryana\"\n                        },\n                        {\n                            \"value\": \"HP\",\n                            \"label\": \"Himachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"JH\",\n                            \"label\": \"Jharkhand\"\n                        },\n                        {\n                            \"value\": \"KN\",\n                            \"label\": \"Karnataka\"\n                        },\n                        {\n                            \"value\": \"KL\",\n                            \"label\": \"Kerala\"\n                        },\n                        {\n                            \"value\": \"MP\",\n                            \"label\": \"Madhya Pradesh\"\n                        },\n                        {\n                            \"value\": \"MH\",\n                            \"label\": \"Maharashtra\"\n                        },\n                        {\n                            \"value\": \"MN\",\n                            \"label\": \"Manipur\"\n                        },\n                        {\n                            \"value\": \"ML\",\n                            \"label\": \"Meghalaya\"\n                        },\n                        {\n                            \"value\": \"MZ\",\n                            \"label\": \"Mizoram\"\n                        },\n                        {\n                            \"value\": \"NL\",\n                            \"label\": \"Nagaland\"\n                        },\n                        {\n                            \"value\": \"OD\",\n                            \"label\": \"Odisha\"\n                        },\n                        {\n                            \"value\": \"PB\",\n                            \"label\": \"Punjab\"\n                        },\n                        {\n                            \"value\": \"RJ\",\n                            \"label\": \"Rajasthan\"\n                        },\n                        {\n                            \"value\": \"SK\",\n                            \"label\": \"Sikkim\"\n                        },\n                        {\n                            \"value\": \"TN\",\n                            \"label\": \"Tamil Nadu\"\n                        },\n                        {\n                            \"value\": \"TS\",\n                            \"label\": \"Telangana\"\n                        },\n                        {\n                            \"value\": \"TR\",\n                            \"label\": \"Tripura\"\n                        },\n                        {\n                            \"value\": \"UP\",\n                            \"label\": \"Uttar Pradesh\"\n                        },\n                        {\n                            \"value\": \"UK\",\n                            \"label\": \"Uttarakhand\"\n                        },\n                        {\n                            \"value\": \"WB\",\n                            \"label\": \"West Bengal\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"designation\",\n                    \"label\": \"Your role\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Designation\",\n                    \"errorMessage\": \"Enter your role\",\n                    \"addNewPopupHeader\": \"Add a new role\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        },\n                        {\n                            \"value\": \"BEO\",\n                            \"label\": \"Block education officer\"\n                        },\n                        {\n                            \"value\": \"DEO\",\n                            \"label\": \"District education officer\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"experience\",\n                    \"label\": \"Your experience in years\",\n                    \"value\": \"10\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Ex. 5 years\",\n                    \"errorMessage\": \"Enter your experience in years\",\n                    \"isNumberOnly\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 2\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"about\",\n                    \"label\": \"Tell us about yourself\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"textarea\",\n                    \"position\": \"floating\",\n                    \"errorMessage\": \"This field cannot be empty\",\n                    \"placeHolder\": \"Please use only 150 character\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 150\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"areasOfExpertise\",\n                    \"label\": \"Your expertise\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Expertise\",\n                    \"errorMessage\": \"Enter your expertise\",\n                    \"addNewPopupHeader\": \"Add your expertise\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        },\n                        {\n                            \"value\": \"schoolProcess\",\n                            \"label\": \"School process\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"educationQualification\",\n                    \"label\": \"Education qualification\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Education qualification\",\n                    \"errorMessage\": \"Enter education qualification\",\n                    \"placeHolder\": \"Ex. BA, B.ED\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"languages\",\n                    \"label\": \"Languages\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Medium\",\n                    \"errorMessage\": \"Enter language\",\n                    \"addNewPopupHeader\": \"Add new language\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        },\n                        {\n                            \"value\": \"hindi\",\n                            \"label\": \"Hindi\"\n                        }\n                    ]\n                }\n            ]\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -112,7 +139,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
+							"raw": "{\n    \"type\": \"profile\",\n\t\"sub_type\": \"profileForm\",\n    \"template_name\": \"defaultTemplate\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -120,9 +147,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/read/61ee56ebfc2b962cf281dd01",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/3",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
+							"path": ["v1", "form", "read", "3"]
 						}
 					},
 					"response": []
@@ -140,7 +167,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
+							"raw": "{\n    \"type\": \"profile\",\n    \"sub_type\": \"profileForm\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"name\",\n                    \"label\": \"Your name\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Please enter your full name\",\n                    \"errorMessage\": \"This field can only contain alphabets\",\n                    \"showValidationError\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"pattern\": \"^[^0-9!@#%$&()\\\\-`.+,/\\\"]*$\"\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"location\",\n                    \"label\": \"Select your location\",\n                    \"value\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        }\n                    ],\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"select\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Location\",\n                    \"errorMessage\": \"Please select your location\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        },\n                        {\n                            \"value\": \"AR\",\n                            \"label\": \"Arunachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"As\",\n                            \"label\": \"Assam\"\n                        },\n                        {\n                            \"value\": \"BR\",\n                            \"label\": \"Bihar\"\n                        },\n                        {\n                            \"value\": \"CG\",\n                            \"label\": \"Chhattisgarh\"\n                        },\n                        {\n                            \"value\": \"GA\",\n                            \"label\": \"Goa\"\n                        },\n                        {\n                            \"value\": \"GJ\",\n                            \"label\": \"Gujarat\"\n                        },\n                        {\n                            \"value\": \"HR\",\n                            \"label\": \"Haryana\"\n                        },\n                        {\n                            \"value\": \"HP\",\n                            \"label\": \"Himachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"JH\",\n                            \"label\": \"Jharkhand\"\n                        },\n                        {\n                            \"value\": \"KN\",\n                            \"label\": \"Karnataka\"\n                        },\n                        {\n                            \"value\": \"KL\",\n                            \"label\": \"Kerala\"\n                        },\n                        {\n                            \"value\": \"MP\",\n                            \"label\": \"Madhya Pradesh\"\n                        },\n                        {\n                            \"value\": \"MH\",\n                            \"label\": \"Maharashtra\"\n                        },\n                        {\n                            \"value\": \"MN\",\n                            \"label\": \"Manipur\"\n                        },\n                        {\n                            \"value\": \"ML\",\n                            \"label\": \"Meghalaya\"\n                        },\n                        {\n                            \"value\": \"MZ\",\n                            \"label\": \"Mizoram\"\n                        },\n                        {\n                            \"value\": \"NL\",\n                            \"label\": \"Nagaland\"\n                        },\n                        {\n                            \"value\": \"OD\",\n                            \"label\": \"Odisha\"\n                        },\n                        {\n                            \"value\": \"PB\",\n                            \"label\": \"Punjab\"\n                        },\n                        {\n                            \"value\": \"RJ\",\n                            \"label\": \"Rajasthan\"\n                        },\n                        {\n                            \"value\": \"SK\",\n                            \"label\": \"Sikkim\"\n                        },\n                        {\n                            \"value\": \"TN\",\n                            \"label\": \"Tamil Nadu\"\n                        },\n                        {\n                            \"value\": \"TS\",\n                            \"label\": \"Telangana\"\n                        },\n                        {\n                            \"value\": \"TR\",\n                            \"label\": \"Tripura\"\n                        },\n                        {\n                            \"value\": \"UP\",\n                            \"label\": \"Uttar Pradesh\"\n                        },\n                        {\n                            \"value\": \"UK\",\n                            \"label\": \"Uttarakhand\"\n                        },\n                        {\n                            \"value\": \"WB\",\n                            \"label\": \"West Bengal\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"designation\",\n                    \"label\": \"Your role\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Designation\",\n                    \"errorMessage\": \"Enter your role\",\n                    \"addNewPopupHeader\": \"Add a new role\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        },\n                        {\n                            \"value\": \"BEO\",\n                            \"label\": \"Block education officer\"\n                        },\n                        {\n                            \"value\": \"DEO\",\n                            \"label\": \"District education officer\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"experience\",\n                    \"label\": \"Your experience in years\",\n                    \"value\": \"10\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Ex. 5 years\",\n                    \"errorMessage\": \"Enter your experience in years\",\n                    \"isNumberOnly\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 2\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"about\",\n                    \"label\": \"Tell us about yourself\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"textarea\",\n                    \"position\": \"floating\",\n                    \"errorMessage\": \"This field cannot be empty\",\n                    \"placeHolder\": \"Please use only 150 character\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 150\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"areasOfExpertise\",\n                    \"label\": \"Your expertise\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Expertise\",\n                    \"errorMessage\": \"Enter your expertise\",\n                    \"addNewPopupHeader\": \"Add your expertise\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        },\n                        {\n                            \"value\": \"schoolProcess\",\n                            \"label\": \"School process\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"educationQualification\",\n                    \"label\": \"Education qualification\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Education qualification\",\n                    \"errorMessage\": \"Enter education qualification\",\n                    \"placeHolder\": \"Ex. BA, B.ED\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"languages\",\n                    \"label\": \"Languages\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Medium\",\n                    \"errorMessage\": \"Enter language\",\n                    \"addNewPopupHeader\": \"Add new language\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        },\n                        {\n                            \"value\": \"hindi\",\n                            \"label\": \"Hindi\"\n                        }\n                    ]\n                }\n            ]\n        }\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -148,65 +175,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/update/61ee56ebfc2b962cf281dd01",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/update",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
-						},
-						"description": "NOTE: Id is required in params and that should be objectId"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "System User",
-			"item": [
-				{
-					"name": "Create",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "internal_access_token",
-								"value": "{{internal_access_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\":\"system\",\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\",\n,    \"role\":\"admin\"\n\n, \"secretCode\":\"W5bF7gesuS0xsNWmpsKy\"\n\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/systemUsers/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "systemUsers", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Login",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/systemUsers/login",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "systemUsers", "login"]
+							"path": ["v1", "form", "update"]
 						}
 					},
 					"response": []
@@ -214,155 +185,10 @@
 			]
 		},
 		{
-			"name": "entity",
+			"name": "File-upload",
 			"item": [
 				{
-					"name": "Create User Entity",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\": \"DM\",\n    \"label\": \"DM\",\n    \"type\": \"roles\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "create"]
-						},
-						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
-					},
-					"response": []
-				},
-				{
-					"name": "Read User Entity",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/read?type=roles&deleted=false&status=ACTIVE",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "read"],
-							"query": [
-								{
-									"key": "type",
-									"value": "roles"
-								},
-								{
-									"key": "deleted",
-									"value": "false"
-								},
-								{
-									"key": "status",
-									"value": "ACTIVE"
-								}
-							]
-						},
-						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
-					},
-					"response": []
-				},
-				{
-					"name": "Update User Entity",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/delete/628d754878bfa4f6931d0ff8",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "delete", "628d754878bfa4f6931d0ff8"]
-						},
-						"description": "NOET: All body req parameters are optional to update."
-					},
-					"response": []
-				},
-				{
-					"name": "Deletes User Entity",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/delete/6285a9a0cc79ec00165e71e3",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "delete", "6285a9a0cc79ec00165e71e3"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "mentors",
-			"item": [
-				{
-					"name": "Users list",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/mentors/list?pageNo=1&pageSize=5&searchText=test",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "mentors", "list"],
-							"query": [
-								{
-									"key": "pageNo",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "5"
-								},
-								{
-									"key": "searchText",
-									"value": "test"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "file-upload",
-			"item": [
-				{
-					"name": "get Signed Url",
+					"name": "Get Signed Url",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -391,31 +217,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Get Signed Url",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSignedUrl?fileName=logo1.jpeg",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "cloud-services", "file", "getSignedUrl"],
-							"query": [
-								{
-									"key": "fileName",
-									"value": "logo1.jpeg"
-								}
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -429,7 +230,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"vipin@gmail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
+							"raw": "{\n    \"name\": \"Nikolas\",\n    \"email\":\"tacape1645@meogl.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -437,8 +238,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}user"],
+							"raw": "{{UserDevBaseUrl}}/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}"],
 							"path": ["v1", "account", "create"]
 						}
 					},
@@ -451,7 +252,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"shahu\",\n    \"email\":\"ankit.s@pacewisdomss.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":true,\n    \"secretCode\":\"4567\"\n}",
+							"raw": "{\n    \"name\":\"shahu\",\n    \"email\":\"ankit.s@pacewisdomss.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -501,19 +302,19 @@
 								},
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdomss.com",
+									"value": "priyanka@tunerlabs.com",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "test123",
+									"value": "12345678",
 									"type": "text"
 								}
 							]
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/login",
-							"host": ["{{UserDevBaseUrl}}user"],
+							"raw": "{{UserDevBaseUrl}}/v1/account/login",
+							"host": ["{{UserDevBaseUrl}}"],
 							"path": ["v1", "account", "login"]
 						}
 					},
@@ -539,77 +340,10 @@
 					"response": []
 				},
 				{
-					"name": "Change Role Copy",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "ankit.s@pacewisdom.cdd",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/changeRole",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "changeRole"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify Mentor",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": []
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/verifyMentor?userId=62a820225ff93f30cfe5f990",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "verifyMentor"],
-							"query": [
-								{
-									"key": "userId",
-									"value": "62a820225ff93f30cfe5f990"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Reset Password",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"body": {
 							"mode": "urlencoded",
 							"urlencoded": [
@@ -815,6 +549,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "List User with Id",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userIds\" : [4,5,6]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "list"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -828,18 +590,171 @@
 						"header": [
 							{
 								"key": "X-auth-token",
+								"value": "bearer {{systemUserToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/v1/admin/deleteUser/1",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["v1", "admin", "deleteUser", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"system\",\n    \"email\": \"system@admin.com\",\n    \"password\": \"testing\",\n    \"secret_code\": \"W5bF7gesuS0xsNWmpsKy\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"var jsonBody = JSON.parse(responseBody);",
+									"pm.environment.set(\"systemUserToken\", jsonBody.result.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/v1/admin/login",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["v1", "admin", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Organization",
+			"item": [
+				{
+					"name": "Create Organization",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "internal_access_token",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"MentorEd\",\n    \"code\":\"mentor112\",\n    \"description\":\"testing org\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Organization",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "internal_access_token",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"MentorEd\",\n    \"description\":\"testing org\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/2",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "update", "2"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Organization",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": ""
+							"raw": "{\n    \"orgIds\" : [4,5,6]\n}"
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/628483242d53327460469bec",
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/list?page=1&limit=10",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "admin", "deleteUser", "628483242d53327460469bec"]
+							"path": ["v1", "organization", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
 						}
 					},
 					"response": []

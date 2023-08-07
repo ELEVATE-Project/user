@@ -1,6 +1,6 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const entityTypeQueries = require('../../database/queries/entityType')
+const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
 
 module.exports = class EntityHelper {

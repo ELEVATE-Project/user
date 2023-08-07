@@ -45,11 +45,11 @@ module.exports = {
 	},
 
 	logout: (req) => {
-		req.checkBody('refreshToken').notEmpty().withMessage('refreshToken field is empty')
+		req.checkBody('refresh_token').notEmpty().withMessage('refresh_token field is empty')
 	},
 
 	generateToken: (req) => {
-		req.checkBody('refreshToken').notEmpty().withMessage('refreshToken field is empty')
+		req.checkBody('refresh_token').notEmpty().withMessage('refresh_token field is empty')
 	},
 
 	generateOtp: (req) => {

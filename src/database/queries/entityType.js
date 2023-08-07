@@ -2,6 +2,7 @@
 const EntityType = require('@database/models/index').EntityType
 const Entity = require('@database/models/index').Entity
 const { Op } = require('sequelize')
+const common = require('@constants/common')
 module.exports = class UserEntityData {
 	static async create(data) {
 		try {
@@ -37,7 +38,7 @@ module.exports = class UserEntityData {
 	}
 	static async findAllUserEntityTypes(filter, userId) {
 		try {
-			filter.status = 'ACTIVE'
+			filter.status = common.activeStatus
 			return await EntityType.findAll({
 				where: filter,
 				include: [

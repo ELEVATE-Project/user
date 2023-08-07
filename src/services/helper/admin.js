@@ -6,14 +6,14 @@
  */
 
 // Dependencies
-const usersData = require('@db/users/queries')
+
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user_roles')
-const organizationQueries = require('@database/queries/organizations')
+const roleQueries = require('@database/queries/userRole')
+const organizationQueries = require('@database/queries/organization')
 
 module.exports = class AdminHelper {
 	/**

@@ -1,6 +1,6 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const organizationQueries = require('@database/queries/organizations')
+const organizationQueries = require('@database/queries/organization')
 const utils = require('@generics/utils')
 
 module.exports = class OrganizationsHelper {
@@ -68,6 +68,79 @@ module.exports = class OrganizationsHelper {
 				statusCode: httpStatusCode.accepted,
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * List Organizations.
+	 * @method
+	 * @name list
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Organization data.
+	 */
+
+	static async list(params) {
+		try {
+			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('organizationIds')) {
+				const organizationIds = params.body.userIds
+				const orgIdsNotFoundInRedis = []
+				const orgDetailsFoundInRedis = []
+				for (let i = 0; i < organizationIds.length; i++) {
+					let orgDetails =
+						(await utilsHelper.redisGet(common.redisOrgPrefix + organizationIds[i].toString())) || false
+
+					if (!orgDetails) {
+						orgIdsNotFoundInRedis.push(organizationIds[i])
+					} else {
+						orgDetailsFoundInRedis.push(orgDetails)
+					}
+				}
+
+				let options = {
+					attributes: ['id', 'name', 'code', 'description'],
+				}
+
+				let organizations = await organizationQueries.findAll(
+					{
+						id: orgIdsNotFoundInRedis,
+					},
+					options
+				)
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+					result: [...organizations, ...orgDetailsFoundInRedis],
+				})
+			} else {
+				let organizations = await organizationQueries.listOrganizations(
+					params.pageNo,
+					params.pageSize,
+					params.searchText
+				)
+
+				if (organizations.rows.length < 1) {
+					return common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+						result: {
+							data: [],
+							count: 0,
+						},
+					})
+				}
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+					result: {
+						data: organizations.rows,
+						count: organizations.count,
+					},
+				})
+			}
 		} catch (error) {
 			throw error
 		}

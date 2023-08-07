@@ -79,4 +79,6 @@ module.exports = {
 	roleMentor: 'mentor',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
+	location: 'location',
+	languages: 'languages',
 }

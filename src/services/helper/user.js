@@ -10,7 +10,10 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
 const utils = require('@generics/utils')
-const roleQueries = require('@database/queries/user_roles')
+const roleQueries = require('@database/queries/userRole')
+const entitiesQueries = require('@database/queries/entities')
+const entityTypeQueries = require('@database/queries/entityType')
+const _ = require('lodash')
 
 module.exports = class UserHelper {
 	/**
@@ -32,6 +35,56 @@ module.exports = class UserHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			if (bodyData.hasOwnProperty(common.location) || bodyData.hasOwnProperty(common.languages)) {
+				let values = []
+				if (bodyData.hasOwnProperty(common.location)) values.push(common.location)
+				if (bodyData.hasOwnProperty(common.languages)) values.push(common.languages)
+
+				if (values > 0) {
+					const entityTypes = await entityTypeQueries.findOne(
+						{ value: values },
+						{ attributes: ['id', 'value'] }
+					)
+
+					if (!entityTypes) {
+						return common.failureResponse({
+							message: bodyData.hasOwnProperty(common.location)
+								? 'LOCATION_UPDATE_FAILED'
+								: 'LANGUAGE_UPDATE_FAILED',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					//write logic
+					entityTypes.map(async function (entityType) {
+						let entities = await entitiesQueries.findAll(
+							{
+								value: bodyData[entityType.value],
+								entity_type_id: entityType.id,
+							},
+							{ attributes: ['value'] }
+						)
+
+						if (!entities || entities.length < bodyData[entityType.value].length) {
+							return common.failureResponse({
+								message:
+									bodyData[entityType.value] == common.location
+										? 'LOCATION_UPDATE_FAILED'
+										: 'LANGUAGE_UPDATE_FAILED',
+								statusCode: httpStatusCode.bad_request,
+								responseCode: 'CLIENT_ERROR',
+							})
+						}
+
+						bodyData[entityType.value] = _.map(entities, function (entity) {
+							return entity.value
+						})
+					})
+				}
+			}
+
 			let update = await userQueries.updateUser({ id: id }, bodyData)
 			if (!update) {
 				return common.failureResponse({

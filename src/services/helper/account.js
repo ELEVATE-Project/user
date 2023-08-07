@@ -13,13 +13,11 @@ const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 
 const common = require('@constants/common')
-const usersData = require('@db/users/queries')
 const userQueries = require('@database/queries/users')
-const organizationQueries = require('@database/queries/organizations')
-const notificationTemplateData = require('@db/notification-template/query')
-const notificationTemplateQueries = require('@database/queries/notification_templates')
+const organizationQueries = require('@database/queries/organization')
+const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const roleQueries = require('@database/queries/user_roles')
+const roleQueries = require('@database/queries/userRole')
 const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
@@ -294,7 +292,7 @@ module.exports = class AccountHelper {
 	 * @name logout
 	 * @param {Object} req -request data.
 	 * @param {string} bodyData.loggedInId - user id.
-	 * @param {string} bodyData.refreshToken - refresh token.
+	 * @param {string} bodyData.refresh_token - refresh token.
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
@@ -311,7 +309,7 @@ module.exports = class AccountHelper {
 
 			let refreshTokens = user.refresh_tokens ? user.refresh_tokens : []
 			refreshTokens = refreshTokens.filter(function (tokenData) {
-				return tokenData.token !== bodyData.refreshToken
+				return tokenData.token !== bodyData.refresh_token
 			})
 
 			/* Destroy refresh token for user */
@@ -339,14 +337,14 @@ module.exports = class AccountHelper {
 	 * @method
 	 * @name generateToken
 	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.refreshToken - refresh token.
+	 * @param {string} bodyData.refresh_token - refresh token.
 	 * @returns {JSON} - returns access token info
 	 */
 
 	static async generateToken(bodyData) {
 		let decodedToken
 		try {
-			decodedToken = jwt.verify(bodyData.refreshToken, process.env.REFRESH_TOKEN_SECRET)
+			decodedToken = jwt.verify(bodyData.refresh_token, process.env.REFRESH_TOKEN_SECRET)
 		} catch (error) {
 			/* If refresh token is expired */
 			error.statusCode = httpStatusCode.unauthorized
@@ -367,7 +365,7 @@ module.exports = class AccountHelper {
 
 		/* Check valid refresh token stored in db */
 		if (user.refresh_tokens.length) {
-			const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refreshToken)
+			const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
 			if (!token) {
 				return common.failureResponse({
 					message: 'REFRESH_TOKEN_NOT_FOUND',
