@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: 'active'
+				defaultValue: 'ACTIVE',
 			},
 			org_admin: DataTypes.ARRAY(DataTypes.INTEGER),
 			parent_id: DataTypes.INTEGER,
@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'Organization', tableName: 'organizations', freezeTableName: true, paranoid: true }
 	)
 	Organization.associate = (models) => {
-		Organization.hasMany(models.User, { foreignKey: 'organization_id' },{ as: 'users' })
+		Organization.hasMany(models.User, { foreignKey: 'organization_id' }, { as: 'users' })
 	}
 	return Organization
 }

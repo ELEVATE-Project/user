@@ -12,7 +12,7 @@ info:
   contact:
     email: info@sunbird.org
 servers:
-  - url: http://localhost:3002 
+  - url: http://localhost:3002
     description: local dev
   - url: https://dev.elevate-apis.shikshalokam.org
     description: dev server
@@ -32,7 +32,7 @@ paths:
         description: Request body consist of metadata and accepts payload as JSON
         content:
           application/json:
-            schema: 
+            schema:
               $ref: '#/components/schemas/user/userCreateUserRequest'
       responses:
         '200':
@@ -1046,97 +1046,92 @@ components:
           message:
             type: string
             example: Password reset successfully.
-          result: 
+          result:
             type: object
-            properties: 
-              access_token: 
+            properties:
+              access_token:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE2OTAzNzIxMTh9.WmhUXIocykrBVti7vtznx_BMAaBtuqYUks4sc1J94Do
-              refresh_token: 
+              refresh_token:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE3MDYwOTY5MTh9.eqJ-KD0YA-Cdpz3XHWKgmi66uU6o229K9pyp6BwAAzI
-              user: 
+              user:
                 type: object
-                properties: 
-                  id: 
+                properties:
+                  id:
                     type: number
                     example: 9
-                  email: 
+                  email:
                     type: string
                     example: brandyn.terry@yahoo.com
-                  email_verified: 
+                  email_verified:
                     type: string
                     example: false
-                  name: 
+                  name:
                     type: string
                     example: Ashly
-                  gender: 
+                  gender:
                     type: string
                     example: male
-                  about: 
+                  about:
                     type: string
                     example: null
-                  share_link: 
+                  share_link:
                     type: string
                     example: null
-                  status: 
+                  status:
                     type: string
-                    example: active
-                  image: 
+                    example: ACTIVE
+                  image:
                     type: string
                     example: null
-                  last_logged_in_at: 
+                  last_logged_in_at:
                     type: string
                     format: nullable
-                  has_accepted_terms_and_conditions: 
+                  has_accepted_terms_and_conditions:
                     type: boolean
-                  languages: 
+                  languages:
                     type: string
                     example: []
-                  preferred_language: 
+                  preferred_language:
                     type: string
                     example: en
-                  organization_id: 
+                  organization_id:
                     type: number
                     example: 1
-                  roles: 
+                  roles:
                     type: array
-                    items: 
+                    items:
                       type: number
                       example: 2
-                  deleted: 
-                    type: boolean
-                  deleted_at: 
+                  deleted_at:
                     type: string
                     example: null
-                  created_at: 
+                  created_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  updated_at: 
+                  updated_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  deleted_at: 
-                    type: string
-                    example: null
-                  user_roles: 
+                  user_roles:
                     type: array
-                    items: 
+                    items:
                       type: object
-                      properties: 
-                        id: 
+                      properties:
+                        id:
                           type: number
                           example: 2
-                        title: 
+                        title:
                           type: string
                           example: mentor
-                        user_type: 
+                        user_type:
                           type: number
                           example: 0
-                        status: 
+                        status:
                           type: string
-                          example: active
+                          example: ACTIVE
       resetPasswordResponse400:
         description: Bad Request
         type: object
@@ -1198,58 +1193,58 @@ components:
       userCreateUserResponse:
         description: User creation response
         type: object
-        properties: 
-          responseCode: 
+        properties:
+          responseCode:
             type: string
             example: OK
-          message: 
+          message:
             type: string
             example: Sign-up successful Please wait while logging in.
-          result: 
+          result:
             type: object
-            properties: 
-              access_token: 
+            properties:
+              access_token:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE2OTAzNzIxMTh9.WmhUXIocykrBVti7vtznx_BMAaBtuqYUks4sc1J94Do
-              refresh_token: 
+              refresh_token:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE3MDYwOTY5MTh9.eqJ-KD0YA-Cdpz3XHWKgmi66uU6o229K9pyp6BwAAzI
-              user: 
+              user:
                 type: object
-                properties: 
-                  id: 
+                properties:
+                  id:
                     type: number
                     example: 9
-                  email: 
+                  email:
                     type: string
                     example: brandyn.terry@yahoo.com
-                  email_verified: 
+                  email_verified:
                     type: string
                     example: false
-                  name: 
+                  name:
                     type: string
                     example: Ashly
-                  gender: 
+                  gender:
                     type: string
                     example: male
-                  about: 
+                  about:
                     type: string
                     example: null
-                  share_link: 
+                  share_link:
                     type: string
                     example: null
-                  status: 
+                  status:
                     type: string
-                    example: active
-                  image: 
+                    example: ACTIVE
+                  image:
                     type: string
                     example: null
-                  last_logged_in_at: 
+                  last_logged_in_at:
                     type: string
                     format: nullable
-                  has_accepted_terms_and_conditions: 
+                  has_accepted_terms_and_conditions:
                     type: boolean
-                  languages: 
+                  languages:
                     type: string
                     example: John Deo
                   designation:
@@ -1260,69 +1255,62 @@ components:
                     type: array
                     items:
                     example: []
-                  preferred_language: 
+                  preferred_language:
                     type: string
                     example: en
-                  organization_id: 
+                  organization_id:
                     type: number
                     example: 1
-                  roles: 
+                  roles:
                     type: array
-                    items: 
+                    items:
                       type: number
                       example: 2
-                  deleted: 
-                    type: boolean
-                  deleted_at: 
-                    type: string
-                    example: null
-                  created_at: 
+                  created_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  updated_at: 
+                  updated_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:48:38.270Z
-                  deleted_at: 
+                  deleted_at:
                     type: string
                     example: null
-                  user_roles: 
+                  user_roles:
                     type: array
-                    items: 
+                    items:
                       type: object
-                      properties: 
-                        id: 
+                      properties:
+                        id:
                           type: number
                           example: 2
-                        title: 
+                        title:
                           type: string
                           example: mentor
-                        user_type: 
+                        user_type:
                           type: number
                           example: 0
-                        status: 
+                        status:
                           type: string
-                          example: active
-          meta: 
+                          example: ACTIVE
+          meta:
             type: object
-            properties: 
-              formsVersion: 
+            properties:
+              formsVersion:
                 type: array
-                items: 
+                items:
                   type: object
-                  properties: 
-                    id: 
+                  properties:
+                    id:
                       type: string
                       example: 1
-                    type: 
+                    type:
                       type: string
                       example: profile
-              correlation: 
+              correlation:
                 type: string
                 example: 0c418f35-4f8e-4255-a500-cb1a56f10a87
-                    items:
-                    example: []
               languages:
                 type: array
                 items:
@@ -1383,122 +1371,117 @@ components:
         type: object
         description: User login response
         properties:
-          responseCode: 
+          responseCode:
             type: string
             example: OK
-          message: 
+          message:
             type: string
             example: User logged in successfully.
-          result: 
+          result:
             type: object
-            properties: 
-              access_token: 
+            properties:
+              access_token:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6ImhpbGJlcnQyOUB5YWhvby5jb20iLCJuYW1lIjoiQWRlbGlhIiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg2Nzg2LCJleHAiOjE2OTAzNzMxODZ9.0_Yi8yEu_G04VNJvVvafWMvO-Eb9TVsoCnp_pfrFVi8
-              refresh_token: 
+              refresh_token:
                 type: string
                 example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6ImhpbGJlcnQyOUB5YWhvby5jb20iLCJuYW1lIjoiQWRlbGlhIiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg2Nzg2LCJleHAiOjE3MDYwOTc5ODZ9.quHyyjz4DEc7rvKpxwzaiRyRKFkqrbTb8tNB5zX0eF0
-              user: 
+              user:
                 type: object
-                properties: 
-                  id: 
+                properties:
+                  id:
                     type: number
                     example: 7
-                  email: 
+                  email:
                     type: string
                     example: hilbert29@yahoo.com
-                  email_verified: 
+                  email_verified:
                     type: string
                     example: false
-                  name: 
+                  name:
                     type: string
                     example: Adelia
-                  gender: 
+                  gender:
                     type: string
                     example: male
-                  location: 
+                  location:
                     type: string
                     example: []
-                  about: 
+                  about:
                     type: string
                     example: null
-                  share_link: 
+                  share_link:
                     type: string
                     example: null
-                  status: 
+                  status:
                     type: string
-                    example: active
-                  last_logged_in_at: 
+                    example: ACTIVE
+                  last_logged_in_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:50:35.044Z
-                  has_accepted_terms_and_conditions: 
+                  has_accepted_terms_and_conditions:
                     type: boolean
-                  languages: 
+                  languages:
                     type: string
                     example: null
-                  preferred_language: 
+                  preferred_language:
                     type: string
                     example: en
-                  organization_id: 
+                  organization_id:
                     type: number
                     example: 1
-                  roles: 
+                  roles:
                     type: array
-                    items: 
+                    items:
                       type: number
                       example: 2
                   image:
                     type: string
                     example: https://cloudstorage.com/container/abc.png
-                  deleted: 
-                    type: boolean
-                  deleted_at: 
+                  deleted_at:
                     type: string
                     example: null
-                  created_at: 
+                  created_at:
                     type: string
                     format: date-time
                     example: 2023-07-24T14:37:56.393Z
-                  updated_at: 
+                  updated_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:50:35.044Z
-                  deleted_at: 
-                    type: string
-                    format: nullable
-                  user_roles: 
+                  user_roles:
                     type: array
-                    items: 
+                    items:
                       type: object
-                      properties: 
-                        id: 
+                      properties:
+                        id:
                           type: number
                           example: 2
-                        title: 
+                        title:
                           type: string
                           example: mentor
-                        user_type: 
+                        user_type:
                           type: number
                           example: 0
-                        status: 
+                        status:
                           type: string
-                          example: active
-          meta: 
+                          example: ACTIVE
+          meta:
             type: object
-            properties: 
-              formsVersion: 
+            properties:
+              formsVersion:
                 type: array
-                items: 
+                items:
                   type: object
-                  properties: 
-                    id: 
+                  properties:
+                    id:
                       type: string
                       example: 1
-                    type: 
+                    type:
                       type: string
                       example: profile
-              correlation: 
+              correlation:
                 type: string
                 example: 0c418f35-4f8e-4255-a500-cb1a56f10a87
 
@@ -1828,9 +1811,6 @@ components:
               has_accepted_terms_and_conditions:
                 type: boolean
                 example: false
-              deleted:
-                type: boolean
-                example: false
               id:
                 type: string
                 example: 1
@@ -1867,7 +1847,7 @@ components:
                 example: en
               status:
                 type: string
-                example: active
+                example: ACTIVE
               share_link:
                 type: string
                 example: null
@@ -2465,7 +2445,7 @@ components:
           result:
             type: string
             example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-image.jpg
-      
+
     admin:
       createSystemUserRequest:
         type: object
@@ -2554,89 +2534,84 @@ components:
               user:
                 type: object
                 properties:
-                  id: 
+                  id:
                     type: number
                     example: 7
-                  email: 
+                  email:
                     type: string
                     example: hilbert29@yahoo.com
-                  email_verified: 
+                  email_verified:
                     type: string
                     example: false
-                  name: 
+                  name:
                     type: string
                     example: Adelia
-                  gender: 
+                  gender:
                     type: string
                     example: male
-                  location: 
+                  location:
                     type: string
                     example: []
-                  about: 
+                  about:
                     type: string
                     example: null
-                  share_link: 
+                  share_link:
                     type: string
                     example: null
-                  status: 
+                  status:
                     type: string
-                    example: active
-                  last_logged_in_at: 
+                    example: ACTIVE
+                  last_logged_in_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:50:35.044Z
-                  has_accepted_terms_and_conditions: 
+                  has_accepted_terms_and_conditions:
                     type: boolean
-                  languages: 
+                  languages:
                     type: string
                     example: null
-                  preferred_language: 
+                  preferred_language:
                     type: string
                     example: en
-                  organization_id: 
+                  organization_id:
                     type: number
                     example: 1
-                  roles: 
+                  roles:
                     type: array
-                    items: 
+                    items:
                       type: number
                       example: 4
                   image:
                     type: string
                     example: https://cloudstorage.com/container/abc.png
-                  deleted: 
-                    type: boolean
-                  deleted_at: 
+                  deleted_at:
                     type: string
                     example: null
-                  created_at: 
+                  created_at:
                     type: string
                     format: date-time
                     example: 2023-07-24T14:37:56.393Z
-                  updated_at: 
+                  updated_at:
                     type: string
                     format: date-time
                     example: 2023-07-25T11:50:35.044Z
-                  deleted_at: 
-                    type: string
-                    format: nullable
-                  user_roles: 
+                  user_roles:
                     type: array
-                    items: 
+                    items:
                       type: object
-                      properties: 
-                        id: 
+                      properties:
+                        id:
                           type: number
                           example: 4
-                        title: 
+                        title:
                           type: string
                           example: admin
-                        user_type: 
+                        user_type:
                           type: number
                           example: 0
-                        status: 
+                        status:
                           type: string
-                          example: active
+                          example: ACTIVE
             items:
               type: object
               properties:

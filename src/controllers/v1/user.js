@@ -33,12 +33,13 @@ module.exports = class User {
 	 * @method
 	 * @name read
 	 * @param {Object} req -request data.
-	 * @param {string} req.params._id - user id.
+	 * @param {string} req.params.id - user id.
+	 * @param {string} req.headers.internal_access_token - to get deleted user details
 	 * @returns {JSON} - returns user details.
 	 */
 	async read(req) {
 		try {
-			const userDetails = await userHelper.read(req.params.id ? req.params.id : req.decodedToken.id)
+			const userDetails = await userHelper.read(req.params.id ? req.params.id : req.decodedToken.id, req.headers)
 			return userDetails
 		} catch (error) {
 			return error

@@ -41,6 +41,8 @@ module.exports = class UserEntityData {
 			filter.status = common.activeStatus
 			return await EntityType.findAll({
 				where: filter,
+				raw: true,
+				nest: true,
 				include: [
 					{
 						model: Entity,

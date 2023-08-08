@@ -1,4 +1,5 @@
 const Entity = require('@database/models/index').Entity
+const common = require('@constants/common')
 module.exports = class UserEntityData {
 	static async create(data) {
 		try {
@@ -10,10 +11,11 @@ module.exports = class UserEntityData {
 
 	static async findAll(filter, options = {}) {
 		try {
-			filter.status = 'ACTIVE'
+			filter.status = common.activeStatus
 			return await Entity.findAll({
 				where: filter,
 				...options,
+				raw: true,
 			})
 		} catch (error) {
 			throw error
@@ -57,9 +59,13 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findOne(filter) {
+	static async findOne(filter, options = {}) {
 		try {
-			return await Entities.findOne(filter)
+			return await Entity.findOne({
+				where: filter,
+				...options,
+				raw: true,
+			})
 		} catch (error) {
 			return error
 		}

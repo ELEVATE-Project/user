@@ -156,40 +156,6 @@ module.exports = class Account {
 	}
 
 	/**
-	 * Verify the mentor or not
-	 * @method
-	 * @name verifyMentor
-	 * @param {Object} req -request data.
-	 * @param {Object} req.query.userId -userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	async verifyMentor(req) {
-		try {
-			const result = await accountHelper.verifyMentor(req.query.userId)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Verify user is mentor or not
-	 * @method
-	 * @name verifyUser
-	 * @param {Object} req -request data.
-	 * @param {Object} req.query.userId -userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	async verifyUser(req) {
-		try {
-			const result = await accountHelper.verifyUser(req.query.userId)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
 	 * Accept term and condition
 	 * @method
 	 * @name acceptTermsAndCondition

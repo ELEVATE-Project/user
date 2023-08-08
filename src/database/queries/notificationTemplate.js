@@ -1,6 +1,7 @@
 'use strict'
 const NotificationTemplate = require('@database/models/index').NotificationTemplate
 const { Op } = require('sequelize')
+const common = require('@constants/common')
 
 exports.create = async (data) => {
 	try {
@@ -27,7 +28,7 @@ exports.findOneEmailTemplate = async (code) => {
 		const filter = {
 			code: code,
 			type: 'email',
-			status: 'active',
+			status: common.activeStatus,
 		}
 
 		let templateData = await NotificationTemplate.findOne({
@@ -59,7 +60,7 @@ exports.getEmailHeader = async (filter) => {
 		const filterEmailHeader = {
 			code: header,
 			type: 'emailHeader',
-			status: 'active',
+			status: common.activeStatus,
 		}
 
 		const headerData = await NotificationTemplate.findOne({
@@ -77,7 +78,7 @@ exports.getEmailFooter = async (filter) => {
 		const filterEmailFooter = {
 			code: footer,
 			type: 'emailFooter',
-			status: 'active',
+			status: common.activeStatus,
 		}
 
 		const headerData = await NotificationTemplate.findOne({

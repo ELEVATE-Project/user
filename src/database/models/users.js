@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
 			share_link: DataTypes.STRING,
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: 'active',
+				defaultValue: 'ACTIVE',
 			},
 			image: DataTypes.STRING,
 			last_logged_in_at: DataTypes.DATE,

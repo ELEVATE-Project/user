@@ -21,7 +21,7 @@ module.exports = {
 			.matches(/^[A-Za-z0-9 ]+$/)
 			.withMessage('label is invalid')
 
-		req.checkBody('type')
+		req.checkBody('data_type')
 			.trim()
 			.notEmpty()
 			.withMessage('type field is empty')

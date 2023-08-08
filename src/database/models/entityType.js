@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
 			value: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				unique: true
+				unique: true,
 			},
 			label: {
 				type: DataTypes.STRING,
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: 'active',
+				defaultValue: 'ACTIVE',
 			},
 			type: {
 				type: DataTypes.STRING,
@@ -68,6 +68,6 @@ module.exports = (sequelize, DataTypes) => {
 			throw error
 		}
 	})
-	
+
 	return EntityType
 }

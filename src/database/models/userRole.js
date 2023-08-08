@@ -20,14 +20,14 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: 'active',
+				defaultValue: 'ACTIVE',
 			},
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }
 	)
 
 	UserRole.associate = (models) => {
-		UserRole.hasMany(models.User,{ foreignKey: 'id', as: 'user_role_array' })
+		UserRole.hasMany(models.User, { foreignKey: 'id', as: 'user_role_array' })
 	}
 
 	return UserRole

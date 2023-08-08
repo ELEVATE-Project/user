@@ -136,7 +136,7 @@ module.exports = {
 			let eachentityTypeRow = {
 				value: key,
 				label: toCamelCase(key),
-				status: 'active',
+				status: 'ACTIVE',
 				data_type: 'string',
 				allow_filtering: true,
 				updated_at: new Date(),
@@ -156,7 +156,7 @@ module.exports = {
 			if (eachTypes.value in entitiesArray) {
 				entitiesArray[eachTypes.value].forEach((eachEntity) => {
 					eachEntity.entity_type_id = eachTypes.id
-					eachEntity.status = 'active'
+					eachEntity.status = 'ACTIVE'
 					eachEntity.type = 'system'
 					eachEntity.created_at = new Date()
 					eachEntity.updated_at = new Date()
