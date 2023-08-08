@@ -1,5 +1,5 @@
 /**
- * name : validators/v1/entity.js
+ * name : validators/v1/entity-types.js
  * author : Aman Gupta
  * Date : 04-Nov-2021
  * Description : Validations of user entities controller
@@ -24,9 +24,9 @@ module.exports = {
 		req.checkBody('data_type')
 			.trim()
 			.notEmpty()
-			.withMessage('type field is empty')
+			.withMessage('data_type field is empty')
 			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
+			.withMessage('data_type is invalid, must not contain spaces')
 	},
 
 	update: (req) => {
@@ -47,25 +47,21 @@ module.exports = {
 			.matches(/^[A-Z]+$/)
 			.withMessage('status is invalid, must be in all caps')
 
-		req.checkBody('deleted').optional().isBoolean().withMessage('deleted is invalid')
-
-		req.checkBody('type')
+		req.checkBody('data_type')
 			.optional()
 			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
+			.withMessage('data_type is invalid, must not contain spaces')
 	},
 
 	read: (req) => {
 		console.log()
-		if (req.query.type) {
-			req.checkQuery('type')
+		if (req.query.data_type) {
+			req.checkQuery('data_type')
 				.trim()
 				.notEmpty()
-				.withMessage('type field is empty')
+				.withMessage('data_type field is empty')
 				.matches(/^[A-Za-z]+$/)
 				.withMessage('type is invalid, must not contain spaces')
-
-			req.checkQuery('deleted').optional().isBoolean().withMessage('deleted is invalid')
 
 			req.checkQuery('status')
 				.optional()

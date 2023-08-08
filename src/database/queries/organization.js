@@ -58,3 +58,15 @@ exports.listOrganizations = async (page, limit, search) => {
 		return error
 	}
 }
+
+exports.findAll = async (filter, options = {}) => {
+	try {
+		return await Organization.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
+	} catch (error) {
+		return error
+	}
+}

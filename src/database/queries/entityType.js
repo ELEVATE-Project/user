@@ -41,8 +41,6 @@ module.exports = class UserEntityData {
 			filter.status = common.activeStatus
 			return await EntityType.findAll({
 				where: filter,
-				raw: true,
-				nest: true,
 				include: [
 					{
 						model: Entity,
@@ -71,6 +69,7 @@ module.exports = class UserEntityData {
 			const [rowsAffected] = await EntityType.update(update, {
 				where: filter,
 				...options,
+				individualHooks: true,
 			})
 
 			return rowsAffected
@@ -95,6 +94,27 @@ module.exports = class UserEntityData {
 	static async findById(id) {
 		try {
 			return await EntityType.findByPk(id)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllSystemEntityTypes(filter) {
+		try {
+			filter.status = common.activeStatus
+			return await EntityType.findAll({
+				where: filter,
+				include: [
+					{
+						model: Entity,
+						required: false,
+						where: {
+							created_by: null,
+						},
+						as: 'entities',
+					},
+				],
+			})
 		} catch (error) {
 			return error
 		}

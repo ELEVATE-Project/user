@@ -19,7 +19,7 @@ module.exports = class Entity {
 
 	async create(req) {
 		try {
-			return await entityTypeHelper.create(req.body, req.decodedToken.id)
+			return await entityTypeHelper.create(req.body, req.decodedToken.id, req.decodedToken.roles)
 		} catch (error) {
 			return error
 		}
@@ -35,7 +35,7 @@ module.exports = class Entity {
 
 	async update(req) {
 		try {
-			return await entityTypeHelper.update(req.body, req.params.id, req.decodedToken.id)
+			return await entityTypeHelper.update(req.body, req.params.id, req.decodedToken.id, req.decodedToken.roles)
 		} catch (error) {
 			return error
 		}

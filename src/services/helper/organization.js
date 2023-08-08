@@ -84,12 +84,12 @@ module.exports = class OrganizationsHelper {
 	static async list(params) {
 		try {
 			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('organizationIds')) {
-				const organizationIds = params.body.userIds
+				const organizationIds = params.body.organizationIds
 				const orgIdsNotFoundInRedis = []
 				const orgDetailsFoundInRedis = []
 				for (let i = 0; i < organizationIds.length; i++) {
 					let orgDetails =
-						(await utilsHelper.redisGet(common.redisOrgPrefix + organizationIds[i].toString())) || false
+						(await utils.redisGet(common.redisOrgPrefix + organizationIds[i].toString())) || false
 
 					if (!orgDetails) {
 						orgIdsNotFoundInRedis.push(organizationIds[i])

@@ -81,4 +81,5 @@ module.exports = {
 	redisOrgPrefix: 'org_',
 	location: 'location',
 	languages: 'languages',
+	typeSystem: 'system',
 }

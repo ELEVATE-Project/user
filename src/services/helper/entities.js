@@ -23,10 +23,20 @@ module.exports = class UserEntityHelper {
 	 * @returns {JSON} - Entity created response.
 	 */
 
-	static async create(bodyData, id = null) {
-		bodyData.created_by = id
-		bodyData.updated_by = id
+	static async create(bodyData, userId, roles = []) {
 		try {
+			let isAdmin = false
+			if (roles && roles.length > 0) {
+				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+			}
+
+			if (!isAdmin) {
+				bodyData.type = common.roleUser
+				bodyData.created_by = userId
+				bodyData.updated_by = userId
+			} else {
+				bodyData.type = common.typeSystem
+			}
 			const entity = await entitiesQueries.create(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -62,10 +72,20 @@ module.exports = class UserEntityHelper {
 	 * @returns {JSON} - Entity updted response.
 	 */
 
-	static async update(bodyData, id, loggedInUserId = null) {
-		bodyData.updated_by = loggedInUserId
+	static async update(bodyData, id, loggedInUserId, roles = []) {
 		try {
-			const rowsAffected = await entitiesQueries.updateOne(id, bodyData)
+			let isAdmin = false
+			if (roles && roles.length > 0) {
+				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+			}
+
+			if (!isAdmin) {
+				bodyData.type = common.roleUser
+				bodyData.updated_by = loggedInUserId
+			} else {
+				bodyData.type = common.typeSystem
+			}
+			const rowsAffected = await entitiesQueries.updateOne({ id: id }, bodyData)
 
 			if (rowsAffected == 0) {
 				return common.failureResponse({
@@ -187,7 +207,7 @@ module.exports = class UserEntityHelper {
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
-	static async delete(id, userId =null) {
+	static async delete(id, userId = null) {
 		try {
 			const rowsAffected = await entitiesQueries.delete(id, userId)
 			if (rowsAffected == 0) {

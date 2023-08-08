@@ -13,10 +13,18 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity created response.
 	 */
 
-	static async create(bodyData, id = null) {
-		bodyData.created_by = id
-		bodyData.updated_by = id
+	static async create(bodyData, userId, roles = []) {
 		try {
+			let isAdmin = false
+			if (roles && roles.length > 0) {
+				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+			}
+
+			if (!isAdmin) {
+				bodyData.created_by = userId
+				bodyData.updated_by = userId
+			}
+
 			const entityType = await entityTypeQueries.create(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -45,10 +53,17 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity updted response.
 	 */
 
-	static async update(bodyData, id, loggedInUserId = null) {
-		bodyData.updated_by = loggedInUserId
+	static async update(bodyData, id, loggedInUserId, roles = []) {
 		try {
-			const rowsAffected = await entityTypeQueries.updateOne(id, bodyData)
+			let isAdmin = false
+			if (roles && roles.length > 0) {
+				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+			}
+
+			if (!isAdmin) {
+				bodyData.updated_by = userId
+			}
+			const rowsAffected = await entityTypeQueries.updateOne({ id: id }, bodyData)
 
 			if (rowsAffected == 0) {
 				return common.failureResponse({
@@ -75,10 +90,9 @@ module.exports = class EntityHelper {
 
 	static async readAllSystemEntityTypes() {
 		try {
-			const filter = { created_by: null }
-			const entities = await entityTypeQueries.findAll(filter)
+			const entityTypes = await entityTypeQueries.findAllSystemEntityTypes({ created_by: null })
 
-			if (!entities.length) {
+			if (!entityTypes.length) {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -88,7 +102,7 @@ module.exports = class EntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_FETCHED_SUCCESSFULLY',
-				result: entities,
+				result: entityTypes,
 			})
 		} catch (error) {
 			throw error
@@ -101,9 +115,9 @@ module.exports = class EntityHelper {
 				value: body.value,
 				created_by: null,
 			}
-			const entities = await entityTypeQueries.findAllUserEntityTypes(filter, userId)
+			const entityTypes = await entityTypeQueries.findAllUserEntityTypes(filter, userId)
 
-			if (!entities.length) {
+			if (!entityTypes.length) {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -113,7 +127,7 @@ module.exports = class EntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_FETCHED_SUCCESSFULLY',
-				result: { entity_types: entities },
+				result: { entity_types: entityTypes },
 			})
 		} catch (error) {
 			throw error
@@ -129,7 +143,7 @@ module.exports = class EntityHelper {
 
 	static async delete(id) {
 		try {
-			const rowsAffected = await entityTypeQueries.delete(id)
+			const rowsAffected = await entityTypeQueries.delete({ id: id })
 			if (rowsAffected == 0) {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
