@@ -8,6 +8,370 @@
 	},
 	"item": [
 		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "Create Account Mentee",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nikolas\",\n    \"email\":\"tacape1645@meogl.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Account Mentor",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"password\",\n    \"role\":\"mentor\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonBody = JSON.parse(responseBody);",
+									"pm.environment.set(\"token\", jsonBody.result.access_token);",
+									"pm.environment.set(\"refresh_token\", jsonBody.result.refresh_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankitstar00786@yahoo.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "testing",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "priyanka@tunerlabs.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/login",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Accept Terms & Condition",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "acceptTermsAndCondition"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdomss.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "test123",
+									"type": "text"
+								},
+								{
+									"key": "otp",
+									"value": "336969",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/resetPassword",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "resetPassword"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Regenerate Access Token Copy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/generateToken",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "generateToken"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdomss.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "\"\"",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "generateOtp"]
+						},
+						"description": "To generate and regenerate otp"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/logout",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "logout"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List User Accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list?type=mentor&page=1&limit=2&search=p",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "list"],
+							"query": [
+								{
+									"key": "type",
+									"value": "mentor"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "2"
+								},
+								{
+									"key": "search",
+									"value": "p"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registration Otp",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "email",
+									"value": "ankit.s@pacewisdom.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testing",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "Ankit",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/registrationOtp",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "registrationOtp"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List User with Id",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userIds\" : [4,5,6]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "list"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "User",
 			"item": [
 				{
@@ -49,7 +413,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n    \"location\": [\"AP\",\"KL\"],\n    \"about\": \"This is test about of mentee\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
+							"raw": "{\n    \"name\": \"Ankit\",\n    \"location\": [\"AP\", \"KL\"],\n    \"about\": \"This is test about of mentee\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\"english\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -139,7 +503,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"profile\",\n\t\"sub_type\": \"profileForm\",\n    \"template_name\": \"defaultTemplate\"\n}",
+							"raw": "{\n    \"type\": \"profile\",\n\t\"sub_type\": \"profileForm\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -147,9 +511,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/read/3",
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "read", "3"]
+							"path": ["v1", "form", "read", "1"]
 						}
 					},
 					"response": []
@@ -221,366 +585,6 @@
 			]
 		},
 		{
-			"name": "Account",
-			"item": [
-				{
-					"name": "Create Account Mentee",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nikolas\",\n    \"email\":\"tacape1645@meogl.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}"],
-							"path": ["v1", "account", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Account Mentor",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\":\"shahu\",\n    \"email\":\"ankit.s@pacewisdomss.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Login Account",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonBody = JSON.parse(responseBody);",
-									"pm.environment.set(\"token\", jsonBody.result.access_token);",
-									"pm.environment.set(\"refreshToken\", jsonBody.result.refresh_token);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "ankitstar00786@yahoo.com",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "testing",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "priyanka@tunerlabs.com",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "12345678",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}/v1/account/login",
-							"host": ["{{UserDevBaseUrl}}"],
-							"path": ["v1", "account", "login"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Accept Terms & Condition",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "acceptTermsAndCondition"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Reset Password",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "ankit.s@pacewisdomss.com",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "test123",
-									"type": "text"
-								},
-								{
-									"key": "otp",
-									"value": "336969",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/resetPassword",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "resetPassword"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Regenerate Access Token Copy",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "",
-									"value": "",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "refreshToken",
-									"value": "{{refreshToken}}",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/generateToken",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "generateToken"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Generate Otp",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "ankit.s@pacewisdomss.com",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "\"\"",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "generateOtp"]
-						},
-						"description": "To generate and regenerate otp"
-					},
-					"response": []
-				},
-				{
-					"name": "Logout Account",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "refreshToken",
-									"value": "{{refreshToken}}",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/logout",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "logout"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List User Accounts",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/list?type=mentee&page=1&limit=2",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "list"],
-							"query": [
-								{
-									"key": "type",
-									"value": "mentee"
-								},
-								{
-									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "limit",
-									"value": "2"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Registration Otp",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "ankit.s@pacewisdom.com",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "testing",
-									"type": "text"
-								},
-								{
-									"key": "name",
-									"value": "Ankit",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/registrationOtp",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "registrationOtp"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List User with Id",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"userIds\" : [4,5,6]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/list",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "list"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
 			"name": "Admin",
 			"item": [
 				{
@@ -590,13 +594,13 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{systemUserToken}}",
+								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}/v1/admin/deleteUser/1",
-							"host": ["{{UserDevBaseUrl}}"],
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/1",
+							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "admin", "deleteUser", "1"]
 						}
 					},
@@ -639,7 +643,7 @@
 								"exec": [
 									"",
 									"var jsonBody = JSON.parse(responseBody);",
-									"pm.environment.set(\"systemUserToken\", jsonBody.result.access_token);"
+									"pm.environment.set(\"token\", jsonBody.result.access_token);"
 								],
 								"type": "text/javascript"
 							}
@@ -658,8 +662,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}/v1/admin/login",
-							"host": ["{{UserDevBaseUrl}}"],
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/login",
+							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "admin", "login"]
 						}
 					},
@@ -729,7 +733,7 @@
 				{
 					"name": "List Organization",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -737,10 +741,6 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"orgIds\" : [4,5,6]\n}"
-						},
 						"url": {
 							"raw": "{{UserDevBaseUrl}}user/v1/organization/list?page=1&limit=10",
 							"host": ["{{UserDevBaseUrl}}user"],
@@ -755,6 +755,243 @@
 									"value": "10"
 								}
 							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "EntityTypes",
+			"item": [
+				{
+					"name": "Create EntityType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"education\",\n    \"label\": \"Qualification\",\n    \"data_type\":\"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update EntityType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"education\",\n    \"label\": \"Qualification\",\n    \"data_type\":\"string\",\n    \"status\":\"INACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/4",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "update", "4"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read System  EntityTypes",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read User  EntityTypes",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"read_user_entity\" : true,\n    \"value\" : \"languages\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete EntityType",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/4",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "delete", "4"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Entities",
+			"item": [
+				{
+					"name": "Create Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"type\":\"string\",\n    \"entity_type_id\":4\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"entity_type_id\":4\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/31",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "update", "31"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/31",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "delete", "31"]
 						}
 					},
 					"response": []
