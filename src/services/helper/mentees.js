@@ -12,6 +12,10 @@ const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
 
 const { successResponse } = require('@constants/common')
+
+const { UniqueConstraintError } = require('sequelize')
+const menteeQueries = require('../../database/queries/userextension')
+
 module.exports = class MenteesHelper {
 	/**
 	 * Profile.
@@ -409,6 +413,121 @@ module.exports = class MenteesHelper {
 			}
 		} catch (error) {
 			throw error
+		}
+	}
+	// Functions for new APIs
+	/**
+	 * Create a new mentee extension.
+	 * @method
+	 * @name createMenteeExtension
+	 * @param {Object} data - Mentee extension data to be created.
+	 * @param {String} userId - User ID of the mentee.
+	 * @returns {Promise<Object>} - Created mentee extension details.
+	 */
+	static async createMenteeExtension(data, userId) {
+		try {
+			data.user_id = userId
+			console.log(data)
+			const response = await menteeQueries.createMenteeExtension(data)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTEE_EXTENSION_CREATED',
+				result: response,
+			})
+		} catch (error) {
+			if (error instanceof UniqueConstraintError) {
+				return common.failureResponse({
+					message: 'MENTEE_EXTENSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return error
+		}
+	}
+
+	/**
+	 * Update a mentee extension.
+	 * @method
+	 * @name updateMenteeExtension
+	 * @param {String} userId - User ID of the mentee.
+	 * @param {Object} data - Updated mentee extension data excluding user_id.
+	 * @returns {Promise<Object>} - Updated mentee extension details.
+	 */
+	static async updateMenteeExtension(data, userId) {
+		try {
+			if (data.user_id) {
+				delete data['user_id']
+			}
+			//const mentee = await menteeQueries.updateMenteeExtension(userId, data);
+			const mentee = await menteeQueries.updateMenteeExtension(userId, data)
+
+			if (mentee == 'MENTEE_EXTENSION_NOT_FOUND') {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTEE_EXTENSION_NOT_FOUND',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTEE_EXTENSION_UPDATED',
+				result: {},
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get mentee extension details by user ID.
+	 * @method
+	 * @name getMenteeExtension
+	 * @param {String} userId - User ID of the mentee.
+	 * @returns {Promise<Object>} - Mentee extension details.
+	 */
+	static async getMenteeExtension(userId) {
+		try {
+			const mentee = await menteeQueries.getMenteeExtension(userId)
+			if (!mentee) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTEE_EXTENSION_NOT_FOUND',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTEE_EXTENSION_FETCHED',
+				result: mentee,
+			})
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
+
+	/**
+	 * Delete a mentee extension by user ID.
+	 * @method
+	 * @name deleteMenteeExtension
+	 * @param {String} userId - User ID of the mentee.
+	 * @returns {Promise<Object>} - Indicates if the mentee extension was deleted successfully.
+	 */
+	static async deleteMenteeExtension(userId) {
+		try {
+			const mentee = await menteeQueries.deleteMenteeExtension(userId)
+			if (!mentee) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTEE_EXTENSION_NOT_FOUND',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTEE_EXTENSION_DELETED',
+				result: true,
+			})
+		} catch (error) {
+			return error
 		}
 	}
 }

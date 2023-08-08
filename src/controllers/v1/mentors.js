@@ -88,4 +88,69 @@ module.exports = class Mentors {
 			return error
 		}
 	}
+
+	//new apis
+	/**
+	 * Create a new mentor extension.
+	 * @method
+	 * @name createMentorExtension
+	 * @param {Object} req - Request data.
+	 * @param {Object} req.body - Mentor extension data excluding user_id.
+	 * @returns {Promise<Object>} - Created mentor extension details.
+	 */
+	async create(req) {
+		try {
+			return await mentorsHelper.createMentorExtension(req.body, '1' || req.decodedToken._id)
+		} catch (error) {
+			console.error(error)
+			return error
+		}
+	}
+	/**
+	 * Update a mentor extension.
+	 * @method
+	 * @name updateMentorExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken._id - User ID of the mentor.
+	 * @param {Object} req.body - Updated mentor extension data excluding user_id.
+	 * @returns {Promise<Object>} - Updated mentor extension details.
+	 */
+
+	async update(req) {
+		try {
+			return await mentorsHelper.updateMentorExtension(req.body, '1', req.decodedToken._id)
+		} catch (error) {
+			return error
+		}
+	}
+	/**
+	 * Get mentor extension by user ID.
+	 * @method
+	 * @name getMentorExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.params.id - User ID of the mentor.
+	 * @returns {Promise<Object>} - Mentor extension details.
+	 */
+	async getMentorExtension(req) {
+		try {
+			return await mentorsHelper.getMentorExtension(req.query.id || req.decodedToken._id) //params since read will be public for mentors
+		} catch (error) {
+			return error
+		}
+	}
+	/**
+	 * Delete a mentor extension by user ID.
+	 * @method
+	 * @name deleteMentorExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken._id - User ID of the mentor.
+	 * @returns {Promise<Boolean>} - True if deleted successfully, otherwise false.
+	 */
+	async deleteMentorExtension(req) {
+		try {
+			return await mentorsHelper.deleteMentorExtension('1', req.decodedToken._id)
+		} catch (error) {
+			return error
+		}
+	}
 }
