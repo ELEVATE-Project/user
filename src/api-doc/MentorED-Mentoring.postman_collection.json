@@ -1487,7 +1487,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"description\":\"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In hendrerit gravida rutrum quisque non tellus. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Accumsan sit amet nulla facilisi morbi tempus iaculis. Lobortis scelerisque fermentum dui faucibus in.\"\n}",
+							"raw": "{\n    \"description\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. In hendrerit gravida rutrum quisque non tellus. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur adipiscing. Accumsan sit amet nulla facilisi morbi tempus iaculis. Lobortis scelerisque fermentum dui faucibus in.\",\n    \"meta_data\": {\n        \"request_type\": \"Report an issue\",\n        \"browserName\": \"Chrome\",\n        \"browserVersion\": \"114.0.0.0\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
