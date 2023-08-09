@@ -393,8 +393,8 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}/v1/user/read/3",
-							"host": ["{{UserDevBaseUrl}}"],
+							"raw": "{{UserDevBaseUrl}}user/v1/user/read/3",
+							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "user", "read", "3"]
 						}
 					},
@@ -450,6 +450,37 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/user/share/1",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "user", "share", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Role",
+			"item": [
+				{
+					"name": "List User Roles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user//v1/userRole/list",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["", "v1", "userRole", "list"]
 						}
 					},
 					"response": []
@@ -925,7 +956,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"type\":\"string\",\n    \"entity_type_id\":4\n}",
+							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"entity_type_id\":4\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -992,6 +1023,36 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/31",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "entity", "delete", "31"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/read?id=1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "read"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "read_user_entity",
+									"value": "true",
+									"disabled": true
+								}
+							]
 						}
 					},
 					"response": []

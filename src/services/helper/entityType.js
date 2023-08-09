@@ -61,7 +61,7 @@ module.exports = class EntityHelper {
 			}
 
 			if (!isAdmin) {
-				bodyData.updated_by = userId
+				bodyData.updated_by = loggedInUserId
 			}
 			const rowsAffected = await entityTypeQueries.updateOne({ id: id }, bodyData)
 

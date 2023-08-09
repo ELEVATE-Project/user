@@ -55,14 +55,7 @@ module.exports = {
 			.withMessage('type is invalid, must not contain spaces')
 	},
 
-	read: (req) => {
-		req.checkBody('entity_type_id')
-			.trim()
-			.notEmpty()
-			.withMessage('Entity type field is empty')
-			.isNumeric()
-			.withMessage('Entity type is invalid, must be an integer')
-	},
+	read: (req) => {},
 
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')

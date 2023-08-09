@@ -704,167 +704,7 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/form/readForm400Response'
-  '/user/v1/userentity/create':
-    post:
-      summary: Create user entity
-      tags:
-        - User Entity APIs
-      description: "This API is associated with user entity creation  \n - Then
-        Endpoint for create entity `/user/v1/userentity/create` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              '$ref': '#/components/schemas/userentity/createUserEntityRequest'
-      responses:
-        '201':
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/userentity/createUserEntity201Response'
-        400:
-          description: Bad Request. User Entity alrady exist
-          content:
-            application/json:
-              schema:
-                '$ref': '#/components/schemas/userentity/createUserEntity400Response'
-  '/user/v1/userentity/update/{id}':
-    patch:
-      summary: Update user entity
-      tags:
-        - User Entity APIs
-      description: "This API is associated with update user entity  \n - Then
-        Endpoint for update entity `/user/v1/userentity/update` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: 'id'
-          required: true
-          description: Please append a valid user entity id to the request url
-          schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
-      requestBody:
-        content:
-          application/json:
-            schema:
-              '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
-      responses:
-        '202':
-          description: Accepted
-          content:
-            application/json:
-              schema:
-                '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
-        '400':
-          description: Bad Request. User Entity Not Found
-          content:
-            application/json:
-              schema:
-                '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
-  '/user/v1/userentity/read?type={type}&deleted={deleted}&status={status}':
-    get:
-      summary: Get user entity
-      tags:
-        - User Entity APIs
-      description: "This API is associated with getting user entity based on conditions  \n - Then
-        Endpoint for getting user entity `/user/v1/userentity/read` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: type
-          required: true
-          description: Please append a valid type of role
-          schema:
-            type: string
-          example: roles
-        - in: path
-          name: deleted
-          required: true
-          description: Please append a deleted type eg. for deleted user `true` and
-            for existing user `false`
-          schema:
-            type: string
-          example: 'false'
-        - in: path
-          name: status
-          required: true
-          description: Please append a deleted type eg. for active user `ACTIVE` and
-            for Disabled user `DISABLED`
-          schema:
-            type: string
-          example: ACTIVE
-      responses:
-        '200':
-          description: Accepted
-          content:
-            application/json:
-              schema:
-                '$ref': '#/components/schemas/userentity/readUserEntity200Response'
-  '/user/v1/userentity/delete/{id}':
-    patch:
-      summary: Delete user entity
-      tags:
-        - User Entity APIs
-      description: "This API is associated with delete user entity  \n - Then
-        Endpoint for delete user entity `/user/v1/userentity/delete` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-        - in: path
-          name: 'id'
-          required: true
-          description: Please append a valid user entity id to the request url
-          schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
-      responses:
-        '202':
-          description: Accepted
-          content:
-            application/json:
-              schema:
-                '$ref': '#/components/schemas/userentity/deleteUserEntity202Response'
-        '400':
-          description: Bad Request. User Entity Already Deleted
-          content:
-            application/json:
-              schema:
-                '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
+
   '/user/v1/admin/create':
     post:
       summary: Create admin user
@@ -956,6 +796,461 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/admin/deleteUser400Response'
+  '/user/v1/organization/create':
+    post:
+      summary: Create Organization
+      tags:
+        - Organization
+      description: "This API is associated with organization  \n - The
+        Endpoint for create organization `/user/v1/organization/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      operationId: createOrganization
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - name: internal_access_token
+          in: header
+          description: To make use of the admin related API, you require internal_access_token.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/organization/createOrganizationRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/organization/createOrganization200Response'
+        '400':
+          description: Bad Request. System User doesn't exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/admin/createOrganization400Response'
+  '/user/v1/organization/update/{id}':
+    post:
+      summary: Update Organization
+      tags:
+        - Organization
+      description: "This API is associated with organization  \n - The
+        Endpoint for update organization `/user/v1/organization/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      operationId: createOrganization
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - name: internal_access_token
+          in: header
+          description: To make use of the admin related API, you require internal_access_token.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Please append a valid user id to the request url
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/organization/createOrganizationRequest'
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/organization/updateOrganization200Response'
+        '400':
+          description: Bad Request. System User doesn't exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/organization/updateOrganization400Response'
+  '/user/v1/organization/list?page={page}&limit={limit}&search={search}':
+    get:
+      summary: List Organization
+      tags:
+        - Organization
+      description: "This API is associated with the listing of organization based on condition  \n -
+        Endpoint for list organization `/user/v1/organization/list` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: page
+          description: Please add page number
+          required: false
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: number of record to limit
+          required: false
+          schema:
+            type: number
+          example: 2
+        - in: path
+          name: search
+          description: Please search for name or title of user etc.
+          required: false
+          schema:
+            type: string
+          example: jhon
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/organization/organizationList200Response'
+  '/user/v1/userRole/list':
+    get:
+      summary: UserRole List
+      tags:
+        - UserRole APIs
+      description: "This API is associated with the user's role details  \n - Then
+        Endpoint for user profile details `/user/v1/userRole/list` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ok
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userRole/userRoleListResponse200'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  '/user/v1/entity-type/create':
+    post:
+      summary: Create entity type
+      tags:
+        - EntityType APIs
+      description: "This API is associated with entity type creation  \n - Then
+        Endpoint for create entity `/user/v1/entity-type/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/entity-type/createEntityTypeRequest'
+      responses:
+        '201':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entity-type/createEntityType201Response'
+        400:
+          description: Bad Request. Entity type alrady exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/createEntityType400Response'
+  '/user/v1/entity-type/update/{id}':
+    post:
+      summary: Update entity type
+      tags:
+        - EntityType APIs
+      description: "This API is associated with entity type updation  \n - Then
+        Endpoint for create entity `/user/v1/entity-type/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: Please append a valid user id to the request url
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/entity-type/createEntityTypeRequest'
+      responses:
+        '201':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entity-type/updateEntityType201Response'
+        400:
+          description: Bad Request. Entity type alrady exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/updateEntityType400Response'
+  '/user/v1/entity-type/read':
+    post:
+      summary: Read entity type
+      tags:
+        - EntityType APIs
+      description: "This API is associated with entity type list  \n - Then
+        Endpoint for create entity `/user/v1/entity-type/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entity-type/readEntityType201Response'
+        400:
+          description: Bad Request. Entity type alrady exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/updateEntityType400Response'
+  '/user/v1/entity-type/delete/{id}':
+    patch:
+      summary: Delete entity type
+      tags:
+        - EntityType APIs
+      description: "This API is associated with delete entity  \n - Then
+        Endpoint for delete user entity `/user/v1/entity-type/delete` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id'
+          required: true
+          description: Please append a valid user entity id to the request url
+          schema:
+            type: integer
+          example: 31
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/deleteUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Already Deleted
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/deleteUserEntity400Response'
+  '/user/v1/entity/create':
+    post:
+      summary: Create entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with entity creation  \n - Then
+        Endpoint for create entity `/user/v1/entity/create` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/userentity/createUserEntityRequest'
+      responses:
+        '201':
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userentity/createUserEntity201Response'
+        400:
+          description: Bad Request. User Entity alrady exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userentity/createUserEntity400Response'
+  '/user/v1/entity/update/{id}':
+    patch:
+      summary: Update entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with update entity  \n - Then
+        Endpoint for update entity `/user/v1/entity/update` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id'
+          required: true
+          description: Please append a valid user entity id to the request url
+          schema:
+            type: integer
+          example: 2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Not Found
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userentity/updateUserEntity400Response'
+  '/user/v1/entity/read?id={id}':
+    get:
+      summary: Read user entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with getting user entity based on id or value  \n - Then
+        Endpoint for getting user entity `/user/v1/entity/read` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: Please append a valid id
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userentity/readUserEntity200Response'
+  '/user/v1/entity/delete/{id}':
+    patch:
+      summary: Delete entity
+      tags:
+        - Entity APIs
+      description: "This API is associated with delete entity  \n - Then
+        Endpoint for delete user entity `/user/v1/entity/delete` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: 'id'
+          required: true
+          description: Please append a valid user entity id to the request url
+          schema:
+            type: integer
+          example: 31
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userentity/deleteUserEntity202Response'
+        '400':
+          description: Bad Request. User Entity Already Deleted
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
 components:
   schemas:
     user:
@@ -2275,16 +2570,20 @@ components:
           - value
           - label
           - type
+          - entity_type_id
         properties:
           value:
             type: string
-            example: HM
+            example: AP
           label:
             type: string
-            example: Head Master
+            example: Andhra Pradesh
           type:
             type: string
-            example: roles
+            example: string
+          entity_type_id:
+            type: integer
+            example: 4
       createUserEntity201Response:
         type: object
         description: User entity created
@@ -2294,21 +2593,21 @@ components:
             example: OK
           message:
             type: string
-            example: User entity created successfully
+            example: Entity created successfully
           result:
             type: array
             items:
             example: []
       createUserEntity400Response:
         type: object
-        description: User entity already exist
+        description: Entity already exists
         properties:
           responseCode:
             type: string
             example: CLIENT_ERROR
           message:
             type: string
-            example: User entity already exists
+            example: Entity already exists
           error:
             type: array
             items:
@@ -2319,51 +2618,51 @@ components:
           - value
           - label
           - type
-          - status
+          - entity_type_id
         description: User Entity update request
         properties:
           value:
             type: string
-            example: HM
+            example: AP
           label:
             type: string
-            example: Head Master
-          status:
-            type: string
-            example: DISABLED
+            example: Andhra Pradesh
           type:
             type: string
-            example: roles
+            example: string
+          entity_type_id:
+            type: integer
+            example: 4
       updateUserEntity202Response:
         type: object
-        description: User Entity Updated
+        description: ntity Updated
         properties:
           responseCode:
             type: string
             example: OK
           message:
             type: string
-            example: User entity updated successfully
+            example: Entity updated successfully
           result:
             type: array
             items:
             example: []
       updateUserEntity400Response:
         type: object
-        description: User Entity Not Found
+        description: Entity not found
         properties:
           responseCode:
             type: string
             example: CLIENT_ERROR
           message:
             type: string
-            example: User entity not found
+            example: Entity not found
           error:
             type: array
             items:
             example: []
       readUserEntity200Response:
-        description: User Entity fetched
+        description: Entity fetched successfully
         type: object
         properties:
           responseCode:
@@ -2371,42 +2670,73 @@ components:
             example: OK
           message:
             type: string
-            example: User entity fetched successfully
+            example: Entity fetched successfully
           result:
             type: array
             items:
               type: object
               properties:
+                id:
+                  type: number
+                  example: 1
+                entity_type_id:
+                  type: number
+                  example: 1
                 value:
                   type: string
-                  example: HM
+                  example: AP
                 label:
                   type: string
-                  example: Head Master
+                  example: Andhra Pradesh
+                status:
+                  type: string
+                  example: ACTIVE
+                type:
+                  type: string
+                  example: system
+                created_by:
+                  type: string
+                  example: null
+                updated_by:
+                  type: string
+                  example: null
+                created_at:
+                  type: string
+                  format: date-time
+                  example: 2023-08-07T11:27:23.573Z
+                updated_at:
+                  type: string
+                  format: date-time
+                  example: 2023-08-07T11:27:23.573Z
+                deleted_at:
+                  type: string
+                  format: date-time
+                  example: null
+
       deleteUserEntity202Response:
         type: object
-        description: User Entity Deleted
+        description: Entity Deleted
         properties:
           responseCode:
             type: string
             example: OK
           message:
             type: string
-            example: User entity deleted successfully
+            example: Entity deleted successfully
           result:
             type: array
             items:
             example: []
       deleteUserEntity400Response:
         type: object
-        description: User Entity Deleted
+        description: Entity not found
         properties:
           responseCode:
             type: string
             example: CLIENT_ERROR
           message:
             type: string
-            example: User entity already deleted
+            example: Entity not found
           error:
             type: array
             items:
@@ -2663,6 +2993,386 @@ components:
             type: array
             items:
             example: []
+    organization:
+      createOrganizationRequest:
+        type: object
+        description: Creates Organization
+        required:
+          - name
+          - code
+          - description
+        properties:
+          name:
+            type: string
+            example: MentorEd
+          code:
+            type: string
+            example: mentor112
+          description:
+            type: string
+            example: testing
+      createOrganization200Response:
+        type: object
+        description: Organization created successfully
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organization created successfully
+          result:
+            type: array
+            items:
+            example: []
+      createOrganization400Response:
+        type: object
+        description: Organization already exists
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Organization already exists
+          error:
+            type: array
+            items:
+            example: []
+      updateOrganization200Response:
+        type: object
+        description: Organization updated
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organization updated successfully
+          result:
+            type: array
+            items:
+            example: []
+      updateOrganization400Response:
+        type: object
+        description: Organization already exists
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Organization not found
+          error:
+            type: array
+            items:
+            example: []
+      organizationList200Response:
+        type: object
+        description: Organization list
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Organization fetched successfully.
+          result:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 1
+                    name:
+                      type: string
+                      example: Shikshalokam
+                    code:
+                      type: string
+                      example: sl
+                    description:
+                      type: string
+                      example: Founded in 2017 ShikshaLokam is an Education Leadership Catalyst under the aegis of Advaith Foundation.
+              count:
+                type: number
+                example: 1
+
+    entity-type:
+      createEntityTypeRequest:
+        type: object
+        description: entity type request
+        properties:
+          value:
+            type: string
+            example: location
+          label:
+            type: string
+            example: Location
+          data_type:
+            type: string
+            example: string
+      createEntityType201Response:
+        type: object
+        description: entity type request
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Entity type created successfully.
+          result:
+            type: object
+            properties:
+              status:
+                type: string
+                example: ACTIVE
+              id:
+                type: number
+                example: 5
+              value:
+                type: string
+                example: location
+              label:
+                type: string
+                example: Location
+              data_type:
+                type: string
+                example: string
+              created_by:
+                type: number
+                example: 15
+              updated_by:
+                type: number
+                example: 15
+              updated_at:
+                type: string
+                format: date-time
+                example: 2023-08-09T17:02:12.842Z
+              created_at:
+                type: string
+                format: date-time
+                example: 2023-08-09T17:02:12.842Z
+              allow_filtering:
+                type: string
+                format: nullable
+              deleted_at:
+                type: string
+                format: date-time
+                example: null
+      createEntityType400Response:
+        type: object
+        description: User entity already exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Entity type already exists
+          error:
+            type: array
+            items:
+            example: []
+      updateEntityType201Response:
+        type: object
+        description: Entity type updated
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Entity type updated successfully
+          result:
+            type: array
+            items:
+            example: []
+      updateEntityType400Response:
+        type: object
+        description: User entity already exist
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Validation failed, Entered data is incorrect!
+          error:
+            type: array
+            items:
+              type: object
+              properties:
+                location:
+                  type: string
+                  example: params
+                param:
+                  type: string
+                  example: id
+                msg:
+                  type: string
+                  example: id param is empty
+      readEntityType201Response:
+        type: object
+        description: read entity type
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Entity fetched successfully
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 1
+                value:
+                  type: string
+                  example: location
+                label:
+                  type: string
+                  example: Location
+                status:
+                  type: string
+                  example: ACTIVE
+                data_type:
+                  type: string
+                  example: string
+                created_by:
+                  type: string
+                  format: nullable
+                updated_by:
+                  type: string
+                  format: nullable
+                allow_filtering:
+                  type: boolean
+                created_at:
+                  type: string
+                  format: date-time
+                  example: 2023-08-07T11:27:23.566Z
+                updated_at:
+                  type: string
+                  format: date-time
+                  example: 2023-08-07T11:27:23.566Z
+                deleted_at:
+                  type: string
+                  format: nullable
+                entities:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 1
+                      entity_type_id:
+                        type: number
+                        example: 1
+                      value:
+                        type: string
+                        example: AP
+                      label:
+                        type: string
+                        example: Andhra Pradesh
+                      status:
+                        type: string
+                        example: ACTIVE
+                      type:
+                        type: string
+                        example: system
+                      created_by:
+                        type: string
+                        format: nullable
+                      updated_by:
+                        type: string
+                        format: nullable
+                      created_at:
+                        type: string
+                        format: date-time
+                        example: 2023-08-07T11:27:23.573Z
+                      updated_at:
+                        type: string
+                        format: date-time
+                        example: 2023-08-07T11:27:23.573Z
+                      deleted_at:
+                        type: string
+                        format: nullable
+      deleteUserEntity202Response:
+        type: object
+        description: Entity Deleted
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: Entity deleted successfully
+          result:
+            type: array
+            items:
+            example: []
+      deleteUserEntity400Response:
+        type: object
+        description: Entity not found
+        properties:
+          responseCode:
+            type: string
+            example: CLIENT_ERROR
+          message:
+            type: string
+            example: Entity not found
+          error:
+            type: array
+            items:
+            example: []
+    userRole:
+      userRoleListResponse200:
+        type: object
+        description: Organization list
+        properties:
+          responseCode:
+            type: string
+            example: OK
+          message:
+            type: string
+            example: User Role list fetched successfully.
+          result:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: number
+                  example: 1
+                title:
+                  type: string
+                  example: mentor
+                user_type:
+                  type: number
+                  example: 0
+                status:
+                  type: string
+                  example: ACTIVE
+                created_at:
+                  type: string
+                  format: date-time
+                  example: 2023-08-07T11:27:23.560Z
+                updated_at:
+                  type: string
+                  format: date-time
+                  example: 2023-08-07T11:27:23.560Z
+                deleted_at:
+                  type: date-time
+                  example: null
+
   securitySchemes:
     bearer:
       type: apiKey

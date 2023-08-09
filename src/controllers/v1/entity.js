@@ -59,7 +59,7 @@ module.exports = class Entity {
 	async read(req) {
 		try {
 			if (req.query.id || req.query.value) {
-				return await entityHelper.read(req.query, req.params.id)
+				return await entityHelper.read(req.query, req.decodedToken.id)
 			}
 			return await entityHelper.readAll(req.query, null)
 		} catch (error) {
