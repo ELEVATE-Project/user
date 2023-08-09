@@ -1,10 +1,8 @@
-// Dependencies
+// DependenciesI
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-
-const entityTypeQueries = require('../../database/queries/entity')
-const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
-const { Op } = require('sequelize')
+const entityTypeQueries = require('../../database/queries/entityType')
+const { UniqueConstraintError } = require('sequelize')
 
 module.exports = class EntityHelper {
 	/**
@@ -20,23 +18,16 @@ module.exports = class EntityHelper {
 		bodyData.created_by = '0' || id
 		bodyData.updated_by = '0' || id
 		try {
-			const entity = await entityTypeQueries.createEntity(bodyData)
+			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
-				result: entity,
+				result: entityType,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
 				return common.failureResponse({
 					message: 'ENTITY_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			if (error instanceof ForeignKeyConstraintError) {
-				return common.failureResponse({
-					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -58,7 +49,7 @@ module.exports = class EntityHelper {
 	static async update(bodyData, id, loggedInUserId) {
 		bodyData.updated_by = 1 || loggedInUserId
 		try {
-			const result = await entityTypeQueries.updateOneEntity(id, bodyData)
+			const result = await entityTypeQueries.updateOneEntityType(id, bodyData)
 
 			if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
@@ -83,39 +74,10 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	/**
-	 * Read entity.
-	 * @method
-	 * @name read
-	 * @param {Object} bodyData - entity body data.
-	 * @returns {JSON} - Entity read response.
-	 */
-
-	static async read(query, userId) {
+	static async readAllSystemEntityTypes() {
 		try {
-			let filter
-			if (query.id) {
-				filter = {
-					[Op.or]: [
-						{
-							id: query.id,
-							created_by: '0',
-						},
-						{ id: query.id, created_by: userId },
-					],
-				}
-			} else {
-				filter = {
-					[Op.or]: [
-						{
-							value: query.value,
-							created_by: '0',
-						},
-						{ value: query.value, created_by: userId },
-					],
-				}
-			}
-			const entities = await entityTypeQueries.findAllEntities(filter)
+			const filter = { created_by: '0' }
+			const entities = await entityTypeQueries.findAllEntityTypes(filter)
 
 			if (!entities.length) {
 				return common.failureResponse({
@@ -134,26 +96,15 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readAll(query, userId) {
+	static async readUserEntityTypes(body, userId) {
 		try {
-			let filter
-			if (query.read_user_entity) {
-				filter = {
-					[Op.or]: [
-						{
-							created_by: '0',
-						},
-						{
-							created_by: userId,
-						},
-					],
-				}
-			} else {
-				filter = {
-					created_by: '0',
-				}
+			userId = 1
+
+			const filter = {
+				value: body.value,
+				created_by: 0,
 			}
-			const entities = await entityTypeQueries.findAllEntities(filter)
+			const entities = await entityTypeQueries.findAllUserEntityTypes(filter, userId)
 
 			if (!entities.length) {
 				return common.failureResponse({
@@ -165,13 +116,12 @@ module.exports = class EntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_FETCHED_SUCCESSFULLY',
-				result: entities,
+				result: { entity_types: entities },
 			})
 		} catch (error) {
 			throw error
 		}
 	}
-
 	/**
 	 * Delete entity.
 	 * @method
@@ -180,9 +130,9 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
-	static async delete(id, userId) {
+	static async delete(id) {
 		try {
-			const result = await entityTypeQueries.deleteOneEntityType(id, userId)
+			const result = await entityTypeQueries.deleteOneEntityType(id)
 			if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
@@ -194,7 +144,6 @@ module.exports = class EntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_DELETED_SUCCESSFULLY',
-				result: {},
 			})
 		} catch (error) {
 			throw error

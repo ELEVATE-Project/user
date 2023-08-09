@@ -9,6 +9,9 @@ const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
+const mentorQueries = require('../../database/queries/mentorextention')
+const { UniqueConstraintError } = require('sequelize')
+
 module.exports = class MentorsHelper {
 	/**
 	 * upcomingSessions.
@@ -253,6 +256,122 @@ module.exports = class MentorsHelper {
 			}
 		} catch (err) {
 			return err
+		}
+	}
+
+	//Functions for new APIS
+	/**
+	 * Create a new mentor extension.
+	 * @method
+	 * @name createMentorExtension
+	 * @param {Object} data - Mentor extension data to be created.
+	 * @param {String} userId - User ID of the mentor.
+	 * @returns {Promise<Object>} - Created mentor extension details.
+	 */
+	static async createMentorExtension(data, userId) {
+		try {
+			data.user_id = userId
+			console.log(data)
+			const response = await mentorQueries.createMentorExtension(data)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTOR_EXTENSION_CREATED',
+				result: response,
+			})
+		} catch (error) {
+			if (error instanceof UniqueConstraintError) {
+				return common.failureResponse({
+					message: 'MENTOR_EXTENSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return error
+		}
+	}
+
+	/**
+	 * Update a mentor extension.
+	 * @method
+	 * @name updateMentorExtension
+	 * @param {String} userId - User ID of the mentor.
+	 * @param {Object} data - Updated mentor extension data excluding user_id.
+	 * @returns {Promise<Object>} - Updated mentor extension details.
+	 */
+	static async updateMentorExtension(data, userId) {
+		try {
+			if (data.user_id) {
+				delete data['user_id']
+			}
+			//const mentor = await mentorQueries.updateMentorExtension(userId, data)
+			const mentor = await mentorQueries.updateMentorExtension(userId, data)
+
+			if (mentor == 'MENTOR_EXTENSION_NOT_FOUND') {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTOR_EXTENSION_NOT_FOUND',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTOR_EXTENSION_UPDATED',
+				result: {},
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get mentor extension details by user ID.
+	 * @method
+	 * @name getMentorExtension
+	 * @param {String} userId - User ID of the mentor.
+	 * @returns {Promise<Object>} - Mentor extension details.
+	 */
+	static async getMentorExtension(userId) {
+		try {
+			const mentor = await mentorQueries.getMentorExtension(userId)
+			if (!mentor) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTOR_EXTENSION_NOT_FOUND',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTOR_EXTENSION_FETCHED',
+				result: mentor,
+			})
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
+
+	/**
+	 * Delete a mentor extension by user ID.
+	 * @method
+	 * @name deleteMentorExtension
+	 * @param {String} userId - User ID of the mentor.
+	 * @returns {Promise<Object>} - Indicates if the mentor extension was deleted successfully.
+	 */
+	static async deleteMentorExtension(userId) {
+		try {
+			const mentor = await mentorQueries.deleteMentorExtension(userId)
+			if (!mentor) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTOR_EXTENSION_NOT_FOUND',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MENTOR_EXTENSION_DELETED',
+				result: true,
+			})
+		} catch (error) {
+			return error
 		}
 	}
 }

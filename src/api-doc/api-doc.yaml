@@ -666,14 +666,97 @@ paths:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/entity/createUserEntityRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                value:
+                  type: string
+                label:
+                  type: string
+                status:
+                  type: string
+                type:
+                  type: string
+                entity_type_id:
+                  type: number
+            examples:
+              example1:
+                value:
+                  value: en
+                  label: English
+                  status: ACTIVE
+                  type: SYSTEM
+                  entity_type_id: 1
       responses:
         '201':
           description: Created
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/entity/createUserEntity201Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      entity_type_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updatedAt:
+                        type: string
+                      createdAt:
+                        type: string
+                      deletedAt:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity created successfully
+                    result:
+                      id: 1
+                      value: en
+                      label: English
+                      status: ACTIVE
+                      type: SYSTEM
+                      entity_type_id: 1
+                      created_by: 0
+                      updated_by: 0
+                      updatedAt: '2023-07-21T21:46:41.392Z'
+                      createdAt: '2023-07-21T21:46:41.392Z'
+                      deletedAt: null
+                    meta:
+                      formsVersion: []
+                      correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
+                      meetingPlatform: BBB
         '400':
           description: Bad Request. User Entity already exists.
           content:
@@ -701,30 +784,80 @@ paths:
             type: string
         - in: path
           name: 'id '
-          required: true
           description: Please append a valid user entity ID to the Request URL.
           schema:
-            type: string
-          example: 62832531a05cbd57b273aebb
+            type: number
+          required: true
       requestBody:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/entity/updateUserEntityRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                value:
+                  type: string
+                label:
+                  type: string
+                status:
+                  type: string
+                type:
+                  type: string
+                entity_type_id:
+                  type: number
+            examples:
+              example1:
+                value:
+                  value: english
+                  label: English
+                  status: ACTIVE
+                  type: SYSTEM
+                  entity_type_id: 1
       responses:
         '202':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/entity/updateUserEntity202Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity updated successfully
+                    result: []
+                    meta:
+                      formsVersion: []
+                      correlation: 4b69c161-1d19-4d4c-963c-057feaa2e82e
+                      meetingPlatform: BBB
         '400':
           description: Bad Request. User Entity Not Found
           content:
             application.json:
               schema:
                 $ref: '#/components/schemas/entity/updateUserEntity400Response'
-  /mentoring/v1/entity/read?type={type}&deleted={deleted}&status={Status}:
+  /mentoring/v1/entity/read?entity_type_id={type}&readUserEntity={boolean}:
     get:
       summary: Get user entity details
       tags:
@@ -744,37 +877,89 @@ paths:
           schema:
             type: string
         - in: path
-          name: type
+          name: entity_type_id
+          description: Entity Type ID
+          schema:
+            type: integer
           required: true
-          description: Please append a valid type of role.
-          schema:
-            type: string
-          example: roles
         - in: path
-          name: deleted
-          description: >-
-            Please append a deleted type. For example, for a deleted user, the
-            type could be `true` while for an existing user, the type could be
-            `false`.
+          name: readUserEntity
+          description: To include user created entities
           schema:
-            type: string
-          example: 'false'
-        - in: path
-          name: status
-          description: >-
-            Please append a status of the user. For example, for an active user,
-            specify the value  `ACTIVE` while for a disabled user, specify the
-            value `DISABLED`.
-          schema:
-            type: string
-          example: ACTIVE
+            type: boolean
+          required: true
       responses:
         '200':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/entity/readUserEntity200Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        entity_type_id:
+                          type: number
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        status:
+                          type: string
+                        type:
+                          type: string
+                        created_by:
+                          type: number
+                        updated_by:
+                          type: number
+                        createdAt:
+                          type: string
+                        updatedAt:
+                          type: string
+                        deletedAt:
+                          type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity fetched successfully
+                    result:
+                      - id: 1
+                        entity_type_id: 1
+                        value: english
+                        label: English
+                        status: ACTIVE
+                        type: SYSTEM
+                        created_by: 0
+                        updated_by: 1
+                        createdAt: '2023-07-21T21:46:41.392Z'
+                        updatedAt: '2023-07-21T21:47:50.202Z'
+                        deletedAt: null
+                    meta:
+                      formsVersion: []
+                      correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
+                      meetingPlatform: BBB
   /mentoring/v1/entity/delete/{id}:
     patch:
       summary: Delete user entity
@@ -807,7 +992,38 @@ paths:
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/entity/deleteUserEntity202Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity deleted successfully
+                    result: []
+                    meta:
+                      formsVersion: []
+                      correlation: 2f8b1d3d-0a25-4dda-ae5f-8d8bb9dd9282
+                      meetingPlatform: BBB
         '400':
           description: Bad Request. User Entity has already been deleted.
           content:
@@ -1564,7 +1780,8 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - &ref_2
+          name: X-auth-token
           required: true
           in: header
           description: >-
@@ -1610,6 +1827,7 @@ paths:
             application.json:
               schema:
                 $ref: '#/components/schemas/mentors/upcomingSession400Response'
+    parameters: &ref_3 []
   /mentoring/v1/questions/create:
     post:
       summary: Create questions
@@ -2700,6 +2918,759 @@ paths:
                       correlation: a677494a-b89c-441c-8bdf-70fc91c7136d
                       meetingPlatform: 'OFF'
       summary: Get app config
+  /mentoring/v1/mentors/create:
+    post:
+      summary: Create mentor details
+      tags:
+        - Mentor APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentors/create/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: &ref_4
+        - *ref_2
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: &ref_9
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      designation:
+                        type: string
+                      area_of_expertise:
+                        type: array
+                        items:
+                          type: string
+                      education_qualification:
+                        type: array
+                        items:
+                          type: string
+                      rating:
+                        type: object
+                        properties:
+                          average:
+                            type: number
+                          count:
+                            type: number
+                      user_type:
+                        type: string
+                      meta:
+                        type: object
+                        properties:
+                          age:
+                            type: number
+                          experience:
+                            type: string
+                      stats:
+                        type: object
+                        properties:
+                          sessions_attended:
+                            type: number
+                          students_mentored:
+                            type: number
+                      tags:
+                        type: array
+                        items:
+                          type: string
+                      configs:
+                        type: object
+                        properties:
+                          notification:
+                            type: boolean
+                          visibility:
+                            type: string
+                      visibility:
+                        type: string
+                      organisation_ids:
+                        type: array
+                        items:
+                          type: number
+                      external_session_visibility:
+                        type: string
+                      external_mentor_visibility:
+                        type: string
+                      user_id:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentor extension created successfully.
+                    result:
+                      designation: Lead Mentor
+                      area_of_expertise:
+                        - Technology
+                        - Leadership
+                      education_qualification:
+                        - MBA
+                        - B.Tech
+                      rating:
+                        average: 4.5
+                        count: 20
+                      user_type: mentor
+                      meta:
+                        age: 35
+                        experience: 10 years
+                      stats:
+                        sessions_attended: 50
+                        students_mentored: 30
+                      tags:
+                        - Experienced
+                        - Technical
+                      configs:
+                        notification: true
+                        visibility: public
+                      visibility: visible
+                      organisation_ids:
+                        - 1
+                        - 2
+                      external_session_visibility: limited
+                      external_mentor_visibility: hidden
+                      user_id: 1
+                      updated_at: '2023-08-08T19:04:04.607Z'
+                      created_at: '2023-08-08T19:04:04.607Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: 4bc32289-a646-40c5-8229-adfa3a92faa6
+                      meetingPlatform: BBB
+        '400': &ref_5
+          description: Bad Request. Mentor Not Found
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: e511136d-1383-4f91-aa28-178c96778a68
+                    message: Failed to create mentor extension.
+      requestBody: &ref_10
+        description: ''
+        content:
+          application/json:
+            schema: &ref_6
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                designation:
+                  type: string
+                area_of_expertise:
+                  type: array
+                  items:
+                    type: string
+                education_qualification:
+                  type: array
+                  items:
+                    type: string
+                rating:
+                  type: object
+                  properties:
+                    average:
+                      type: number
+                    count:
+                      type: number
+                user_type:
+                  type: string
+                meta:
+                  type: object
+                  properties:
+                    age:
+                      type: number
+                    experience:
+                      type: string
+                stats:
+                  type: object
+                  properties:
+                    sessions_attended:
+                      type: number
+                    students_mentored:
+                      type: number
+                tags:
+                  type: array
+                  items:
+                    type: string
+                configs:
+                  type: object
+                  properties:
+                    notification:
+                      type: boolean
+                    visibility:
+                      type: string
+                visibility:
+                  type: string
+                organisation_ids:
+                  type: array
+                  items:
+                    type: number
+                external_session_visibility:
+                  type: string
+                external_mentor_visibility:
+                  type: string
+            examples:
+              example1:
+                value:
+                  designation: Lead Mentor
+                  area_of_expertise:
+                    - Technology
+                    - Leadership
+                  education_qualification:
+                    - MBA
+                    - B.Tech
+                  rating:
+                    average: 4.5
+                    count: 20
+                  user_type: mentor
+                  meta:
+                    age: 35
+                    experience: 10 years
+                  stats:
+                    sessions_attended: 50
+                    students_mentored: 30
+                  tags:
+                    - Experienced
+                    - Technical
+                  configs:
+                    notification: true
+                    visibility: public
+                  visibility: visible
+                  organisation_ids:
+                    - 1
+                    - 2
+                  external_session_visibility: limited
+                  external_mentor_visibility: hidden
+    parameters: *ref_3
+  /mentoring/v1/mentors/update:
+    post:
+      summary: Update mentor details
+      tags:
+        - Mentor APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentors/update/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: &ref_11
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentor extension updated successfully.
+                    result: {}
+                    meta:
+                      formsVersion: []
+                      correlation: 24f12521-c6a9-484b-a69e-f26ec900383f
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: &ref_12
+        description: ''
+        content:
+          application/json:
+            schema: *ref_6
+            examples:
+              example1:
+                value:
+                  designation: Lead Mentor
+                  area_of_expertise:
+                    - Technology
+                    - Leadership
+                  education_qualification:
+                    - MBA
+                    - B.Tech
+                  rating:
+                    average: 5
+                    count: 20
+                  user_type: mentor
+                  meta:
+                    age: 35
+                    experience: 10 years
+                  stats:
+                    sessions_attended: 50
+                    students_mentored: 30
+                  tags:
+                    - Experienced
+                    - Technical
+                  configs:
+                    notification: true
+                    visibility: public
+                  visibility: visible
+                  organisation_ids:
+                    - 1
+                    - 2
+                  external_session_visibility: limited
+                  external_mentor_visibility: hidden
+    parameters: *ref_3
+  /mentoring/v1/mentors/getMentorExtension/:
+    get:
+      summary: Read mentor details
+      tags:
+        - Mentor APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentors/getMentorExtension/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: &ref_13
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      user_id:
+                        type: number
+                      designation:
+                        type: string
+                      area_of_expertise:
+                        type: array
+                        items:
+                          type: string
+                      education_qualification:
+                        type: array
+                        items:
+                          type: string
+                      rating:
+                        type: object
+                        properties:
+                          average:
+                            type: number
+                          count:
+                            type: number
+                      user_type:
+                        type: string
+                      meta:
+                        type: object
+                        properties:
+                          age:
+                            type: number
+                          experience:
+                            type: string
+                      stats:
+                        type: object
+                        properties:
+                          sessions_attended:
+                            type: number
+                          students_mentored:
+                            type: number
+                      tags:
+                        type: array
+                        items:
+                          type: string
+                      configs:
+                        type: object
+                        properties:
+                          notification:
+                            type: boolean
+                          visibility:
+                            type: string
+                      visibility:
+                        type: string
+                      organisation_ids:
+                        type: array
+                        items:
+                          type: number
+                      external_session_visibility:
+                        type: string
+                      external_mentor_visibility:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentor extension fetched successfully.
+                    result:
+                      user_id: 1
+                      designation: Lead Mentor
+                      area_of_expertise:
+                        - Technology
+                        - Leadership
+                      education_qualification:
+                        - MBA
+                        - B.Tech
+                      rating:
+                        average: 5
+                        count: 20
+                      user_type: mentor
+                      meta:
+                        age: 35
+                        experience: 10 years
+                      stats:
+                        sessions_attended: 50
+                        students_mentored: 30
+                      tags:
+                        - Experienced
+                        - Technical
+                      configs:
+                        notification: true
+                        visibility: public
+                      visibility: visible
+                      organisation_ids:
+                        - 1
+                        - 2
+                      external_session_visibility: limited
+                      external_mentor_visibility: hidden
+                      created_at: '2023-08-08T19:04:04.607Z'
+                      updated_at: '2023-08-08T19:06:13.237Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: 1bac1a53-e9df-4321-804d-04c69ffb3d0e
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: &ref_7
+        description: ''
+        content: {}
+    parameters: &ref_8
+      - in: path
+        name: id
+        description: user ID
+        schema:
+          type: number
+        required: true
+  /mentoring/v1/mentors/deleteMentorExtension:
+    delete:
+      summary: Delete mentor details
+      tags:
+        - Mentor APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentors/deleteMentorExtension/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: &ref_14
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: boolean
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentor extension deleted successfully.
+                    result: true
+                    meta:
+                      formsVersion: []
+                      correlation: 356f215d-1316-4a54-bbfb-024ce4c605ca
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: *ref_7
+    parameters: *ref_8
+  /mentoring/v1/mentees/create:
+    post:
+      summary: Create Mentee details
+      tags:
+        - Mentee APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentees/create/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: *ref_9
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentee extension created successfully.
+                    result:
+                      designation: Lead Mentor
+                      area_of_expertise:
+                        - Technology
+                        - Leadership
+                      education_qualification:
+                        - MBA
+                        - B.Tech
+                      rating:
+                        average: 4.5
+                        count: 20
+                      user_type: mentor
+                      meta:
+                        age: 35
+                        experience: 10 years
+                      stats:
+                        sessions_attended: 50
+                        students_mentored: 30
+                      tags:
+                        - Experienced
+                        - Technical
+                      configs:
+                        notification: true
+                        visibility: public
+                      visibility: visible
+                      organisation_ids:
+                        - 1
+                        - 2
+                      external_session_visibility: limited
+                      external_mentor_visibility: hidden
+                      user_id: 1
+                      updated_at: '2023-08-08T19:04:04.607Z'
+                      created_at: '2023-08-08T19:04:04.607Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: 4bc32289-a646-40c5-8229-adfa3a92faa6
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: *ref_10
+    parameters: *ref_3
+  /mentoring/v1/mentees/update:
+    post:
+      summary: Update Mentee details
+      tags:
+        - Mentee APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentees/update/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: *ref_11
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentee extension updated successfully.
+                    result: {}
+                    meta:
+                      formsVersion: []
+                      correlation: 24f12521-c6a9-484b-a69e-f26ec900383f
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: *ref_12
+    parameters: *ref_3
+  /mentoring/v1/mentees/getMentorExtension/:
+    get:
+      summary: Read mentee details
+      tags:
+        - Mentee APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentees/getMentorExtension/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: *ref_13
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentee extension fetched successfully.
+                    result:
+                      user_id: 1
+                      designation: Lead Mentor
+                      area_of_expertise:
+                        - Technology
+                        - Leadership
+                      education_qualification:
+                        - MBA
+                        - B.Tech
+                      rating:
+                        average: 5
+                        count: 20
+                      user_type: mentor
+                      meta:
+                        age: 35
+                        experience: 10 years
+                      stats:
+                        sessions_attended: 50
+                        students_mentored: 30
+                      tags:
+                        - Experienced
+                        - Technical
+                      configs:
+                        notification: true
+                        visibility: public
+                      visibility: visible
+                      organisation_ids:
+                        - 1
+                        - 2
+                      external_session_visibility: limited
+                      external_mentor_visibility: hidden
+                      created_at: '2023-08-08T19:04:04.607Z'
+                      updated_at: '2023-08-08T19:06:13.237Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: 1bac1a53-e9df-4321-804d-04c69ffb3d0e
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: *ref_7
+    parameters: *ref_8
+  /mentoring/v1/mentees/deleteMentorExtension/:
+    delete:
+      summary: Delete mentee
+      tags:
+        - Mentee APIs
+      description: >-
+        This API is associated with the listing of upcoming sessions of one
+        mentor 
+         - Endpoint for listing session `/mentoring/v1/mentees/deleteMentorExtension/` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_4
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema: *ref_14
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Mentee extension deleted successfully.
+                    result: true
+                    meta:
+                      formsVersion: []
+                      correlation: 356f215d-1316-4a54-bbfb-024ce4c605ca
+                      meetingPlatform: BBB
+        '400': *ref_5
+      requestBody: *ref_7
+    parameters: *ref_8
 components:
   schemas:
     form:
@@ -5158,6 +6129,16 @@ components:
 tags:
   - name: Config APIs
     description: You can use this API to get config related to the service
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Mentee APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Mentor APIs
+    description: ''
     externalDocs:
       description: ''
       url: ''

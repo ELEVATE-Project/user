@@ -117,4 +117,71 @@ module.exports = class Mentees {
 			return error
 		}
 	}
+
+	// new apis
+	/**
+	 * Create a new mentee extension.
+	 * @method
+	 * @name createMenteeExtension
+	 * @param {Object} req - Request data.
+	 * @param {Object} req.body - Mentee extension data excluding user_id.
+	 * @returns {Promise<Object>} - Created mentee extension details.
+	 */
+	async create(req) {
+		try {
+			return await menteesHelper.createMenteeExtension(req.body, '1' || req.decodedToken._id)
+		} catch (error) {
+			console.error(error)
+			return error
+		}
+	}
+
+	/**
+	 * Update a mentee extension.
+	 * @method
+	 * @name updateMenteeExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken._id - User ID of the mentee.
+	 * @param {Object} req.body - Updated mentee extension data excluding user_id.
+	 * @returns {Promise<Object>} - Updated mentee extension details.
+	 */
+	async update(req) {
+		try {
+			return await menteesHelper.updateMenteeExtension(req.body, '1', req.decodedToken._id)
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get mentee extension by user ID.
+	 * @method
+	 * @name getMenteeExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.params.id - User ID of the mentee.
+	 * @returns {Promise<Object>} - Mentee extension details.
+	 */
+	async getMenteeExtension(req) {
+		try {
+			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken._id) // params since read will be public for mentees
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Delete a mentee extension by user ID.
+	 * @method
+	 * @name deleteMenteeExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken._id - User ID of the mentee.
+	 * @returns {Promise<Boolean>} - True if deleted successfully, otherwise false.
+	 */
+	async deleteMenteeExtension(req) {
+		try {
+			return await menteesHelper.deleteMenteeExtension('1', req.decodedToken._id)
+		} catch (error) {
+			return error
+		}
+	}
 }
