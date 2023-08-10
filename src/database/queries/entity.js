@@ -18,10 +18,11 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async updateOneEntity(id, update, options = {}) {
+	static async updateOneEntity(id, update, userId, options = {}) {
 		try {
 			const filter = {
 				id: id,
+				created_by: userId,
 			}
 			const [rowsAffected] = await Entity.update(update, {
 				where: filter,

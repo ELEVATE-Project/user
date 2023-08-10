@@ -17,8 +17,8 @@ module.exports = class EntityHelper {
 	 */
 
 	static async create(bodyData, id) {
-		bodyData.created_by = '0' || id
-		bodyData.updated_by = '0' || id
+		bodyData.created_by = id
+		bodyData.updated_by = id
 		try {
 			const entity = await entityTypeQueries.createEntity(bodyData)
 			return common.successResponse({
@@ -56,9 +56,9 @@ module.exports = class EntityHelper {
 	 */
 
 	static async update(bodyData, id, loggedInUserId) {
-		bodyData.updated_by = 1 || loggedInUserId
+		bodyData.updated_by = loggedInUserId
 		try {
-			const result = await entityTypeQueries.updateOneEntity(id, bodyData)
+			const result = await entityTypeQueries.updateOneEntity(id, bodyData, loggedInUserId)
 
 			if (result === 'ENTITY_NOT_FOUND') {
 				return common.failureResponse({
@@ -137,7 +137,7 @@ module.exports = class EntityHelper {
 	static async readAll(query, userId) {
 		try {
 			let filter
-			if (query.read_user_entity) {
+			if (query.read_user_entity == true) {
 				filter = {
 					[Op.or]: [
 						{

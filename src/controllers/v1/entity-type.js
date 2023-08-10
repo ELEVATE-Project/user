@@ -19,7 +19,7 @@ module.exports = class Entity {
 
 	async create(req) {
 		try {
-			return await entityHelper.create(req.body, req.decodedToken._id)
+			return await entityHelper.create(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -35,7 +35,7 @@ module.exports = class Entity {
 
 	async update(req) {
 		try {
-			return await entityHelper.update(req.body, req.params.id, req.decodedToken._id)
+			return await entityHelper.update(req.body, req.params.id, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -52,7 +52,7 @@ module.exports = class Entity {
 	async read(req) {
 		try {
 			if (req.body.read_user_entity) {
-				return await entityHelper.readUserEntityTypes(req.body, req.decodedToken._id)
+				return await entityHelper.readUserEntityTypes(req.body, req.decodedToken.id)
 			}
 			return await entityHelper.readAllSystemEntityTypes()
 		} catch (error) {

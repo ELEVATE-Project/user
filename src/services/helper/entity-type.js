@@ -15,8 +15,8 @@ module.exports = class EntityHelper {
 	 */
 
 	static async create(bodyData, id) {
-		bodyData.created_by = '0' || id
-		bodyData.updated_by = '0' || id
+		bodyData.created_by = id
+		bodyData.updated_by = id
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return common.successResponse({
@@ -47,7 +47,7 @@ module.exports = class EntityHelper {
 	 */
 
 	static async update(bodyData, id, loggedInUserId) {
-		bodyData.updated_by = 1 || loggedInUserId
+		bodyData.updated_by = loggedInUserId
 		try {
 			const result = await entityTypeQueries.updateOneEntityType(id, bodyData)
 
@@ -98,8 +98,6 @@ module.exports = class EntityHelper {
 
 	static async readUserEntityTypes(body, userId) {
 		try {
-			userId = 1
-
 			const filter = {
 				value: body.value,
 				created_by: 0,
