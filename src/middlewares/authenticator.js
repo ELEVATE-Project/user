@@ -83,33 +83,34 @@ module.exports = async function (req, res, next) {
 			req.decodedToken = decodedToken.data
 			return next()
 		}
+		// if (roleValidation) {
+		// 	/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
+		// 	const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+		// 	const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
 
-		if (roleValidation) {
-			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
+		// 	const user = await requests.get(profileUrl, null, true)
 
-			const user = await requests.get(profileUrl, null, true)
+		// 	if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
+		// 		throw common.failureResponse({
+		// 			message: 'USER_ROLE_UPDATED',
+		// 			statusCode: httpStatusCode.unauthorized,
+		// 			responseCode: 'UNAUTHORIZED',
+		// 		})
+		// 	}
+		// 	if (user.data.result.deleted) {
+		// 		throw common.failureResponse({
+		// 			message: 'USER_NOT_FOUND',
+		// 			statusCode: httpStatusCode.unauthorized,
+		// 			responseCode: 'UNAUTHORIZED',
+		// 		})
+		// 	}
+		// }
 
-			if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
-				throw common.failureResponse({
-					message: 'USER_ROLE_UPDATED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
-			if (user.data.result.deleted) {
-				throw common.failureResponse({
-					message: 'USER_NOT_FOUND',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
-		}
 		req.decodedToken = {
-			_id: decodedToken.data._id,
+			id: decodedToken.data.id,
 			email: decodedToken.data.email,
-			isAMentor: decodedToken.data.isAMentor,
+			//isAMentor: decodedToken.data.isAMentor,
+			isAMentor: decodedToken.data.roles.some((role) => role.title === 'mentor'),
 			name: decodedToken.data.name,
 			token: authHeader,
 		}

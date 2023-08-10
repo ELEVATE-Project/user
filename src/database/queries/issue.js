@@ -5,7 +5,6 @@ module.exports = class issueData {
 		try {
 			return await Issue.create(data, { returning: true })
 		} catch (error) {
-			console.error(error)
 			throw error
 		}
 	}
