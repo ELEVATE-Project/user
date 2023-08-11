@@ -1,13 +1,12 @@
-
-
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		let orgData = []
 		const defaultOrg = {
 			name: 'Shikshalokam',
-			code: 'SL',
-			description: 'mentorEd',
-			status: 'active',
+			code: 'sl',
+			description:
+				'Founded in 2017, ShikshaLokam is an Education Leadership Catalyst under the aegis of Advaith Foundation.',
+			status: 'ACTIVE',
 			updated_at: new Date(),
 			created_at: new Date(),
 		}

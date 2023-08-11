@@ -6,14 +6,14 @@
  */
 
 // Dependencies
-const usersData = require('@db/users/queries')
+
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user_roles')
-const organizationQueries = require('@database/queries/organizations')
+const roleQueries = require('@database/queries/userRole')
+const organizationQueries = require('@database/queries/organization')
 
 module.exports = class AdminHelper {
 	/**
@@ -39,7 +39,7 @@ module.exports = class AdminHelper {
 			const update = _.merge(removeKeys, updateParams)
 
 			await userQueries.updateUser({ id: userId }, update)
-			await utils.redisDel(userId.toString())
+			await utils.redisDel(common.redisUserPrefix + userId.toString())
 
 			//code for remove user folder from cloud
 
@@ -87,7 +87,10 @@ module.exports = class AdminHelper {
 			bodyData.roles = roles
 
 			if (!bodyData.organization_id) {
-				let organization = await organizationQueries.findOne({}, { limit: 1 })
+				let organization = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
+				)
 				bodyData.organization_id = organization.id
 			}
 
@@ -185,7 +188,7 @@ function _removeUserKeys() {
 		'preferred_language',
 		'location',
 		'languages',
-		'refresh_token',
+		'refresh_tokens',
 		'image',
 	]
 	return removedFields
@@ -196,7 +199,7 @@ function _generateUpdateParams(userId) {
 		deleted_at: new Date(),
 		name: 'Anonymous User',
 		email: utils.md5Hash(userId) + '@' + 'deletedUser',
-		refresh_token: [],
+		refresh_tokens: [],
 		preferred_language: 'en',
 		location: [],
 		languages: [],

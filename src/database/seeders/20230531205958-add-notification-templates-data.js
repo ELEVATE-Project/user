@@ -5,8 +5,8 @@ module.exports = {
 		const emailTemplates = [
 			{
 				code: 'registration',
-				subject: 'MentorED - Registration Successful!', 
-				body: '<p>Dear {name},</p> Welcome to {appName}. You have taken your first step towards connecting, learning, and solving with members of your community and we are excited to have you here!'
+				subject: 'MentorED - Registration Successful!',
+				body: '<p>Dear {name},</p> Welcome to {appName}. You have taken your first step towards connecting, learning, and solving with members of your community and we are excited to have you here!',
 			},
 			{
 				code: 'emailotp',
@@ -35,12 +35,10 @@ module.exports = {
 
 		let notificationTemplateData = []
 		emailTemplates.forEach(async function (emailTemplate) {
-			emailTemplate['status'] = 'active'
+			emailTemplate['status'] = 'ACTIVE'
 			emailTemplate['type'] = 'email'
 			emailTemplate['updated_at'] = moment().format()
 			emailTemplate['created_at'] = moment().format()
-			emailTemplate['created_by'] = 'SYSTEM'
-			emailTemplate['updated_by'] = 'SYSTEM'
 			if (emailTemplate.code == 'email_footer') {
 				emailTemplate['type'] = 'emailFooter'
 			} else if (emailTemplate.code == 'email_header') {

@@ -1,19 +1,19 @@
 'use strict'
-const database = require('../models/index')
-const { Op } = require('sequelize')
+const Form = require('../models/index').Form
 
 exports.create = async (data) => {
 	try {
-		return await database.Form.create(data)
+		return await Form.create(data)
 	} catch (error) {
 		return error
 	}
 }
 
-exports.findOne = async (filter) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
-		return await database.Form.findOne({
+		return await Form.findOne({
 			where: filter,
+			...options,
 			raw: true,
 		})
 	} catch (error) {
@@ -23,7 +23,7 @@ exports.findOne = async (filter) => {
 
 exports.updateOneForm = async (filter, update, options = {}) => {
 	try {
-		const [res] = await database.Form.update(update, {
+		const [res] = await Form.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -37,7 +37,7 @@ exports.updateOneForm = async (filter, update, options = {}) => {
 
 exports.findAllTypeFormVersion = async () => {
 	try {
-		const formData = await database.Form.findAll({
+		const formData = await Form.findAll({
 			attributes: ['id', 'type', 'version'],
 			raw: true,
 		})

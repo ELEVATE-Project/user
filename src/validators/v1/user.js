@@ -34,11 +34,11 @@ module.exports = {
 				.isBoolean()
 				.withMessage('has_accepted_terms_and_conditions field is invalid')
 
+			req.checkBody('languages').optional().isArray().withMessage('languages is invalid')
+
 			req.checkBody('image').optional().isString().withMessage('image field must be string only')
 		}
 	},
-
-	read: (req) => {},
 
 	share: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')

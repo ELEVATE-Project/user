@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user_roles')
+const roleQueries = require('@database/queries/userRole')
 
 module.exports = async function (req, res, next) {
 	try {

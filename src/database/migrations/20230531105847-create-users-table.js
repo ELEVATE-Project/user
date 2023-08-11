@@ -30,7 +30,7 @@ module.exports = {
 			status: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				defaultValue: 'active',
+				defaultValue: 'ACTIVE',
 			},
 			password: {
 				type: Sequelize.STRING,
@@ -38,9 +38,11 @@ module.exports = {
 			},
 			organization_id: {
 				type: Sequelize.INTEGER,
+				allowNull: false,
 			},
 			has_accepted_terms_and_conditions: {
 				type: Sequelize.BOOLEAN,
+				allowNull: false,
 				defaultValue: false,
 			},
 			gender: {
@@ -50,7 +52,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			location: {
-				type: Sequelize.ARRAY(Sequelize.JSONB),
+				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
@@ -65,7 +67,7 @@ module.exports = {
 			last_logged_in_at: {
 				type: Sequelize.DATE,
 			},
-			refresh_token: {
+			refresh_tokens: {
 				type: Sequelize.ARRAY(Sequelize.JSONB),
 			},
 			image: {

@@ -13,12 +13,11 @@ const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
 
 const common = require('@constants/common')
-const usersData = require('@db/users/queries')
 const userQueries = require('@database/queries/users')
-const organizationQueries = require('@database/queries/organizations')
-const notificationTemplateData = require('@db/notification-template/query')
+const organizationQueries = require('@database/queries/organization')
+const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const roleQueries = require('@database/queries/user_roles')
+const roleQueries = require('@database/queries/userRole')
 const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
@@ -36,7 +35,7 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
-		const projection = ['password', 'refresh_token', 'location', 'otpInfo']
+		const projection = ['password', 'refresh_tokens', 'location', 'otpInfo']
 
 		try {
 			const email = bodyData.email.toLowerCase()
@@ -63,7 +62,10 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
 			if (!bodyData.organization_id) {
-				let organization = await organizationQueries.findOne({}, { limit: 1 })
+				let organization = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
+				)
 				bodyData.organization_id = organization.id
 			}
 
@@ -137,7 +139,7 @@ module.exports = class AccountHelper {
 			})
 
 			const update = {
-				refresh_token: refresh_token,
+				refresh_tokens: refresh_token,
 				last_logged_in_at: new Date().getTime(),
 			}
 
@@ -145,7 +147,7 @@ module.exports = class AccountHelper {
 			await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
 			)
 
@@ -250,7 +252,7 @@ module.exports = class AccountHelper {
 				userId: user.id,
 			}
 
-			let userTokens = user.refresh_token ? user.refresh_token : []
+			let userTokens = user.refresh_tokens ? user.refresh_tokens : []
 			let noOfTokensToKeep = common.refreshTokenLimit - 1
 			let refreshTokens = []
 
@@ -263,14 +265,14 @@ module.exports = class AccountHelper {
 			refreshTokens.push(currentToken)
 
 			const updateParams = {
-				refresh_token: refreshTokens,
+				refresh_tokens: refreshTokens,
 				last_logged_in_at: new Date().getTime(),
 			}
 
 			await userQueries.updateUser({ id: user.id }, updateParams)
 
 			delete user.password
-			delete user.refresh_token
+			delete user.refresh_tokens
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -290,7 +292,7 @@ module.exports = class AccountHelper {
 	 * @name logout
 	 * @param {Object} req -request data.
 	 * @param {string} bodyData.loggedInId - user id.
-	 * @param {string} bodyData.refreshToken - refresh token.
+	 * @param {string} bodyData.refresh_token - refresh token.
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
@@ -305,14 +307,13 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			let refreshTokens = user.refresh_token ? user.refresh_token : []
+			let refreshTokens = user.refresh_tokens ? user.refresh_tokens : []
 			refreshTokens = refreshTokens.filter(function (tokenData) {
-				return tokenData.token !== bodyData.refreshToken
+				return tokenData.token !== bodyData.refresh_token
 			})
 
 			/* Destroy refresh token for user */
-			const res = await userQueries.updateUser({ id: user.id }, { refresh_token: refreshTokens })
-
+			const res = await userQueries.updateUser({ id: user.id }, { refresh_tokens: refreshTokens })
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
 			if (!res) {
 				return common.failureResponse({
@@ -336,14 +337,14 @@ module.exports = class AccountHelper {
 	 * @method
 	 * @name generateToken
 	 * @param {Object} bodyData -request data.
-	 * @param {string} bodyData.refreshToken - refresh token.
+	 * @param {string} bodyData.refresh_token - refresh token.
 	 * @returns {JSON} - returns access token info
 	 */
 
 	static async generateToken(bodyData) {
 		let decodedToken
 		try {
-			decodedToken = jwt.verify(bodyData.refreshToken, process.env.REFRESH_TOKEN_SECRET)
+			decodedToken = jwt.verify(bodyData.refresh_token, process.env.REFRESH_TOKEN_SECRET)
 		} catch (error) {
 			/* If refresh token is expired */
 			error.statusCode = httpStatusCode.unauthorized
@@ -363,8 +364,8 @@ module.exports = class AccountHelper {
 		}
 
 		/* Check valid refresh token stored in db */
-		if (user.refresh_token.length) {
-			const token = user.refresh_token.find((tokenData) => tokenData.token === bodyData.refreshToken)
+		if (user.refresh_tokens.length) {
+			const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
 			if (!token) {
 				return common.failureResponse({
 					message: 'REFRESH_TOKEN_NOT_FOUND',
@@ -455,7 +456,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.OTP_EMAIL_TEMPLATE_CODE
 			)
 
@@ -533,7 +534,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
 			)
 
@@ -642,7 +643,7 @@ module.exports = class AccountHelper {
 				userId: user.id,
 			}
 
-			let userTokens = user.refresh_token ? user.refresh_token : []
+			let userTokens = user.refresh_tokens ? user.refresh_tokens : []
 			let noOfTokensToKeep = common.refreshTokenLimit - 1
 			let refreshTokens = []
 
@@ -654,7 +655,7 @@ module.exports = class AccountHelper {
 
 			refreshTokens.push(currentToken)
 			const updateParams = {
-				refresh_token: refreshTokens,
+				refresh_tokens: refreshTokens,
 				lastLoggedInAt: new Date().getTime(),
 				password: bodyData.password,
 			}
@@ -773,7 +774,7 @@ module.exports = class AccountHelper {
 
 				let options = {
 					attributes: {
-						exclude: ['password', 'refresh_token'],
+						exclude: ['password', 'refresh_tokens'],
 					},
 				}
 
@@ -898,7 +899,7 @@ module.exports = class AccountHelper {
 			}
 
 			await userQueries.updateUser({ id: userId }, { has_accepted_terms_and_conditions: true })
-			await utilsHelper.redisDel(userId.toString())
+			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

@@ -10,7 +10,10 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
 const utils = require('@generics/utils')
-const roleQueries = require('@database/queries/user_roles')
+const roleQueries = require('@database/queries/userRole')
+const entitiesQueries = require('@database/queries/entities')
+const entityTypeQueries = require('@database/queries/entityType')
+const _ = require('lodash')
 
 module.exports = class UserHelper {
 	/**
@@ -32,6 +35,58 @@ module.exports = class UserHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			if (bodyData.hasOwnProperty(common.location) || bodyData.hasOwnProperty(common.languages)) {
+				let values = []
+				if (bodyData.hasOwnProperty(common.location)) values.push(common.location)
+				if (bodyData.hasOwnProperty(common.languages)) values.push(common.languages)
+				if (values.length > 0) {
+					const entityTypes = await entityTypeQueries.findAll(
+						{ value: values },
+						{ attributes: ['id', 'value'] }
+					)
+
+					if (!entityTypes) {
+						return common.failureResponse({
+							message: bodyData.hasOwnProperty(common.location)
+								? 'LOCATION_UPDATE_FAILED'
+								: 'LANGUAGE_UPDATE_FAILED',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					for (
+						let pointerToEntityTypes = 0;
+						pointerToEntityTypes < entityTypes.length;
+						pointerToEntityTypes++
+					) {
+						let entityType = entityTypes[pointerToEntityTypes]
+						let entities = await entitiesQueries.findAll(
+							{
+								value: bodyData[entityType.value],
+								entity_type_id: entityType.id,
+							},
+							{ attributes: ['value'] }
+						)
+
+						if (entities.length != bodyData[entityType.value].length) {
+							return common.failureResponse({
+								message:
+									entityType.value == common.location
+										? 'LOCATION_UPDATE_FAILED'
+										: 'LANGUAGE_UPDATE_FAILED',
+								statusCode: httpStatusCode.bad_request,
+								responseCode: 'CLIENT_ERROR',
+							})
+						}
+						bodyData[entityType.value] = _.map(entities, function (entity) {
+							return entity.value
+						})
+					}
+				}
+			}
+
 			let update = await userQueries.updateUser({ id: id }, bodyData)
 			if (!update) {
 				return common.failureResponse({
@@ -41,8 +96,9 @@ module.exports = class UserHelper {
 				})
 			}
 
-			if (await utils.redisGet(id.toString())) {
-				await utils.redisDel(id.toString())
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			if (await utils.redisGet(redisUserKey)) {
+				await utils.redisDel(redisUserKey)
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -61,8 +117,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - user information
 	 */
-	static async read(id) {
-		const projection = ['password', 'location', 'refresh_token']
+	static async read(id, internal_access_token = null) {
 		try {
 			let filter = {}
 
@@ -72,13 +127,26 @@ module.exports = class UserHelper {
 				filter = { share_link: id }
 			}
 
-			const userDetails = (await utils.redisGet(id.toString())) || false
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			const userDetails = (await utils.redisGet(redisUserKey)) || false
 			if (!userDetails) {
-				const user = await userQueries.findOne(filter, {
+				let options = {
 					attributes: {
-						exclude: projection,
+						exclude: ['password', 'location', 'refresh_tokens'],
 					},
-				})
+				}
+				if (internal_access_token) {
+					options.paranoid = false
+				}
+				const user = await userQueries.findOne(filter, options)
+
+				if (!user) {
+					return common.failureResponse({
+						message: 'USER_NOT_FOUND',
+						statusCode: httpStatusCode.unauthorized,
+						responseCode: 'UNAUTHORIZED',
+					})
+				}
 
 				if (user && user.image) {
 					user.image = await utils.getDownloadableUrl(user.image)
@@ -109,7 +177,7 @@ module.exports = class UserHelper {
 				}
 
 				if (isAMentor) {
-					await utils.redisSet(id.toString(), user)
+					await utils.redisSet(redisUserKey, user)
 				}
 
 				return common.successResponse({

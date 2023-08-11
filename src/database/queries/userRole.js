@@ -1,10 +1,10 @@
 'use strict'
-const database = require('@database/models/index')
+const UserRole = require('@database/models/index').UserRole
 
 const { Op } = require('sequelize')
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await database.UserRole.findOne({
+		return await UserRole.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -16,7 +16,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await database.UserRole.findByPk(id)
+		return await UserRole.findByPk(id)
 	} catch (error) {
 		return error
 	}
@@ -24,7 +24,7 @@ exports.findByPk = async (id) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		return await database.UserRole.findAll({
+		return await UserRole.findAll({
 			where: filter,
 			...options,
 			raw: true,

@@ -1,6 +1,6 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const formQueries = require('@database/queries/forms')
+const formQueries = require('@database/queries/form')
 const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const form = require('@generics/form')

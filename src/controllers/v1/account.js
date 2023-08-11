@@ -18,7 +18,6 @@ module.exports = class Account {
 	 * @name create
 	 * @param {Object} req -request data.
 	 * @param {Object} req.body -request body contains user creation deatils.
-	 * @param {String} req.body.secretCode - secrate code to create mentor.
 	 * @param {String} req.body.name - name of the user.
 	 * @param {Boolean} req.body.role - mentor or mentee .
 	 * @param {String} req.body.email - user email.
@@ -64,8 +63,8 @@ module.exports = class Account {
 	 * @param {Object} req -request data.
 	 * @param {Object} req.decodedToken - it contains user token informations.
 	 * @param {string} req.body.loggedInId - user id.
-	 * @param {string} req.body.refreshToken - refresh token.
-	 * @param {String} req.decodedToken._id - userId.
+	 * @param {string} req.body.refresh_token - refresh token.
+	 * @param {String} req.decodedToken.id - userId.
 	 * @returns {JSON} - accounts loggedout.
 	 */
 
@@ -85,7 +84,7 @@ module.exports = class Account {
 	 * @method
 	 * @name generateToken
 	 * @param {Object} req -request data.
-	 * @param {string} req.body.refreshToken - refresh token.
+	 * @param {string} req.body.refresh_token - refresh token.
 	 * @returns {JSON} - access token info
 	 */
 
@@ -157,45 +156,11 @@ module.exports = class Account {
 	}
 
 	/**
-	 * Verify the mentor or not
-	 * @method
-	 * @name verifyMentor
-	 * @param {Object} req -request data.
-	 * @param {Object} req.query.userId -userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	async verifyMentor(req) {
-		try {
-			const result = await accountHelper.verifyMentor(req.query.userId)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Verify user is mentor or not
-	 * @method
-	 * @name verifyUser
-	 * @param {Object} req -request data.
-	 * @param {Object} req.query.userId -userId.
-	 * @returns {JSON} - verifies user is mentor or not
-	 */
-	async verifyUser(req) {
-		try {
-			const result = await accountHelper.verifyUser(req.query.userId)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
 	 * Accept term and condition
 	 * @method
 	 * @name acceptTermsAndCondition
 	 * @param {Object} req -request data.
-	 * @param {Object} req.decodedToken._id - userId.
+	 * @param {Object} req.decodedToken.id - userId.
 	 * @returns {JSON} - accept the term and condition
 	 */
 	async acceptTermsAndCondition(req) {

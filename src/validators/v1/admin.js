@@ -11,7 +11,7 @@ module.exports = {
 	},
 
 	create: (req) => {
-		req.checkBody('secretCode').trim().notEmpty().withMessage('secretCode field is empty')
+		req.checkBody('secret_code').trim().notEmpty().withMessage('secret_code field is empty')
 		req.checkBody('name')
 			.trim()
 			.notEmpty()
