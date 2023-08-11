@@ -176,6 +176,10 @@ let enviromentVariables = {
 		message: 'Required disable log level',
 		optional: false,
 	},
+	ADMIN_SECRET_CODE: {
+		message: 'Required Admin secret code',
+		optional: false,
+	},
 }
 
 let success = true
