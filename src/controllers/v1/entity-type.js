@@ -1,10 +1,3 @@
-/**
- * name : entity.js
- * author : Aman Gupta
- * created-date : 04-Nov-2021
- * Description : Entity Controller.
- */
-
 // Dependencies
 const entityHelper = require('@services/helper/entity-type')
 
