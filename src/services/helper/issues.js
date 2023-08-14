@@ -1,6 +1,5 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const ObjectId = require('mongoose').Types.ObjectId
 
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
@@ -20,11 +19,10 @@ module.exports = class issuesHelper {
 	static async create(bodyData, decodedToken) {
 		try {
 			const name = decodedToken.name
-			const role = decodedToken.isAMentor ? 'Mentor' : 'Mentee'
+			const role = decodedToken.roles.some((role) => role.title === 'mentor') ? 'Mentor' : 'Mentee'
 			const userEmailId = decodedToken.email
 			const email = process.env.SUPPORT_EMAIL_ID
-
-			bodyData.user_id = decodedToken.id //Getting user id from tokenDetail.
+			bodyData.user_id = decodedToken.id
 
 			if (process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true') {
 				const templateData = await notificationTemplateData.findOneEmailTemplate(
