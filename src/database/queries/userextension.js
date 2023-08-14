@@ -9,23 +9,17 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async updateMenteeExtension(userId, data) {
+	static async updateMenteeExtension(userId, data, options = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const filter = {
-				user_id: userId,
-			}
-			const [rowsAffected] = await MenteeExtension.update(data, {
-				where: filter,
+			return await MenteeExtension.update(data, {
+				where: {
+					user_id: userId,
+				},
+				...options,
 			})
-
-			if (rowsAffected > 0) {
-				return 'MENTEE_EXTENSION_UPDATED'
-			} else {
-				return 'MENTEE_EXTENSION_NOT_FOUND'
-			}
 		} catch (error) {
 			throw error
 		}
@@ -42,11 +36,9 @@ module.exports = class MenteeExtensionQueries {
 
 	static async deleteMenteeExtension(userId) {
 		try {
-			const rowsAffected = await MenteeExtension.destroy({
+			return await MenteeExtension.destroy({
 				where: { user_id: userId },
 			})
-
-			return rowsAffected > 0 ? true : false
 		} catch (error) {
 			throw error
 		}

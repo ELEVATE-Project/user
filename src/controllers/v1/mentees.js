@@ -129,7 +129,7 @@ module.exports = class Mentees {
 	 */
 	async create(req) {
 		try {
-			return await menteesHelper.createMenteeExtension(req.body, '1' || req.decodedToken._id)
+			return await menteesHelper.createMenteeExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			console.error(error)
 			return error
@@ -147,7 +147,7 @@ module.exports = class Mentees {
 	 */
 	async update(req) {
 		try {
-			return await menteesHelper.updateMenteeExtension(req.body, '1', req.decodedToken._id)
+			return await menteesHelper.updateMenteeExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -163,7 +163,7 @@ module.exports = class Mentees {
 	 */
 	async getMenteeExtension(req) {
 		try {
-			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken._id) // params since read will be public for mentees
+			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
 		} catch (error) {
 			return error
 		}
@@ -179,7 +179,7 @@ module.exports = class Mentees {
 	 */
 	async deleteMenteeExtension(req) {
 		try {
-			return await menteesHelper.deleteMenteeExtension('1', req.decodedToken._id)
+			return await menteesHelper.deleteMenteeExtension(req.decodedToken.id)
 		} catch (error) {
 			return error
 		}

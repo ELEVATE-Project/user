@@ -427,7 +427,6 @@ module.exports = class MenteesHelper {
 	static async createMenteeExtension(data, userId) {
 		try {
 			data.user_id = userId
-			console.log(data)
 			const response = await menteeQueries.createMenteeExtension(data)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -459,10 +458,12 @@ module.exports = class MenteesHelper {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			//const mentee = await menteeQueries.updateMenteeExtension(userId, data);
-			const mentee = await menteeQueries.updateMenteeExtension(userId, data)
+			const [updateCount, updatedUser] = await menteeQueries.updateMenteeExtension(userId, data, {
+				returning: true,
+				raw: true,
+			})
 
-			if (mentee == 'MENTEE_EXTENSION_NOT_FOUND') {
+			if (updateCount === '0') {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
@@ -471,7 +472,7 @@ module.exports = class MenteesHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_UPDATED',
-				result: {},
+				result: updatedUser,
 			})
 		} catch (error) {
 			return error
@@ -514,8 +515,8 @@ module.exports = class MenteesHelper {
 	 */
 	static async deleteMenteeExtension(userId) {
 		try {
-			const mentee = await menteeQueries.deleteMenteeExtension(userId)
-			if (!mentee) {
+			const deleteCount = await menteeQueries.deleteMenteeExtension(userId)
+			if (deleteCount === '0') {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
@@ -524,7 +525,6 @@ module.exports = class MenteesHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_DELETED',
-				result: true,
 			})
 		} catch (error) {
 			return error
