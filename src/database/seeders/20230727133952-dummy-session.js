@@ -1,18 +1,20 @@
 const utils = require('../../generics/utils')
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		const startDate = ['2023-01-16T03:45:39', '2023-01-16T05:45:39']
+		const endDate = ['2023-01-16T06:45:39', '2023-01-16T07:45:39']
 		let userData = []
-		for (let i = 0; i < 5; i++) {
+		for (let i = 1; i <= 10; i++) {
 			let defaultUser = {
 				title: 'Like' + i,
 				description: 'ok',
 				recommended_for: ['beo'],
 				categories: ['SQAA'],
 				medium: ['English'],
-				mentor_id: 2,
+				mentor_id: Math.floor(Math.random() * (10 - 6 + 1) + 6),
 				status: 'completed',
-				start_date: random('2023-01-16T03:45:39', '2023-01-17T03:45:39', '2023-01-18T03:45:39'),
-				end_date: random('2023-01-16T05:45:39', '2023-01-17T05:45:39', '2023-01-18T05:45:39'),
+				start_date: startDate[Math.floor(Math.random() * startDate.length)],
+				end_date: endDate[Math.floor(Math.random() * endDate.length)],
 				mentee_password: utils.hash('password'),
 				mentor_password: utils.hash('password'),
 				is_feedback_skipped: true,

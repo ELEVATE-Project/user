@@ -12,11 +12,11 @@ module.exports = {
 
 			req.checkBody('description').trim().notEmpty().withMessage('description field is empty')
 
-			req.checkBody('startDate').notEmpty().withMessage('startDate field is empty')
+			req.checkBody('start_date').notEmpty().withMessage('start_date field is empty')
 
-			req.checkBody('endDate').notEmpty().withMessage('endDate field is empty')
+			req.checkBody('end_date').notEmpty().withMessage('end_date field is empty')
 
-			req.checkBody('recommendedFor').notEmpty().withMessage('recommendedFor field is empty')
+			req.checkBody('recommended_for').notEmpty().withMessage('recommended_for field is empty')
 
 			req.checkBody('categories').notEmpty().withMessage('categories field is empty')
 

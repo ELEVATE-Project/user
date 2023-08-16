@@ -1,5 +1,6 @@
 // Dependencies
 const ObjectId = require('mongoose').Types.ObjectId
+const _ = require('lodash')
 const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
@@ -18,7 +19,9 @@ const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const sessionQueries = require('@database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const userExtensionQueries = require('@database/queries/userExtension')
+const menteeExtensionQueries = require('@database/queries/userextension')
+const mentorExtensionQueries = require('../../database/queries/mentorextension')
+const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 
 module.exports = class SessionsHelper {
 	/**
@@ -31,11 +34,10 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async create(bodyData, loggedInUserId) {
-		bodyData.userId = ObjectId(loggedInUserId)
+		bodyData.mentor_id = loggedInUserId
 		try {
-			const mentorStatus = await this.verifyMentor(loggedInUserId)
-
-			if (mentorStatus === false) {
+			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
+			if (!mentorDetails) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
@@ -43,18 +45,17 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (bodyData.startDate) {
-				bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
+			let startDateUtc
+			let endDateUtc
+			if (bodyData.start_date) {
+				startDateUtc = utils.epochFormat(bodyData.start_date, common.UTC_DATE_TIME_FORMAT)
 			}
-			if (bodyData.endDate) {
-				bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT)
+			if (bodyData.end_date) {
+				endDateUtc = moment.unix(bodyData.end_date).utc().format(common.UTC_DATE_TIME_FORMAT)
 			}
 
-			const timeSlot = await this.isTimeSlotAvailable(
-				loggedInUserId,
-				bodyData?.startDateUtc,
-				bodyData?.endDateUtc
-			)
+			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, startDateUtc, endDateUtc)
+
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
@@ -63,8 +64,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
-
+			let elapsedMinutes = moment(endDateUtc).diff(startDateUtc, 'minutes')
 			if (elapsedMinutes < 30) {
 				return common.failureResponse({
 					message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -80,21 +80,27 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			bodyData.meetingInfo = {
+
+			bodyData.meeting_info = {
 				platform: process.env.DEFAULT_MEETING_SERVICE,
 				value: process.env.DEFAULT_MEETING_SERVICE,
 			}
 			if (process.env.DEFAULT_MEETING_SERVICE === common.BBB_VALUE) {
-				bodyData.meetingInfo = {
+				bodyData.meeting_info = {
 					platform: common.BBB_PLATFORM,
 					value: common.BBB_VALUE,
 				}
 			}
 
-			let data = await sessionData.createSession(bodyData)
+			bodyData.start_date = startDateUtc
+			bodyData.end_date = endDateUtc
 
-			await this.setMentorPassword(data._id, data.userId.toString())
-			await this.setMenteePassword(data._id, data.createdAt)
+			bodyData['mentor_org_id'] =
+				mentorDetails.organisation_ids.length > 0 ? mentorDetails.organisation_ids[0] : null
+			let data = await sessionQueries.create(bodyData)
+
+			await this.setMentorPassword(data.id, data.mentor_id.toString())
+			await this.setMenteePassword(data.id, data.created_at)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -120,10 +126,8 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method) {
 		let isSessionReschedule = false
 		try {
-			let userExtension = await userExtensionQueries.findOne({
-				user_id: userId,
-			})
-			if (!userExtension || userExtension.user_type != common.MENTOR_ROLE) {
+			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
+			if (!mentorExtension) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
@@ -142,7 +146,7 @@ module.exports = class SessionsHelper {
 
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-			let elapsedMinutes = moment(sessionDetail.startDateUtc).diff(currentDate, 'minutes')
+			let elapsedMinutes = moment(sessionDetail.start_date).diff(currentDate, 'minutes')
 			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
 				return common.failureResponse({
 					message: {
@@ -153,20 +157,17 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (bodyData.startDate) {
-				bodyData['startDateUtc'] = moment.unix(bodyData.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
+			let startDateUtc
+			let endDateUtc
+			if (bodyData.start_date) {
+				startDateUtc = utils.epochFormat(bodyData.start_date, common.UTC_DATE_TIME_FORMAT)
 				isSessionReschedule = true
 			}
-			if (bodyData.endDate) {
-				bodyData['endDateUtc'] = moment.unix(bodyData.endDate).utc().format(common.UTC_DATE_TIME_FORMAT)
+			if (bodyData.end_date) {
+				endDateUtc = utils.epochFormat(bodyData.end_date, common.UTC_DATE_TIME_FORMAT)
 				isSessionReschedule = true
 			}
-			const timeSlot = await this.isTimeSlotAvailable(
-				userId,
-				bodyData?.startDateUtc,
-				bodyData?.endDateUtc,
-				sessionId
-			)
+			const timeSlot = await this.isTimeSlotAvailable(userId, startDateUtc, endDateUtc, sessionId)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
@@ -218,15 +219,12 @@ module.exports = class SessionsHelper {
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
 			}
 
-			updateData.updatedAt = new Date().getTime()
-			const result = await sessionData.updateOneSession(
-				{
-					_id: ObjectId(sessionId),
-				},
-				updateData
-			)
+			updateData.updated_at = new Date()
+			updateData.start_date = startDateUtc
+			updateData.end_date = endDateUtc
 
-			if (result === 'SESSION_ALREADY_UPDATED') {
+			const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, updateData)
+			if (rowsAffected == 0) {
 				return common.failureResponse({
 					message: 'SESSION_ALREADY_UPDATED',
 					statusCode: httpStatusCode.bad_request,
@@ -235,12 +233,12 @@ module.exports = class SessionsHelper {
 			}
 
 			if (method == common.DELETE_METHOD || isSessionReschedule) {
-				const sessionAttendees = await sessionAttendesData.findAllSessionAttendees({
-					sessionId: ObjectId(sessionId),
+				const sessionAttendees = await sessionAttendeesQueries.findAll({
+					session_id: sessionId,
 				})
 				const sessionAttendeesIds = []
 				sessionAttendees.forEach((attendee) => {
-					sessionAttendeesIds.push(attendee.userId.toString())
+					sessionAttendeesIds.push(attendee.mentee_id)
 				})
 
 				const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(sessionAttendeesIds)
@@ -248,8 +246,8 @@ module.exports = class SessionsHelper {
 				sessionAttendees.map((attendee) => {
 					for (let index = 0; index < attendeesAccounts.result.length; index++) {
 						const element = attendeesAccounts.result[index]
-						if (element._id == attendee.userId) {
-							attendee.attendeeEmail = element.email.address
+						if (element.id == attendee.mentee_id) {
+							attendee.attendeeEmail = element.email
 							attendee.attendeeName = element.name
 							break
 						}
@@ -549,7 +547,6 @@ module.exports = class SessionsHelper {
 			const sessionAttendeeExist = await sessionAttendeesQueries.findOne({
 				session_id: sessionId,
 				mentee_id: userId,
-				deleted: false,
 			})
 
 			if (sessionAttendeeExist) {
@@ -575,6 +572,7 @@ module.exports = class SessionsHelper {
 			}
 
 			await sessionAttendeesQueries.create(attendee)
+			await sessionEnrollmentQueries.create(_.omit(attendee, 'time_zone'))
 
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
@@ -606,7 +604,6 @@ module.exports = class SessionsHelper {
 				message: 'USER_ENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -641,15 +638,16 @@ module.exports = class SessionsHelper {
 			const mentorName = await userProfile.details('', session.mentor_id)
 			session.mentor_name = mentorName.data.result.name
 
-			const response = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
-
-			if (response === 'USER_NOT_ENROLLED') {
+			const deletedRows = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
+			if (deletedRows === 0) {
 				return common.failureResponse({
 					message: 'USER_NOT_ENROLLED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			await sessionEnrollmentQueries.unEnrollFromSession(sessionId, userId)
 
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE
@@ -935,12 +933,12 @@ module.exports = class SessionsHelper {
 	static async setMentorPassword(sessionId, userId) {
 		try {
 			let hashPassword = utils.hash(sessionId + userId)
-			const result = await sessionData.updateOneSession(
+			const result = await sessionQueries.updateOne(
 				{
-					_id: sessionId,
+					id: sessionId,
 				},
 				{
-					mentorPassword: hashPassword,
+					mentor_password: hashPassword,
 				}
 			)
 
@@ -962,12 +960,12 @@ module.exports = class SessionsHelper {
 	static async setMenteePassword(sessionId, createdAt) {
 		try {
 			let hashPassword = utils.hash(sessionId + createdAt)
-			const result = await sessionData.updateOneSession(
+			const result = await sessionQueries.updateOne(
 				{
-					_id: sessionId,
+					id: sessionId,
 				},
 				{
-					menteePassword: hashPassword,
+					mentee_password: hashPassword,
 				}
 			)
 
@@ -1089,7 +1087,7 @@ module.exports = class SessionsHelper {
 
 	static async isTimeSlotAvailable(id, startDate, endDate, sessionId) {
 		try {
-			const sessions = await sessionData.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
+			const sessions = await sessionQueries.getSessionByUserIdAndTime(id, startDate, endDate, sessionId)
 			if (!sessions) {
 				return true
 			}
@@ -1097,7 +1095,7 @@ module.exports = class SessionsHelper {
 			const startDateResponse = sessions.startDateResponse?.[0]
 			const endDateResponse = sessions.endDateResponse?.[0]
 
-			if (startDateResponse && endDateResponse && !startDateResponse._id.equals(endDateResponse._id)) {
+			if (startDateResponse && endDateResponse && !startDateResponse.id.equals(endDateResponse.id)) {
 				return {
 					isTimeSlotAvailable: false,
 					sessionName: `${startDateResponse.title} and ${endDateResponse.title}`,

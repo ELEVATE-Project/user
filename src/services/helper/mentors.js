@@ -9,7 +9,7 @@ const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
-const mentorQueries = require('../../database/queries/mentorextention')
+const mentorQueries = require('../../database/queries/mentorextension')
 const { UniqueConstraintError } = require('sequelize')
 
 module.exports = class MentorsHelper {

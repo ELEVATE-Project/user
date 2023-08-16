@@ -1,4 +1,4 @@
-const MentorExtension = require('../models/index').MentorExtension // Adjust the path accordingly
+const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
 
 module.exports = class MentorExtensionQueries {
 	static async createMentorExtension(data) {

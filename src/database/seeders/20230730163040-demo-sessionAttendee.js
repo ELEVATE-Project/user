@@ -1,13 +1,12 @@
+const { random } = require('lodash')
+
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		let userData = []
 		const defaultUser = {
-			user_id: 1,
-			designation: 'Teacher',
-			area_of_expertise: ['eduLdship'],
-			education_qualification: ['BEd'],
-			user_type: 'mentor',
-			organisation_ids: [1],
+			mentee_id: Math.floor(Math.random() * (5 - 1 + 1) + 1),
+			session_id: Math.floor(Math.random() * (10 - 1 + 1) + 1),
+			time_zone: 'Asia/Calcutta',
 			updated_at: new Date(),
 			created_at: new Date(),
 		}

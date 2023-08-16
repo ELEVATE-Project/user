@@ -164,6 +164,10 @@ const capitalize = (str) => {
 function isNumeric(value) {
 	return /^\d+$/.test(value)
 }
+const epochFormat = (date, format) => {
+	return moment.unix(date).utc().format(format)
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -186,4 +190,5 @@ module.exports = {
 	extractEmailTemplate,
 	capitalize,
 	isNumeric: isNumeric,
+	epochFormat: epochFormat,
 }

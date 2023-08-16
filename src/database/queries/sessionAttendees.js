@@ -1,4 +1,4 @@
-const SessionAttendee = require('../models/index').SessionAttendee
+const SessionAttendee = require('@database/models/index').SessionAttendee
 exports.create = async (data) => {
 	try {
 		return await SessionAttendee.create(data)
@@ -47,11 +47,19 @@ exports.unEnrollFromSession = async (sessionId, userId) => {
 			},
 		})
 
-		if (result === 1) {
-			return 'USER_UNENROLLED'
-		} else {
-			return 'USER_NOT_ENROLLED'
-		}
+		return result
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAll = async (filter, options = {}) => {
+	try {
+		return await SessionAttendee.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}

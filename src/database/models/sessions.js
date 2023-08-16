@@ -40,10 +40,12 @@ module.exports = (sequelize, DataTypes) => {
 			session_reschedule: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				defaultValue: 0,
 			},
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				defaultValue: 'PUBLISHED',
 			},
 			time_zone: {
 				type: DataTypes.STRING,
@@ -59,11 +61,11 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			mentee_password: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			mentor_password: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			started_at: {
 				type: DataTypes.DATE,
@@ -80,14 +82,15 @@ module.exports = (sequelize, DataTypes) => {
 			is_feedback_skipped: {
 				type: DataTypes.BOOLEAN,
 				allowNull: false,
+				defaultValue: false,
 			},
 			mentee_feedback_question_set: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			mentor_feedback_question_set: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			meeting_info: {
 				type: DataTypes.JSON,
@@ -99,7 +102,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			visibility: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			organization_ids: {
 				type: DataTypes.ARRAY(DataTypes.STRING),

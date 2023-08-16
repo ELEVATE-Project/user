@@ -99,18 +99,16 @@ module.exports = async function (req, res, next) {
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 
 			const user = await requests.get(profileUrl, null, true)
-
-			if (user.data.result.user_roles[0].title !== decodedToken.data.roles[0].title) {
+			if (!user) {
 				throw common.failureResponse({
-					message: 'USER_ROLE_UPDATED',
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-
-			if (user.data.result.deleted) {
+			if (user.data.result.user_roles[0].title !== decodedToken.data.roles[0].title) {
 				throw common.failureResponse({
-					message: 'USER_NOT_FOUND',
+					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})

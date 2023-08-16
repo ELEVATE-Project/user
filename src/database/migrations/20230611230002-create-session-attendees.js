@@ -49,10 +49,6 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
-			deleted: {
-				type: Sequelize.Boolean,
-				defaultValue: false,
-			},
 		})
 	},
 
