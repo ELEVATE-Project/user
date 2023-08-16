@@ -83,5 +83,12 @@
 	"MENTEE_EXTENSION_UPDATED": "Mentee extension updated successfully.",
 	"MENTEE_EXTENSION_NOT_FOUND": "Mentee extension not found.",
 	"MENTEE_EXTENSION_FETCHED": "Mentee extension fetched successfully.",
-	"MENTEE_EXTENSION_DELETED": "Mentee extension deleted successfully."
+	"MENTEE_EXTENSION_DELETED": "Mentee extension deleted successfully.",
+	"ENTITY_TYPE_NOT_FOUND": "Entity type not found",
+	"ENTITY_TYPE_ALREADY_EXISTS": "Entity type already exists",
+	"ENTITY_TYPE_ALREADY_DELETED": "Entity type already deleted",
+	"ENTITY_TYPE_CREATED_SUCCESSFULLY": "Entity type created successfully",
+	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
+	"ENTITY_TYPE_DELETED_SUCCESSFULLY": "Entity type deleted successfully",
+	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully"
 }

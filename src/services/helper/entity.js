@@ -17,8 +17,8 @@ module.exports = class EntityHelper {
 	 */
 
 	static async create(bodyData, id) {
-		bodyData.created_by = '0' || id
-		bodyData.updated_by = '0' || id
+		bodyData.created_by = id
+		bodyData.updated_by = id
 		try {
 			const entity = await entityTypeQueries.createEntity(bodyData)
 			return common.successResponse({
@@ -52,15 +52,18 @@ module.exports = class EntityHelper {
 	 * @param {Object} bodyData - entity body data.
 	 * @param {String} _id - entity id.
 	 * @param {String} loggedInUserId - logged in user id.
-	 * @returns {JSON} - Entity updted response.
+	 * @returns {JSON} - Entity updated response.
 	 */
 
 	static async update(bodyData, id, loggedInUserId) {
-		bodyData.updated_by = 1 || loggedInUserId
+		bodyData.updated_by = loggedInUserId
 		try {
-			const result = await entityTypeQueries.updateOneEntity(id, bodyData)
+			const [updateCount, updatedEntity] = await entityTypeQueries.updateOneEntity(id, bodyData, loggedInUserId, {
+				returning: true,
+				raw: true,
+			})
 
-			if (result === 'ENTITY_NOT_FOUND') {
+			if (updateCount === 0) {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -70,6 +73,7 @@ module.exports = class EntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_UPDATED_SUCCESSFULLY',
+				result: updatedEntity,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
@@ -100,8 +104,9 @@ module.exports = class EntityHelper {
 						{
 							id: query.id,
 							created_by: '0',
+							status: 'ACTIVE',
 						},
-						{ id: query.id, created_by: userId },
+						{ id: query.id, created_by: userId, status: 'ACTIVE' },
 					],
 				}
 			} else {
@@ -110,8 +115,9 @@ module.exports = class EntityHelper {
 						{
 							value: query.value,
 							created_by: '0',
+							status: 'ACTIVE',
 						},
-						{ value: query.value, created_by: userId },
+						{ value: query.value, created_by: userId, status: 'ACTIVE' },
 					],
 				}
 			}
@@ -137,7 +143,7 @@ module.exports = class EntityHelper {
 	static async readAll(query, userId) {
 		try {
 			let filter
-			if (query.read_user_entity) {
+			if (query.read_user_entity == true) {
 				filter = {
 					[Op.or]: [
 						{
@@ -182,8 +188,8 @@ module.exports = class EntityHelper {
 
 	static async delete(id, userId) {
 		try {
-			const result = await entityTypeQueries.deleteOneEntityType(id, userId)
-			if (result === 'ENTITY_NOT_FOUND') {
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, userId)
+			if (deleteCount === '0') {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -194,7 +200,6 @@ module.exports = class EntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_DELETED_SUCCESSFULLY',
-				result: {},
 			})
 		} catch (error) {
 			throw error

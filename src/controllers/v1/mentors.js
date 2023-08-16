@@ -100,7 +100,7 @@ module.exports = class Mentors {
 	 */
 	async create(req) {
 		try {
-			return await mentorsHelper.createMentorExtension(req.body, '1' || req.decodedToken._id)
+			return await mentorsHelper.createMentorExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			console.error(error)
 			return error
@@ -118,7 +118,7 @@ module.exports = class Mentors {
 
 	async update(req) {
 		try {
-			return await mentorsHelper.updateMentorExtension(req.body, '1', req.decodedToken._id)
+			return await mentorsHelper.updateMentorExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -133,7 +133,7 @@ module.exports = class Mentors {
 	 */
 	async getMentorExtension(req) {
 		try {
-			return await mentorsHelper.getMentorExtension(req.query.id || req.decodedToken._id) //params since read will be public for mentors
+			return await mentorsHelper.getMentorExtension(req.query.id || req.decodedToken.id) //params since read will be public for mentors
 		} catch (error) {
 			return error
 		}
@@ -148,7 +148,7 @@ module.exports = class Mentors {
 	 */
 	async deleteMentorExtension(req) {
 		try {
-			return await mentorsHelper.deleteMentorExtension('1', req.decodedToken._id)
+			return await mentorsHelper.deleteMentorExtension(req.decodedToken.id)
 		} catch (error) {
 			return error
 		}

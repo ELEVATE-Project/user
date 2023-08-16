@@ -14,11 +14,8 @@ module.exports = (sequelize, DataTypes) => {
 			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
 			created_by: { type: DataTypes.INTEGER, allowNull: false },
 			updated_by: { type: DataTypes.INTEGER, allowNull: false },
-			allow_filtering: {
-				type: DataTypes.BOOLEAN,
-				allowNull: false,
-			},
-			data_type: { type: DataTypes.STRING, allowNull: false },
+			allow_filtering: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+			data_type: { type: DataTypes.STRING, allowNull: false, defaultValue: 'STRING' },
 		},
 		{ sequelize, modelName: 'EntityType', tableName: 'entity_types', freezeTableName: true, paranoid: true }
 	)
@@ -44,9 +41,7 @@ module.exports = (sequelize, DataTypes) => {
 				}
 			)
 		} catch (error) {
-			// Handle any error that might occur during the soft deletion of associated Entity records
 			console.error('Error during beforeDestroy hook:', error)
-			// Optionally, you can throw the error to prevent the soft deletion of the EntityType record
 			throw error
 		}
 	})

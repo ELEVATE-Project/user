@@ -303,10 +303,12 @@ module.exports = class MentorsHelper {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			//const mentor = await mentorQueries.updateMentorExtension(userId, data)
-			const mentor = await mentorQueries.updateMentorExtension(userId, data)
+			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
+				returning: true,
+				raw: true,
+			})
 
-			if (mentor == 'MENTOR_EXTENSION_NOT_FOUND') {
+			if (updateCount === '0') {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
@@ -315,7 +317,7 @@ module.exports = class MentorsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_UPDATED',
-				result: {},
+				result: updatedMentor,
 			})
 		} catch (error) {
 			return error
@@ -358,8 +360,8 @@ module.exports = class MentorsHelper {
 	 */
 	static async deleteMentorExtension(userId) {
 		try {
-			const mentor = await mentorQueries.deleteMentorExtension(userId)
-			if (!mentor) {
+			const deleteCount = await mentorQueries.deleteMentorExtension(userId)
+			if (deleteCount === '0') {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
@@ -368,7 +370,6 @@ module.exports = class MentorsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_DELETED',
-				result: true,
 			})
 		} catch (error) {
 			return error

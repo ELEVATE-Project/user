@@ -1,12 +1,11 @@
-const issueData = require('@db/issues/query')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const ObjectId = require('mongoose').Types.ObjectId
 
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
 const notificationTemplateData = require('@db/notification-template/query')
 
+const issueQueries = require('../../database/queries/issue')
 module.exports = class issuesHelper {
 	/**
 	 * Report an issue.
@@ -20,11 +19,10 @@ module.exports = class issuesHelper {
 	static async create(bodyData, decodedToken) {
 		try {
 			const name = decodedToken.name
-			const role = decodedToken.isAMentor ? 'Mentor' : 'Mentee'
+			const role = decodedToken.roles.some((role) => role.title === 'mentor') ? 'Mentor' : 'Mentee'
 			const userEmailId = decodedToken.email
 			const email = process.env.SUPPORT_EMAIL_ID
-
-			bodyData.userId = ObjectId(decodedToken._id) //Getting user id from tokenDetail.
+			bodyData.user_id = decodedToken.id
 
 			if (process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true') {
 				const templateData = await notificationTemplateData.findOneEmailTemplate(
@@ -32,8 +30,8 @@ module.exports = class issuesHelper {
 				)
 
 				let metaItems = ''
-				if (bodyData.metaData) {
-					for (const [key, value] of Object.entries(bodyData.metaData)) {
+				if (bodyData.meta_data) {
+					for (const [key, value] of Object.entries(bodyData.meta_data)) {
 						metaItems += `<li><b>${utils.capitalize(key)}:</b> ${value}</li>\n`
 					}
 				}
@@ -49,24 +47,25 @@ module.exports = class issuesHelper {
 								name,
 								role,
 								userEmailId,
-								userId: bodyData.userId.toString(),
+								userId: bodyData.user_id.toString(),
 								description: bodyData.description,
 								metaItems: metaItems || 'Not available',
 							}),
 						},
 					}
 					await kafkaCommunication.pushEmailToKafka(payload)
+					console.log(payload)
+
 					bodyData.isEmailTriggered = true
 				}
 			}
-			await issueData.create(bodyData)
+			await issueQueries.create(bodyData)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ISSUE_REPORTED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}

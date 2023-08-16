@@ -11,28 +11,21 @@ module.exports = class UserEntityData {
 
 	static async findAllEntities(filter) {
 		try {
-			filter.status = 'ACTIVE'
 			return await Entity.findAll({ where: filter })
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async updateOneEntity(id, update, options = {}) {
+	static async updateOneEntity(id, update, userId, options = {}) {
 		try {
-			const filter = {
-				id: id,
-			}
-			const [rowsAffected] = await Entity.update(update, {
-				where: filter,
+			return await Entity.update(update, {
+				where: {
+					id: id,
+					created_by: userId,
+				},
 				...options,
 			})
-
-			if (rowsAffected > 0) {
-				return 'ENTITY_UPDATED'
-			} else {
-				return 'ENTITY_NOT_FOUND'
-			}
 		} catch (error) {
 			throw error
 		}
@@ -40,14 +33,12 @@ module.exports = class UserEntityData {
 
 	static async deleteOneEntityType(id, userId) {
 		try {
-			const rowsAffected = await Entity.destroy({
+			return await Entity.destroy({
 				where: {
 					id: id,
 					created_by: userId,
 				},
 			})
-
-			return rowsAffected > 0 ? 'ENTITY_UPDATED' : 'ENTITY_NOT_FOUND'
 		} catch (error) {
 			throw error
 		}

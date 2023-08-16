@@ -9,23 +9,17 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async updateMentorExtension(userId, data) {
+	static async updateMentorExtension(userId, data, options = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const filter = {
-				user_id: userId,
-			}
-			const [rowsAffected] = await MentorExtension.update(data, {
-				where: filter,
+			return await MentorExtension.update(data, {
+				where: {
+					user_id: userId,
+				},
+				...options,
 			})
-
-			if (rowsAffected > 0) {
-				return 'MENTOR_EXTENSION_UPDATED'
-			} else {
-				return 'MENTOR_EXTENSION_NOT_FOUND'
-			}
 		} catch (error) {
 			throw error
 		}
@@ -42,11 +36,9 @@ module.exports = class MentorExtensionQueries {
 
 	static async deleteMentorExtension(userId) {
 		try {
-			const rowsAffected = await MentorExtension.destroy({
+			return await MentorExtension.destroy({
 				where: { user_id: userId },
 			})
-
-			return rowsAffected > 0 ? true : false
 		} catch (error) {
 			throw error
 		}

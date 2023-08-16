@@ -2865,20 +2865,119 @@ paths:
         content:
           application.json:
             schema:
-              $ref: '#/components/schemas/issues/createRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                descriptaion:
+                  type: string
+                meta_data:
+                  type: object
+                  properties:
+                    request_type:
+                      type: string
+                    browserName:
+                      type: string
+                    browserVersion:
+                      type: string
+            examples:
+              example1:
+                value:
+                  descriptaion: >-
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+                    do eiusmod tempor incididunt ut labore et dolore magna
+                    aliqua. In hendrerit gravida rutrum quisque non tellus.
+                    Faucibus interdum posuere lorem ipsum dolor sit amet
+                    consectetur adipiscing. Accumsan sit amet nulla facilisi
+                    morbi tempus iaculis. Lobortis scelerisque fermentum dui
+                    faucibus in.
+                  meta_data:
+                    request_type: Report an issue
+                    browserName: Chrome
+                    browserVersion: 114.0.0.0
       responses:
         '200':
           description: ok
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/issues/createResponse'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Your issue is successfully reported.
+                    result: []
+                    meta:
+                      formsVersion: []
+                      correlation: a761e205-7d3a-4f6c-a31a-4641a14f1e91
+                      meetingPlatform: BBB
         '422':
           description: Unprocessable Entity
           content:
             application.json:
               schema:
-                $ref: '#/components/schemas/issues/create422Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                        param:
+                          type: string
+                        msg:
+                          type: string
+                      required:
+                        - location
+                        - param
+                        - msg
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error:
+                      - location: body
+                        param: description
+                        msg: description field is empty
+                      - location: body
+                        param: description
+                        msg: description is invalid
+                    meta:
+                      correlation: ce6d6a57-8a4d-4788-b19a-2c2872c1bd74
+                    message: Validation failed, Entered data is incorrect!
   /mentoring/v1/config/get:
     get:
       description: ''
