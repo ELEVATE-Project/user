@@ -176,8 +176,8 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD && (bodyData.endDateUtc || bodyData.startDateUtc)) {
-				let elapsedMinutes = moment(bodyData.endDateUtc).diff(bodyData.startDateUtc, 'minutes')
+			if (method != common.DELETE_METHOD && (endDateUtc || startDateUtc)) {
+				let elapsedMinutes = moment(endDateUtc).diff(startDateUtc, 'minutes')
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
 						message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -196,16 +196,16 @@ module.exports = class SessionsHelper {
 			}
 
 			let message
-			let updateData
 			if (method == common.DELETE_METHOD) {
-				let statTime = moment.unix(sessionDetail.startDate).utc().format(common.UTC_DATE_TIME_FORMAT)
+				// let statTime = moment.unix(sessionDetail.start_date).utc().format(common.UTC_DATE_TIME_FORMAT)
+				let statTime = moment.utc(sessionDetail.start_date).format(common.UTC_DATE_TIME_FORMAT)
 				let current = moment.utc().format(common.UTC_DATE_TIME_FORMAT)
 				let diff = moment(statTime).diff(current, 'minutes')
 
 				if (sessionDetail.status == common.PUBLISHED_STATUS && diff > 10) {
-					updateData = {
-						deleted: true,
-					}
+					await sessionQueries.deleteSession({
+						id: sessionId,
+					})
 					message = 'SESSION_DELETED_SUCCESSFULLY'
 				} else {
 					return common.failureResponse({
@@ -215,21 +215,18 @@ module.exports = class SessionsHelper {
 					})
 				}
 			} else {
-				updateData = bodyData
+				bodyData.start_date = startDateUtc
+				bodyData.end_date = endDateUtc
+
+				const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, bodyData)
+				if (rowsAffected == 0) {
+					return common.failureResponse({
+						message: 'SESSION_ALREADY_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
-			}
-
-			updateData.updated_at = new Date()
-			updateData.start_date = startDateUtc
-			updateData.end_date = endDateUtc
-
-			const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, updateData)
-			if (rowsAffected == 0) {
-				return common.failureResponse({
-					message: 'SESSION_ALREADY_UPDATED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
 			}
 
 			if (method == common.DELETE_METHOD || isSessionReschedule) {

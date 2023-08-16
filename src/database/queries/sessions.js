@@ -134,3 +134,13 @@ exports.getSessionByUserIdAndTime = async (userId, startDate, endDate, sessionId
 		return error
 	}
 }
+
+exports.deleteSession = async (filter) => {
+	try {
+		return await Session.destroy({
+			where: filter,
+		})
+	} catch (error) {
+		return error
+	}
+}
