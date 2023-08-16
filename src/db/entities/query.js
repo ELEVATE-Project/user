@@ -27,7 +27,15 @@ module.exports = class UserEntityData {
 			return error
 		}
 	}
-
+	static async findOneEntityType(type) {
+		try {
+			const filter = { type }
+			const userEntityData = await Entities.findOne(filter)
+			return userEntityData
+		} catch (error) {
+			return error
+		}
+	}
 	static async findAllEntities(filter) {
 		try {
 			const projection = { value: 1, label: 1, _id: 0 }
@@ -57,17 +65,18 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async deleteOneEntity(_id) {
+	static async deleteOneEntityType(id) {
 		try {
 			const update = { deleted: true }
-			const filter = {
-				_id: ObjectId(_id),
-			}
-			const res = await Entities.updateOne(filter, update)
-			if ((res.n === 1 && res.nModified === 1) || (res.matchedCount === 1 && res.modifiedCount === 1)) {
+			const filter = { _id: ObjectId(id) }
+
+			const [rowsAffected] = await Entity.update(update, {
+				where: filter,
+				paranoid: true,
+			})
+
+			if (rowsAffected > 0) {
 				return 'ENTITY_UPDATED'
-			} else if ((res.n === 1 && res.nModified === 0) || (res.matchedCount === 1 && res.modifiedCount === 0)) {
-				return 'ENTITY_ALREADY_EXISTS'
 			} else {
 				return 'ENTITY_NOT_FOUND'
 			}
