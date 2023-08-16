@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
 			created_by: { type: DataTypes.INTEGER, allowNull: false },
 			updated_by: { type: DataTypes.INTEGER, allowNull: false },
-			allow_filtering: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: 'TRUE' },
+			allow_filtering: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 			data_type: { type: DataTypes.STRING, allowNull: false, defaultValue: 'STRING' },
 		},
 		{ sequelize, modelName: 'EntityType', tableName: 'entity_types', freezeTableName: true, paranoid: true }
