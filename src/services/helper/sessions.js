@@ -790,21 +790,12 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - start session link
 	 */
 
-	static async start(sessionId, token) {
+	static async start(sessionId, userTokenData) {
+		const loggedInUserId = userTokenData.id
+		const mentorName = userTokenData.name
 		try {
-			const mentor = await userProfile.details(token)
-
-			if (mentor.data.responseCode !== 'OK') {
-				return common.failureResponse({
-					message: 'MENTORS_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const mentorDetails = mentor.data.result
-
-			if (!mentorDetails.isAMentor) {
+			const mentor = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
+			if (!mentor) {
 				return common.failureResponse({
 					message: 'NOT_A_MENTOR',
 					statusCode: httpStatusCode.bad_request,
@@ -812,8 +803,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const session = await sessionData.findSessionById(sessionId)
-
+			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return resolve(
 					common.failureResponse({
@@ -824,7 +814,7 @@ module.exports = class SessionsHelper {
 				)
 			}
 
-			if (session.userId.toString() !== mentor.data.result._id) {
+			if (session.mentor_id !== mentor.user_id) {
 				return common.failureResponse({
 					message: 'CANNOT_START_OTHER_MENTOR_SESSION',
 					statusCode: httpStatusCode.bad_request,
@@ -832,7 +822,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (process.env.DEFAULT_MEETING_SERVICE == 'OFF' && !session?.meetingInfo?.link) {
+			if (process.env.DEFAULT_MEETING_SERVICE == 'OFF' && !session?.meeting_info?.link) {
 				return common.failureResponse({
 					message: 'MEETING_SERVICE_INFO_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -840,23 +830,22 @@ module.exports = class SessionsHelper {
 				})
 			}
 			let meetingInfo
-			if (session?.meetingInfo?.value !== common.BBB_VALUE && !session.isStarted) {
-				await sessionData.updateOneSession(
+			if (session?.meeting_info?.value !== common.BBB_VALUE && !session.started_at) {
+				await sessionQueries.updateOne(
 					{
-						_id: session._id,
+						id: sessionId,
 					},
 					{
-						status: 'live',
-						isStarted: true,
-						startedAt: utils.utcFormat(),
+						status: common.LIVE_STATUS,
+						started_at: utils.utcFormat(),
 					}
 				)
 			}
-			if (session?.meetingInfo?.link) {
-				meetingInfo = session.meetingInfo
+			if (session?.meeting_info?.link) {
+				meetingInfo = session.meeting_info
 			} else {
 				let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-				let elapsedMinutes = moment(session.startDateUtc).diff(currentDate, 'minutes')
+				let elapsedMinutes = moment(session.start_date).diff(currentDate, 'minutes')
 
 				if (elapsedMinutes > 10) {
 					return common.failureResponse({
@@ -865,13 +854,13 @@ module.exports = class SessionsHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				let sessionDuration = moment(session.endDateUtc).diff(session.startDateUtc, 'minutes')
+				let sessionDuration = moment(session.end_date).diff(session.start_date, 'minutes')
 
 				const meetingDetails = await bigBlueButton.createMeeting(
-					session._id,
+					session.id,
 					session.title,
-					session.menteePassword,
-					session.mentorPassword,
+					session.mentee_password,
+					session.mentor_password,
 					sessionDuration
 				)
 				if (!meetingDetails.success) {
@@ -883,9 +872,9 @@ module.exports = class SessionsHelper {
 				}
 
 				const moderatorMeetingLink = await bigBlueButton.joinMeetingAsModerator(
-					session._id,
-					mentorDetails.name,
-					session.mentorPassword
+					session.id,
+					mentorName,
+					session.mentor_password
 				)
 				meetingInfo = {
 					platform: common.BBB_PLATFORM,
@@ -895,15 +884,15 @@ module.exports = class SessionsHelper {
 						meetingId: meetingDetails.data.response.internalMeetingID,
 					},
 				}
-				await sessionData.updateOneSession(
+
+				await sessionQueries.updateOne(
 					{
-						_id: session._id,
+						id: sessionId,
 					},
 					{
-						status: 'live',
-						isStarted: true,
-						startedAt: utils.utcFormat(),
-						meetingInfo,
+						status: common.LIVE_STATUS,
+						started_at: utils.utcFormat(),
+						meeting_info: meetingInfo,
 					}
 				)
 			}

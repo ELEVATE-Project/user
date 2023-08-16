@@ -172,7 +172,7 @@ module.exports = class Sessions {
 
 	async start(req) {
 		try {
-			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token)
+			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken)
 			return sessionsStarted
 		} catch (error) {
 			return error
