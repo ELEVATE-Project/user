@@ -22,6 +22,7 @@ const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const menteeExtensionQueries = require('@database/queries/userextension')
 const mentorExtensionQueries = require('../../database/queries/mentorextension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
+const postSessionQueries = require('@database/queries/postSessionDetail')
 
 module.exports = class SessionsHelper {
 	/**
@@ -973,20 +974,30 @@ module.exports = class SessionsHelper {
 		try {
 			const recordingInfo = await bigBlueButton.getRecordings(sessionId)
 
-			const result = await sessionData.updateOneSession(
+			await sessionQueries.updateOne(
 				{
-					_id: sessionId,
+					id: sessionId,
 				},
 				{
-					status: 'completed',
-					recordings: recordingInfo.data.response.recordings,
-					completedAt: utils.utcFormat(),
+					status: common.COMPLETED_STATUS,
+					completed_at: utils.utcFormat(),
 				}
 			)
 
+			const recordings = recordingInfo.data.response.recordings
+
+			//update recording info in postsessiontable
+			if (recordings.recording.playback.format.url) {
+				await postSessionQueries.create({
+					session_id: sessionId,
+					recording_url: recordings.recording.playback.format.url,
+					recording: recordings,
+				})
+			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				result: result,
+				result: [],
 			})
 		} catch (error) {
 			return error
