@@ -7,3 +7,17 @@ exports.create = async (data) => {
 		return error
 	}
 }
+
+exports.updateOne = async (filter, update, options = {}) => {
+	try {
+		const [rowsAffected] = await PostSessionDetail.update(update, {
+			where: filter,
+			...options,
+			individualHooks: true,
+		})
+
+		return rowsAffected
+	} catch (error) {
+		return error
+	}
+}

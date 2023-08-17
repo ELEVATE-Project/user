@@ -93,7 +93,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			meeting_info: {
-				type: DataTypes.JSON,
+				type: DataTypes.JSONB,
 				allowNull: true,
 			},
 			meta: {

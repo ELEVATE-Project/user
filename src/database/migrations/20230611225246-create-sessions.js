@@ -91,7 +91,7 @@ module.exports = {
 				allowNull: false,
 			},
 			meeting_info: {
-				type: Sequelize.JSON,
+				type: Sequelize.JSONB,
 				allowNull: true,
 			},
 			meta: {

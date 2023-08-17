@@ -882,7 +882,7 @@ module.exports = class SessionsHelper {
 					value: common.BBB_VALUE,
 					link: moderatorMeetingLink,
 					meta: {
-						meetingId: meetingDetails.data.response.internalMeetingID,
+						meeting_id: meetingDetails.data.response.internalMeetingID,
 					},
 				}
 
@@ -984,14 +984,16 @@ module.exports = class SessionsHelper {
 				}
 			)
 
-			const recordings = recordingInfo.data.response.recordings
+			if (recordingInfo && recordingInfo.data && recordingInfo.data.response) {
+				const recordings = recordingInfo.data.response.recordings
 
-			//update recording info in postsessiontable
-			await postSessionQueries.create({
-				session_id: sessionId,
-				recording_url: recordings.recording.playback.format.url,
-				recording: recordings,
-			})
+				//update recording info in postsessiontable
+				await postSessionQueries.create({
+					session_id: sessionId,
+					recording_url: recordings.recording.playback.format.url,
+					recording: recordings,
+				})
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1045,16 +1047,28 @@ module.exports = class SessionsHelper {
 
 	static async updateRecordingUrl(internalMeetingId, recordingUrl) {
 		try {
-			const updateStatus = await sessionData.updateOneSession(
+			const sessionDetails = await sessionQueries.findOne({
+				'meeting_info.meta.meeting_id': internalMeetingId,
+			})
+
+			if (!sessionDetails) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const rowsAffected = await postSessionQueries.updateOne(
 				{
-					'meetingInfo.meta.meetingId': internalMeetingId,
+					session_id: sessionDetails.id,
 				},
 				{
-					recordingUrl,
+					recording_url: recordingUrl,
 				}
 			)
 
-			if (updateStatus === 'SESSION_NOT_FOUND') {
+			if (rowsAffected === 0) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
