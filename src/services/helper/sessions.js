@@ -987,13 +987,11 @@ module.exports = class SessionsHelper {
 			const recordings = recordingInfo.data.response.recordings
 
 			//update recording info in postsessiontable
-			if (recordings.recording.playback.format.url) {
-				await postSessionQueries.create({
-					session_id: sessionId,
-					recording_url: recordings.recording.playback.format.url,
-					recording: recordings,
-				})
-			}
+			await postSessionQueries.create({
+				session_id: sessionId,
+				recording_url: recordings.recording.playback.format.url,
+				recording: recordings,
+			})
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1014,7 +1012,7 @@ module.exports = class SessionsHelper {
 
 	static async getRecording(sessionId) {
 		try {
-			const session = await sessionData.findSessionById(sessionId)
+			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
