@@ -1,7 +1,10 @@
 const Session = require('@database/models/index').Session
-const { Op } = require('sequelize')
+const { Op, literal } = require('sequelize')
 const common = require('@constants/common')
 const sequelize = require('sequelize')
+
+const moment = require('moment')
+const SessionOwnership = require('../models/index').SessionOwnership
 
 exports.create = async (data) => {
 	try {
@@ -147,6 +150,75 @@ exports.updateSession = async (filter, update, options = {}) => {
 			...options,
 		})
 	} catch (error) {
+		console.log(error)
+		return error
+	}
+}
+exports.removeAndReturnMentorSessions = async (userId) => {
+	try {
+		const currentEpochTime = moment().unix()
+		const currentDate = moment()
+		const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ssZ')
+
+		/* const foundSessionOwnerships = await SessionOwnerships.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: userId,
+			},
+			include: [
+				{
+					model: Session,
+					where: {
+						deleted: false,
+						[Op.or]: [{ startDate: { [Op.gt]: currentEpochTime } }, { status: common.PUBLISHED_STATUS }],
+					},
+					attributes: ['id', 'title'],
+				},
+			],
+		}) */
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: userId,
+			},
+			raw: true,
+		})
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+		const foundSessions = await Session.findAll({
+			where: {
+				id: { [Op.in]: sessionIds },
+				[Op.or]: [{ start_date: { [Op.gt]: currentDateTime } }, { status: common.PUBLISHED_STATUS }],
+			},
+			raw: true,
+		})
+		const sessionIdAndTitle = foundSessions.map((session) => {
+			return { id: session.id, title: session.title }
+		})
+
+		const updatedSessions = await Session.update(
+			{
+				deleted_at: currentDateTime,
+			},
+			{
+				where: {
+					id: { [Op.in]: sessionIds },
+				},
+			}
+		)
+		await SessionOwnership.update(
+			{
+				deleted_at: currentDateTime,
+			},
+			{
+				where: {
+					session_id: { [Op.in]: sessionIds },
+				},
+			}
+		)
+		const removedSessions = updatedSessions[0] === sessionIds.length ? sessionIdAndTitle : []
+		return removedSessions
+	} catch (error) {
+		console.log(error)
 		return error
 	}
 }
@@ -183,5 +255,41 @@ exports.findAllSessions = async (page, limit, search, filters) => {
 		return await Session.findAndCountAll(filterQuery)
 	} catch (error) {
 		return error
+	}
+}
+exports.getAllUpcomingSessions = async () => {
+	//const currentEpochTime = moment().unix()
+	const currentEpochTime = moment().format('YYYY-MM-DD HH:mm:ssZ')
+
+	try {
+		return await Session.findAll({
+			paranoid: false,
+			where: {
+				start_date: {
+					[Op.gt]: currentEpochTime,
+				},
+			},
+			raw: true,
+		})
+	} catch (err) {
+		console.error('An error occurred:', err)
+		throw err
+	}
+}
+
+exports.updateEnrollmentCount = async (sessionId, increment = true) => {
+	try {
+		const updateFields = increment
+			? { seats_remaining: literal('"seats_remaining" + 1') }
+			: { seats_remaining: literal('"seats_remaining" - 1') }
+
+		return await Session.update(updateFields, {
+			where: {
+				id: sessionId,
+			},
+		})
+	} catch (error) {
+		console.error(error)
+		throw error
 	}
 }

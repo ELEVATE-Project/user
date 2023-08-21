@@ -1,4 +1,7 @@
 const SessionAttendee = require('@database/models/index').SessionAttendee
+const { Op } = require('sequelize')
+const SessionEnrollment = require('@database/models/index').SessionEnrollment
+
 exports.create = async (data) => {
 	try {
 		return await SessionAttendee.create(data)
@@ -62,5 +65,63 @@ exports.findAll = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		return error
+	}
+}
+
+exports.unEnrollAllAttendeesOfSessions = async (sessionIds) => {
+	try {
+		const destroyedCount = await SessionAttendee.destroy({
+			where: {
+				session_id: { [Op.in]: sessionIds },
+			},
+		})
+		await SessionEnrollment.destroy({
+			where: {
+				session_id: { [Op.in]: sessionIds },
+			},
+		})
+		console.log(sessionIds, destroyedCount)
+		const isUnenrolledAttendee = destroyedCount > 0
+
+		return destroyedCount
+	} catch (error) {
+		console.error('An error occurred:', error)
+		throw error
+	}
+}
+
+exports.usersUpcomingSessions = async (userId, sessionIds) => {
+	try {
+		console.log(sessionIds, 'fwer-fw-ef-w-ef-w-ef-wef-')
+		return await SessionAttendee.findAll({
+			where: {
+				session_id: sessionIds,
+				mentee_id: userId,
+			},
+		})
+	} catch (error) {
+		console.error('An error occurred:', error)
+		throw error
+	}
+}
+
+exports.unenrollFromUpcomingSessions = async (userId, sessionIds) => {
+	try {
+		const result = await SessionAttendee.destroy({
+			where: {
+				session_id: sessionIds,
+				mentee_id: userId,
+			},
+		})
+		await SessionEnrollment.destroy({
+			where: {
+				session_id: sessionIds,
+				mentee_id: userId,
+			},
+		})
+		return result
+	} catch (error) {
+		console.error('An error occurred:', error)
+		throw error
 	}
 }
