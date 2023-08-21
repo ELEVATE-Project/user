@@ -1,6 +1,7 @@
 const Session = require('@database/models/index').Session
 const { Op } = require('sequelize')
 const common = require('@constants/common')
+const sequelize = require('sequelize')
 
 exports.create = async (data) => {
 	try {
@@ -90,9 +91,6 @@ exports.getSessionByUserIdAndTime = async (userId, startDate, endDate, sessionId
 		}
 
 		if (startDate) {
-			//start date less than or equals to startDate
-			//end date greater than or equals to startDate
-
 			query.start_date = {
 				[Op.lte]: startDate,
 			}
@@ -108,8 +106,6 @@ exports.getSessionByUserIdAndTime = async (userId, startDate, endDate, sessionId
 			startDateResponse = await this.findAll(query)
 		}
 		if (endDate) {
-			//start date less than or equals to endDate
-			//end date greater than or equals to endDate
 			query.start_date = {
 				[Op.lte]: endDate,
 			}
@@ -150,6 +146,41 @@ exports.updateSession = async (filter, update, options = {}) => {
 			where: filter,
 			...options,
 		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAllSessions = async (page, limit, search, filters) => {
+	try {
+		let filterQuery = {
+			where: filters,
+			raw: true,
+			attributes: [
+				'id',
+				'title',
+				'mentor_id',
+				'description',
+				'status',
+				'start_date',
+				'end_date',
+				'image',
+				'created_at',
+				[sequelize.literal('"meeting_info"->>\'value\''), 'meeting_info.value'],
+				[sequelize.literal('"meeting_info"->>\'platform\''), 'meeting_info.platform'],
+			],
+			offset: parseInt((page - 1) * limit, 10),
+			limit: parseInt(limit, 10),
+			order: [['title', 'ASC']],
+		}
+
+		if (search) {
+			filterQuery.where.title = {
+				[Op.iLike]: search + '%',
+			}
+		}
+
+		return await Session.findAndCountAll(filterQuery)
 	} catch (error) {
 		return error
 	}

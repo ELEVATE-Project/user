@@ -427,12 +427,13 @@ module.exports = class SessionsHelper {
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
 			// update sessions which having status as published/live and  exceeds the current date and time
+			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
 			const filterQuery = {
 				[Op.or]: [
 					{
 						status: common.PUBLISHED_STATUS,
 						end_date: {
-							[Op.lt]: moment().utc().format(),
+							[Op.lt]: currentDate,
 						},
 					},
 					{
@@ -441,11 +442,12 @@ module.exports = class SessionsHelper {
 							[Op.ne]: common.BBB_VALUE,
 						},
 						end_date: {
-							[Op.lt]: moment().utc().format(),
+							[Op.lt]: currentDate,
 						},
 					},
 				],
 			}
+
 			await sessionQueries.updateSession(filterQuery, {
 				status: common.COMPLETED_STATUS,
 			})
@@ -466,16 +468,16 @@ module.exports = class SessionsHelper {
 				// } else
 				if (arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)) {
 					filters['end_date'] = {
-						[Op.gte]: moment().utc().format(),
+						[Op.gte]: currentDate,
 					}
 				}
 
 				filters['status'] = arrayOfStatus
 			}
 
-			console.log(filters, 'filters')
-			const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters)
-			if (sessionDetails[0] && sessionDetails[0].data.length == 0 && search !== '') {
+			const sessionDetails = await sessionQueries.findAllSessions(page, limit, search, filters)
+
+			if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -484,12 +486,12 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			sessionDetails[0].data = await sessionMentor.sessionMentorDetails(sessionDetails[0].data)
+			sessionDetails.rows = await sessionMentor.sessionMentorDetails(sessionDetails.rows)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: sessionDetails[0] ? sessionDetails[0] : [],
+				result: sessionDetails,
 			})
 		} catch (error) {
 			throw error
