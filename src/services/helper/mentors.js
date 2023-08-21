@@ -11,6 +11,7 @@ const sessionAttendees = require('@db/sessionAttendees/queries')
 
 const mentorQueries = require('../../database/queries/mentorextension')
 const { UniqueConstraintError } = require('sequelize')
+const _ = require('lodash')
 
 module.exports = class MentorsHelper {
 	/**
@@ -187,14 +188,13 @@ module.exports = class MentorsHelper {
 	static async sessionMentorDetails(session) {
 		try {
 			if (session.length > 0) {
-				const userIds = session
-					.map((item) => item.userId.toString())
-					.filter((value, index, self) => self.indexOf(value) === index)
+				const userIds = _.uniqBy(session, 'mentor_id').map((item) => item.mentor_id)
 
 				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
 				mentorDetails = mentorDetails.result
+
 				for (let i = 0; i < session.length; i++) {
-					let mentorIndex = mentorDetails.findIndex((x) => x._id === session[i].userId.toString())
+					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
 					session[i].mentorName = mentorDetails[mentorIndex].name
 				}
 

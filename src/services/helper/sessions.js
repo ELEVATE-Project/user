@@ -22,6 +22,9 @@ const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const menteeExtensionQueries = require('@database/queries/userextension')
 const mentorExtensionQueries = require('../../database/queries/mentorextension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
+const postSessionQueries = require('@database/queries/postSessionDetail')
+const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
+const { Op } = require('sequelize')
 
 module.exports = class SessionsHelper {
 	/**
@@ -45,17 +48,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let startDateUtc
-			let endDateUtc
-			if (bodyData.start_date) {
-				startDateUtc = utils.epochFormat(bodyData.start_date, common.UTC_DATE_TIME_FORMAT)
-			}
-			if (bodyData.end_date) {
-				endDateUtc = moment.unix(bodyData.end_date).utc().format(common.UTC_DATE_TIME_FORMAT)
-			}
-
-			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, startDateUtc, endDateUtc)
-
+			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
@@ -64,7 +57,9 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let elapsedMinutes = moment(endDateUtc).diff(startDateUtc, 'minutes')
+			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
+			let elapsedMinutes = duration.asMinutes()
+
 			if (elapsedMinutes < 30) {
 				return common.failureResponse({
 					message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -92,14 +87,16 @@ module.exports = class SessionsHelper {
 				}
 			}
 
-			bodyData.start_date = startDateUtc
-			bodyData.end_date = endDateUtc
-
 			bodyData['mentor_org_id'] =
 				mentorDetails.organisation_ids.length > 0 ? mentorDetails.organisation_ids[0] : null
-			let data = await sessionQueries.create(bodyData)
 
-			await this.setMentorPassword(data.id, data.mentor_id.toString())
+			const data = await sessionQueries.create(bodyData)
+			await sessionOwnershipQueries.create({
+				mentor_id: loggedInUserId,
+				session_id: data.id,
+			})
+
+			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
 
 			return common.successResponse({
@@ -134,8 +131,8 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const sessionDetail = await sessionQueries.findById(sessionId)
 
+			const sessionDetail = await sessionQueries.findById(sessionId)
 			if (!sessionDetail) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -145,8 +142,11 @@ module.exports = class SessionsHelper {
 			}
 
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
-			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-			let elapsedMinutes = moment(sessionDetail.start_date).diff(currentDate, 'minutes')
+
+			const currentDate = moment.utc()
+			const startDate = moment.unix(sessionDetail.start_date)
+			let elapsedMinutes = startDate.diff(currentDate, 'minutes')
+
 			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
 				return common.failureResponse({
 					message: {
@@ -157,17 +157,8 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let startDateUtc
-			let endDateUtc
-			if (bodyData.start_date) {
-				startDateUtc = utils.epochFormat(bodyData.start_date, common.UTC_DATE_TIME_FORMAT)
-				isSessionReschedule = true
-			}
-			if (bodyData.end_date) {
-				endDateUtc = utils.epochFormat(bodyData.end_date, common.UTC_DATE_TIME_FORMAT)
-				isSessionReschedule = true
-			}
-			const timeSlot = await this.isTimeSlotAvailable(userId, startDateUtc, endDateUtc, sessionId)
+
+			const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
@@ -176,8 +167,9 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD && (endDateUtc || startDateUtc)) {
-				let elapsedMinutes = moment(endDateUtc).diff(startDateUtc, 'minutes')
+			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {
+				let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
+				let elapsedMinutes = duration.asMinutes()
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
 						message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -197,10 +189,9 @@ module.exports = class SessionsHelper {
 
 			let message
 			if (method == common.DELETE_METHOD) {
-				// let statTime = moment.unix(sessionDetail.start_date).utc().format(common.UTC_DATE_TIME_FORMAT)
-				let statTime = moment.utc(sessionDetail.start_date).format(common.UTC_DATE_TIME_FORMAT)
-				let current = moment.utc().format(common.UTC_DATE_TIME_FORMAT)
-				let diff = moment(statTime).diff(current, 'minutes')
+				let statTime = moment.unix(sessionDetail.start_date)
+				const current = moment.utc()
+				let diff = statTime.diff(current, 'minutes')
 
 				if (sessionDetail.status == common.PUBLISHED_STATUS && diff > 10) {
 					await sessionQueries.deleteSession({
@@ -215,9 +206,6 @@ module.exports = class SessionsHelper {
 					})
 				}
 			} else {
-				bodyData.start_date = startDateUtc
-				bodyData.end_date = endDateUtc
-
 				const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, bodyData)
 				if (rowsAffected == 0) {
 					return common.failureResponse({
@@ -439,30 +427,30 @@ module.exports = class SessionsHelper {
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
 			// update sessions which having status as published/live and  exceeds the current date and time
-			await sessionData.updateSession(
-				{
-					$or: [
-						{
-							status: common.PUBLISHED_STATUS,
-							endDateUtc: {
-								$lt: moment().utc().format(),
-							},
+			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
+			const filterQuery = {
+				[Op.or]: [
+					{
+						status: common.PUBLISHED_STATUS,
+						end_date: {
+							[Op.lt]: currentDate,
 						},
-						{
-							status: common.LIVE_STATUS,
-							'meetingInfo.value': {
-								$ne: common.BBB_VALUE,
-							},
-							endDateUtc: {
-								$lt: moment().utc().format(),
-							},
+					},
+					{
+						status: common.LIVE_STATUS,
+						'meeting_info.value': {
+							[Op.ne]: common.BBB_VALUE,
 						},
-					],
-				},
-				{
-					status: common.COMPLETED_STATUS,
-				}
-			)
+						end_date: {
+							[Op.lt]: currentDate,
+						},
+					},
+				],
+			}
+
+			await sessionQueries.updateSession(filterQuery, {
+				status: common.COMPLETED_STATUS,
+			})
 
 			let arrayOfStatus = []
 			if (status && status != '') {
@@ -470,7 +458,7 @@ module.exports = class SessionsHelper {
 			}
 
 			let filters = {
-				userId: ObjectId(loggedInUserId),
+				mentor_id: loggedInUserId,
 			}
 			if (arrayOfStatus.length > 0) {
 				// if (arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.length == 1) {
@@ -479,17 +467,17 @@ module.exports = class SessionsHelper {
 				// 	}
 				// } else
 				if (arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)) {
-					filters['endDateUtc'] = {
-						$gte: moment().utc().format(),
+					filters['end_date'] = {
+						[Op.gte]: currentDate,
 					}
 				}
 
-				filters['status'] = {
-					$in: arrayOfStatus,
-				}
+				filters['status'] = arrayOfStatus
 			}
-			const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters)
-			if (sessionDetails[0] && sessionDetails[0].data.length == 0 && search !== '') {
+
+			const sessionDetails = await sessionQueries.findAllSessions(page, limit, search, filters)
+
+			if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -498,12 +486,12 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			sessionDetails[0].data = await sessionMentor.sessionMentorDetails(sessionDetails[0].data)
+			sessionDetails.rows = await sessionMentor.sessionMentorDetails(sessionDetails.rows)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: sessionDetails[0] ? sessionDetails[0] : [],
+				result: sessionDetails,
 			})
 		} catch (error) {
 			throw error
@@ -881,7 +869,7 @@ module.exports = class SessionsHelper {
 					value: common.BBB_VALUE,
 					link: moderatorMeetingLink,
 					meta: {
-						meetingId: meetingDetails.data.response.internalMeetingID,
+						meeting_id: meetingDetails.data.response.internalMeetingID,
 					},
 				}
 
@@ -973,20 +961,30 @@ module.exports = class SessionsHelper {
 		try {
 			const recordingInfo = await bigBlueButton.getRecordings(sessionId)
 
-			const result = await sessionData.updateOneSession(
+			await sessionQueries.updateOne(
 				{
-					_id: sessionId,
+					id: sessionId,
 				},
 				{
-					status: 'completed',
-					recordings: recordingInfo.data.response.recordings,
-					completedAt: utils.utcFormat(),
+					status: common.COMPLETED_STATUS,
+					completed_at: utils.utcFormat(),
 				}
 			)
 
+			if (recordingInfo && recordingInfo.data && recordingInfo.data.response) {
+				const recordings = recordingInfo.data.response.recordings
+
+				//update recording info in postsessiontable
+				await postSessionQueries.create({
+					session_id: sessionId,
+					recording_url: recordings.recording.playback.format.url,
+					recording: recordings,
+				})
+			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				result: result,
+				result: [],
 			})
 		} catch (error) {
 			return error
@@ -1003,7 +1001,7 @@ module.exports = class SessionsHelper {
 
 	static async getRecording(sessionId) {
 		try {
-			const session = await sessionData.findSessionById(sessionId)
+			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -1036,16 +1034,28 @@ module.exports = class SessionsHelper {
 
 	static async updateRecordingUrl(internalMeetingId, recordingUrl) {
 		try {
-			const updateStatus = await sessionData.updateOneSession(
+			const sessionDetails = await sessionQueries.findOne({
+				'meeting_info.meta.meeting_id': internalMeetingId,
+			})
+
+			if (!sessionDetails) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const rowsAffected = await postSessionQueries.updateOne(
 				{
-					'meetingInfo.meta.meetingId': internalMeetingId,
+					session_id: sessionDetails.id,
 				},
 				{
-					recordingUrl,
+					recording_url: recordingUrl,
 				}
 			)
 
-			if (updateStatus === 'SESSION_NOT_FOUND') {
+			if (rowsAffected === 0) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -1081,7 +1091,7 @@ module.exports = class SessionsHelper {
 			const startDateResponse = sessions.startDateResponse?.[0]
 			const endDateResponse = sessions.endDateResponse?.[0]
 
-			if (startDateResponse && endDateResponse && !startDateResponse.id.equals(endDateResponse.id)) {
+			if (startDateResponse && endDateResponse && startDateResponse.id !== endDateResponse.id) {
 				return {
 					isTimeSlotAvailable: false,
 					sessionName: `${startDateResponse.title} and ${endDateResponse.title}`,

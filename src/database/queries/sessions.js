@@ -1,6 +1,7 @@
 const Session = require('@database/models/index').Session
 const { Op } = require('sequelize')
 const common = require('@constants/common')
+const sequelize = require('sequelize')
 
 exports.create = async (data) => {
 	try {
@@ -84,39 +85,32 @@ exports.incrementOrDecrement = async (filterWithOptions, incrementFields = []) =
 exports.getSessionByUserIdAndTime = async (userId, startDate, endDate, sessionId) => {
 	try {
 		let startDateResponse, endDateResponse
-
 		const query = {
 			mentor_id: userId,
 			status: { [Op.ne]: common.COMPLETED_STATUS },
 		}
 
 		if (startDate) {
-			//start date less than or equals to startDate
-			//end date greater than or equals to startDate
-
 			query.start_date = {
-				[Op.lte]: new Date(startDate),
+				[Op.lte]: startDate,
 			}
 			query.end_date = {
-				[Op.gte]: new Date(startDate),
+				[Op.gte]: startDate,
 			}
 
 			if (sessionId) {
 				// check if sessionId is truthy (i.e. not undefined or empty)
-				console.log('came')
 				query.id = { [Op.ne]: sessionId }
 			}
 
 			startDateResponse = await this.findAll(query)
 		}
 		if (endDate) {
-			//start date less than or equals to endDate
-			//end date greater than or equals to endDate
 			query.start_date = {
-				[Op.lte]: new Date(endDate),
+				[Op.lte]: endDate,
 			}
 			query.end_date = {
-				[Op.gte]: new Date(endDate),
+				[Op.gte]: endDate,
 			}
 
 			if (sessionId) {
@@ -126,6 +120,7 @@ exports.getSessionByUserIdAndTime = async (userId, startDate, endDate, sessionId
 
 			endDateResponse = await this.findAll(query)
 		}
+
 		return {
 			startDateResponse: startDateResponse,
 			endDateResponse: endDateResponse,
@@ -140,6 +135,52 @@ exports.deleteSession = async (filter) => {
 		return await Session.destroy({
 			where: filter,
 		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.updateSession = async (filter, update, options = {}) => {
+	try {
+		return await await Session.update(update, {
+			where: filter,
+			...options,
+		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAllSessions = async (page, limit, search, filters) => {
+	try {
+		let filterQuery = {
+			where: filters,
+			raw: true,
+			attributes: [
+				'id',
+				'title',
+				'mentor_id',
+				'description',
+				'status',
+				'start_date',
+				'end_date',
+				'image',
+				'created_at',
+				[sequelize.literal('"meeting_info"->>\'value\''), 'meeting_info.value'],
+				[sequelize.literal('"meeting_info"->>\'platform\''), 'meeting_info.platform'],
+			],
+			offset: parseInt((page - 1) * limit, 10),
+			limit: parseInt(limit, 10),
+			order: [['title', 'ASC']],
+		}
+
+		if (search) {
+			filterQuery.where.title = {
+				[Op.iLike]: search + '%',
+			}
+		}
+
+		return await Session.findAndCountAll(filterQuery)
 	} catch (error) {
 		return error
 	}

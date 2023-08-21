@@ -52,11 +52,11 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			start_date: {
-				type: DataTypes.DATE,
+				type: DataTypes.BIGINT,
 				allowNull: false,
 			},
 			end_date: {
-				type: DataTypes.DATE,
+				type: DataTypes.BIGINT,
 				allowNull: false,
 			},
 			mentee_password: {
@@ -93,7 +93,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			meeting_info: {
-				type: DataTypes.JSON,
+				type: DataTypes.JSONB,
 				allowNull: true,
 			},
 			meta: {
@@ -110,7 +110,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			mentor_org_id: {
 				type: DataTypes.INTEGER,
-				allowNull: true,
+				allowNull: false,
 			},
 			seats_remaining: {
 				type: DataTypes.INTEGER,
