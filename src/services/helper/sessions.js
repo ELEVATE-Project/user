@@ -23,6 +23,8 @@ const menteeExtensionQueries = require('@database/queries/userextension')
 const mentorExtensionQueries = require('../../database/queries/mentorextension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 const postSessionQueries = require('@database/queries/postSessionDetail')
+const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
+const { Op } = require('sequelize')
 
 module.exports = class SessionsHelper {
 	/**
@@ -46,17 +48,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let startDateUtc
-			let endDateUtc
-			if (bodyData.start_date) {
-				startDateUtc = utils.epochFormat(bodyData.start_date, common.UTC_DATE_TIME_FORMAT)
-			}
-			if (bodyData.end_date) {
-				endDateUtc = moment.unix(bodyData.end_date).utc().format(common.UTC_DATE_TIME_FORMAT)
-			}
-
-			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, startDateUtc, endDateUtc)
-
+			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
@@ -65,7 +57,9 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let elapsedMinutes = moment(endDateUtc).diff(startDateUtc, 'minutes')
+			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
+			let elapsedMinutes = duration.asMinutes()
+
 			if (elapsedMinutes < 30) {
 				return common.failureResponse({
 					message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -93,14 +87,16 @@ module.exports = class SessionsHelper {
 				}
 			}
 
-			bodyData.start_date = startDateUtc
-			bodyData.end_date = endDateUtc
-
 			bodyData['mentor_org_id'] =
 				mentorDetails.organisation_ids.length > 0 ? mentorDetails.organisation_ids[0] : null
-			let data = await sessionQueries.create(bodyData)
 
-			await this.setMentorPassword(data.id, data.mentor_id.toString())
+			const data = await sessionQueries.create(bodyData)
+			await sessionOwnershipQueries.create({
+				mentor_id: loggedInUserId,
+				session_id: data.id,
+			})
+
+			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
 
 			return common.successResponse({
@@ -440,30 +436,28 @@ module.exports = class SessionsHelper {
 	static async list(loggedInUserId, page, limit, search, status) {
 		try {
 			// update sessions which having status as published/live and  exceeds the current date and time
-			await sessionData.updateSession(
-				{
-					$or: [
-						{
-							status: common.PUBLISHED_STATUS,
-							endDateUtc: {
-								$lt: moment().utc().format(),
-							},
+			const filterQuery = {
+				[Op.or]: [
+					{
+						status: common.PUBLISHED_STATUS,
+						end_date: {
+							[Op.lt]: moment().utc().format(),
 						},
-						{
-							status: common.LIVE_STATUS,
-							'meetingInfo.value': {
-								$ne: common.BBB_VALUE,
-							},
-							endDateUtc: {
-								$lt: moment().utc().format(),
-							},
+					},
+					{
+						status: common.LIVE_STATUS,
+						'meeting_info.value': {
+							[Op.ne]: common.BBB_VALUE,
 						},
-					],
-				},
-				{
-					status: common.COMPLETED_STATUS,
-				}
-			)
+						end_date: {
+							[Op.lt]: moment().utc().format(),
+						},
+					},
+				],
+			}
+			await sessionQueries.updateSession(filterQuery, {
+				status: common.COMPLETED_STATUS,
+			})
 
 			let arrayOfStatus = []
 			if (status && status != '') {
@@ -471,7 +465,7 @@ module.exports = class SessionsHelper {
 			}
 
 			let filters = {
-				userId: ObjectId(loggedInUserId),
+				mentor_id: loggedInUserId,
 			}
 			if (arrayOfStatus.length > 0) {
 				// if (arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.length == 1) {
@@ -480,15 +474,15 @@ module.exports = class SessionsHelper {
 				// 	}
 				// } else
 				if (arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)) {
-					filters['endDateUtc'] = {
-						$gte: moment().utc().format(),
+					filters['end_date'] = {
+						[Op.gte]: moment().utc().format(),
 					}
 				}
 
-				filters['status'] = {
-					$in: arrayOfStatus,
-				}
+				filters['status'] = arrayOfStatus
 			}
+
+			console.log(filters, 'filters')
 			const sessionDetails = await sessionData.findAllSessions(page, limit, search, filters)
 			if (sessionDetails[0] && sessionDetails[0].data.length == 0 && search !== '') {
 				return common.failureResponse({
@@ -1104,7 +1098,7 @@ module.exports = class SessionsHelper {
 			const startDateResponse = sessions.startDateResponse?.[0]
 			const endDateResponse = sessions.endDateResponse?.[0]
 
-			if (startDateResponse && endDateResponse && !startDateResponse.id.equals(endDateResponse.id)) {
+			if (startDateResponse && endDateResponse && startDateResponse.id !== endDateResponse.id) {
 				return {
 					isTimeSlotAvailable: false,
 					sessionName: `${startDateResponse.title} and ${endDateResponse.title}`,

@@ -77,7 +77,7 @@ module.exports = class Sessions {
 	 * @method
 	 * @name list
 	 * @param {Object} req -request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.pageNo - Page No.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
@@ -87,7 +87,7 @@ module.exports = class Sessions {
 	async list(req) {
 		try {
 			const sessionDetails = await sessionsHelper.list(
-				req.decodedToken._id,
+				req.decodedToken.id,
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
