@@ -131,8 +131,8 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const sessionDetail = await sessionQueries.findById(sessionId)
 
+			const sessionDetail = await sessionQueries.findById(sessionId)
 			if (!sessionDetail) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -142,8 +142,11 @@ module.exports = class SessionsHelper {
 			}
 
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
-			let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-			let elapsedMinutes = moment(sessionDetail.start_date).diff(currentDate, 'minutes')
+
+			const currentDate = moment.utc()
+			const startDate = moment.unix(sessionDetail.start_date)
+			let elapsedMinutes = startDate.diff(currentDate, 'minutes')
+
 			if (!isEditingAllowedAtAnyTime && elapsedMinutes < process.env.SESSION_EDIT_WINDOW_MINUTES) {
 				return common.failureResponse({
 					message: {
@@ -154,17 +157,8 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let startDateUtc
-			let endDateUtc
-			if (bodyData.start_date) {
-				startDateUtc = utils.epochFormat(bodyData.start_date, common.UTC_DATE_TIME_FORMAT)
-				isSessionReschedule = true
-			}
-			if (bodyData.end_date) {
-				endDateUtc = utils.epochFormat(bodyData.end_date, common.UTC_DATE_TIME_FORMAT)
-				isSessionReschedule = true
-			}
-			const timeSlot = await this.isTimeSlotAvailable(userId, startDateUtc, endDateUtc, sessionId)
+
+			const timeSlot = await this.isTimeSlotAvailable(userId, bodyData.start_date, bodyData.end_date, sessionId)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
@@ -173,8 +167,9 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (method != common.DELETE_METHOD && (endDateUtc || startDateUtc)) {
-				let elapsedMinutes = moment(endDateUtc).diff(startDateUtc, 'minutes')
+			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {
+				let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
+				let elapsedMinutes = duration.asMinutes()
 				if (elapsedMinutes < 30) {
 					return common.failureResponse({
 						message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -194,10 +189,9 @@ module.exports = class SessionsHelper {
 
 			let message
 			if (method == common.DELETE_METHOD) {
-				// let statTime = moment.unix(sessionDetail.start_date).utc().format(common.UTC_DATE_TIME_FORMAT)
-				let statTime = moment.utc(sessionDetail.start_date).format(common.UTC_DATE_TIME_FORMAT)
-				let current = moment.utc().format(common.UTC_DATE_TIME_FORMAT)
-				let diff = moment(statTime).diff(current, 'minutes')
+				let statTime = moment.unix(sessionDetail.start_date)
+				const current = moment.utc()
+				let diff = statTime.diff(current, 'minutes')
 
 				if (sessionDetail.status == common.PUBLISHED_STATUS && diff > 10) {
 					await sessionQueries.deleteSession({
@@ -212,9 +206,6 @@ module.exports = class SessionsHelper {
 					})
 				}
 			} else {
-				bodyData.start_date = startDateUtc
-				bodyData.end_date = endDateUtc
-
 				const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, bodyData)
 				if (rowsAffected == 0) {
 					return common.failureResponse({
