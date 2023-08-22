@@ -12,8 +12,8 @@ module.exports = {
 				status: 'active',
 				email_header: 'email_header',
 				email_footer: 'email_footer',
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				created_at: new Date(),
 				updated_at: new Date(),
 			},
@@ -25,8 +25,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 			},
 			{
 				id: 3,
@@ -36,8 +36,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 			},
 			{
 				id: 4,
@@ -48,8 +48,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},
@@ -62,8 +62,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},
@@ -76,8 +76,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},
@@ -90,8 +90,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},
@@ -104,8 +104,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},
@@ -118,8 +118,8 @@ module.exports = {
 				status: 'active',
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1, // Replace with appropriate user ID
-				updated_by: 1, // Replace with appropriate user ID
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},
