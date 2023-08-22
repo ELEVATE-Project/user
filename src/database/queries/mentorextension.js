@@ -43,4 +43,34 @@ module.exports = class MentorExtensionQueries {
 			throw error
 		}
 	}
+	static async removeMentorDetails(userId) {
+		try {
+			return await MentorExtension.update(
+				{
+					designation: null,
+					area_of_expertise: [],
+					education_qualification: [],
+					rating: null,
+					user_type: null,
+					meta: null,
+					stats: null,
+					tags: [],
+					configs: null,
+					visibility: null,
+					organisation_ids: [],
+					external_session_visibility: null,
+					external_mentor_visibility: null,
+					deleted_at: Date.now(),
+				},
+				{
+					where: {
+						user_id: userId,
+					},
+				}
+			)
+		} catch (error) {
+			console.error('An error occurred:', error)
+			throw error
+		}
+	}
 }

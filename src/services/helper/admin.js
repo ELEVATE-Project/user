@@ -10,6 +10,9 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const sessionQueries = require('../../database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
+const mentorQueries = require('../../database/queries/mentorextension')
+const menteeQueries = require('../../database/queries/userextension')
+
 module.exports = class AdminHelper {
 	/**
 	 * userDelete
@@ -22,34 +25,43 @@ module.exports = class AdminHelper {
 
 	static async userDelete(decodedToken, userId) {
 		try {
-			/* if (decodedToken.role !== common.ADMIN_ROLE) {
+			if (decodedToken.roles.some((role) => role.title !== common.ADMIN_ROLE)) {
 				return common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
-			} */
+			}
 			let result = {}
-			const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
 
-			const isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(removedSessionsDetail) //Notify the removed sessions attendees if any
-			result.isAttendeesNotified = isAttendeesNotified
-			const isUnenrolledFromSessions = await this.unenrollFromUpcomingSessions(userId) //Unenroll the user if enrolled into any upcoming sessions
-			result.isUnenrolledFromSessions = isUnenrolledFromSessions
+			const mentor = await mentorQueries.getMentorExtension(userId)
+			const isMentor = mentor !== null
 
-			if (isUnenrolledFromSessions && isAttendeesNotified) {
+			let removedUserDetails
+
+			if (isMentor) {
+				removedUserDetails = await mentorQueries.removeMentorDetails(userId)
+				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
+				result.isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+			} else {
+				removedUserDetails = await menteeQueries.removeMenteeDetails(userId)
+			}
+
+			result.areUserDetailsCleared = removedUserDetails > 0
+			result.isUnenrolledFromSessions = await this.unenrollFromUpcomingSessions(userId)
+
+			if (result.isUnenrolledFromSessions && result.areUserDetailsCleared) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_REMOVED_SUCCESSFULLY',
 					result,
 				})
-			} else {
-				return common.failureResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USER_NOT_REMOVED_SUCCESSFULLY',
-					result,
-				})
 			}
+			return common.failureResponse({
+				statusCode: httpStatusCode.bad_request,
+				message: 'USER_NOT_REMOVED_SUCCESSFULLY',
+				result,
+			})
 		} catch (error) {
 			console.error('An error occurred in userDelete:', error)
 			return error
@@ -98,7 +110,7 @@ module.exports = class AdminHelper {
 			}
 			const sessionIds = removedSessionsDetail.map((session) => session.id)
 			const unenrollCount = await sessionAttendeesQueries.unEnrollAllAttendeesOfSessions(sessionIds)
-			return unenrollCount > 0
+			return true
 		} catch (error) {
 			console.error('An error occurred in notifySessionAttendees:', error)
 			return error
@@ -127,8 +139,7 @@ module.exports = class AdminHelper {
 				userId,
 				upcomingSessionsId
 			)
-			console.log(unenrollFromUpcomingSessions)
-			return unenrollFromUpcomingSessions > 0
+			return true
 		} catch (error) {
 			console.error('An error occurred in unenrollFromUpcomingSessions:', error)
 			return error

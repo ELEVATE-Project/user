@@ -80,8 +80,6 @@ exports.unEnrollAllAttendeesOfSessions = async (sessionIds) => {
 				session_id: { [Op.in]: sessionIds },
 			},
 		})
-		console.log(sessionIds, destroyedCount)
-		const isUnenrolledAttendee = destroyedCount > 0
 
 		return destroyedCount
 	} catch (error) {
@@ -92,7 +90,6 @@ exports.unEnrollAllAttendeesOfSessions = async (sessionIds) => {
 
 exports.usersUpcomingSessions = async (userId, sessionIds) => {
 	try {
-		console.log(sessionIds, 'fwer-fw-ef-w-ef-w-ef-wef-')
 		return await SessionAttendee.findAll({
 			where: {
 				session_id: sessionIds,

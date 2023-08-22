@@ -20,10 +20,6 @@ module.exports = (sequelize, DataTypes) => {
 			rating: {
 				type: DataTypes.JSON,
 			},
-			user_type: {
-				type: DataTypes.STRING,
-				allowNull: false,
-			},
 			meta: {
 				type: DataTypes.JSONB,
 			},
