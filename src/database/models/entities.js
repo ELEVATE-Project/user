@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
 			label: { type: DataTypes.STRING, allowNull: false },
 			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
 			type: { type: DataTypes.STRING },
-			created_by: { type: DataTypes.INTEGER, allowNull: false },
-			updated_by: { type: DataTypes.INTEGER, allowNull: false },
+			created_by: { type: DataTypes.INTEGER, allowNull: true },
+			updated_by: { type: DataTypes.INTEGER, allowNull: true },
 		},
 		{ sequelize, modelName: 'Entity', tableName: 'entities', freezeTableName: true, paranoid: true }
 	)
