@@ -103,14 +103,16 @@ module.exports = {
 }
 
 function toCamelCase(inputString) {
-	const cleanedString = inputString.replace(/[^a-zA-Z0-9\s]/g, ' ')
-	const words = cleanedString.split(/\s+/)
-	const camelCasedWords = words.map((word, index) => {
-		if (index === 0) {
-			return word.toLowerCase()
-		}
-		return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-	})
-	const camelCaseString = camelCasedWords.join('')
-	return camelCaseString
+	const parts = inputString.replace(/_/g, ' ').split(' ')
+	const camelWithSpace = parts
+		.map((part, index) => {
+			if (index === 0) {
+				return part.charAt(0).toUpperCase() + part.slice(1)
+			} else {
+				return ' ' + part.charAt(0).toUpperCase() + part.slice(1)
+			}
+		})
+		.join('')
+
+	return camelWithSpace
 }

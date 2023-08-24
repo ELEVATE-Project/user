@@ -87,10 +87,12 @@ module.exports = (sequelize, DataTypes) => {
 			mentee_feedback_question_set: {
 				type: DataTypes.STRING,
 				allowNull: true,
+				defaultValue: 'MENTEE_QS1',
 			},
 			mentor_feedback_question_set: {
 				type: DataTypes.STRING,
 				allowNull: true,
+				defaultValue: 'MENTOR_QS2',
 			},
 			meeting_info: {
 				type: DataTypes.JSONB,
