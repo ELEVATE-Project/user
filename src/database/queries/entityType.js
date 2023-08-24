@@ -24,6 +24,7 @@ module.exports = class UserEntityData {
 			const entityData = await EntityType.findAll({
 				where: filter,
 				attributes,
+				raw: true,
 			})
 			return entityData
 		} catch (error) {

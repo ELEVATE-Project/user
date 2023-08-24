@@ -24,6 +24,7 @@ const mentorExtensionQueries = require('../../database/queries/mentorextension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 const postSessionQueries = require('@database/queries/postSessionDetail')
 const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
+const entityTypeQueries = require('@database/queries/entityType')
 const { Op } = require('sequelize')
 
 module.exports = class SessionsHelper {
@@ -74,6 +75,59 @@ module.exports = class SessionsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
+
+			//validate entities
+			if (
+				bodyData.hasOwnProperty(common.MEDIUM) ||
+				bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
+				bodyData.hasOwnProperty(common.CATEGORIES)
+			) {
+				let values = []
+				if (bodyData.hasOwnProperty(common.MEDIUM)) values.push(common.MEDIUM)
+				if (bodyData.hasOwnProperty(common.RECOMMENDED_FOR)) values.push(common.RECOMMENDED_FOR)
+				if (bodyData.hasOwnProperty(common.CATEGORIES)) values.push(common.CATEGORIES)
+				if (values.length > 0) {
+					const entityTypes = await entityTypeQueries.findAllEntityTypes(
+						{ value: values },
+						{ attributes: ['id', 'value'] }
+					)
+
+					if (!entityTypes) {
+						return common.failureResponse({
+							message: 'SESSION_CREATION_FAILED',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					for (
+						let pointerToEntityTypes = 0;
+						pointerToEntityTypes < entityTypes.length;
+						pointerToEntityTypes++
+					) {
+						let entityType = entityTypes[pointerToEntityTypes]
+						let entities = await entitiesQueries.findAll(
+							{
+								value: bodyData[entityType.value],
+								entity_type_id: entityType.id,
+							},
+							{ attributes: ['value'] }
+						)
+
+						if (entities.length != bodyData[entityType.value].length) {
+							return common.failureResponse({
+								message: 'SESSION_CREATION_FAILED',
+								statusCode: httpStatusCode.bad_request,
+								responseCode: 'CLIENT_ERROR',
+							})
+						}
+
+						bodyData[entityType.value] = _.map(entities, function (entity) {
+							return entity.value
+						})
+					}
+				}
 			}
 
 			bodyData.meeting_info = {
@@ -165,6 +219,60 @@ module.exports = class SessionsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
+
+			//validate entities
+			if (
+				method != common.DELETE_METHOD &&
+				(bodyData.hasOwnProperty(common.MEDIUM) ||
+					bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
+					bodyData.hasOwnProperty(common.CATEGORIES))
+			) {
+				let values = []
+				if (bodyData.hasOwnProperty(common.MEDIUM)) values.push(common.MEDIUM)
+				if (bodyData.hasOwnProperty(common.RECOMMENDED_FOR)) values.push(common.RECOMMENDED_FOR)
+				if (bodyData.hasOwnProperty(common.CATEGORIES)) values.push(common.CATEGORIES)
+				if (values.length > 0) {
+					const entityTypes = await entityTypeQueries.findAllEntityTypes(
+						{ value: values },
+						{ attributes: ['id', 'value'] }
+					)
+
+					if (!entityTypes) {
+						return common.failureResponse({
+							message: 'SESSION_UPDATION_FAILED',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					for (
+						let pointerToEntityTypes = 0;
+						pointerToEntityTypes < entityTypes.length;
+						pointerToEntityTypes++
+					) {
+						let entityType = entityTypes[pointerToEntityTypes]
+						let entities = await entitiesQueries.findAll(
+							{
+								value: bodyData[entityType.value],
+								entity_type_id: entityType.id,
+							},
+							{ attributes: ['value'] }
+						)
+
+						if (entities.length != bodyData[entityType.value].length) {
+							return common.failureResponse({
+								message: 'SESSION_UPDATION_FAILED',
+								statusCode: httpStatusCode.bad_request,
+								responseCode: 'CLIENT_ERROR',
+							})
+						}
+
+						bodyData[entityType.value] = _.map(entities, function (entity) {
+							return entity.value
+						})
+					}
+				}
 			}
 
 			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {

@@ -83,4 +83,7 @@ module.exports = {
 		'/issues/create',
 	],
 	MENTOR_ROLE: 'mentor',
+	MEDIUM: 'medium',
+	RECOMMENDED_FOR: 'recommended_for',
+	CATEGORIES: 'categories',
 }
