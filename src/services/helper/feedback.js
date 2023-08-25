@@ -7,6 +7,9 @@ const questionsSetData = require('@db/questionsSet/queries')
 const questionsData = require('@db/questions/queries')
 const ObjectId = require('mongoose').Types.ObjectId
 const kafkaCommunication = require('@generics/kafka-communication')
+const sessionQueries = require('@database/queries/sessions')
+const questionSetQueries = require('@database/queries/questionSet')
+const questionsQueries = require('@database/queries/questions')
 
 module.exports = class MenteesHelper {
 	/**
@@ -126,17 +129,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Feedback forms.
 	 */
 
-	static async forms(sessionId, isAMentor) {
+	static async forms(sessionId, roles) {
 		try {
-			let sessioninfo = await sessionData.findOneSession(
+			let sessioninfo = await sessionQueries.findOne(
+				{ id: sessionId },
 				{
-					_id: sessionId,
-				},
-				{
-					mentorFeedbackForm: 1,
-					menteeFeedbackForm: 1,
+					attributes: ['mentee_feedback_question_set', 'mentor_feedback_question_set'],
 				}
 			)
+
 			if (!sessioninfo) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -146,10 +147,11 @@ module.exports = class MenteesHelper {
 			}
 
 			let formCode
+			const isAMentor = roles.some((role) => role.title == common.MENTOR_ROLE)
 			if (isAMentor) {
-				formCode = sessioninfo.mentorFeedbackForm
+				formCode = sessioninfo.mentor_feedback_question_set
 			} else {
-				formCode = sessioninfo.menteeFeedbackForm
+				formCode = sessioninfo.mentee_feedback_question_set
 			}
 
 			let formData = await getFeedbackQuestions(formCode)
@@ -297,16 +299,14 @@ module.exports = class MenteesHelper {
 
 const getFeedbackQuestions = async function (formCode) {
 	try {
-		let questionsSet = await questionsSetData.findOneQuestionsSet({
+		let questionsSet = await questionSetQueries.findOneQuestionsSet({
 			code: formCode,
 		})
 
 		let result = {}
 		if (questionsSet && questionsSet.questions) {
-			let questions = await questionsData.find({
-				_id: {
-					$in: questionsSet.questions,
-				},
+			let questions = await questionsQueries.find({
+				id: questionsSet.questions,
 			})
 
 			if (questions && questions.length > 0) {

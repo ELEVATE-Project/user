@@ -23,7 +23,7 @@ module.exports = class Feedback {
 
 	async forms(req) {
 		try {
-			const feedbackFormData = await feedbackHelper.forms(req.params.id, req.decodedToken.isAMentor)
+			const feedbackFormData = await feedbackHelper.forms(req.params.id, req.decodedToken.roles)
 			return feedbackFormData
 		} catch (error) {
 			return error
