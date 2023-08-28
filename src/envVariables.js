@@ -191,6 +191,10 @@ let enviromentVariables = {
 		message: 'Required session mentee limit',
 		optional: false,
 	},
+	MENTOR_SECRET_CODE: {
+		message: 'Required mentor secret code',
+		optional: false,
+	},
 }
 
 let success = true

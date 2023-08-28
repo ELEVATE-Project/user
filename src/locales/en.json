@@ -90,5 +90,6 @@
 	"ENTITY_TYPE_CREATED_SUCCESSFULLY": "Entity type created successfully",
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
 	"ENTITY_TYPE_DELETED_SUCCESSFULLY": "Entity type deleted successfully",
-	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully"
+	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully",
+	"INVALID_SECRET_CODE": "Incorrect code. Please try again."
 }
