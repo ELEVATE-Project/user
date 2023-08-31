@@ -27,7 +27,10 @@ module.exports = class MentorExtensionQueries {
 
 	static async getMentorExtension(userId) {
 		try {
-			const mentor = await MentorExtension.findOne({ where: { user_id: userId } })
+			const mentor = await MentorExtension.findOne({
+				where: { user_id: userId },
+				raw: true,
+			})
 			return mentor
 		} catch (error) {
 			throw error

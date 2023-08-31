@@ -9,9 +9,13 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntities(filter) {
+	static async findAllEntities(filter, options = {}) {
 		try {
-			return await Entity.findAll({ where: filter })
+			return await Entity.findAll({
+				where: filter,
+				...options,
+				raw: true,
+			})
 		} catch (error) {
 			throw error
 		}

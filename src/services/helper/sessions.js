@@ -25,6 +25,7 @@ const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 const postSessionQueries = require('@database/queries/postSessionDetail')
 const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
 const entityTypeQueries = require('@database/queries/entityType')
+const entitiesQueries = require('@database/queries/entity')
 const { Op } = require('sequelize')
 
 module.exports = class SessionsHelper {
@@ -87,6 +88,7 @@ module.exports = class SessionsHelper {
 				if (bodyData.hasOwnProperty(common.MEDIUM)) values.push(common.MEDIUM)
 				if (bodyData.hasOwnProperty(common.RECOMMENDED_FOR)) values.push(common.RECOMMENDED_FOR)
 				if (bodyData.hasOwnProperty(common.CATEGORIES)) values.push(common.CATEGORIES)
+
 				if (values.length > 0) {
 					const entityTypes = await entityTypeQueries.findAllEntityTypes(
 						{ value: values },
@@ -107,7 +109,7 @@ module.exports = class SessionsHelper {
 						pointerToEntityTypes++
 					) {
 						let entityType = entityTypes[pointerToEntityTypes]
-						let entities = await entitiesQueries.findAll(
+						let entities = await entitiesQueries.findAllEntities(
 							{
 								value: bodyData[entityType.value],
 								entity_type_id: entityType.id,
@@ -252,7 +254,7 @@ module.exports = class SessionsHelper {
 						pointerToEntityTypes++
 					) {
 						let entityType = entityTypes[pointerToEntityTypes]
-						let entities = await entitiesQueries.findAll(
+						let entities = await entitiesQueries.findAllEntities(
 							{
 								value: bodyData[entityType.value],
 								entity_type_id: entityType.id,

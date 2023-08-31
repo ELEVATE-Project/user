@@ -10,6 +10,9 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const sessionQueries = require('@database/queries/sessions')
 const questionSetQueries = require('@database/queries/questionSet')
 const questionsQueries = require('@database/queries/questions')
+const feedbackQueries = require('@database/queries/feedback')
+const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
+const mentorExtensionQueries = require('@database/queries/mentorextension')
 
 module.exports = class MenteesHelper {
 	/**
@@ -180,23 +183,19 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async submit(sessionId, updateData, userId, isAMentor) {
-		let feedbackAs
+		let feedback_as
 		if (isAMentor) {
-			feedbackAs = updateData.feedbackAs
-			delete updateData.feedbackAs
+			feedback_as = updateData.feedback_as
+			delete updateData.feedback_as
 		}
 		try {
-			let sessionInfo = await sessionData.findOneSession(
+			let sessionInfo = await sessionQueries.findOne(
+				{ id: sessionId },
 				{
-					_id: sessionId,
-				},
-				{
-					_id: 1,
-					skippedFeedback: 1,
-					feedbacks: 1,
-					userId: 1,
+					attributes: ['is_feedback_skipped', 'mentor_id'],
 				}
 			)
+
 			if (!sessionInfo) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -204,43 +203,30 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (isAMentor && feedbackAs === 'mentor') {
-				if (
-					sessionInfo.skippedFeedback == true ||
-					(sessionInfo.feedbacks && sessionInfo.feedbacks.length > 0)
-				) {
-					return common.failureResponse({
-						message: 'FEEDBACK_ALREADY_SUBMITTED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
 
-				const result = await sessionData.updateOneSession(
-					{
-						_id: sessionId,
-						userId: userId,
-					},
-					updateData
+			const feedbacks = await feedbackQueries.findAll({
+				session_id: sessionId,
+				user_id: userId,
+			})
+
+			let feedbackNotExists = []
+			if (feedbacks && feedbacks.length > 0) {
+				feedbackNotExists = updateData.feedbacks.filter(
+					(data) => !feedbacks.some((feedback) => data.question_id == feedback.question_id)
 				)
-
-				if (result == 'SESSION_NOT_FOUND') {
-					return common.failureResponse({
-						message: 'SESSION_NOT_FOUND',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				} else {
-					return common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'FEEDBACK_SUBMITTED',
-					})
-				}
 			} else {
-				let sessionAttendesInfo = await sessionAttendees.findOneSessionAttendee(sessionId, userId)
+				feedbackNotExists = updateData.feedbacks
+			}
+
+			feedbackNotExists.map(async function (feedback) {
+				feedback.session_id = sessionId
+				feedback.user_id = userId
+			})
+
+			if (isAMentor && feedback_as === 'mentor') {
 				if (
-					(sessionAttendesInfo.skippedFeedback && sessionAttendesInfo.skippedFeedback == true) ||
-					(sessionAttendesInfo.feedbacks && sessionAttendesInfo.feedbacks.length > 0)
+					sessionInfo.is_feedback_skipped == true ||
+					(feedbacks.length > 0 && feedbackNotExists.length == 0)
 				) {
 					return common.failureResponse({
 						message: 'FEEDBACK_ALREADY_SUBMITTED',
@@ -249,39 +235,55 @@ module.exports = class MenteesHelper {
 					})
 				}
 
-				const result = await sessionAttendees.updateOne(
+				await feedbackQueries.bulkCreate(feedbackNotExists)
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'FEEDBACK_SUBMITTED',
+				})
+			} else {
+				const sessionAttendesInfo = await sessionAttendeesQueries.findOne(
 					{
-						sessionId: sessionId,
-						userId: userId,
+						session_id: sessionId,
+						mentee_id: userId,
 					},
-					updateData
+					{
+						attributes: ['is_feedback_skipped'],
+					}
 				)
-				if (!updateData.skippedFeedback) {
-					updateData.feedbacks.map(async function (feedbackInfo) {
-						let questionData = await questionsData.findOneQuestion({ _id: feedbackInfo.questionId })
-						if (questionData && questionData.evaluating == common.MENTOR_EVALUATING) {
-							let data = {
-								type: 'MENTOR_RATING',
-								mentorId: sessionInfo.userId,
-								...feedbackInfo,
-							}
-							kafkaCommunication.pushMentorRatingToKafka(data)
+
+				if (
+					sessionAttendesInfo.is_feedback_skipped == true ||
+					(feedbacks.length > 0 && feedbackNotExists.length == 0)
+				) {
+					return common.failureResponse({
+						message: 'FEEDBACK_ALREADY_SUBMITTED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				await feedbackQueries.bulkCreate(feedbackNotExists)
+				if (!updateData.is_feedback_skipped) {
+					feedbackNotExists.map(async function (feedbackInfo) {
+						let questionData = await questionsQueries.findOneQuestion({
+							id: feedbackInfo.question_id,
+						})
+
+						if (
+							questionData &&
+							questionData.category &&
+							questionData.category.evaluating == common.MENTOR_EVALUATING
+						) {
+							await ratingCalculation(feedbackInfo, sessionInfo.mentor_id)
 						}
 					})
 				}
 
-				if (result == 'SESSION_ATTENDENCE_NOT_FOUND') {
-					return common.failureResponse({
-						message: 'SESSION_NOT_FOUND',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				} else {
-					return common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'FEEDBACK_SUBMITTED',
-					})
-				}
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'FEEDBACK_SUBMITTED',
+				})
 			}
 		} catch (error) {
 			throw error
@@ -321,6 +323,80 @@ const getFeedbackQuestions = async function (formCode) {
 			}
 		}
 		return result
+	} catch (error) {
+		return error
+	}
+}
+
+/**
+ * Rating Calculation
+ * @method
+ * @name ratingCalculation
+ * @param {Object} feedbackData - feedback data
+ * @param {String} mentor_id - mentor id
+ * @returns {JSON} - mentor data.
+ */
+
+const ratingCalculation = async function (ratingData, mentor_id) {
+	try {
+		let mentorDetails = await mentorExtensionQueries.getMentorExtension(mentor_id)
+		let mentorRating = mentorDetails.rating
+		let updateData
+		if (mentorRating.average && mentorRating.average) {
+			let totalRating = parseFloat(ratingData.response)
+			let ratingBreakup = []
+			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
+				let breakupFound = false
+				ratingBreakup = await Promise.all(
+					mentorRating.breakup.map((breakupData) => {
+						totalRating = totalRating + parseFloat(breakupData.star * breakupData.votes)
+
+						if (breakupData['star'] == Number(ratingData.response)) {
+							breakupFound = true
+							return {
+								star: breakupData.star,
+								votes: breakupData.votes + 1,
+							}
+						} else {
+							return breakupData
+						}
+					})
+				)
+
+				if (!breakupFound) {
+					ratingBreakup.push({
+						star: Number(ratingData.response),
+						votes: 1,
+					})
+				}
+			}
+
+			let totalVotesCount = mentorRating.votes + 1
+			let avg = Math.round(parseFloat(totalRating) / totalVotesCount)
+			updateData = {
+				rating: {
+					average: avg,
+					votes: totalVotesCount,
+					breakup: ratingBreakup,
+				},
+			}
+		} else {
+			updateData = {
+				rating: {
+					average: parseFloat(ratingData.response),
+					votes: 1,
+					breakup: [
+						{
+							star: Number(ratingData.response),
+							votes: 1,
+						},
+					],
+				},
+			}
+		}
+
+		await mentorExtensionQueries.updateMentorExtension(mentor_id, updateData)
+		return
 	} catch (error) {
 		return error
 	}
