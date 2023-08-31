@@ -202,12 +202,12 @@ services:
       - elasticsearch
       - mentoring
       - user
-  networks:
-    elevate_net:
-      external: false
-  volumes:
-    zookeeper-data:
-    kafka-data:
-    mongo-data:
-    fbdata:
-    logs:
+networks:
+  elevate_net:
+    external: false
+volumes:
+  zookeeper-data:
+  kafka-data:
+  mongo-data:
+  fbdata:
+  logs:

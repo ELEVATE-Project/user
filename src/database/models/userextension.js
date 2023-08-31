@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			user_type: {
 				type: DataTypes.STRING,
-				allowNull: false,
 			},
 			meta: {
 				type: DataTypes.JSONB,
