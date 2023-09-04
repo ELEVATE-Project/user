@@ -58,7 +58,16 @@ module.exports = class AccountHelper {
 					})
 				}
 			}
-
+			if (
+				(bodyData.secret_code || bodyData.role == common.MENTOR_ROLE) &&
+				bodyData.secret_code != process.env.MENTOR_SECRET_CODE
+			) {
+				return common.failureResponse({
+					message: 'INVALID_SECRET_CODE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
 			if (!bodyData.organization_id) {

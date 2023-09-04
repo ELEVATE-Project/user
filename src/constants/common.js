@@ -82,4 +82,5 @@ module.exports = {
 	location: 'location',
 	languages: 'languages',
 	typeSystem: 'system',
+	MENTOR_ROLE: 'mentor',
 }
