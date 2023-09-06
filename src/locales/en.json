@@ -80,6 +80,7 @@
 	"MENTOR_EXTENSION_DELETED": "Mentor extension deleted successfully.",
 	"MENTEE_EXTENSION_CREATED": "Mentee extension created successfully.",
 	"MENTEE_EXTENSION_CREATION_FAILED": "Failed to create mentee extension.",
+	"MENTEE_EXTENSION_EXITS": "Duplicate user found",
 	"MENTEE_EXTENSION_UPDATED": "Mentee extension updated successfully.",
 	"MENTEE_EXTENSION_NOT_FOUND": "Mentee extension not found.",
 	"MENTEE_EXTENSION_FETCHED": "Mentee extension fetched successfully.",

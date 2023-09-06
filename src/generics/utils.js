@@ -13,6 +13,7 @@ const path = require('path')
 const md5 = require('md5')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
+const common = require('@constants/common')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -161,6 +162,10 @@ function redisDel(key) {
 const capitalize = (str) => {
 	return startCase(str)
 }
+const isAMentor = (roles) => {
+	return roles.some((role) => role.title !== common.MENTOR_ROLE)
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -173,7 +178,6 @@ module.exports = {
 	getTimeZone,
 	utcFormat: utcFormat,
 	md5Hash: md5Hash,
-
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
@@ -182,4 +186,5 @@ module.exports = {
 	redisDel: redisDel,
 	extractEmailTemplate,
 	capitalize,
+	isAMentor,
 }

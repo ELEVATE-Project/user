@@ -271,13 +271,6 @@ module.exports = class MentorsHelper {
 	static async createMentorExtension(data, userId) {
 		try {
 			data.user_id = userId
-			if (data.secret_code != process.env.MENTOR_SECRET_CODE) {
-				return common.failureResponse({
-					message: 'INVALID_SECRET_CODE',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const response = await mentorQueries.createMentorExtension(data)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
