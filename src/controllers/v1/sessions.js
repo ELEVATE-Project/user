@@ -25,23 +25,23 @@ module.exports = class Sessions {
 		try {
 			if (req.params.id) {
 				if (req.headers.timezone) {
-					req.body['timeZone'] = req.headers.timezone
+					req.body['time_zone'] = req.headers.timezone
 				}
 
 				const sessionUpdated = await sessionsHelper.update(
 					req.params.id,
 					req.body,
-					req.decodedToken._id,
+					req.decodedToken.id,
 					req.method
 				)
 
 				return sessionUpdated
 			} else {
 				if (req.headers.timezone) {
-					req.body['timeZone'] = req.headers.timezone
+					req.body['time_zone'] = req.headers.timezone
 				}
 
-				const sessionCreated = await sessionsHelper.create(req.body, req.decodedToken._id)
+				const sessionCreated = await sessionsHelper.create(req.body, req.decodedToken.id)
 
 				return sessionCreated
 			}
@@ -64,7 +64,7 @@ module.exports = class Sessions {
 		try {
 			const sessionDetails = await sessionsHelper.details(
 				req.params.id,
-				req.decodedToken ? req.decodedToken._id : ''
+				req.decodedToken ? req.decodedToken.id : ''
 			)
 			return sessionDetails
 		} catch (error) {
@@ -77,7 +77,7 @@ module.exports = class Sessions {
 	 * @method
 	 * @name list
 	 * @param {Object} req -request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.pageNo - Page No.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
@@ -87,7 +87,7 @@ module.exports = class Sessions {
 	async list(req) {
 		try {
 			const sessionDetails = await sessionsHelper.list(
-				req.decodedToken._id,
+				req.decodedToken.id,
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
@@ -133,7 +133,7 @@ module.exports = class Sessions {
 			const enrolledSession = await sessionsHelper.enroll(
 				req.params.id,
 				req.decodedToken,
-				req.headers['timeZone']
+				req.headers['timezone']
 			)
 			return enrolledSession
 		} catch (error) {
@@ -172,7 +172,7 @@ module.exports = class Sessions {
 
 	async start(req) {
 		try {
-			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token)
+			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken)
 			return sessionsStarted
 		} catch (error) {
 			return error

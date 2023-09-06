@@ -20,6 +20,7 @@ module.exports = {
 			},
 			status: {
 				type: Sequelize.STRING,
+				defaultValue: 'ACTIVE',
 			},
 			type: {
 				type: Sequelize.STRING,

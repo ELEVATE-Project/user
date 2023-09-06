@@ -1,20 +1,20 @@
-const MenteeExtension = require('../models/index').UserExtension
+const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
 
-module.exports = class MenteeExtensionQueries {
-	static async createMenteeExtension(data) {
+module.exports = class MentorExtensionQueries {
+	static async createMentorExtension(data) {
 		try {
-			return await MenteeExtension.create(data, { returning: true })
+			return await MentorExtension.create(data, { returning: true })
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async updateMenteeExtension(userId, data, options = {}) {
+	static async updateMentorExtension(userId, data, options = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			return await MenteeExtension.update(data, {
+			return await MentorExtension.update(data, {
 				where: {
 					user_id: userId,
 				},
@@ -25,27 +25,30 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async getMenteeExtension(userId) {
+	static async getMentorExtension(userId) {
 		try {
-			const mentee = await MenteeExtension.findOne({ where: { user_id: userId } })
-			return mentee
+			const mentor = await MentorExtension.findOne({
+				where: { user_id: userId },
+				raw: true,
+			})
+			return mentor
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async deleteMenteeExtension(userId) {
+	static async deleteMentorExtension(userId) {
 		try {
-			return await MenteeExtension.destroy({
+			return await MentorExtension.destroy({
 				where: { user_id: userId },
 			})
 		} catch (error) {
 			throw error
 		}
 	}
-	static async removeMenteeDetails(userId) {
+	static async removeMentorDetails(userId) {
 		try {
-			return await MenteeExtension.update(
+			return await MentorExtension.update(
 				{
 					designation: null,
 					area_of_expertise: [],

@@ -61,9 +61,9 @@ module.exports = {
 	MENTOR_SESSION_ONE_HOUR_REMAINDER_EMAIL_CODE: 'mentor_one_hour_before_session_reminder',
 	UTC_DATE_TIME_FORMAT: 'YYYY-MM-DDTHH:mm:ss',
 	internalAccessUrs: ['/notifications/emailCronJob'],
-	COMPLETED_STATUS: 'completed',
-	PUBLISHED_STATUS: 'published',
-	LIVE_STATUS: 'live',
+	COMPLETED_STATUS: 'COMPLETED',
+	PUBLISHED_STATUS: 'PUBLISHED',
+	LIVE_STATUS: 'LIVE',
 	MENTOR_EVALUATING: 'mentor',
 	internalCacheExpirationTime: process.env.INTERNAL_CACHE_EXP_TIME, // In Seconds
 	RedisCacheExpiryTime: process.env.REDIS_CACHE_EXP_TIME,
@@ -83,4 +83,8 @@ module.exports = {
 		'/mentors/upcomingSessions/',
 		'/issues/create',
 	],
+	MENTOR_ROLE: 'mentor',
+	MEDIUM: 'medium',
+	RECOMMENDED_FOR: 'recommended_for',
+	CATEGORIES: 'categories',
 }

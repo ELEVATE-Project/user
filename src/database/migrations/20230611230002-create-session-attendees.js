@@ -23,7 +23,7 @@ module.exports = {
 			},
 			joined_at: {
 				type: Sequelize.DATE,
-				allowNull: false,
+				allowNull: true,
 			},
 			left_at: {
 				type: Sequelize.DATE,
@@ -32,6 +32,7 @@ module.exports = {
 			is_feedback_skipped: {
 				type: Sequelize.BOOLEAN,
 				allowNull: false,
+				defaultValue: false,
 			},
 			meeting_info: {
 				type: Sequelize.JSON,

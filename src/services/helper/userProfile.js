@@ -19,8 +19,8 @@ module.exports = class UserProfileHelper {
 	static async details(token = '', userId = '') {
 		try {
 			let profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS
-
 			let internalToken = false
+
 			if (userId != '') {
 				profileUrl = profileUrl + '/' + userId
 				internalToken = true

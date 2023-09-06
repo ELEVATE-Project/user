@@ -79,9 +79,13 @@ module.exports = async function (req, res, next) {
 			})
 		}
 
-		if (decodedToken.data.role === common.ADMIN_ROLE) {
-			req.decodedToken = decodedToken.data
-			return next()
+		let isAdmin = false
+		if (decodedToken.data.roles) {
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			if (isAdmin) {
+				req.decodedToken = decodedToken.data
+				return next()
+			}
 		}
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
@@ -89,7 +93,13 @@ module.exports = async function (req, res, next) {
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 
 			const user = await requests.get(profileUrl, null, true)
-
+			if (!user) {
+				throw common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 			const isRoleSame =
 				user.data.result.user_roles.length === decodedToken.data.roles.length &&
 				user.data.result.user_roles.every((role1) =>
@@ -97,15 +107,14 @@ module.exports = async function (req, res, next) {
 				)
 			if (!isRoleSame) {
 				throw common.failureResponse({
-					message: 'USER_ROLE_UPDATED',
+					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			if (user.data.result.deletedAt /* deleted_at */ !== null) {
-				//Using deletedAt since user service isn't updated yet
+			if (user.data.result.deleted_at !== null) {
 				throw common.failureResponse({
-					message: 'USER_NOT_FOUND',
+					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})

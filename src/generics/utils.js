@@ -165,6 +165,12 @@ const capitalize = (str) => {
 const isAMentor = (roles) => {
 	return roles.some((role) => role.title !== common.MENTOR_ROLE)
 }
+function isNumeric(value) {
+	return /^\d+$/.test(value)
+}
+const epochFormat = (date, format) => {
+	return moment.unix(date).utc().format(format)
+}
 
 module.exports = {
 	hash: hash,
@@ -187,4 +193,6 @@ module.exports = {
 	extractEmailTemplate,
 	capitalize,
 	isAMentor,
+	isNumeric: isNumeric,
+	epochFormat: epochFormat,
 }

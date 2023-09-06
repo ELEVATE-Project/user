@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			joined_at: {
 				type: DataTypes.DATE,
-				allowNull: false,
+				allowNull: true,
 			},
 			left_at: {
 				type: DataTypes.DATE,
@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 			is_feedback_skipped: {
 				type: DataTypes.BOOLEAN,
 				allowNull: false,
+				defaultValue: false,
 			},
 			meeting_info: {
 				type: DataTypes.JSON,

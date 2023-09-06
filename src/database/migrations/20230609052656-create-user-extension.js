@@ -20,9 +20,6 @@ module.exports = {
 			rating: {
 				type: Sequelize.JSON,
 			},
-			user_type: {
-				type: Sequelize.STRING,
-			},
 			meta: {
 				type: Sequelize.JSONB,
 			},

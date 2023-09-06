@@ -33,11 +33,9 @@ module.exports = {
 			},
 			created_by: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			updated_by: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			created_at: {
 				allowNull: false,

@@ -1,5 +1,5 @@
 'use strict'
-
+require('dotenv').config({ path: '../../.env' })
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.createTable('sessions', {
@@ -40,30 +40,32 @@ module.exports = {
 			session_reschedule: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				defaultValue: 0,
 			},
 			status: {
 				type: Sequelize.STRING,
 				allowNull: false,
+				defaultValue: 'PUBLISHED',
 			},
 			time_zone: {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			start_date: {
-				type: Sequelize.DATE,
+				type: Sequelize.BIGINT,
 				allowNull: false,
 			},
 			end_date: {
-				type: Sequelize.DATE,
+				type: Sequelize.BIGINT,
 				allowNull: false,
 			},
 			mentee_password: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			mentor_password: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			started_at: {
 				type: Sequelize.DATE,
@@ -80,17 +82,18 @@ module.exports = {
 			is_feedback_skipped: {
 				type: Sequelize.BOOLEAN,
 				allowNull: false,
+				defaultValue: false,
 			},
 			mentee_feedback_question_set: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			mentor_feedback_question_set: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			meeting_info: {
-				type: Sequelize.JSON,
+				type: Sequelize.JSONB,
 				allowNull: true,
 			},
 			meta: {
@@ -99,7 +102,7 @@ module.exports = {
 			},
 			visibility: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			organization_ids: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
@@ -107,7 +110,15 @@ module.exports = {
 			},
 			mentor_org_id: {
 				type: Sequelize.INTEGER,
-				allowNull: true,
+				allowNull: false,
+			},
+			seats_remaining: {
+				type: Sequelize.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
+			},
+			seats_limit: {
+				type: Sequelize.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
 			},
 			created_at: {
 				allowNull: false,

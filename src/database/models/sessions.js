@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '../../.env' })
 module.exports = (sequelize, DataTypes) => {
 	const Session = sequelize.define(
 		'Session',
@@ -39,30 +40,32 @@ module.exports = (sequelize, DataTypes) => {
 			session_reschedule: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				defaultValue: 0,
 			},
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				defaultValue: 'PUBLISHED',
 			},
 			time_zone: {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			start_date: {
-				type: DataTypes.DATE,
+				type: DataTypes.BIGINT,
 				allowNull: false,
 			},
 			end_date: {
-				type: DataTypes.DATE,
+				type: DataTypes.BIGINT,
 				allowNull: false,
 			},
 			mentee_password: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			mentor_password: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			started_at: {
 				type: DataTypes.DATE,
@@ -79,17 +82,20 @@ module.exports = (sequelize, DataTypes) => {
 			is_feedback_skipped: {
 				type: DataTypes.BOOLEAN,
 				allowNull: false,
+				defaultValue: false,
 			},
 			mentee_feedback_question_set: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
+				defaultValue: 'MENTEE_QS1',
 			},
 			mentor_feedback_question_set: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
+				defaultValue: 'MENTOR_QS2',
 			},
 			meeting_info: {
-				type: DataTypes.JSON,
+				type: DataTypes.JSONB,
 				allowNull: true,
 			},
 			meta: {
@@ -98,7 +104,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			visibility: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			organization_ids: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
@@ -106,7 +112,15 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			mentor_org_id: {
 				type: DataTypes.INTEGER,
-				allowNull: true,
+				allowNull: false,
+			},
+			seats_remaining: {
+				type: DataTypes.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
+			},
+			seats_limit: {
+				type: DataTypes.INTEGER,
+				defaultValue: process.env.SESSION_MENTEE_LIMIT,
 			},
 		},
 		{ sequelize, modelName: 'Session', tableName: 'sessions', freezeTableName: true, paranoid: true }
