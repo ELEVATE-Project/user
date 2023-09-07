@@ -472,7 +472,7 @@ module.exports = class MenteesHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_UPDATED',
-				result: updatedUser,
+				result: updatedUser[0],
 			})
 		} catch (error) {
 			return error
