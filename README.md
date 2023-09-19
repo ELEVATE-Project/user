@@ -340,6 +340,12 @@ Elevate services can be setup in local using three methods:
 -   MongoDB - 4.1.4
 -   Redis - 7.0.0
 
+```
+Uses MongoDB v4.1.4, which has an OSI Compliant License (GNU Affero General Public License, version 3)
+MongoDB v4.1.4 repository: https://github.com/mongodb/mongo/tree/r4.1.4
+MongoDB v4.1.4 License: https://github.com/mongodb/mongo/blob/r4.1.4/LICENSE-Community.txt
+```
+
 # Scripts
 
 ## Scheduler
