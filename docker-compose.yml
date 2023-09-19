@@ -33,7 +33,7 @@ services:
         gelf-address: 'udp://0.0.0.0:12201'
         tag: 'kafka-logs'
   mongo:
-    image: 'mongo:5'
+    image: 'mongo:4.1.4'
     restart: 'always'
     command:
       - '--logpath'
