@@ -22,6 +22,12 @@ module.exports = {
 				type: Sequelize.STRING,
 				defaultValue: 'ACTIVE',
 			},
+			created_by: {
+				type: Sequelize.INTEGER,
+			},
+			updated_by: {
+				type: Sequelize.INTEGER,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
