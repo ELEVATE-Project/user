@@ -716,6 +716,74 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/admin/deleteUser400Response'
+  /user/admin/addOrgAdmin:
+    post:
+      summary: Add Organization Admin
+      description: Assign a user as the Org-Admin.
+      tags:
+        - Admin APIs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 12
+                org_id:
+                  type: integer
+                  example: 55
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: 'OK'
+                  message:
+                    type: string
+                    example: 'User Assigned As The Org-Admin Successfully'
+                  result:
+                    type: object
+                    properties:
+                      user_id:
+                        type: integer
+                        example: 12
+                      org_id:
+                        type: integer
+                        example: 55
+                      user_roles:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 2
+                            title:
+                              type: string
+                              example: 'mentor'
+                            user_type:
+                              type: integer
+                              example: 0
+                            status:
+                              type: string
+                              example: 'ACTIVE'
+                          example:
+                            - id: 2
+                              title: 'mentor'
+                              user_type: 0
+                              status: 'ACTIVE'
+                            - id: 3
+                              title: 'org_admin'
+                              user_type: 0
+                              status: 'ACTIVE'
   '/user/v1/organization/create':
     post:
       summary: Create Organization
