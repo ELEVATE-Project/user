@@ -1,4 +1,4 @@
-const issuesHelper = require('@services/helper/issues')
+const issuesHelper = require('@services/issues')
 
 module.exports = class Help {
 	/**

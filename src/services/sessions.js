@@ -12,8 +12,8 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('request')
 
-const bigBlueButton = require('./bigBlueButton')
-const userProfile = require('./userProfile')
+const bigBlueButton = require('@requests/bigBlueButton')
+const userProfile = require('@requests/userProfile')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 

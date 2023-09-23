@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const feedbackHelper = require('@services/helper/feedback')
+const feedbackHelper = require('@services/feedback')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 

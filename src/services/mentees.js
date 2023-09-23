@@ -2,11 +2,11 @@
 const moment = require('moment-timezone')
 
 const sessionAttendees = require('@db/sessionAttendees/queries')
-const userProfile = require('./userProfile')
+const userProfile = require('@requests/userProfile')
 const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const bigBlueButton = require('./bigBlueButton')
+const bigBlueButton = require('@requests/bigBlueButton')
 const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
@@ -14,7 +14,7 @@ const ObjectId = require('mongoose').Types.ObjectId
 const { successResponse } = require('@constants/common')
 
 const { UniqueConstraintError } = require('sequelize')
-const menteeQueries = require('../../database/queries/userextension')
+const menteeQueries = require('../database/queries/userextension')
 
 module.exports = class MenteesHelper {
 	/**

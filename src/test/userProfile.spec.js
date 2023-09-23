@@ -16,7 +16,7 @@ describe('User profile api test', () => {
 
 		beforeAll(async () => {
 			await loadMongo()
-			profile = require('@services/helper/userProfile')
+			profile = require('@requests/userProfile')
 			request = require('@generics/requests')
 			return
 		})

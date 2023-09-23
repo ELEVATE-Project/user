@@ -1,4 +1,4 @@
-const platformHelper = require('@services/helper/platform')
+const platformHelper = require('@services/platform')
 
 module.exports = class Config {
 	/**

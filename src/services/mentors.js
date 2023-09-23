@@ -3,13 +3,13 @@ const moment = require('moment-timezone')
 
 const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
-const userProfile = require('./userProfile')
+const userProfile = require('@requests/userProfile')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
-const mentorQueries = require('../../database/queries/mentorextention')
+const mentorQueries = require('../database/queries/mentorextention')
 const { UniqueConstraintError } = require('sequelize')
 
 module.exports = class MentorsHelper {

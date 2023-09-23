@@ -4,7 +4,7 @@
  * created-date : 09-Nov-2021
  * Description : Cloud services controllers.
  */
-const filesHelpers = require('@services/helper/files')
+const filesHelpers = require('@services/files')
 
 module.exports = class CloudServices {
 	/**

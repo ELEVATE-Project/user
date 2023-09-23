@@ -5,7 +5,7 @@ const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
 const notificationTemplateData = require('@db/notification-template/query')
 
-const issueQueries = require('../../database/queries/issue')
+const issueQueries = require('../database/queries/issue')
 module.exports = class issuesHelper {
 	/**
 	 * Report an issue.

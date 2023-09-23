@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const userHelper = require('@services/helper/admin')
+const userHelper = require('@services/admin')
 
 module.exports = class admin {
 	/**
