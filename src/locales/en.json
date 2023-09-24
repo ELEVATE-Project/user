@@ -72,5 +72,8 @@
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
 	"LOCATION_UPDATE_FAILED": "Location update failed",
 	"LANGUAGE_UPDATE_FAILED": "Language update failed",
-	"ROLE_REQUIRED": "Role required."
+	"ROLE_REQUIRED": "Role required.",
+	"USER_CSV_UPLOADED": "Bulk User Invites CSV Uploaded Successfully",
+	"ORG_ADMIN_MAPPED_SUCCESSFULLY": "User Assigned As The Org-Admin Successfully",
+	"ORG_ADMIN_MAPPING_FAILED": "Unable to Assign User As Org-Admin"
 }

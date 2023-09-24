@@ -70,3 +70,11 @@ exports.findAll = async (filter, options = {}) => {
 		return error
 	}
 }
+
+exports.findByPk = async (id) => {
+	try {
+		return await Organization.findByPk(id)
+	} catch (error) {
+		return error
+	}
+}

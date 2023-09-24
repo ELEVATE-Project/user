@@ -16,14 +16,14 @@ module.exports = class Admin {
 	 * Delete user
 	 * @method
 	 * @name deleteUser
-	 * @param {String} req.params._id -userId.
+	 * @param {String} req.params.id -userId.
 	 * @returns {JSON} - delete user response
 	 */
 
 	async deleteUser(req) {
 		try {
 			let isAdmin = false
-			const roles = decodedToken.data.roles
+			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
 				isAdmin = utilsHelper.isAdmin(roles)
 			}
@@ -85,6 +85,43 @@ module.exports = class Admin {
 		try {
 			const loggedInAccount = await adminHelper.login(req.body)
 			return loggedInAccount
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Add admin to organization
+	 * @method
+	 * @name addOrgAdmin
+	 * @param {Object} bodyData - organization and user data.
+	 * @param {string} bodyData.user_id - org admin id.
+	 * @param {string} bodyData.org_id - organization id.
+	 * @returns {JSON} - returns user response
+	 */
+
+	async addOrgAdmin(req) {
+		try {
+			let isAdmin = false
+			const roles = req.decodedToken.roles
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.isAdmin(roles)
+			}
+
+			if (!isAdmin) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const orgAdminCreation = await adminHelper.addOrgAdmin(
+				req.body.user_id,
+				req.body.org_id,
+				req.decodedToken.id
+			)
+			return orgAdminCreation
 		} catch (error) {
 			return error
 		}
