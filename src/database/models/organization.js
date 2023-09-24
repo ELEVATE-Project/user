@@ -31,6 +31,12 @@ module.exports = (sequelize, DataTypes) => {
 			parent_id: DataTypes.INTEGER,
 			related_orgs: DataTypes.ARRAY(DataTypes.INTEGER),
 			in_domain_visibility: DataTypes.STRING,
+			created_by: {
+				type: DataTypes.INTEGER,
+			},
+			updated_by: {
+				type: DataTypes.INTEGER,
+			},
 		},
 		{ sequelize, modelName: 'Organization', tableName: 'organizations', freezeTableName: true, paranoid: true }
 	)

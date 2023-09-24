@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			org_id: {
+			organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -21,6 +21,12 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: 'ACTIVE',
+			},
+			created_by: {
+				type: DataTypes.INTEGER,
+			},
+			updated_by: {
+				type: DataTypes.INTEGER,
 			},
 		},
 		{ sequelize, modelName: 'OrgDomain', tableName: 'org_domains', freezeTableName: true, paranoid: true }

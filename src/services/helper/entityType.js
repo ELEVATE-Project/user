@@ -2,6 +2,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
+const utilsHelper = require('@generics/utils')
 
 module.exports = class EntityHelper {
 	/**
@@ -17,7 +18,7 @@ module.exports = class EntityHelper {
 		try {
 			let isAdmin = false
 			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+				isAdmin = utilsHelper.isAdmin(roles)
 			}
 
 			if (!isAdmin) {
@@ -57,7 +58,7 @@ module.exports = class EntityHelper {
 		try {
 			let isAdmin = false
 			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+				isAdmin = utilsHelper.isAdmin(roles)
 			}
 
 			if (!isAdmin) {

@@ -114,7 +114,11 @@ function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
 function isNumeric(value) {
-    return /^\d+$/.test(value);
+	return /^\d+$/.test(value)
+}
+
+const isAdmin = (roles) => {
+	return roles.some((role) => role.title == common.roleAdmin)
 }
 module.exports = {
 	generateToken,
@@ -130,5 +134,6 @@ module.exports = {
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
-	isNumeric: isNumeric
+	isNumeric: isNumeric,
+	isAdmin,
 }

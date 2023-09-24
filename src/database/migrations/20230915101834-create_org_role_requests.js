@@ -21,7 +21,7 @@ module.exports = {
 				type: Sequelize.STRING,
 				defaultValue: 'REQUESTED', //REQUESTED, UNDER_REVIEW, ACCEPTED, REJECTED
 			},
-			org_id: {
+			organization_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},

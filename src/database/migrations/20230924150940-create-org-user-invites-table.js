@@ -2,18 +2,14 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable('org_domains', {
+		await queryInterface.createTable('org_user_invites', {
 			id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			organization_id: {
-				type: Sequelize.INTEGER,
-				allowNull: false,
-			},
-			domain: {
+			email: {
 				type: Sequelize.STRING,
 				allowNull: false,
 				unique: true,
@@ -22,10 +18,19 @@ module.exports = {
 				type: Sequelize.STRING,
 				defaultValue: 'ACTIVE',
 			},
-			created_by: {
+			organization_id: {
 				type: Sequelize.INTEGER,
+				allowNull: false,
 			},
-			updated_by: {
+			roles: {
+				type: Sequelize.ARRAY(Sequelize.INTEGER),
+				allowNull: false,
+			},
+			file_id: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+			},
+			created_by: {
 				type: Sequelize.INTEGER,
 			},
 			created_at: {
@@ -43,6 +48,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable('org_domains')
+		await queryInterface.dropTable('org_user_invites')
 	},
 }

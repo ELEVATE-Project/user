@@ -2,25 +2,34 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable('org_domains', {
+		await queryInterface.createTable('file_uploads', {
 			id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			organization_id: {
-				type: Sequelize.INTEGER,
+			name: {
+				type: Sequelize.STRING,
 				allowNull: false,
+				unique: true,
 			},
-			domain: {
+			input_path: {
 				type: Sequelize.STRING,
 				allowNull: false,
 				unique: true,
 			},
 			status: {
 				type: Sequelize.STRING,
-				defaultValue: 'ACTIVE',
+				defaultValue: 'UPLOADED',
+			},
+			type: {
+				type: Sequelize.STRING,
+				allowNull: false,
+			},
+			output_path: {
+				type: Sequelize.STRING,
+				allowNull: false,
 			},
 			created_by: {
 				type: Sequelize.INTEGER,
@@ -43,6 +52,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable('org_domains')
+		await queryInterface.dropTable('file_uploads')
 	},
 }

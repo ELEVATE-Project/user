@@ -9,6 +9,7 @@
 const adminHelper = require('@services/helper/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const utilsHelper = require('@generics/utils')
 
 module.exports = class Admin {
 	/**
@@ -24,7 +25,7 @@ module.exports = class Admin {
 			let isAdmin = false
 			const roles = decodedToken.data.roles
 			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+				isAdmin = utilsHelper.isAdmin(roles)
 			}
 
 			if (!isAdmin) {
