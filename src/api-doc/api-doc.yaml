@@ -1631,13 +1631,13 @@ components:
                     example: 8
                   email:
                     type: string
-                    example: user@shikshalokam.org
+                    example: example@mail.com
                   email_verified:
                     type: string
-                    example: 'false'
+                    example: 'true'
                   name:
                     type: string
-                    example: user
+                    example: John Deo
                   status:
                     type: string
                     example: ACTIVE
@@ -1662,10 +1662,10 @@ components:
                       type: number
                     example:
                       - 2
-                  user_created_at:
+                  created_at:
                     type: string
                     example: '2023-09-20T11:59:37.871Z'
-                  user_updated_at:
+                  updated_at:
                     type: string
                     example: '2023-09-20T11:59:37.871Z'
                   user_roles:
@@ -1685,12 +1685,6 @@ components:
                         status:
                           type: string
                           example: ACTIVE
-                  profile_updated_at:
-                    type: string
-                    example: '2023-09-20T12:00:46.533Z'
-                  profile_created_at:
-                    type: string
-                    example: '2023-09-20T12:00:46.533Z'
       userCreateUser406Exist:
         description: User solutions response
         type: object
