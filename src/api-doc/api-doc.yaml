@@ -2419,74 +2419,65 @@ components:
           result:
             type: object
             properties:
-              access_token:
+              id:
+                type: number
+                example: 8
+              email:
                 type: string
-                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-              refresh_token:
+                example: example@mail.com
+              email_verified:
                 type: string
-                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-              user:
+                example: 'true'
+              name:
+                type: string
+                example: John Deo
+              status:
+                type: string
+                example: ACTIVE
+              has_accepted_terms_and_conditions:
+                type: boolean
+                example: true
+              preferred_language:
                 type: object
                 properties:
-                  id:
-                    type: number
-                    example: 8
-                  email:
+                  value:
                     type: string
-                    example: example@mail.com
-                  email_verified:
+                    example: english
+                  label:
                     type: string
-                    example: 'true'
-                  name:
-                    type: string
-                    example: John Deo
-                  status:
-                    type: string
-                    example: ACTIVE
-                  has_accepted_terms_and_conditions:
-                    type: boolean
-                    example: true
-                  preferred_language:
-                    type: object
-                    properties:
-                      value:
-                        type: string
-                        example: english
-                      label:
-                        type: string
-                        example: English
-                  organization_id:
-                    type: number
-                    example: 1
-                  roles:
-                    type: array
-                    items:
+                    example: English
+              organization_id:
+                type: number
+                example: 1
+              roles:
+                type: array
+                items:
+                  type: number
+                example:
+                  - 2
+              created_at:
+                type: string
+                example: '2023-09-20T11:59:37.871Z'
+              updated_at:
+                type: string
+                example: '2023-09-20T11:59:37.871Z'
+              user_roles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
                       type: number
-                    example:
-                      - 2
-                  created_at:
-                    type: string
-                    example: '2023-09-20T11:59:37.871Z'
-                  updated_at:
-                    type: string
-                    example: '2023-09-20T11:59:37.871Z'
-                  user_roles:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                          example: 1
-                        title:
-                          type: string
-                          example: mentee
-                        user_type:
-                          type: number
-                          example: 0
-                        status:
-                          type: string
-                          example: ACTIVE
+                      example: 1
+                    title:
+                      type: string
+                      example: mentee
+                    user_type:
+                      type: number
+                      example: 0
+                    status:
+                      type: string
+                      example: ACTIVE
       shareMentorProfile200Response:
         type: object
         properties:
