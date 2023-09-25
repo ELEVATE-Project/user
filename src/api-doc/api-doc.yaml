@@ -1760,13 +1760,19 @@ components:
                     example: hilbert29@yahoo.com
                   email_verified:
                     type: string
-                    example: false
+                    example: true
                   name:
                     type: string
                     example: Adelia
                   gender:
-                    type: string
-                    example: male
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: male
+                      label:
+                        type: string
+                        example: Male
                   location:
                     type: array
                     items:
@@ -1792,8 +1798,14 @@ components:
                     type: string
                     example: null
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -2029,7 +2041,7 @@ components:
             example: 123456
       resetPasswordResponse200:
         type: object
-        description: User login response
+        description: Reset Password response
         properties:
           responseCode:
             type: string
@@ -2057,13 +2069,19 @@ components:
                     example: brandyn.terry@yahoo.com
                   email_verified:
                     type: string
-                    example: false
+                    example: true
                   name:
                     type: string
                     example: Ashly
                   gender:
-                    type: string
-                    example: male
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: male
+                      label:
+                        type: string
+                        example: Male
                   about:
                     type: string
                     example: null
@@ -2088,8 +2106,14 @@ components:
                       type: string
                     example: []
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -2284,7 +2308,7 @@ components:
                 example: mentee
               email_verified:
                 type: boolean
-                example: false
+                example: true
               has_accepted_terms_and_conditions:
                 type: boolean
                 example: false
@@ -2310,8 +2334,14 @@ components:
                 type: number
                 example: 2
               preferred_language:
-                type: string
-                example: en
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: english
+                  label:
+                    type: string
+                    example: English
               status:
                 type: string
                 example: ACTIVE
@@ -2331,8 +2361,14 @@ components:
                 type: string
                 example: This is test about of mentee
               gender:
-                type: string
-                example: MALE
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: male
+                  label:
+                    type: string
+                    example: Male
               image:
                 type: string
                 example: https://cloudstorage.com/container/abc.png
@@ -2819,13 +2855,16 @@ components:
                     example: hilbert29@yahoo.com
                   email_verified:
                     type: string
-                    example: false
-                  name:
-                    type: string
-                    example: Adelia
+                    example: true
                   gender:
-                    type: string
-                    example: male
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: male
+                      label:
+                        type: string
+                        example: Male
                   location:
                     type: array
                     items:
@@ -2853,8 +2892,14 @@ components:
                       type: string
                     example: []
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
