@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const accountHelper = require('@services/helper/account')
+const accountHelper = require('@services/account')
 const csv = require('csvtojson')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')

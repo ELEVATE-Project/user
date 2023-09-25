@@ -1,5 +1,5 @@
 /**
- * name : services/helper/mentors.js
+ * name : mentors.js
  * author : Aman
  * created-date : 12-Nov-2021
  * Description : User Profile Service Helper.

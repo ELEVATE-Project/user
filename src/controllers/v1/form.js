@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const formsHelper = require('@services/helper/form')
+const formsHelper = require('@services/form')
 
 module.exports = class Form {
 	/**

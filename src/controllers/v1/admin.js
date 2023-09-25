@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const adminHelper = require('@services/helper/admin')
+const adminHelper = require('@services/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 

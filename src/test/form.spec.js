@@ -16,7 +16,7 @@ describe('Form controller and service file', () => {
 
 	beforeAll(async () => {
 		await loadMongo()
-		formServices = require('@services/helper/form')
+		formServices = require('@services/form')
 		formData = require('@db/forms/queries')
 		utils = require('@generics/utils')
 		KafkaProducer = require('@generics/kafka-communication')

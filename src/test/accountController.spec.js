@@ -17,7 +17,7 @@ describe('Account controller and helper test', () => {
 
 	beforeAll(async () => {
 		await loadMongo()
-		accountService = require('@services/helper/account')
+		accountService = require('@services/account')
 		controller = require('@controllers/v1/account')
 		userModel = require('@db/users/queries')
 		aes256cbc.init(process.env.KEY, process.env.IV)

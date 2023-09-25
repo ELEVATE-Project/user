@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const entityTypeHelper = require('@services/helper/entityType')
+const entityTypeHelper = require('@services/entityType')
 
 module.exports = class Entity {
 	/**

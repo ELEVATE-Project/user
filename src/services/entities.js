@@ -1,8 +1,8 @@
 /**
- * name : services/helper/userentity.js
+ * name : entities.js
  * author : Aman
  * created-date : 02-Nov-2021
- * Description : user entity reltaed information.
+ * Description : user entity related information.
  */
 
 // Dependencies

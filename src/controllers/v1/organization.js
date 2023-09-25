@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const orgHelper = require('@services/helper/organization')
+const orgHelper = require('@services/organization')
 
 module.exports = class Organization {
 	/**

@@ -1,5 +1,5 @@
 /**
- * name : services/helper/admin.js
+ * name : admin.js
  * author : Priyanka Pradeep
  * created-date : 16-Jun-2023
  * Description : Admin Service Helper.
