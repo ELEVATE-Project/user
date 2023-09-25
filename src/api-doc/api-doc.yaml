@@ -84,7 +84,7 @@ paths:
     patch:
       summary: Terms & Condition
       tags:
-        - User APIs
+        - Depreciated APIs
       description: This API Requires only X-auth-token and it will set an email to verify true.
       parameters:
         - name: X-auth-token
@@ -1594,10 +1594,15 @@ components:
             format: password
             example: Password
             required: true
-          role:
+          otp:
             type: string
-            description: Type of User (Mentor, Mentee)
-            example: mentor
+            description: Email OTP for verification
+            example: 6845975
+            required: true
+          has_accepted_terms_and_conditions:
+            type: boolean
+            description: Flag specifiying if user has accepted the terms & conditions
+            example: true
             required: true
       userCreateUserResponse:
         description: User creation response
@@ -1614,62 +1619,40 @@ components:
             properties:
               access_token:
                 type: string
-                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE2OTAzNzIxMTh9.WmhUXIocykrBVti7vtznx_BMAaBtuqYUks4sc1J94Do
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
               refresh_token:
                 type: string
-                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE3MDYwOTY5MTh9.eqJ-KD0YA-Cdpz3XHWKgmi66uU6o229K9pyp6BwAAzI
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
               user:
                 type: object
                 properties:
                   id:
                     type: number
-                    example: 9
+                    example: 8
                   email:
                     type: string
-                    example: brandyn.terry@yahoo.com
+                    example: user@shikshalokam.org
                   email_verified:
                     type: string
-                    example: false
+                    example: 'false'
                   name:
                     type: string
-                    example: Ashly
-                  gender:
-                    type: string
-                    example: male
-                  about:
-                    type: string
-                    example: null
-                  share_link:
-                    type: string
-                    example: null
+                    example: user
                   status:
                     type: string
                     example: ACTIVE
-                  image:
-                    type: string
-                    example: null
-                  last_logged_in_at:
-                    type: string
-                    format: nullable
                   has_accepted_terms_and_conditions:
                     type: boolean
                     example: true
-                  languages:
-                    type: string
-                    example: John Deo
-                  designation:
-                    type: array
-                    items:
-                      type: string
-                    example: ['DEO', 'HM']
-                  location:
-                    type: array
-                    items:
-                      type: string
-                    example: ['AP']
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -1677,16 +1660,14 @@ components:
                     type: array
                     items:
                       type: number
-                      example: 2
-                  created_at:
+                    example:
+                      - 2
+                  user_created_at:
                     type: string
-                    example: 2023-07-25T11:48:38.270Z
-                  updated_at:
+                    example: '2023-09-20T11:59:37.871Z'
+                  user_updated_at:
                     type: string
-                    example: 2023-07-25T11:48:38.270Z
-                  deleted_at:
-                    type: string
-                    example: null
+                    example: '2023-09-20T11:59:37.871Z'
                   user_roles:
                     type: array
                     items:
@@ -1704,6 +1685,12 @@ components:
                         status:
                           type: string
                           example: ACTIVE
+                  profile_updated_at:
+                    type: string
+                    example: '2023-09-20T12:00:46.533Z'
+                  profile_created_at:
+                    type: string
+                    example: '2023-09-20T12:00:46.533Z'
       userCreateUser406Exist:
         description: User solutions response
         type: object
