@@ -444,7 +444,7 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
-  '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
+  '/user/v1/cloud-services/file/getSignedUrl?fileName={file_name}':
     get:
       summary: Cloud services get signed url
       tags:
@@ -462,7 +462,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'fileName'
+          name: 'file_name'
           required: true
           description: Please append a valid file name to url which has to be uploaded
           schema:
@@ -475,7 +475,7 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
-  '/user/v1/cloud-services/file/getDownloadableUrl?filePath={filePath}':
+  '/user/v1/cloud-services/file/getDownloadableUrl?file_path={file_path}':
     get:
       summary: Cloud services get download url
       tags:
@@ -493,7 +493,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'filePath'
+          name: 'file_path'
           required: true
           description: Please append a valid file path to url which has to be downloaded
           schema:
@@ -630,7 +630,7 @@ paths:
       summary: Create admin user
       tags:
         - Admin APIs
-      description: "This API is associated with create system user  \n - Then
+      description: "API associated with creating new admin user  \n - Then
         Endpoint for create system user `/user/v1/admin/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -719,9 +719,20 @@ paths:
   /user/admin/addOrgAdmin:
     post:
       summary: Add Organization Admin
-      description: Assign a user as the Org-Admin.
+      description: "This API is used to assign a user as the Org-Admin  \n - Then
+        Endpoint for delete user `/user/v1/admin/addOrgAdmin` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
       tags:
         - Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -771,7 +782,7 @@ paths:
                               example: 'mentor'
                             user_type:
                               type: integer
-                              example: 0
+                              example: 1
                             status:
                               type: string
                               example: 'ACTIVE'
@@ -799,12 +810,6 @@ paths:
           in: header
           description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
-          required: true
-          schema:
-            type: string
-        - name: internal_access_token
-          in: header
-          description: To make use of the admin related API, you require internal_access_token.
           required: true
           schema:
             type: string
@@ -841,12 +846,6 @@ paths:
           in: header
           description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
-          required: true
-          schema:
-            type: string
-        - name: internal_access_token
-          in: header
-          description: To make use of the admin related API, you require internal_access_token.
           required: true
           schema:
             type: string
@@ -960,12 +959,12 @@ paths:
                 result:
                   request_id: 12
                   org_id: 10
-                  status: request
+                  status: REQUESTED
                   meta: {}
   /user/v1/organization/getOrgRoleRequests:
     get:
       summary: Get User Org Role Requests
-      description: Get a list of organization role requests for a specific role.
+      description: Get a list of organization role requests for a specific role. This api is used by the user to get the request for role change
       tags:
         - Organization
       parameters:
@@ -1405,8 +1404,8 @@ paths:
                     example: All uploaded documents verified
                 status:
                   type: string
-                  enum: [approved, rejected, under_review]
-                  example: approved
+                  enum: [APPROVED, REJECTED, UNDER_REVIEW]
+                  example: APPROVED
       responses:
         '200':
           description: Successfully updated organization request status.
@@ -1455,7 +1454,7 @@ paths:
                 result:
                   id: 12
                   requester_id: 23
-                  type: mentor
+                  role: mentor
                   status: approved
                   org_id: 43
                   handled_by: 22
@@ -1675,10 +1674,10 @@ components:
                       properties:
                         id:
                           type: number
-                          example: 2
+                          example: 1
                         title:
                           type: string
-                          example: mentor
+                          example: mentee
                         user_type:
                           type: number
                           example: 0
@@ -1833,10 +1832,10 @@ components:
                       properties:
                         id:
                           type: number
-                          example: 2
+                          example: 1
                         title:
                           type: string
-                          example: mentor
+                          example: mentee
                         user_type:
                           type: integer
                           example: 0
@@ -1894,7 +1893,7 @@ components:
         required:
           - refreshToken
         properties:
-          refreshToken:
+          refresh_token:
             type: string
             description: Refresh token.
             example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
@@ -2184,7 +2183,7 @@ components:
         required:
           - refreshToken
         properties:
-          refreshToken:
+          refresh_token:
             type: string
             description: Refresh token.
             example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
@@ -2261,24 +2260,10 @@ components:
                         properties:
                           _id:
                             type: string
-                            example: 62832531a05cbd57b273aebb
+                            example: 1
                           name:
                             type: string
                             example: jhon
-                          areasOfExpertise:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                value:
-                                  type: string
-                                  example: 1
-                                label:
-                                  type: string
-                                  example: Educational Leadership
-                                _id:
-                                  type: string
-                                  example: 628d422029034b105806b906
                           image:
                             type: string
                             example: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png'
@@ -2321,15 +2306,25 @@ components:
               location:
                 type: array
                 items:
-                  type: array
-                  items:
-                    type: string
-                  example: ['ap']
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                      example: kl
+                    label:
+                      type: string
+                      example: Kerala
               languages:
                 type: array
                 items:
-                  type: string
-                example: ['en']
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                      example: english
+                    label:
+                      type: string
+                      example: English
               organization_id:
                 type: number
                 example: 2
@@ -2407,7 +2402,7 @@ components:
             example: true
           gender:
             type: string
-            example: MALE
+            example: male
           image:
             type: string
             example: https://cloudstorage.com/container/abc.png
@@ -2422,10 +2417,67 @@ components:
             type: string
             example: Profile updated successfully.
           result:
-            type: array
-            items:
-              type: string
-            example: []
+            type: object
+            properties:
+              id:
+                type: number
+                example: 8
+              email:
+                type: string
+                example: example@mail.com
+              email_verified:
+                type: string
+                example: 'true'
+              name:
+                type: string
+                example: John Deo
+              status:
+                type: string
+                example: ACTIVE
+              has_accepted_terms_and_conditions:
+                type: boolean
+                example: true
+              preferred_language:
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: english
+                  label:
+                    type: string
+                    example: English
+              organization_id:
+                type: number
+                example: 1
+              roles:
+                type: array
+                items:
+                  type: number
+                example:
+                  - 2
+              created_at:
+                type: string
+                example: '2023-09-20T11:59:37.871Z'
+              updated_at:
+                type: string
+                example: '2023-09-20T11:59:37.871Z'
+              user_roles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 1
+                    title:
+                      type: string
+                      example: mentee
+                    user_type:
+                      type: number
+                      example: 0
+                    status:
+                      type: string
+                      example: ACTIVE
       shareMentorProfile200Response:
         type: object
         properties:
@@ -2438,7 +2490,7 @@ components:
           result:
             type: object
             properties:
-              shareLink:
+              share_link:
                 type: string
                 example: 52f076629b3749ebf7dcab23f22b30df
       shareMentorProfileBadRequest400Response:
@@ -2473,7 +2525,7 @@ components:
           data:
             type: object
             properties:
-              templateName:
+              template_name:
                 type: string
                 example: defaultTemplate
               fields:
@@ -2557,7 +2609,7 @@ components:
           data:
             type: object
             properties:
-              templateName:
+              template_name:
                 type: string
                 example: defaultTemplate
               fields:
@@ -2634,9 +2686,6 @@ components:
           sub_type:
             type: string
             example: profileForm
-          templateName:
-            type: string
-            example: defaultTemplate
       readForm200Response:
         description: Read
         type: object
@@ -2735,13 +2784,13 @@ components:
           result:
             type: object
             properties:
-              signedUrl:
+              signed_url:
                 type: string
                 example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
-              filePath:
+              file_path:
                 type: string
                 example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
-              destFilePath:
+              dest_file_ath:
                 type: string
                 example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
       cloudServicesDownloadResponse200:
@@ -2765,6 +2814,7 @@ components:
           - name
           - email
           - password
+          - secret_code
         properties:
           name:
             type: string
@@ -2779,6 +2829,10 @@ components:
             format: password
             example: password
             required: true
+          secret_code:
+            type: string
+            example: secret_code
+            required: true
       createSystemUser201Response:
         type: object
         description: System User created
@@ -2792,8 +2846,11 @@ components:
           result:
             type: array
             items:
-              type: string
-            example: []
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
       createSystemUser406Response:
         type: object
         description: System User alreay exist
@@ -2967,8 +3024,11 @@ components:
           result:
             type: array
             items:
-              type: string
-            example: []
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
       deleteUser400Response:
         type: object
         description: User Deleted
