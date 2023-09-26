@@ -18,10 +18,7 @@ module.exports = {
 			status: {
 				type: Sequelize.STRING,
 			},
-			type: {
-				type: Sequelize.STRING,
-			},
-			created_b: {
+			created_by: {
 				type: Sequelize.INTEGER,
 			},
 			updated_by: {
@@ -29,6 +26,9 @@ module.exports = {
 			},
 			allow_filtering: {
 				type: Sequelize.BOOLEAN,
+			},
+			data_type: {
+				type: Sequelize.STRING,
 			},
 			created_at: {
 				allowNull: false,
@@ -40,6 +40,15 @@ module.exports = {
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
+			},
+		})
+
+		// Add an index for the 'value' column
+		await queryInterface.addIndex('entity_types', ['value'], {
+			unique: true,
+			name: 'unique_value',
+			where: {
+				deleted_at: null,
 			},
 		})
 	},

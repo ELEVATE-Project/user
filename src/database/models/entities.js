@@ -10,9 +10,9 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 			entity_type_id: { type: DataTypes.INTEGER, allowNull: false },
-			value: { type: DataTypes.STRING, allowNull: false },
+			value: { type: DataTypes.STRING, allowNull: false, unique: true },
 			label: { type: DataTypes.STRING, allowNull: false },
-			status: { type: DataTypes.STRING, allowNull: false },
+			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
 			type: { type: DataTypes.STRING },
 			created_by: { type: DataTypes.INTEGER, allowNull: false },
 			updated_by: { type: DataTypes.INTEGER, allowNull: false },
@@ -20,7 +20,13 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'Entity', tableName: 'entities', freezeTableName: true, paranoid: true }
 	)
 	Entity.associate = (models) => {
-		Entity.belongsTo(models.EntityType, { foreignKey: 'id' })
+		Entity.belongsTo(models.EntityType, {
+			foreignKey: 'entity_type_id',
+			as: 'entity_type',
+			scope: {
+				deleted_at: null, // Only associate with active EntityType records
+			},
+		})
 	}
 	return Entity
 }

@@ -1,12 +1,5 @@
-/**
- * name : entity.js
- * author : Aman Gupta
- * created-date : 04-Nov-2021
- * Description : Entity Controller.
- */
-
 // Dependencies
-const entityHelper = require('@services/helper/entity')
+const entityHelper = require('@services/helper/entity-type')
 
 module.exports = class Entity {
 	/**
@@ -18,10 +11,8 @@ module.exports = class Entity {
 	 */
 
 	async create(req) {
-		const params = req.body
 		try {
-			const createdEntity = await entityHelper.create(params, req.decodedToken.id)
-			return createdEntity
+			return await entityHelper.create(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -36,11 +27,8 @@ module.exports = class Entity {
 	 */
 
 	async update(req) {
-		const params = req.body
-		const id = req.params.id
 		try {
-			const updatedEntity = await entityHelper.update(params, id, req.decodedToken.id)
-			return updatedEntity
+			return await entityHelper.update(req.body, req.params.id, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -56,10 +44,10 @@ module.exports = class Entity {
 
 	async read(req) {
 		try {
-			if (req.query.id || req.query.value) {
-				return await entityHelper.read(req.query, req.decodedToken.id)
+			if (req.body.read_user_entity) {
+				return await entityHelper.readUserEntityTypes(req.body, req.decodedToken.id)
 			}
-			return await entityHelper.readAll(req.query, req.decodedToken.id)
+			return await entityHelper.readAllSystemEntityTypes()
 		} catch (error) {
 			return error
 		}
@@ -75,8 +63,7 @@ module.exports = class Entity {
 
 	async delete(req) {
 		try {
-			const updatedEntity = await entityHelper.delete(req.params.id, req.decodedToken.id)
-			return updatedEntity
+			return await entityHelper.delete(req.params.id)
 		} catch (error) {
 			return error
 		}

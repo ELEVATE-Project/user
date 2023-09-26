@@ -83,22 +83,27 @@ module.exports = async function (req, res, next) {
 			req.decodedToken = decodedToken.data
 			return next()
 		}
-
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
 			const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
+			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 
 			const user = await requests.get(profileUrl, null, true)
 
-			if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
+			const isRoleSame =
+				user.data.result.user_roles.length === decodedToken.data.roles.length &&
+				user.data.result.user_roles.every((role1) =>
+					decodedToken.data.roles.some((role2) => role1.title === role2.title)
+				)
+			if (!isRoleSame) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			if (user.data.result.deleted) {
+			if (user.data.result.deletedAt /* deleted_at */ !== null) {
+				//Using deletedAt since user service isn't updated yet
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
@@ -106,10 +111,11 @@ module.exports = async function (req, res, next) {
 				})
 			}
 		}
+
 		req.decodedToken = {
-			_id: decodedToken.data._id,
+			id: decodedToken.data.id,
 			email: decodedToken.data.email,
-			isAMentor: decodedToken.data.isAMentor,
+			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
 		}
