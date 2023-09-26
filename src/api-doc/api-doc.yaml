@@ -1009,7 +1009,7 @@ paths:
                       org_id: 43
                       handled_by: 22
                   count: 1
-  '/user/v1/userRole/list':
+  /user/v1/userRole/list:
     get:
       summary: UserRole List
       tags:
@@ -1039,6 +1039,103 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  /user/v1/entity-type/create:
+    post:
+      summary: Create entity type
+      tags:
+        - EntityType APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/create` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the user who is already a mentee of the organization.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/entity-type/createEntityTypeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      allow_filtering:
+                        type: boolean
+                      data_type:
+                        type: string
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: string
+                      has_entities:
+                        type: boolean
+                  field_0:
+                    type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity type created successfully
+                    result:
+                      id: 1
+                      value: ln
+                      label: Languages
+                      status: ACTIVE
+                      allow_filtering: true
+                      data_type: STRING
+                      created_by: 1
+                      updated_by: 1
+                      updated_at: '2023-09-22T12:40:19.817Z'
+                      created_at: '2023-09-22T12:40:19.817Z'
+                      has_entities: true
+                    meta:
+                      correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
+                      meeting_platform: BBB
+        400:
+          description: Bad Request. Entity type alrady exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/createEntityType400Response'
   '/user/v1/entity-type/update/{id}':
     post:
       summary: Update entity type
@@ -1067,7 +1164,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/entity-type/createEntityTypeRequest'
+              '$ref': '#/components/schemas/entity-type/updateEntityTypeRequest'
       responses:
         '201':
           description: ok
@@ -1098,21 +1195,136 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                value:
+                  type: array
+                  items:
+                    type: string
+                read_user_entity:
+                  type: boolean
+            examples:
+              example1:
+                value:
+                  value:
+                    - ln
+                  read_user_entity: false
       responses:
-        '201':
-          description: ok
+        201:
+          description: Created
           content:
-            application/json:
+            application.json:
               schema:
-                $ref: '#/components/schemas/entity-type/readEntityType201Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        status:
+                          type: string
+                        created_by:
+                          type: number
+                        updated_by:
+                          type: number
+                        allow_filtering:
+                          type: boolean
+                        data_type:
+                          type: string
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
+                        entities:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: number
+                              entity_type_id:
+                                type: number
+                              value:
+                                type: string
+                              label:
+                                type: string
+                              status:
+                                type: string
+                              type:
+                                type: string
+                              created_by:
+                                type: number
+                              updated_by:
+                                type: number
+                              created_at:
+                                type: string
+                              updated_at:
+                                type: string
+                        has_entities:
+                          type: boolean
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity type fetched successfully
+                    result:
+                      - id: 4
+                        value: ln
+                        label: Languages
+                        status: ACTIVE
+                        created_by: 0
+                        updated_by: 0
+                        allow_filtering: true
+                        data_type: STRING
+                        created_at: '2023-09-21T10:16:19.270Z'
+                        updated_at: '2023-09-21T10:16:19.270Z'
+                        has_entities: true
+                        entities:
+                          - id: 13
+                            entity_type_id: 4
+                            value: ml
+                            label: Malayalam
+                            status: ACTIVE
+                            type: SYSTEM
+                            created_by: 1
+                            updated_by: 1
+                            created_at: '2023-09-21T10:16:33.583Z'
+                            updated_at: '2023-09-21T10:16:33.583Z'
+                    meta:
+                      correlation: 64cd08ba-cc87-4172-9633-2146dabe0b78
+                      meeting_platform: BBB
         400:
           description: Bad Request. Entity type alrady exist
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/entity-type/updateEntityType400Response'
+                '$ref': '#/components/schemas/userentity/createUserEntity400Response'
   '/user/v1/entity-type/delete/{id}':
-    patch:
+    post:
       summary: Delete entity type
       tags:
         - EntityType APIs
@@ -1171,12 +1383,75 @@ paths:
             schema:
               '$ref': '#/components/schemas/userentity/createUserEntityRequest'
       responses:
-        '201':
-          description: ok
+        201:
+          description: Created
           content:
-            application/json:
+            application.json:
               schema:
-                $ref: '#/components/schemas/userentity/createUserEntity201Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      entity_type_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity created successfully
+                    result:
+                      id: 1
+                      value: en
+                      label: English
+                      status: ACTIVE
+                      type: string
+                      entity_type_id: 1
+                      created_by: 0
+                      updated_by: 0
+                      updated_at: '2023-07-21T21:46:41.392Z'
+                      created_at: '2023-07-21T21:46:41.392Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
+                      meeting_platform: BBB
         400:
           description: Bad Request. User Entity alrady exist
           content:
@@ -1209,16 +1484,103 @@ paths:
           example: 2
       requestBody:
         content:
-          application/json:
+          application.json:
             schema:
-              '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                value:
+                  type: string
+                label:
+                  type: string
+                status:
+                  type: string
+                entity_type_id:
+                  type: number
+            examples:
+              example1:
+                value:
+                  value: en
+                  label: English
+                  status: ACTIVE
+                  entity_type_id: 1
       responses:
         '202':
           description: Accepted
           content:
-            application/json:
+            application.json:
               schema:
-                '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      entity_type_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity updated successfully
+                    result:
+                      responseCode: OK
+                      message: Entity created successfully
+                      result:
+                        id: 1
+                        value: en
+                        label: English
+                        status: ACTIVE
+                        type: string
+                        entity_type_id: 1
+                        created_by: 0
+                        updated_by: 0
+                        updated_at: '2023-07-21T21:46:41.392Z'
+                        created_at: '2023-07-21T21:46:41.392Z'
+                        deleted_at: null
+                      meta:
+                        formsVersion: []
+                        correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
+                        meeting_platform: BBB
+                    meta:
+                      formsVersion: []
+                      correlation: 4b69c161-1d19-4d4c-963c-057feaa2e82e
+                      meeting_platform: BBB
         '400':
           description: Bad Request. User Entity Not Found
           content:
@@ -1257,7 +1619,7 @@ paths:
               schema:
                 '$ref': '#/components/schemas/userentity/readUserEntity200Response'
   '/user/v1/entity/delete/{id}':
-    patch:
+    post:
       summary: Delete entity
       tags:
         - Entity APIs
@@ -3160,14 +3522,43 @@ components:
     entity-type:
       createEntityTypeRequest:
         type: object
+        properties:
+          value:
+            type: string
+            example: ln
+          label:
+            type: string
+            example: Languages
+          type:
+            type: string
+            example: SYSTEM
+          allow_filtering:
+            type: boolean
+            example: true
+          data_type:
+            type: string
+          has_entities:
+            type: boolean
+            example: STRING
+      updateEntityTypeRequest:
+        type: object
         description: entity type request
         properties:
           value:
             type: string
-            example: location
+            example: roles
           label:
             type: string
-            example: Location
+            example: Roles
+          status:
+            type: string
+            example: ACTIVE
+          type:
+            type: string
+            example: SYSTEM
+          allow_filtering:
+            type: boolean
+            example: true
           data_type:
             type: string
             example: string
@@ -3238,15 +3629,50 @@ components:
         properties:
           responseCode:
             type: string
-            example: OK
           message:
             type: string
-            example: Entity type updated successfully
           result:
-            type: array
-            items:
-              type: string
-            example: []
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              value:
+                type: string
+                example: roles
+              label:
+                type: string
+                example: Roles
+              status:
+                type: string
+                example: ACTIVE
+              created_by:
+                type: string
+                example: '2023-09-06T12:01:09.025Z'
+              updated_by:
+                type: number
+                example: '2023-09-22T12:47:42.510Z'
+              allow_filtering:
+                type: boolean
+                example: true
+              data_type:
+                type: string
+                example: string
+              org_id:
+                type: number
+                example: 1
+              has_entities:
+                type: boolean
+                example: true
+          meta:
+            type: object
+            properties:
+              correlation:
+                type: string
+                example: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
+              meeting_platform:
+                type: string
+                example: BBB
       updateEntityType400Response:
         type: object
         description: User entity already exist
@@ -3271,95 +3697,6 @@ components:
                 msg:
                   type: string
                   example: id param is empty
-      readEntityType201Response:
-        type: object
-        description: read entity type
-        properties:
-          responseCode:
-            type: string
-            example: OK
-          message:
-            type: string
-            example: Entity fetched successfully
-          result:
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  type: number
-                  example: 1
-                value:
-                  type: string
-                  example: location
-                label:
-                  type: string
-                  example: Location
-                status:
-                  type: string
-                  example: ACTIVE
-                data_type:
-                  type: string
-                  example: string
-                created_by:
-                  type: string
-                  format: nullable
-                updated_by:
-                  type: string
-                  format: nullable
-                allow_filtering:
-                  type: boolean
-                created_at:
-                  type: string
-                  format: date-time
-                  example: 2023-08-07T11:27:23.566Z
-                updated_at:
-                  type: string
-                  format: date-time
-                  example: 2023-08-07T11:27:23.566Z
-                deleted_at:
-                  type: string
-                  format: nullable
-                entities:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: number
-                        example: 1
-                      entity_type_id:
-                        type: number
-                        example: 1
-                      value:
-                        type: string
-                        example: AP
-                      label:
-                        type: string
-                        example: Andhra Pradesh
-                      status:
-                        type: string
-                        example: ACTIVE
-                      type:
-                        type: string
-                        example: system
-                      created_by:
-                        type: string
-                        format: nullable
-                      updated_by:
-                        type: string
-                        format: nullable
-                      created_at:
-                        type: string
-                        format: date-time
-                        example: 2023-08-07T11:27:23.573Z
-                      updated_at:
-                        type: string
-                        format: date-time
-                        example: 2023-08-07T11:27:23.573Z
-                      deleted_at:
-                        type: string
-                        format: nullable
       deleteUserEntity202Response:
         type: object
         description: Entity Deleted
@@ -3482,42 +3819,6 @@ components:
             items:
               type: string
             example: []
-      updateUserEntityRequest:
-        type: object
-        required:
-          - value
-          - label
-          - type
-          - entity_type_id
-        description: User Entity update request
-        properties:
-          value:
-            type: string
-            example: AP
-          label:
-            type: string
-            example: Andhra Pradesh
-          type:
-            type: string
-            example: string
-          entity_type_id:
-            type: integer
-            example: 4
-      updateUserEntity202Response:
-        type: object
-        description: ntity Updated
-        properties:
-          responseCode:
-            type: string
-            example: OK
-          message:
-            type: string
-            example: Entity updated successfully
-          result:
-            type: array
-            items:
-              type: string
-            example: []
       updateUserEntity400Response:
         type: object
         description: Entity not found
@@ -3574,10 +3875,10 @@ components:
                   example: null
                 created_at:
                   type: string
-                  example: 2023-08-07T11:27:23.573Z
+                  example: '2023-08-07T11:27:23.573Z'
                 updated_at:
                   type: string
-                  example: 2023-08-07T11:27:23.573Z
+                  example: '2023-08-07T11:27:23.573Z'
                 deleted_at:
                   type: string
                   example: null
