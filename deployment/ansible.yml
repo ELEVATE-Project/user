@@ -44,7 +44,7 @@
         update: yes
         version: "{{ gitBranch }}"
     - name: Update npm
-      shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
+      shell: cd {{release_path}}/src && npm i 
 
     - name: Delete Old Folder & create folder
       shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir mentoring

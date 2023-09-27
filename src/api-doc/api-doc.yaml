@@ -49,8 +49,6 @@ paths:
                   type: string
                 sub_type:
                   type: string
-                action:
-                  type: string
                 data:
                   type: object
                   properties:
@@ -102,14 +100,13 @@ paths:
                 value:
                   type: session
                   sub_type: createSessions
-                  action: sessionField
                   data:
                     template_name: defaultTemplate
                     fields:
                       controls:
                         - name: title
                           label: title
-                          value: ""
+                          value: ''
                           class: ion-margin
                           type: text
                           position: floating
@@ -118,26 +115,26 @@ paths:
                             min_length: 5
                         - name: categories
                           label: Select categories
-                          value: ""
+                          value: ''
                           class: ion-margin
                           type: chip
-                          position: ""
+                          position: ''
                           disabled: false
                           show_select_all: true
                           validators:
                             required: true
                         - name: ages
                           label: Select age
-                          value: ""
+                          value: ''
                           class: ion-margin
                           type: chip
-                          position: ""
+                          position: ''
                           disabled: false
                           show_select_all: true
                           validators:
                             required: true
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -209,7 +206,7 @@ paths:
                       created_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                       org_id:
                         type: number
                   meta:
@@ -226,7 +223,7 @@ paths:
                               type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -243,7 +240,7 @@ paths:
                           controls:
                             - name: title
                               label: title
-                              value: ""
+                              value: ''
                               class: ion-margin
                               type: text
                               position: floating
@@ -252,26 +249,26 @@ paths:
                                 min_length: 5
                             - name: categories
                               label: Select categories
-                              value: ""
+                              value: ''
                               class: ion-margin
                               type: chip
-                              position: ""
+                              position: ''
                               disabled: false
                               show_select_all: true
                               validators:
                                 required: true
                             - name: ages
                               label: Select age
-                              value: ""
+                              value: ''
                               class: ion-margin
                               type: chip
-                              position: ""
+                              position: ''
                               disabled: false
                               show_select_all: true
                               validators:
                                 required: true
-                      updated_at: "2023-07-18T20:48:10.492Z"
-                      created_at: "2023-07-18T20:48:10.492Z"
+                      updated_at: '2023-07-18T20:48:10.492Z'
+                      created_at: '2023-07-18T20:48:10.492Z'
                       deleted_at: null
                       org_id: 1
                     meta:
@@ -279,13 +276,13 @@ paths:
                         - id: 16
                           type: session
                       correlation: d244be75-c5ec-4286-9498-af2fe6f853e5
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/form/createForm400Response"
+                $ref: '#/components/schemas/form/createForm400Response'
   /mentoring/v1/form/update/{formId}:
     patch:
       operationId: formUpdate
@@ -322,8 +319,6 @@ paths:
                 type:
                   type: string
                 sub_type:
-                  type: string
-                action:
                   type: string
                 data:
                   type: object
@@ -376,14 +371,13 @@ paths:
                 value:
                   type: session
                   sub_type: createSessionsNew
-                  action: sessionField
                   data:
                     template_name: Test
                     fields:
                       controls:
                         - name: title
                           label: title
-                          value: ""
+                          value: ''
                           class: ion-margin
                           type: text
                           position: floating
@@ -392,26 +386,26 @@ paths:
                             min_length: 5
                         - name: categories
                           label: Select categories
-                          value: ""
+                          value: ''
                           class: ion-margin
                           type: chip
-                          position: ""
+                          position: ''
                           disabled: false
                           show_select_all: true
                           validators:
                             required: true
                         - name: ages
                           label: Select age
-                          value: ""
+                          value: ''
                           class: ion-margin
                           type: chip
-                          position: ""
+                          position: ''
                           disabled: false
                           show_select_all: true
                           validators:
                             required: true
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -441,7 +435,7 @@ paths:
                               type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -454,13 +448,13 @@ paths:
                         - id: 16
                           type: session
                       correlation: 37517055-d4f5-4578-ac57-25a10e541603
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/form/updateForm400Response"
+                $ref: '#/components/schemas/form/updateForm400Response'
   /mentoring/v1/form/read/{formId}:
     get:
       operationId: formRead
@@ -503,7 +497,7 @@ paths:
                   type: session
                   sub_type: createSessionsNew
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -575,7 +569,7 @@ paths:
                       created_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                       org_id:
                         type: number
                   meta:
@@ -592,7 +586,7 @@ paths:
                               type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -609,7 +603,7 @@ paths:
                           controls:
                             - name: title
                               label: title
-                              value: ""
+                              value: ''
                               class: ion-margin
                               type: text
                               position: floating
@@ -618,26 +612,26 @@ paths:
                                 min_length: 5
                             - name: categories
                               label: Select categories
-                              value: ""
+                              value: ''
                               class: ion-margin
                               type: chip
-                              position: ""
+                              position: ''
                               disabled: false
                               show_select_all: true
                               validators:
                                 required: true
                             - name: ages
                               label: Select age
-                              value: ""
+                              value: ''
                               class: ion-margin
                               type: chip
-                              position: ""
+                              position: ''
                               disabled: false
                               show_select_all: true
                               validators:
                                 required: true
-                      updated_at: "2023-07-18T20:48:10.492Z"
-                      created_at: "2023-07-18T20:48:10.492Z"
+                      updated_at: '2023-07-18T20:48:10.492Z'
+                      created_at: '2023-07-18T20:48:10.492Z'
                       deleted_at: null
                       org_id: 1
                     meta:
@@ -645,13 +639,13 @@ paths:
                         - id: 16
                           type: session
                       correlation: d244be75-c5ec-4286-9498-af2fe6f853e5
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/form/readForm400Response"
+                $ref: '#/components/schemas/form/readForm400Response'
   /mentoring/v1/entity/create:
     post:
       summary: Create user entity
@@ -662,7 +656,7 @@ paths:
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity/create` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters: &ref_15
+      parameters: &ref_6
         - name: X-auth-token
           in: header
           description: >-
@@ -682,10 +676,6 @@ paths:
                   type: string
                 label:
                   type: string
-                status:
-                  type: string
-                type:
-                  type: string
                 entity_type_id:
                   type: number
             examples:
@@ -693,11 +683,9 @@ paths:
                 value:
                   value: en
                   label: English
-                  status: ACTIVE
-                  type: SYSTEM
                   entity_type_id: 1
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -733,7 +721,7 @@ paths:
                       created_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -743,7 +731,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -759,23 +747,23 @@ paths:
                       entity_type_id: 1
                       created_by: 0
                       updated_by: 0
-                      updated_at: "2023-07-21T21:46:41.392Z"
-                      created_at: "2023-07-21T21:46:41.392Z"
+                      updated_at: '2023-07-21T21:46:41.392Z'
+                      created_at: '2023-07-21T21:46:41.392Z'
                       deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
-                      meetingPlatform: BBB
-        "400": &ref_16
+                      meeting_platform: BBB
+        '400': &ref_7
           description: Bad Request. User Entity already exists.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/entity/createUserEntity400Response"
+                $ref: '#/components/schemas/entity/createUserEntity400Response'
     parameters:
       - in: path
-        name: ""
-        description: ""
+        name: ''
+        description: ''
         schema:
           type: string
   /mentoring/v1/entity/update/{id}:
@@ -798,7 +786,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: "id "
+          name: 'id '
           description: Please append a valid user entity ID to the Request URL.
           schema:
             type: number
@@ -816,8 +804,6 @@ paths:
                   type: string
                 status:
                   type: string
-                type:
-                  type: string
                 entity_type_id:
                   type: number
             examples:
@@ -826,10 +812,9 @@ paths:
                   value: english
                   label: English
                   status: ACTIVE
-                  type: SYSTEM
                   entity_type_id: 1
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
@@ -842,9 +827,30 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      type: string
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      entity_type_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -854,25 +860,43 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
                   value:
                     responseCode: OK
                     message: Entity updated successfully
-                    result: []
+                    result:
+                      responseCode: OK
+                      message: Entity created successfully
+                      result:
+                        id: 1
+                        value: en
+                        label: English
+                        status: ACTIVE
+                        type: SYSTEM
+                        entity_type_id: 1
+                        created_by: 0
+                        updated_by: 0
+                        updated_at: '2023-07-21T21:46:41.392Z'
+                        created_at: '2023-07-21T21:46:41.392Z'
+                        deleted_at: null
+                      meta:
+                        formsVersion: []
+                        correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
+                        meeting_platform: BBB
                     meta:
                       formsVersion: []
                       correlation: 4b69c161-1d19-4d4c-963c-057feaa2e82e
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request. User Entity Not Found
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/entity/updateUserEntity400Response"
-  /mentoring/v1/entity/read?entity_type_id={type}&readUserEntity={boolean}:
+                $ref: '#/components/schemas/entity/updateUserEntity400Response'
+  /mentoring/v1/entity/read/{id}:
     get:
       summary: Get user entity details
       tags:
@@ -892,19 +916,12 @@ paths:
           schema:
             type: string
         - in: path
-          name: entity_type_id
-          description: Entity Type ID
+          name: id
+          description: ID of the entity
           schema:
-            type: integer
-          required: true
-        - in: path
-          name: readUserEntity
-          description: To include user created entities
-          schema:
-            type: boolean
-          required: true
+            type: string
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
@@ -917,32 +934,30 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        entity_type_id:
-                          type: number
-                        value:
-                          type: string
-                        label:
-                          type: string
-                        status:
-                          type: string
-                        type:
-                          type: string
-                        created_by:
-                          type: number
-                        updated_by:
-                          type: number
-                        created_at:
-                          type: string
-                        updated_at:
-                          type: string
-                        deleted_at:
-                          type: "null"
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      entity_type_id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -952,7 +967,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -968,13 +983,14 @@ paths:
                         type: SYSTEM
                         created_by: 0
                         updated_by: 1
-                        created_at: "2023-07-21T21:46:41.392Z"
-                        updated_at: "2023-07-21T21:47:50.202Z"
+                        created_at: '2023-07-21T21:46:41.392Z'
+                        updated_at: '2023-07-21T21:47:50.202Z'
                         deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
-                      meetingPlatform: BBB
+                      meeting_platform: BBB
+    parameters: []
   /mentoring/v1/entity/delete/{id}:
     patch:
       summary: Delete user entity
@@ -995,14 +1011,14 @@ paths:
           schema:
             type: string
         - in: path
-          name: "id "
+          name: 'id '
           required: true
           description: Please append a valid user entity ID to the Request URL.
           schema:
             type: string
           example: 62832531a05cbd57b273aebb
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
@@ -1027,7 +1043,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -1038,13 +1054,13 @@ paths:
                     meta:
                       formsVersion: []
                       correlation: 2f8b1d3d-0a25-4dda-ae5f-8d8bb9dd9282
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request. User Entity has already been deleted.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/entity/deleteUserEntity400Response"
+                $ref: '#/components/schemas/entity/deleteUserEntity400Response'
   /mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}:
     get:
       summary: Get list of sessions
@@ -1095,7 +1111,7 @@ paths:
             type: string
           example: John
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -1112,7 +1128,7 @@ paths:
                     properties:
                       count:
                         type: number
-                      rows:
+                      data:
                         type: array
                         items:
                           type: object
@@ -1145,22 +1161,21 @@ paths:
                               type: string
                             org_id:
                               type: number
-                          required: []
               examples:
                 example1:
                   value:
                     responseCode: OK
                     message: Session fetched successfully.
                     result:
-                      count: 0
-                      rows:
+                      count: 1
+                      data:
                         - id: 1
                           title: Leadership session by Adam
                           mentor_id: 21
                           description: Leadership session desc
                           status: PUBLISHED
-                          start_date: "1695210731"
-                          end_date: "1695214329"
+                          start_date: '1695210731'
+                          end_date: '1695214329'
                           image:
                             - >-
                               https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/1232s2133sdd1-12e2dasd3123.png
@@ -1169,12 +1184,12 @@ paths:
                           meeting_info.platform: BigBlueButton (Default)
                           mentor_name: Newell
                           org_id: 1
-        "400":
+        '400':
           description: Bad Request. Session Not Found
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/getSessionList400Response"
+                $ref: '#/components/schemas/sessions/getSessionList400Response'
   /mentoring/v1/sessions/details/{sessionId}:
     get:
       summary: Get session details
@@ -1202,7 +1217,7 @@ paths:
             type: string
           example: 1
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -1237,7 +1252,7 @@ paths:
                           type: string
                       created_at:
                         type: string
-                      session_reschedule:
+                      session_reschedule_count:
                         type: number
                       time_zone:
                         type: string
@@ -1259,7 +1274,8 @@ paths:
                           platform:
                             type: string
                       meta:
-                        type: string
+                        type: object
+                        properties: {}
                       visibility:
                         type: string
                       organization_ids:
@@ -1273,13 +1289,15 @@ paths:
                       updated_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                       is_enrolled:
                         type: boolean
                       mentor_name:
                         type: string
                       org_id:
-                        type: number
+                        type: array
+                        items:
+                          type: number
                   meta:
                     type: object
                     properties: {}
@@ -1294,13 +1312,13 @@ paths:
                       mentor_id: 21
                       description: Leadership session desc
                       status: PUBLISHED
-                      start_date: "1695210731"
-                      end_date: "1695214329"
+                      start_date: '1695210731'
+                      end_date: '1695214329'
                       image:
                         - >-
                           https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/1232s2133sdd1-12e2dasd3123.png
                       created_at: 2023-09-20T11:56:42.257Z,
-                      session_reschedule: 0
+                      session_reschedule_count: 0
                       time_zone: Asia/Calcutta
                       started_at: string
                       completed_at: string
@@ -1310,24 +1328,26 @@ paths:
                       meeting_info:
                         value: BBB
                         platform: BigBlueButton (Default)
-                      meta: string
+                      meta: {}
                       visibility: string
                       organization_ids: string
                       mentor_org_id: 1
                       seats_remaining: 25
                       seats_limit: 25
-                      updated_at: "2023-09-20T11:56:42.412Z"
+                      updated_at: '2023-09-20T11:56:42.412Z'
                       deleted_at: null
                       is_enrolled: false
                       mentor_name: Newell
-                      org_id: 1
+                      org_id:
+                        - 1
+                        - 2
                     meta: {}
-        "400":
+        '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/getSessionDetails400Response"
+                $ref: '#/components/schemas/sessions/getSessionDetails400Response'
   /mentoring/v1/sessions/share/{sessionId}:
     get:
       summary: Share session details
@@ -1355,18 +1375,40 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/shareSession200Response"
-        "400":
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      share_link:
+                        type: string
+                  meta:
+                    type: object
+                    properties: {}
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Session link generated successfully.
+                    result:
+                      share_link: 45fd48791a7a9d589aaa2d1b7f3f8dd7
+                    meta: {}
+        '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/shareSession400Response"
+                $ref: '#/components/schemas/sessions/shareSession400Response'
   /mentoring/v1/sessions/enroll/{sessionId}:
     post:
       summary: Enroll for a session
@@ -1394,18 +1436,18 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/enrollSession200Response"
-        "400":
+                $ref: '#/components/schemas/sessions/enrollSession200Response'
+        '400':
           description: Bad Request. The user is already enrolled for the session.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/enrollSession400Response"
+                $ref: '#/components/schemas/sessions/enrollSession400Response'
   /mentoring/v1/sessions/unenroll/{sessionId}:
     post:
       summary: Cancel enrollment from a session
@@ -1433,18 +1475,18 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/unenrollSession200Response"
-        "400":
+                $ref: '#/components/schemas/sessions/unenrollSession200Response'
+        '400':
           description: Bad Request. The user is not enrolled for the session.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/unenrollSession400Response"
+                $ref: '#/components/schemas/sessions/unenrollSession400Response'
   /mentoring/v1/sessions/start/{sessionId}:
     get:
       summary: Start Session
@@ -1472,24 +1514,24 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/startSession200Response"
-        "400":
+                $ref: '#/components/schemas/sessions/startSession200Response'
+        '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/startSession400Response"
-        "500":
+                $ref: '#/components/schemas/sessions/startSession400Response'
+        '500':
           description: Bad Request. Unable to create a meeting.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/startSession500Response"
+                $ref: '#/components/schemas/sessions/startSession500Response'
   /mentoring/v1/sessions/update:
     post:
       summary: Create Session
@@ -1549,8 +1591,8 @@ paths:
                 value:
                   title: Leadership session by Adam
                   description: Leadership session desc
-                  start_date: "1695210731"
-                  end_date: "1695214329"
+                  start_date: '1695210731'
+                  end_date: '1695214329'
                   mentee_feedback_question_set: MENTEE_QS1
                   mentor_feedback_question_set: MENTOR_QS2
                   recommended_for:
@@ -1562,7 +1604,7 @@ paths:
                   image:
                     - users/1232s2133sdd1-12e2dasd3123.png
       responses:
-        "201":
+        '201':
           description: created
           content:
             application.json:
@@ -1606,7 +1648,12 @@ paths:
                       medium:
                         type: array
                         items:
-                          type: number
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
                       image:
                         type: array
                         items:
@@ -1618,7 +1665,7 @@ paths:
                       status:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                       is_feedback_skipped:
                         type: boolean
                       mentee_feedback_question_set:
@@ -1626,7 +1673,7 @@ paths:
                       mentor_feedback_question_set:
                         type: string
                       id:
-                        type: string
+                        type: number
                       created_at:
                         type: string
                       updated_at:
@@ -1639,8 +1686,8 @@ paths:
                     result:
                       title: Leadership session by Adam
                       description: Training in leadership
-                      start_date: "1695210731"
-                      end_date: "1695214329"
+                      start_date: '1695210731'
+                      end_date: '1695214329'
                       recommended_for:
                         - value: deo
                           label: District education officer
@@ -1648,7 +1695,8 @@ paths:
                         - value: educational_leadership
                           label: Educational leadership
                       medium:
-                        - 1
+                        - value: en
+                          label: English
                       image:
                         - users/1232s2133sdd1-12e2dasd3123.png
                       mentor_id: 21
@@ -1658,15 +1706,15 @@ paths:
                       is_feedback_skipped: false
                       mentee_feedback_question_set: MENTEE_QS1
                       mentor_feedback_question_set: MENTOR_QS2
-                      id: "1"
+                      id: 1
                       created_at: 2023-09-20T11:56:42.257Z,
-                      updated_at: "2023-09-20T11:56:42.412Z"
-        "400":
+                      updated_at: '2023-09-20T11:56:42.412Z'
+        '400':
           description: Bad Request. Create Session Error
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/createSession400Response"
+                $ref: '#/components/schemas/sessions/createSession400Response'
   /mentoring/v1/sessions/update/{sessionId}:
     delete:
       summary: Delete session
@@ -1694,18 +1742,40 @@ paths:
             type: string
           example: 1
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/deleteSession202Response"
-        "400":
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties: {}
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: >-
+                      Session successfully deleted. This session is no longer
+                      available.
+                    result: []
+                    meta: {}
+        '400':
           description: Bad Request. The session could not be found.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/deleteSession400Response"
+                $ref: '#/components/schemas/sessions/deleteSession400Response'
     post:
       summary: Update session
       tags:
@@ -1764,8 +1834,8 @@ paths:
                 value:
                   title: Leadership session by Adam
                   description: Leadership session desc
-                  start_date: "1695210731"
-                  end_date: "1695214329"
+                  start_date: '1695210731'
+                  end_date: '1695214329'
                   mentee_feedback_question_set: MENTEE_QS1
                   mentor_feedback_question_set: MENTOR_QS2
                   recommended_for:
@@ -1777,7 +1847,7 @@ paths:
                   image:
                     - users/1232s2133sdd1-12e2dasd3123.png
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
@@ -1821,7 +1891,12 @@ paths:
                       medium:
                         type: array
                         items:
-                          type: number
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
                       image:
                         type: array
                         items:
@@ -1833,7 +1908,7 @@ paths:
                       status:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                       is_feedback_skipped:
                         type: boolean
                       mentee_feedback_question_set:
@@ -1841,7 +1916,7 @@ paths:
                       mentor_feedback_question_set:
                         type: string
                       id:
-                        type: string
+                        type: number
                       created_at:
                         type: string
                       updated_at:
@@ -1854,8 +1929,8 @@ paths:
                     result:
                       title: Leadership session by Adam
                       description: Training in leadership
-                      start_date: "1695210731"
-                      end_date: "1695214329"
+                      start_date: '1695210731'
+                      end_date: '1695214329'
                       recommended_for:
                         - value: deo
                           label: District education officer
@@ -1863,7 +1938,8 @@ paths:
                         - value: educational_leadership
                           label: Educational leadership
                       medium:
-                        - 1
+                        - value: en
+                          label: English
                       image:
                         - users/1232s2133sdd1-12e2dasd3123.png
                       mentor_id: 21
@@ -1873,17 +1949,17 @@ paths:
                       is_feedback_skipped: false
                       mentee_feedback_question_set: MENTEE_QS1
                       mentor_feedback_question_set: MENTOR_QS2
-                      id: "1"
+                      id: 1
                       created_at: 2023-09-20T11:56:42.257Z,
-                      updated_at: "2023-09-20T11:56:42.412Z"
-        "400":
+                      updated_at: '2023-09-20T11:56:42.412Z'
+        '400':
           description: >-
             Bad Request. Encountered an Error while trying to update the
             session.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/updateSession400Response"
+                $ref: '#/components/schemas/sessions/updateSession400Response'
   /mentoring/v1/sessions/getRecording/{sessionId}:
     get:
       summary: Get session recording
@@ -1911,18 +1987,18 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/sessionRecording200Response"
-        "400":
+                $ref: '#/components/schemas/sessions/sessionRecording200Response'
+        '400':
           description: Bad Request.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/sessionRecording400Response"
+                $ref: '#/components/schemas/sessions/sessionRecording400Response'
   /mentoring/v1/sessions/completed/{sessionId}:
     patch:
       summary: Update session status
@@ -1950,12 +2026,12 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/sessionCompleted200Response"
+                $ref: '#/components/schemas/sessions/sessionCompleted200Response'
   /mentoring/v1/sessions/updateRecordingUrl/{internalSessionId}:
     patch:
       summary: Update session recording url
@@ -1983,18 +2059,18 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/updateRecordingUrl200Response"
-        "400":
+                $ref: '#/components/schemas/sessions/updateRecordingUrl200Response'
+        '400':
           description: Bad Request.
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/sessions/updateRecordingUrl400Response"
+                $ref: '#/components/schemas/sessions/updateRecordingUrl400Response'
   /mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}:
     get:
       summary: Get list of session
@@ -2033,7 +2109,7 @@ paths:
             type: number
           example: 2
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -2041,7 +2117,7 @@ paths:
                 $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
-                  response_code:
+                  responseCode:
                     type: string
                   message:
                     type: string
@@ -2061,16 +2137,12 @@ paths:
                           items:
                             type: string
                         user_id:
-                          type: string
+                          type: number
                         status:
                           type: string
                         start_date:
                           type: string
                         end_date:
-                          type: string
-                        start_date_utc:
-                          type: string
-                        end_date_utc:
                           type: string
                         meeting_info:
                           type: object
@@ -2085,6 +2157,8 @@ paths:
                           type: boolean
                         mentor_name:
                           type: string
+                        org_id:
+                          type: number
                       required:
                         - id
                         - title
@@ -2094,12 +2168,11 @@ paths:
                         - status
                         - start_date
                         - end_date
-                        - start_date_utc
-                        - end_date_utc
                         - meeting_info
                         - created_at
                         - is_enrolled
                         - mentor_name
+                        - org_id
                   count:
                     type: number
                   meta:
@@ -2110,55 +2183,65 @@ paths:
                       meeting_platform:
                         type: string
               examples:
-                example1:
+                Success Response:
                   value:
-                    response_code: OK
+                    responseCode: OK
                     message: Session fetched successfully.
                     result:
                       - id: 1
-                        title: session
-                        description: descriptio
+                        title: >-
+                          Innovations in Indian Education: A Roadmap for the
+                          Future
+                        description: >-
+                          Join this session to discover innovative approaches
+                          and technologies shaping the future of Indian
+                          education. Learn how educators are adapting to meet
+                          the evolving needs of students and society.
                         image:
                           - >-
                             https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/session/62a73ffb12c0c4fe9b4c0f61-1695201766113-images_jpeg
-                        user_id: 62a73ffb12c0c4fe9b4c0f61
+                        user_id: 23
                         status: published
-                        start_date: "1697215860"
-                        end_date: "1697219460"
-                        start_date_utc: "2023-10-13T16:51:00"
-                        end_date_utc: "2023-10-13T17:51:00"
+                        start_date: '1697215860'
+                        end_date: '1697219460'
                         meeting_info:
                           platform: BigBlueButton (Default)
                           value: Default
-                        created_at: "2023-09-13T16:51:46.377Z"
+                        created_at: '2023-09-13T16:51:46.377Z'
                         is_enrolled: false
-                        mentor_name: afnan
+                        mentor_name: Nevil M
+                        org_id: 5
                       - id: 2
-                        title: created session
-                        description: jkkk
+                        title: >-
+                          Digital Revolution in Indian Classrooms: EdTech Trends
+                          and Insights
+                        description: >-
+                          Dive into the digital transformation of Indian
+                          classrooms. Gain insights into the latest educational
+                          technology trends, their impact, and how they're
+                          reshaping the teaching and learning experience.
                         image: []
-                        user_id: 64ae40051073b0dd429e0677
+                        user_id: 12
                         status: published
-                        start_date: "1695656520"
-                        end_date: "1695660120"
-                        start_date_utc: "2023-09-25T15:42:00"
-                        end_date_utc: "2023-09-25T16:42:00"
+                        start_date: '1695656520'
+                        end_date: '1695660120'
                         meeting_info:
-                          platform: "OFF"
-                          value: "OFF"
-                        created_at: "2023-08-25T10:42:43.708Z"
+                          platform: 'OFF'
+                          value: 'OFF'
+                        created_at: '2023-08-25T10:42:43.708Z'
                         is_enrolled: false
-                        mentor_name: Aa
+                        mentor_name: Aanya Sharma
+                        org_id: 5
                     count: 2
                     meta:
                       correlation: ecf6f2b6-6e21-445a-9242-303dc0ccd0b7
                       meeting_platform: BBB
-        "400":
+        '400':
           description: Bad Request. Session Not Found
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/mentees/menteeSession400Response"
+                $ref: '#/components/schemas/mentees/menteeSession400Response'
   /mentoring/v1/mentees/joinSession/{sessionId}:
     get:
       summary: Join session as mentee
@@ -2186,7 +2269,7 @@ paths:
             type: string
           example: 62832531a05cbd57b273aebb
       responses:
-        "200":
+        '200':
           description: Accepted
           content:
             application.json:
@@ -2210,7 +2293,7 @@ paths:
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 res:
@@ -2223,13 +2306,13 @@ paths:
                         https://dev.mentoring.shikshalokam.org/bigbluebutton/api/join?meetingID=650d5409401e8a63573b8a27&password=$2a$10$roDTPeDCeG/KR3Yuhrbnle9FwFTz7aPviL4UN2bsG5zIH7fBzpmjy&fullName=Feedback&checksum=1304befc8685f21b866d67afa077ad82c14b5f28
                     meta:
                       correlation: c878b18d-9f1c-47a9-9fbd-f6f6f7cef4db
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request. join session error
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/mentees/menteeJoinSession400Response"
+                $ref: '#/components/schemas/mentees/menteeJoinSession400Response'
   /mentoring/v1/mentees/reports?filterType={filterType}:
     get:
       summary: Mentee reports
@@ -2250,7 +2333,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: "filterType "
+          name: 'filterType '
           required: true
           description: >-
             Please append a valid filter type for reports such as `MONTHLY` or
@@ -2259,7 +2342,7 @@ paths:
             type: string
           example: QUARTERLY
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application.json:
@@ -2287,7 +2370,7 @@ paths:
                     response_code: OK
                     message: Mentees report fetched successfully.
                     result:
-                      total_session_enrolled: 1
+                      total_sessions_enrolled: 1
                       total_sessions_attended: 1
                     meta: {}
   /mentoring/v1/mentees/homeFeed:
@@ -2310,7 +2393,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -2348,10 +2431,6 @@ paths:
                               type: number
                             end_date:
                               type: number
-                            start_date_utc:
-                              type: string
-                            end_date_utc:
-                              type: string
                             meeting_info:
                               type: object
                               properties:
@@ -2429,12 +2508,14 @@ paths:
                                         type: boolean
                                   label:
                                     type: string
+                            org_id:
+                              type: number
                       correlation:
                         type: string
                       meeting_platform:
                         type: string
               examples:
-                example1:
+                Success Response:
                   value:
                     response_code: OK
                     message: Session fetched successfully.
@@ -2450,12 +2531,10 @@ paths:
                           status: published
                           start_date: 1697215860
                           end_date: 1697219460
-                          start_date_utc: "2023-10-13T16:51:00"
-                          end_date_utc: "2023-10-13T17:51:00"
                           meeting_info:
                             platform: BigBlueButton (Default)
                             value: Default
-                          created_at: "2023-09-13T16:51:46.377Z"
+                          created_at: '2023-09-13T16:51:46.377Z'
                           is_enrolled: false
                           mentor_name: afnan
                       my_sessions: []
@@ -2463,8 +2542,14 @@ paths:
                       type: feedback
                       data:
                         - id: 3
-                          title: Test
-                          description: test
+                          title: >-
+                            STEM Education in India: Fostering Innovation and
+                            Scientific Thinking
+                          description: >-
+                            Explore the significance of STEM (Science,
+                            Technology, Engineering, and Mathematics) education
+                            in India. Discuss ways to nurture scientific
+                            curiosity and innovation among Indian students.
                           mentor_feedback_form: mentorQS2
                           form:
                             - id: 4
@@ -2475,27 +2560,28 @@ paths:
                               visible: true
                               status: published
                               name: mentorEngagementInSession
-                              value: ""
+                              value: ''
                               class: ion-margin
                               no_of_stars: 5
-                              updated_at: "2021-12-14T09:41:55.552Z"
-                              created_at: "2021-12-14T09:41:55.552Z"
+                              updated_at: '2021-12-14T09:41:55.552Z'
+                              created_at: '2021-12-14T09:41:55.552Z'
                               questions_set_id: 5
                               validators:
                                 required: false
                               label: >-
                                 How would you rate the engagement in the
                                 session?
+                          org_id: 22
                       correlation: 87a59ed4-483d-4d02-a6ae-9aad8b218f45
                       meeting_platform: BBB
-  /mentoring/v1/mentees/profile:
+  /mentoring/v1/profile/read:
     get:
-      summary: Mentee profile
+      summary: Read profile
       tags:
-        - Mentee APIs
+        - Profile APIs
       description: |-
-        This API is associated with mentee profile 
-         - Endpoint for list session `/mentoring/v1/mentees/profile` 
+        This API is associated with  profile 
+         - Endpoint for list session `/mentoring/v1/profile/read` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
@@ -2508,7 +2594,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -2527,16 +2613,14 @@ paths:
                         type: string
                       verified:
                         type: boolean
-                      session_attended:
+                      total_sessions_attended:
                         type: string
-                      is_a_mentor:
-                        type: boolean
-                      has_accepted_t_and_c:
-                        type: boolean
-                      deleted:
+                      total_sessions_hosted:
+                        type: string
+                      terms_and_conditions:
                         type: boolean
                       id:
-                        type: string
+                        type: number
                       name:
                         type: string
                       designation:
@@ -2545,7 +2629,7 @@ paths:
                           type: object
                           properties:
                             value:
-                              type: number
+                              type: string
                             label:
                               type: string
                       location:
@@ -2554,7 +2638,7 @@ paths:
                           type: object
                           properties:
                             value:
-                              type: number
+                              type: string
                             label:
                               type: string
                       areas_of_expertise:
@@ -2563,7 +2647,7 @@ paths:
                           type: object
                           properties:
                             value:
-                              type: number
+                              type: string
                             label:
                               type: string
                       languages:
@@ -2572,11 +2656,18 @@ paths:
                           type: object
                           properties:
                             value:
-                              type: number
+                              type: string
                             label:
                               type: string
                       education_qualification:
-                        type: string
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
                       updated_at:
                         type: string
                       created_at:
@@ -2588,43 +2679,111 @@ paths:
                       experience:
                         type: string
                       gender:
-                        type: string
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
                       image:
                         type: string
+                  user_roles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        title:
+                          type: string
+                        user_type:
+                          type: number
+                        status:
+                          type: string
               examples:
-                example1:
+                mentee:
                   value:
                     response_code: OK
                     message: Profile fetched successfully.
                     result:
                       email: example@mail.com
                       verified: true
-                      session_attended: "1"
-                      is_a_mentor: true
-                      has_accepted_t_and_c: false
-                      deleted: false
-                      id: 62832531a05cbd57b273aebb
-                      name: Ankit
+                      total_sessions_attended: '1'
+                      terms_and_conditions: false
+                      id: 4564
+                      name: Nevil
                       designation:
-                        - value: 1
+                        - value: teacher
                           label: Teacher
                       location:
-                        - value: 1
-                          label: Bangalore
+                        - value: kl
+                          label: Kerala
                       areas_of_expertise:
-                        - value: 1
+                        - value: educational_leadership
                           label: Educational Leadership
                       languages:
-                        - value: 1
+                        - value: en
                           label: English
-                      education_qualification: B.A.
-                      updated_at: "2022-05-18T05:24:52.431Z"
-                      created_at: "2022-05-18T05:24:52.431Z"
-                      last_logged_in_at: "2022-05-18T05:24:52.431Z"
+                      education_qualification:
+                        - value: bcom
+                          label: B.Com
+                      updated_at: '2022-05-18T05:24:52.431Z'
+                      created_at: '2022-05-18T05:24:52.431Z'
+                      last_logged_in_at: '2022-05-18T05:24:52.431Z'
                       about: This is test about of mentee
-                      experience: "4.2"
-                      gender: MALE
+                      experience: '4.2'
+                      gender:
+                        - value: male
+                          label: MALE
                       image: https://cloudstorage.com/container/abc.png
+                      user_roles:
+                        - id: 1
+                          title: mentee
+                          user_type: 0
+                          status: ACTIVE
+                mentor:
+                  value:
+                    response_code: OK
+                    message: Profile fetched successfully.
+                    result:
+                      email: example@mail.com
+                      verified: true
+                      total_sessions_attended: '1'
+                      total_sessions_hosted: '23'
+                      terms_and_conditions: false
+                      id: 4564
+                      name: Nevil
+                      designation:
+                        - value: teacher
+                          label: Teacher
+                      location:
+                        - value: kl
+                          label: Kerala
+                      areas_of_expertise:
+                        - value: educational_leadership
+                          label: Educational Leadership
+                      languages:
+                        - value: en
+                          label: English
+                      education_qualification:
+                        - value: bcom
+                          label: B.Com
+                      updated_at: '2022-05-18T05:24:52.431Z'
+                      created_at: '2022-05-18T05:24:52.431Z'
+                      last_logged_in_at: '2022-05-18T05:24:52.431Z'
+                      about: This is test about of mentee
+                      experience: '4.2'
+                      gender:
+                        - value: male
+                          label: MALE
+                      image: https://cloudstorage.com/container/abc.png
+                    user_roles:
+                      - id: 1
+                        title: mentor
+                        user_type: 0
+                        status: ACTIVE
   /mentoring/v1/mentors/profile/{mentorId}:
     get:
       summary: Mentor profile
@@ -2645,14 +2804,14 @@ paths:
           schema:
             type: string
         - in: path
-          name: "mentorId "
+          name: 'mentorId '
           required: true
           description: Please append a valid mentorId
           schema:
             type: string
             example: 62a820225ff93f30cfe5f990
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -2679,14 +2838,8 @@ paths:
                         type: boolean
                       name:
                         type: string
-                      is_a_mentor:
+                      terms_and_conditions:
                         type: boolean
-                      has_accepted_t_and_c:
-                        type: boolean
-                      deleted:
-                        type: boolean
-                      education_qualification:
-                        type: string
                       designation:
                         type: array
                         items:
@@ -2705,7 +2858,19 @@ paths:
                               type: string
                             label:
                               type: string
-                      areas_of_expertise:
+                      area_of_expertise:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
+                      education_qualification:
                         type: array
                         items:
                           type: object
@@ -2726,8 +2891,6 @@ paths:
                               type: string
                             label:
                               type: string
-                            id:
-                              type: number
                       updated_at:
                         type: string
                       created_at:
@@ -2738,6 +2901,19 @@ paths:
                         type: string
                       experience:
                         type: string
+                      user_roles:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            title:
+                              type: string
+                            user_type:
+                              type: number
+                            status:
+                              type: string
                       image:
                         type: string
                       rating:
@@ -2760,7 +2936,14 @@ paths:
                                 - star
                                 - votes
                       preferred_language:
-                        type: string
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
                   meta:
                     type: object
                     properties:
@@ -2780,30 +2963,36 @@ paths:
                       email: mentoredtest@yopmail.com
                       verified: false
                       name: Nevil
-                      is_a_mentor: true
-                      has_accepted_t_and_c: true
-                      deleted: false
-                      education_qualification: test
+                      terms_and_conditions: true
                       designation:
                         - value: teacher
                           label: Teacher
                       location:
-                        - value: KN
-                          label: Karnataka
-                      areas_of_expertise:
-                        - value: eduLdship
-                          label: Educational leadership
-                        - value: schoolProcess
-                          label: School process
+                        - value: kl
+                          label: Kerala
+                      area_of_expertise:
+                        - value: technology
+                          label: Technology
+                        - value: leadership
+                          label: Leadership
+                      education_qualification:
+                        - value: mba
+                          label: MBA
+                        - value: b_tech
+                          label: B.Tech
                       languages:
-                        - value: english
+                        - value: en
                           label: English
-                          id: 1
-                      updated_at: "2022-10-10T08:07:06.087Z"
-                      created_at: "2022-09-26T05:40:11.170Z"
-                      last_logged_in_at: "2022-10-10T08:06:52.296Z"
+                      updated_at: '2022-10-10T08:07:06.087Z'
+                      created_at: '2022-09-26T05:40:11.170Z'
+                      last_logged_in_at: '2022-10-10T08:06:52.296Z'
                       about: Testing
-                      experience: "5"
+                      experience: '5'
+                      user_roles:
+                        - id: 1
+                          title: mentee
+                          user_type: 0
+                          status: ACTIVE
                       image: >-
                         https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/users/63313b3b315eeea0c61ab5b1-1664170882343-1664170852637.jpg
                       rating:
@@ -2814,16 +3003,18 @@ paths:
                             votes: 1
                           - star: 5
                             votes: 2
-                      preferred_language: en
+                      preferred_language:
+                        - value: en
+                          label: English
                     meta:
                       correlation: 1357deb7-28a7-4e9d-95b0-2b0b55cef24d
                       meeting_platform: BBB
-        "400":
+        '400':
           description: Bad request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/mentors/mentorProfile400Response"
+                $ref: '#/components/schemas/mentors/mentorProfile400Response'
   /mentoring/v1/mentors/reports?filterType={filterType}:
     get:
       summary: Mentors reports
@@ -2844,7 +3035,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: "filterType "
+          name: 'filterType '
           required: true
           description: >-
             Please append a valid filter Type for reports like `MONTHLY` or
@@ -2853,7 +3044,7 @@ paths:
             type: string
           example: QUARTERLY
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application.json:
@@ -2909,7 +3100,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: "mentorId "
+          name: 'mentorId '
           required: true
           description: Please append a valid mentorId
           schema:
@@ -2934,7 +3125,7 @@ paths:
             type: string
           example: jhon
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -2962,16 +3153,12 @@ paths:
                           items:
                             type: string
                         user_id:
-                          type: string
+                          type: number
                         status:
                           type: string
                         start_date:
                           type: string
                         end_date:
-                          type: string
-                        start_date_utc:
-                          type: string
-                        end_date_utc:
                           type: string
                         meeting_info:
                           type: object
@@ -2980,6 +3167,8 @@ paths:
                               type: string
                         mentor_name:
                           type: string
+                        org_id:
+                          type: number
                   meta:
                     type: object
                     properties:
@@ -2992,26 +3181,31 @@ paths:
                     message: Upcoming session fetched successfully.
                     result:
                       - id: 1
-                        title: Magna dolorem nostru
-                        description: Reprehenderit culpa
+                        title: >-
+                          The Role of Teachers in Shaping India's Future:
+                          Professional Development Strategies
+                        description: >-
+                          Recognize the pivotal role of educators in the Indian
+                          education system. Discover effective professional
+                          development strategies for empowering teachers and
+                          enhancing their impact on students.
                         image: []
-                        user_id: 63187a01e0d4e27052ded984
+                        user_id: 112
                         status: published
-                        start_date: "1695377520"
-                        end_date: "1695384720"
-                        start_date_utc: "2023-09-22T10:12:00"
-                        end_date_utc: "2023-09-22T12:12:00"
+                        start_date: '1695377520'
+                        end_date: '1695384720'
                         meeting_info:
                           platform: BigBlueButton (Default)
-                        mentor_name: Nevil Mm
+                        mentor_name: Nevil M
+                        org_id: 22
                     meta:
                       correlation: 1c9b58a1-4d30-46df-8eba-e6954ee9d70e
-        "400":
+        '400':
           description: Bad Request. Mentor Not Found
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/mentors/upcomingSession400Response"
+                $ref: '#/components/schemas/mentors/upcomingSession400Response'
     parameters: &ref_3 []
   /mentoring/v1/questions/create:
     post:
@@ -3046,13 +3240,13 @@ paths:
                 type:
                   type: string
                 options:
-                  type: "null"
+                  type: 'null'
                 no_of_stars:
                   type: number
                 status:
                   type: string
                 category:
-                  type: "null"
+                  type: 'null'
                 rendering_data:
                   type: object
                   properties:
@@ -3072,7 +3266,7 @@ paths:
                         required:
                           type: boolean
                 meta:
-                  type: "null"
+                  type: 'null'
             examples:
               example1:
                 value:
@@ -3086,16 +3280,16 @@ paths:
                   status: active
                   category: null
                   rendering_data:
-                    value: ""
+                    value: ''
                     class: ion-margin
                     disabled: false
-                    noOfstars: "5"
+                    noOfstars: '5'
                     position: floating
                     validation:
                       required: false
                   meta: null
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -3119,13 +3313,13 @@ paths:
                       type:
                         type: string
                       options:
-                        type: "null"
+                        type: 'null'
                       no_of_stars:
                         type: number
                       status:
                         type: string
                       category:
-                        type: "null"
+                        type: 'null'
                       rendering_data:
                         type: object
                         properties:
@@ -3145,13 +3339,13 @@ paths:
                               required:
                                 type: boolean
                       meta:
-                        type: "null"
+                        type: 'null'
                       updated_at:
                         type: string
                       created_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -3161,7 +3355,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -3180,21 +3374,21 @@ paths:
                       status: active
                       category: null
                       rendering_data:
-                        value: ""
+                        value: ''
                         class: ion-margin
                         disabled: false
-                        noOfstars: "5"
+                        noOfstars: '5'
                         position: floating
                         validation:
                           required: false
                       meta: null
-                      updated_at: "2023-07-17T09:43:01.614Z"
-                      created_at: "2023-07-17T09:43:01.614Z"
+                      updated_at: '2023-07-17T09:43:01.614Z'
+                      created_at: '2023-07-17T09:43:01.614Z'
                       deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: c1987eb0-c58a-415c-99bc-a9de62518318
-                      meetingPlatform: BBB
+                      meeting_platform: BBB
   /mentoring/v1/questions/update/{QuestionId}:
     patch:
       summary: Update questions
@@ -3216,7 +3410,7 @@ paths:
             type: string
         - in: path
           name: QuestionId
-          description: ""
+          description: ''
           schema:
             type: number
           required: true
@@ -3234,13 +3428,13 @@ paths:
                 type:
                   type: string
                 options:
-                  type: "null"
+                  type: 'null'
                 no_of_stars:
                   type: number
                 status:
                   type: string
                 category:
-                  type: "null"
+                  type: 'null'
                 rendering_data:
                   type: object
                   properties:
@@ -3260,7 +3454,7 @@ paths:
                         required:
                           type: boolean
                 meta:
-                  type: "null"
+                  type: 'null'
             examples:
               example1:
                 value:
@@ -3269,7 +3463,7 @@ paths:
                     To what extent did you feel comfortable sharing your
                     thoughts in the session
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
@@ -3282,9 +3476,50 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      type: string
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      question:
+                        type: string
+                      type:
+                        type: string
+                      options:
+                        type: 'null'
+                      no_of_stars:
+                        type: number
+                      status:
+                        type: string
+                      category:
+                        type: 'null'
+                      rendering_data:
+                        type: object
+                        properties:
+                          value:
+                            type: string
+                          class:
+                            type: string
+                          disabled:
+                            type: boolean
+                          noOfstars:
+                            type: string
+                          position:
+                            type: string
+                          validation:
+                            type: object
+                            properties:
+                              required:
+                                type: boolean
+                      meta:
+                        type: 'null'
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -3294,24 +3529,46 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
                   value:
                     responseCode: OK
                     message: Question updated successfully
-                    result: []
+                    result:
+                      id: 2
+                      name: keyvalue
+                      question: >-
+                        To what extent did you feel comfortable sharing your
+                        thoughts in the session?
+                      type: rating
+                      options: null
+                      no_of_stars: 5
+                      status: active
+                      category: null
+                      rendering_data:
+                        value: ''
+                        class: ion-margin
+                        disabled: false
+                        noOfstars: '5'
+                        position: floating
+                        validation:
+                          required: false
+                      meta: null
+                      updated_at: '2023-07-17T09:43:01.614Z'
+                      created_at: '2023-07-17T09:43:01.614Z'
+                      deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: 91339881-7ac2-45b5-a8a1-12ed6b06da99
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/questions/updateQuestionResponse400"
+                $ref: '#/components/schemas/questions/updateQuestionResponse400'
   /mentoring/v1/questions/read/{QuestionId}:
     get:
       summary: Get questions
@@ -3338,7 +3595,7 @@ paths:
             type: number
           required: true
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application.json:
@@ -3360,7 +3617,7 @@ paths:
                       question:
                         type: string
                       options:
-                        type: "null"
+                        type: 'null'
                       type:
                         type: string
                       no_of_stars:
@@ -3368,7 +3625,7 @@ paths:
                       status:
                         type: string
                       category:
-                        type: "null"
+                        type: 'null'
                       rendering_data:
                         type: object
                         properties:
@@ -3388,13 +3645,13 @@ paths:
                               required:
                                 type: boolean
                       meta:
-                        type: "null"
+                        type: 'null'
                       created_at:
                         type: string
                       updated_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -3404,7 +3661,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -3423,27 +3680,27 @@ paths:
                       status: active
                       category: null
                       rendering_data:
-                        value: ""
+                        value: ''
                         class: ion-margin
                         disabled: false
-                        noOfstars: "5"
+                        noOfstars: '5'
                         position: floating
                         validation:
                           required: false
                       meta: null
-                      created_at: "2023-07-17T09:29:10.942Z"
-                      updated_at: "2023-07-17T09:46:51.744Z"
+                      created_at: '2023-07-17T09:29:10.942Z'
+                      updated_at: '2023-07-17T09:46:51.744Z'
                       deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: fe922367-b03f-4164-a2c4-fba10a577dee
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/questions/readQuestionResponse400"
+                $ref: '#/components/schemas/questions/readQuestionResponse400'
   /mentoring/v1/questionsSet/create:
     post:
       summary: Create question set
@@ -3483,7 +3740,7 @@ paths:
                     - 1
                   code: feedback
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -3513,9 +3770,9 @@ paths:
                       created_at:
                         type: string
                       meta:
-                        type: "null"
+                        type: 'null'
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -3525,7 +3782,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -3536,22 +3793,22 @@ paths:
                       status: published
                       id: 2
                       questions:
-                        - "1"
+                        - '1'
                       code: feedback
-                      updated_at: "2023-07-17T09:55:06.660Z"
-                      created_at: "2023-07-17T09:55:06.660Z"
+                      updated_at: '2023-07-17T09:55:06.660Z'
+                      created_at: '2023-07-17T09:55:06.660Z'
                       meta: null
                       deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: c7d0d434-25e7-41d4-8384-496e8786a7a1
-                      meetingPlatform: BBB
-        "400":
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/questionset/createQuestionSetResponse400"
+                $ref: '#/components/schemas/questionset/createQuestionSetResponse400'
   /mentoring/v1/questionsSet/update/{QuestionSetId}:
     patch:
       summary: Update question set
@@ -3573,7 +3830,7 @@ paths:
             type: string
         - in: path
           name: QuestionSetId
-          description: ""
+          description: ''
           schema: &ref_1
             type: number
           required: true
@@ -3597,7 +3854,7 @@ paths:
                     - 1
                   code: UpdatedFeedbackCode
       responses:
-        "202":
+        '202':
           description: Accepted
           content:
             application.json:
@@ -3610,9 +3867,26 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      type: string
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      id:
+                        type: number
+                      questions:
+                        type: array
+                        items:
+                          type: string
+                      code:
+                        type: string
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      meta:
+                        type: 'null'
+                      deleted_at:
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -3622,24 +3896,33 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
                   value:
                     responseCode: OK
                     message: Questions set updated successfully
-                    result: []
+                    result:
+                      status: published
+                      id: 2
+                      questions:
+                        - '1'
+                      code: UpdatedFeedbackCode
+                      updated_at: '2023-07-17T09:55:06.660Z'
+                      created_at: '2023-07-17T09:55:06.660Z'
+                      meta: null
+                      deleted_at: null
                     meta:
                       formsVersion: []
-                      correlation: 767facf7-c809-4a7e-940b-09b8e981a1d4
-                      meetingPlatform: BBB
-        "400":
+                      correlation: c7d0d434-25e7-41d4-8384-496e8786a7a1
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/questionset/updateQuestionSetResponse400"
+                $ref: '#/components/schemas/questionset/updateQuestionSetResponse400'
   /mentoring/v1/questionsSet/read/{QuestionSetId}:
     get:
       summary: Get question set
@@ -3661,11 +3944,11 @@ paths:
             type: string
         - in: path
           name: QuestionSetId
-          description: ""
+          description: ''
           schema: *ref_1
           required: true
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application.json:
@@ -3691,33 +3974,45 @@ paths:
                       status:
                         type: string
                       meta:
-                        type: "null"
+                        type: 'null'
                       created_at:
                         type: string
                       updated_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
                   meta:
                     type: object
                     properties:
-                      formsVersion:
-                        type: array
-                        items:
-                          type: string
                       correlation:
                         type: string
                       meetingPlatform:
                         type: string
               examples:
                 example1:
-                  value: ""
-        "400":
+                  value:
+                    responseCode: OK
+                    message: Question set fetched successfully
+                    result:
+                      status: published
+                      id: 2
+                      questions:
+                        - '1'
+                      code: feedback
+                      updated_at: '2023-07-17T09:55:06.660Z'
+                      created_at: '2023-07-17T09:55:06.660Z'
+                      meta: null
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: fe922367-b03f-4164-a2c4-fba10a577dee
+                      meeting_platform: BBB
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/questionset/readQuestionSetResponse400"
+                $ref: '#/components/schemas/questionset/readQuestionSetResponse400'
   /mentoring/v1/feedback/forms/{SessionId}:
     get:
       summary: Get feedback form
@@ -3745,18 +4040,102 @@ paths:
             type: string
           example: 1
       responses:
-        "200":
+        '200':
           description: Ok
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/feedback/getFeedbackFromResponse200"
-        "400":
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      form:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            name:
+                              type: string
+                            options:
+                              type: 'null'
+                            type:
+                              type: string
+                            no_of_stars:
+                              type: number
+                            status:
+                              type: string
+                            category:
+                              type: 'null'
+                            rendering_data:
+                              type: object
+                              properties:
+                                validators:
+                                  type: object
+                                  properties:
+                                    required:
+                                      type: boolean
+                                disable:
+                                  type: boolean
+                                visible:
+                                  type: boolean
+                                class:
+                                  type: string
+                            meta:
+                              type: object
+                              properties: {}
+                            created_at:
+                              type: string
+                            updated_at:
+                              type: string
+                            deleted_at:
+                              type: 'null'
+                            label:
+                              type: string
+                  meta:
+                    type: object
+                    properties: {}
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: >-
+                      Thank you for hosting the session. Please rate us on the
+                      following to help us improve.
+                    result:
+                      form:
+                        - id: 1
+                          name: mentor_engagement_in_session
+                          options: null
+                          type: rating
+                          no_of_stars: 5
+                          status: PUBLISHED
+                          category: null
+                          rendering_data:
+                            validators:
+                              required: true
+                            disable: true
+                            visible: true
+                            class: ion-margin
+                          meta: {}
+                          created_at: '2023-09-20T11:48:34.679Z'
+                          updated_at: '2023-09-20T11:48:34.679Z'
+                          deleted_at: null
+                          label: How would you rate the engagement in the session?
+                    meta: {}
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/feedback/getFeedbackFormResponse400"
+                $ref: '#/components/schemas/feedback/getFeedbackFormResponse400'
   /mentoring/v1/feedback/submit/{SessionId}:
     post:
       summary: Submit feedback
@@ -3787,26 +4166,46 @@ paths:
         content:
           application.json:
             schema:
-              $ref: "#/components/schemas/feedback/submitFeedbackRequest"
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                feedbacks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      question_id:
+                        type: string
+                      value:
+                        type: string
+                feedback_as:
+                  type: string
+            examples:
+              example1:
+                value:
+                  feedbacks:
+                    - question_id: '1'
+                      value: '1'
+                  feedback_as: mentee
       responses:
-        "200":
+        '200':
           description: OK
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/feedback/submitFeedbackResponse200"
-        "400":
+                $ref: '#/components/schemas/feedback/submitFeedbackResponse200'
+        '400':
           description: Bad Request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/feedback/submitFeedbackResponse400"
-        "422":
+                $ref: '#/components/schemas/feedback/submitFeedbackResponse400'
+        '422':
           description: Unprocessable Entity
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/feedback/submitFeedbackResponse422"
+                $ref: '#/components/schemas/feedback/submitFeedbackResponse422'
   /mentoring/v1/users/pendingFeedbacks:
     get:
       summary: Users pending feedback
@@ -3827,7 +4226,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -3850,7 +4249,7 @@ paths:
                           type: string
                         description:
                           type: string
-                        mentorFeedbackForm:
+                        mentor_feedback_form:
                           type: string
                         form:
                           type: object
@@ -3864,7 +4263,7 @@ paths:
                       - id: 43
                         title: Leadership
                         description: Training in leadership
-                        mentorFeedbackForm: mentorQS2
+                        mentor_feedback_form: mentorQS2
                         form: {}
   /user/v1/cloud-services/getSignedUrl?fileName={fileName}:
     get:
@@ -3893,12 +4292,37 @@ paths:
             type: string
           example: image.jpg
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/cloudServices/cloudServicesResponse200"
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      signed_url:
+                        type: string
+                      file_path:
+                        type: string
+                      dest_file_path:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Signed URL Generated Successfully.
+                    result:
+                      signed_url: >-
+                        https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
+                      file_path: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
+                      dest_file_path: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
   /user/v1/cloud-services/getDownloadableUrl?filePath={filePath}:
     get:
       summary: Cloud services get download url
@@ -3927,49 +4351,13 @@ paths:
             type: string
           example: users/62832531a05cbd57b273aebb-1654149589875-image.jpg
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
               schema:
                 $ref: >-
                   #/components/schemas/cloudServices/cloudServicesDownloadResponse200
-  /notification/v1/email/send:
-    post:
-      summary: Send email
-      tags:
-        - Email APIs
-      description: |-
-        This API is associated with sending email through API 
-         - Then The API Endpoint forsending email `/notification/v1/email/send` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters:
-        - name: internal_access_token
-          in: header
-          description: To make use of the API, you require internal access token.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Request body consist of metadata and accepts payload as JSON
-        content:
-          application.json:
-            schema:
-              $ref: "#/components/schemas/email/emailSendRequest"
-      responses:
-        "200":
-          description: OK. Email sent successfully.
-          content:
-            application.json:
-              schema:
-                $ref: "#/components/schemas/email/emailSendResponse200"
-        "400":
-          description: Bad Request.
-          content:
-            application.json:
-              schema:
-                $ref: "#/components/schemas/email/emailSendResponse400"
   /mentoring/v1/users/list?type={userType}&page={page}&limit={limit}&search={search}:
     get:
       summary: List user
@@ -4015,7 +4403,7 @@ paths:
             type: string
           example: jhon
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -4046,7 +4434,7 @@ paths:
                                     type: number
                                   name:
                                     type: string
-                                  areasOfExpertise:
+                                  areas_of_expertise:
                                     type: array
                                     items:
                                       type: object
@@ -4069,8 +4457,8 @@ paths:
                         - key: A
                           values:
                             - id: 44
-                              name: jhon
-                              areasOfExpertise:
+                              name: adam
+                              areas_of_expertise:
                                 - value: educational_leadership
                                   label: Educational Leadership
                               image: >-
@@ -4103,7 +4491,7 @@ paths:
             type: string
           example: 21
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -4134,12 +4522,12 @@ paths:
                       share_link: 07fc31acad0de174f940fc39c3718d93
                     meta:
                       correlation: 59a1e835-6786-4e99-98f5-2987229f8e4d
-        "400":
+        '400':
           description: Bad request
           content:
             application.json:
               schema:
-                $ref: "#/components/schemas/mentors/shareMentorProfile400Response"
+                $ref: '#/components/schemas/mentors/shareMentorProfile400Response'
   /mentoring/v1/issues/create:
     post:
       summary: Report an issue
@@ -4193,7 +4581,7 @@ paths:
                     browserName: Chrome
                     browserVersion: 114.0.0.0
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
@@ -4218,7 +4606,7 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -4229,8 +4617,8 @@ paths:
                     meta:
                       formsVersion: []
                       correlation: a761e205-7d3a-4f6c-a31a-4641a14f1e91
-                      meetingPlatform: BBB
-        "422":
+                      meeting_platform: BBB
+        '422':
           description: Unprocessable Entity
           content:
             application.json:
@@ -4278,62 +4666,102 @@ paths:
                     message: Validation failed, Entered data is incorrect!
   /mentoring/v1/config/get:
     get:
-      description: ""
+      description: ''
       operationId: /mentoring/v1/platform/config
       tags:
         - Config APIs
       parameters: []
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/config"
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      meeting_platform:
+                        type: string
+                      report_issue:
+                        type: object
+                        properties:
+                          to:
+                            type: string
+                          subject:
+                            type: string
+                  meta:
+                    type: object
+                    properties:
+                      forms_version:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            type:
+                              type: string
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
               examples:
                 Success  Response:
                   value:
                     responseCode: OK
                     message: App config fetched successfully
                     result:
-                      meetingPlatform: "OFF"
-                      reportIssue:
+                      meeting_platform: 'OFF'
+                      report_issue:
                         to: support@xyz.com,team@xyz.com
                         subject: Support request for MentorED
                     meta:
-                      formsVersion:
-                        - _id: 6473b164c4a896503f61fda2
+                      forms_version:
+                        - id: 55
                           type: session
-                        - _id: 6473b164c4a896503f61fda3
-                          type: profile
-                        - _id: 6473b164c4a896503f61fda4
-                          type: termsAndConditions
-                        - _id: 6473b164c4a896503f61fda5
-                          type: faq
-                        - _id: 6473b164c4a896503f61fda6
-                          type: helpVideos
                       correlation: a677494a-b89c-441c-8bdf-70fc91c7136d
-                      meetingPlatform: "OFF"
+                      meeting_platform: 'OFF'
+                example1:
+                  value:
+                    responseCode: OK
+                    message: App config fetched successfully
+                    result:
+                      meeting_platform: 'OFF'
+                      report_issue:
+                        to: support@xyz.com,team@xyz.com
+                        subject: Support request for MentorED
+                    meta:
+                      forms_version:
+                        - id: 55
+                          type: session
+                      correlation: a677494a-b89c-441c-8bdf-70fc91c7136d
+                      meeting_platform: 'OFF'
       summary: Get app config
-  /mentoring/v1/mentors/create:
+  /mentoring/v1/profile/create:
     post:
-      summary: Create mentor details
+      summary: Create details
       tags:
-        - Mentor APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentors/create/` 
+        - Profile APIs
+      description: |-
+        This API is associated with the profile API
+         - Endpoint for listing session `/mentoring/v1/profile/create/` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters: &ref_4
         - *ref_2
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
-              schema: &ref_9
+              schema:
                 $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
@@ -4349,11 +4777,27 @@ paths:
                       area_of_expertise:
                         type: array
                         items:
-                          type: string
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
                       education_qualification:
                         type: array
                         items:
-                          type: string
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
                       rating:
                         type: object
                         properties:
@@ -4361,8 +4805,6 @@ paths:
                             type: number
                           count:
                             type: number
-                      user_type:
-                        type: string
                       meta:
                         type: object
                         properties:
@@ -4405,8 +4847,20 @@ paths:
                       created_at:
                         type: string
                       deleted_at:
-                        type: string
-                        example: null
+                        type: 'null'
+                      user_roles:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            title:
+                              type: string
+                            user_type:
+                              type: number
+                            status:
+                              type: string
                   meta:
                     type: object
                     properties:
@@ -4416,25 +4870,28 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
                   value:
                     responseCode: OK
-                    message: Mentor extension created successfully.
+                    message: Mentee extension created successfully.
                     result:
                       designation: Lead Mentor
                       area_of_expertise:
-                        - Technology
-                        - Leadership
+                        - value: technology
+                          label: Technology
+                        - value: leadership
+                          label: Leadership
                       education_qualification:
-                        - MBA
-                        - B.Tech
+                        - value: mba
+                          label: MBA
+                        - value: b_tech
+                          label: B.Tech
                       rating:
                         average: 4.5
                         count: 20
-                      user_type: mentor
                       meta:
                         age: 35
                         experience: 10 years
@@ -4454,14 +4911,19 @@ paths:
                       external_session_visibility: limited
                       external_mentor_visibility: hidden
                       user_id: 1
-                      updated_at: "2023-08-08T19:04:04.607Z"
-                      created_at: "2023-08-08T19:04:04.607Z"
+                      updated_at: '2023-08-08T19:04:04.607Z'
+                      created_at: '2023-08-08T19:04:04.607Z'
                       deleted_at: null
+                      user_roles:
+                        - id: 1
+                          title: mentee
+                          user_type: 0
+                          status: ACTIVE
                     meta:
                       formsVersion: []
                       correlation: 4bc32289-a646-40c5-8229-adfa3a92faa6
-                      meetingPlatform: BBB
-        "400": &ref_5
+                      meeting_platform: BBB
+        '400': &ref_5
           description: Bad Request. Mentor Not Found
           content:
             application.json:
@@ -4490,11 +4952,11 @@ paths:
                     meta:
                       correlation: e511136d-1383-4f91-aa28-178c96778a68
                     message: Failed to create mentor extension.
-      requestBody: &ref_10
-        description: ""
+      requestBody:
+        description: ''
         content:
           application/json:
-            schema: &ref_6
+            schema:
               $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
@@ -4508,22 +4970,8 @@ paths:
                   type: array
                   items:
                     type: string
-                rating:
-                  type: object
-                  properties:
-                    average:
-                      type: number
-                    count:
-                      type: number
-                user_type:
+                experience:
                   type: string
-                meta:
-                  type: object
-                  properties:
-                    age:
-                      type: number
-                    experience:
-                      type: string
                 stats:
                   type: object
                   properties:
@@ -4557,140 +5005,36 @@ paths:
                 value:
                   designation: Lead Mentor
                   area_of_expertise:
-                    - Technology
-                    - Leadership
+                    - technology
+                    - leadership
                   education_qualification:
-                    - MBA
-                    - B.Tech
-                  rating:
-                    average: 4.5
-                    count: 20
-                  user_type: mentor
-                  meta:
-                    age: 35
-                    experience: 10 years
-                  stats:
-                    sessions_attended: 50
-                    students_mentored: 30
+                    - mba
+                    - b_tech
+                  experience: 10 years
                   tags:
                     - Experienced
                     - Technical
                   configs:
                     notification: true
                     visibility: public
-                  visibility: visible
-                  organisation_ids:
-                    - 1
-                    - 2
-                  external_session_visibility: limited
-                  external_mentor_visibility: hidden
     parameters: *ref_3
-  /mentoring/v1/mentors/update:
+  /mentoring/v1/profile/update:
     post:
-      summary: Update mentor details
+      summary: Update details
       tags:
-        - Mentor APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentors/update/` 
+        - Profile APIs
+      description: |-
+        This API is associated with profile
+         - Endpoint for listing session `/mentoring/v1/profile/update` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters: *ref_4
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
-              schema: &ref_11
-                $schema: http://json-schema.org/draft-04/schema#
-                type: object
-                properties:
-                  responseCode:
-                    type: string
-                  message:
-                    type: string
-                  result:
-                    type: object
-                    properties: {}
-                  meta:
-                    type: object
-                    properties:
-                      formsVersion:
-                        type: array
-                        items:
-                          type: string
-                      correlation:
-                        type: string
-                      meetingPlatform:
-                        type: string
-              examples:
-                example1:
-                  value:
-                    responseCode: OK
-                    message: Mentor extension updated successfully.
-                    result: {}
-                    meta:
-                      formsVersion: []
-                      correlation: 24f12521-c6a9-484b-a69e-f26ec900383f
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: &ref_12
-        description: ""
-        content:
-          application/json:
-            schema: *ref_6
-            examples:
-              example1:
-                value:
-                  designation: Lead Mentor
-                  area_of_expertise:
-                    - Technology
-                    - Leadership
-                  education_qualification:
-                    - MBA
-                    - B.Tech
-                  rating:
-                    average: 5
-                    count: 20
-                  user_type: mentor
-                  meta:
-                    age: 35
-                    experience: 10 years
-                  stats:
-                    sessions_attended: 50
-                    students_mentored: 30
-                  tags:
-                    - Experienced
-                    - Technical
-                  configs:
-                    notification: true
-                    visibility: public
-                  visibility: visible
-                  organisation_ids:
-                    - 1
-                    - 2
-                  external_session_visibility: limited
-                  external_mentor_visibility: hidden
-    parameters: *ref_3
-  /mentoring/v1/mentors/getMentorExtension/:
-    get:
-      summary: Read mentor details
-      tags:
-        - Mentor APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentors/getMentorExtension/` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters: *ref_4
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema: &ref_13
+              schema:
                 $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
@@ -4701,18 +5045,32 @@ paths:
                   result:
                     type: object
                     properties:
-                      user_id:
-                        type: number
                       designation:
                         type: string
                       area_of_expertise:
                         type: array
                         items:
-                          type: string
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
                       education_qualification:
                         type: array
                         items:
-                          type: string
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
                       rating:
                         type: object
                         properties:
@@ -4720,8 +5078,6 @@ paths:
                             type: number
                           count:
                             type: number
-                      user_type:
-                        type: string
                       meta:
                         type: object
                         properties:
@@ -4757,13 +5113,27 @@ paths:
                         type: string
                       external_mentor_visibility:
                         type: string
-                      created_at:
-                        type: string
+                      user_id:
+                        type: number
                       updated_at:
                         type: string
-                      deleted_at:
+                      created_at:
                         type: string
-                        example: null
+                      deleted_at:
+                        type: 'null'
+                      user_roles:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            title:
+                              type: string
+                            user_type:
+                              type: number
+                            status:
+                              type: string
                   meta:
                     type: object
                     properties:
@@ -4773,26 +5143,28 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
                   value:
                     responseCode: OK
-                    message: Mentor extension fetched successfully.
+                    message: Mentee extension updated successfully.
                     result:
-                      user_id: 1
                       designation: Lead Mentor
                       area_of_expertise:
-                        - Technology
-                        - Leadership
+                        - value: technology
+                          label: Technology
+                        - value: leadership
+                          label: Leadership
                       education_qualification:
-                        - MBA
-                        - B.Tech
+                        - value: mba
+                          label: MBA
+                        - value: b_tech
+                          label: B.Tech
                       rating:
-                        average: 5
+                        average: 4.5
                         count: 20
-                      user_type: mentor
                       meta:
                         age: 35
                         experience: 10 years
@@ -4811,42 +5183,86 @@ paths:
                         - 2
                       external_session_visibility: limited
                       external_mentor_visibility: hidden
-                      created_at: "2023-08-08T19:04:04.607Z"
-                      updated_at: "2023-08-08T19:06:13.237Z"
+                      user_id: 1
+                      updated_at: '2023-08-08T19:04:04.607Z'
+                      created_at: '2023-08-08T19:04:04.607Z'
                       deleted_at: null
+                      user_roles:
+                        - id: 1
+                          title: mentee
+                          user_type: 0
+                          status: ACTIVE
                     meta:
                       formsVersion: []
-                      correlation: 1bac1a53-e9df-4321-804d-04c69ffb3d0e
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: &ref_7
-        description: ""
-        content: {}
-    parameters: &ref_8
-      - in: path
-        name: id
-        description: user ID
-        schema:
-          type: number
-        required: true
-  /mentoring/v1/mentors/deleteMentorExtension:
-    delete:
-      summary: Delete mentor details
+                      correlation: 4bc32289-a646-40c5-8229-adfa3a92faa6
+                      meeting_platform: BBB
+        '400': *ref_5
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                designation:
+                  type: string
+                area_of_expertise:
+                  type: array
+                  items:
+                    type: string
+                education_qualification:
+                  type: array
+                  items:
+                    type: string
+                experience:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                configs:
+                  type: object
+                  properties:
+                    notification:
+                      type: boolean
+                    visibility:
+                      type: string
+            examples:
+              example1:
+                value:
+                  designation: Lead Mentor
+                  area_of_expertise:
+                    - technology
+                    - leadership
+                  education_qualification:
+                    - mba
+                    - b_tech
+                  experience: 10 years
+                  tags:
+                    - Experienced
+                    - Technical
+                  configs:
+                    notification: true
+                    visibility: public
+    parameters: *ref_3
+  /mentoring/v1/profile/getExtension:
+    get:
+      summary: Read extention details
       tags:
-        - Mentor APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentors/deleteMentorExtension/` 
+        - Profile APIs
+      description: |-
+        This API is associated with profile
+         - Endpoint for listing session `/mentoring/v1/profile/getExtension` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters: *ref_4
       responses:
-        "200":
+        '200':
           description: ok
           content:
             application.json:
-              schema: &ref_14
+              schema:
                 $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
@@ -4855,7 +5271,79 @@ paths:
                   message:
                     type: string
                   result:
-                    type: boolean
+                    type: object
+                    properties:
+                      user_id:
+                        type: number
+                      designation:
+                        type: string
+                      area_of_expertise:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
+                      education_qualification:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                            label:
+                              type: string
+                          required:
+                            - value
+                            - label
+                      rating:
+                        type: object
+                        properties:
+                          average:
+                            type: number
+                          count:
+                            type: number
+                      experience:
+                        type: string
+                      stats:
+                        type: object
+                        properties:
+                          sessions_attended:
+                            type: number
+                          students_mentored:
+                            type: number
+                      tags:
+                        type: array
+                        items:
+                          type: string
+                      configs:
+                        type: object
+                        properties:
+                          notification:
+                            type: boolean
+                          visibility:
+                            type: string
+                      visibility:
+                        type: string
+                      organisation_ids:
+                        type: array
+                        items:
+                          type: number
+                      external_session_visibility:
+                        type: string
+                      external_mentor_visibility:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
                   meta:
                     type: object
                     properties:
@@ -4865,134 +5353,8 @@ paths:
                           type: string
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
-              examples:
-                example1:
-                  value:
-                    responseCode: OK
-                    message: Mentor extension deleted successfully.
-                    result: true
-                    meta:
-                      formsVersion: []
-                      correlation: 356f215d-1316-4a54-bbfb-024ce4c605ca
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: *ref_7
-    parameters: *ref_8
-  /mentoring/v1/mentees/create:
-    post:
-      summary: Create Mentee details
-      tags:
-        - Mentee APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentees/create/` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters: *ref_4
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema: *ref_9
-              examples:
-                example1:
-                  value:
-                    responseCode: OK
-                    message: Mentee extension created successfully.
-                    result:
-                      designation: Lead Mentor
-                      area_of_expertise:
-                        - Technology
-                        - Leadership
-                      education_qualification:
-                        - MBA
-                        - B.Tech
-                      rating:
-                        average: 4.5
-                        count: 20
-                      user_type: mentor
-                      meta:
-                        age: 35
-                        experience: 10 years
-                      stats:
-                        sessions_attended: 50
-                        students_mentored: 30
-                      tags:
-                        - Experienced
-                        - Technical
-                      configs:
-                        notification: true
-                        visibility: public
-                      visibility: visible
-                      organisation_ids:
-                        - 1
-                        - 2
-                      external_session_visibility: limited
-                      external_mentor_visibility: hidden
-                      user_id: 1
-                      updated_at: "2023-08-08T19:04:04.607Z"
-                      created_at: "2023-08-08T19:04:04.607Z"
-                      deleted_at: null
-                    meta:
-                      formsVersion: []
-                      correlation: 4bc32289-a646-40c5-8229-adfa3a92faa6
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: *ref_10
-    parameters: *ref_3
-  /mentoring/v1/mentees/update:
-    post:
-      summary: Update Mentee details
-      tags:
-        - Mentee APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentees/update/` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters: *ref_4
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema: *ref_11
-              examples:
-                example1:
-                  value:
-                    responseCode: OK
-                    message: Mentee extension updated successfully.
-                    result: {}
-                    meta:
-                      formsVersion: []
-                      correlation: 24f12521-c6a9-484b-a69e-f26ec900383f
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: *ref_12
-    parameters: *ref_3
-  /mentoring/v1/mentees/getMentorExtension/:
-    get:
-      summary: Read mentee details
-      tags:
-        - Mentee APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentees/getMentorExtension/` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters: *ref_4
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema: *ref_13
               examples:
                 example1:
                   value:
@@ -5002,15 +5364,18 @@ paths:
                       user_id: 1
                       designation: Lead Mentor
                       area_of_expertise:
-                        - Technology
-                        - Leadership
+                        - value: technology
+                          label: Technology
+                        - value: leadership
+                          label: Leadership
                       education_qualification:
-                        - MBA
-                        - B.Tech
+                        - value: mba
+                          label: MBA
+                        - value: b_tech
+                          label: B.Tech
                       rating:
                         average: 5
                         count: 20
-                      user_type: mentor
                       meta:
                         age: 35
                         experience: 10 years
@@ -5029,58 +5394,35 @@ paths:
                         - 2
                       external_session_visibility: limited
                       external_mentor_visibility: hidden
-                      created_at: "2023-08-08T19:04:04.607Z"
-                      updated_at: "2023-08-08T19:06:13.237Z"
+                      created_at: '2023-08-08T19:04:04.607Z'
+                      updated_at: '2023-08-08T19:06:13.237Z'
                       deleted_at: null
                     meta:
                       formsVersion: []
                       correlation: 1bac1a53-e9df-4321-804d-04c69ffb3d0e
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: *ref_7
-    parameters: *ref_8
-  /mentoring/v1/mentees/deleteMentorExtension/:
-    delete:
-      summary: Delete mentee
-      tags:
-        - Mentee APIs
-      description: >-
-        This API is associated with the listing of upcoming sessions of one
-        mentor 
-         - Endpoint for listing session `/mentoring/v1/mentees/deleteMentorExtension/` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters: *ref_4
-      responses:
-        "200":
-          description: ok
-          content:
-            application.json:
-              schema: *ref_14
-              examples:
-                example1:
-                  value:
-                    responseCode: OK
-                    message: Mentee extension deleted successfully.
-                    result: true
-                    meta:
-                      formsVersion: []
-                      correlation: 356f215d-1316-4a54-bbfb-024ce4c605ca
-                      meetingPlatform: BBB
-        "400": *ref_5
-      requestBody: *ref_7
-    parameters: *ref_8
+                      meeting_platform: BBB
+        '400': *ref_5
+      requestBody:
+        description: ''
+        content: {}
+    parameters:
+      - in: path
+        name: id
+        description: user ID
+        schema:
+          type: number
+        required: true
   /mentoring/v1/entity-type/create:
     post:
       summary: Create entity type
       tags:
-        - Entity Type
+        - Entity Type APIs
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/create` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters: *ref_15
+      parameters: *ref_6
       requestBody:
         content:
           application.json:
@@ -5092,31 +5434,26 @@ paths:
                   type: string
                 label:
                   type: string
-                status:
-                  type: string
                 type:
                   type: string
                 allow_filtering:
                   type: boolean
                 data_type:
                   type: string
-                org_id:
-                  type: number
-                allow_custom_entities:
+                has_entities:
                   type: boolean
+              required: []
             examples:
               example1:
                 value:
                   value: ln
                   label: Languages
-                  status: ACTIVE
                   type: SYSTEM
                   allow_filtering: true
                   data_type: STRING
-                  org_id: 1
-                  allow_custom_entities: false
+                  has_entities: true
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -5152,13 +5489,17 @@ paths:
                       created_at:
                         type: string
                       deleted_at:
-                        type: "null"
+                        type: 'null'
+                      has_entities:
+                        type: boolean
+                  field_0:
+                    type: string
                   meta:
                     type: object
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -5174,24 +5515,24 @@ paths:
                       data_type: STRING
                       created_by: 1
                       updated_by: 1
-                      updated_at: "2023-09-22T12:40:19.817Z"
-                      created_at: "2023-09-22T12:40:19.817Z"
-                      deleted_at: null
+                      updated_at: '2023-09-22T12:40:19.817Z'
+                      created_at: '2023-09-22T12:40:19.817Z'
+                      has_entities: true
                     meta:
                       correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
-                      meetingPlatform: BBB
-        "400": *ref_16
+                      meeting_platform: BBB
+        '400': *ref_7
   /mentoring/v1/entity-type/read:
     get:
       summary: Read entity type
-      tags: &ref_17
-        - Entity Type
+      tags:
+        - Entity Type APIs
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/read` 
          - It is mandatory to provide values for parameters which are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters: *ref_15
+      parameters: *ref_6
       requestBody:
         content:
           application/json:
@@ -5212,7 +5553,7 @@ paths:
                     - ln
                   read_user_entity: false
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -5225,75 +5566,108 @@ paths:
                   message:
                     type: string
                   result:
-                    type: object
-                    properties:
-                      id:
-                        type: number
-                      value:
-                        type: string
-                      label:
-                        type: string
-                      status:
-                        type: string
-                      allow_filtering:
-                        type: boolean
-                      data_type:
-                        type: string
-                      created_by:
-                        type: number
-                      updated_by:
-                        type: number
-                      updated_at:
-                        type: string
-                      created_at:
-                        type: string
-                      deleted_at:
-                        type: "null"
-                      org_id:
-                        type: number
-                      allow_custom_entities:
-                        type: boolean
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        status:
+                          type: string
+                        created_by:
+                          type: number
+                        updated_by:
+                          type: number
+                        allow_filtering:
+                          type: boolean
+                        data_type:
+                          type: string
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
+                        entities:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: number
+                              entity_type_id:
+                                type: number
+                              value:
+                                type: string
+                              label:
+                                type: string
+                              status:
+                                type: string
+                              type:
+                                type: string
+                              created_by:
+                                type: number
+                              updated_by:
+                                type: number
+                              created_at:
+                                type: string
+                              updated_at:
+                                type: string
+                        has_entities:
+                          type: boolean
                   meta:
                     type: object
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
                   value:
                     responseCode: OK
-                    message: Entity type created successfully
+                    message: Entity type fetched successfully
                     result:
-                      id: 7
-                      value: ln
-                      label: Languages
-                      status: ACTIVE
-                      allow_filtering: true
-                      data_type: STRING
-                      created_by: 1
-                      updated_by: 1
-                      updated_at: "2023-09-22T12:40:19.817Z"
-                      created_at: "2023-09-22T12:40:19.817Z"
-                      deleted_at: null
-                      org_id: 1
-                      allow_custom_entities: false
+                      - id: 4
+                        value: ln
+                        label: Languages
+                        status: ACTIVE
+                        created_by: 0
+                        updated_by: 0
+                        allow_filtering: true
+                        data_type: STRING
+                        created_at: '2023-09-21T10:16:19.270Z'
+                        updated_at: '2023-09-21T10:16:19.270Z'
+                        has_entities: true
+                        entities:
+                          - id: 13
+                            entity_type_id: 4
+                            value: ml
+                            label: Malayalam
+                            status: ACTIVE
+                            type: SYSTEM
+                            created_by: 1
+                            updated_by: 1
+                            created_at: '2023-09-21T10:16:33.583Z'
+                            updated_at: '2023-09-21T10:16:33.583Z'
                     meta:
-                      correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
-                      meetingPlatform: BBB
-        "400": *ref_16
+                      correlation: 64cd08ba-cc87-4172-9633-2146dabe0b78
+                      meeting_platform: BBB
+        '400': *ref_7
   /mentoring/v1/entity-type/update/{id}:
     post:
       summary: Update entity type
-      tags: *ref_17
+      tags:
+        - Entity Type APIs
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/update` 
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters: *ref_15
-      requestBody: &ref_18
+      parameters: *ref_6
+      requestBody:
         content:
           application/json:
             schema:
@@ -5322,7 +5696,7 @@ paths:
                   allow_filtering: true
                   data_type: string
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -5335,42 +5709,40 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        value:
-                          type: string
-                        label:
-                          type: string
-                        status:
-                          type: string
-                        created_by:
-                          type: "null"
-                        updated_by:
-                          type: number
-                        allow_filtering:
-                          type: boolean
-                        data_type:
-                          type: string
-                        created_at:
-                          type: string
-                        updated_at:
-                          type: string
-                        deleted_at:
-                          type: "null"
-                        org_id:
-                          type: number
-                        allow_custom_entities:
-                          type: boolean
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      created_by:
+                        type: 'null'
+                      updated_by:
+                        type: number
+                      allow_filtering:
+                        type: boolean
+                      data_type:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                      org_id:
+                        type: number
+                      has_entities:
+                        type: boolean
                   meta:
                     type: object
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -5378,36 +5750,38 @@ paths:
                     responseCode: OK
                     message: Entity type updated successfully
                     result:
-                      - id: 1
-                        value: roles
-                        label: Roles
-                        status: ACTIVE
-                        created_by: null
-                        updated_by: 1
-                        allow_filtering: true
-                        data_type: string
-                        created_at: "2023-09-06T12:01:09.025Z"
-                        updated_at: "2023-09-22T12:47:42.510Z"
-                        deleted_at: null
-                        org_id: 1
-                        allow_custom_entities: false
+                      id: 1
+                      value: roles
+                      label: Roles
+                      status: ACTIVE
+                      created_by: null
+                      updated_by: 1
+                      allow_filtering: true
+                      data_type: string
+                      created_at: '2023-09-06T12:01:09.025Z'
+                      updated_at: '2023-09-22T12:47:42.510Z'
+                      deleted_at: null
+                      org_id: 1
+                      has_entities: true
                     meta:
                       correlation: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
-                      meetingPlatform: BBB
-        "400": *ref_16
+                      meeting_platform: BBB
+        '400': *ref_7
   /mentoring/v1/entity-type/delete/{id}:
     delete:
       summary: Delete entity type
-      tags: *ref_17
+      tags:
+        - Entity Type APIs
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/delete` 
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
-      parameters: *ref_15
-      requestBody: *ref_18
+      parameters: *ref_6
+      requestBody:
+        content: {}
       responses:
-        "201":
+        '201':
           description: Created
           content:
             application.json:
@@ -5428,7 +5802,7 @@ paths:
                     properties:
                       correlation:
                         type: string
-                      meetingPlatform:
+                      meeting_platform:
                         type: string
               examples:
                 example1:
@@ -5438,8 +5812,8 @@ paths:
                     result: []
                     meta:
                       correlation: b6841b40-4977-47b5-ac83-3c1e9aa40771
-                      meetingPlatform: BBB
-        "400": *ref_16
+                      meeting_platform: BBB
+        '400': *ref_7
 components:
   schemas:
     form:
@@ -5482,7 +5856,7 @@ components:
                           example: name
                         value:
                           type: string
-                          example: ""
+                          example: ''
                         class:
                           type: string
                           example: ion-margin
@@ -5568,7 +5942,7 @@ components:
                           example: name
                         value:
                           type: string
-                          example: ""
+                          example: ''
                         class:
                           type: string
                           example: ion-margin
@@ -5654,10 +6028,10 @@ components:
                 example: profileFields
               updated_at:
                 type: string
-                example: "2022-05-24T23:14:10.080Z"
+                example: '2022-05-24T23:14:10.080Z'
               created_at:
                 type: string
-                example: "2022-05-24T23:14:10.080Z"
+                example: '2022-05-24T23:14:10.080Z'
               __v:
                 type: number
                 example: 0
@@ -5686,7 +6060,7 @@ components:
                               example: name
                             value:
                               type: string
-                              example: ""
+                              example: ''
                             class:
                               type: string
                               example: ion-margin
@@ -6029,7 +6403,7 @@ components:
                 example: 25
               updated_at:
                 type: string
-                example: "2023-09-20T11:56:42.412Z"
+                example: '2023-09-20T11:56:42.412Z'
               deleted_at:
                 type: string
                 example: null
@@ -6215,10 +6589,10 @@ components:
             example: Training in leadership
           start_date:
             type: string
-            example: "1695210731"
+            example: '1695210731'
           end_date:
             type: string
-            example: "1695214329"
+            example: '1695214329'
           recommended_for:
             type: array
             items:
@@ -6319,7 +6693,7 @@ components:
                 example: 2023-09-20T11:56:42.257Z,
               updated_at:
                 type: string
-                example: "2023-09-20T11:56:42.412Z"
+                example: '2023-09-20T11:56:42.412Z'
       createSession400Response:
         description: Create Session Error.
         type: object
@@ -6611,10 +6985,10 @@ components:
                       example: published
                     startDate:
                       type: string
-                      example: "2022-01-04 18:00:00"
+                      example: '2022-01-04 18:00:00'
                     endDate:
                       type: string
-                      example: "2022-01-04 18:30:00"
+                      example: '2022-01-04 18:30:00'
                     endDateUtc:
                       type: string
                       example: Invalid date
@@ -6739,10 +7113,10 @@ components:
                       example: published
                     startDate:
                       type: string
-                      example: "2022-01-04 18:00:00"
+                      example: '2022-01-04 18:00:00'
                     endDate:
                       type: string
-                      example: "2022-01-04 18:30:00"
+                      example: '2022-01-04 18:30:00'
                     endDateUtc:
                       type: string
                       example: Invalid date
@@ -6837,22 +7211,22 @@ components:
                 example: B.A.
               updated_at:
                 type: string
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               created_at:
                 type: string
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               __v:
                 type: number
                 example: 0
               lastLoggedInAt:
                 type: string
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               about:
                 type: string
                 example: This is test about of mentee
               experience:
                 type: string
-                example: "4.2"
+                example: '4.2'
               gender:
                 type: string
                 example: MALE
@@ -6913,10 +7287,10 @@ components:
                       example: published
                     startDate:
                       type: string
-                      example: "2022-01-04 18:00:00"
+                      example: '2022-01-04 18:00:00'
                     endDate:
                       type: string
-                      example: "2022-01-04 18:30:00"
+                      example: '2022-01-04 18:30:00'
                     endDateUtc:
                       type: string
                       example: Invalid date
@@ -7033,22 +7407,22 @@ components:
                 example: B.A.
               updated_at:
                 type: string
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               created_at:
                 type: string
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               __v:
                 type: number
                 example: 0
               lastLoggedInAt:
                 type: string
-                example: "2022-05-18T05:24:52.431Z"
+                example: '2022-05-18T05:24:52.431Z'
               about:
                 type: string
                 example: This is test about of mentee
               experience:
                 type: string
-                example: "4.2"
+                example: '4.2'
               gender:
                 type: string
                 example: MALE
@@ -7117,17 +7491,17 @@ components:
             items:
               type: string
               example:
-                - "1"
-                - "2"
+                - '1'
+                - '2'
           deleted:
             type: boolean
             example: false
           value:
             type: string
-            example: "1"
+            example: '1'
           hint:
             type: string
-            example: ""
+            example: ''
       createQuestionResponse201:
         type: object
         properties:
@@ -7144,8 +7518,8 @@ components:
                 type: string
                 example: How would you rate the audio and video quality of the session
               options:
-                - "1"
-                - "2"
+                - '1'
+                - '2'
               deleted:
                 type: boolean
                 example: false
@@ -7157,10 +7531,10 @@ components:
                     example: false
               value:
                 type: string
-                example: "1"
+                example: '1'
               hint:
                 type: string
-                example: ""
+                example: ''
               disable:
                 type: boolean
                 example: false
@@ -7175,10 +7549,10 @@ components:
                 example: 6296e6892fdc1f037cbf4529
               updated_at:
                 type: string
-                example: "2022-06-01T04:09:45.713Z"
+                example: '2022-06-01T04:09:45.713Z'
               created_at:
                 type: string
-                example: "2022-06-01T04:09:45.713Z"
+                example: '2022-06-01T04:09:45.713Z'
               __v:
                 type: number
                 example: 0
@@ -7196,18 +7570,18 @@ components:
             items:
               type: string
               example:
-                - "1"
-                - "2"
-                - "3"
+                - '1'
+                - '2'
+                - '3'
           deleted:
             type: boolean
             example: false
           value:
             type: string
-            example: "1"
+            example: '1'
           hint:
             type: string
-            example: ""
+            example: ''
       updateQuestionResponse202:
         type: object
         properties:
@@ -7256,11 +7630,11 @@ components:
                 type: array
                 items:
                   - type: string
-                    example: "1"
+                    example: '1'
                   - type: string
-                    example: "2"
+                    example: '2'
                   - type: string
-                    example: "3"
+                    example: '3'
               deleted:
                 type: boolean
                 example: false
@@ -7272,10 +7646,10 @@ components:
                     example: false
               value:
                 type: string
-                example: "1"
+                example: '1'
               hint:
                 type: string
-                example: ""
+                example: ''
               disable:
                 type: boolean
                 example: false
@@ -7290,10 +7664,10 @@ components:
                 example: 6296e6892fdc1f037cbf4529
               updated_at:
                 type: string
-                example: "2022-06-01T04:09:45.713Z"
+                example: '2022-06-01T04:09:45.713Z'
               created_at:
                 type: string
-                example: "2022-06-01T04:09:45.713Z"
+                example: '2022-06-01T04:09:45.713Z'
               __v:
                 type: number
                 example: 0
@@ -7362,10 +7736,10 @@ components:
                 example: 629978caf0cf0901d7d74d12
               updated_at:
                 type: string
-                example: "2022-06-03T02:58:18.462Z"
+                example: '2022-06-03T02:58:18.462Z'
               created_at:
                 type: string
-                example: "2022-06-03T02:58:18.462Z"
+                example: '2022-06-03T02:58:18.462Z'
               __v:
                 type: number
                 example: 0
@@ -7463,10 +7837,10 @@ components:
                 example: 629978caf0cf0901d7d74d12
               updated_at:
                 type: string
-                example: "2022-06-03T02:58:18.462Z"
+                example: '2022-06-03T02:58:18.462Z'
               created_at:
                 type: string
-                example: "2022-06-03T02:58:18.462Z"
+                example: '2022-06-03T02:58:18.462Z'
               __v:
                 type: number
                 example: 0
@@ -7548,10 +7922,10 @@ components:
                       format: nullable
                     created_at:
                       type: string
-                      example: "2023-09-20T11:48:34.679Z"
+                      example: '2023-09-20T11:48:34.679Z'
                     updated_at:
                       type: string
-                      example: "2023-09-20T11:48:34.679Z"
+                      example: '2023-09-20T11:48:34.679Z'
                     deleted_at:
                       type: string
                       example: null
@@ -7595,7 +7969,7 @@ components:
                   example: 1
                 value:
                   type: string
-                  example: "1"
+                  example: '1'
                 question:
                   type: string
                   example: >-
@@ -7890,7 +8264,7 @@ components:
         result:
           type: object
           properties:
-            meetingPlatform:
+            meeting_platform:
               type: string
             reportIssue:
               type: object
@@ -7923,19 +8297,24 @@ tags:
     description: You can use this API to get config related to the service
     externalDocs:
       description: Config APIs
-      url: ""
+      url: ''
   - name: Mentee APIs
     description: mentee APIs
     externalDocs:
-      description: ""
-      url: ""
+      description: ''
+      url: ''
   - name: Mentor APIs
     description: Mentor APIs
     externalDocs:
-      description: ""
-      url: ""
-  - name: Entity Type
-    description: ""
+      description: ''
+      url: ''
+  - name: Entity Type APIs
+    description: ''
     externalDocs:
-      description: ""
-      url: ""
+      description: ''
+      url: ''
+  - name: Profile APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
