@@ -1,5 +1,5 @@
 // Dependencies
-const entityHelper = require('@services/entity-type')
+const entityTypeService = require('@services/entity-type')
 
 module.exports = class Entity {
 	/**
@@ -12,7 +12,7 @@ module.exports = class Entity {
 
 	async create(req) {
 		try {
-			return await entityHelper.create(req.body, req.decodedToken.id)
+			return await entityTypeService.create(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -28,7 +28,7 @@ module.exports = class Entity {
 
 	async update(req) {
 		try {
-			return await entityHelper.update(req.body, req.params.id, req.decodedToken.id)
+			return await entityTypeService.update(req.body, req.params.id, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -45,9 +45,9 @@ module.exports = class Entity {
 	async read(req) {
 		try {
 			if (req.body.read_user_entity) {
-				return await entityHelper.readUserEntityTypes(req.body, req.decodedToken.id)
+				return await entityTypeService.readUserEntityTypes(req.body, req.decodedToken.id)
 			}
-			return await entityHelper.readAllSystemEntityTypes()
+			return await entityTypeService.readAllSystemEntityTypes()
 		} catch (error) {
 			return error
 		}
@@ -63,7 +63,7 @@ module.exports = class Entity {
 
 	async delete(req) {
 		try {
-			return await entityHelper.delete(req.params.id)
+			return await entityTypeService.delete(req.params.id)
 		} catch (error) {
 			return error
 		}

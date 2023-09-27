@@ -13,6 +13,7 @@ const path = require('path')
 const md5 = require('md5')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
+const crypto = require('crypto')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -161,6 +162,20 @@ function redisDel(key) {
 const capitalize = (str) => {
 	return startCase(str)
 }
+/**
+ * Generate security checksum.
+ * @method
+ * @name generateCheckSum
+ * @param {String} queryHash - Query hash.
+ * @returns {Number} - checksum key.
+ */
+
+function generateCheckSum(queryHash) {
+	var shasum = crypto.createHash('sha1')
+	shasum.update(queryHash)
+	const checksum = shasum.digest('hex')
+	return checksum
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -182,4 +197,6 @@ module.exports = {
 	redisDel: redisDel,
 	extractEmailTemplate,
 	capitalize,
+
+	generateCheckSum:generateCheckSum
 }

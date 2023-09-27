@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const notificationsHelper = require('@services/notifications')
+const notificationsService = require('@services/notifications')
 const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Notifications {
@@ -19,7 +19,7 @@ module.exports = class Notifications {
 
 	async emailCronJobBeforeFifteenMin() {
 		try {
-			notificationsHelper.sendNotificationBefore15mins()
+			notificationsService.sendNotificationBefore15mins()
 			return {
 				statusCode: httpStatusCode.ok,
 			}
@@ -37,7 +37,7 @@ module.exports = class Notifications {
 
 	async emailCronJobBeforeOneDay() {
 		try {
-			notificationsHelper.sendNotificationBefore24Hour()
+			notificationsService.sendNotificationBefore24Hour()
 			return {
 				statusCode: httpStatusCode.ok,
 			}
@@ -55,7 +55,7 @@ module.exports = class Notifications {
 
 	async emailCronJobBeforeOneHour() {
 		try {
-			notificationsHelper.sendNotificationBefore1Hour()
+			notificationsService.sendNotificationBefore1Hour()
 			return {
 				statusCode: httpStatusCode.ok,
 			}

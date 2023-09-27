@@ -2,7 +2,7 @@
 const moment = require('moment-timezone')
 
 const sessionAttendees = require('@db/sessionAttendees/queries')
-const userProfile = require('@requests/userProfile')
+const userProfile = require('@requests/user')
 const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
@@ -15,6 +15,7 @@ const { successResponse } = require('@constants/common')
 
 const { UniqueConstraintError } = require('sequelize')
 const menteeQueries = require('../database/queries/userextension')
+const bigBlueButtonService = require('./bigBlueButton')
 
 module.exports = class MenteesHelper {
 	/**
@@ -235,7 +236,7 @@ module.exports = class MenteesHelper {
 			if (sessionAttendee?.meetingInfo?.link) {
 				meetingInfo = sessionAttendee.meetingInfo
 			} else {
-				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
+				const attendeeLink = await bigBlueButtonService.joinMeetingAsAttendee(
 					sessionId,
 					menteeDetails.name,
 					session.menteePassword

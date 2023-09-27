@@ -13,9 +13,10 @@ const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE
 const request = require('request')
 
 const bigBlueButton = require('@requests/bigBlueButton')
-const userProfile = require('@requests/userProfile')
+const userProfile = require('@requests/user')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
+const bigBlueButtonService = require('./bigBlueButton')
 
 module.exports = class SessionsHelper {
 	/**
@@ -883,7 +884,7 @@ module.exports = class SessionsHelper {
 					})
 				}
 
-				const moderatorMeetingLink = await bigBlueButton.joinMeetingAsModerator(
+				const moderatorMeetingLink = await bigBlueButtonService.joinMeetingAsModerator(
 					session._id,
 					mentorDetails.name,
 					session.mentorPassword

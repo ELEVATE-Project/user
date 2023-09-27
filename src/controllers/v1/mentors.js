@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const mentorsHelper = require('@services/mentors')
+const mentorsService = require('@services/mentors')
 
 module.exports = class Mentors {
 	/**
@@ -22,7 +22,7 @@ module.exports = class Mentors {
 	 */
 	async upcomingSessions(req) {
 		try {
-			return await mentorsHelper.upcomingSessions(
+			return await mentorsService.upcomingSessions(
 				req.params.id,
 				req.pageNo,
 				req.pageSize,
@@ -44,7 +44,7 @@ module.exports = class Mentors {
 	 */
 	async profile(req) {
 		try {
-			return await mentorsHelper.profile(req.params.id)
+			return await mentorsService.profile(req.params.id)
 		} catch (error) {
 			return errors
 		}
@@ -64,7 +64,7 @@ module.exports = class Mentors {
 
 	async reports(req) {
 		try {
-			const reports = await mentorsHelper.reports(req.decodedToken._id, req.query.filterType)
+			const reports = await mentorsService.reports(req.decodedToken._id, req.query.filterType)
 			return reports
 		} catch (error) {
 			return error
@@ -82,7 +82,7 @@ module.exports = class Mentors {
 
 	async share(req) {
 		try {
-			const shareLink = await mentorsHelper.share(req.params.id)
+			const shareLink = await mentorsService.share(req.params.id)
 			return shareLink
 		} catch (error) {
 			return error
@@ -100,7 +100,7 @@ module.exports = class Mentors {
 	 */
 	async create(req) {
 		try {
-			return await mentorsHelper.createMentorExtension(req.body, req.decodedToken.id)
+			return await mentorsService.createMentorExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			console.error(error)
 			return error
@@ -118,7 +118,7 @@ module.exports = class Mentors {
 
 	async update(req) {
 		try {
-			return await mentorsHelper.updateMentorExtension(req.body, req.decodedToken.id)
+			return await mentorsService.updateMentorExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -133,7 +133,7 @@ module.exports = class Mentors {
 	 */
 	async getMentorExtension(req) {
 		try {
-			return await mentorsHelper.getMentorExtension(req.query.id || req.decodedToken.id) //params since read will be public for mentors
+			return await mentorsService.getMentorExtension(req.query.id || req.decodedToken.id) //params since read will be public for mentors
 		} catch (error) {
 			return error
 		}
@@ -148,7 +148,7 @@ module.exports = class Mentors {
 	 */
 	async deleteMentorExtension(req) {
 		try {
-			return await mentorsHelper.deleteMentorExtension(req.decodedToken.id)
+			return await mentorsService.deleteMentorExtension(req.decodedToken.id)
 		} catch (error) {
 			return error
 		}

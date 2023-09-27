@@ -2,16 +2,16 @@
  * name : bigBlueButton.js
  * author : Aman Karki
  * created-date : 09-Nov-2021
- * Description : Google cloud services methods.
+ * Description : bigBlueButton methods.
  */
 
 // Dependencies
 const bigBlueButtonUrl = process.env.BIG_BLUE_BUTTON_URL + process.env.BIB_BLUE_BUTTON_BASE_URL
-const crypto = require('crypto')
 const request = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
+const utils = require('@generics/utils')
 
-module.exports = class BigBlueButtonHelper {
+module.exports = class BigBlueButtonRequests {
 	/**
 	 * Create Meeting.
 	 * @method
@@ -51,59 +51,11 @@ module.exports = class BigBlueButtonHelper {
 				lastUserTimeout
 
 			let checkSumGeneration = 'create' + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY
-			const checksum = this.generateCheckSum(checkSumGeneration)
+			const checksum = utils.generateCheckSum(checkSumGeneration)
 
 			const createUrl = bigBlueButtonUrl + endpoints.CREATE_MEETING + '?' + query + '&checksum=' + checksum
 			let response = await request.get(createUrl)
 			return response
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
-	 * Join Meeting as Moderator.
-	 * @method
-	 * @name joinMeetingAsModerator
-	 * @param {String} meetingId - meeting Id.
-	 * @param {String} mentorName - mentor name.
-	 * @param {String} moderatorPW - Moderator Password.
-	 * @returns {String} - Moderator Meeting url.
-	 */
-
-	static async joinMeetingAsModerator(meetingId, mentorName, moderatorPW) {
-		try {
-			mentorName = encodeURI(mentorName)
-			let query = 'meetingID=' + meetingId + '&password=' + moderatorPW + '&fullName=' + mentorName
-			let checkSumGeneration = 'join' + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY
-			const checksum = this.generateCheckSum(checkSumGeneration)
-
-			const joinUrl = bigBlueButtonUrl + endpoints.JOIN_MEETING + '?' + query + '&checksum=' + checksum
-			return joinUrl
-		} catch (error) {
-			throw error
-		}
-	}
-
-	/**
-	 * Join Meeting as Attendee.
-	 * @method
-	 * @name joinMeetingAsAttendee
-	 * @param {String} meetingId - meeting Id.
-	 * @param {String} menteeName - mentee name.
-	 * @param {String} menteePW - Mentee Password.
-	 * @returns {String} - Mentee Meeting url.
-	 */
-
-	static async joinMeetingAsAttendee(meetingId, menteeName, menteePW) {
-		try {
-			menteeName = encodeURI(menteeName)
-			let query = 'meetingID=' + meetingId + '&password=' + menteePW + '&fullName=' + menteeName
-			let checkSumGeneration = 'join' + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY
-			const checksum = this.generateCheckSum(checkSumGeneration)
-
-			const joinUrl = bigBlueButtonUrl + endpoints.JOIN_MEETING + '?' + query + '&checksum=' + checksum
-			return joinUrl
 		} catch (error) {
 			throw error
 		}
@@ -120,7 +72,7 @@ module.exports = class BigBlueButtonHelper {
 	static async getRecordings(meetingId) {
 		try {
 			let checkSumGeneration = 'getRecordingsmeetingID=' + meetingId + process.env.BIG_BLUE_BUTTON_SECRET_KEY
-			const checksum = this.generateCheckSum(checkSumGeneration)
+			const checksum = utils.generateCheckSum(checkSumGeneration)
 
 			const meetingInfoUrl =
 				bigBlueButtonUrl + endpoints.GET_RECORDINGS + '?meetingID=' + meetingId + '&checksum=' + checksum
@@ -129,20 +81,5 @@ module.exports = class BigBlueButtonHelper {
 		} catch (error) {
 			throw error
 		}
-	}
-
-	/**
-	 * Generate security checksum.
-	 * @method
-	 * @name generateCheckSum
-	 * @param {String} queryHash - Query hash.
-	 * @returns {Number} - checksum key.
-	 */
-
-	static generateCheckSum(queryHash) {
-		var shasum = crypto.createHash('sha1')
-		shasum.update(queryHash)
-		const checksum = shasum.digest('hex')
-		return checksum
 	}
 }

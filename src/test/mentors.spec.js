@@ -20,7 +20,7 @@ describe('Sessions controller and helper test', () => {
 		mentorsServices = require('@services/mentors')
 		sessionAttended = require('@db/sessionAttendees/queries')
 		sessionsData = require('@db/sessions/queries')
-		userProfile = require('@requests/userProfile')
+		userProfile = require('@requests/user')
 	})
 
 	test('should return Profile of mentor', async () => {

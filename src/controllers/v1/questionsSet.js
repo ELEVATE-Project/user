@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const questionsSetHelper = require('@services/questionsSet')
+const questionsService = require('@services/questionsSet')
 
 module.exports = class QuestionsSet {
 	/**
@@ -19,7 +19,7 @@ module.exports = class QuestionsSet {
 
 	async create(req) {
 		try {
-			const createQuestionsSet = await questionsSetHelper.create(req.body)
+			const createQuestionsSet = await questionsService.create(req.body)
 			return createQuestionsSet
 		} catch (error) {
 			return error
@@ -37,7 +37,7 @@ module.exports = class QuestionsSet {
 
 	async update(req) {
 		try {
-			const updateQuestionsSet = await questionsSetHelper.update(req.params.id, req.body)
+			const updateQuestionsSet = await questionsService.update(req.params.id, req.body)
 			return updateQuestionsSet
 		} catch (error) {
 			return error
@@ -55,7 +55,7 @@ module.exports = class QuestionsSet {
 
 	async read(req) {
 		try {
-			const questionsSetData = await questionsSetHelper.read(req.params.id)
+			const questionsSetData = await questionsService.read(req.params.id)
 			return questionsSetData
 		} catch (error) {
 			return error

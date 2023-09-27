@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const menteesHelper = require('@services/mentees')
+const menteesService = require('@services/mentees')
 
 module.exports = class Mentees {
 	/**
@@ -19,7 +19,7 @@ module.exports = class Mentees {
 	 */
 	async profile(req) {
 		try {
-			return await menteesHelper.profile(req.decodedToken._id)
+			return await menteesService.profile(req.decodedToken._id)
 		} catch (error) {
 			return errors
 		}
@@ -39,7 +39,7 @@ module.exports = class Mentees {
 
 	async sessions(req) {
 		try {
-			const sessions = await menteesHelper.sessions(
+			const sessions = await menteesService.sessions(
 				req.decodedToken._id,
 				req.query.enrolled,
 				req.pageNo,
@@ -67,7 +67,7 @@ module.exports = class Mentees {
 
 	async reports(req) {
 		try {
-			const reports = await menteesHelper.reports(req.decodedToken._id, req.query.filterType)
+			const reports = await menteesService.reports(req.decodedToken._id, req.query.filterType)
 			return reports
 		} catch (error) {
 			return error
@@ -86,7 +86,7 @@ module.exports = class Mentees {
 
 	async homeFeed(req) {
 		try {
-			const homefeed = await menteesHelper.homeFeed(
+			const homefeed = await menteesService.homeFeed(
 				req.decodedToken._id,
 				req.decodedToken.isAMentor,
 				req.pageNo,
@@ -111,7 +111,7 @@ module.exports = class Mentees {
 
 	async joinSession(req) {
 		try {
-			const session = await menteesHelper.joinSession(req.params.id, req.decodedToken.token)
+			const session = await menteesService.joinSession(req.params.id, req.decodedToken.token)
 			return session
 		} catch (error) {
 			return error
@@ -129,7 +129,7 @@ module.exports = class Mentees {
 	 */
 	async create(req) {
 		try {
-			return await menteesHelper.createMenteeExtension(req.body, req.decodedToken.id)
+			return await menteesService.createMenteeExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			console.error(error)
 			return error
@@ -147,7 +147,7 @@ module.exports = class Mentees {
 	 */
 	async update(req) {
 		try {
-			return await menteesHelper.updateMenteeExtension(req.body, req.decodedToken.id)
+			return await menteesService.updateMenteeExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -163,7 +163,7 @@ module.exports = class Mentees {
 	 */
 	async getMenteeExtension(req) {
 		try {
-			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
+			return await menteesService.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
 		} catch (error) {
 			return error
 		}
@@ -179,7 +179,7 @@ module.exports = class Mentees {
 	 */
 	async deleteMenteeExtension(req) {
 		try {
-			return await menteesHelper.deleteMenteeExtension(req.decodedToken.id)
+			return await menteesService.deleteMenteeExtension(req.decodedToken.id)
 		} catch (error) {
 			return error
 		}

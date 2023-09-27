@@ -17,7 +17,7 @@ describe('Sessions controller and helper test', () => {
 		await loadMongo()
 		menteesServices = require('@services/mentees')
 		sessionAttended = require('@db/sessionAttendees/queries')
-		userProfile = require('@requests/userProfile')
+		userProfile = require('@requests/user')
 	})
 
 	test('should return Profile of mentee', async () => {

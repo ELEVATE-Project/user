@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const questionsHelper = require('@services/questions')
+const questionsService = require('@services/questions')
 
 module.exports = class Questions {
 	/**
@@ -19,7 +19,7 @@ module.exports = class Questions {
 
 	async create(req) {
 		try {
-			const createdQuestion = await questionsHelper.create(req.body)
+			const createdQuestion = await questionsService.create(req.body)
 			return createdQuestion
 		} catch (error) {
 			return error
@@ -36,7 +36,7 @@ module.exports = class Questions {
 
 	async update(req) {
 		try {
-			const updatedQuestion = await questionsHelper.update(req.params.id, req.body)
+			const updatedQuestion = await questionsService.update(req.params.id, req.body)
 			return updatedQuestion
 		} catch (error) {
 			return error
@@ -53,7 +53,7 @@ module.exports = class Questions {
 
 	async read(req) {
 		try {
-			const questionData = await questionsHelper.read(req.params.id)
+			const questionData = await questionsService.read(req.params.id)
 			return questionData
 		} catch (error) {
 			return error

@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const entityHelper = require('@services/entity')
+const entityService = require('@services/entity')
 
 module.exports = class Entity {
 	/**
@@ -20,7 +20,7 @@ module.exports = class Entity {
 	async create(req) {
 		const params = req.body
 		try {
-			const createdEntity = await entityHelper.create(params, req.decodedToken.id)
+			const createdEntity = await entityService.create(params, req.decodedToken.id)
 			return createdEntity
 		} catch (error) {
 			return error
@@ -39,7 +39,7 @@ module.exports = class Entity {
 		const params = req.body
 		const id = req.params.id
 		try {
-			const updatedEntity = await entityHelper.update(params, id, req.decodedToken.id)
+			const updatedEntity = await entityService.update(params, id, req.decodedToken.id)
 			return updatedEntity
 		} catch (error) {
 			return error
@@ -57,9 +57,9 @@ module.exports = class Entity {
 	async read(req) {
 		try {
 			if (req.query.id || req.query.value) {
-				return await entityHelper.read(req.query, req.decodedToken.id)
+				return await entityService.read(req.query, req.decodedToken.id)
 			}
-			return await entityHelper.readAll(req.query, req.decodedToken.id)
+			return await entityService.readAll(req.query, req.decodedToken.id)
 		} catch (error) {
 			return error
 		}
@@ -75,7 +75,7 @@ module.exports = class Entity {
 
 	async delete(req) {
 		try {
-			const updatedEntity = await entityHelper.delete(req.params.id, req.decodedToken.id)
+			const updatedEntity = await entityService.delete(req.params.id, req.decodedToken.id)
 			return updatedEntity
 		} catch (error) {
 			return error

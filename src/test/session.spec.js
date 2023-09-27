@@ -19,7 +19,7 @@ describe('Sessions controller and helper test', () => {
 		sessionService = require('@services/sessions')
 		controller = require('@controllers/v1/sessions')
 		sessionModel = require('@db/sessions/queries')
-		userProfile = require('@requests/userProfile')
+		userProfile = require('@requests/user')
 		return
 	})
 
