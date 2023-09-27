@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const orgHelper = require('@services/organization')
+const orgService = require('@services/organization')
 
 module.exports = class Organization {
 	/**
@@ -24,7 +24,7 @@ module.exports = class Organization {
 
 	async create(req) {
 		try {
-			const createdOrg = await orgHelper.create(req.body)
+			const createdOrg = await orgService.create(req.body)
 			return createdOrg
 		} catch (error) {
 			return error
@@ -44,7 +44,7 @@ module.exports = class Organization {
 
 	async update(req) {
 		try {
-			const updatedOrg = await orgHelper.update(req.params.id, req.body)
+			const updatedOrg = await orgService.update(req.params.id, req.body)
 			return updatedOrg
 		} catch (error) {
 			return error
@@ -68,7 +68,7 @@ module.exports = class Organization {
 	 */
 	async list(req) {
 		try {
-			const result = await orgHelper.list(req)
+			const result = await orgService.list(req)
 			return result
 		} catch (error) {
 			return error

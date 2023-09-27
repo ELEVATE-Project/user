@@ -5,7 +5,7 @@
  * Description : Google cloud services methods.
  */
 
-const filesHelper = require('@services/files')
+const filesService = require('@services/files')
 
 module.exports = class File {
 	/**
@@ -19,7 +19,7 @@ module.exports = class File {
 	 */
 	async getSignedUrl(req) {
 		try {
-			const signedUrlResponse = await filesHelper.getSignedUrl(
+			const signedUrlResponse = await filesService.getSignedUrl(
 				req.query.fileName,
 				req.decodedToken._id,
 				req.query.dynamicPath ? req.query.dynamicPath : ''
@@ -39,7 +39,7 @@ module.exports = class File {
 	 */
 	async getDownloadableUrl(req) {
 		try {
-			const downlopadUrlResponse = await filesHelper.getDownloadableUrl(req.query.filePath)
+			const downlopadUrlResponse = await filesService.getDownloadableUrl(req.query.filePath)
 			return downlopadUrlResponse
 		} catch (error) {
 			return error
