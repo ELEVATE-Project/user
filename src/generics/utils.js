@@ -172,6 +172,28 @@ const epochFormat = (date, format) => {
 	return moment.unix(date).utc().format(format)
 }
 
+/**
+ * Calculate the time difference in milliseconds between a current date
+ * and a modified date obtained by subtracting a specified time value and unit from startDate.
+ * 
+ * @param {string} startDate - The start date.
+ * @param {number} timeValue - The amount of time to subtract.
+ * @param {string} timeUnit - The unit of time to subtract (e.g., 'hours', 'days').
+ * @returns {number} The time difference in milliseconds.
+ */
+function getTimeDifferenceInMilliseconds(startDate, timeValue, timeUnit) {
+	// Get current date
+	const currentUnixTimestamp = moment().unix()
+
+	// Subtract the specified time value and unit
+	const modifiedDate = moment.unix(startDate).subtract(timeValue, timeUnit).unix()
+
+	// Calculate the duration and get the time difference in milliseconds
+	const duration = moment.duration(moment.unix(modifiedDate).diff(moment.unix(currentUnixTimestamp)));
+
+	return duration.asMilliseconds()
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -195,4 +217,5 @@ module.exports = {
 	isAMentor,
 	isNumeric: isNumeric,
 	epochFormat: epochFormat,
+	getTimeDifferenceInMilliseconds,getTimeDifferenceInMilliseconds
 }
