@@ -8,4 +8,9 @@ module.exports = {
 	USERS_LIST: 'v1/account/list',
 	SHARE_MENTOR_PROFILE: 'v1/user/share',
 	USERS_ENTITY_READ: 'v1/userentity/read',
+
+	// Endpoints of the scheduler service
+    CREATE_SCHEDULER_JOB: '/scheduler/jobs/create', 	// Create scheduler job endpoint
+    UPDATE_DELAY: '/scheduler/jobs/updateDelay', 		// Update delay of scheduled job endpoint
+    REMOVE_SCHEDULED_JOB: '/scheduler/jobs/remove' 	// Remove scheduled job endpoint
 }
