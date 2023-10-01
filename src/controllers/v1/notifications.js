@@ -21,7 +21,7 @@ module.exports = class Notifications {
 		try {
 
 			// Make a call to notification service 
-			notificationsService.sendEmail(req.body.jobId, req.body.emailTemplateCode)
+			notificationsService.sendNotification(req.body.jobId, req.body.emailTemplateCode)
 			return {
 				statusCode: httpStatusCode.ok,
 			}
