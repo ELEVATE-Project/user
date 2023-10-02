@@ -28,7 +28,7 @@ module.exports = class UserEntityHelper {
 		try {
 			let isAdmin = false
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.isAdmin(roles)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
 			}
 
 			if (!isAdmin) {
@@ -77,7 +77,7 @@ module.exports = class UserEntityHelper {
 		try {
 			let isAdmin = false
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.isAdmin(roles)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
 			}
 
 			if (!isAdmin) {

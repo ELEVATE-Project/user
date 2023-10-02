@@ -114,6 +114,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					organization_id: user.organization_id,
 					roles: [role],
 				},
 			}
@@ -231,6 +232,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					organization_id: user.organization_id,
 					roles: roles,
 				},
 			}
@@ -630,6 +632,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					organization_id: user.organization_id,
 					role: roles,
 				},
 			}

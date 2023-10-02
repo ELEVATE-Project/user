@@ -25,7 +25,7 @@ module.exports = class Admin {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.isAdmin(roles)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
 			}
 
 			if (!isAdmin) {
@@ -105,7 +105,7 @@ module.exports = class Admin {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.isAdmin(roles)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
 			}
 
 			if (!isAdmin) {

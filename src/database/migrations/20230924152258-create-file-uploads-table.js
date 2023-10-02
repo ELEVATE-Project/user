@@ -22,6 +22,7 @@ module.exports = {
 			status: {
 				type: Sequelize.STRING,
 				defaultValue: 'UPLOADED',
+				allowNull: false,
 			},
 			type: {
 				type: Sequelize.STRING,
@@ -29,6 +30,10 @@ module.exports = {
 			},
 			output_path: {
 				type: Sequelize.STRING,
+				allowNull: true,
+			},
+			organization_id: {
+				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
 			created_by: {

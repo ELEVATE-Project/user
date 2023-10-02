@@ -32,5 +32,9 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'OrgDomain', tableName: 'org_domains', freezeTableName: true, paranoid: true }
 	)
 
+	OrgDomain.associate = (models) => {
+		OrgDomain.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
+	}
+
 	return OrgDomain
 }

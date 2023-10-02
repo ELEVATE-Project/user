@@ -47,5 +47,10 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
+	OrgRoleRequest.associate = (models) => {
+		OrgRoleRequest.belongsTo(models.User, { as: 'requester', foreignKey: 'requester_id' })
+		OrgRoleRequest.belongsTo(models.User, { as: 'handler', foreignKey: 'handled_by' })
+	}
+
 	return OrgRoleRequest
 }

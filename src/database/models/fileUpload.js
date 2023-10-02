@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: 'UPLOADED',
+				allowNull: false,
 			},
 			type: {
 				type: DataTypes.STRING,
@@ -29,6 +30,10 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			output_path: {
 				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			organization_id: {
+				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
 			created_by: {
@@ -40,6 +45,10 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{ sequelize, modelName: 'FileUpload', tableName: 'file_uploads', freezeTableName: true, paranoid: true }
 	)
+
+	FileUpload.associate = (models) => {
+		FileUpload.belongsTo(models.User, { foreignKey: 'created_by', as: 'uploaded_by' })
+	}
 
 	return FileUpload
 }

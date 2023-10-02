@@ -100,8 +100,7 @@ module.exports = async function (req, res, next) {
 
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const user = await userQueries.findOne({ id: decodedToken.data.id })
-
+			const user = await userQueries.findByPk(decodedToken.data.id)
 			if (!user) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -115,8 +114,12 @@ module.exports = async function (req, res, next) {
 				{ attributes: ['title'] }
 			)
 
-			//for the time being user have one role
-			if (roles && roles[0].title !== decodedToken.data.roles[0].title) {
+			/* Invalidate token when user role is updated */
+			const isRoleSame =
+				roles.length === decodedToken.data.roles.length &&
+				roles.every((role1) => decodedToken.data.roles.some((role2) => role1.title === role2.title))
+
+			if (!isRoleSame) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,

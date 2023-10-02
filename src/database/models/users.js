@@ -57,6 +57,9 @@ module.exports = (sequelize, DataTypes) => {
 	)
 	User.associate = (models) => {
 		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
+		User.hasMany(models.FileUpload, { foreignKey: 'id', as: 'invite_file_uploads' })
+		User.hasMany(models.OrgRoleRequest, { as: 'requested_roles', foreignKey: 'requester_id' })
+		User.hasMany(models.OrgRoleRequest, { as: 'handled_requests', foreignKey: 'handled_by' })
 	}
 	return User
 }

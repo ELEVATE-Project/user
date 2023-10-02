@@ -14,7 +14,6 @@ const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const organizationQueries = require('@database/queries/organization')
-const orgAdmin = require('@validators/v1/org-admin')
 
 module.exports = class AdminHelper {
 	/**
@@ -157,6 +156,7 @@ module.exports = class AdminHelper {
 					id: user.id,
 					name: user.name,
 					email: user.email,
+					organization_id: user.organization_id,
 					roles: roles,
 				},
 			}
@@ -207,8 +207,9 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let orgAdmins = organization.org_admin
-			orgAdmins.push(userId)
+			let orgAdminsIds = organization.org_admin ? organization.org_admin : []
+			orgAdminsIds.push(userId)
+			const orgAdmins = _.uniq(orgAdminsIds)
 			const update = {
 				org_admin: orgAdmins,
 				updated_by: loggedInUserId,
@@ -223,7 +224,7 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let roles = user.roles ? user.roles : []
+			let roleArray = user.roles ? user.roles : []
 			let role = await roleQueries.findOne({ title: common.roleOrgAdmin })
 			if (!role) {
 				return common.failureResponse({
@@ -232,21 +233,15 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			roles.push(role.id)
+			roleArray.push(role.id)
+			const roles = _.uniq(roleArray)
 
-			const userRowsAffected = await userQueries.update(
+			await userQueries.updateUser(
 				{ id: userId },
 				{
 					roles: roles,
 				}
 			)
-			if (userRowsAffected == 0) {
-				return common.failureResponse({
-					message: 'ORG_ADMIN_MAPPING_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 
 			const roleData = await roleQueries.findAll(
 				{ id: roles, status: common.activeStatus },

@@ -9,4 +9,7 @@ module.exports = {
 	bulkUserCreate: (req) => {
 		req.checkBody('file_path').notEmpty().withMessage('file_path field is empty')
 	},
+	getRequestDetails: (req) => {
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+	},
 }
