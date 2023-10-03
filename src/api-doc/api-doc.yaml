@@ -2122,59 +2122,62 @@ paths:
                   message:
                     type: string
                   result:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        title:
-                          type: string
-                        description:
-                          type: string
-                        image:
-                          type: array
-                          items:
-                            type: string
-                        user_id:
-                          type: number
-                        status:
-                          type: string
-                        start_date:
-                          type: string
-                        end_date:
-                          type: string
-                        meeting_info:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
                           type: object
                           properties:
-                            platform:
+                            id:
+                              type: number
+                            title:
                               type: string
-                            value:
+                            description:
                               type: string
-                        created_at:
-                          type: string
-                        is_enrolled:
-                          type: boolean
-                        mentor_name:
-                          type: string
-                        org_id:
-                          type: number
-                      required:
-                        - id
-                        - title
-                        - description
-                        - image
-                        - user_id
-                        - status
-                        - start_date
-                        - end_date
-                        - meeting_info
-                        - created_at
-                        - is_enrolled
-                        - mentor_name
-                        - org_id
-                  count:
-                    type: number
+                            image:
+                              type: array
+                              items:
+                                type: string
+                            user_id:
+                              type: number
+                            status:
+                              type: string
+                            start_date:
+                              type: string
+                            end_date:
+                              type: string
+                            meeting_info:
+                              type: object
+                              properties:
+                                platform:
+                                  type: string
+                                value:
+                                  type: string
+                            created_at:
+                              type: string
+                            is_enrolled:
+                              type: boolean
+                            mentor_name:
+                              type: string
+                            org_id:
+                              type: number
+                          required:
+                            - id
+                            - title
+                            - description
+                            - image
+                            - user_id
+                            - status
+                            - start_date
+                            - end_date
+                            - meeting_info
+                            - created_at
+                            - is_enrolled
+                            - mentor_name
+                            - org_id
+                      count:
+                        type: number
                   meta:
                     type: object
                     properties:
@@ -2188,51 +2191,53 @@ paths:
                     responseCode: OK
                     message: Session fetched successfully.
                     result:
-                      - id: 1
-                        title: >-
-                          Innovations in Indian Education: A Roadmap for the
-                          Future
-                        description: >-
-                          Join this session to discover innovative approaches
-                          and technologies shaping the future of Indian
-                          education. Learn how educators are adapting to meet
-                          the evolving needs of students and society.
-                        image:
-                          - >-
-                            https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/session/62a73ffb12c0c4fe9b4c0f61-1695201766113-images_jpeg
-                        user_id: 23
-                        status: published
-                        start_date: '1697215860'
-                        end_date: '1697219460'
-                        meeting_info:
-                          platform: BigBlueButton (Default)
-                          value: Default
-                        created_at: '2023-09-13T16:51:46.377Z'
-                        is_enrolled: false
-                        mentor_name: Nevil M
-                        org_id: 5
-                      - id: 2
-                        title: >-
-                          Digital Revolution in Indian Classrooms: EdTech Trends
-                          and Insights
-                        description: >-
-                          Dive into the digital transformation of Indian
-                          classrooms. Gain insights into the latest educational
-                          technology trends, their impact, and how they're
-                          reshaping the teaching and learning experience.
-                        image: []
-                        user_id: 12
-                        status: published
-                        start_date: '1695656520'
-                        end_date: '1695660120'
-                        meeting_info:
-                          platform: 'OFF'
-                          value: 'OFF'
-                        created_at: '2023-08-25T10:42:43.708Z'
-                        is_enrolled: false
-                        mentor_name: Aanya Sharma
-                        org_id: 5
-                    count: 2
+                      data:
+                        - id: 1
+                          title: >-
+                            Innovations in Indian Education: A Roadmap for the
+                            Future
+                          description: >-
+                            Join this session to discover innovative approaches
+                            and technologies shaping the future of Indian
+                            education. Learn how educators are adapting to meet
+                            the evolving needs of students and society.
+                          image:
+                            - >-
+                              https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/session/62a73ffb12c0c4fe9b4c0f61-1695201766113-images_jpeg
+                          user_id: 23
+                          status: published
+                          start_date: '1697215860'
+                          end_date: '1697219460'
+                          meeting_info:
+                            platform: BigBlueButton (Default)
+                            value: Default
+                          created_at: '2023-09-13T16:51:46.377Z'
+                          is_enrolled: false
+                          mentor_name: Nevil M
+                          org_id: 5
+                        - id: 2
+                          title: >-
+                            Digital Revolution in Indian Classrooms: EdTech
+                            Trends and Insights
+                          description: >-
+                            Dive into the digital transformation of Indian
+                            classrooms. Gain insights into the latest
+                            educational technology trends, their impact, and how
+                            they're reshaping the teaching and learning
+                            experience.
+                          image: []
+                          user_id: 12
+                          status: published
+                          start_date: '1695656520'
+                          end_date: '1695660120'
+                          meeting_info:
+                            platform: 'OFF'
+                            value: 'OFF'
+                          created_at: '2023-08-25T10:42:43.708Z'
+                          is_enrolled: false
+                          mentor_name: Aanya Sharma
+                          org_id: 5
+                      count: 2
                     meta:
                       correlation: ecf6f2b6-6e21-445a-9242-303dc0ccd0b7
                       meeting_platform: BBB
@@ -5416,7 +5421,7 @@ paths:
     post:
       summary: Create entity type
       tags:
-        - Entity Type APIs
+        - Entity Type
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/create` 
@@ -5525,8 +5530,8 @@ paths:
   /mentoring/v1/entity-type/read:
     get:
       summary: Read entity type
-      tags:
-        - Entity Type APIs
+      tags: &ref_8
+        - Entity Type
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/read` 
@@ -5659,8 +5664,7 @@ paths:
   /mentoring/v1/entity-type/update/{id}:
     post:
       summary: Update entity type
-      tags:
-        - Entity Type APIs
+      tags: *ref_8
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/update` 
@@ -5770,8 +5774,7 @@ paths:
   /mentoring/v1/entity-type/delete/{id}:
     delete:
       summary: Delete entity type
-      tags:
-        - Entity Type APIs
+      tags: *ref_8
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/delete` 
@@ -8308,7 +8311,7 @@ tags:
     externalDocs:
       description: ''
       url: ''
-  - name: Entity Type APIs
+  - name: Entity Type
     description: ''
     externalDocs:
       description: ''
