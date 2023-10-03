@@ -25,17 +25,11 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateOne = async (filter, update, options = {}) => {
 	try {
-		const [rowsAffected] = await SessionAttendee.update(update, {
+		return await SessionAttendee.update(update, {
 			where: filter,
 			...options,
-			individualHooks: true, // Pass 'individualHooks: true' option to ensure proper triggering of 'beforeUpdate' hook.
+			individualHooks: true,
 		})
-
-		if (rowsAffected > 0) {
-			return 'ENTITY_UPDATED'
-		} else {
-			return 'ENTITY_NOT_FOUND'
-		}
 	} catch (error) {
 		return error
 	}
