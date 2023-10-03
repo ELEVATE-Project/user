@@ -71,7 +71,6 @@ module.exports = {
 	BBB_PLATFORM: 'BigBlueButton (Default)',
 	REPORT_EMAIL_SUBJECT: 'Having issue in logging in/signing up',
 	ADMIN_ROLE: 'admin',
-	MENTOR_ROLE: 'mentor',
 	roleValidationPaths: [
 		'/sessions/enroll/',
 		'/sessions/unEnroll/',
