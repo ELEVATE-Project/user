@@ -44,7 +44,7 @@
 		"kafkajs": "^2.2.3",
 		"lodash": "^4.17.21",
 		"md5": "^2.3.0",
-		"module-alias": "^2.2.2",
+		"module-alias": "^2.2.3",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",
 		"mongodb": "^4.11.0",
@@ -98,6 +98,7 @@
 		"@public": "public",
 		"@routes": "routes",
 		"@services": "services",
-		"@validators": "validators"
+		"@validators": "validators",
+		"@database": "database"
 	}
 }

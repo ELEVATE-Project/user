@@ -10,11 +10,16 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				type: DataTypes.INTEGER,
 			},
-			session_id: { type: DataTypes.INTEGER, allowNull: false },
+			session_id: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
 			recording: {
 				type: DataTypes.JSON,
 			},
-			recording_url: { type: DataTypes.STRING },
+			recording_url: {
+				type: DataTypes.STRING,
+			},
 			meta: {
 				type: DataTypes.JSON,
 			},

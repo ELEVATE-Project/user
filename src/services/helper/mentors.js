@@ -9,8 +9,9 @@ const httpStatusCode = require('@generics/http-status')
 const ObjectId = require('mongoose').Types.ObjectId
 const sessionAttendees = require('@db/sessionAttendees/queries')
 
-const mentorQueries = require('../../database/queries/mentorextention')
+const mentorQueries = require('../../database/queries/mentorextension')
 const { UniqueConstraintError } = require('sequelize')
+const _ = require('lodash')
 
 module.exports = class MentorsHelper {
 	/**
@@ -187,14 +188,13 @@ module.exports = class MentorsHelper {
 	static async sessionMentorDetails(session) {
 		try {
 			if (session.length > 0) {
-				const userIds = session
-					.map((item) => item.userId.toString())
-					.filter((value, index, self) => self.indexOf(value) === index)
+				const userIds = _.uniqBy(session, 'mentor_id').map((item) => item.mentor_id)
 
 				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
 				mentorDetails = mentorDetails.result
+
 				for (let i = 0; i < session.length; i++) {
-					let mentorIndex = mentorDetails.findIndex((x) => x._id === session[i].userId.toString())
+					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
 					session[i].mentorName = mentorDetails[mentorIndex].name
 				}
 
@@ -271,13 +271,6 @@ module.exports = class MentorsHelper {
 	static async createMentorExtension(data, userId) {
 		try {
 			data.user_id = userId
-			if (data.secret_code != process.env.MENTOR_SECRET_CODE) {
-				return common.failureResponse({
-					message: 'INVALID_SECRET_CODE',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const response = await mentorQueries.createMentorExtension(data)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

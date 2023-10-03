@@ -80,6 +80,7 @@
 	"MENTOR_EXTENSION_DELETED": "Mentor extension deleted successfully.",
 	"MENTEE_EXTENSION_CREATED": "Mentee extension created successfully.",
 	"MENTEE_EXTENSION_CREATION_FAILED": "Failed to create mentee extension.",
+	"MENTEE_EXTENSION_EXITS": "Duplicate user found",
 	"MENTEE_EXTENSION_UPDATED": "Mentee extension updated successfully.",
 	"MENTEE_EXTENSION_NOT_FOUND": "Mentee extension not found.",
 	"MENTEE_EXTENSION_FETCHED": "Mentee extension fetched successfully.",
@@ -91,5 +92,7 @@
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
 	"ENTITY_TYPE_DELETED_SUCCESSFULLY": "Entity type deleted successfully",
 	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully",
-	"INVALID_SECRET_CODE": "Incorrect code. Please try again."
+	"INVALID_SECRET_CODE": "Incorrect code. Please try again.",
+	"SESSION_CREATION_FAILED": "Failed to create session.",
+	"SESSION_UPDATION_FAILED": "Failed to update session."
 }

@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: 'published',
+				defaultValue: 'PUBLISHED',
 			},
 			category: {
 				type: DataTypes.JSON,

@@ -436,7 +436,7 @@ module.exports = class MenteesHelper {
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
 				return common.failureResponse({
-					message: 'MENTEE_EXTENSION_CREATION_FAILED',
+					message: 'MENTEE_EXTENSION_EXITS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -472,7 +472,7 @@ module.exports = class MenteesHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_UPDATED',
-				result: updatedUser,
+				result: updatedUser[0],
 			})
 		} catch (error) {
 			return error

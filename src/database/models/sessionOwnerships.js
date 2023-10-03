@@ -1,5 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
-	const SessionOwnerships = sequelize.define(
+	const SessionOwnership = sequelize.define(
 		'SessionOwnership',
 		{
 			id: {
@@ -26,5 +26,5 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
-	return SessionOwnerships
+	return SessionOwnership
 }

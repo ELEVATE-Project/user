@@ -17,6 +17,7 @@ module.exports = {
 			},
 			status: {
 				type: Sequelize.STRING,
+				defaultValue: 'ACTIVE',
 			},
 			created_by: {
 				type: Sequelize.INTEGER,
