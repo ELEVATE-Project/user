@@ -27,7 +27,7 @@ module.exports = class Mentors {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.params.menteeId ? req.params.menteeId : req?.decodedToken?._id
+				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id
 			)
 		} catch (error) {
 			return error
@@ -44,7 +44,7 @@ module.exports = class Mentors {
 	 */
 	async profile(req) {
 		try {
-			return await mentorsHelper.profile(req.params.id)
+			return await mentorsHelper.read(req.params.id)
 		} catch (error) {
 			return errors
 		}
@@ -54,7 +54,7 @@ module.exports = class Mentors {
 	 * @method
 	 * @name reports
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.query.filterType - filterType.
 	 * @param {String} [req.query.filterType = "MONTHLY"] - Monthly reports.
 	 * @param {String} [req.query.filterType = "WEEKLY"] - Weekly report.
@@ -64,7 +64,11 @@ module.exports = class Mentors {
 
 	async reports(req) {
 		try {
-			const reports = await mentorsHelper.reports(req.decodedToken._id, req.query.filterType)
+			const reports = await mentorsHelper.reports(
+				req.decodedToken.id,
+				req.query.filterType,
+				req.decodedToken.roles
+			)
 			return reports
 		} catch (error) {
 			return error
@@ -95,7 +99,7 @@ module.exports = class Mentors {
 	//  * @method
 	//  * @name createMentorExtension
 	//  * @param {Object} req - Request data.
-	//  * @param {Object} req.body - Mentor extension data excluding user_id.
+	//  * @param {Object} req.body - Mentor extension data excluding userid.
 	//  * @returns {Promise<Object>} - Created mentor extension details.
 	//  */
 	// async create(req) {
@@ -111,8 +115,8 @@ module.exports = class Mentors {
 	//  * @method
 	//  * @name updateMentorExtension
 	//  * @param {Object} req - Request data.
-	//  * @param {String} req.decodedToken._id - User ID of the mentor.
-	//  * @param {Object} req.body - Updated mentor extension data excluding user_id.
+	//  * @param {String} req.decodedToken.id - User ID of the mentor.
+	//  * @param {Object} req.body - Updated mentor extension data excluding userid.
 	//  * @returns {Promise<Object>} - Updated mentor extension details.
 	//  */
 

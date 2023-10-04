@@ -130,7 +130,7 @@ services:
     depends_on:
       - kafka
       - mongo
-      #- redis_bullmq
+      - redis
     networks:
       - elevate_net
 

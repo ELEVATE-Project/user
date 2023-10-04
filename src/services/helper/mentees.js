@@ -15,6 +15,9 @@ const { successResponse } = require('@constants/common')
 
 const { UniqueConstraintError } = require('sequelize')
 const menteeQueries = require('../../database/queries/userextension')
+const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
+const sessionQueries = require('@database/queries/sessions')
+const _ = require('lodash')
 
 module.exports = class MenteesHelper {
 	/**
@@ -24,14 +27,19 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async profile(id) {
+	static async read(id) {
 		const menteeDetails = await userProfile.details('', id)
-		const filter = { userId: id, isSessionAttended: true }
-		const totalsession = await sessionAttendees.countAllSessionAttendees(filter)
+		const mentee = await menteeQueries.getMenteeExtension(id)
+
+		delete mentee.user_id
+		delete mentee.organisation_ids
+
+		const filter = { is_session_attended: true }
+		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
-			result: { sessionsAttended: totalsession, ...menteeDetails.data.result },
+			result: { sessionsAttended: totalSession, ...menteeDetails.data.result, ...mentee },
 		})
 	}
 
@@ -62,11 +70,10 @@ module.exports = class MenteesHelper {
 				/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
 				sessions = await this.getMySessions(page, limit, search, userId)
 			}
-
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: sessions,
+				result: { data: sessions.rows, count: sessions.count },
 			})
 		} catch (error) {
 			throw error
@@ -83,31 +90,44 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async reports(userId, filterType) {
-		let filterStartDate
-		let filterEndDate
-		let totalSessionEnrolled
-		let totalsessionsAttended
 		try {
-			if (filterType === 'MONTHLY') {
-				;[filterStartDate, filterEndDate] = utils.getCurrentMonthRange()
-			} else if (filterType === 'WEEKLY') {
-				;[filterStartDate, filterEndDate] = utils.getCurrentWeekRange()
-			} else if (filterType === 'QUARTERLY') {
-				;[filterStartDate, filterEndDate] = utils.getCurrentQuarterRange()
+			let filterStartDate, filterEndDate
+
+			switch (filterType) {
+				case 'MONTHLY':
+					;[filterStartDate, filterEndDate] = utils.getCurrentMonthRange()
+					break
+				case 'WEEKLY':
+					;[filterStartDate, filterEndDate] = utils.getCurrentWeekRange()
+					break
+				case 'QUARTERLY':
+					;[filterStartDate, filterEndDate] = utils.getCurrentQuarterRange()
+					break
+				default:
+					throw new Error('Invalid filterType')
 			}
 
-			totalSessionEnrolled = await sessionAttendees.countSessionAttendees(filterStartDate, filterEndDate, userId)
-
-			totalsessionsAttended = await sessionAttendees.countSessionAttendeesThroughStartDate(
-				filterStartDate,
-				filterEndDate,
+			const totalSessionsEnrolled = await sessionAttendeesQueries.getEnrolledSessionsCountInDateRange(
+				filterStartDate.toISOString(),
+				filterEndDate.toISOString(),
 				userId
 			)
+
+			const totalSessionsAttended = await sessionAttendeesQueries.getAttendedSessionsCountInDateRange(
+				filterStartDate.toISOString(),
+				filterEndDate.toISOString(),
+				userId
+			)
+
+			const result = {
+				total_session_enrolled: totalSessionsEnrolled,
+				total_session_attended: totalSessionsAttended,
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEES_REPORT_FETCHED_SUCCESSFULLY',
-				result: { totalSessionEnrolled, totalsessionsAttended },
+				result,
 			})
 		} catch (error) {
 			throw error
@@ -134,10 +154,9 @@ module.exports = class MenteesHelper {
 			let mySessions = await this.getMySessions(page, limit, search, userId)
 
 			const result = {
-				allSessions: allSessions[0].data,
-				mySessions: mySessions[0].data,
+				all_sessions: allSessions.rows,
+				my_sessions: mySessions.rows,
 			}
-
 			const feedbackData = await feedbackHelper.pending(userId, isAMentor)
 
 			return common.successResponse({
@@ -175,7 +194,7 @@ module.exports = class MenteesHelper {
 				})
 			}
 
-			const session = await sessionData.findSessionById(sessionId)
+			const session = await sessionQueries.findById(sessionId)
 
 			if (!session) {
 				return common.failureResponse({
@@ -184,8 +203,7 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			if (session.status == 'completed') {
+			if (session.status == 'COMPLETED') {
 				return common.failureResponse({
 					message: 'SESSION_ENDED',
 					statusCode: httpStatusCode.bad_request,
@@ -193,7 +211,7 @@ module.exports = class MenteesHelper {
 				})
 			}
 
-			if (session.status !== 'live') {
+			if (session.status !== 'LIVE') {
 				return common.failureResponse({
 					message: 'JOIN_ONLY_LIVE_SESSION',
 					statusCode: httpStatusCode.bad_request,
@@ -202,9 +220,10 @@ module.exports = class MenteesHelper {
 			}
 
 			let menteeDetails = mentee.data.result
-
-			const sessionAttendee = await sessionAttendees.findAttendeeBySessionAndUserId(menteeDetails._id, sessionId)
-
+			const sessionAttendee = await sessionAttendeesQueries.findAttendeeBySessionAndUserId(
+				menteeDetails.id,
+				sessionId
+			)
 			if (!sessionAttendee) {
 				return common.failureResponse({
 					message: 'USER_NOT_ENROLLED',
@@ -212,18 +231,17 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			let meetingInfo
-			if (session?.meetingInfo?.value !== common.BBB_VALUE) {
-				meetingInfo = session.meetingInfo
-				await sessionAttendees.updateOne(
+			if (session?.meeting_info?.value !== common.BBB_VALUE) {
+				meetingInfo = session.meeting_info
+
+				await sessionAttendeesQueries.updateOne(
 					{
-						_id: sessionAttendee._id,
+						id: sessionAttendee.id,
 					},
 					{
-						meetingInfo,
-						joinedAt: utils.utcFormat(),
-						isSessionAttended: true,
+						meeting_info: meetingInfo,
+						joined_at: utils.utcFormat(),
 					}
 				)
 				return common.successResponse({
@@ -232,8 +250,8 @@ module.exports = class MenteesHelper {
 					result: meetingInfo,
 				})
 			}
-			if (sessionAttendee?.meetingInfo?.link) {
-				meetingInfo = sessionAttendee.meetingInfo
+			if (sessionAttendee?.meeting_info?.link) {
+				meetingInfo = sessionAttendee.meeting_info
 			} else {
 				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
 					sessionId,
@@ -245,14 +263,13 @@ module.exports = class MenteesHelper {
 					platform: common.BBB_PLATFORM,
 					link: attendeeLink,
 				}
-				await sessionAttendees.updateOne(
+				await sessionAttendeesQueries.updateOne(
 					{
-						_id: sessionAttendee._id,
+						id: sessionAttendee.id,
 					},
 					{
-						meetingInfo,
-						joinedAt: utils.utcFormat(),
-						isSessionAttended: true,
+						meeting_info: meetingInfo,
+						joined_at: utils.utcFormat(),
 					}
 				)
 			}
@@ -263,7 +280,6 @@ module.exports = class MenteesHelper {
 				result: meetingInfo,
 			})
 		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}
@@ -280,21 +296,10 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async getAllSessions(page, limit, search, userId) {
-		let filters = {
-			status: { $in: ['published', 'live'] },
-			endDateUtc: {
-				$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
-			},
-			userId: {
-				$ne: ObjectId(userId),
-			},
-			deleted: false,
-		}
+		const sessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
 
-		const sessions = await sessionData.findAllSessions(page, limit, search, filters)
-
-		sessions[0].data = await this.menteeSessionDetails(sessions[0].data, userId)
-		sessions[0].data = await this.sessionMentorDetails(sessions[0].data)
+		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
+		sessions.rows = await this.sessionMentorDetails(sessions.rows)
 		return sessions
 	}
 
@@ -310,107 +315,90 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async getMySessions(page, limit, search, userId) {
-		const filters = {
-			$and: [
-				{
-					'sessionDetail.endDateUtc': {
-						$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
-					},
-				},
-			],
-			$or: [
-				{
-					'sessionDetail.status': 'published',
-				},
-				{
-					'sessionDetail.status': 'live',
-				},
-			],
-			userId,
+		try {
+			const upcomingSessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
+
+			const upcomingSessionIds = upcomingSessions.rows.map((session) => session.id)
+
+			const usersUpcomingSessions = await sessionAttendeesQueries.usersUpcomingSessions(
+				userId,
+				upcomingSessionIds
+			)
+
+			const usersUpcomingSessionIds = usersUpcomingSessions.map(
+				(usersUpcomingSession) => usersUpcomingSession.session_id
+			)
+
+			let sessionDetails = await sessionQueries.findAndCountAll({ id: usersUpcomingSessionIds })
+
+			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
+
+			return sessionDetails
+		} catch (error) {
+			throw error
 		}
-		const sessions = await sessionAttendees.findAllUpcomingMenteesSession(page, limit, search, filters)
-
-		sessions[0].data = await this.sessionMentorDetails(sessions[0].data)
-
-		return sessions
 	}
 
 	static async menteeSessionDetails(sessions, userId) {
 		try {
-			const sessionIds = []
 			if (sessions.length > 0) {
-				sessions.forEach((session) => {
-					sessionIds.push(session._id)
+				const sessionIds = sessions.map((session) => session.id)
+
+				const attendees = await sessionAttendeesQueries.findAll({
+					session_id: sessionIds,
+					mentee_id: userId,
 				})
 
-				const filters = {
-					sessionId: {
-						$in: sessionIds,
-					},
-					userId,
-				}
-				const attendees = await sessionAttendees.findAllSessionAttendees(filters)
 				await Promise.all(
 					sessions.map(async (session) => {
-						if (attendees) {
-							const attendee = attendees.find(
-								(attendee) => attendee.sessionId.toString() === session._id.toString()
-							)
-							if (attendee) {
-								session.isEnrolled = true
-							} else {
-								session.isEnrolled = false
-								delete session?.meetingInfo?.link
-								delete session?.meetingInfo?.meta
-							}
-						} else {
-							session.isEnrolled = false
-							delete session?.meetingInfo?.link
-							delete session?.meetingInfo?.meta
-						}
+						const attendee = attendees.find((attendee) => attendee.session_id === session.id)
+						session.is_enrolled = !!attendee
 					})
 				)
+
 				return sessions
 			} else {
 				return sessions
 			}
 		} catch (err) {
-			console.log(err)
 			return err
 		}
 	}
 
-	static async sessionMentorDetails(session) {
+	static async sessionMentorDetails(sessions) {
 		try {
-			if (session.length > 0) {
-				const userIds = session
-					.map((item) => item.userId.toString())
-					.filter((value, index, self) => self.indexOf(value) === index)
-
-				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
-				mentorDetails = mentorDetails.result
-				for (let i = 0; i < session.length; i++) {
-					let mentorIndex = mentorDetails.findIndex((x) => x._id === session[i].userId.toString())
-					session[i].mentorName = mentorDetails[mentorIndex].name
-				}
-
-				await Promise.all(
-					session.map(async (sessions) => {
-						if (sessions.image && sessions.image.length > 0) {
-							sessions.image = sessions.image.map(async (imgPath) => {
-								if (imgPath && imgPath != '') {
-									return await utils.getDownloadableUrl(imgPath)
-								}
-							})
-							sessions.image = await Promise.all(sessions.image)
-						}
-					})
-				)
-
-				return session
-			} else {
-				return session
+			if (sessions.length === 0) {
+				return sessions
 			}
+
+			// Extract unique mentor_ids
+			const mentorIds = [...new Set(sessions.map((session) => session.mentor_id))]
+
+			// Fetch mentor details
+			const mentorDetails = (await userProfile.getListOfUserDetails(mentorIds)).result
+
+			// Map mentor names to sessions
+			sessions.forEach((session) => {
+				const mentor = mentorDetails.find((mentorDetail) => mentorDetail.id === session.mentor_id)
+				if (mentor) {
+					session.mentor_name = mentor.name
+				}
+			})
+
+			// Fetch and update image URLs in parallel
+			await Promise.all(
+				sessions.map(async (session) => {
+					if (session.image && session.image.length > 0) {
+						session.image = await Promise.all(
+							session.image.map(async (imgPath) =>
+								imgPath ? await utils.getDownloadableUrl(imgPath) : null
+							)
+						)
+					}
+				})
+			)
+
+			return sessions
 		} catch (error) {
 			throw error
 		}
@@ -501,7 +489,6 @@ module.exports = class MenteesHelper {
 				result: mentee,
 			})
 		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}

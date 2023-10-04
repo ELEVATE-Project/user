@@ -4,15 +4,18 @@ const { isAMentor } = require('@generics/utils')
 
 module.exports = class Mentees {
 	/**
-	 * Create a new mentee extension.
+	 * Create a new mentor or mentee extension.
 	 * @method
-	 * @name createMenteeExtension
+	 * @name create
 	 * @param {Object} req - Request data.
 	 * @param {Object} req.body - Mentee extension data excluding user_id.
 	 * @returns {Promise<Object>} - Created mentee extension details.
 	 */
 	async create(req) {
 		try {
+			if (isAMentor(req.decodedToken.roles)) {
+				return await mentorsHelper.createMentorExtension(req.body, req.decodedToken.id)
+			}
 			return await menteesHelper.createMenteeExtension(req.body, req.decodedToken.id)
 		} catch (error) {
 			console.error(error)
@@ -21,7 +24,7 @@ module.exports = class Mentees {
 	}
 
 	/**
-	 * Update a user extension.
+	 * Update a mentor or mentee extension.
 	 * @method
 	 * @name update
 	 * @param {Object} req - Request data.
@@ -41,7 +44,26 @@ module.exports = class Mentees {
 	}
 
 	/**
-	 * Get user extension by user ID.
+	 * Get mentor or mentee extension by user ID.
+	 * @method
+	 * @name getExtension
+	 * @param {Object} req - Request data.
+	 * @param {String} req.params.id - User ID of the user.
+	 * @returns {Promise<Object>} - user extension details.
+	 */
+	async getExtension(req) {
+		try {
+			if (isAMentor(req.decodedToken.roles)) {
+				return await mentorsHelper.getMentorExtension(req.decodedToken.id)
+			}
+			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get mentor or mentee extension by user ID.
 	 * @method
 	 * @name read
 	 * @param {Object} req - Request data.
@@ -51,11 +73,11 @@ module.exports = class Mentees {
 	async read(req) {
 		try {
 			if (isAMentor(req.decodedToken.roles)) {
-				return await mentorsHelper.getMentorExtension(req.body, req.decodedToken.id)
+				return await mentorsHelper.read(req.decodedToken.id)
 			}
-			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
+			return await menteesHelper.read(req.decodedToken.id)
 		} catch (error) {
-			return error
+			return errors
 		}
 	}
 

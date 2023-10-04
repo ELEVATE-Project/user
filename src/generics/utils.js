@@ -163,7 +163,7 @@ const capitalize = (str) => {
 	return startCase(str)
 }
 const isAMentor = (roles) => {
-	return roles.some((role) => role.title !== common.MENTOR_ROLE)
+	return roles.some((role) => role.title == common.MENTOR_ROLE)
 }
 function isNumeric(value) {
 	return /^\d+$/.test(value)
@@ -172,6 +172,18 @@ const epochFormat = (date, format) => {
 	return moment.unix(date).utc().format(format)
 }
 
+function deleteProperties(obj, propertiesToDelete) {
+	try {
+		return Object.keys(obj).reduce((result, key) => {
+			if (!propertiesToDelete.includes(key)) {
+				result[key] = obj[key]
+			}
+			return result
+		}, {})
+	} catch (error) {
+		return obj
+	}
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange: getCurrentMonthRange,
@@ -195,4 +207,5 @@ module.exports = {
 	isAMentor,
 	isNumeric: isNumeric,
 	epochFormat: epochFormat,
+	deleteProperties,
 }

@@ -73,7 +73,7 @@
 	"USER_REMOVED_SUCCESSFULLY": "User details removed successfully.",
 	"USER_NOT_REMOVED_SUCCESSFULLY": "Error while removing user details.",
 	"MENTOR_EXTENSION_CREATED": "Mentor extension created successfully.",
-	"MENTOR_EXTENSION_CREATION_FAILED": "Failed to create mentor extension.",
+	"MENTOR_EXTENSION_CREATION_FAILED": "Failed to create mentor extension, Mentor already exists.",
 	"MENTOR_EXTENSION_UPDATED": "Mentor extension updated successfully.",
 	"MENTOR_EXTENSION_NOT_FOUND": "Mentor extension not found.",
 	"MENTOR_EXTENSION_FETCHED": "Mentor extension fetched successfully.",

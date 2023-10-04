@@ -37,6 +37,7 @@ exports.updateOne = async (filter, update, options = {}) => {
 			return 'ENTITY_NOT_FOUND'
 		}
 	} catch (error) {
+		console.error(error)
 		return error
 	}
 }
@@ -95,6 +96,7 @@ exports.usersUpcomingSessions = async (userId, sessionIds) => {
 				session_id: sessionIds,
 				mentee_id: userId,
 			},
+			raw: true,
 		})
 	} catch (error) {
 		console.error('An error occurred:', error)
@@ -120,5 +122,113 @@ exports.unenrollFromUpcomingSessions = async (userId, sessionIds) => {
 	} catch (error) {
 		console.error('An error occurred:', error)
 		throw error
+	}
+}
+exports.countEnrolledSessions = async (filters, mentee_id) => {
+	try {
+		let sessionEnrollments = await SessionEnrollment.findAll({
+			where: {
+				mentee_id: mentee_id,
+			},
+		})
+		console.log(sessionEnrollments, 'aaaaaaaaaaaaaaaaaaaaaaa')
+		const sessionIds = sessionEnrollments.map((enrollment) => enrollment.session_id)
+		if (sessionIds.length <= 0) {
+			return 0
+		}
+		return await SessionAttendee.count({
+			where: {
+				...filters,
+				session_id: sessionIds,
+			},
+		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.getEnrolledSessionsCountInDateRange = async (startDate, endDate, mentee_id) => {
+	try {
+		let sessionEnrollments = await SessionEnrollment.findAll({
+			where: {
+				mentee_id: mentee_id,
+			},
+		})
+		const sessionIds = sessionEnrollments.map((enrollment) => enrollment.session_id)
+		if (sessionIds.length <= 0) {
+			return 0
+		}
+		return await SessionAttendee.count({
+			where: {
+				created_at: {
+					[Op.between]: [startDate, endDate],
+				},
+				session_id: sessionIds,
+			},
+		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.getAttendedSessionsCountInDateRange = async (startDate, endDate, mentee_id) => {
+	try {
+		let sessionEnrollments = await SessionEnrollment.findAll({
+			where: {
+				mentee_id: mentee_id,
+			},
+		})
+		const sessionIds = sessionEnrollments.map((enrollment) => enrollment.session_id)
+		if (sessionIds.length <= 0) {
+			return 0
+		}
+		return await SessionAttendee.count({
+			where: {
+				joined_at: {
+					[Op.between]: [startDate, endDate],
+				},
+				session_id: sessionIds,
+			},
+		})
+	} catch (error) {
+		console.error(error)
+		return error
+	}
+}
+exports.findAttendeeBySessionAndUserId = async (id, sessionId) => {
+	try {
+		const attendee = await SessionAttendee.findOne({
+			where: {
+				mentee_id: id,
+				session_id: sessionId,
+			},
+			raw: true,
+		})
+		return attendee
+	} catch (error) {
+		return error
+	}
+}
+exports.findPendingFeedbackSessions = async (menteeId, completedSessionIds) => {
+	try {
+		let sessionEnrollments = await SessionEnrollment.findAll({
+			where: {
+				mentee_id: menteeId,
+			},
+		})
+		const sessionIds = sessionEnrollments.map((enrollment) => enrollment.session_id)
+		const filteredSessionIds = sessionIds.filter((sessionId) => !completedSessionIds.includes(sessionId))
+		return await SessionAttendee.findAll({
+			where: {
+				joined_at: {
+					[Op.not]: null,
+				},
+				is_feedback_skipped: false,
+				session_id: filteredSessionIds,
+			},
+			raw: true,
+		})
+	} catch (error) {
+		return error
 	}
 }
