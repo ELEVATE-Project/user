@@ -2,6 +2,11 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const organizationQueries = require('@database/queries/organization')
 const utils = require('@generics/utils')
+const roleQueries = require('@database/queries/userRole')
+const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
+const orgDomainQueries = require('@database/queries/orgDomain')
+const { Op } = require('sequelize')
+const _ = require('lodash')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -12,7 +17,7 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} - Organization creation data.
 	 */
 
-	static async create(bodyData) {
+	static async create(bodyData, loggedInUserId) {
 		try {
 			let organization = await organizationQueries.findOne({ code: bodyData.code })
 
@@ -24,18 +29,29 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 
+			bodyData.created_by = loggedInUserId
+
 			let createOrg = await organizationQueries.create(bodyData)
+			if (bodyData.domains?.length) {
+				await Promise.all(
+					bodyData.domains.map(async (domain) => {
+						let domainCreationData = {
+							domain: domain,
+							organization_id: createOrg.id,
+							created_by: loggedInUserId,
+						}
+						await orgDomainQueries.create(domainCreationData)
+					})
+				)
+			}
+
 			const cacheKey = common.redisOrgPrefix + createOrg.id.toString()
 			await utils.internalDel(cacheKey)
-			// await KafkaProducer.clearInternalCache(cacheKey)
-			let result = {
-				organization: createOrg,
-			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
-				createOrg,
+				result: createOrg,
 			})
 		} catch (error) {
 			throw error
@@ -50,15 +66,38 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} - Update Organization data.
 	 */
 
-	static async update(id, bodyData) {
+	static async update(id, bodyData, loggedInUserId) {
 		try {
-			const rowsUpdated = await organizationQueries.update({ id: id }, bodyData)
-			if (rowsUpdated == 0) {
-				return common.failureResponse({
-					message: 'ORGANIZATION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			bodyData.updated_by = loggedInUserId
+			await organizationQueries.update({ id: id }, bodyData)
+
+			let domains = []
+			if (bodyData.domains?.length) {
+				let existingDomains = await orgDomainQueries.findAll({
+					domain: {
+						[Op.in]: bodyData.domains,
+					},
+					organization_id: id,
 				})
+
+				if (!existingDomains.length > 0) {
+					domains = bodyData.domains
+				} else {
+					const domainVal = _.map(existingDomains, 'domain')
+					const nonExistedDomains = _.difference(bodyData.domains, domainVal)
+					domains = nonExistedDomains
+				}
+
+				await Promise.all(
+					domains.map(async (domain) => {
+						let domainCreationData = {
+							domain: domain,
+							organization_id: id,
+							created_by: loggedInUserId,
+						}
+						await orgDomainQueries.create(domainCreationData)
+					})
+				)
 			}
 
 			const cacheKey = common.redisOrgPrefix + id.toString()
@@ -83,7 +122,7 @@ module.exports = class OrganizationsHelper {
 
 	static async list(params) {
 		try {
-			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('organizationIds')) {
+			if (params.body && params.body.organizationIds) {
 				const organizationIds = params.body.organizationIds
 				const orgIdsNotFoundInRedis = []
 				const orgDetailsFoundInRedis = []
@@ -121,26 +160,62 @@ module.exports = class OrganizationsHelper {
 					params.searchText
 				)
 
-				if (organizations.rows.length < 1) {
-					return common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
-						result: {
-							data: [],
-							count: 0,
-						},
-					})
-				}
-
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
-					result: {
-						data: organizations.rows,
-						count: organizations.count,
-					},
+					result: organizations,
 				})
 			}
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Request Org Role
+	 * @method
+	 * @name requestOrgRole
+	 * @param {Integer} loggedInUserId
+	 * @param {Object} bodyData
+	 * @returns {JSON} - Organization creation data.
+	 */
+
+	static async requestOrgRole(tokenInformation, bodyData) {
+		try {
+			const role = await roleQueries.findByPk(bodyData.role)
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const checkForRoleRequest = await orgRoleReqQueries.findOne({
+				requester_id: tokenInformation.id,
+				role: bodyData.role,
+				status: common.statusRequested,
+			})
+
+			let result
+			if (!checkForRoleRequest) {
+				const roleRequestData = {
+					requester_id: tokenInformation.id,
+					role: bodyData.role,
+					organization_id: tokenInformation.organization_id,
+					meta: bodyData.form_data,
+				}
+
+				result = await orgRoleReqQueries.create(roleRequestData)
+			} else {
+				result = checkForRoleRequest
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: role.title == common.roleMentor ? 'MENTOR_ROLE_REQUESTED' : 'MENTEE_ROLE_REQUESTED',
+				result,
+			})
 		} catch (error) {
 			throw error
 		}

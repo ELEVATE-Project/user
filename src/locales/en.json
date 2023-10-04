@@ -77,5 +77,8 @@
 	"ORG_ADMIN_MAPPED_SUCCESSFULLY": "User Assigned As The Org-Admin Successfully",
 	"ORG_ADMIN_MAPPING_FAILED": "Unable to Assign User As Org-Admin",
 	"FILE_UPLOAD_FETCHED": "Bulk Invites CSV List Fetched Successfully",
-	"ORG_ROLE_REQ_FETCHED": "Organisation request details fetched successfully"
+	"ORG_ROLE_REQ_FETCHED": "Organisation request details fetched successfully",
+	"ORG_ROLE_REQ_LIST_FETCHED": "Organization requests fetched successfully",
+	"MENTOR_ROLE_REQUESTED": "mentor role requested successfully",
+	"MENTEE_ROLE_REQUESTED": "mentee role requested successfully"
 }

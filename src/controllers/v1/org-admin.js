@@ -41,11 +41,14 @@ module.exports = class OrgAdmin {
 	}
 
 	/**
-	 * List of uploaded invitee file
+	 * Get a list of uploaded bulk invite CSV files.
 	 * @method
 	 * @name getBulkInvitesFilesList
-	 * @param {String} req.body.file_path -Uploaded file path .
-	 * @returns {Object} - uploaded file response.
+	 * @param {Object} req - request data with method GET.
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @param {String} req.status - status.
+	 * @returns {JSON} - list of uploaded CSV files.
 	 */
 	async getBulkInvitesFilesList(req) {
 		try {
@@ -96,6 +99,37 @@ module.exports = class OrgAdmin {
 				req.decodedToken.organization_id
 			)
 			return requestDetails
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get a list of organization requests based on specified filters.
+	 * @method
+	 * @name getRequests
+	 * @param {Object} req - request data with method GET.
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @returns {JSON} - list of organization requests.
+	 */
+	async getRequests(req) {
+		try {
+			let isOrgAdmin = false
+			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
+				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
+			}
+
+			if (!isOrgAdmin) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgAdminHelper.getRequests(req)
+			return result
 		} catch (error) {
 			return error
 		}

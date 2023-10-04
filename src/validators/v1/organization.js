@@ -21,4 +21,9 @@ module.exports = {
 	update: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
+
+	requestOrgRole: (req) => {
+		req.checkBody('role').notEmpty().withMessage('role field is empty')
+		req.checkBody('form_data').notEmpty().withMessage('form_data field is empty')
+	},
 }

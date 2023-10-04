@@ -7,6 +7,9 @@
 
 // Dependencies
 const orgHelper = require('@services/helper/organization')
+const utilsHelper = require('@generics/utils')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Organization {
 	/**
@@ -24,7 +27,21 @@ module.exports = class Organization {
 
 	async create(req) {
 		try {
-			const createdOrg = await orgHelper.create(req.body)
+			let isAdmin = false
+			const roles = req.decodedToken.roles
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
+			}
+
+			if (!isAdmin) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const createdOrg = await orgHelper.create(req.body, req.decodedToken.id)
 			return createdOrg
 		} catch (error) {
 			return error
@@ -44,7 +61,21 @@ module.exports = class Organization {
 
 	async update(req) {
 		try {
-			const updatedOrg = await orgHelper.update(req.params.id, req.body)
+			let isAdmin = false
+			const roles = req.decodedToken.roles
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
+			}
+
+			if (!isAdmin) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const updatedOrg = await orgHelper.update(req.params.id, req.body, req.decodedToken.id)
 			return updatedOrg
 		} catch (error) {
 			return error
@@ -69,6 +100,25 @@ module.exports = class Organization {
 	async list(req) {
 		try {
 			const result = await orgHelper.list(req)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Request Org Role
+	 * @method
+	 * @name requestOrgRole
+	 * @param {Object} req -request data.
+	 * @param {string} req.body.role - requested role id.
+	 * @param {string} req.body.form_data - answer for the form.
+	 * @param {string} req.body.data -request data.
+	 */
+
+	async requestOrgRole(req) {
+		try {
+			const result = await orgHelper.requestOrgRole(req.decodedToken, req.body)
 			return result
 		} catch (error) {
 			return error

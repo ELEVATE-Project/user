@@ -825,17 +825,6 @@ module.exports = class AccountHelper {
 					params.searchText
 				)
 
-				if (users.rows.length < 1) {
-					return common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'USER_LIST',
-						result: {
-							data: [],
-							count: 0,
-						},
-					})
-				}
-
 				let foundKeys = {}
 				let result = []
 
@@ -843,7 +832,7 @@ module.exports = class AccountHelper {
                 it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
-					users.rows.map(async (user) => {
+					users.data.map(async (user) => {
 						/* Assigned image url from the stored location */
 						if (user.image) {
 							user.image = await utilsHelper.getDownloadableUrl(user.image)

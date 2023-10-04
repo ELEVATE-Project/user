@@ -56,8 +56,14 @@ exports.listUploads = async (page, limit, status, organization_id) => {
 			filterQuery.where.status = status
 		}
 
-		const fileUploads = await FileUpload.findAndCountAll(filterQuery)
-		return fileUploads
+		const result = await FileUpload.findAndCountAll(filterQuery)
+		const transformedResult = {
+			count: result.count,
+			data: result.rows.map((row) => {
+				return row.get({ plain: true })
+			}),
+		}
+		return transformedResult
 	} catch (error) {
 		return error
 	}
