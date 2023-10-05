@@ -257,13 +257,13 @@ exports.findAllSessions = async (page, limit, search, filters) => {
 		return error
 	}
 }
-exports.getAllUpcomingSessions = async () => {
-	//const currentEpochTime = moment().unix()
-	const currentEpochTime = moment().format('YYYY-MM-DD HH:mm:ssZ')
+exports.getAllUpcomingSessions = async (paranoid) => {
+	const currentEpochTime = moment().unix()
+	//const currentEpochTime = moment().format('YYYY-MM-DD HH:mm:ssZ')
 
 	try {
 		return await Session.findAll({
-			paranoid: false,
+			paranoid: paranoid,
 			where: {
 				start_date: {
 					[Op.gt]: currentEpochTime,
@@ -291,5 +291,256 @@ exports.updateEnrollmentCount = async (sessionId, increment = true) => {
 	} catch (error) {
 		console.error(error)
 		throw error
+	}
+}
+exports.countHostedSessions = async (id) => {
+	try {
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: id,
+			},
+			raw: true,
+		})
+
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+
+		const count = await Session.count({
+			where: {
+				id: { [Op.in]: sessionIds },
+				status: 'COMPLETED',
+				started_at: {
+					[Op.not]: null,
+				},
+			},
+		})
+		return count
+	} catch (error) {
+		return error
+	}
+}
+
+exports.getCreatedSessionsCountInDateRange = async (mentorId, startDate, endDate) => {
+	try {
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: mentorId,
+			},
+			raw: true,
+		})
+
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+
+		const count = await Session.count({
+			where: {
+				id: { [Op.in]: sessionIds },
+				created_at: {
+					[Op.between]: [startDate, endDate],
+				},
+			},
+		})
+		return count
+	} catch (error) {
+		throw error
+	}
+}
+
+exports.getHostedSessionsCountInDateRange = async (mentorId, startDate, endDate) => {
+	try {
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: mentorId,
+			},
+			raw: true,
+		})
+
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+		const count = await Session.count({
+			where: {
+				id: { [Op.in]: sessionIds },
+				status: 'COMPLETED',
+				start_date: {
+					[Op.between]: [startDate, endDate],
+				},
+				started_at: {
+					[Op.not]: null,
+				},
+			},
+		})
+		return count
+	} catch (error) {
+		throw error
+	}
+}
+
+/* exports.getMentorsUpcomingSessions = async (mentorId) => {
+	try {
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: mentorId,
+			},
+			raw: true,
+		})
+
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+		const currentEpochTime = moment().unix()
+		console.log(sessionIds)
+		console.log(currentEpochTime)
+		return await Session.findAll({
+			where: {
+				id: { [Op.in]: sessionIds },
+				status: 'PUBLISHED',
+				start_date: {
+					[Op.gt]: currentEpochTime,
+				},
+				started_at: {
+					[Op.eq]: null,
+				},
+			},
+			raw: true,
+		})
+	} catch (error) {
+		throw error
+	}
+} */
+
+exports.getMentorsUpcomingSessions = async (page, limit, search, mentorId) => {
+	try {
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: mentorId,
+			},
+			raw: true,
+		})
+
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+		const currentEpochTime = moment().unix()
+
+		const sessionAttendeesData = await Session.findAndCountAll({
+			where: {
+				[Op.and]: [
+					{
+						id: { [Op.in]: sessionIds },
+						status: 'PUBLISHED',
+						start_date: {
+							[Op.gt]: currentEpochTime,
+						},
+						started_at: {
+							[Op.eq]: null,
+						},
+					},
+					{
+						[Op.or]: [
+							sequelize.where(
+								sequelize.fn('LOWER', sequelize.col('title')),
+								'LIKE',
+								`%${search.toLowerCase()}%`
+							),
+						],
+					},
+				],
+			},
+			order: [['start_date', 'ASC']],
+			attributes: [
+				'id',
+				'title',
+				'description',
+				'start_date',
+				'end_date',
+				'status',
+				'image',
+				'mentor_id',
+				'meeting_info',
+				/* 				[(sequelize.json('meeting_info.platform'), 'meeting_info.platform')],
+				[sequelize.json('meeting_info.value'), 'meeting_info.value'], */
+			],
+			offset: limit * (page - 1),
+			limit: limit,
+			raw: true,
+		})
+
+		return {
+			data: sessionAttendeesData.rows,
+			count: sessionAttendeesData.count,
+		}
+	} catch (error) {
+		return error
+	}
+}
+exports.getUpcomingSessions = async (page, limit, search, userId) => {
+	try {
+		const currentEpochTime = moment().unix()
+		console.log(currentEpochTime)
+		const sessionData = await Session.findAndCountAll({
+			where: {
+				[Op.or]: [{ title: { [Op.iLike]: `%${search}%` } }], // Case-insensitive search
+				mentor_id: { [Op.ne]: userId },
+				end_date: {
+					[Op.gt]: currentEpochTime,
+				},
+				status: {
+					[Op.in]: ['PUBLISHED', 'LIVE'],
+				},
+			},
+			order: [['created_at', 'DESC']],
+			attributes: [
+				'id',
+				'title',
+				'description',
+				'start_date',
+				'end_date',
+				'status',
+				'image',
+				'mentor_id',
+				'created_at',
+				'meeting_info',
+				/* ['meetingInfo.platform', 'meetingInfo.platform'],
+				['meetingInfo.value', 'meetingInfo.value'], */
+			],
+			offset: limit * (page - 1),
+			limit: limit,
+			raw: true,
+		})
+		return sessionData
+		return {
+			data: sessionData.rows,
+			count: sessionData.count,
+		}
+	} catch (error) {
+		console.error(error)
+		return error
+	}
+}
+
+exports.findAndCountAll = async (filter, options = {}) => {
+	try {
+		const { rows, count } = await Session.findAndCountAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
+		return { rows, count }
+	} catch (error) {
+		return error
+	}
+}
+exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, completedSessionIds) => {
+	try {
+		return await Session.findAll({
+			where: {
+				id: { [Op.notIn]: completedSessionIds },
+				status: 'COMPLETED',
+				is_feedback_skipped: false,
+				mentor_id: mentorId,
+			},
+			...options,
+			raw: true,
+		})
+	} catch (error) {
+		return error
 	}
 }
