@@ -180,11 +180,15 @@ let enviromentVariables = {
 		message: 'Required Admin secret code',
 		optional: false,
 	},
-	DEFAULT_ORGANISATION_CODE:{
+	DEFAULT_ORGANISATION_CODE: {
 		message: 'Required default organisation code',
 		optional: false,
-		default: 'sl'
-	}
+		default: 'sl',
+	},
+	MENTORING_SERVICE_URL: {
+		message: 'Required Mentoring Service Url',
+		optional: false,
+	},
 }
 
 let success = true
