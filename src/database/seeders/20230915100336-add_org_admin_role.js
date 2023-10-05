@@ -6,7 +6,7 @@ module.exports = {
 		let roleData = []
 		let eachRow = {
 			title: 'org_admin',
-			user_type: 0,
+			user_type: 1,
 			updated_at: new Date(),
 			created_at: new Date(),
 		}

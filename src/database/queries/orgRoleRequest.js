@@ -86,3 +86,16 @@ exports.listAllRequests = async (filter, page, limit, options = {}) => {
 		return error
 	}
 }
+
+exports.update = async (filter, update, options = {}) => {
+	try {
+		const [res] = await OrgRoleRequest.update(update, {
+			where: filter,
+			...options,
+			individualHooks: true,
+		})
+		return res
+	} catch (error) {
+		return error
+	}
+}

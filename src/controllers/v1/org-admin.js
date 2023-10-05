@@ -111,7 +111,7 @@ module.exports = class OrgAdmin {
 	 * @param {Object} req - request data with method GET.
 	 * @param {Number} req.pageNo - page no.
 	 * @param {Number} req.pageSize - page size limit.
-	 * @returns {JSON} - list of organization requests.
+	 * @returns {JSON} - list of role change requests.
 	 */
 	async getRequests(req) {
 		try {
@@ -129,6 +129,38 @@ module.exports = class OrgAdmin {
 			}
 
 			const result = await orgAdminHelper.getRequests(req)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Update Request Status
+	 * @method
+	 * @name updateRequestStatus
+	 * @param {Object} req - request data with method POST.
+	 * @param {string} req.body.request_id -request id.
+	 * @param {string} req.body.comments - comments.
+	 * @param {string} req.body.status - status.
+	 * @returns {JSON} - Response of request status change.
+	 */
+	async updateRequestStatus(req) {
+		try {
+			let isOrgAdmin = false
+			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
+				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
+			}
+
+			if (!isOrgAdmin) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgAdminHelper.updateRequestStatus(req.body, req.decodedToken.id)
 			return result
 		} catch (error) {
 			return error

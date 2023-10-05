@@ -28,7 +28,19 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 		},
-		{ sequelize, modelName: 'OrgDomain', tableName: 'org_domains', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'OrgDomain',
+			tableName: 'org_domains',
+			indexes: [
+				{
+					unique: true,
+					fields: ['organization_id', 'domain'],
+				},
+			],
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
 
 	OrgDomain.associate = (models) => {

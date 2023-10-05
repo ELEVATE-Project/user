@@ -80,5 +80,8 @@
 	"ORG_ROLE_REQ_FETCHED": "Organisation request details fetched successfully",
 	"ORG_ROLE_REQ_LIST_FETCHED": "Organization requests fetched successfully",
 	"MENTOR_ROLE_REQUESTED": "mentor role requested successfully",
-	"MENTEE_ROLE_REQUESTED": "mentee role requested successfully"
+	"MENTEE_ROLE_REQUESTED": "mentee role requested successfully",
+	"ORG_ROLE_REQ_FAILED": "Organisation request update failed",
+	"ORG_ROLE_REQ_APPROVED": "Organisation request approved successfully",
+	"ORG_ROLE_REQ_UPDATED": "Organisation request updated"
 }

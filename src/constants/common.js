@@ -84,7 +84,11 @@ module.exports = {
 	statusFailed: 'FAILED',
 	statusProcessed: 'PROCESSED',
 	statusRequested: 'REQUESTED',
+	statusAccepted: 'APPROVED',
+	statusRejected: 'REJECTED',
+	statusUnderReview: 'UNDER_REVIEW',
 	fileTypeCSV: 'text/csv',
 	tempFolderForBulkUpload: '/public/invites',
 	azureBlobType: 'BlockBlob',
+	roleTypeSystem: 1,
 }
