@@ -1,25 +1,21 @@
 // Dependencies
-const ObjectId = require('mongoose').Types.ObjectId
 const _ = require('lodash')
 const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
 const sessionData = require('@db/sessions/queries')
-const sessionAttendesData = require('@db/sessionAttendees/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const sessionAttendeesHelper = require('./sessionAttendees')
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
 const request = require('request')
-
 const bigBlueButton = require('./bigBlueButton')
 const userProfile = require('./userProfile')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const sessionQueries = require('@database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const menteeExtensionQueries = require('@database/queries/userextension')
 const mentorExtensionQueries = require('../../database/queries/mentorextension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 const postSessionQueries = require('@database/queries/postSessionDetail')
@@ -27,6 +23,8 @@ const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
 const entityTypeQueries = require('@database/queries/entityType')
 const entitiesQueries = require('@database/queries/entity')
 const { Op } = require('sequelize')
+
+const schedulerRequest = require('@requests/scheduler')
 
 module.exports = class SessionsHelper {
 	/**
@@ -49,7 +47,7 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			
 			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
 			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
@@ -145,16 +143,37 @@ module.exports = class SessionsHelper {
 
 			bodyData['mentor_org_id'] =
 				mentorDetails.organisation_ids.length > 0 ? mentorDetails.organisation_ids[0] : null
-
+			
 			const data = await sessionQueries.create(bodyData)
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
 			})
-
+			
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
 
+			// Set notification schedulers for the session
+			let jobsToCreate = common.jobsToCreate
+
+			// Calculate delays for notification jobs
+			jobsToCreate[0].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 1, 'hour')
+			jobsToCreate[1].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 24, 'hour')
+			jobsToCreate[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
+
+			// Iterate through the jobs and create scheduler jobs
+			for ( let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++ ) {
+				// Append the session ID to the job ID
+				jobsToCreate[jobIndex].jobId = jobsToCreate[jobIndex].jobId + data.id
+				// Create the scheduler job with the calculated delay and other parameters
+				await schedulerRequest.createSchedulerJob(
+					jobsToCreate[jobIndex].jobId, 
+					jobsToCreate[jobIndex].delay, 
+					jobsToCreate[jobIndex].jobName, 
+					jobsToCreate[jobIndex].emailTemplate
+				)
+			}
+			
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'SESSION_CREATED_SUCCESSFULLY',
@@ -298,6 +317,7 @@ module.exports = class SessionsHelper {
 			}
 
 			let message
+			const sessionRelatedJobIds = common.notificationJobIdPrefixes.map(element => element + sessionDetail.id);
 			if (method == common.DELETE_METHOD) {
 				let statTime = moment.unix(sessionDetail.start_date)
 				const current = moment.utc()
@@ -308,6 +328,13 @@ module.exports = class SessionsHelper {
 						id: sessionId,
 					})
 					message = 'SESSION_DELETED_SUCCESSFULLY'
+
+					// Delete scheduled jobs associated with deleted session
+					for ( let jobIndex = 0; jobIndex < sessionRelatedJobIds.length; jobIndex++ ) {
+						// Remove scheduled notification jobs using the jobIds
+						await schedulerRequest.removeScheduledJob({ jobId: sessionRelatedJobIds[jobIndex] })
+					}
+
 				} else {
 					return common.failureResponse({
 						message: 'SESSION_DELETION_FAILED',
@@ -325,6 +352,21 @@ module.exports = class SessionsHelper {
 					})
 				}
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
+
+				// If new start date is passed update session notification jobs
+				if ( bodyData.start_date && bodyData.start_date !== sessionDetail.start_date ) {
+					const updateDelayData = sessionRelatedJobIds.map(jobId => ({ id: jobId }));
+
+					// Calculate new delays for notification jobs
+					updateDelayData[0].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 1, 'hour')
+					updateDelayData[1].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 24, 'hour')
+					updateDelayData[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
+
+					// Update scheduled notification job delays
+					for ( let jobIndex = 0; jobIndex < updateDelayData.length; jobIndex++ ) {
+						await schedulerRequest.updateDelayOfScheduledJob(updateDelayData[jobIndex])
+					}
+				}
 			}
 
 			if (method == common.DELETE_METHOD || isSessionReschedule) {

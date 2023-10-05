@@ -99,6 +99,7 @@
 		"@routes": "routes",
 		"@services": "services",
 		"@validators": "validators",
-		"@database": "database"
+		"@database": "database",
+		"@requests": "requests"
 	}
 }

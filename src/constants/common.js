@@ -86,4 +86,27 @@ module.exports = {
 	MEDIUM: 'medium',
 	RECOMMENDED_FOR: 'recommended_for',
 	CATEGORIES: 'categories',
+	jobsToCreate: [
+		{
+			jobId: 'mentoring_session_one_hour_',
+			jobName: 'notificationBeforeAnHour',
+			emailTemplate: 'mentor_one_hour_before_session_reminder',
+		},
+		{
+			jobId: 'mentoring_session_one_day_',
+			jobName: 'notificationBeforeOneDay',
+			emailTemplate: 'mentor_session_reminder',
+		},
+		{
+			jobId: 'mentoring_session_fifteen_min_',
+			jobName: 'notificationBeforeFifteenMin',
+			emailTemplate: 'mentee_session_reminder',
+		},
+	],
+	notificationJobIdPrefixes : [
+		'mentoring_session_one_hour_',
+		'mentoring_session_one_day_',
+		'mentoring_session_fifteen_min_'
+	]
 }
+ 
