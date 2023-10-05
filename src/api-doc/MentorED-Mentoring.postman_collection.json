@@ -248,7 +248,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"string\"\n}",
+							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"STRING\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -300,7 +300,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": [\n        \"ln\"\n    ],\n    \"read_user_entity\": true\n}",
+							"raw": "{\n    \"value\": [\n        \"ln\"\n    ],\n    \"read_user_entity\": false\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -787,9 +787,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/joinSession/628dae0fce0ce9359aeb8b23",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/joinSession/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "joinSession", "628dae0fce0ce9359aeb8b23"]
+							"path": ["v1", "mentees", "joinSession", "1"]
 						}
 					},
 					"response": []
@@ -859,125 +859,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Get Mentee Profile",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/profile",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "profile"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create mentee",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"designation\": \"Lead Mentor\",\n    \"area_of_expertise\": [\n        \"Technology\",\n        \"Leadership\"\n    ],\n    \"education_qualification\": [\n        \"MBA\",\n        \"B.Tech\"\n    ],\n    \"rating\": {\n        \"average\": 4.5,\n        \"count\": 20\n    },\n    \"user_type\": \"mentor\",\n    \"meta\": {\n        \"age\": 35,\n        \"experience\": \"10 years\"\n    },\n    \"stats\": {\n        \"sessions_attended\": 50,\n        \"students_mentored\": 30\n    },\n    \"tags\": [\n        \"Experienced\",\n        \"Technical\"\n    ],\n    \"configs\": {\n        \"notification\": true,\n        \"visibility\": \"public\"\n    },\n    \"visibility\": \"visible\",\n    \"organisation_ids\": [\n        1,\n        2\n    ],\n    \"external_session_visibility\": \"limited\",\n    \"external_mentor_visibility\": \"hidden\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/create/",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "create", ""]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update mentee",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"designation\": \"Lead Mentor\",\n    \"area_of_expertise\": [\n        \"Technology\",\n        \"Leadership\"\n    ],\n    \"education_qualification\": [\n        \"MBA\",\n        \"B.Tech\"\n    ],\n    \"rating\": {\n        \"average\": 5,\n        \"count\": 20\n    },\n    \"user_type\": \"mentor\",\n    \"meta\": {\n        \"age\": 35,\n        \"experience\": \"10 years\"\n    },\n    \"stats\": {\n        \"sessions_attended\": 50,\n        \"students_mentored\": 30\n    },\n    \"tags\": [\n        \"Experienced\",\n        \"Technical\"\n    ],\n    \"configs\": {\n        \"notification\": true,\n        \"visibility\": \"public\"\n    },\n    \"visibility\": \"visible\",\n    \"organisation_ids\": [\n        1,\n        2\n    ],\n    \"external_session_visibility\": \"limited\",\n    \"external_mentor_visibility\": \"hidden\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/update/",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "update", ""]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read mentee",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/getMenteeExtension/?id=1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "getMenteeExtension", ""],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete mentee",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/deleteMenteeExtension",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "deleteMenteeExtension"]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -1022,9 +903,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/62a820225ff93f30cfe5f990",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "profile", "62a820225ff93f30cfe5f990"]
+							"path": ["v1", "mentors", "profile", "1"]
 						}
 					},
 					"response": []
@@ -1041,9 +922,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/62a820225ff93f30cfe5f990?page=1&limit=5&search=testing5",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/1?page=1&limit=5",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "upcomingSessions", "62a820225ff93f30cfe5f990"],
+							"path": ["v1", "mentors", "upcomingSessions", "1"],
 							"query": [
 								{
 									"key": "page",
@@ -1055,7 +936,8 @@
 								},
 								{
 									"key": "search",
-									"value": "testing5"
+									"value": "testing5",
+									"disabled": true
 								}
 							]
 						}
@@ -1081,109 +963,9 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/share/62d00b7c082b1ebc88a2a095",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/share/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "share", "62d00b7c082b1ebc88a2a095"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create mentor",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"designation\": \"Lead Mentor\",\n    \"area_of_expertise\": [\n        \"Technology\",\n        \"Leadership\"\n    ],\n    \"education_qualification\": [\n        \"MBA\",\n        \"B.Tech\"\n    ],\n    \"rating\": {\n        \"average\": 4.5,\n        \"count\": 20\n    },\n    \"user_type\": \"mentor\",\n    \"meta\": {\n        \"age\": 35,\n        \"experience\": \"10 years\"\n    },\n    \"stats\": {\n        \"sessions_attended\": 50,\n        \"students_mentored\": 30\n    },\n    \"tags\": [\n        \"Experienced\",\n        \"Technical\"\n    ],\n    \"configs\": {\n        \"notification\": true,\n        \"visibility\": \"public\"\n    },\n    \"visibility\": \"visible\",\n    \"organisation_ids\": [\n        1,\n        2\n    ],\n    \"external_session_visibility\": \"limited\",\n    \"external_mentor_visibility\": \"hidden\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/create/",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "create", ""]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update mentor",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"designation\": \"Lead Mentor\",\n    \"area_of_expertise\": [\n        \"Technology\",\n        \"Leadership\"\n    ],\n    \"education_qualification\": [\n        \"MBA\",\n        \"B.Tech\"\n    ],\n    \"rating\": {\n        \"average\": 5,\n        \"count\": 20\n    },\n    \"user_type\": \"mentor\",\n    \"meta\": {\n        \"age\": 35,\n        \"experience\": \"10 years\"\n    },\n    \"stats\": {\n        \"sessions_attended\": 50,\n        \"students_mentored\": 30\n    },\n    \"tags\": [\n        \"Experienced\",\n        \"Technical\"\n    ],\n    \"configs\": {\n        \"notification\": true,\n        \"visibility\": \"public\"\n    },\n    \"visibility\": \"visible\",\n    \"organisation_ids\": [\n        1,\n        2\n    ],\n    \"external_session_visibility\": \"limited\",\n    \"external_mentor_visibility\": \"hidden\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/update/",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "update", ""]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read Mentor",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/getMentorExtension/?id=1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "getMentorExtension", ""],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Mentor",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/deleteMentorExtension",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "deleteMentorExtension"]
+							"path": ["v1", "mentors", "share", "1"]
 						}
 					},
 					"response": []
@@ -1516,6 +1298,156 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "platform", "config"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin APIs",
+			"item": [
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/userDelete?userId=9",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "admin", "userDelete"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Create Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"designation\": \"Lead Mentor\",\n    \"area_of_expertise\": [\n        \"Technology\",\n        \"Leadership\"\n    ],\n    \"education_qualification\": [\n        \"MBA\",\n        \"B.Tech\"\n    ],\n    \"rating\": {\n        \"average\": 4.5,\n        \"count\": 20\n    },\n    \"user_type\": \"mentor\",\n    \"meta\": {\n        \"age\": 35,\n        \"experience\": \"10 years\"\n    },\n    \"stats\": {\n        \"sessions_attended\": 50,\n        \"students_mentored\": 30\n    },\n    \"tags\": [\n        \"Experienced\",\n        \"Technical\"\n    ],\n    \"configs\": {\n        \"notification\": true,\n        \"visibility\": \"public\"\n    },\n    \"visibility\": \"visible\",\n    \"organisation_ids\": [\n        1,\n        2\n    ],\n    \"external_session_visibility\": \"limited\",\n    \"external_mentor_visibility\": \"hidden\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/create/",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "profile", "create", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Profile",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/read/",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "profile", "read", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"designation\": \"Lead Mentor\",\n    \"area_of_expertise\": [\n        \"Technology\",\n        \"Leadership\"\n    ],\n    \"education_qualification\": [\n        \"MBA\",\n        \"B.Tech\"\n    ],\n    \"rating\": {\n        \"average\": 5,\n        \"count\": 20\n    },\n    \"user_type\": \"mentor\",\n    \"meta\": {\n        \"age\": 35,\n        \"experience\": \"10 years\"\n    },\n    \"stats\": {\n        \"sessions_attended\": 50,\n        \"students_mentored\": 30\n    },\n    \"tags\": [\n        \"Experienced\",\n        \"Technical\"\n    ],\n    \"configs\": {\n        \"notification\": true,\n        \"visibility\": \"public\"\n    },\n    \"visibility\": \"visible\",\n    \"organisation_ids\": [\n        1,\n        2\n    ],\n    \"external_session_visibility\": \"limited\",\n    \"external_mentor_visibility\": \"hidden\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/update/",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "profile", "update", ""]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete mentee",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/delete",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "delete"]
 						}
 					},
 					"response": []

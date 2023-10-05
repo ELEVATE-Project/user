@@ -54,7 +54,6 @@ module.exports = class MentorExtensionQueries {
 					area_of_expertise: [],
 					education_qualification: [],
 					rating: null,
-					user_type: null,
 					meta: null,
 					stats: null,
 					tags: [],

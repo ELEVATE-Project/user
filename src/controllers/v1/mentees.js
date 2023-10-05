@@ -7,6 +7,7 @@
 
 // Dependencies
 const menteesHelper = require('@services/helper/mentees')
+const { isAMentor } = require('@generics/utils')
 
 module.exports = class Mentees {
 	/**
@@ -14,12 +15,13 @@ module.exports = class Mentees {
 	 * @method
 	 * @name profile
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @returns {JSON} - Mentee profile details
 	 */
 	async profile(req) {
 		try {
-			return await menteesHelper.profile(req.decodedToken._id)
+			console.log(req.decodedToken)
+			return await menteesHelper.profile(req.decodedToken.id)
 		} catch (error) {
 			return errors
 		}
@@ -29,7 +31,7 @@ module.exports = class Mentees {
 	 * @method
 	 * @name sessions
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {Boolean} req.query.enrolled - Enrolled key true/false.
 	 * @param {Number} req.pageNo - page no.
 	 * @param {Number} req.pageSize - page size limit.
@@ -40,7 +42,7 @@ module.exports = class Mentees {
 	async sessions(req) {
 		try {
 			const sessions = await menteesHelper.sessions(
-				req.decodedToken._id,
+				req.decodedToken.id,
 				req.query.enrolled,
 				req.pageNo,
 				req.pageSize,
@@ -57,7 +59,7 @@ module.exports = class Mentees {
 	 * @method
 	 * @name reports
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.query.filterType - filterType.
 	 * @param {String} [req.query.filterType = "MONTHLY"] - Monthly reports.
 	 * @param {String} [req.query.filterType = "WEEKLY"] - Weekly report.
@@ -67,7 +69,7 @@ module.exports = class Mentees {
 
 	async reports(req) {
 		try {
-			const reports = await menteesHelper.reports(req.decodedToken._id, req.query.filterType)
+			const reports = await menteesHelper.reports(req.decodedToken.id, req.query.filterType)
 			return reports
 		} catch (error) {
 			return error
@@ -79,21 +81,21 @@ module.exports = class Mentees {
 	 * @method
 	 * @name homeFeed
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {Boolean} req.decodedToken.isAMentor - true/false.
 	 * @returns {JSON} - Mentees homefeed response.
 	 */
 
 	async homeFeed(req) {
 		try {
-			const homefeed = await menteesHelper.homeFeed(
-				req.decodedToken._id,
-				req.decodedToken.isAMentor,
+			const homeFeed = await menteesHelper.homeFeed(
+				req.decodedToken.id,
+				isAMentor(req.decodedToken.roles),
 				req.pageNo,
 				req.pageSize,
 				req.searchText
 			)
-			return homefeed
+			return homeFeed
 		} catch (error) {
 			return error
 		}
@@ -124,7 +126,7 @@ module.exports = class Mentees {
 	//  * @method
 	//  * @name createMenteeExtension
 	//  * @param {Object} req - Request data.
-	//  * @param {Object} req.body - Mentee extension data excluding user_id.
+	//  * @param {Object} req.body - Mentee extension data excluding userid.
 	//  * @returns {Promise<Object>} - Created mentee extension details.
 	//  */
 	// async create(req) {
@@ -141,8 +143,8 @@ module.exports = class Mentees {
 	//  * @method
 	//  * @name updateMenteeExtension
 	//  * @param {Object} req - Request data.
-	//  * @param {String} req.decodedToken._id - User ID of the mentee.
-	//  * @param {Object} req.body - Updated mentee extension data excluding user_id.
+	//  * @param {String} req.decodedToken.id - User ID of the mentee.
+	//  * @param {Object} req.body - Updated mentee extension data excluding userid.
 	//  * @returns {Promise<Object>} - Updated mentee extension details.
 	//  */
 	// async update(req) {
@@ -174,7 +176,7 @@ module.exports = class Mentees {
 	//  * @method
 	//  * @name deleteMenteeExtension
 	//  * @param {Object} req - Request data.
-	//  * @param {String} req.decodedToken._id - User ID of the mentee.
+	//  * @param {String} req.decodedToken.id - User ID of the mentee.
 	//  * @returns {Promise<Boolean>} - True if deleted successfully, otherwise false.
 	//  */
 	// async deleteMenteeExtension(req) {

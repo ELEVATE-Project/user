@@ -26,92 +26,68 @@ module.exports = class MenteesHelper {
 
 	static async pending(userId, isAMentor) {
 		try {
-			let sessions = []
+			const sessions = []
+			const completedSessionsFeedback = await feedbackQueries.findAll({ user_id: userId })
+			const completedSessionIds = completedSessionsFeedback.map((feedback) => feedback.session_id)
 
 			if (isAMentor) {
-				let filters = {
-					status: 'completed',
-					skippedFeedback: false,
-					isStarted: true,
-					feedbacks: {
-						$size: 0,
-					},
-					userId: ObjectId(userId),
-					deleted: false,
+				const options = {
+					attributes: ['id', 'title', 'description', 'mentor_feedback_question_set'],
 				}
-				let mentorSessions = await sessionData.findSessions(filters, {
-					_id: 1,
-					title: 1,
-					description: 1,
-					mentorFeedbackForm: 1,
-				})
 
-				sessions = mentorSessions
+				const sessionDetails = await sessionQueries.mentorsSessionWithPendingFeedback(
+					userId,
+					options,
+					completedSessionIds
+				)
+
+				sessions.push(...sessionDetails)
 			}
 
-			let sessionAttendeesFilter = {
-				'sessionDetail.status': 'completed',
-				isSessionAttended: true,
-				skippedFeedback: false,
-				feedbacks: {
-					$size: 0,
-				},
-				userId: ObjectId(userId),
-			}
-			let menteeSessionAttendence = await sessionAttendees.findPendingFeedbackSessions(sessionAttendeesFilter)
-
-			if (menteeSessionAttendence && menteeSessionAttendence.length > 0) {
-				menteeSessionAttendence.forEach((sessionData) => {
-					if (sessionData.sessionDetail) {
-						let found = sessions.find(
-							(session) => session._id.toString() === sessionData.sessionDetail._id.toString()
-						)
-						if (!found) {
-							sessions.push(sessionData.sessionDetail)
-						}
-					}
-				})
-			}
-
-			let formCodes = []
-			await Promise.all(
-				sessions.map(function (session) {
-					let formCode
-					if (session.menteeFeedbackForm) {
-						formCode = session.menteeFeedbackForm
-					} else if (session.mentorFeedbackForm) {
-						formCode = session.mentorFeedbackForm
-					}
-					if (formCode && !formCodes.includes(formCode)) {
-						formCodes.push(formCode)
-					}
-				})
+			const menteeSessionAttendances = await sessionAttendeesQueries.findPendingFeedbackSessions(
+				userId,
+				completedSessionIds
 			)
 
-			let feedbackForm = {}
-			await Promise.all(
-				formCodes.map(async function (formCode) {
-					let formData = await getFeedbackQuestions(formCode)
-					if (formData) {
-						feedbackForm[formCode] = formData
-					}
-				})
+			const sessionIds = menteeSessionAttendances.map(
+				(menteeSessionAttendance) => menteeSessionAttendance.session_id
 			)
 
-			sessions.map(async function (sessionData) {
-				var formCode = ''
-				if (sessionData.menteeFeedbackForm) {
-					formCode = sessionData.menteeFeedbackForm
-				} else if (sessionData.mentorFeedbackForm) {
-					formCode = sessionData.mentorFeedbackForm
+			const sessionOptions = {
+				attributes: ['id', 'title', 'description', 'mentee_feedback_question_set'],
+			}
+
+			const menteeSessionDetails = await sessionQueries.findAll(
+				{ id: sessionIds, status: 'COMPLETED' },
+				sessionOptions
+			)
+
+			sessions.push(...menteeSessionDetails)
+
+			// Getting unique form codes
+			const formCodes = [
+				...new Set(
+					sessions.map(
+						(session) => session.mentee_feedback_question_set || session.mentor_feedback_question_set
+					)
+				),
+			]
+
+			// Fetch feedback form data
+			const feedbackForm = {}
+
+			for (const formCode of formCodes) {
+				const formData = await getFeedbackQuestions(formCode)
+				if (formData) {
+					feedbackForm[formCode] = formData
 				}
-				if (formCode && feedbackForm[formCode]) {
-					sessionData['form'] = feedbackForm[formCode]
-				} else {
-					sessionData['form'] = []
-				}
-				return sessionData
-			})
+			}
+
+			// Attach feedback forms to sessions
+			for (const sessionData of sessions) {
+				const formCode = sessionData.mentee_feedback_question_set || sessionData.mentor_feedback_question_set
+				sessionData['form'] = feedbackForm[formCode] || []
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

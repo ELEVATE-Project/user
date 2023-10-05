@@ -27,7 +27,7 @@ module.exports = class MenteeExtensionQueries {
 
 	static async getMenteeExtension(userId) {
 		try {
-			const mentee = await MenteeExtension.findOne({ where: { user_id: userId } })
+			const mentee = await MenteeExtension.findOne({ where: { user_id: userId }, raw: true })
 			return mentee
 		} catch (error) {
 			throw error
@@ -51,7 +51,6 @@ module.exports = class MenteeExtensionQueries {
 					area_of_expertise: [],
 					education_qualification: [],
 					rating: null,
-					user_type: null,
 					meta: null,
 					stats: null,
 					tags: [],
