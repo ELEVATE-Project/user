@@ -125,6 +125,10 @@ function extractFilename(fileString) {
 	return match ? match[0] : null
 }
 
+function extractDomainFromEmail(email) {
+	return email.substring(email.lastIndexOf('@') + 1)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -142,4 +146,5 @@ module.exports = {
 	redisDel: redisDel,
 	isNumeric: isNumeric,
 	extractFilename: extractFilename,
+	extractDomainFromEmail: extractDomainFromEmail,
 }

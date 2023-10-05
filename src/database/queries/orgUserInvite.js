@@ -21,3 +21,15 @@ exports.update = async (filter, update, options) => {
 		return error
 	}
 }
+
+exports.findOne = async (filter, options = {}) => {
+	try {
+		return await OrgUserInvite.findOne({
+			where: filter,
+			...options,
+			raw: true,
+		})
+	} catch (error) {
+		return error
+	}
+}

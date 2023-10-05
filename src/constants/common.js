@@ -74,6 +74,7 @@ module.exports = {
 	roleAssociationName: 'user_roles',
 	activeStatus: 'ACTIVE',
 	roleMentor: 'mentor',
+	roleMentee: 'mentee',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
