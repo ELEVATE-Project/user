@@ -1,10 +1,11 @@
 'use strict'
 const FileUpload = require('../models/index').FileUpload
-// const User = require('../models/index').User
 
 exports.create = async (data) => {
 	try {
-		return await FileUpload.create(data)
+		const createFileUpload = await FileUpload.create(data)
+		const result = createFileUpload.get({ plain: true })
+		return result
 	} catch (error) {
 		return error
 	}
