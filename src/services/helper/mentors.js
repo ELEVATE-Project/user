@@ -186,7 +186,7 @@ module.exports = class MentorsHelper {
 
 				for (let i = 0; i < session.length; i++) {
 					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
-					session[i].mentorName = mentorDetails[mentorIndex].name
+					session[i].mentor_name = mentorDetails[mentorIndex].name
 				}
 
 				await Promise.all(
