@@ -120,6 +120,9 @@ module.exports = {
 				type: Sequelize.INTEGER,
 				defaultValue: process.env.SESSION_MENTEE_LIMIT,
 			},
+			custom_entity_text: {
+				type: Sequelize.JSON,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,

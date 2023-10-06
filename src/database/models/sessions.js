@@ -122,6 +122,9 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				defaultValue: process.env.SESSION_MENTEE_LIMIT,
 			},
+			custom_entity_text: {
+				type: DataTypes.JSON,
+			},
 		},
 		{ sequelize, modelName: 'Session', tableName: 'sessions', freezeTableName: true, paranoid: true }
 	)

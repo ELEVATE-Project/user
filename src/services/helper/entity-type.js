@@ -14,9 +14,10 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Created entity type response.
 	 */
 
-	static async create(bodyData, id) {
+	static async create(bodyData, id, orgId) {
 		bodyData.created_by = id
 		bodyData.updated_by = id
+		bodyData.org_id = orgId
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return common.successResponse({
@@ -47,7 +48,7 @@ module.exports = class EntityHelper {
 	 */
 
 	static async update(bodyData, id, loggedInUserId) {
-		bodyData.updated_by = loggedInUserId
+		;(bodyData.updated_by = loggedInUserId), (bodyData.org_id = orgId)
 		try {
 			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, bodyData, {
 				returning: true,
@@ -79,12 +80,11 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readAllSystemEntityTypes() {
+	static async readAllSystemEntityTypes(organization_id) {
 		try {
-			const filter = { created_by: '0' }
 			const attributes = ['value', 'label', 'id']
 
-			const entities = await entityTypeQueries.findAllEntityTypes(filter, attributes)
+			const entities = await entityTypeQueries.findAllEntityTypes(organization_id, attributes)
 
 			if (!entities.length) {
 				return common.failureResponse({
@@ -103,14 +103,14 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readUserEntityTypes(body, userId) {
+	static async readUserEntityTypes(body, userId, organization_id) {
 		try {
 			const filter = {
 				value: body.value,
 				created_by: 0,
 				status: 'ACTIVE',
 			}
-			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter, userId)
+			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter, organization_id)
 
 			if (!entities.length) {
 				return common.failureResponse({

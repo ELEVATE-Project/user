@@ -5,7 +5,13 @@ const sequelize = require('sequelize')
 
 const moment = require('moment')
 const SessionOwnership = require('../models/index').SessionOwnership
-
+exports.getColumns = async () => {
+	try {
+		return await Object.keys(Session.rawAttributes)
+	} catch (error) {
+		return error
+	}
+}
 exports.create = async (data) => {
 	try {
 		return await Session.create(data)

@@ -19,10 +19,19 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntityTypes(filter, attributes) {
+	static async findAllEntityTypes(orgId, attributes) {
 		try {
 			const entityData = await EntityType.findAll({
-				where: filter,
+				where: {
+					[Op.or]: [
+						{
+							created_by: 0,
+						},
+						{
+							org_id: orgId,
+						},
+					],
+				},
 				attributes,
 				raw: true,
 			})
@@ -31,29 +40,41 @@ module.exports = class UserEntityData {
 			return error
 		}
 	}
-	static async findUserEntityTypesAndEntities(filter, userId) {
+	static async findUserEntityTypesAndEntities(filter, orgId) {
 		try {
 			return await EntityType.findAll({
-				where: filter,
+				where: {
+					...filter,
+					[Op.or]: [
+						{
+							created_by: 0,
+						},
+						{
+							org_id: orgId,
+						},
+					],
+				},
 				include: [
 					{
 						model: Entity,
 						required: false,
 						where: {
-							[Op.or]: [
+							/* [Op.or]: [
 								{
 									created_by: 0,
 								},
 								{
 									created_by: userId,
 								},
-							],
+							], */
+							status: 'ACTIVE',
 						},
 						as: 'entities',
 					},
 				],
 			})
 		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}

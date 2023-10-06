@@ -40,8 +40,11 @@ module.exports = class Sessions {
 				if (req.headers.timezone) {
 					req.body['time_zone'] = req.headers.timezone
 				}
-
-				const sessionCreated = await sessionsHelper.create(req.body, req.decodedToken.id)
+				const sessionCreated = await sessionsHelper.create(
+					req.body,
+					req.decodedToken.id,
+					req.decodedToken.organization_id
+				)
 
 				return sessionCreated
 			}

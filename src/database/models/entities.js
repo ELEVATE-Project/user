@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 			entity_type_id: { type: DataTypes.INTEGER, allowNull: false },
-			value: { type: DataTypes.STRING, allowNull: false, unique: true },
+			value: { type: DataTypes.STRING, allowNull: false },
 			label: { type: DataTypes.STRING, allowNull: false },
 			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
 			type: { type: DataTypes.STRING },

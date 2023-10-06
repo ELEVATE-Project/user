@@ -38,7 +38,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Create session data.
 	 */
 
-	static async create(bodyData, loggedInUserId) {
+	static async create(bodyData, loggedInUserId, orgId) {
 		bodyData.mentor_id = loggedInUserId
 		try {
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
@@ -77,9 +77,26 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const filter = {
+				status: 'ACTIVE',
+			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
 
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let res = utils.validateInput(bodyData, validationData, 'sessions')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+			let sessionModel = await sessionQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 			//validate entities
-			if (
+			/* 			if (
 				bodyData.hasOwnProperty(common.MEDIUM) ||
 				bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
 				bodyData.hasOwnProperty(common.CATEGORIES)
@@ -130,7 +147,7 @@ module.exports = class SessionsHelper {
 						})
 					}
 				}
-			}
+			} */
 
 			bodyData.meeting_info = {
 				platform: process.env.DEFAULT_MEETING_SERVICE,
@@ -143,24 +160,25 @@ module.exports = class SessionsHelper {
 				}
 			}
 
-			bodyData['mentor_org_id'] =
-				mentorDetails.organisation_ids.length > 0 ? mentorDetails.organisation_ids[0] : null
+			bodyData['mentor_org_id'] = orgId
 
 			const data = await sessionQueries.create(bodyData)
+
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
 			})
-
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
+			const processDbResponse = utils.processDbResponse(data.toJSON(), validationData)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'SESSION_CREATED_SUCCESSFULLY',
-				result: data,
+				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -224,7 +242,7 @@ module.exports = class SessionsHelper {
 			}
 
 			//validate entities
-			if (
+			/* 			if (
 				method != common.DELETE_METHOD &&
 				(bodyData.hasOwnProperty(common.MEDIUM) ||
 					bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
@@ -275,7 +293,7 @@ module.exports = class SessionsHelper {
 						})
 					}
 				}
-			}
+			} */
 
 			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {
 				let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
@@ -513,12 +531,25 @@ module.exports = class SessionsHelper {
 			const mentorName = await userProfile.details('', sessionDetails.mentor_id)
 			sessionDetails.mentor_name = mentorName.data.result.name
 
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					created_by: 0,
+					status: 'ACTIVE',
+				},
+				sessionDetails.mentor_org_id
+			)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: sessionDetails,
+				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

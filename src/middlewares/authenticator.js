@@ -100,6 +100,7 @@ module.exports = async function (req, res, next) {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
 			const isRoleSame =
 				user.data.result.user_roles.length === decodedToken.data.roles.length &&
 				user.data.result.user_roles.every((role1) =>
@@ -127,6 +128,7 @@ module.exports = async function (req, res, next) {
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
+			organization_id: decodedToken.data.organization_id,
 		}
 		next()
 	} catch (err) {
