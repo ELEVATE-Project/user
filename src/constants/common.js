@@ -103,10 +103,10 @@ module.exports = {
 			emailTemplate: 'mentee_session_reminder',
 		},
 	],
-	notificationJobIdPrefixes : [
+	notificationJobIdPrefixes: [
 		'mentoring_session_one_hour_',
 		'mentoring_session_one_day_',
-		'mentoring_session_fifteen_min_'
-	]
+		'mentoring_session_fifteen_min_',
+	],
+	ORG_ADMIN_ROLE: 'org_admin',
 }
- 
