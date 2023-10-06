@@ -1,14 +1,6 @@
-/**
- * name : admin.js
- * author : Nevil Mathew
- * created-date : 21-JUN-2023
- * Description : Admin Controller.
- */
+const orgAdminService = require('@services/helper/org-admin')
 
-// Dependencies
-const orgAdminHelper = require('@services/helper/org-admin')
-
-module.exports = class admin {
+module.exports = class OrgAdmin {
 	/**
 	 * setOrgPolicies
 	 * @method
@@ -29,7 +21,7 @@ module.exports = class admin {
 		try {
 			console.log(req.decodedToken)
 			console.log(req.body)
-			const orgPolicies = await orgAdminHelper.setOrgPolicies(req.decodedToken, req.body)
+			const orgPolicies = await orgAdminService.setOrgPolicies(req.decodedToken, req.body)
 			return orgPolicies
 		} catch (error) {
 			return error
@@ -39,8 +31,24 @@ module.exports = class admin {
 	async getOrgPolicies(req) {
 		try {
 			//req.decodedToken.organization_id
-			const orgPolicies = await orgAdminHelper.getOrgPolicies(req.decodedToken)
+			const orgPolicies = await orgAdminService.getOrgPolicies(req.decodedToken)
 			return orgPolicies
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * @description			- change user role.
+	 * @method				- post
+	 * @name 				- roleChange
+	 * @returns {JSON} 		- user role change details.
+	 */
+
+	async roleChange(req) {
+		try {
+			let changedRoleDetails = orgAdminService.roleChange(req.body)
+			return changedRoleDetails
 		} catch (error) {
 			return error
 		}
