@@ -19,9 +19,12 @@ module.exports = class OrgAdminService {
 
 	static async roleChange(bodyData) {
 		try {
-			if (bodyData.current_roles[0] === common.MENTOR_ROLE) {
+			if (bodyData.current_roles[0] === common.MENTOR_ROLE && bodyData.new_roles[0] === common.MENTEE_ROLE) {
 				return await this.changeRoleToMentee(bodyData)
-			} else if (bodyData.current_roles[0] === common.MENTEE_ROLE) {
+			} else if (
+				bodyData.current_roles[0] === common.MENTEE_ROLE &&
+				bodyData.new_roles[0] === common.MENTOR_ROLE
+			) {
 				return await this.changeRoleToMentor(bodyData)
 			}
 		} catch (error) {
