@@ -94,5 +94,6 @@
 	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully",
 	"INVALID_SECRET_CODE": "Incorrect code. Please try again.",
 	"SESSION_CREATION_FAILED": "Failed to create session.",
-	"SESSION_UPDATION_FAILED": "Failed to update session."
+	"SESSION_UPDATION_FAILED": "Failed to update session.",
+	"SCHEDULER_SERVICE_DOWN": "Scheduler service is down"
 }
