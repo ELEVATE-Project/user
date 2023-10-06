@@ -13,7 +13,7 @@ module.exports = class orgAdminHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			const orgPolicies = await OrganisationExtensionQueries.create({
+			const orgPolicies = await OrganisationExtensionQueries.upsert({
 				org_id: decodedToken.organization_id,
 				...policies,
 			})

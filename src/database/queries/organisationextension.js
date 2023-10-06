@@ -2,7 +2,7 @@
 const OrganisationExtension = require('@database/models/index').OrganisationExtension
 
 module.exports = class OrganisationExtensionQueries {
-	static async create(data) {
+	static async upsert(data) {
 		try {
 			if (!data.org_id) throw new Error('Org_id Missing')
 			const [orgPolicies] = await OrganisationExtension.upsert(data, {
