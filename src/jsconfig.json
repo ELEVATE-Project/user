@@ -18,7 +18,8 @@
 			"@services*": ["./services*"],
 			"@validators*": ["./validators*"],
 			"@utils*": ["./utils*"],
-			"@helpers*": ["./helpers*"]
+			"@helpers*": ["./helpers*"],
+			"@database": ["./database*"]
 		}
 	},
 	"exclude": ["node_modules"]
