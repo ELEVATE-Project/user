@@ -125,7 +125,6 @@ exports.countEnrolledSessions = async (filters, mentee_id) => {
 				mentee_id: mentee_id,
 			},
 		})
-		console.log(sessionEnrollments, 'aaaaaaaaaaaaaaaaaaaaaaa')
 		const sessionIds = sessionEnrollments.map((enrollment) => enrollment.session_id)
 		if (sessionIds.length <= 0) {
 			return 0
