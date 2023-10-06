@@ -127,6 +127,7 @@ module.exports = async function (req, res, next) {
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
+			organization_id: decodedToken.data.organization_id,
 		}
 		next()
 	} catch (err) {
