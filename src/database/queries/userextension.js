@@ -34,11 +34,14 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async deleteMenteeExtension(userId) {
+	static async deleteMenteeExtension(userId, force = false) {
 		try {
-			return await MenteeExtension.destroy({
-				where: { user_id: userId },
-			})
+			const options = { where: { user_id: userId } };
+
+			if (force) {
+				options.force = true;
+			}
+			return await MenteeExtension.destroy(options)
 		} catch (error) {
 			throw error
 		}

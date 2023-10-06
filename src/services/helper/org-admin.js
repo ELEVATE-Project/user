@@ -3,6 +3,8 @@ const common = require('@constants/common')
 const mentorQueries = require('../../database/queries/mentorextension')
 const menteeQueries = require('../../database/queries/userextension')
 const httpStatusCode = require('@generics/http-status')
+const sessionQueries = require('../../database/queries/sessions')
+const adminService = require('./admin')
 
 module.exports = class OrgAdminService {
 	/**
@@ -37,7 +39,6 @@ module.exports = class OrgAdminService {
 			// Check current role based on that swap data
 			// If current role is mentor validate data from mentor_extenion table
 			const mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
-
 			// If such mentor return error
 			if (!mentorDetails) {
 				return common.failureResponse({
@@ -56,9 +57,15 @@ module.exports = class OrgAdminService {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			
+			// Delete upcoming sessions of user as mentor
+			const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(bodyData.user_id)
+			const isAttendeesNotified = await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+			
 			// Delete mentor Extension
-			await mentorQueries.deleteMentorExtension(bodyData.user_id)
+			if (isAttendeesNotified) {
+				await mentorQueries.deleteMentorExtension(bodyData.user_id, true)
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -69,7 +76,6 @@ module.exports = class OrgAdminService {
 				},
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -105,7 +111,7 @@ module.exports = class OrgAdminService {
 			}
 
 			// Delete mentee extension (user_extension table)
-			await menteeQueries.deleteMenteeExtension(bodyData.user_id)
+			await menteeQueries.deleteMenteeExtension(bodyData.user_id, true)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -116,7 +122,6 @@ module.exports = class OrgAdminService {
 				},
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
