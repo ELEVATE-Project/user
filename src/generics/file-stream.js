@@ -28,7 +28,13 @@ let FileStream = class FileStream {
 		if (!fs.existsSync('public' + '/' + 'reports')) {
 			fs.mkdirSync('public' + '/' + 'reports')
 		}
+
+		if (!fs.existsSync('public' + '/' + 'invites')) {
+			fs.mkdirSync('public' + '/' + 'invites')
+		}
+
 		const filePath = `${'public'}/${'reports'}/${moment(currentDate).tz('Asia/Kolkata').format('YYYY_MM_DD')}/`
+
 		this.ensureDirectoryPath(filePath)
 		this.input = new stream.Readable({ objectMode: true })
 		this.fileName = filePath + fileName + '_' + fileExtensionWithTime

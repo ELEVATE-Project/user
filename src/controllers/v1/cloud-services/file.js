@@ -21,7 +21,7 @@ module.exports = class File {
 		try {
 			const signedUrlResponse = await filesHelper.getSignedUrl(
 				req.query.fileName,
-				req.decodedToken._id,
+				req.decodedToken.id,
 				req.query.dynamicPath ? req.query.dynamicPath : ''
 			)
 			return signedUrlResponse

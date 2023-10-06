@@ -73,7 +73,6 @@ exports.listUsers = async (roleId, page, limit, search) => {
 	try {
 		let filterQuery = {
 			where: {},
-			raw: true,
 			attributes: ['id', 'name', 'image'],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
@@ -90,7 +89,14 @@ exports.listUsers = async (roleId, page, limit, search) => {
 			filterQuery.where.roles = { [Op.contains]: [roleId] }
 		}
 
-		return await database.User.findAndCountAll(filterQuery)
+		const result = await database.User.findAndCountAll(filterQuery)
+		const transformedResult = {
+			count: result.count,
+			data: result.rows.map((row) => {
+				return row.get({ plain: true })
+			}),
+		}
+		return transformedResult
 	} catch (error) {
 		return error
 	}

@@ -12,6 +12,7 @@ const common = require('@constants/common')
 const entitiesQueries = require('@database/queries/entities')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
+const utilsHelper = require('@generics/utils')
 
 module.exports = class UserEntityHelper {
 	/**
@@ -27,7 +28,7 @@ module.exports = class UserEntityHelper {
 		try {
 			let isAdmin = false
 			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
 			}
 
 			if (!isAdmin) {
@@ -76,7 +77,7 @@ module.exports = class UserEntityHelper {
 		try {
 			let isAdmin = false
 			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
 			}
 
 			if (!isAdmin) {

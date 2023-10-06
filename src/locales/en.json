@@ -71,5 +71,17 @@
 	"ENTITY_TYPE_ALREADY_EXISTS": "Entity type already exists.",
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
 	"LOCATION_UPDATE_FAILED": "Location update failed",
-	"LANGUAGE_UPDATE_FAILED": "Language update failed"
+	"LANGUAGE_UPDATE_FAILED": "Language update failed",
+	"ROLE_REQUIRED": "Role required.",
+	"USER_CSV_UPLOADED": "Bulk User Invites CSV Uploaded Successfully",
+	"ORG_ADMIN_MAPPED_SUCCESSFULLY": "User Assigned As The Org-Admin Successfully",
+	"ORG_ADMIN_MAPPING_FAILED": "Unable to Assign User As Org-Admin",
+	"FILE_UPLOAD_FETCHED": "Bulk Invites CSV List Fetched Successfully",
+	"ORG_ROLE_REQ_FETCHED": "Organisation request details fetched successfully",
+	"ORG_ROLE_REQ_LIST_FETCHED": "Organization requests fetched successfully",
+	"MENTOR_ROLE_REQUESTED": "mentor role requested successfully",
+	"MENTEE_ROLE_REQUESTED": "mentee role requested successfully",
+	"ORG_ROLE_REQ_FAILED": "Organisation request update failed",
+	"ORG_ROLE_REQ_APPROVED": "Organisation request approved successfully",
+	"ORG_ROLE_REQ_UPDATED": "Organisation request updated"
 }

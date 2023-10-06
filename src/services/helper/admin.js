@@ -156,6 +156,7 @@ module.exports = class AdminHelper {
 					id: user.id,
 					name: user.name,
 					email: user.email,
+					organization_id: user.organization_id,
 					roles: roles,
 				},
 			}
@@ -171,6 +172,95 @@ module.exports = class AdminHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_IN_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Add admin to organization
+	 * @method
+	 * @name addOrgAdmin
+	 * @param {string} userId - user Id.
+	 * @param {string} organizationId -organization Id.
+	 * @returns {JSON} - delete user response
+	 */
+	static async addOrgAdmin(userId, organizationId, loggedInUserId) {
+		try {
+			let user = await userQueries.findByPk(userId)
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let organization = await organizationQueries.findByPk(organizationId)
+			if (!organization) {
+				return common.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let orgAdminsIds = organization.org_admin ? organization.org_admin : []
+			orgAdminsIds.push(userId)
+			const orgAdmins = _.uniq(orgAdminsIds)
+			const update = {
+				org_admin: orgAdmins,
+				updated_by: loggedInUserId,
+			}
+
+			const orgRowsAffected = await organizationQueries.update({ id: organizationId }, update)
+			if (orgRowsAffected == 0) {
+				return common.failureResponse({
+					message: 'ORG_ADMIN_MAPPING_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let roleArray = user.roles ? user.roles : []
+			let role = await roleQueries.findOne({ title: common.roleOrgAdmin })
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			roleArray.push(role.id)
+			const roles = _.uniq(roleArray)
+
+			await userQueries.updateUser(
+				{ id: userId },
+				{
+					roles: roles,
+				}
+			)
+
+			const roleData = await roleQueries.findAll(
+				{ id: roles, status: common.activeStatus },
+				{
+					attributes: {
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
+					},
+				}
+			)
+
+			const result = {
+				user_id: userId,
+				organization_id: organizationId,
+				user_roles: roleData,
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORG_ADMIN_MAPPED_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {

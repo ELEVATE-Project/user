@@ -5,7 +5,8 @@ const common = require('@constants/common')
 
 exports.create = async (data) => {
 	try {
-		return await Organization.create(data)
+		const createdOrg = await Organization.create(data)
+		return createdOrg.get({ plain: true })
 	} catch (error) {
 		return error
 	}
@@ -40,7 +41,6 @@ exports.listOrganizations = async (page, limit, search) => {
 	try {
 		let filterQuery = {
 			where: { status: common.activeStatus },
-			raw: true,
 			attributes: ['id', 'name', 'code', 'description'],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
@@ -53,7 +53,14 @@ exports.listOrganizations = async (page, limit, search) => {
 			}
 		}
 
-		return await Organization.findAndCountAll(filterQuery)
+		const result = await Organization.findAndCountAll(filterQuery)
+		const transformedResult = {
+			count: result.count,
+			data: result.rows.map((row) => {
+				return row.get({ plain: true })
+			}),
+		}
+		return transformedResult
 	} catch (error) {
 		return error
 	}
@@ -66,6 +73,14 @@ exports.findAll = async (filter, options = {}) => {
 			...options,
 			raw: true,
 		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findByPk = async (id) => {
+	try {
+		return await Organization.findByPk(id)
 	} catch (error) {
 		return error
 	}

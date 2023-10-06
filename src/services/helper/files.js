@@ -21,13 +21,13 @@ module.exports = class FilesHelper {
 	 * @param {string} _id  -  userId
 	 * @returns {JSON} - Response contains signed url
 	 */
-	static async getSignedUrl(fileName, _id, dynamicPath) {
+	static async getSignedUrl(fileName, id, dynamicPath) {
 		try {
 			let destFilePath
 			if (dynamicPath != '') {
 				destFilePath = dynamicPath + '/' + fileName
 			} else {
-				destFilePath = `users/${_id}-${new Date().getTime()}-${fileName}`
+				destFilePath = `users/${id}-${new Date().getTime()}-${fileName}`
 			}
 
 			let response

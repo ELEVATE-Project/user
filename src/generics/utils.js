@@ -16,7 +16,6 @@ const crypto = require('crypto')
 
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
-
 const algorithm = 'aes-256-cbc'
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
@@ -83,6 +82,10 @@ const getDownloadableUrl = async (imgPath) => {
 	return imgPath
 }
 
+const validateRoleAccess = (roles, requiredRole) => {
+	return roles.some((role) => role.title == requiredRole)
+}
+
 /**
  * md5 hash
  * @function
@@ -114,8 +117,18 @@ function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
 function isNumeric(value) {
-    return /^\d+$/.test(value);
+	return /^\d+$/.test(value)
 }
+
+function extractFilename(fileString) {
+	const match = fileString.match(/([^/]+)(?=\.\w+$)/)
+	return match ? match[0] : null
+}
+
+function extractDomainFromEmail(email) {
+	return email.substring(email.lastIndexOf('@') + 1)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -124,11 +137,14 @@ module.exports = {
 	composeEmailBody,
 	getDownloadableUrl,
 	md5Hash,
+	validateRoleAccess,
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
 	redisSet: redisSet,
 	redisGet: redisGet,
 	redisDel: redisDel,
-	isNumeric: isNumeric
+	isNumeric: isNumeric,
+	extractFilename: extractFilename,
+	extractDomainFromEmail: extractDomainFromEmail,
 }

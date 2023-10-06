@@ -18,6 +18,8 @@ const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
 const roleQueries = require('@database/queries/userRole')
+const orgDomainQueries = require('@database/queries/orgDomain')
+const userInviteQueries = require('@database/queries/orgUserInvite')
 const FILESTREAM = require('@generics/file-stream')
 
 module.exports = class AccountHelper {
@@ -61,41 +63,74 @@ module.exports = class AccountHelper {
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
-			if (!bodyData.organization_id) {
-				let organization = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
-					{ attributes: ['id'] }
-				)
-				bodyData.organization_id = organization.id
-			}
-
-			let roles = []
+			//check user exist in invitee list
 			let role
+			let roles = []
+			const invitedUserMatch = await userInviteQueries.findOne({
+				email,
+			})
 
-			if (bodyData.role) {
-				role = await roleQueries.findOne(
-					{ title: bodyData.role.toLowerCase(), status: common.activeStatus },
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
-					}
-				)
+			if (invitedUserMatch) {
+				bodyData.organization_id = invitedUserMatch.organization_id
+				bodyData.roles = roles = invitedUserMatch.roles
+				role = await roleQueries.findOne({ id: invitedUserMatch.roles })
 			} else {
-				role = await roleQueries.findOne({ title: common.roleUser })
-			}
-
-			if (!role) {
-				return common.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
+				//find organization from email domain
+				let emailDomain = utilsHelper.extractDomainFromEmail(email)
+				let domainDetails = await orgDomainQueries.findOne({
+					domain: emailDomain,
 				})
+				bodyData.organization_id = domainDetails
+					? domainDetails.organization_id
+					: (
+							await organizationQueries.findOne(
+								{
+									code: process.env.DEFAULT_ORGANISATION_CODE,
+								},
+								{ attributes: ['id'] }
+							)
+					  ).id
+
+				//add default role as mentee
+				role = await roleQueries.findOne({ title: common.roleMentee })
+				if (!role) {
+					return common.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				roles.push(role.id)
+				bodyData.roles = roles
 			}
 
-			roles.push(role.id)
-			bodyData.roles = roles
 			delete bodyData.role
+
+			// if (bodyData.role) {
+			// 	role = await roleQueries.findOne(
+			// 		{ title: bodyData.role.toLowerCase(), status: common.activeStatus },
+			// 		{
+			// 			attributes: {
+			// 				exclude: ['created_at', 'updated_at', 'deleted_at'],
+			// 			},
+			// 		}
+			// 	)
+			// } else {
+			// 	role = await roleQueries.findOne({ title: common.roleUser })
+			// }
+
+			// if (!role) {
+			// 	return common.failureResponse({
+			// 		message: 'ROLE_NOT_FOUND',
+			// 		statusCode: httpStatusCode.not_acceptable,
+			// 		responseCode: 'CLIENT_ERROR',
+			// 	})
+			// }
+
+			// roles.push(role.id)
+			// bodyData.roles = roles
+			// delete bodyData.role
 
 			await userQueries.create(bodyData)
 
@@ -114,6 +149,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					organization_id: user.organization_id,
 					roles: [role],
 				},
 			}
@@ -231,6 +267,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					organization_id: user.organization_id,
 					roles: roles,
 				},
 			}
@@ -630,6 +667,7 @@ module.exports = class AccountHelper {
 					id: user.id,
 					email: user.email,
 					name: user.name,
+					organization_id: user.organization_id,
 					role: roles,
 				},
 			}
@@ -822,17 +860,6 @@ module.exports = class AccountHelper {
 					params.searchText
 				)
 
-				if (users.rows.length < 1) {
-					return common.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'USER_LIST',
-						result: {
-							data: [],
-							count: 0,
-						},
-					})
-				}
-
 				let foundKeys = {}
 				let result = []
 
@@ -840,7 +867,7 @@ module.exports = class AccountHelper {
                 it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
-					users.rows.map(async (user) => {
+					users.data.map(async (user) => {
 						/* Assigned image url from the stored location */
 						if (user.image) {
 							user.image = await utilsHelper.getDownloadableUrl(user.image)
