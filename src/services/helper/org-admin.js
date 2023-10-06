@@ -29,9 +29,16 @@ module.exports = class orgAdminHelper {
 		}
 	}
 
-	static async getOrgPolicies(orgId) {
+	static async getOrgPolicies(decodedToken) {
 		try {
-			const orgPolicies = await OrganisationExtensionQueries.getById(orgId)
+			if (decodedToken.roles.some((role) => role.title !== common.ORG_ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const orgPolicies = await OrganisationExtensionQueries.getById(decodedToken.organization_id)
 			if (orgPolicies) {
 				delete orgPolicies.dataValues.deleted_at
 				return successResponse({
@@ -40,7 +47,7 @@ module.exports = class orgAdminHelper {
 					result: { ...orgPolicies.dataValues },
 				})
 			} else {
-				throw new Error(`No organisation extension found for org_id ${orgId}`)
+				throw new Error(`No organisation extension found for org_id ${decodedToken.organization_id}`)
 			}
 		} catch (error) {
 			throw new Error(`Error reading organisation policies: ${error.message}`)

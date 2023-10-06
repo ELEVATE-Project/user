@@ -39,7 +39,7 @@ module.exports = class admin {
 	async getOrgPolicies(req) {
 		try {
 			//req.decodedToken.organization_id
-			const orgPolicies = await orgAdminHelper.getOrgPolicies(1)
+			const orgPolicies = await orgAdminHelper.getOrgPolicies(req.decodedToken)
 			return orgPolicies
 		} catch (error) {
 			return error
