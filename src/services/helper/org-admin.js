@@ -6,6 +6,7 @@ const { successResponse } = require('@constants/common')
 module.exports = class orgAdminHelper {
 	static async setOrgPolicies(decodedToken, policies) {
 		try {
+			console.log('DECODED TOKEN: ', decodedToken)
 			if (decodedToken.roles.some((role) => role.title !== common.ORG_ADMIN_ROLE)) {
 				return common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
@@ -31,6 +32,7 @@ module.exports = class orgAdminHelper {
 
 	static async getOrgPolicies(decodedToken) {
 		try {
+			console.log('DECODED TOKEN: ', decodedToken)
 			if (decodedToken.roles.some((role) => role.title !== common.ORG_ADMIN_ROLE)) {
 				return common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
