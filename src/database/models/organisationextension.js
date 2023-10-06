@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 			mentor_visibility_policy: { type: DataTypes.STRING },
 			external_session_visibility_policy: { type: DataTypes.STRING },
 			external_mentor_visibility_policy: { type: DataTypes.STRING },
-			is_approval_required: { type: DataTypes.STRING },
+			approval_required_for: { type: DataTypes.ARRAY(DataTypes.STRING) },
 			allow_mentor_override: DataTypes.BOOLEAN,
 		},
 		{
