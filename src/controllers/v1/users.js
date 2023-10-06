@@ -8,6 +8,7 @@
 // Dependencies
 const userHelper = require('@services/helper/user')
 const feedbackHelper = require('@services/helper/feedback')
+const { isAMentor } = require('@generics/utils')
 
 module.exports = class Users {
 	/**
@@ -15,14 +16,17 @@ module.exports = class Users {
 	 * @method
 	 * @name pendingFeedbacks
 	 * @param {Object} req -request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.decodedToken.isAMentor - User Mentor key true/false.
 	 * @returns {JSON} - Pending feedback information.
 	 */
 
 	async pendingFeedbacks(req) {
 		try {
-			const pendingFeedBacks = await feedbackHelper.pending(req.decodedToken._id, req.decodedToken.isAMentor)
+			const pendingFeedBacks = await feedbackHelper.pending(
+				req.decodedToken.id,
+				isAMentor(req.decodedToken.roles)
+			)
 			return pendingFeedBacks
 		} catch (error) {
 			return error
@@ -43,8 +47,8 @@ module.exports = class Users {
 
 	async list(req) {
 		try {
-			const lsitUser = await userHelper.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
-			return lsitUser
+			const listUser = await userHelper.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
+			return listUser
 		} catch (error) {
 			return error
 		}

@@ -12,6 +12,8 @@ const sessionAttendees = require('@db/sessionAttendees/queries')
 const mentorQueries = require('../../database/queries/mentorextension')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
+const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
+const sessionQueries = require('@database/queries/sessions')
 
 module.exports = class MentorsHelper {
 	/**
@@ -26,48 +28,38 @@ module.exports = class MentorsHelper {
 	 */
 	static async upcomingSessions(id, page, limit, search = '', menteeUserId) {
 		try {
-			const mentorsDetails = await userProfile.details('', id)
-
-			if (mentorsDetails?.data?.result?.isAMentor) {
-				const filterUpcomingSession = {
-					$and: [
-						{
-							startDateUtc: {
-								$gt: moment().utc().format(common.UTC_DATE_TIME_FORMAT),
-							},
-						},
-						{
-							status: 'published',
-						},
-						{
-							isStarted: false,
-						},
-					],
-					userId: mentorsDetails.data.result._id,
-				}
-				let upcomingSessions = await sessionsData.mentorsUpcomingSession(
-					page,
-					limit,
-					search,
-					filterUpcomingSession
-				)
-
-				upcomingSessions[0].data = await this.sessionMentorDetails(upcomingSessions[0].data)
-				if (menteeUserId && id != menteeUserId) {
-					upcomingSessions[0].data = await this.menteeSessionDetails(upcomingSessions[0].data, menteeUserId)
-				}
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'UPCOMING_SESSION_FETCHED',
-					result: upcomingSessions,
-				})
-			} else {
+			const mentorsDetails = await mentorQueries.getMentorExtension(id)
+			if (!mentorsDetails) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.bad_request,
 					message: 'MENTORS_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			let upcomingSessions = await sessionQueries.getMentorsUpcomingSessions(page, limit, search, id)
+
+			if (!upcomingSessions.data.length) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'UPCOMING_SESSION_FETCHED',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+
+			upcomingSessions.data = await this.sessionMentorDetails(upcomingSessions.data)
+
+			if (menteeUserId && id != menteeUserId) {
+				upcomingSessions.data = await this.menteeSessionDetails(upcomingSessions.data, menteeUserId)
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'UPCOMING_SESSION_FETCHED',
+				result: upcomingSessions,
+			})
 		} catch (err) {
 			return err
 		}
@@ -80,7 +72,7 @@ module.exports = class MentorsHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async profile(id) {
+	/* 	static async profile(id) {
 		try {
 			const mentorsDetails = await userProfile.details('', id)
 			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
@@ -108,7 +100,7 @@ module.exports = class MentorsHelper {
 		} catch (err) {
 			return err
 		}
-	}
+	} */
 
 	/**
 	 * Mentors reports.
@@ -119,50 +111,49 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - Mentors reports
 	 */
 
-	static async reports(userId, filterType) {
-		let filterStartDate
-		let filterEndDate
-		let totalSessionCreated
-		let totalsessionHosted
-		let filters
+	static async reports(userId, filterType, roles) {
 		try {
-			if (filterType === 'MONTHLY') {
-				;[filterStartDate, filterEndDate] = utils.getCurrentMonthRange()
-			} else if (filterType === 'WEEKLY') {
-				;[filterStartDate, filterEndDate] = utils.getCurrentWeekRange()
-			} else if (filterType === 'QUARTERLY') {
-				;[filterStartDate, filterEndDate] = utils.getCurrentQuarterRange()
+			if (!utils.isAMentor(roles)) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
-			/* totalSessionCreated */
-			filters = {
-				createdAt: {
-					$gte: filterStartDate.toISOString(),
-					$lte: filterEndDate.toISOString(),
-				},
-				userId: ObjectId(userId),
-				deleted: false,
+			let filterStartDate, filterEndDate
+
+			switch (filterType) {
+				case 'MONTHLY':
+					;[filterStartDate, filterEndDate] = utils.getCurrentMonthRange()
+					break
+				case 'WEEKLY':
+					;[filterStartDate, filterEndDate] = utils.getCurrentWeekRange()
+					break
+				case 'QUARTERLY':
+					;[filterStartDate, filterEndDate] = utils.getCurrentQuarterRange()
+					break
+				default:
+					throw new Error('Invalid filterType')
 			}
 
-			totalSessionCreated = await sessionsData.countSessions(filters)
+			const totalSessionsCreated = await sessionQueries.getCreatedSessionsCountInDateRange(
+				userId,
+				filterStartDate.toISOString(),
+				filterEndDate.toISOString()
+			)
 
-			/* totalsessionHosted */
-			filters = {
-				startDateUtc: {
-					$gte: filterStartDate.toISOString(),
-					$lte: filterEndDate.toISOString(),
-				},
-				userId: ObjectId(userId),
-				status: 'completed',
-				deleted: false,
-				isStarted: true,
-			}
+			const totalSessionsHosted = await sessionQueries.getHostedSessionsCountInDateRange(
+				userId,
+				Date.parse(filterStartDate) / 1000, // Converts milliseconds to seconds
+				Date.parse(filterEndDate) / 1000
+			)
 
-			totalsessionHosted = await sessionsData.countSessions(filters)
+			const result = { total_session_created: totalSessionsCreated, total_session_hosted: totalSessionsHosted }
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTORS_REPORT_FETCHED_SUCCESSFULLY',
-				result: { totalSessionCreated, totalsessionHosted },
+				result,
 			})
 		} catch (error) {
 			throw error
@@ -176,9 +167,9 @@ module.exports = class MentorsHelper {
 	 * @param {String} _id - Mentors user id.
 	 * @returns {JSON} - Returns sharable link of the mentor.
 	 */
-	static async share(_id) {
+	static async share(id) {
 		try {
-			const shareLink = await userProfile.share(_id)
+			const shareLink = await userProfile.share(id)
 			return shareLink
 		} catch (error) {
 			return error
@@ -195,7 +186,7 @@ module.exports = class MentorsHelper {
 
 				for (let i = 0; i < session.length; i++) {
 					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
-					session[i].mentorName = mentorDetails[mentorIndex].name
+					session[i].mentor_name = mentorDetails[mentorIndex].name
 				}
 
 				await Promise.all(
@@ -222,34 +213,21 @@ module.exports = class MentorsHelper {
 
 	static async menteeSessionDetails(sessions, userId) {
 		try {
-			const sessionIds = []
 			if (sessions.length > 0) {
-				sessions.forEach((session) => {
-					sessionIds.push(session._id)
+				const sessionIds = sessions.map((session) => session.id)
+
+				const attendees = await sessionAttendeesQueries.findAll({
+					session_id: sessionIds,
+					mentee_id: userId,
 				})
 
-				const filters = {
-					sessionId: {
-						$in: sessionIds,
-					},
-					userId,
-				}
-				const attendees = await sessionAttendees.findAllSessionAttendees(filters)
 				await Promise.all(
 					sessions.map(async (session) => {
-						if (attendees) {
-							const attendee = attendees.find(
-								(attendee) => attendee.sessionId.toString() === session._id.toString()
-							)
-							session.isEnrolled = false
-							if (attendee) {
-								session.isEnrolled = true
-							}
-						} else {
-							session.isEnrolled = false
-						}
+						const attendee = attendees.find((attendee) => attendee.session_id === session.id)
+						session.is_enrolled = !!attendee
 					})
 				)
+
 				return sessions
 			} else {
 				return sessions
@@ -345,7 +323,6 @@ module.exports = class MentorsHelper {
 				result: mentor,
 			})
 		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}
@@ -369,6 +346,47 @@ module.exports = class MentorsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_DELETED',
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Profile.
+	 * @method
+	 * @name profile
+	 * @param {String} userId - user id.
+	 * @returns {JSON} - profile details
+	 */
+	static async read(id) {
+		try {
+			let mentorProfile = await userProfile.details('', id)
+			if (!mentorProfile.data.result) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTORS_NOT_FOUND',
+				})
+			}
+			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
+
+			let mentorExtension = await mentorQueries.getMentorExtension(id)
+			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
+
+			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
+
+			const filter = { is_session_attended: true }
+			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_FTECHED_SUCCESSFULLY',
+				result: {
+					sessions_attended: totalSession,
+					sessions_hosted: totalSessionHosted,
+					...mentorProfile,
+					...mentorExtension,
+				},
 			})
 		} catch (error) {
 			return error

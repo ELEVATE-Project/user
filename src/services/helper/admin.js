@@ -119,7 +119,7 @@ module.exports = class AdminHelper {
 
 	static async unenrollFromUpcomingSessions(userId) {
 		try {
-			const upcomingSessions = await sessionQueries.getAllUpcomingSessions()
+			const upcomingSessions = await sessionQueries.getAllUpcomingSessions(false)
 
 			const upcomingSessionsId = upcomingSessions.map((session) => session.id)
 			const usersUpcomingSessions = await sessionAttendeesQueries.usersUpcomingSessions(
@@ -131,7 +131,7 @@ module.exports = class AdminHelper {
 			}
 			await Promise.all(
 				usersUpcomingSessions.map(async (session) => {
-					await sessionQueries.updateEnrollmentCount(session.session_id)
+					await sessionQueries.updateEnrollmentCount(session.session_id, false)
 				})
 			)
 

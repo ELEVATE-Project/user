@@ -77,8 +77,6 @@ services:
       - KAFKA_URL=kafka:9092
       - USER_SERIVCE_HOST=http://user:3001
       - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/mentoring-local
-      - REDIS_HOST=redis://redis:6379
-
     depends_on:
       - kafka
       - mongo
@@ -93,7 +91,7 @@ services:
       - '3001:3001'
     command: ['nodemon', 'app.js']
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
+      - MONGODB_URL=mongodb://mongo:27017/elevate-users
       - KAFKA_URL=kafka:9092
       - REDIS_HOST=redis://redis:6379
       - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/user-local

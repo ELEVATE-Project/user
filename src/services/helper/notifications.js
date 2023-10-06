@@ -1,74 +1,46 @@
 // Dependenices
-const moment = require('moment-timezone')
 const common = require('@constants/common')
-const sessionData = require('@db/sessions/queries')
-const notificationData = require('@db/notification-template/query')
-const sessionAttendesData = require('@db/sessionAttendees/queries')
 const sessionAttendeesHelper = require('./sessionAttendees')
-const ObjectId = require('mongoose').Types.ObjectId
 const kafkaCommunication = require('@generics/kafka-communication')
 const utils = require('@generics/utils')
+const sessionQueries = require('@database/queries/sessions')
+const notificationQueries = require('@database/queries/notificationTemplate')
+const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 
 module.exports = class Notifications {
 	/**
-	 * Send Notification to Mentors before 24 hour.
+	 * @description				- Send Notifications.
 	 * @method
-	 * @name sendNotificationBefore24Hour
+	 * @name 					- sendNotification
 	 * @returns
 	 */
 
-	static async sendNotificationBefore24Hour() {
+	static async sendNotification(notificationJobId, notificataionTemplate) {
 		try {
-			let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-			var dateEndTime = moment(currentDateutc).add(1441, 'minutes').format(common.UTC_DATE_TIME_FORMAT)
-			var dateStartTime = moment(currentDateutc).add(1440, 'minutes').format(common.UTC_DATE_TIME_FORMAT)
+			// Data contains notificationJobId and notificationTemplate.
+			// Extract sessionId from incoming notificationJobId.
+			// Split the string by underscores and get the last part
+			const parts = notificationJobId.split('_')
+			const lastPart = parts[parts.length - 1]
 
-			let sessions = await sessionData.findSessions({
-				status: 'published',
-				deleted: false,
-				startDateUtc: {
-					$gte: dateStartTime,
-					$lt: dateEndTime,
-				},
+			// Convert the last part to an integer
+			const sessionId = Number(lastPart)
+
+			// Find session data
+			let sessions = await sessionQueries.findOne({
+				id: sessionId,
+				status: common.PUBLISHED_STATUS,
 			})
 
-			let emailTemplate = await notificationData.findOneEmailTemplate(common.MENTOR_SESSION_REMAINDER_EMAIL_CODE)
+			// Get email template based on incoming request.
+			let emailTemplate = await notificationQueries.findOneEmailTemplate(notificataionTemplate)
 
-			if (emailTemplate && sessions && sessions.length > 0) {
-				const mentorIds = []
-				sessions.forEach((session) => {
-					mentorIds.push(session.userId.toString())
-				})
-				const userAccounts = await sessionAttendeesHelper.getAllAccountsDetail(mentorIds)
-				if (userAccounts && userAccounts.result.length > 0) {
-					await Promise.all(
-						sessions.map(async function (session) {
-							let emailBody = emailTemplate.body
-							if (
-								process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != common.BBB_VALUE &&
-								!session.meetingInfo?.link
-							) {
-								emailBody = utils.extractEmailTemplate(emailBody, ['default', 'linkWarning'])
-							} else {
-								emailBody = utils.extractEmailTemplate(emailBody, ['default'])
-							}
-							emailBody = emailBody.replace('{sessionTitle}', session.title)
-							var foundElement = userAccounts.result.find((e) => e._id === session.userId.toString())
-
-							if (foundElement && foundElement.email.address && foundElement.name) {
-								emailBody = emailBody.replace('{name}', foundElement.name)
-								const payload = {
-									type: 'email',
-									email: {
-										to: foundElement.email.address,
-										subject: emailTemplate.subject,
-										body: emailBody,
-									},
-								}
-								await kafkaCommunication.pushEmailToKafka(payload)
-							}
-						})
-					)
+			if (emailTemplate && sessions) {
+				// if notificataionTemplate is {MENTEE_SESSION_REMAINDER_EMAIL_CODE} then notification to all personal registered for the session has to be send.
+				if (notificataionTemplate === common.MENTEE_SESSION_REMAINDER_EMAIL_CODE) {
+					await this.sendNotificationToAttendees(sessions, emailTemplate)
+				} else {
+					await this.sendNotificationsToMentor(sessions, emailTemplate)
 				}
 			}
 		} catch (error) {
@@ -77,63 +49,46 @@ module.exports = class Notifications {
 	}
 
 	/**
-	 * Send Notification to attendees before 15 mins.
+	 * @description 		- Send Notification to attendees.
 	 * @method
-	 * @name sendNotificationBefore15mins
+	 * @name 				- sendNotificationToAttendees
 	 * @returns
 	 */
 
-	static async sendNotificationBefore15mins() {
+	static async sendNotificationToAttendees(session, emailTemplate) {
 		try {
-			let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-
-			var dateEndTime = moment(currentDateutc).add(16, 'minutes').format(common.UTC_DATE_TIME_FORMAT)
-			var dateStartTime = moment(currentDateutc).add(15, 'minutes').format(common.UTC_DATE_TIME_FORMAT)
-
-			let data = await sessionData.findSessions({
-				status: 'published',
-				deleted: false,
-				startDateUtc: {
-					$gte: dateStartTime,
-					$lt: dateEndTime,
-				},
-			})
-
-			let allAttendess = []
+			let allAttendees = []
 			let attendeesInfo = []
 
-			let emailTemplate = await notificationData.findOneEmailTemplate(common.MENTEE_SESSION_REMAINDER_EMAIL_CODE)
+			// Get all sessionAttendees joined for the session
+			const sessionAttendees = await sessionAttendeesQueries.findAll({
+				session_id: session.id,
+			})
 
-			if (emailTemplate && data && data.length > 0) {
-				await Promise.all(
-					data.map(async function (session) {
-						const sessionAttendees = await sessionAttendesData.findAllSessionAttendees({
-							sessionId: ObjectId(session._id),
-						})
-						if (sessionAttendees && sessionAttendees.length > 0) {
-							sessionAttendees.forEach((attendee) => {
-								allAttendess.push(attendee.userId.toString())
-								attendeesInfo.push({
-									userId: attendee.userId.toString(),
-									title: session.title,
-								})
-							})
-						}
+			// If sessionAttendees data is available process the data
+			if (sessionAttendees && sessionAttendees.length > 0) {
+				sessionAttendees.forEach((attendee) => {
+					allAttendees.push(attendee.mentee_id)
+					attendeesInfo.push({
+						userId: attendee.mentee_id,
+						title: session.title,
 					})
-				)
+				})
 			}
-			const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(allAttendess)
+
+			// Get attendees accound details
+			const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(allAttendees)
 
 			if (attendeesAccounts.result && attendeesAccounts.result.length > 0) {
 				attendeesInfo.forEach(async function (attendee) {
 					let emailBody = emailTemplate.body.replace('{sessionTitle}', attendee.title)
-					var foundElement = attendeesAccounts.result.find((e) => e._id === attendee.userId.toString())
-					if (foundElement && foundElement.email.address && foundElement.name) {
+					var foundElement = attendeesAccounts.result.find((e) => e.id === attendee.userId)
+					if (foundElement && foundElement.email && foundElement.name) {
 						emailBody = emailBody.replace('{name}', foundElement.name)
 						const payload = {
 							type: 'email',
 							email: {
-								to: foundElement.email.address,
+								to: foundElement.email,
 								subject: emailTemplate.subject,
 								body: emailBody,
 							},
@@ -148,66 +103,43 @@ module.exports = class Notifications {
 	}
 
 	/**
-	 * Send Notification to Mentors before 1 hour.
+	 * @description			- Send Notification to Mentors.
 	 * @method
-	 * @name sendNotificationBefore1Hour
+	 * @name 				- sendNotificationsToMentor
 	 * @returns
 	 */
 
-	static async sendNotificationBefore1Hour() {
+	static async sendNotificationsToMentor(session, emailTemplate) {
 		try {
-			let currentDateutc = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-			var dateEndTime = moment(currentDateutc).add(61, 'minutes').format(common.UTC_DATE_TIME_FORMAT)
-			var dateStartTime = moment(currentDateutc).add(60, 'minutes').format(common.UTC_DATE_TIME_FORMAT)
+			const mentorIds = []
+			mentorIds.push(session.mentor_id.toString())
 
-			let sessions = await sessionData.findSessions({
-				status: 'published',
-				deleted: false,
-				startDateUtc: {
-					$gte: dateStartTime,
-					$lt: dateEndTime,
-				},
-			})
+			// Get mentor details
+			const userAccounts = await sessionAttendeesHelper.getAllAccountsDetail(mentorIds)
 
-			let emailTemplate = await notificationData.findOneEmailTemplate(
-				common.MENTOR_SESSION_ONE_HOUR_REMAINDER_EMAIL_CODE
-			)
-
-			if (emailTemplate && sessions && sessions.length > 0) {
-				const mentorIds = []
-				sessions.forEach((session) => {
-					mentorIds.push(session.userId.toString())
-				})
-				const userAccounts = await sessionAttendeesHelper.getAllAccountsDetail(mentorIds)
-				if (userAccounts && userAccounts.result.length > 0) {
-					await Promise.all(
-						sessions.map(async function (session) {
-							let emailBody = emailTemplate.body
-							if (
-								process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != 'BBB' &&
-								!session.meetingInfo?.link
-							) {
-								emailBody = utils.extractEmailTemplate(emailBody, ['default', 'linkWarning'])
-							} else {
-								emailBody = utils.extractEmailTemplate(emailBody, ['default'])
-							}
-							emailBody = emailBody.replace('{sessionTitle}', session.title)
-							var foundElement = userAccounts.result.find((e) => e._id === session.userId.toString())
-
-							if (foundElement && foundElement.email.address && foundElement.name) {
-								emailBody = emailBody.replace('{name}', foundElement.name)
-								const payload = {
-									type: 'email',
-									email: {
-										to: foundElement.email.address,
-										subject: emailTemplate.subject,
-										body: emailBody,
-									},
-								}
-								await kafkaCommunication.pushEmailToKafka(payload)
-							}
-						})
-					)
+			if (userAccounts && userAccounts.result.length > 0) {
+				const userAccountDetails = userAccounts.result[0]
+				let emailBody = emailTemplate.body
+				if (
+					process.env.DEFAULT_MEETING_SERVICE.toUpperCase() != common.BBB_VALUE &&
+					!session.meetingInfo?.link
+				) {
+					emailBody = utils.extractEmailTemplate(emailBody, ['default', 'linkWarning'])
+				} else {
+					emailBody = utils.extractEmailTemplate(emailBody, ['default'])
+				}
+				emailBody = emailBody.replace('{sessionTitle}', session.title)
+				if (userAccountDetails && userAccountDetails.email && userAccountDetails.name) {
+					emailBody = emailBody.replace('{name}', userAccountDetails.name)
+					const payload = {
+						type: 'email',
+						email: {
+							to: userAccountDetails.email,
+							subject: emailTemplate.subject,
+							body: emailBody,
+						},
+					}
+					await kafkaCommunication.pushEmailToKafka(payload)
 				}
 			}
 		} catch (error) {

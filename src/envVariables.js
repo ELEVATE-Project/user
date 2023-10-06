@@ -195,6 +195,14 @@ let enviromentVariables = {
 		message: 'Required mentor secret code',
 		optional: false,
 	},
+	SCHEDULER_SERVICE_HOST: {
+		message: 'Required scheduler service host',
+		optional: false,
+	},
+	SCHEDULER_SERVICE_BASE_URL: {
+		message: 'Required scheduler service base url',
+		optional: false,
+	},
 }
 
 let success = true
