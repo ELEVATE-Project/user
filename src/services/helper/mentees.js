@@ -18,6 +18,7 @@ const menteeQueries = require('../../database/queries/userextension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const _ = require('lodash')
+const entityTypeQueries = require('@database/queries/entityType')
 
 module.exports = class MenteesHelper {
 	/**
@@ -27,19 +28,31 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(id) {
+	static async read(id, orgId) {
 		const menteeDetails = await userProfile.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 
 		delete mentee.user_id
 		delete mentee.organisation_ids
 
+		let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+			{
+				status: 'ACTIVE',
+			},
+			orgId
+		)
+
+		validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+		const processDbResponse = utils.processDbResponse(mentee, validationData)
+
 		const filter = { is_session_attended: true }
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
+
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
-			result: { sessionsAttended: totalSession, ...menteeDetails.data.result, ...mentee },
+			result: { sessionsAttended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
 		})
 	}
 
@@ -412,14 +425,37 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - User ID of the mentee.
 	 * @returns {Promise<Object>} - Created mentee extension details.
 	 */
-	static async createMenteeExtension(data, userId) {
+	static async createMenteeExtension(data, userId, orgId) {
 		try {
 			data.user_id = userId
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				orgId
+			)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let res = utils.validateInput(data, validationData, 'user_extensions')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+			let menteeExtensionsModel = await menteeQueries.getColumns()
+			data = utils.restructureBody(data, validationData, menteeExtensionsModel)
 			const response = await menteeQueries.createMenteeExtension(data)
+			const processDbResponse = utils.processDbResponse(response.toJSON(), validationData)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_CREATED',
-				result: response,
+				result: processDbResponse,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
@@ -441,11 +477,31 @@ module.exports = class MenteesHelper {
 	 * @param {Object} data - Updated mentee extension data excluding user_id.
 	 * @returns {Promise<Object>} - Updated mentee extension details.
 	 */
-	static async updateMenteeExtension(data, userId) {
+	static async updateMenteeExtension(data, userId, orgId) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
+			const filter = {
+				status: 'ACTIVE',
+			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let res = utils.validateInput(data, validationData, 'user_extensions')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+
+			let userExtensionModel = await menteeQueries.getColumns()
+
+			data = utils.restructureBody(data, validationData, userExtensionModel)
+
 			const [updateCount, updatedUser] = await menteeQueries.updateMenteeExtension(userId, data, {
 				returning: true,
 				raw: true,
@@ -457,10 +513,12 @@ module.exports = class MenteesHelper {
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
 				})
 			}
+			const processDbResponse = utils.processDbResponse(updatedUser[0], validationData)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_UPDATED',
-				result: updatedUser[0],
+				result: processDbResponse,
 			})
 		} catch (error) {
 			return error
@@ -476,17 +534,26 @@ module.exports = class MenteesHelper {
 	 */
 	static async getMenteeExtension(userId) {
 		try {
-			const mentee = await menteeQueries.getMenteeExtension(userId)
+			const mentee = await menteeQueries.getMenteeExtension(userId, orgId)
 			if (!mentee) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
 				})
 			}
+			const filter = {
+				status: 'ACTIVE',
+			}
+			console.log(mentee)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const processDbResponse = utils.processDbResponse(mentee, validationData)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_FETCHED',
-				result: mentee,
+				result: processDbResponse,
 			})
 		} catch (error) {
 			return error

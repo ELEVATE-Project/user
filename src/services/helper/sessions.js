@@ -49,13 +49,13 @@ module.exports = class SessionsHelper {
 			}
 
 			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
-			if (timeSlot.isTimeSlotAvailable === false) {
+			/* 	if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
+			} */
 
 			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
 			let elapsedMinutes = duration.asMinutes()
@@ -141,7 +141,7 @@ module.exports = class SessionsHelper {
 						}
 
 						bodyData[entityType.value] = _.map(entities, function (entity) {
-							return entity.value
+							return entity.valuearea
 						})
 					}
 				}
@@ -183,12 +183,12 @@ module.exports = class SessionsHelper {
 				// Append the session ID to the job ID
 				jobsToCreate[jobIndex].jobId = jobsToCreate[jobIndex].jobId + data.id
 				// Create the scheduler job with the calculated delay and other parameters
-				await schedulerRequest.createSchedulerJob(
+				/* await schedulerRequest.createSchedulerJob(
 					jobsToCreate[jobIndex].jobId,
 					jobsToCreate[jobIndex].delay,
 					jobsToCreate[jobIndex].jobName,
 					jobsToCreate[jobIndex].emailTemplate
-				)
+				) */
 			}
 
 			return common.successResponse({

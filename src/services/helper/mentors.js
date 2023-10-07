@@ -14,6 +14,7 @@ const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
+const entityTypeQueries = require('@database/queries/entityType')
 
 module.exports = class MentorsHelper {
 	/**
@@ -246,14 +247,38 @@ module.exports = class MentorsHelper {
 	 * @param {String} userId - User ID of the mentor.
 	 * @returns {Promise<Object>} - Created mentor extension details.
 	 */
-	static async createMentorExtension(data, userId) {
+	static async createMentorExtension(data, userId, orgId) {
 		try {
 			data.user_id = userId
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				orgId
+			)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let res = utils.validateInput(data, validationData, 'mentor_extensions')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+			let mentorExtensionsModel = await mentorQueries.getColumns()
+			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
+
 			const response = await mentorQueries.createMentorExtension(data)
+
+			const processDbResponse = utils.processDbResponse(response.toJSON(), validationData)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_CREATED',
-				result: response,
+				result: processDbResponse,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
@@ -275,7 +300,7 @@ module.exports = class MentorsHelper {
 	 * @param {Object} data - Updated mentor extension data excluding user_id.
 	 * @returns {Promise<Object>} - Updated mentor extension details.
 	 */
-	static async updateMentorExtension(data, userId) {
+	static async updateMentorExtension(data, userId, orgId) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
@@ -291,10 +316,24 @@ module.exports = class MentorsHelper {
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
 				})
 			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				orgId
+			)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let mentorExtensionsModel = await mentorQueries.getColumns()
+
+			data = utils.restructureBody(updatedMentor[0], validationData, mentorExtensionsModel)
+
+			const processDbResponse = utils.processDbResponse(data, validationData)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_UPDATED',
-				result: updatedMentor,
+				result: processDbResponse,
 			})
 		} catch (error) {
 			return error
@@ -359,7 +398,7 @@ module.exports = class MentorsHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(id) {
+	static async read(id, orgId) {
 		try {
 			let mentorProfile = await userProfile.details('', id)
 			if (!mentorProfile.data.result) {
@@ -368,11 +407,32 @@ module.exports = class MentorsHelper {
 					message: 'MENTORS_NOT_FOUND',
 				})
 			}
-			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
+			if (!orgId) {
+				orgId = mentorProfile.data.result.organization_id
+			}
 
 			let mentorExtension = await mentorQueries.getMentorExtension(id)
-			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
 
+			if (!mentorProfile.data.result || !mentorExtension) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTORS_NOT_FOUND',
+				})
+			}
+			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
+
+			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
+			console.log(mentorExtension)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				orgId
+			)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
 			const filter = { is_session_attended: true }
@@ -385,10 +445,11 @@ module.exports = class MentorsHelper {
 					sessions_attended: totalSession,
 					sessions_hosted: totalSessionHosted,
 					...mentorProfile,
-					...mentorExtension,
+					...processDbResponse,
 				},
 			})
 		} catch (error) {
+			console.error(error)
 			return error
 		}
 	}

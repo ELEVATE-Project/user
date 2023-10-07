@@ -14,9 +14,17 @@ module.exports = class Mentees {
 	async create(req) {
 		try {
 			if (isAMentor(req.decodedToken.roles)) {
-				return await mentorsHelper.createMentorExtension(req.body, req.decodedToken.id)
+				return await mentorsHelper.createMentorExtension(
+					req.body,
+					req.decodedToken.id,
+					req.decodedToken.organization_id
+				)
 			}
-			return await menteesHelper.createMenteeExtension(req.body, req.decodedToken.id)
+			return await menteesHelper.createMenteeExtension(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.organization_id
+			)
 		} catch (error) {
 			console.error(error)
 			return error
@@ -35,9 +43,17 @@ module.exports = class Mentees {
 	async update(req) {
 		try {
 			if (isAMentor(req.decodedToken.roles)) {
-				return await mentorsHelper.updateMentorExtension(req.body, req.decodedToken.id)
+				return await mentorsHelper.updateMentorExtension(
+					req.body,
+					req.decodedToken.id,
+					req.decodedToken.organization_id
+				)
 			}
-			return await menteesHelper.updateMenteeExtension(req.body, req.decodedToken.id)
+			return await menteesHelper.updateMenteeExtension(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.organization_id
+			)
 		} catch (error) {
 			return error
 		}
@@ -54,9 +70,9 @@ module.exports = class Mentees {
 	async getExtension(req) {
 		try {
 			if (isAMentor(req.decodedToken.roles)) {
-				return await mentorsHelper.getMentorExtension(req.decodedToken.id)
+				return await mentorsHelper.getMentorExtension(req.query.id || req.decodedToken.id)
 			}
-			return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
+			return await menteesHelper.getMenteeExtension(req.decodedToken.id, req.decodedToken.organization_id) // params since read will be public for mentees
 		} catch (error) {
 			return error
 		}
@@ -73,11 +89,11 @@ module.exports = class Mentees {
 	async read(req) {
 		try {
 			if (isAMentor(req.decodedToken.roles)) {
-				return await mentorsHelper.read(req.decodedToken.id)
+				return await mentorsHelper.read(req.decodedToken.id, req.decodedToken.organization_id)
 			}
-			return await menteesHelper.read(req.decodedToken.id)
+			return await menteesHelper.read(req.decodedToken.id, req.decodedToken.organization_id)
 		} catch (error) {
-			return errors
+			return error
 		}
 	}
 

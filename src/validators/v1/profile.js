@@ -4,11 +4,6 @@ module.exports = {
 
 		req.checkBody('area_of_expertise').optional().isArray().withMessage('Area of expertise must be an array')
 
-		req.checkBody('education_qualification')
-			.optional()
-			.isArray()
-			.withMessage('Education qualification must be an array')
-
 		req.checkBody('rating').not().exists().withMessage('Rating should not be in the body')
 		req.checkBody('stats').not().exists().withMessage('Stats should not be in the body')
 
@@ -34,10 +29,10 @@ module.exports = {
 
 		req.checkBody('area_of_expertise').optional().isArray().withMessage('Area of expertise must be an array')
 
-		req.checkBody('education_qualification')
+		/* 		req.checkBody('education_qualification')
 			.optional()
 			.isArray()
-			.withMessage('Education qualification must be an array')
+			.withMessage('Education qualification must be an array') */
 
 		req.checkBody('rating').not().exists().withMessage('Rating should not be in the body')
 		req.checkBody('stats').not().exists().withMessage('Stats should not be in the body')

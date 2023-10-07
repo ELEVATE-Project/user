@@ -9,13 +9,13 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 			designation: {
-				type: DataTypes.STRING,
+				type: DataTypes.ARRAY(DataTypes.STRING),
 			},
 			area_of_expertise: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
 			},
 			education_qualification: {
-				type: DataTypes.ARRAY(DataTypes.STRING),
+				type: DataTypes.STRING,
 			},
 			rating: {
 				type: DataTypes.JSON,
@@ -43,6 +43,9 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			external_mentor_visibility: {
 				type: DataTypes.STRING,
+			},
+			custom_entity_text: {
+				type: DataTypes.JSON,
 			},
 		},
 		{

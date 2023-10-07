@@ -283,7 +283,7 @@ function processDbResponse(session, entityType) {
 	const output = { ...session } // Create a copy of the session object
 
 	for (const key in output) {
-		if (entityType.some((entity) => entity.value === key)) {
+		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
 			const matchingEntity = entityType.find((entity) => entity.value === key)
 			const matchingValues = matchingEntity.entities
 				.filter((entity) => output[key].includes(entity.value))
