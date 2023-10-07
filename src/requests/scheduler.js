@@ -49,9 +49,21 @@ const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate
 
 	const apiUrl = schedulerServiceUrl + apiEndpoints.CREATE_SCHEDULER_JOB
 	try {
-		request.post(apiUrl, options, callback)
+		request.post(apiUrl, options, (err, data) => {
+			if (err) {
+				console.error('Error in createSchedulerJob POST request:', err)
+			} else {
+				if (data.body.success) {
+					callback(null, data.body.message)
+				} else {
+					console.error('Error in createSchedulerJob POST request response:', data.body)
+					callback(data.body, null)
+				}
+			}
+		})
 	} catch (error) {
-		console.error('Error in createSchedulerJob ')
+		console.error('Error in createSchedulerJob ', error)
+		callback(error, null)
 	}
 }
 
@@ -71,9 +83,21 @@ const updateDelayOfScheduledJob = function (bodyData, callback) {
 
 	const apiUrl = schedulerServiceUrl + apiEndpoints.UPDATE_DELAY
 	try {
-		request.post(apiUrl, options, callback)
+		request.post(apiUrl, options, (err, data) => {
+			if (err) {
+				console.error('Error in updateDelayOfScheduledJob POST request:', err)
+			} else {
+				if (data.body.success) {
+					callback(null, data.body.message)
+				} else {
+					console.error('Error in updateDelayOfScheduledJob POST request response:', data.body)
+					callback(data.body, null)
+				}
+			}
+		})
 	} catch (error) {
-		console.error('Error in updateDelayOfScheduledJob ')
+		console.error('Error in updateDelayOfScheduledJob ', error)
+		callback(error, null)
 	}
 }
 
@@ -93,14 +117,26 @@ const removeScheduledJob = function (bodyData, callback) {
 
 	const apiUrl = schedulerServiceUrl + apiEndpoints.REMOVE_SCHEDULED_JOB
 	try {
-		request.post(apiUrl, options, callback)
+		request.post(apiUrl, options, (err, data) => {
+			if (err) {
+				console.error('Error in removeScheduledJob POST request:', err)
+			} else {
+				if (data.body.success) {
+					callback(null, data.body.message)
+				} else {
+					console.error('Error in updateDelayOfScheduledJob POST request response:', data.body)
+					callback(data.body, null)
+				}
+			}
+		})
 	} catch (error) {
-		console.error('Error in removeScheduledJob ')
+		console.error('Error in removeScheduledJob ', error)
+		callback(error, null)
 	}
 }
 
 module.exports = {
-	createSchedulerJob: createSchedulerJob,
-	updateDelayOfScheduledJob: updateDelayOfScheduledJob,
-	removeScheduledJob: removeScheduledJob,
+	createSchedulerJob,
+	updateDelayOfScheduledJob,
+	removeScheduledJob,
 }
