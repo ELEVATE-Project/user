@@ -56,7 +56,6 @@ module.exports = {
 	},
 
 	read: (req) => {
-		console.log()
 		if (req.query.type) {
 			req.checkQuery('type')
 				.trim()

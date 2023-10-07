@@ -197,7 +197,6 @@ module.exports = class SessionsHelper {
 				result: processDbResponse,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}

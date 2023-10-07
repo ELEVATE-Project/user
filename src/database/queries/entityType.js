@@ -74,7 +74,6 @@ module.exports = class UserEntityData {
 				],
 			})
 		} catch (error) {
-			console.log(error)
 			return error
 		}
 	}

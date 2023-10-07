@@ -422,7 +422,6 @@ module.exports = class MentorsHelper {
 			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
 
 			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
-			console.log(mentorExtension)
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
 				{
 					status: 'ACTIVE',

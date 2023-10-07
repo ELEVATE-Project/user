@@ -54,7 +54,6 @@ module.exports = class issuesHelper {
 						},
 					}
 					await kafkaCommunication.pushEmailToKafka(payload)
-					console.log(payload)
 
 					bodyData.isEmailTriggered = true
 				}

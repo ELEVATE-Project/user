@@ -156,7 +156,6 @@ exports.updateSession = async (filter, update, options = {}) => {
 			...options,
 		})
 	} catch (error) {
-		console.log(error)
 		return error
 	}
 }
@@ -224,7 +223,6 @@ exports.removeAndReturnMentorSessions = async (userId) => {
 		const removedSessions = updatedSessions[0] === sessionIds.length ? sessionIdAndTitle : []
 		return removedSessions
 	} catch (error) {
-		console.log(error)
 		return error
 	}
 }
@@ -480,7 +478,6 @@ exports.getMentorsUpcomingSessions = async (page, limit, search, mentorId) => {
 exports.getUpcomingSessions = async (page, limit, search, userId) => {
 	try {
 		const currentEpochTime = moment().unix()
-		console.log(currentEpochTime)
 		const sessionData = await Session.findAndCountAll({
 			where: {
 				[Op.or]: [{ title: { [Op.iLike]: `%${search}%` } }], // Case-insensitive search
