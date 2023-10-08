@@ -29,21 +29,24 @@ module.exports = class OrgAdminHelper {
 
 	static async bulkUserCreate(filePath, tokenInformation) {
 		try {
+			const { id, email, organization_id } = tokenInformation
+
 			const creationData = {
 				name: utils.extractFilename(filePath),
 				input_path: filePath,
 				type: common.fileTypeCSV,
-				created_by: tokenInformation.id,
+				organization_id,
+				created_by: id,
 			}
-
 			const result = await fileUploadQueries.create(creationData)
 			//push to queue
 			await invitesQueue.add(
 				{
-					fileUploadData: result,
-					userInfo: {
-						id: tokenInformation.id,
-						email: tokenInformation.email,
+					fileDetails: result,
+					user: {
+						id,
+						email,
+						organization_id,
 					},
 				},
 				{

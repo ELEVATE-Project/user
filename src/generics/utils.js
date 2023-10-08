@@ -17,6 +17,7 @@ const crypto = require('crypto')
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const algorithm = 'aes-256-cbc'
+const moment = require('moment-timezone')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -86,6 +87,12 @@ const validateRoleAccess = (roles, requiredRole) => {
 	return roles.some((role) => role.title == requiredRole)
 }
 
+const generateFileName = (name, extension) => {
+	const currentDate = new Date()
+	const fileExtensionWithTime = moment(currentDate).tz('Asia/Kolkata').format('YYYY_MM_DD_HH_mm') + extension
+	return name + fileExtensionWithTime
+}
+
 /**
  * md5 hash
  * @function
@@ -138,6 +145,7 @@ module.exports = {
 	getDownloadableUrl,
 	md5Hash,
 	validateRoleAccess,
+	generateFileName,
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,

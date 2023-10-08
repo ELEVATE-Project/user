@@ -15,7 +15,6 @@ invitesQueue.process(async (job) => {
 	}
 
 	let response = await userInviteHelper.uploadInvites(job.data)
-	console.log(response, 'response')
 	if (!response.success) {
 		console.log(`Job with id ${job.id} Failed`)
 	}
@@ -28,7 +27,7 @@ invitesQueue.on('completed', (job) => {
 
 invitesQueue.on('failed', (job, err) => {
 	console.log(`Job with id ${job.id} Failed`)
-	console.log(err)
+	logger.error(`Job with id ${job.id} Failed`)
 })
 
 module.exports = invitesQueue

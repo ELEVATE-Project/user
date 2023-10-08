@@ -41,7 +41,6 @@ exports.listUploads = async (page, limit, status, organization_id) => {
 	try {
 		let filterQuery = {
 			where: {},
-			raw: true,
 			attributes: {
 				exclude: ['created_at', 'updated_at', 'deleted_at', 'updated_by'],
 			},

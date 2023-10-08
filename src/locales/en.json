@@ -83,5 +83,6 @@
 	"MENTEE_ROLE_REQUESTED": "mentee role requested successfully",
 	"ORG_ROLE_REQ_FAILED": "Organisation request update failed",
 	"ORG_ROLE_REQ_APPROVED": "Organisation request approved successfully",
-	"ORG_ROLE_REQ_UPDATED": "Organisation request updated"
+	"ORG_ROLE_REQ_UPDATED": "Organisation request updated",
+	"FILE_UPLOAD_MODIFY_ERROR": "File update failed"
 }

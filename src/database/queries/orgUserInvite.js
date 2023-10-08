@@ -1,11 +1,24 @@
 'use strict'
 const OrgUserInvite = require('../models/index').OrgUserInvite
+const { UniqueConstraintError, ValidationError } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		return await OrgUserInvite.create(data)
+		const createData = await OrgUserInvite.create(data)
+		const result = createData.get({ plain: true })
+		return result
 	} catch (error) {
-		return error
+		if (error instanceof UniqueConstraintError) {
+			return 'USER_ALREADY_EXISTS'
+		} else if (error instanceof ValidationError) {
+			let message
+			error.errors.forEach((err) => {
+				message = `${err.path} cannot be null.`
+			})
+			return message
+		} else {
+			return error
+		}
 	}
 }
 
