@@ -1,32 +1,25 @@
+// DependenciesI
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const entityTypeQueries = require('@database/queries/entityType')
+const entityTypeQueries = require('../../database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
-const utilsHelper = require('@generics/utils')
 
 module.exports = class EntityHelper {
 	/**
-	 * Create entity.
+	 * Create entity type.
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData - entity body data.
+	 * @param {Object} bodyData - entity type body data.
 	 * @param {String} id -  id.
-	 * @returns {JSON} - Entity created response.
+	 * @returns {JSON} - Created entity type response.
 	 */
 
-	static async create(bodyData, userId, roles = []) {
+	static async create(bodyData, id, orgId) {
+		bodyData.created_by = id
+		bodyData.updated_by = id
+		bodyData.org_id = orgId
 		try {
-			let isAdmin = false
-			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
-			}
-
-			if (!isAdmin) {
-				bodyData.created_by = userId
-				bodyData.updated_by = userId
-			}
-
-			const entityType = await entityTypeQueries.create(bodyData)
+			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
@@ -45,28 +38,55 @@ module.exports = class EntityHelper {
 	}
 
 	/**
-	 * Update entity.
+	 * Update entity type.
 	 * @method
 	 * @name update
-	 * @param {Object} bodyData - entity body data.
-	 * @param {String} _id - entity id.
+	 * @param {Object} bodyData -  body data.
+	 * @param {String} id - entity type id.
 	 * @param {String} loggedInUserId - logged in user id.
-	 * @returns {JSON} - Entity updted response.
+	 * @returns {JSON} - Updated Entity Type.
 	 */
 
-	static async update(bodyData, id, loggedInUserId, roles = []) {
+	static async update(bodyData, id, loggedInUserId, orgId) {
+		;(bodyData.updated_by = loggedInUserId), (bodyData.org_id = orgId)
 		try {
-			let isAdmin = false
-			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
+			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, bodyData, {
+				returning: true,
+				raw: true,
+			})
+
+			if (updateCount === '0') {
+				return common.failureResponse({
+					message: 'ENTITY_TYPE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
-			if (!isAdmin) {
-				bodyData.updated_by = loggedInUserId
+			return common.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ENTITY_TYPE_UPDATED_SUCCESSFULLY',
+				result: updatedEntityType,
+			})
+		} catch (error) {
+			if (error instanceof UniqueConstraintError) {
+				return common.failureResponse({
+					message: 'ENTITY_TYPE_ALREADY_DELETED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-			const rowsAffected = await entityTypeQueries.updateOne({ id: id }, bodyData)
+			throw error
+		}
+	}
 
-			if (rowsAffected == 0) {
+	static async readAllSystemEntityTypes(organization_id) {
+		try {
+			const attributes = ['value', 'label', 'id']
+
+			const entities = await entityTypeQueries.findAllEntityTypes(organization_id, attributes)
+
+			if (!entities.length) {
 				return common.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -74,80 +94,53 @@ module.exports = class EntityHelper {
 				})
 			}
 			return common.successResponse({
-				statusCode: httpStatusCode.accepted,
-				message: 'ENTITY_TYPE_UPDATED_SUCCESSFULLY',
-			})
-		} catch (error) {
-			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
-					message: 'ENTITY_TYPE_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			throw error
-		}
-	}
-
-	static async readAllSystemEntityTypes() {
-		try {
-			const entityTypes = await entityTypeQueries.findAllSystemEntityTypes({ created_by: null })
-
-			if (!entityTypes.length) {
-				return common.failureResponse({
-					message: 'ENTITY_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'ENTITY_FETCHED_SUCCESSFULLY',
-				result: entityTypes,
+				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
+				result: entities,
 			})
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async readUserEntityTypes(body, userId) {
+	static async readUserEntityTypes(body, userId, organization_id) {
 		try {
 			const filter = {
 				value: body.value,
-				created_by: null,
+				status: 'ACTIVE',
 			}
-			const entityTypes = await entityTypeQueries.findAllUserEntityTypes(filter, userId)
+			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter, organization_id)
 
-			if (!entityTypes.length) {
+			if (!entities.length) {
 				return common.failureResponse({
-					message: 'ENTITY_NOT_FOUND',
+					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'ENTITY_FETCHED_SUCCESSFULLY',
-				result: { entity_types: entityTypes },
+				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
+				result: { entity_types: entities },
 			})
 		} catch (error) {
 			throw error
 		}
 	}
 	/**
-	 * Delete entity.
+	 * Delete entity type.
 	 * @method
 	 * @name delete
-	 * @param {String} _id - Delete entity.
+	 * @param {String} id - Delete entity type.
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
 	static async delete(id) {
 		try {
-			const rowsAffected = await entityTypeQueries.delete({ id: id })
-			if (rowsAffected == 0) {
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id)
+			if (deleteCount === '0') {
 				return common.failureResponse({
-					message: 'ENTITY_NOT_FOUND',
+					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -155,7 +148,7 @@ module.exports = class EntityHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: 'ENTITY_DELETED_SUCCESSFULLY',
+				message: 'ENTITY_TYPE_DELETED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error

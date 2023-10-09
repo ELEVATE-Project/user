@@ -1,7 +1,6 @@
-const Entity = require('@database/models/index').Entity
-const common = require('@constants/common')
+const Entity = require('../models/index').Entity
 module.exports = class UserEntityData {
-	static async create(data) {
+	static async createEntity(data) {
 		try {
 			return await Entity.create(data, { returning: true })
 		} catch (error) {
@@ -9,9 +8,8 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAll(filter, options = {}) {
+	static async findAllEntities(filter, options = {}) {
 		try {
-			filter.status = common.activeStatus
 			return await Entity.findAll({
 				where: filter,
 				...options,
@@ -22,50 +20,37 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async updateOne(filter, update, options = {}) {
+	static async updateOneEntity(id, update, userId, options = {}) {
 		try {
-			const [rowsAffected] = await Entity.update(update, {
-				where: filter,
+			return await Entity.update(update, {
+				where: {
+					id: id,
+					created_by: userId,
+				},
 				...options,
 			})
-
-			return rowsAffected
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async delete(id, userId) {
+	static async deleteOneEntityType(id, userId) {
 		try {
-			const rowsAffected = await Entity.destroy({
+			return await Entity.destroy({
 				where: {
 					id: id,
 					created_by: userId,
 				},
 			})
-
-			return rowsAffected
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async findById(id) {
+	static async findEntityTypeById(filter) {
 		try {
-			const entityData = await Entity.findByPk(id)
+			const entityData = await Entity.findByPk(filter)
 			return entityData
-		} catch (error) {
-			return error
-		}
-	}
-
-	static async findOne(filter, options = {}) {
-		try {
-			return await Entity.findOne({
-				where: filter,
-				...options,
-				raw: true,
-			})
 		} catch (error) {
 			return error
 		}
