@@ -4,7 +4,6 @@ module.exports = class UserEntityData {
 		try {
 			return await Entity.create(data, { returning: true })
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}

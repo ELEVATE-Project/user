@@ -100,6 +100,7 @@ module.exports = async function (req, res, next) {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
 			const isRoleSame =
 				user.data.result.user_roles.length === decodedToken.data.roles.length &&
 				user.data.result.user_roles.every((role1) =>

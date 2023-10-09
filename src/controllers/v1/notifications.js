@@ -19,8 +19,7 @@ module.exports = class Notifications {
 
 	async emailCronJob(req) {
 		try {
-
-			// Make a call to notification service 
+			// Make a call to notification service
 			notificationsService.sendNotification(req.body.jobId, req.body.emailTemplateCode)
 			return {
 				statusCode: httpStatusCode.ok,

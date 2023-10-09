@@ -107,6 +107,7 @@ const updateDelayOfScheduledJob = function (bodyData, callback) {
  * @param {object} bodyData - The data containing information about the job.
  * @param {function} callback - The callback function to handle the result of the job removal.
  */
+
 const removeScheduledJob = function (bodyData, callback) {
 	const options = {
 		headers: {

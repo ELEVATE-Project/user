@@ -5,7 +5,13 @@ const sequelize = require('sequelize')
 
 const moment = require('moment')
 const SessionOwnership = require('../models/index').SessionOwnership
-
+exports.getColumns = async () => {
+	try {
+		return await Object.keys(Session.rawAttributes)
+	} catch (error) {
+		return error
+	}
+}
 exports.create = async (data) => {
 	try {
 		return await Session.create(data)
@@ -150,7 +156,6 @@ exports.updateSession = async (filter, update, options = {}) => {
 			...options,
 		})
 	} catch (error) {
-		console.log(error)
 		return error
 	}
 }
@@ -221,7 +226,6 @@ exports.removeAndReturnMentorSessions = async (userId) => {
 		const removedSessions = updatedSessions[0] === sessionIds.length ? sessionIdAndTitle : []
 		return removedSessions
 	} catch (error) {
-		console.log(error)
 		return error
 	}
 }
@@ -477,7 +481,6 @@ exports.getMentorsUpcomingSessions = async (page, limit, search, mentorId) => {
 exports.getUpcomingSessions = async (page, limit, search, userId) => {
 	try {
 		const currentEpochTime = moment().unix()
-		console.log(currentEpochTime)
 		const sessionData = await Session.findAndCountAll({
 			where: {
 				[Op.or]: [{ title: { [Op.iLike]: `%${search}%` } }], // Case-insensitive search

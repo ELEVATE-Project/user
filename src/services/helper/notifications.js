@@ -7,7 +7,6 @@ const sessionQueries = require('@database/queries/sessions')
 const notificationQueries = require('@database/queries/notificationTemplate')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 
-
 module.exports = class Notifications {
 	/**
 	 * @description				- Send Notifications.
@@ -23,20 +22,20 @@ module.exports = class Notifications {
 			// Split the string by underscores and get the last part
 			const parts = notificationJobId.split('_')
 			const lastPart = parts[parts.length - 1]
-			
+
 			// Convert the last part to an integer
 			const sessionId = Number(lastPart)
-			
+
 			// Find session data
 			let sessions = await sessionQueries.findOne({
 				id: sessionId,
-				status: common.PUBLISHED_STATUS
+				status: common.PUBLISHED_STATUS,
 			})
 
 			// Get email template based on incoming request.
 			let emailTemplate = await notificationQueries.findOneEmailTemplate(notificataionTemplate)
-			
-			if ( emailTemplate && sessions ) {				
+
+			if (emailTemplate && sessions) {
 				// if notificataionTemplate is {MENTEE_SESSION_REMAINDER_EMAIL_CODE} then notification to all personal registered for the session has to be send.
 				if (notificataionTemplate === common.MENTEE_SESSION_REMAINDER_EMAIL_CODE) {
 					await this.sendNotificationToAttendees(sessions, emailTemplate)
@@ -44,7 +43,6 @@ module.exports = class Notifications {
 					await this.sendNotificationsToMentor(sessions, emailTemplate)
 				}
 			}
-				
 		} catch (error) {
 			throw error
 		}
@@ -61,12 +59,12 @@ module.exports = class Notifications {
 		try {
 			let allAttendees = []
 			let attendeesInfo = []
-			
+
 			// Get all sessionAttendees joined for the session
 			const sessionAttendees = await sessionAttendeesQueries.findAll({
 				session_id: session.id,
 			})
-			
+
 			// If sessionAttendees data is available process the data
 			if (sessionAttendees && sessionAttendees.length > 0) {
 				sessionAttendees.forEach((attendee) => {
@@ -77,10 +75,10 @@ module.exports = class Notifications {
 					})
 				})
 			}
-			
+
 			// Get attendees accound details
 			const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(allAttendees)
-			
+
 			if (attendeesAccounts.result && attendeesAccounts.result.length > 0) {
 				attendeesInfo.forEach(async function (attendee) {
 					let emailBody = emailTemplate.body.replace('{sessionTitle}', attendee.title)
@@ -99,7 +97,6 @@ module.exports = class Notifications {
 					}
 				})
 			}
-			
 		} catch (error) {
 			throw error
 		}
@@ -116,10 +113,10 @@ module.exports = class Notifications {
 		try {
 			const mentorIds = []
 			mentorIds.push(session.mentor_id.toString())
-			
+
 			// Get mentor details
 			const userAccounts = await sessionAttendeesHelper.getAllAccountsDetail(mentorIds)
-			
+
 			if (userAccounts && userAccounts.result.length > 0) {
 				const userAccountDetails = userAccounts.result[0]
 				let emailBody = emailTemplate.body
@@ -132,7 +129,7 @@ module.exports = class Notifications {
 					emailBody = utils.extractEmailTemplate(emailBody, ['default'])
 				}
 				emailBody = emailBody.replace('{sessionTitle}', session.title)
-				if ( userAccountDetails && userAccountDetails.email && userAccountDetails.name ) {
+				if (userAccountDetails && userAccountDetails.email && userAccountDetails.name) {
 					emailBody = emailBody.replace('{name}', userAccountDetails.name)
 					const payload = {
 						type: 'email',
@@ -145,10 +142,8 @@ module.exports = class Notifications {
 					await kafkaCommunication.pushEmailToKafka(payload)
 				}
 			}
-
 		} catch (error) {
 			throw error
 		}
 	}
-
 }

@@ -1,6 +1,13 @@
 const MenteeExtension = require('../models/index').UserExtension
 
 module.exports = class MenteeExtensionQueries {
+	static async getColumns() {
+		try {
+			return await Object.keys(MenteeExtension.rawAttributes)
+		} catch (error) {
+			return error
+		}
+	}
 	static async createMenteeExtension(data) {
 		try {
 			return await MenteeExtension.create(data, { returning: true })

@@ -1,6 +1,13 @@
 const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
 
 module.exports = class MentorExtensionQueries {
+	static async getColumns() {
+		try {
+			return await Object.keys(MentorExtension.rawAttributes)
+		} catch (error) {
+			return error
+		}
+	}
 	static async createMentorExtension(data) {
 		try {
 			return await MentorExtension.create(data, { returning: true })

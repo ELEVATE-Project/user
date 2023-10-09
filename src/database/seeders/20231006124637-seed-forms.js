@@ -55,28 +55,6 @@ module.exports = {
 					label: 'Professional development',
 				},
 			],
-			area_of_expertise: [
-				{
-					value: 'educational_leadership',
-					label: 'Educational leadership',
-				},
-				{
-					value: 'school_process',
-					label: 'School process',
-				},
-				{
-					value: 'communication',
-					label: 'Communication',
-				},
-				{
-					value: 'sqaa',
-					label: 'SQAA',
-				},
-				{
-					value: 'professional_development',
-					label: 'Professional development',
-				},
-			],
 			location: [
 				{
 					value: 'ap',
@@ -193,57 +171,35 @@ module.exports = {
 			],
 			designation: [
 				{
-					value: 'deo',
-					label: 'District education officer',
-				},
-				{
-					value: 'beo',
-					label: 'Block education officer',
-				},
-				{
-					value: 'hm',
-					label: 'Head master',
-				},
-				{
-					value: 'te',
+					value: 'teacher',
 					label: 'Teacher',
 				},
 				{
-					value: 'co',
-					label: 'Cluster officials',
+					value: 'hm',
+					label: 'Head Master',
 				},
 			],
 		}
 
 		const sessionEntityTypes = ['recommended_for', 'categories', 'medium']
-		const user = ['recommended_for', 'categories', 'medium']
-
 		const entityTypeFinalArray = Object.keys(entitiesArray).map((key) => {
 			const entityTypeRow = {
 				value: key,
-				label: convertToWords(key),
+				label: toCamelCase(key),
 				data_type: 'STRING',
 				status: 'ACTIVE',
 				updated_at: new Date(),
 				created_at: new Date(),
 				created_by: 0,
-				updated_by: 0,
 				allow_filtering: true,
 				org_id: 1,
-				has_entities: true,
 			}
 
 			// Check if the key is in sessionEntityTypes before adding model_names
 			if (sessionEntityTypes.includes(key)) {
 				entityTypeRow.model_names = ['sessions']
-			} else {
-				entityTypeRow.model_names = ['mentor_extensions', 'user_extensions']
 			}
-			if (key === 'location') {
-				entityTypeRow.allow_custom_entities = false
-			} else {
-				entityTypeRow.allow_custom_entities = true
-			}
+
 			return entityTypeRow
 		})
 
@@ -279,14 +235,11 @@ module.exports = {
 	},
 }
 
-function convertToWords(inputString) {
-	const words = inputString.replace(/_/g, ' ').split(' ')
-
-	const capitalizedWords = words.map((word) => {
-		return word.charAt(0).toUpperCase() + word.slice(1)
-	})
-
-	const result = capitalizedWords.join(' ')
-
-	return result
+function toCamelCase(inputString) {
+	return inputString
+		.replace(/_/g, ' ')
+		.replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => {
+			return index === 0 ? word.toLowerCase() : word.toUpperCase()
+		})
+		.replace(/\s+/g, '')
 }

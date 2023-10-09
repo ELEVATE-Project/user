@@ -36,7 +36,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Create session data.
 	 */
 
-	static async create(bodyData, loggedInUserId) {
+	static async create(bodyData, loggedInUserId, orgId) {
 		bodyData.mentor_id = loggedInUserId
 		try {
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
@@ -47,15 +47,15 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			
+
 			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
-			if (timeSlot.isTimeSlotAvailable === false) {
+			/* 	if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
+			} */
 
 			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
 			let elapsedMinutes = duration.asMinutes()
@@ -75,9 +75,26 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const filter = {
+				status: 'ACTIVE',
+			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
 
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let res = utils.validateInput(bodyData, validationData, 'sessions')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+			let sessionModel = await sessionQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 			//validate entities
-			if (
+			/* 			if (
 				bodyData.hasOwnProperty(common.MEDIUM) ||
 				bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
 				bodyData.hasOwnProperty(common.CATEGORIES)
@@ -124,11 +141,11 @@ module.exports = class SessionsHelper {
 						}
 
 						bodyData[entityType.value] = _.map(entities, function (entity) {
-							return entity.value
+							return entity.valuearea
 						})
 					}
 				}
-			}
+			} */
 
 			bodyData.meeting_info = {
 				platform: process.env.DEFAULT_MEETING_SERVICE,
@@ -141,17 +158,17 @@ module.exports = class SessionsHelper {
 				}
 			}
 
-			bodyData['mentor_org_id'] =
-				mentorDetails.organisation_ids.length > 0 ? mentorDetails.organisation_ids[0] : null
-			
+			bodyData['mentor_org_id'] = orgId
+
 			const data = await sessionQueries.create(bodyData)
+
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
 			})
-			
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
+			const processDbResponse = utils.processDbResponse(data.toJSON(), validationData)
 
 			// Set notification schedulers for the session
 			let jobsToCreate = common.jobsToCreate
@@ -162,22 +179,22 @@ module.exports = class SessionsHelper {
 			jobsToCreate[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
 
 			// Iterate through the jobs and create scheduler jobs
-			for ( let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++ ) {
+			for (let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++) {
 				// Append the session ID to the job ID
 				jobsToCreate[jobIndex].jobId = jobsToCreate[jobIndex].jobId + data.id
 				// Create the scheduler job with the calculated delay and other parameters
-				await schedulerRequest.createSchedulerJob(
-					jobsToCreate[jobIndex].jobId, 
-					jobsToCreate[jobIndex].delay, 
-					jobsToCreate[jobIndex].jobName, 
+				/* await schedulerRequest.createSchedulerJob(
+					jobsToCreate[jobIndex].jobId,
+					jobsToCreate[jobIndex].delay,
+					jobsToCreate[jobIndex].jobName,
 					jobsToCreate[jobIndex].emailTemplate
-				)
+				) */
 			}
-			
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'SESSION_CREATED_SUCCESSFULLY',
-				result: data,
+				result: processDbResponse,
 			})
 		} catch (error) {
 			throw error
@@ -243,7 +260,7 @@ module.exports = class SessionsHelper {
 			}
 
 			//validate entities
-			if (
+			/* 			if (
 				method != common.DELETE_METHOD &&
 				(bodyData.hasOwnProperty(common.MEDIUM) ||
 					bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
@@ -294,7 +311,7 @@ module.exports = class SessionsHelper {
 						})
 					}
 				}
-			}
+			} */
 
 			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {
 				let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
@@ -317,7 +334,7 @@ module.exports = class SessionsHelper {
 			}
 
 			let message
-			const sessionRelatedJobIds = common.notificationJobIdPrefixes.map(element => element + sessionDetail.id);
+			const sessionRelatedJobIds = common.notificationJobIdPrefixes.map((element) => element + sessionDetail.id)
 			if (method == common.DELETE_METHOD) {
 				let statTime = moment.unix(sessionDetail.start_date)
 				const current = moment.utc()
@@ -330,11 +347,10 @@ module.exports = class SessionsHelper {
 					message = 'SESSION_DELETED_SUCCESSFULLY'
 
 					// Delete scheduled jobs associated with deleted session
-					for ( let jobIndex = 0; jobIndex < sessionRelatedJobIds.length; jobIndex++ ) {
+					for (let jobIndex = 0; jobIndex < sessionRelatedJobIds.length; jobIndex++) {
 						// Remove scheduled notification jobs using the jobIds
 						await schedulerRequest.removeScheduledJob({ jobId: sessionRelatedJobIds[jobIndex] })
 					}
-
 				} else {
 					return common.failureResponse({
 						message: 'SESSION_DELETION_FAILED',
@@ -354,16 +370,28 @@ module.exports = class SessionsHelper {
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
 
 				// If new start date is passed update session notification jobs
-				if ( bodyData.start_date && bodyData.start_date !== sessionDetail.start_date ) {
-					const updateDelayData = sessionRelatedJobIds.map(jobId => ({ id: jobId }));
+				if (bodyData.start_date && bodyData.start_date !== sessionDetail.start_date) {
+					const updateDelayData = sessionRelatedJobIds.map((jobId) => ({ id: jobId }))
 
 					// Calculate new delays for notification jobs
-					updateDelayData[0].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 1, 'hour')
-					updateDelayData[1].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 24, 'hour')
-					updateDelayData[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
+					updateDelayData[0].delay = await utils.getTimeDifferenceInMilliseconds(
+						bodyData.start_date,
+						1,
+						'hour'
+					)
+					updateDelayData[1].delay = await utils.getTimeDifferenceInMilliseconds(
+						bodyData.start_date,
+						24,
+						'hour'
+					)
+					updateDelayData[2].delay = await utils.getTimeDifferenceInMilliseconds(
+						bodyData.start_date,
+						15,
+						'minutes'
+					)
 
 					// Update scheduled notification job delays
-					for ( let jobIndex = 0; jobIndex < updateDelayData.length; jobIndex++ ) {
+					for (let jobIndex = 0; jobIndex < updateDelayData.length; jobIndex++) {
 						await schedulerRequest.updateDelayOfScheduledJob(updateDelayData[jobIndex])
 					}
 				}
@@ -555,12 +583,25 @@ module.exports = class SessionsHelper {
 			const mentorName = await userProfile.details('', sessionDetails.mentor_id)
 			sessionDetails.mentor_name = mentorName.data.result.name
 
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					created_by: 0,
+					status: 'ACTIVE',
+				},
+				sessionDetails.mentor_org_id
+			)
+
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: sessionDetails,
+				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

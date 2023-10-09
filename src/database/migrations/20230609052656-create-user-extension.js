@@ -9,13 +9,13 @@ module.exports = {
 				type: Sequelize.INTEGER,
 			},
 			designation: {
-				type: Sequelize.STRING,
+				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			area_of_expertise: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			education_qualification: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
+				type: Sequelize.STRING,
 			},
 			rating: {
 				type: Sequelize.JSON,
@@ -43,6 +43,9 @@ module.exports = {
 			},
 			external_mentor_visibility: {
 				type: Sequelize.STRING,
+			},
+			custom_entity_text: {
+				type: Sequelize.JSON,
 			},
 			created_at: {
 				allowNull: false,

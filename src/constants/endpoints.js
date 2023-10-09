@@ -10,7 +10,7 @@ module.exports = {
 	USERS_ENTITY_READ: 'v1/userentity/read',
 
 	// Endpoints of the scheduler service
-    CREATE_SCHEDULER_JOB: 'jobs/create', 	// Create scheduler job endpoint
-    UPDATE_DELAY: 'jobs/updateDelay', 		// Update delay of scheduled job endpoint
-    REMOVE_SCHEDULED_JOB: 'jobs/remove' 	// Remove scheduled job endpoint
+	CREATE_SCHEDULER_JOB: 'jobs/create', // Create scheduler job endpoint
+	UPDATE_DELAY: 'jobs/updateDelay', // Update delay of scheduled job endpoint
+	REMOVE_SCHEDULED_JOB: 'jobs/remove', // Remove scheduled job endpoint
 }
