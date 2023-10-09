@@ -875,8 +875,18 @@ module.exports = class AccountHelper {
 						return user
 					})
 				)
+				if (users.count == 0) {
+					return common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'USER_LIST',
+						result: {
+							data: [],
+							count: 0,
+						},
+					})
+				}
 
-				for (let user of users.rows) {
+				for (let user of users.data) {
 					let firstChar = user.name.charAt(0)
 					firstChar = firstChar.toUpperCase()
 
