@@ -44,11 +44,15 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async deleteMentorExtension(userId) {
+	static async deleteMentorExtension(userId, force = false) {
 		try {
-			return await MentorExtension.destroy({
-				where: { user_id: userId },
-			})
+			const options = { where: { user_id: userId } }
+
+			if (force) {
+				options.force = true
+			}
+
+			return await MentorExtension.destroy(options)
 		} catch (error) {
 			throw error
 		}

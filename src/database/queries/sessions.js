@@ -189,16 +189,19 @@ exports.removeAndReturnMentorSessions = async (userId) => {
 			raw: true,
 		})
 		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+
 		const foundSessions = await Session.findAll({
 			where: {
 				id: { [Op.in]: sessionIds },
-				[Op.or]: [{ start_date: { [Op.gt]: currentDateTime } }, { status: common.PUBLISHED_STATUS }],
+				[Op.or]: [{ start_date: { [Op.gt]: currentEpochTime } }, { status: common.PUBLISHED_STATUS }],
 			},
 			raw: true,
 		})
+
 		const sessionIdAndTitle = foundSessions.map((session) => {
 			return { id: session.id, title: session.title }
 		})
+		const upcomingSessionIds = foundSessions.map((session) => session.id)
 
 		const updatedSessions = await Session.update(
 			{
@@ -206,7 +209,7 @@ exports.removeAndReturnMentorSessions = async (userId) => {
 			},
 			{
 				where: {
-					id: { [Op.in]: sessionIds },
+					id: { [Op.in]: upcomingSessionIds },
 				},
 			}
 		)
@@ -216,7 +219,7 @@ exports.removeAndReturnMentorSessions = async (userId) => {
 			},
 			{
 				where: {
-					session_id: { [Op.in]: sessionIds },
+					session_id: { [Op.in]: upcomingSessionIds },
 				},
 			}
 		)

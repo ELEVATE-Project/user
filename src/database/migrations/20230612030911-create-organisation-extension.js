@@ -21,8 +21,8 @@ module.exports = {
 			external_mentor_visibility_policy: {
 				type: Sequelize.STRING,
 			},
-			is_approval_required: {
-				type: Sequelize.STRING,
+			approval_required_for: {
+				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			allow_mentor_override: {
 				type: Sequelize.BOOLEAN,

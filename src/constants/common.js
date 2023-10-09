@@ -61,7 +61,7 @@ module.exports = {
 	MENTOR_SESSION_REMAINDER_EMAIL_CODE: 'mentor_session_reminder',
 	MENTOR_SESSION_ONE_HOUR_REMAINDER_EMAIL_CODE: 'mentor_one_hour_before_session_reminder',
 	UTC_DATE_TIME_FORMAT: 'YYYY-MM-DDTHH:mm:ss',
-	internalAccessUrs: ['/notifications/emailCronJob'],
+	internalAccessUrs: ['/notifications/emailCronJob', '/org-admin/roleChange'],
 	COMPLETED_STATUS: 'COMPLETED',
 	PUBLISHED_STATUS: 'PUBLISHED',
 	LIVE_STATUS: 'LIVE',
@@ -84,6 +84,7 @@ module.exports = {
 		'/issues/create',
 	],
 	MENTOR_ROLE: 'mentor',
+	MENTEE_ROLE: 'mentee',
 	MEDIUM: 'medium',
 	RECOMMENDED_FOR: 'recommended_for',
 	CATEGORIES: 'categories',
@@ -109,4 +110,5 @@ module.exports = {
 		'mentoring_session_one_day_',
 		'mentoring_session_fifteen_min_',
 	],
+	ORG_ADMIN_ROLE: 'org_admin',
 }
