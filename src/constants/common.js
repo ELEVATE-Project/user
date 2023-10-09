@@ -70,6 +70,7 @@ module.exports = {
 		'/user/v1/org-admin/getRequests',
 		'/user/v1/organization/requestOrgRole',
 	],
+	responseType: 'stream',
 	roleAssociationModel: 'UserRole',
 	roleAssociationName: 'user_roles',
 	activeStatus: 'ACTIVE',
@@ -92,4 +93,6 @@ module.exports = {
 	tempFolderForBulkUpload: '/public/invites',
 	azureBlobType: 'BlockBlob',
 	roleTypeSystem: 1,
+	inviteeOutputFile: 'output-user-invite',
+	csvExtension: '.csv',
 }

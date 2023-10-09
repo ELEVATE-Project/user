@@ -56,7 +56,6 @@ exports.listAllRequests = async (filter, page, limit, options = {}) => {
 		let filterQuery = {
 			where: filter,
 			...options,
-
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
 			include: [
