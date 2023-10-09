@@ -71,33 +71,30 @@ exports.findOneWithAssociation = async (filter, options = {}, associationTable, 
 
 exports.listUsers = async (roleId, page, limit, search) => {
 	try {
-		let filterQuery = {
-			where: {},
-			attributes: ['id', 'name', 'image'],
-			offset: parseInt((page - 1) * limit, 10),
-			limit: parseInt(limit, 10),
-			order: [['name', 'ASC']],
-		}
+		const offset = (page - 1) * limit
+		const whereClause = {}
 
 		if (search) {
-			filterQuery.where.name = {
-				[Op.iLike]: search + '%',
-			}
+			whereClause.name = { [Op.iLike]: search + '%' }
 		}
 
 		if (roleId) {
-			filterQuery.where.roles = { [Op.contains]: [roleId] }
+			whereClause.roles = { [Op.contains]: [roleId] }
 		}
 
-		const result = await database.User.findAndCountAll(filterQuery)
-		const transformedResult = {
-			count: result.count,
-			data: result.rows.map((row) => {
-				return row.get({ plain: true })
-			}),
+		const filterQuery = {
+			where: whereClause,
+			attributes: ['id', 'name', 'image'],
+			offset: parseInt(offset, 10),
+			limit: parseInt(limit, 10),
+			order: [['name', 'ASC']],
+			raw: true,
 		}
-		return transformedResult
+
+		const { count, rows: users } = await database.User.findAndCountAll(filterQuery)
+
+		return { count, data: users }
 	} catch (error) {
-		return error
+		throw error
 	}
 }
