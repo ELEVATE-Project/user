@@ -16,6 +16,7 @@ const roleQueries = require('@database/queries/userRole')
 const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const invitesQueue = require('@configs/queue')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -210,25 +211,35 @@ module.exports = class OrgAdminHelper {
 			const isAccepted = bodyData.status === common.statusAccepted
 			const message = isAccepted ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
-			if (isAccepted) {
-				//call event to update mentoring
-			}
-
-			let result = await orgRoleReqQueries.requestDetails({ id })
-
+			const result = await orgRoleReqQueries.requestDetails({ id })
 			let roleArray = []
-			let user = await userQueries.findByPk(result.requester_id)
 
-			if (user.roles?.length) {
-				const userRoles = await roleQueries.findAll(
-					{ id: user.roles, status: common.activeStatus },
-					{ attributes: ['title', 'id', 'user_type'] }
+			const user = await userQueries.findByPk(result.requester_id)
+
+			const userRoles = await roleQueries.findAll(
+				{ id: user.roles, status: common.activeStatus },
+				{ attributes: ['title', 'id', 'user_type', 'status'] }
+			)
+
+			const systemRoleIds = userRoles
+				.filter((role) => role.user_type === common.roleTypeSystem)
+				.map((role) => role.id)
+
+			roleArray.push(...systemRoleIds)
+
+			if (isAccepted) {
+				const { title } = await roleQueries.findOne(
+					{ id: result.role, status: common.activeStatus },
+					{ attributes: ['title', 'id', 'user_type', 'status'] }
 				)
 
-				const systemRoleIds = userRoles
-					.filter((role) => role.user_type === common.roleTypeSystem)
-					.map((role) => role.id)
-				roleArray.push(...systemRoleIds)
+				eventBroadcaster('roleChange', {
+					requestBody: {
+						userId: result.requester_id,
+						new_roles: [title],
+						old_roles: _.map(userRoles, 'title'),
+					},
+				})
 			}
 
 			roleArray.push(result.role)
