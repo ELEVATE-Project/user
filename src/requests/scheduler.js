@@ -19,142 +19,125 @@ const mentoringBaseurl = `http://localhost:${process.env.APPLICATION_PORT}`
  * @param {number} delay - The delay in milliseconds before the job is executed.
  * @param {string} jobName - The name of the job.
  * @param {string} notificationTemplate - The template for the notification.
- * @returns {Promise} A promise that resolves with the result of the job creation.
+ * @param {function} callback - The callback function to handle the result of the job creation.
  */
-const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate) {
-	return new Promise(async (resolve, reject) => {
-		const bodyData = {
-			jobName: jobName,
-			email: email,
-			request: {
-				url: mentoringBaseurl + '/mentoring/v1/notifications/emailCronJob',
-				method: 'post',
-				header: { internal_access_token: process.env.INTERNAL_ACCESS_TOKEN },
-			},
-			jobOptions: {
-				jobId: jobId,
-				delay: delay,
-				emailTemplate: notificationTemplate,
-				removeOnComplete: true,
-				removeOnFail: false,
-				attempts: 1,
-			},
-		}
+const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate, callback) {
+	const bodyData = {
+		jobName: jobName,
+		email: email,
+		request: {
+			url: mentoringBaseurl + '/mentoring/v1/notifications/emailCronJob',
+			method: 'post',
+			header: { internal_access_token: process.env.INTERNAL_ACCESS_TOKEN },
+		},
+		jobOptions: {
+			jobId: jobId,
+			delay: delay,
+			emailTemplate: notificationTemplate,
+			removeOnComplete: true,
+			removeOnFail: false,
+			attempts: 1,
+		},
+	}
 
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			json: bodyData,
-		}
+	const options = {
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		json: bodyData,
+	}
 
-		const apiUrl = schedulerServiceUrl + apiEndpoints.CREATE_SCHEDULER_JOB
-		try {
-			request.post(apiUrl, options, callback)
-
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'SCHEDULER_SERVICE_DOWN',
-					})
+	const apiUrl = schedulerServiceUrl + apiEndpoints.CREATE_SCHEDULER_JOB
+	try {
+		request.post(apiUrl, options, (err, data) => {
+			if (err) {
+				console.error('Error in createSchedulerJob POST request:', err)
+			} else {
+				if (data.body.success) {
+					callback(null, data.body.message)
 				} else {
-					if (data.body.success) {
-						resolve(data.body.message)
-					} else {
-						reject({
-							message: 'NOTIFICATION_SCHEDULE_FAILED',
-						})
-					}
+					console.error('Error in createSchedulerJob POST request response:', data.body)
+					callback(data.body, null)
 				}
 			}
-		} catch (error) {
-			reject(error)
-		}
-	})
+		})
+	} catch (error) {
+		console.error('Error in createSchedulerJob ', error)
+		callback(error, null)
+	}
 }
 
 /**
  * Update the delay of a scheduled job.
  *
  * @param {object} bodyData - The data containing information about the job.
- * @returns {Promise} A promise that resolves with the result of the job update.
+ * @param {function} callback - The callback function to handle the result of the job update.
  */
-const updateDelayOfScheduledJob = function (bodyData) {
-	return new Promise(async (resolve, reject) => {
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			json: bodyData,
-		}
+const updateDelayOfScheduledJob = function (bodyData, callback) {
+	const options = {
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		json: bodyData,
+	}
 
-		const apiUrl = schedulerServiceUrl + apiEndpoints.UPDATE_DELAY
-		try {
-			request.post(apiUrl, options, callback)
-
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'SCHEDULER_SERVICE_DOWN',
-					})
+	const apiUrl = schedulerServiceUrl + apiEndpoints.UPDATE_DELAY
+	try {
+		request.post(apiUrl, options, (err, data) => {
+			if (err) {
+				console.error('Error in updateDelayOfScheduledJob POST request:', err)
+			} else {
+				if (data.body.success) {
+					callback(null, data.body.message)
 				} else {
-					if (data.body.success) {
-						resolve(data.body.message)
-					} else {
-						reject({
-							message: 'SCHEDULER_SERVICE_DOWN',
-						})
-					}
+					console.error('Error in updateDelayOfScheduledJob POST request response:', data.body)
+					callback(data.body, null)
 				}
 			}
-		} catch (error) {
-			reject(error)
-		}
-	})
+		})
+	} catch (error) {
+		console.error('Error in updateDelayOfScheduledJob ', error)
+		callback(error, null)
+	}
 }
 
 /**
  * Remove a scheduled job.
  *
  * @param {object} bodyData - The data containing information about the job.
- * @returns {Promise} A promise that resolves with the result of the job removal.
+ * @param {function} callback - The callback function to handle the result of the job removal.
  */
-const removeScheduledJob = function (bodyData) {
-	return new Promise(async (resolve, reject) => {
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			json: bodyData,
-		}
 
-		const apiUrl = schedulerServiceUrl + apiEndpoints.REMOVE_SCHEDULED_JOB
-		try {
-			request.post(apiUrl, options, callback)
+const removeScheduledJob = function (bodyData, callback) {
+	const options = {
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		json: bodyData,
+	}
 
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'SCHEDULER_SERVICE_DOWN',
-					})
+	const apiUrl = schedulerServiceUrl + apiEndpoints.REMOVE_SCHEDULED_JOB
+	try {
+		request.post(apiUrl, options, (err, data) => {
+			if (err) {
+				console.error('Error in removeScheduledJob POST request:', err)
+			} else {
+				if (data.body.success) {
+					callback(null, data.body.message)
 				} else {
-					if (data.body.success) {
-						resolve(data.body.message)
-					} else {
-						reject({
-							message: 'SCHEDULER_SERVICE_DOWN',
-						})
-					}
+					console.error('Error in updateDelayOfScheduledJob POST request response:', data.body)
+					callback(data.body, null)
 				}
 			}
-		} catch (error) {
-			reject(error)
-		}
-	})
+		})
+	} catch (error) {
+		console.error('Error in removeScheduledJob ', error)
+		callback(error, null)
+	}
 }
 
 module.exports = {
-	createSchedulerJob: createSchedulerJob,
-	updateDelayOfScheduledJob: updateDelayOfScheduledJob,
-	removeScheduledJob: removeScheduledJob,
+	createSchedulerJob,
+	updateDelayOfScheduledJob,
+	removeScheduledJob,
 }
