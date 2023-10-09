@@ -261,4 +261,41 @@ module.exports = class OrgAdminHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {Number} id - user id
+	 * @param {Object} loggedInUserId - logged in user id
+	 * @returns {JSON} - Deactivated user data
+	 */
+	static async deactivateUser(id, loggedInUserId) {
+		try {
+			let rowsAffected = await userQueries.updateUser(
+				{
+					id,
+				},
+				{
+					status: common.inActiveStatus,
+					updated_by: loggedInUserId,
+				}
+			)
+
+			if (rowsAffected == 0) {
+				return common.failureResponse({
+					message: 'STATUS_UPDATE_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'DEACTIVATED_USER',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

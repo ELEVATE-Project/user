@@ -166,4 +166,33 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {String} req.params.id - user Id.
+	 * @returns {JSON} - deactivated user response
+	 */
+	async deactivateUser(req) {
+		try {
+			let isOrgAdmin = false
+			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
+				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
+			}
+
+			if (!isOrgAdmin) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgAdminHelper.deactivateUser(req.params.id, req.decodedToken.id)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }

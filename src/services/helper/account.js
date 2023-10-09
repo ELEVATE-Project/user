@@ -208,7 +208,10 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({ email: bodyData.email.toLowerCase() })
+			let user = await userQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				status: common.activeStatus,
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
