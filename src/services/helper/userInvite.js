@@ -13,7 +13,6 @@ const path = require('path')
 const csv = require('csvtojson')
 const axios = require('axios')
 const common = require('@constants/common')
-const FILESTREAM = require('@generics/file-stream')
 const filesHelper = require('@services/helper/files')
 const request = require('request')
 const userInviteQueries = require('@database/queries/orgUserInvite')
@@ -59,6 +58,8 @@ module.exports = class UserInviteHelper {
 				if (rowsAffected == 0) {
 					throw new Error('FILE_UPLOAD_MODIFY_ERROR')
 				}
+				//send email to admin
+				await this.sendInviteeEmail(process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE, data.user)
 
 				//delete the downloaded file and output file
 
@@ -146,7 +147,7 @@ module.exports = class UserInviteHelper {
 				let status
 				if (data.id) {
 					status = data.id
-					await sendInviteeEmail(data)
+					await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, data)
 				} else {
 					status = data
 					isErrorOccured = true
@@ -218,18 +219,16 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async sendInviteeEmail(userData) {
+	static async sendInviteeEmail(templateCode, userData) {
 		try {
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.INVITEE_EMAIL_TEMPLATE_CODE
-			)
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
 
 			if (templateData) {
 				// Push successfull invite email to kafka
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
-						to: email,
+						to: userData.email,
 						subject: templateData.subject,
 						body: utils.composeEmailBody(templateData.body, {
 							name: userData.name,
