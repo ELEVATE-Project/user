@@ -92,7 +92,14 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
-				role = await roleQueries.findOne({ title: common.roleMentee })
+				role = await roleQueries.findOne(
+					{ title: common.roleMentee },
+					{
+						attributes: {
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
+						},
+					}
+				)
 				if (!role) {
 					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
@@ -106,31 +113,6 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-
-			// if (bodyData.role) {
-			// 	role = await roleQueries.findOne(
-			// 		{ title: bodyData.role.toLowerCase(), status: common.activeStatus },
-			// 		{
-			// 			attributes: {
-			// 				exclude: ['created_at', 'updated_at', 'deleted_at'],
-			// 			},
-			// 		}
-			// 	)
-			// } else {
-			// 	role = await roleQueries.findOne({ title: common.roleUser })
-			// }
-
-			// if (!role) {
-			// 	return common.failureResponse({
-			// 		message: 'ROLE_NOT_FOUND',
-			// 		statusCode: httpStatusCode.not_acceptable,
-			// 		responseCode: 'CLIENT_ERROR',
-			// 	})
-			// }
-
-			// roles.push(role.id)
-			// bodyData.roles = roles
-			// delete bodyData.role
 
 			await userQueries.create(bodyData)
 
