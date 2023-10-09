@@ -84,7 +84,7 @@ paths:
     patch:
       summary: Terms & Condition
       tags:
-        - User APIs
+        - Depreciated APIs
       description: This API Requires only X-auth-token and it will set an email to verify true.
       parameters:
         - name: X-auth-token
@@ -444,7 +444,7 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
-  '/user/v1/cloud-services/file/getSignedUrl?fileName={fileName}':
+  '/user/v1/cloud-services/file/getSignedUrl?fileName={file_name}':
     get:
       summary: Cloud services get signed url
       tags:
@@ -462,7 +462,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'fileName'
+          name: 'file_name'
           required: true
           description: Please append a valid file name to url which has to be uploaded
           schema:
@@ -475,7 +475,7 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/cloudServices/cloudServicesResponse200'
-  '/user/v1/cloud-services/file/getDownloadableUrl?filePath={filePath}':
+  '/user/v1/cloud-services/file/getDownloadableUrl?file_path={file_path}':
     get:
       summary: Cloud services get download url
       tags:
@@ -493,7 +493,7 @@ paths:
           schema:
             type: string
         - in: path
-          name: 'filePath'
+          name: 'file_path'
           required: true
           description: Please append a valid file path to url which has to be downloaded
           schema:
@@ -630,7 +630,7 @@ paths:
       summary: Create admin user
       tags:
         - Admin APIs
-      description: "This API is associated with create system user  \n - Then
+      description: "API associated with creating new admin user  \n - Then
         Endpoint for create system user `/user/v1/admin/create` \n - It is mandatory to
         provide values for parameters marked with `required` \n - Mandatory parameter
         cannot be empty or null"
@@ -716,6 +716,85 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/admin/deleteUser400Response'
+  /user/admin/addOrgAdmin:
+    post:
+      summary: Add Organization Admin
+      description: "This API is used to assign a user as the Org-Admin  \n - Then
+        Endpoint for delete user `/user/v1/admin/addOrgAdmin` \n - It is mandatory to
+        provide values for parameters marked with `required` \n - Mandatory parameter
+        cannot be empty or null"
+      tags:
+        - Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 12
+                org_id:
+                  type: integer
+                  example: 55
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                    example: 'OK'
+                  message:
+                    type: string
+                    example: 'User Assigned As The Org-Admin Successfully'
+                  result:
+                    type: object
+                    properties:
+                      user_id:
+                        type: integer
+                        example: 12
+                      org_id:
+                        type: integer
+                        example: 55
+                      user_roles:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 2
+                            title:
+                              type: string
+                              example: 'mentor'
+                            user_type:
+                              type: integer
+                              example: 1
+                            status:
+                              type: string
+                              example: 'ACTIVE'
+                          example:
+                            - id: 2
+                              title: 'mentor'
+                              user_type: 0
+                              status: 'ACTIVE'
+                            - id: 3
+                              title: 'org_admin'
+                              user_type: 0
+                              status: 'ACTIVE'
   '/user/v1/organization/create':
     post:
       summary: Create Organization
@@ -731,12 +810,6 @@ paths:
           in: header
           description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
-          required: true
-          schema:
-            type: string
-        - name: internal_access_token
-          in: header
-          description: To make use of the admin related API, you require internal_access_token.
           required: true
           schema:
             type: string
@@ -773,12 +846,6 @@ paths:
           in: header
           description: To make use of the API, you require X-auth-token. This is Available
             in login API Response.
-          required: true
-          schema:
-            type: string
-        - name: internal_access_token
-          in: header
-          description: To make use of the admin related API, you require internal_access_token.
           required: true
           schema:
             type: string
@@ -852,7 +919,97 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/organization/organizationList200Response'
-  '/user/v1/userRole/list':
+  /user/v1/organization/requestOrgRole:
+    post:
+      summary: Request Org Role
+      description: Request a specific role within an organization.
+      tags:
+        - Organization
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: User's access token which already recognizes the user as the organization's mentee.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  example: mentor
+                form_data:
+                  type: object
+                  properties:
+                    org_specific_fields:
+                      type: string
+                      example: answer
+      responses:
+        '200':
+          description: Successful request for organization role.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Mentor role requested successfully
+                result:
+                  request_id: 12
+                  org_id: 10
+                  status: REQUESTED
+                  meta: {}
+  /user/v1/organization/getOrgRoleRequests:
+    get:
+      summary: Get User Org Role Requests
+      description: Get a list of organization role requests for a specific role. This api is used by the user to get the request for role change
+      tags:
+        - Organization
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the user who is already a mentee of the organization.
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Number of items per page.
+          required: true
+          schema:
+            type: integer
+        - name: role
+          in: query
+          description: The specific role for which requests are being fetched.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully fetched organization role requests.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Org Role Requests Fetched Successfully
+                result:
+                  data:
+                    - id: 12
+                      requester_id: 23
+                      role: mentor
+                      status: under_review
+                      org_id: 43
+                      handled_by: 22
+                  count: 1
+  /user/v1/userRole/list:
     get:
       summary: UserRole List
       tags:
@@ -882,6 +1039,103 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/profile/Unauthorized401Response'
+  /user/v1/entity-type/create:
+    post:
+      summary: Create entity type
+      tags:
+        - EntityType APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/create` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the user who is already a mentee of the organization.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              '$ref': '#/components/schemas/entity-type/createEntityTypeRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      allow_filtering:
+                        type: boolean
+                      data_type:
+                        type: string
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: string
+                      has_entities:
+                        type: boolean
+                  field_0:
+                    type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity type created successfully
+                    result:
+                      id: 1
+                      value: ln
+                      label: Languages
+                      status: ACTIVE
+                      allow_filtering: true
+                      data_type: STRING
+                      created_by: 1
+                      updated_by: 1
+                      updated_at: '2023-09-22T12:40:19.817Z'
+                      created_at: '2023-09-22T12:40:19.817Z'
+                      has_entities: true
+                    meta:
+                      correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
+                      meeting_platform: BBB
+        400:
+          description: Bad Request. Entity type alrady exist
+          content:
+            application/json:
+              schema:
+                '$ref': '#/components/schemas/entity-type/createEntityType400Response'
   '/user/v1/entity-type/update/{id}':
     post:
       summary: Update entity type
@@ -910,7 +1164,7 @@ paths:
         content:
           application/json:
             schema:
-              '$ref': '#/components/schemas/entity-type/createEntityTypeRequest'
+              '$ref': '#/components/schemas/entity-type/updateEntityTypeRequest'
       responses:
         '201':
           description: ok
@@ -941,21 +1195,136 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                value:
+                  type: array
+                  items:
+                    type: string
+                read_user_entity:
+                  type: boolean
+            examples:
+              example1:
+                value:
+                  value:
+                    - ln
+                  read_user_entity: false
       responses:
-        '201':
-          description: ok
+        201:
+          description: Created
           content:
-            application/json:
+            application.json:
               schema:
-                $ref: '#/components/schemas/entity-type/readEntityType201Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: number
+                        value:
+                          type: string
+                        label:
+                          type: string
+                        status:
+                          type: string
+                        created_by:
+                          type: number
+                        updated_by:
+                          type: number
+                        allow_filtering:
+                          type: boolean
+                        data_type:
+                          type: string
+                        created_at:
+                          type: string
+                        updated_at:
+                          type: string
+                        entities:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: number
+                              entity_type_id:
+                                type: number
+                              value:
+                                type: string
+                              label:
+                                type: string
+                              status:
+                                type: string
+                              type:
+                                type: string
+                              created_by:
+                                type: number
+                              updated_by:
+                                type: number
+                              created_at:
+                                type: string
+                              updated_at:
+                                type: string
+                        has_entities:
+                          type: boolean
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity type fetched successfully
+                    result:
+                      - id: 4
+                        value: ln
+                        label: Languages
+                        status: ACTIVE
+                        created_by: 0
+                        updated_by: 0
+                        allow_filtering: true
+                        data_type: STRING
+                        created_at: '2023-09-21T10:16:19.270Z'
+                        updated_at: '2023-09-21T10:16:19.270Z'
+                        has_entities: true
+                        entities:
+                          - id: 13
+                            entity_type_id: 4
+                            value: ml
+                            label: Malayalam
+                            status: ACTIVE
+                            type: SYSTEM
+                            created_by: 1
+                            updated_by: 1
+                            created_at: '2023-09-21T10:16:33.583Z'
+                            updated_at: '2023-09-21T10:16:33.583Z'
+                    meta:
+                      correlation: 64cd08ba-cc87-4172-9633-2146dabe0b78
+                      meeting_platform: BBB
         400:
           description: Bad Request. Entity type alrady exist
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/entity-type/updateEntityType400Response'
+                '$ref': '#/components/schemas/userentity/createUserEntity400Response'
   '/user/v1/entity-type/delete/{id}':
-    patch:
+    post:
       summary: Delete entity type
       tags:
         - EntityType APIs
@@ -1014,12 +1383,75 @@ paths:
             schema:
               '$ref': '#/components/schemas/userentity/createUserEntityRequest'
       responses:
-        '201':
-          description: ok
+        201:
+          description: Created
           content:
-            application/json:
+            application.json:
               schema:
-                $ref: '#/components/schemas/userentity/createUserEntity201Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      entity_type_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity created successfully
+                    result:
+                      id: 1
+                      value: en
+                      label: English
+                      status: ACTIVE
+                      type: string
+                      entity_type_id: 1
+                      created_by: 0
+                      updated_by: 0
+                      updated_at: '2023-07-21T21:46:41.392Z'
+                      created_at: '2023-07-21T21:46:41.392Z'
+                      deleted_at: null
+                    meta:
+                      formsVersion: []
+                      correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
+                      meeting_platform: BBB
         400:
           description: Bad Request. User Entity alrady exist
           content:
@@ -1052,16 +1484,103 @@ paths:
           example: 2
       requestBody:
         content:
-          application/json:
+          application.json:
             schema:
-              '$ref': '#/components/schemas/userentity/updateUserEntityRequest'
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                value:
+                  type: string
+                label:
+                  type: string
+                status:
+                  type: string
+                entity_type_id:
+                  type: number
+            examples:
+              example1:
+                value:
+                  value: en
+                  label: English
+                  status: ACTIVE
+                  entity_type_id: 1
       responses:
         '202':
           description: Accepted
           content:
-            application/json:
+            application.json:
               schema:
-                '$ref': '#/components/schemas/userentity/updateUserEntity202Response'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      entity_type_id:
+                        type: number
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      updated_at:
+                        type: string
+                      created_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+                      meeting_platform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity updated successfully
+                    result:
+                      responseCode: OK
+                      message: Entity created successfully
+                      result:
+                        id: 1
+                        value: en
+                        label: English
+                        status: ACTIVE
+                        type: string
+                        entity_type_id: 1
+                        created_by: 0
+                        updated_by: 0
+                        updated_at: '2023-07-21T21:46:41.392Z'
+                        created_at: '2023-07-21T21:46:41.392Z'
+                        deleted_at: null
+                      meta:
+                        formsVersion: []
+                        correlation: 6191e4d4-438b-4609-8de6-da3694b506b1
+                        meeting_platform: BBB
+                    meta:
+                      formsVersion: []
+                      correlation: 4b69c161-1d19-4d4c-963c-057feaa2e82e
+                      meeting_platform: BBB
         '400':
           description: Bad Request. User Entity Not Found
           content:
@@ -1100,7 +1619,7 @@ paths:
               schema:
                 '$ref': '#/components/schemas/userentity/readUserEntity200Response'
   '/user/v1/entity/delete/{id}':
-    patch:
+    post:
       summary: Delete entity
       tags:
         - Entity APIs
@@ -1136,7 +1655,278 @@ paths:
             application/json:
               schema:
                 '$ref': '#/components/schemas/userentity/deleteUserEntity400Response'
-
+  /user/v1/org-admin/getRequests:
+    post:
+      summary: Get Requests
+      description: Get a list of organization requests based on specified filters.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the org admin.
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Number of items per page.
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filters:
+                  type: object
+                  properties:
+                    role:
+                      type: array
+                      items:
+                        type: string
+                        example: mentor
+                    status:
+                      type: array
+                      items:
+                        type: string
+                        example: requested
+                    handled_by:
+                      type: array
+                      items:
+                        type: integer
+                        example: 2
+      responses:
+        '200':
+          description: Successfully fetched organization requests.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Organization requests fetched successfully
+                result:
+                  data:
+                    - id: 12
+                      requester_id: 23
+                      role: mentor
+                      status: under_review
+                      org_id: 43
+                      handled_by: 22
+                      requester:
+                        id: 23
+                        name: Jake
+                        email: jake@gmail.com
+                    - id: 13
+                      requester_id: 22
+                      role: mentor
+                      status: approved
+                      org_id: 43
+                      handled_by: 22
+                      requester:
+                        id: 23
+                        name: Jake
+                        email: jake@gmail.com
+                  count: 12
+  /user/v1/org-admin/updateRequestStatus:
+    post:
+      summary: Update Request Status
+      description: Update the status of an organization request.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the org admin.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  type: integer
+                  example: 12
+                comments:
+                  type: array
+                  items:
+                    type: string
+                    example: All uploaded documents verified
+                status:
+                  type: string
+                  enum: [APPROVED, REJECTED, UNDER_REVIEW]
+                  example: APPROVED
+      responses:
+        '200':
+          description: Successfully updated organization request status.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Successfully updated organization request status
+                result:
+                  id: 12
+                  requester_id: 23
+                  status: approved
+                  org_id: 43
+                  handled_by: 22
+                  requester:
+                    id: 23
+                    name: Jake
+  /user/v1/org-admin/getRequestDetails:
+    get:
+      summary: Get Request Details
+      description: Get details of a specific organization request.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the org admin.
+          required: true
+          schema:
+            type: string
+        - name: request_id
+          in: query
+          description: ID of the request to get details for.
+          required: true
+          schema:
+            type: integer
+            example: 12
+      responses:
+        '200':
+          description: Successfully fetched organization request details.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Organisation request details fetched successfully
+                result:
+                  id: 12
+                  requester_id: 23
+                  role: mentor
+                  status: approved
+                  org_id: 43
+                  handled_by: 22
+                  requester:
+                    id: 23
+                    name: Jake
+                  handler:
+                    id: 24
+                    name: org_admin name
+                  comments:
+                    - Temp 1
+                    - Temp 2
+                  meta: {}
+  /user/v1/org-admin/bulkUserCreate:
+    post:
+      summary: Bulk User Create
+      description: Create multiple users in bulk using a CSV file.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the org admin.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file_path:
+                  type: string
+                  example: path/to/uploaded-csv-file
+      responses:
+        '200':
+          description: Successfully uploaded bulk user invites CSV.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Bulk User Invites CSV Uploaded Successfully
+                result:
+                  id: 20
+                  input_path: <file_path>
+                  status: UPLOADED
+                  created_by: 22
+                  type: text/csv
+                  updated_at: '2023-09-20T12:00:46.533Z'
+                  created_at: '2023-09-20T12:00:46.533Z'
+  /user/v1/org-admin/getBulkInvitesFilesList:
+    get:
+      summary: Get Bulk Invite Files List
+      description: Get a list of uploaded bulk invite CSV files.
+      tags:
+        - Org Admin APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the org admin.
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Number of items per page.
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Status of the bulk invite files (uploaded/processed/failed).
+          required: true
+          schema:
+            type: string
+            enum: [uploaded, processed, failed]
+            example: uploaded
+      responses:
+        '200':
+          description: Successfully fetched bulk invite CSV list.
+          content:
+            application/json:
+              example:
+                responseCode: OK
+                message: Bulk Invites CSV List Fetched Successfully
+                result:
+                  data:
+                    - id: 12
+                      name: filename.csv
+                      input_path: <path/to/uploaded-csv>
+                      status: UPLOADED
+                      created_by: 4
+                      type: text/csv
+                      output_path: <path/to/output-csv>
+                    - id: 13
+                      name: filename2.csv
+                      input_path: <path/to/uploaded-csv>
+                      status: UPLOADED
+                      created_by: 4
+                      type: text/csv
+                      output_path: <path/to/output-csv>
+                  count: 2
 components:
   schemas:
     user:
@@ -1165,10 +1955,15 @@ components:
             format: password
             example: Password
             required: true
-          role:
+          otp:
             type: string
-            description: Type of User (Mentor, Mentee)
-            example: mentor
+            description: Email OTP for verification
+            example: 6845975
+            required: true
+          has_accepted_terms_and_conditions:
+            type: boolean
+            description: Flag specifiying if user has accepted the terms & conditions
+            example: true
             required: true
       userCreateUserResponse:
         description: User creation response
@@ -1185,62 +1980,40 @@ components:
             properties:
               access_token:
                 type: string
-                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE2OTAzNzIxMTh9.WmhUXIocykrBVti7vtznx_BMAaBtuqYUks4sc1J94Do
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
               refresh_token:
                 type: string
-                example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo5LCJlbWFpbCI6ImJyYW5keW4udGVycnlAeWFob28uY29tIiwibmFtZSI6IkFzaGx5Iiwicm9sZXMiOlt7ImlkIjoyLCJ0aXRsZSI6Im1lbnRvciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiYWN0aXZlIn1dfSwiaWF0IjoxNjkwMjg1NzE4LCJleHAiOjE3MDYwOTY5MTh9.eqJ-KD0YA-Cdpz3XHWKgmi66uU6o229K9pyp6BwAAzI
+                example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
               user:
                 type: object
                 properties:
                   id:
                     type: number
-                    example: 9
+                    example: 8
                   email:
                     type: string
-                    example: brandyn.terry@yahoo.com
+                    example: example@mail.com
                   email_verified:
                     type: string
-                    example: false
+                    example: 'true'
                   name:
                     type: string
-                    example: Ashly
-                  gender:
-                    type: string
-                    example: male
-                  about:
-                    type: string
-                    example: null
-                  share_link:
-                    type: string
-                    example: null
+                    example: John Deo
                   status:
                     type: string
                     example: ACTIVE
-                  image:
-                    type: string
-                    example: null
-                  last_logged_in_at:
-                    type: string
-                    format: nullable
                   has_accepted_terms_and_conditions:
                     type: boolean
                     example: true
-                  languages:
-                    type: string
-                    example: John Deo
-                  designation:
-                    type: array
-                    items:
-                      type: string
-                    example: ['DEO', 'HM']
-                  location:
-                    type: array
-                    items:
-                      type: string
-                    example: ['AP']
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -1248,16 +2021,14 @@ components:
                     type: array
                     items:
                       type: number
-                      example: 2
+                    example:
+                      - 2
                   created_at:
                     type: string
-                    example: 2023-07-25T11:48:38.270Z
+                    example: '2023-09-20T11:59:37.871Z'
                   updated_at:
                     type: string
-                    example: 2023-07-25T11:48:38.270Z
-                  deleted_at:
-                    type: string
-                    example: null
+                    example: '2023-09-20T11:59:37.871Z'
                   user_roles:
                     type: array
                     items:
@@ -1265,10 +2036,10 @@ components:
                       properties:
                         id:
                           type: number
-                          example: 2
+                          example: 1
                         title:
                           type: string
-                          example: mentor
+                          example: mentee
                         user_type:
                           type: number
                           example: 0
@@ -1350,13 +2121,19 @@ components:
                     example: hilbert29@yahoo.com
                   email_verified:
                     type: string
-                    example: false
+                    example: true
                   name:
                     type: string
                     example: Adelia
                   gender:
-                    type: string
-                    example: male
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: male
+                      label:
+                        type: string
+                        example: Male
                   location:
                     type: array
                     items:
@@ -1382,8 +2159,14 @@ components:
                     type: string
                     example: null
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -1411,10 +2194,10 @@ components:
                       properties:
                         id:
                           type: number
-                          example: 2
+                          example: 1
                         title:
                           type: string
-                          example: mentor
+                          example: mentee
                         user_type:
                           type: integer
                           example: 0
@@ -1472,7 +2255,7 @@ components:
         required:
           - refreshToken
         properties:
-          refreshToken:
+          refresh_token:
             type: string
             description: Refresh token.
             example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
@@ -1619,7 +2402,7 @@ components:
             example: 123456
       resetPasswordResponse200:
         type: object
-        description: User login response
+        description: Reset Password response
         properties:
           responseCode:
             type: string
@@ -1647,13 +2430,19 @@ components:
                     example: brandyn.terry@yahoo.com
                   email_verified:
                     type: string
-                    example: false
+                    example: true
                   name:
                     type: string
                     example: Ashly
                   gender:
-                    type: string
-                    example: male
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: male
+                      label:
+                        type: string
+                        example: Male
                   about:
                     type: string
                     example: null
@@ -1678,8 +2467,14 @@ components:
                       type: string
                     example: []
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -1750,7 +2545,7 @@ components:
         required:
           - refreshToken
         properties:
-          refreshToken:
+          refresh_token:
             type: string
             description: Refresh token.
             example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7Il9pZCI6IjYyODMyNTMxYTA1Y2JkNTdiMjczYWViYiIsImVtYWlsIjoiYW5raXQuc0BwYWNld2lzZG9tLmNvbSIsIm5hbWUiOiJBbmtpdCIsImlzQU1lbnRvciI6dHJ1ZX0sImlhdCI6MTY1MzAxMDYxNCwiZXhwIjoxNjY4ODIxODE0fQ.hrIiKz3envHDPauVXSmA_BO_KKzWJAePsP3xD8l851s
@@ -1827,24 +2622,10 @@ components:
                         properties:
                           _id:
                             type: string
-                            example: 62832531a05cbd57b273aebb
+                            example: 1
                           name:
                             type: string
                             example: jhon
-                          areasOfExpertise:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                value:
-                                  type: string
-                                  example: 1
-                                label:
-                                  type: string
-                                  example: Educational Leadership
-                                _id:
-                                  type: string
-                                  example: 628d422029034b105806b906
                           image:
                             type: string
                             example: 'https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/https://cloudstorage.com/container/abc.png'
@@ -1874,7 +2655,7 @@ components:
                 example: mentee
               email_verified:
                 type: boolean
-                example: false
+                example: true
               has_accepted_terms_and_conditions:
                 type: boolean
                 example: false
@@ -1887,21 +2668,37 @@ components:
               location:
                 type: array
                 items:
-                  type: array
-                  items:
-                    type: string
-                  example: ['ap']
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                      example: kl
+                    label:
+                      type: string
+                      example: Kerala
               languages:
                 type: array
                 items:
-                  type: string
-                example: ['en']
+                  type: object
+                  properties:
+                    value:
+                      type: string
+                      example: english
+                    label:
+                      type: string
+                      example: English
               organization_id:
                 type: number
                 example: 2
               preferred_language:
-                type: string
-                example: en
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: english
+                  label:
+                    type: string
+                    example: English
               status:
                 type: string
                 example: ACTIVE
@@ -1921,8 +2718,14 @@ components:
                 type: string
                 example: This is test about of mentee
               gender:
-                type: string
-                example: MALE
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: male
+                  label:
+                    type: string
+                    example: Male
               image:
                 type: string
                 example: https://cloudstorage.com/container/abc.png
@@ -1961,7 +2764,7 @@ components:
             example: true
           gender:
             type: string
-            example: MALE
+            example: male
           image:
             type: string
             example: https://cloudstorage.com/container/abc.png
@@ -1976,10 +2779,67 @@ components:
             type: string
             example: Profile updated successfully.
           result:
-            type: array
-            items:
-              type: string
-            example: []
+            type: object
+            properties:
+              id:
+                type: number
+                example: 8
+              email:
+                type: string
+                example: example@mail.com
+              email_verified:
+                type: string
+                example: 'true'
+              name:
+                type: string
+                example: John Deo
+              status:
+                type: string
+                example: ACTIVE
+              has_accepted_terms_and_conditions:
+                type: boolean
+                example: true
+              preferred_language:
+                type: object
+                properties:
+                  value:
+                    type: string
+                    example: english
+                  label:
+                    type: string
+                    example: English
+              organization_id:
+                type: number
+                example: 1
+              roles:
+                type: array
+                items:
+                  type: number
+                example:
+                  - 2
+              created_at:
+                type: string
+                example: '2023-09-20T11:59:37.871Z'
+              updated_at:
+                type: string
+                example: '2023-09-20T11:59:37.871Z'
+              user_roles:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      example: 1
+                    title:
+                      type: string
+                      example: mentee
+                    user_type:
+                      type: number
+                      example: 0
+                    status:
+                      type: string
+                      example: ACTIVE
       shareMentorProfile200Response:
         type: object
         properties:
@@ -1992,7 +2852,7 @@ components:
           result:
             type: object
             properties:
-              shareLink:
+              share_link:
                 type: string
                 example: 52f076629b3749ebf7dcab23f22b30df
       shareMentorProfileBadRequest400Response:
@@ -2027,7 +2887,7 @@ components:
           data:
             type: object
             properties:
-              templateName:
+              template_name:
                 type: string
                 example: defaultTemplate
               fields:
@@ -2111,7 +2971,7 @@ components:
           data:
             type: object
             properties:
-              templateName:
+              template_name:
                 type: string
                 example: defaultTemplate
               fields:
@@ -2188,9 +3048,6 @@ components:
           sub_type:
             type: string
             example: profileForm
-          templateName:
-            type: string
-            example: defaultTemplate
       readForm200Response:
         description: Read
         type: object
@@ -2289,13 +3146,13 @@ components:
           result:
             type: object
             properties:
-              signedUrl:
+              signed_url:
                 type: string
                 example: https://aws-bucket-storage-name.s3.ap-south-1.amazonaws.com/users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=aws-access-key-id%2F20220602%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20220602T055949Z&X-Amz-Expires=1800&X-Amz-Signature=0588b16fba45cb85efdc45749173c42ba26b47a9faa9bce5715c666b2657a4d4&X-Amz-SignedHeaders=host
-              filePath:
+              file_path:
                 type: string
                 example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
-              destFilePath:
+              dest_file_ath:
                 type: string
                 example: users/62832531a05cbd57b273aebb-1654149589875-laptop1.jpg
       cloudServicesDownloadResponse200:
@@ -2319,6 +3176,7 @@ components:
           - name
           - email
           - password
+          - secret_code
         properties:
           name:
             type: string
@@ -2333,6 +3191,10 @@ components:
             format: password
             example: password
             required: true
+          secret_code:
+            type: string
+            example: secret_code
+            required: true
       createSystemUser201Response:
         type: object
         description: System User created
@@ -2346,8 +3208,11 @@ components:
           result:
             type: array
             items:
-              type: string
-            example: []
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
       createSystemUser406Response:
         type: object
         description: System User alreay exist
@@ -2409,13 +3274,16 @@ components:
                     example: hilbert29@yahoo.com
                   email_verified:
                     type: string
-                    example: false
-                  name:
-                    type: string
-                    example: Adelia
+                    example: true
                   gender:
-                    type: string
-                    example: male
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: male
+                      label:
+                        type: string
+                        example: Male
                   location:
                     type: array
                     items:
@@ -2443,8 +3311,14 @@ components:
                       type: string
                     example: []
                   preferred_language:
-                    type: string
-                    example: en
+                    type: object
+                    properties:
+                      value:
+                        type: string
+                        example: english
+                      label:
+                        type: string
+                        example: English
                   organization_id:
                     type: number
                     example: 1
@@ -2512,8 +3386,11 @@ components:
           result:
             type: array
             items:
-              type: string
-            example: []
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                  example: 1
       deleteUser400Response:
         type: object
         description: User Deleted
@@ -2645,14 +3522,43 @@ components:
     entity-type:
       createEntityTypeRequest:
         type: object
+        properties:
+          value:
+            type: string
+            example: ln
+          label:
+            type: string
+            example: Languages
+          type:
+            type: string
+            example: SYSTEM
+          allow_filtering:
+            type: boolean
+            example: true
+          data_type:
+            type: string
+          has_entities:
+            type: boolean
+            example: STRING
+      updateEntityTypeRequest:
+        type: object
         description: entity type request
         properties:
           value:
             type: string
-            example: location
+            example: roles
           label:
             type: string
-            example: Location
+            example: Roles
+          status:
+            type: string
+            example: ACTIVE
+          type:
+            type: string
+            example: SYSTEM
+          allow_filtering:
+            type: boolean
+            example: true
           data_type:
             type: string
             example: string
@@ -2723,15 +3629,50 @@ components:
         properties:
           responseCode:
             type: string
-            example: OK
           message:
             type: string
-            example: Entity type updated successfully
           result:
-            type: array
-            items:
-              type: string
-            example: []
+            type: object
+            properties:
+              id:
+                type: number
+                example: 1
+              value:
+                type: string
+                example: roles
+              label:
+                type: string
+                example: Roles
+              status:
+                type: string
+                example: ACTIVE
+              created_by:
+                type: string
+                example: '2023-09-06T12:01:09.025Z'
+              updated_by:
+                type: number
+                example: '2023-09-22T12:47:42.510Z'
+              allow_filtering:
+                type: boolean
+                example: true
+              data_type:
+                type: string
+                example: string
+              org_id:
+                type: number
+                example: 1
+              has_entities:
+                type: boolean
+                example: true
+          meta:
+            type: object
+            properties:
+              correlation:
+                type: string
+                example: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
+              meeting_platform:
+                type: string
+                example: BBB
       updateEntityType400Response:
         type: object
         description: User entity already exist
@@ -2756,95 +3697,6 @@ components:
                 msg:
                   type: string
                   example: id param is empty
-      readEntityType201Response:
-        type: object
-        description: read entity type
-        properties:
-          responseCode:
-            type: string
-            example: OK
-          message:
-            type: string
-            example: Entity fetched successfully
-          result:
-            type: array
-            items:
-              type: object
-              properties:
-                id:
-                  type: number
-                  example: 1
-                value:
-                  type: string
-                  example: location
-                label:
-                  type: string
-                  example: Location
-                status:
-                  type: string
-                  example: ACTIVE
-                data_type:
-                  type: string
-                  example: string
-                created_by:
-                  type: string
-                  format: nullable
-                updated_by:
-                  type: string
-                  format: nullable
-                allow_filtering:
-                  type: boolean
-                created_at:
-                  type: string
-                  format: date-time
-                  example: 2023-08-07T11:27:23.566Z
-                updated_at:
-                  type: string
-                  format: date-time
-                  example: 2023-08-07T11:27:23.566Z
-                deleted_at:
-                  type: string
-                  format: nullable
-                entities:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: number
-                        example: 1
-                      entity_type_id:
-                        type: number
-                        example: 1
-                      value:
-                        type: string
-                        example: AP
-                      label:
-                        type: string
-                        example: Andhra Pradesh
-                      status:
-                        type: string
-                        example: ACTIVE
-                      type:
-                        type: string
-                        example: system
-                      created_by:
-                        type: string
-                        format: nullable
-                      updated_by:
-                        type: string
-                        format: nullable
-                      created_at:
-                        type: string
-                        format: date-time
-                        example: 2023-08-07T11:27:23.573Z
-                      updated_at:
-                        type: string
-                        format: date-time
-                        example: 2023-08-07T11:27:23.573Z
-                      deleted_at:
-                        type: string
-                        format: nullable
       deleteUserEntity202Response:
         type: object
         description: Entity Deleted
@@ -2967,42 +3819,6 @@ components:
             items:
               type: string
             example: []
-      updateUserEntityRequest:
-        type: object
-        required:
-          - value
-          - label
-          - type
-          - entity_type_id
-        description: User Entity update request
-        properties:
-          value:
-            type: string
-            example: AP
-          label:
-            type: string
-            example: Andhra Pradesh
-          type:
-            type: string
-            example: string
-          entity_type_id:
-            type: integer
-            example: 4
-      updateUserEntity202Response:
-        type: object
-        description: ntity Updated
-        properties:
-          responseCode:
-            type: string
-            example: OK
-          message:
-            type: string
-            example: Entity updated successfully
-          result:
-            type: array
-            items:
-              type: string
-            example: []
       updateUserEntity400Response:
         type: object
         description: Entity not found
@@ -3059,10 +3875,10 @@ components:
                   example: null
                 created_at:
                   type: string
-                  example: 2023-08-07T11:27:23.573Z
+                  example: '2023-08-07T11:27:23.573Z'
                 updated_at:
                   type: string
-                  example: 2023-08-07T11:27:23.573Z
+                  example: '2023-08-07T11:27:23.573Z'
                 deleted_at:
                   type: string
                   example: null
