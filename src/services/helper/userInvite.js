@@ -62,6 +62,8 @@ module.exports = class UserInviteHelper {
 				await this.sendInviteeEmail(process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE, data.user)
 
 				//delete the downloaded file and output file
+				utils.clearFile(response.result.downloadPath)
+				utils.clearFile(createResponse.result.outputFilePath)
 
 				return resolve({
 					success: true,
@@ -147,6 +149,8 @@ module.exports = class UserInviteHelper {
 				let status
 				if (data.id) {
 					status = data.id
+					data.user = user
+					data.role = invitee.roles
 					await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, data)
 				} else {
 					status = data
@@ -232,7 +236,9 @@ module.exports = class UserInviteHelper {
 						subject: templateData.subject,
 						body: utils.composeEmailBody(templateData.body, {
 							name: userData.name,
+							role: userData.roles ?? '',
 							appName: process.env.APP_NAME,
+							adminName: userData.user?.name ?? '',
 						}),
 					},
 				}
