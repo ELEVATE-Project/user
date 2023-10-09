@@ -53,4 +53,24 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	/**
+	 * @description			- Inherit entity type.
+	 * @method				- post
+	 * @name 				- inheritEntityType
+	 * @returns {JSON} 		- Inherited entity type details.
+	 */
+
+	async inheritEntityType(req) {
+		try {
+			let entityTypeDetails = orgAdminService.inheritEntityType(
+				req.body.entity_type_value, 			
+				req.body.target_entity_type_label,
+				req.decodedToken.organization_id
+			)
+			return entityTypeDetails
+		} catch (error) {
+			return error
+		}
+	}
 }

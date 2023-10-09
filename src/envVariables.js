@@ -1,4 +1,5 @@
 let table = require('cli-table')
+let userService = require('@requests/user')
 
 let tableData = new table()
 
@@ -203,6 +204,11 @@ let enviromentVariables = {
 		message: 'Required scheduler service base url',
 		optional: false,
 	},
+	DEFAULT_ORGANISATION_CODE: {
+		message: 'Required default organisation code',
+		optional: false,
+		default: 'sl',
+	}
 }
 
 let success = true
@@ -290,8 +296,22 @@ module.exports = function () {
 	})
 
 	console.log(tableData.toString())
+	getDefaultOrgId()
 
 	return {
 		success: success,
+	}
+}
+
+async function getDefaultOrgId(){
+	// Get default organisation details
+	let defaultOrgDetails = await userService.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
+	
+	// Set global variable
+	if(defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
+		global.DEFAULT_ORGANISATION_ID = defaultOrgDetails.data.result.id
+	} else {
+		console.log("Server stoped . Failed to set default organisation value")
+		process.exit();
 	}
 }
