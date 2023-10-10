@@ -124,4 +124,20 @@ module.exports = class Organization {
 			return error
 		}
 	}
+
+	/**
+	 * Organization read
+	 * @method
+	 * @name 					- read
+	 * @param {Object} req 		- request data.
+	 */
+
+	async read(req) {
+		try {
+			const result = await orgHelper.read(req)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }

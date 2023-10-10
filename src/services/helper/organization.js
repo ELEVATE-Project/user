@@ -220,4 +220,43 @@ module.exports = class OrganizationsHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Read organisation details
+	 * @method
+	 * @name read
+	 * @param {Integer/String} req 	- organisation id/code
+	 * @returns {JSON} 									- Organization creation details.
+	 */
+
+	static async read(req) {
+		try {
+			let filter = {}
+			// Build filter based on incoming query
+			if (req.query.organisationId) {
+				filter.id = parseInt(req.query.organisationId)
+			} else if (req.query.organisationCode) {
+				filter.code = req.query.organisationCode
+			}
+			
+			const organisationDetails = await organizationQueries.findOne(filter)
+
+			if (!organisationDetails) {
+				return common.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+				result: organisationDetails,
+			})
+
+		} catch (error) {
+			throw error
+		}
+	}
 }
