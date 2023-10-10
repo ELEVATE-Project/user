@@ -235,4 +235,42 @@ module.exports = class Account {
 			return error
 		}
 	}
+
+	/**
+	 * otp to verify user during reActivateAccountOtp
+	 * @method
+	 * @name reActivateAccount
+	 * @param {Object} req -request data.
+	 * @param {String} req.body.email - user email.
+	 * @returns {JSON} - otp success response
+	 */
+
+	async reActivateAccountOtp(req) {
+		const params = req.body
+		try{
+			const result = await accountHelper.reActivateAccountOtp(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * reActivate the Account
+	 * @name reActivateAccount
+	 * @param {Object} req - request data.
+	 * @param {String} req.body.email -user email. 
+	 * @param {string} req.body.otp - reActivateAccountOtp.
+	 * @returns {JSON} - returns susccess or failure .
+	 */
+	async reActivateAccount(req) {
+		const params = req.body
+		try{
+			const result = await accountHelper.reActivateAccount(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	} 
+		
 }
