@@ -8,6 +8,7 @@ const sessionQueries = require('../../database/queries/sessions')
 const adminService = require('./admin')
 const OrganisationExtensionQueries = require('@database/queries/organisationextension')
 const entityTypeQueries = require('../../database/queries/entityType')
+const userRequest = require('@requests/user')
 
 module.exports = class OrgAdminService {
 	/**
@@ -197,10 +198,24 @@ module.exports = class OrgAdminService {
 
 	static async inheritEntityType(entityValue, entityLabel, userOrgId) {
 		try {
+			// Get default organisation details
+			let defaultOrgDetails = await userRequest.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
+		
+			let defaultOrgId
+			if(defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
+				defaultOrgId = defaultOrgDetails.data.result.id
+			} else {
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
-				org_id: DEFAULT_ORGANISATION_ID
+				org_id: defaultOrgId
 			}
 			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
 			
@@ -218,7 +233,7 @@ module.exports = class OrgAdminService {
 			entityTypeDetails.label = entityLabel
 			entityTypeDetails.org_id = userOrgId
 			delete entityTypeDetails.id
-
+			
 			// Create new inherited entity type
 			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
 			return common.successResponse({
