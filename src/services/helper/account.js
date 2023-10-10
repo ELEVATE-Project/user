@@ -21,6 +21,8 @@ const roleQueries = require('@database/queries/userRole')
 const orgDomainQueries = require('@database/queries/orgDomain')
 const userInviteQueries = require('@database/queries/orgUserInvite')
 const FILESTREAM = require('@generics/file-stream')
+const entityTypeQueries = require('@database/queries/entityType')
+const utils = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -311,6 +313,14 @@ module.exports = class AccountHelper {
 			delete user.password
 			delete user.refresh_tokens
 
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				user.organization_id
+			)
+			user = utils.processDbResponse(user, validationData)
+
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({
@@ -350,9 +360,12 @@ module.exports = class AccountHelper {
 			})
 
 			/* Destroy refresh token for user */
-			const res = await userQueries.updateUser({ id: user.id }, { refresh_tokens: refreshTokens })
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: user.id },
+				{ refresh_tokens: refreshTokens }
+			)
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
-			if (!res) {
+			if (affectedRows == 0) {
 				return common.failureResponse({
 					message: 'INVALID_REFRESH_TOKEN',
 					statusCode: httpStatusCode.unauthorized,
@@ -966,9 +979,12 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const res = await userQueries.updateUser({ email: bodyData.email }, { role_id: role.id })
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ email: bodyData.email },
+				{ role_id: role.id }
+			)
 			/* If user doc not updated  */
-			if (!res) {
+			if (affectedRows == 0) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,

@@ -21,7 +21,7 @@ module.exports = class User {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedUser = await userHelper.update(params, req.decodedToken.id)
+			const updatedUser = await userHelper.update(params, req.decodedToken.id, req.decodedToken.organization_id)
 			return updatedUser
 		} catch (error) {
 			return error

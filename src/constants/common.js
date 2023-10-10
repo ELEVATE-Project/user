@@ -22,10 +22,12 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 	return response
 }
 
-const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode }) => {
+const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode, result }) => {
 	const error = new Error(message)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
+	error.data = result || []
+
 	return error
 }
 
