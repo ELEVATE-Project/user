@@ -2,6 +2,13 @@
 const database = require('@database/models/index')
 const { Op } = require('sequelize')
 
+exports.getColumns = async () => {
+	try {
+		return await Object.keys(database.User.rawAttributes)
+	} catch (error) {
+		return error
+	}
+}
 exports.create = async (data) => {
 	try {
 		return await database.User.create(data)
@@ -24,12 +31,11 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		const [res] = await database.User.update(update, {
+		return await database.User.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
 		})
-		return res
 	} catch (error) {
 		return error
 	}

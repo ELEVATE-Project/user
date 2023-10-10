@@ -73,6 +73,13 @@ module.exports = {
 			image: {
 				type: Sequelize.STRING,
 			},
+			custom_entity_text: {
+				type: Sequelize.JSON,
+			},
+			meta: {
+				type: Sequelize.JSONB,
+				allowNull: true,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
