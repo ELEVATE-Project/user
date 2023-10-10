@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const orgHelper = require('@services/helper/organization')
+const orgService = require('@services/helper/organization')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
@@ -41,7 +41,7 @@ module.exports = class Organization {
 				})
 			}
 
-			const createdOrg = await orgHelper.create(req.body, req.decodedToken.id)
+			const createdOrg = await orgService.create(req.body, req.decodedToken.id)
 			return createdOrg
 		} catch (error) {
 			return error
@@ -75,7 +75,7 @@ module.exports = class Organization {
 				})
 			}
 
-			const updatedOrg = await orgHelper.update(req.params.id, req.body, req.decodedToken.id)
+			const updatedOrg = await orgService.update(req.params.id, req.body, req.decodedToken.id)
 			return updatedOrg
 		} catch (error) {
 			return error
@@ -99,7 +99,7 @@ module.exports = class Organization {
 	 */
 	async list(req) {
 		try {
-			const result = await orgHelper.list(req)
+			const result = await orgService.list(req)
 			return result
 		} catch (error) {
 			return error
@@ -118,7 +118,26 @@ module.exports = class Organization {
 
 	async requestOrgRole(req) {
 		try {
-			const result = await orgHelper.requestOrgRole(req.decodedToken, req.body)
+			const result = await orgService.requestOrgRole(req.decodedToken, req.body)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Organization read
+	 * @method
+	 * @name 					- read
+	 * @param {Object} req 		- request data.
+	 */
+
+	async read(req) {
+		try {
+			const result = await orgService.read(
+				req.query.organisationId ? req.query.organisationId : "",
+				req.query.organisationCode ? req.query.organisationCode : ""
+			)
 			return result
 		} catch (error) {
 			return error
