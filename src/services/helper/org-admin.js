@@ -16,6 +16,8 @@ const roleQueries = require('@database/queries/userRole')
 const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const invitesQueue = require('@configs/queue')
+const entityTypeQueries = require('@database/queries/entityType')
+const organizationQueries = require('@database/queries/organization')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -243,6 +245,59 @@ module.exports = class OrgAdminHelper {
 				message,
 				result,
 			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * @description 					- Inherit new entity type from an existing default org's entityType.
+	 * @method
+	 * @name 							- inheritEntityType
+	 * @param {String} entityValue 		- Entity type value
+	 * @param {String} entityLabel 		- Entity type label
+	 * @param {Integer} userOrgId 		- User org id
+	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 */
+
+	static async inheritEntityType(entityValue, entityLabel, userOrgId) {
+		try {
+			let defaultOrgId = await organizationQueries.findOne(
+				{code: process.env.DEFAULT_ORGANISATION_CODE},
+				{ attributes: ['id'] }
+			)
+			defaultOrgId = defaultOrgId.id
+			// Fetch entity type data using defaultOrgId and entityValue
+			const filter = {
+				value: entityValue,
+				org_id: defaultOrgId
+			}
+			
+			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
+			
+			// If no matching data found return failure response
+			if (!entityTypeDetails) {
+				return common.failureResponse({
+					message: 'ENTITY_TYPE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+	
+			// Build data for inheriting entityType
+			entityTypeDetails.parent_id = entityTypeDetails.org_id
+			entityTypeDetails.label = entityLabel
+			entityTypeDetails.org_id = userOrgId
+			delete entityTypeDetails.id
+			
+			// Create new inherited entity type
+			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
+				result: inheritedEntityType,
+			})
+
 		} catch (error) {
 			throw error
 		}

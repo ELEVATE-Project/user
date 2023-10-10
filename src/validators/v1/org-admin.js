@@ -12,4 +12,9 @@ module.exports = {
 	getRequestDetails: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
+	inheritEntityType: (req) => {
+		// Validate incoming request body
+		req.checkBody('entity_type_value').notEmpty().withMessage('entity_type_value field is empty')
+		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
+	}
 }
