@@ -123,7 +123,6 @@ module.exports = class FormsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			form.entities = await entityTypeQueries.findAllEntities(filter)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
