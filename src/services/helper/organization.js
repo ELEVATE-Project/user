@@ -229,16 +229,16 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} 									- Organization creation details.
 	 */
 
-	static async read(req) {
+	static async read(organisationId, organisationCode) {
 		try {
 			let filter = {}
 			// Build filter based on incoming query
-			if (req.query.organisationId) {
-				filter.id = parseInt(req.query.organisationId)
-			} else if (req.query.organisationCode) {
-				filter.code = req.query.organisationCode
+			if (organisationId !== "") {
+				filter.id = parseInt(organisationId)
+			} else {
+				filter.code = organisationCode
 			}
-			
+
 			const organisationDetails = await organizationQueries.findOne(filter)
 
 			if (!organisationDetails) {
