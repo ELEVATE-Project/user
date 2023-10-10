@@ -12,7 +12,6 @@ module.exports = {
 			name: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			input_path: {
 				type: Sequelize.STRING,

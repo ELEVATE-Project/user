@@ -26,4 +26,15 @@ module.exports = {
 		req.checkBody('role').notEmpty().withMessage('role field is empty')
 		req.checkBody('form_data').notEmpty().withMessage('form_data field is empty')
 	},
+
+	read: (req) => {
+		req.checkQuery('organisationId').optional().notEmpty().withMessage('organisationId field is empty')
+
+		req.checkQuery('organisationCode').optional().notEmpty().withMessage('organisationCode field is empty')
+
+		// Use oneOf to check that at least one of the fields is present
+		req.checkQuery()
+			.oneOf(['organisationId', 'organisationCode'])
+			.withMessage('At least one of organisationId or organisationCode should be present')
+	},
 }

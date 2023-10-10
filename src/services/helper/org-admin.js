@@ -18,6 +18,7 @@ const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const invitesQueue = require('@configs/queue')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -31,21 +32,24 @@ module.exports = class OrgAdminHelper {
 
 	static async bulkUserCreate(filePath, tokenInformation) {
 		try {
+			const { id, email, organization_id } = tokenInformation
+
 			const creationData = {
 				name: utils.extractFilename(filePath),
 				input_path: filePath,
 				type: common.fileTypeCSV,
-				created_by: tokenInformation.id,
+				organization_id,
+				created_by: id,
 			}
-
 			const result = await fileUploadQueries.create(creationData)
 			//push to queue
 			await invitesQueue.add(
 				{
-					fileUploadData: result,
-					userInfo: {
-						id: tokenInformation.id,
-						email: tokenInformation.email,
+					fileDetails: result,
+					user: {
+						id,
+						email,
+						organization_id,
 					},
 				},
 				{
@@ -209,25 +213,35 @@ module.exports = class OrgAdminHelper {
 			const isAccepted = bodyData.status === common.statusAccepted
 			const message = isAccepted ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
-			if (isAccepted) {
-				//call event to update mentoring
-			}
-
-			let result = await orgRoleReqQueries.requestDetails({ id })
-
+			const result = await orgRoleReqQueries.requestDetails({ id })
 			let roleArray = []
-			let user = await userQueries.findByPk(result.requester_id)
 
-			if (user.roles?.length) {
-				const userRoles = await roleQueries.findAll(
-					{ id: user.roles, status: common.activeStatus },
-					{ attributes: ['title', 'id', 'user_type'] }
+			const user = await userQueries.findByPk(result.requester_id)
+
+			const userRoles = await roleQueries.findAll(
+				{ id: user.roles, status: common.activeStatus },
+				{ attributes: ['title', 'id', 'user_type', 'status'] }
+			)
+
+			const systemRoleIds = userRoles
+				.filter((role) => role.user_type === common.roleTypeSystem)
+				.map((role) => role.id)
+
+			roleArray.push(...systemRoleIds)
+
+			if (isAccepted) {
+				const { title } = await roleQueries.findOne(
+					{ id: result.role, status: common.activeStatus },
+					{ attributes: ['title', 'id', 'user_type', 'status'] }
 				)
 
-				const systemRoleIds = userRoles
-					.filter((role) => role.user_type === common.roleTypeSystem)
-					.map((role) => role.id)
-				roleArray.push(...systemRoleIds)
+				eventBroadcaster('roleChange', {
+					requestBody: {
+						userId: result.requester_id,
+						new_roles: [title],
+						old_roles: _.map(userRoles, 'title'),
+					},
+				})
 			}
 
 			roleArray.push(result.role)
@@ -263,18 +277,18 @@ module.exports = class OrgAdminHelper {
 	static async inheritEntityType(entityValue, entityLabel, userOrgId) {
 		try {
 			let defaultOrgId = await organizationQueries.findOne(
-				{code: process.env.DEFAULT_ORGANISATION_CODE},
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
 				{ attributes: ['id'] }
 			)
 			defaultOrgId = defaultOrgId.id
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
-				org_id: defaultOrgId
+				org_id: defaultOrgId,
 			}
-			
+
 			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
-			
+
 			// If no matching data found return failure response
 			if (!entityTypeDetails) {
 				return common.failureResponse({
@@ -283,13 +297,13 @@ module.exports = class OrgAdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-	
+
 			// Build data for inheriting entityType
 			entityTypeDetails.parent_id = entityTypeDetails.org_id
 			entityTypeDetails.label = entityLabel
 			entityTypeDetails.org_id = userOrgId
 			delete entityTypeDetails.id
-			
+
 			// Create new inherited entity type
 			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
 			return common.successResponse({
@@ -297,7 +311,6 @@ module.exports = class OrgAdminHelper {
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: inheritedEntityType,
 			})
-
 		} catch (error) {
 			throw error
 		}
