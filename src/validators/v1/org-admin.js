@@ -12,4 +12,10 @@ module.exports = {
 		req.checkBody('current_roles').notEmpty().withMessage('current_roles field is empty')
 		req.checkBody('new_roles').notEmpty().withMessage('new_roles field is empty')
 	},
+	inheritEntityType: (req) => {
+		// Validate incoming request body
+		req.checkBody('entity_type_value').notEmpty().withMessage('entity_type_value field is empty')
+		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
+	}
+	
 }
