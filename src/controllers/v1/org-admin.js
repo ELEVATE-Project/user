@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const orgAdminHelper = require('@services/helper/org-admin')
+const orgAdminService = require('@services/helper/org-admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utilsHelper = require('@generics/utils')
@@ -33,7 +33,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const userUploadRes = await orgAdminHelper.bulkUserCreate(req.body.file_path, req.decodedToken)
+			const userUploadRes = await orgAdminService.bulkUserCreate(req.body.file_path, req.decodedToken)
 			return userUploadRes
 		} catch (error) {
 			return error
@@ -65,7 +65,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const fileUploadList = await orgAdminHelper.getBulkInvitesFilesList(req)
+			const fileUploadList = await orgAdminService.getBulkInvitesFilesList(req)
 			return fileUploadList
 		} catch (error) {
 			return error
@@ -94,7 +94,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const requestDetails = await orgAdminHelper.getRequestDetails(
+			const requestDetails = await orgAdminService.getRequestDetails(
 				req.params.id,
 				req.decodedToken.organization_id
 			)
@@ -128,7 +128,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminHelper.getRequests(req)
+			const result = await orgAdminService.getRequests(req)
 			return result
 		} catch (error) {
 			return error
@@ -160,8 +160,28 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminHelper.updateRequestStatus(req.body, req.decodedToken.id)
+			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken.id)
 			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * @description			- Inherit entity type.
+	 * @method				- post
+	 * @name 				- inheritEntityType
+	 * @returns {JSON} 		- Inherited entity type details.
+	 */
+
+	async inheritEntityType(req) {
+		try {
+			let entityTypeDetails = orgAdminService.inheritEntityType(
+				req.body.entity_type_value, 			
+				req.body.target_entity_type_label,
+				req.decodedToken.organization_id
+			)
+			return entityTypeDetails
 		} catch (error) {
 			return error
 		}

@@ -135,8 +135,8 @@ module.exports = class Organization {
 	async read(req) {
 		try {
 			const result = await orgService.read(
-				req.query.organisationId ? req.query.organisationId : "",
-				req.query.organisationCode ? req.query.organisationCode : ""
+				req.query.organisationId ? req.query.organisationId : '',
+				req.query.organisationCode ? req.query.organisationCode : ''
 			)
 			return result
 		} catch (error) {

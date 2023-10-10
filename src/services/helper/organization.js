@@ -233,7 +233,7 @@ module.exports = class OrganizationsHelper {
 		try {
 			let filter = {}
 			// Build filter based on incoming query
-			if (organisationId !== "") {
+			if (organisationId !== '') {
 				filter.id = parseInt(organisationId)
 			} else {
 				filter.code = organisationCode
@@ -254,7 +254,6 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				result: organisationDetails,
 			})
-
 		} catch (error) {
 			throw error
 		}
