@@ -8,7 +8,7 @@ const sessionQueries = require('../../database/queries/sessions')
 const adminService = require('./admin')
 const OrganisationExtensionQueries = require('@database/queries/organisationextension')
 const entityTypeQueries = require('../../database/queries/entityType')
-const userRequest = require('@requests/user')
+const userRequests = require('@requests/user')
 
 module.exports = class OrgAdminService {
 	/**
@@ -199,7 +199,7 @@ module.exports = class OrgAdminService {
 	static async inheritEntityType(entityValue, entityLabel, userOrgId) {
 		try {
 			// Get default organisation details
-			let defaultOrgDetails = await userRequest.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
+			let defaultOrgDetails = await userRequests.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
 		
 			let defaultOrgId
 			if(defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
