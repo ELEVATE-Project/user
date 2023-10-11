@@ -190,6 +190,7 @@ function validateInput(input, validationData, modelName) {
 		errors: errors,
 	}
 }
+
 function restructureBody(requestBody, entityData, allowedKeys) {
 	const customEntities = {}
 	for (const requestBodyKey in requestBody) {
@@ -243,6 +244,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 
 	return requestBody
 }
+
 function processDbResponse(session, entityType) {
 	if (session.meta) {
 		entityType.forEach((entity) => {
@@ -285,6 +287,7 @@ function processDbResponse(session, entityType) {
 	delete data.custom_entity_text
 	return data
 }
+
 function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))

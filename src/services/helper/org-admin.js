@@ -270,7 +270,6 @@ module.exports = class OrgAdminHelper {
 			throw error
 		}
 	}
-}
 
 	/**
 	 * @description 					- Inherit new entity type from an existing default org's entityType.
@@ -323,7 +322,6 @@ module.exports = class OrgAdminHelper {
 			throw error
 		}
 	}
-
 }
 
 function updateRoleForApprovedRequest(requestDetails) {
@@ -371,5 +369,4 @@ function updateRoleForApprovedRequest(requestDetails) {
 			return error
 		}
 	})
-
-	}
+}
