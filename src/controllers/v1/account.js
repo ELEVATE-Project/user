@@ -8,8 +8,6 @@
 // Dependencies
 const accountHelper = require('@services/helper/account')
 const csv = require('csvtojson')
-const common = require('@constants/common')
-const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Account {
 	/**

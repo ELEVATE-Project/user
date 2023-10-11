@@ -1,14 +1,16 @@
+const fs = require('fs')
 const Queue = require('bull')
 const userInviteHelper = require('@services/helper/userInvite')
 const common = require('@constants/common')
-const fs = require('fs')
-
-const invitesQueue = new Queue('upload_invites', process.env.REDIS_HOST)
 
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 
+const invitesQueue = new Queue('upload_invites', process.env.REDIS_HOST)
+
 invitesQueue.process(async (job) => {
+	console.log(`Job with id ${job.id} Started`)
+
 	const destPath = PROJECT_ROOT_DIRECTORY + common.tempFolderForBulkUpload
 	if (!fs.existsSync(destPath)) {
 		fs.mkdirSync(destPath)
@@ -16,17 +18,15 @@ invitesQueue.process(async (job) => {
 
 	let response = await userInviteHelper.uploadInvites(job.data)
 	if (!response.success) {
-		console.log(`Job with id ${job.id} Failed`)
+		logger.info(`Job with id ${job.id} Error ${response.message}`)
 	}
 })
 
 invitesQueue.on('completed', (job) => {
-	console.log(`Job with id ${job.id} has been completed`)
 	logger.info(`Job with id ${job.id} has been completed`)
 })
 
 invitesQueue.on('failed', (job, err) => {
-	console.log(`Job with id ${job.id} Failed`)
 	logger.error(`Job with id ${job.id} Failed`)
 })
 

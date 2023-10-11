@@ -39,7 +39,16 @@ module.exports = class OrgAdminHelper {
 				organization_id,
 				created_by: id,
 			}
+
 			const result = await fileUploadQueries.create(creationData)
+			if (!result?.id) {
+				return common.successResponse({
+					responseCode: 'CLIENT_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					message: 'USER_CSV_UPLOADED_FAILED',
+				})
+			}
+
 			//push to queue
 			await invitesQueue.add(
 				{
@@ -58,6 +67,7 @@ module.exports = class OrgAdminHelper {
 					},
 				}
 			)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_CSV_UPLOADED',
@@ -195,12 +205,12 @@ module.exports = class OrgAdminHelper {
 	 */
 	static async updateRequestStatus(bodyData, loggedInUserId) {
 		try {
-			const id = bodyData.request_id
+			const requestId = bodyData.request_id
 			delete bodyData.request_id
-			bodyData.handled_by = loggedInUserId
 
-			const rowsAffected = await orgRoleReqQueries.update({ id: id }, bodyData)
-			if (rowsAffected == 0) {
+			bodyData.handled_by = loggedInUserId
+			const rowsAffected = await orgRoleReqQueries.update({ id: requestId }, bodyData)
+			if (rowsAffected === 0) {
 				return common.failureResponse({
 					message: 'ORG_ROLE_REQ_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -208,54 +218,19 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			const isAccepted = bodyData.status === common.statusAccepted
-			const message = isAccepted ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
+			const requestDetails = await orgRoleReqQueries.requestDetails({ id: requestId })
 
-			const result = await orgRoleReqQueries.requestDetails({ id })
-			let roleArray = []
+			const isApproved = bodyData.status === common.statusAccepted
+			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
-			const user = await userQueries.findByPk(result.requester_id)
-
-			const userRoles = await roleQueries.findAll(
-				{ id: user.roles, status: common.activeStatus },
-				{ attributes: ['title', 'id', 'user_type', 'status'] }
-			)
-
-			const systemRoleIds = userRoles
-				.filter((role) => role.user_type === common.roleTypeSystem)
-				.map((role) => role.id)
-
-			roleArray.push(...systemRoleIds)
-
-			if (isAccepted) {
-				const { title } = await roleQueries.findOne(
-					{ id: result.role, status: common.activeStatus },
-					{ attributes: ['title', 'id', 'user_type', 'status'] }
-				)
-
-				eventBroadcaster('roleChange', {
-					requestBody: {
-						userId: result.requester_id,
-						new_roles: [title],
-						old_roles: _.map(userRoles, 'title'),
-					},
-				})
+			if (isApproved) {
+				await updateRoleForApprovedRequest(requestDetails)
 			}
-
-			roleArray.push(result.role)
-			const roles = _.uniq(roleArray)
-
-			await userQueries.updateUser(
-				{ id: result.requester_id },
-				{
-					roles: roles,
-				}
-			)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message,
-				result,
+				result: requestDetails,
 			})
 		} catch (error) {
 			throw error
@@ -270,17 +245,12 @@ module.exports = class OrgAdminHelper {
 	 * @param {Object} loggedInUserId - logged in user id
 	 * @returns {JSON} - Deactivated user data
 	 */
-	static async deactivateUser(id, loggedInUserId) {
+	static async deactivateUser(filterQuery, loggedInUserId) {
 		try {
-			let rowsAffected = await userQueries.updateUser(
-				{
-					id,
-				},
-				{
-					status: common.inActiveStatus,
-					updated_by: loggedInUserId,
-				}
-			)
+			let rowsAffected = await userQueries.updateUser(filterQuery, {
+				status: common.inActiveStatus,
+				updated_by: loggedInUserId,
+			})
 
 			if (rowsAffected == 0) {
 				return common.failureResponse({
@@ -292,10 +262,57 @@ module.exports = class OrgAdminHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'DEACTIVATED_USER',
+				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
 			throw error
 		}
 	}
+}
+
+function updateRoleForApprovedRequest(requestDetails) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const user = await userQueries.findByPk(requestDetails.requester_id)
+			const userRoles = await roleQueries.findAll(
+				{ id: user.roles, status: common.activeStatus },
+				{ attributes: ['title', 'id', 'user_type', 'status'] }
+			)
+
+			const systemRoleIds = userRoles
+				.filter((role) => role.user_type === common.roleTypeSystem)
+				.map((role) => role.id)
+
+			let rolesToUpdate = [...systemRoleIds]
+
+			const { title } = await roleQueries.findOne(
+				{ id: requestDetails.role, status: common.activeStatus },
+				{ attributes: ['title', 'id', 'user_type', 'status'] }
+			)
+
+			eventBroadcaster('roleChange', {
+				requestBody: {
+					userId: requestDetails.requester_id,
+					new_roles: [title],
+					old_roles: _.map(userRoles, 'title'),
+				},
+			})
+
+			rolesToUpdate.push(requestDetails.role)
+			const roles = _.uniq(rolesToUpdate)
+
+			await userQueries.updateUser(
+				{ id: requestDetails.requester_id },
+				{
+					roles,
+				}
+			)
+
+			return resolve({
+				success: true,
+			})
+		} catch (error) {
+			return error
+		}
+	})
 }

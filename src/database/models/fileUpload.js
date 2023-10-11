@@ -47,6 +47,7 @@ module.exports = (sequelize, DataTypes) => {
 
 	FileUpload.associate = (models) => {
 		FileUpload.belongsTo(models.User, { foreignKey: 'created_by', as: 'uploaded_by' })
+		FileUpload.hasMany(models.OrgUserInvite, { as: 'invitees', foreignKey: 'file_id' })
 	}
 
 	return FileUpload

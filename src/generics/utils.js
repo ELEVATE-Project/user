@@ -84,6 +84,7 @@ const getDownloadableUrl = async (imgPath) => {
 }
 
 const validateRoleAccess = (roles, requiredRole) => {
+	if (!roles || roles.length === 0) return false
 	return roles.some((role) => role.title == requiredRole)
 }
 
@@ -136,6 +137,14 @@ function extractDomainFromEmail(email) {
 	return email.substring(email.lastIndexOf('@') + 1)
 }
 
+function generateCSVContent(data) {
+	const headers = Object.keys(data[0])
+	return [
+		headers.join(','),
+		...data.map((row) => headers.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
+	].join('\n')
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -155,4 +164,5 @@ module.exports = {
 	isNumeric: isNumeric,
 	extractFilename: extractFilename,
 	extractDomainFromEmail: extractDomainFromEmail,
+	generateCSVContent: generateCSVContent,
 }

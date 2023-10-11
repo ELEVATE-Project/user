@@ -41,4 +41,9 @@ module.exports = {
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
+
+	addOrgAdmin: (req) => {
+		req.checkBody('user_id').notEmpty().withMessage('user_id field is empty')
+		req.checkBody('org_id').notEmpty().withMessage('org_id field is empty')
+	},
 }
