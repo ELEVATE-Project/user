@@ -412,7 +412,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n    \"location\": [\"AP\", \"KL\"],\n    \"about\": \"This is test about of mentee\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\"english\"]\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -992,7 +992,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": [\n        \"ln\"\n    ]\n}",
+							"raw": "{\n    \"value\": [\n        \"languages\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
