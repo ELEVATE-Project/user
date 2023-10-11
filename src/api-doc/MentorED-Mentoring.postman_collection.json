@@ -1476,7 +1476,7 @@
 							"raw": "{\n\t\"user_id\":1,\n\t\"current_roles\":[\"mentor\"],\n\t\"new_roles\":[\"mentee\"]\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/roleChange",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/roleChange",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "roleChange"]
 						}
@@ -1502,7 +1502,7 @@
 							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/inheritEntityType",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
 						}
@@ -1533,7 +1533,7 @@
 							"raw": "{\n\t\"jobId\": \"mentoring_session_one_hour_1\",\n\t\"emailTemplateCode\": \"mentor_one_hour_before_session_reminder\"\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/notifications/emailCronJob",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/notifications/emailCronJob",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "notifications", "emailCronJob"]
 						}
