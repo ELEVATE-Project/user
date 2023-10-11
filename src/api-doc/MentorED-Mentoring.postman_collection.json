@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "30976341-d211-4422-aabd-318b65bde8ea",
+		"_postman_id": "bb606f0d-faa2-49b0-84f1-d8b808c52d3f",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "18760682"
 	},
 	"item": [
 		{
@@ -1448,6 +1448,63 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/delete",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentees", "delete"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "org-admin",
+			"item": [
+				{
+					"name": "roleChange (Internal api)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"user_id\":1,\n\t\"current_roles\":[\"mentor\"],\n\t\"new_roles\":[\"mentee\"]\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/roleChange",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "roleChange"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "inheritEntityType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
 						}
 					},
 					"response": []
