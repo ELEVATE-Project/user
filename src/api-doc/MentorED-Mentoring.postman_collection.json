@@ -1510,6 +1510,37 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "notification",
+			"item": [
+				{
+					"name": "emailCronJob (Internal api)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"jobId\": \"mentoring_session_one_hour_1\",\n\t\"emailTemplateCode\": \"mentor_one_hour_before_session_reminder\"\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/notifications/emailCronJob",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "notifications", "emailCronJob"]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
