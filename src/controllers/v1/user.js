@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const userHelper = require('@services/helper/user')
+const userService = require('@services/user')
 
 module.exports = class User {
 	/**
@@ -21,7 +21,7 @@ module.exports = class User {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedUser = await userHelper.update(params, req.decodedToken.id, req.decodedToken.organization_id)
+			const updatedUser = await userService.update(params, req.decodedToken.id, req.decodedToken.organization_id)
 			return updatedUser
 		} catch (error) {
 			return error
@@ -39,7 +39,7 @@ module.exports = class User {
 	 */
 	async read(req) {
 		try {
-			const userDetails = await userHelper.read(req.params.id ? req.params.id : req.decodedToken.id, req.headers)
+			const userDetails = await userService.read(req.params.id ? req.params.id : req.decodedToken.id, req.headers)
 			return userDetails
 		} catch (error) {
 			return error
@@ -55,7 +55,7 @@ module.exports = class User {
 	 */
 	async share(req) {
 		try {
-			const shareLink = await userHelper.share(req.params.id)
+			const shareLink = await userService.share(req.params.id)
 			return shareLink
 		} catch (error) {
 			return error

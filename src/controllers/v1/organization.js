@@ -6,10 +6,10 @@
  */
 
 // Dependencies
-const orgService = require('@services/helper/organization')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const orgService = require('@services/organization')
 
 module.exports = class Organization {
 	/**

@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const formsHelper = require('@services/helper/form')
+const formsService = require('@services/form')
 
 module.exports = class Form {
 	/**
@@ -25,7 +25,7 @@ module.exports = class Form {
 	async create(req) {
 		const params = req.body
 		try {
-			const createdForm = await formsHelper.create(params)
+			const createdForm = await formsService.create(params)
 			return createdForm
 		} catch (error) {
 			return error
@@ -48,7 +48,7 @@ module.exports = class Form {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedForm = await formsHelper.update(req.params.id, params)
+			const updatedForm = await formsService.update(req.params.id, params)
 			return updatedForm
 		} catch (error) {
 			return error
@@ -72,10 +72,10 @@ module.exports = class Form {
 		const params = req.body
 		try {
 			if (!req.params.id && Object.keys(req.body).length === 0) {
-				const form = await formsHelper.readAllFormsVersion()
+				const form = await formsService.readAllFormsVersion()
 				return form
 			} else {
-				const form = await formsHelper.read(req.params.id, params)
+				const form = await formsService.read(req.params.id, params)
 				return form
 			}
 		} catch (error) {

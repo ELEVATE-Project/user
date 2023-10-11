@@ -1,5 +1,5 @@
 /**
- * name : services/helper/users.js
+ * name : users.js
  * author : Priyanka Pradeep
  * created-date : 17-July-2023
  * Description : User Service Helper.
