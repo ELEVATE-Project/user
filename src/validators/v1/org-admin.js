@@ -22,4 +22,9 @@ module.exports = {
 			req.checkBody('id').isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
 		}
 	},
+	inheritEntityType: (req) => {
+		// Validate incoming request body
+		req.checkBody('entity_type_value').notEmpty().withMessage('entity_type_value field is empty')
+		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
+	}
 }

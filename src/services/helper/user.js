@@ -25,7 +25,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, id) {
+	static async update(bodyData, id, orgId) {
 		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
@@ -36,59 +36,28 @@ module.exports = class UserHelper {
 				})
 			}
 
-			if (bodyData.hasOwnProperty(common.location) || bodyData.hasOwnProperty(common.languages)) {
-				let values = []
-				if (bodyData.hasOwnProperty(common.location)) values.push(common.location)
-				if (bodyData.hasOwnProperty(common.languages)) values.push(common.languages)
-				if (values.length > 0) {
-					const entityTypes = await entityTypeQueries.findAll(
-						{ value: values },
-						{ attributes: ['id', 'value'] }
-					)
+			const filter = {
+				status: 'ACTIVE',
+			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
 
-					if (!entityTypes) {
-						return common.failureResponse({
-							message: bodyData.hasOwnProperty(common.location)
-								? 'LOCATION_UPDATE_FAILED'
-								: 'LANGUAGE_UPDATE_FAILED',
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					}
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-					for (
-						let pointerToEntityTypes = 0;
-						pointerToEntityTypes < entityTypes.length;
-						pointerToEntityTypes++
-					) {
-						let entityType = entityTypes[pointerToEntityTypes]
-						let entities = await entitiesQueries.findAll(
-							{
-								value: bodyData[entityType.value],
-								entity_type_id: entityType.id,
-							},
-							{ attributes: ['value'] }
-						)
-
-						if (entities.length != bodyData[entityType.value].length) {
-							return common.failureResponse({
-								message:
-									entityType.value == common.location
-										? 'LOCATION_UPDATE_FAILED'
-										: 'LANGUAGE_UPDATE_FAILED',
-								statusCode: httpStatusCode.bad_request,
-								responseCode: 'CLIENT_ERROR',
-							})
-						}
-						bodyData[entityType.value] = _.map(entities, function (entity) {
-							return entity.value
-						})
-					}
-				}
+			let res = utils.validateInput(bodyData, validationData, 'users')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
 			}
 
-			let update = await userQueries.updateUser({ id: id }, bodyData)
-			if (!update) {
+			let userModel = await userQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, userModel)
+
+			const [affectedRows, updatedData] = await userQueries.updateUser({ id: id }, bodyData)
+			if (affectedRows == 0) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
@@ -100,9 +69,16 @@ module.exports = class UserHelper {
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
+			const processDbResponse = utils.processDbResponse(
+				JSON.parse(JSON.stringify(updatedData[0])),
+				validationData
+			)
+			delete processDbResponse.refresh_tokens
+			delete processDbResponse.password
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
+				result: processDbResponse,
 			})
 		} catch (error) {
 			throw error
@@ -175,15 +151,22 @@ module.exports = class UserHelper {
 				if (roles && roles.length > 0) {
 					isAMentor = roles.some((role) => role.title === common.roleMentor)
 				}
+				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+					{
+						status: 'ACTIVE',
+					},
+					user.organization_id
+				)
+				const processDbResponse = utils.processDbResponse(user, validationData)
 
 				if (isAMentor) {
-					await utils.redisSet(redisUserKey, user)
+					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
-					result: user ? user : {},
+					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
 				return common.successResponse({

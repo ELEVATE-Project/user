@@ -1,149 +1,154 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		const entitiesArray = {
+			languages: [
+				{
+					label: 'English',
+					value: 'en_in',
+				},
+				{
+					label: 'Hindi',
+					value: 'hi',
+				},
+			],
 			location: [
 				{
-					value: 'AP',
+					value: 'ap',
 					label: 'Andhra Pradesh',
 				},
 				{
-					value: 'AR',
+					value: 'ar',
 					label: 'Arunachal Pradesh',
 				},
 				{
-					value: 'As',
+					value: 'as',
 					label: 'Assam',
 				},
 				{
-					value: 'BR',
+					value: 'br',
 					label: 'Bihar',
 				},
 				{
-					value: 'CG',
+					value: 'cg',
 					label: 'Chhattisgarh',
 				},
 				{
-					value: 'GA',
+					value: 'ga',
 					label: 'Goa',
 				},
 				{
-					value: 'GJ',
+					value: 'gj',
 					label: 'Gujarat',
 				},
 				{
-					value: 'HR',
+					value: 'hr',
 					label: 'Haryana',
 				},
 				{
-					value: 'HP',
+					value: 'hp',
 					label: 'Himachal Pradesh',
 				},
 				{
-					value: 'JH',
+					value: 'jh',
 					label: 'Jharkhand',
 				},
 				{
-					value: 'KN',
+					value: 'kn',
 					label: 'Karnataka',
 				},
 				{
-					value: 'KL',
+					value: 'kl',
 					label: 'Kerala',
 				},
 				{
-					value: 'MP',
+					value: 'mp',
 					label: 'Madhya Pradesh',
 				},
 				{
-					value: 'MH',
+					value: 'mh',
 					label: 'Maharashtra',
 				},
 				{
-					value: 'MN',
+					value: 'mn',
 					label: 'Manipur',
 				},
 				{
-					value: 'ML',
+					value: 'ml',
 					label: 'Meghalaya',
 				},
 				{
-					value: 'MZ',
+					value: 'mz',
 					label: 'Mizoram',
 				},
 				{
-					value: 'NL',
+					value: 'nl',
 					label: 'Nagaland',
 				},
 				{
-					value: 'OD',
+					value: 'od',
 					label: 'Odisha',
 				},
 				{
-					value: 'PB',
+					value: 'pb',
 					label: 'Punjab',
 				},
 				{
-					value: 'RJ',
+					value: 'rj',
 					label: 'Rajasthan',
 				},
 				{
-					value: 'SK',
+					value: 'sk',
 					label: 'Sikkim',
 				},
 				{
-					value: 'TN',
+					value: 'tn',
 					label: 'Tamil Nadu',
 				},
 				{
-					value: 'TS',
+					value: 'ts',
 					label: 'Telangana',
 				},
 				{
-					value: 'TR',
+					value: 'tr',
 					label: 'Tripura',
 				},
 				{
-					value: 'UP',
+					value: 'up',
 					label: 'Uttar Pradesh',
 				},
 				{
-					value: 'UK',
+					value: 'uk',
 					label: 'Uttarakhand',
 				},
 				{
-					value: 'WB',
+					value: 'wb',
 					label: 'West Bengal',
-				},
-			],
-			languages: [
-				{
-					value: 'english',
-					label: 'English',
-				},
-				{
-					value: 'hindi',
-					label: 'Hindi',
 				},
 			],
 		}
 
-		let entitiesFinalArray = []
-		let entityTypeFinalArray = []
-		let entityTypeValues = []
-		entityTypeValues = [...Object.keys(entitiesArray)]
-
-		Object.keys(entitiesArray).forEach((key) => {
-			let eachentityTypeRow = {
+		const entityTypeFinalArray = Object.keys(entitiesArray).map((key) => {
+			const entityTypeRow = {
 				value: key,
-				label: toCamelCase(key),
+				label: convertToWords(key),
+				data_type: 'STRING',
 				status: 'ACTIVE',
-				data_type: 'string',
-				allow_filtering: true,
 				updated_at: new Date(),
 				created_at: new Date(),
+				created_by: 0,
+				updated_by: 0,
+				allow_filtering: true,
+				org_id: 1,
+				has_entities: true,
+				model_names: ['users'],
 			}
 
-			entityTypeFinalArray.push(eachentityTypeRow)
+			if (key === 'location') {
+				entityTypeRow.allow_custom_entities = false
+			} else {
+				entityTypeRow.allow_custom_entities = true
+			}
+			return entityTypeRow
 		})
 
 		await queryInterface.bulkInsert('entity_types', entityTypeFinalArray, {})
@@ -152,14 +157,17 @@ module.exports = {
 			type: queryInterface.sequelize.QueryTypes.SELECT,
 		})
 
-		entityTypes.forEach((eachTypes) => {
-			if (eachTypes.value in entitiesArray) {
-				entitiesArray[eachTypes.value].forEach((eachEntity) => {
-					eachEntity.entity_type_id = eachTypes.id
+		const entitiesFinalArray = []
+
+		entityTypes.forEach((eachType) => {
+			if (eachType.value in entitiesArray) {
+				entitiesArray[eachType.value].forEach((eachEntity) => {
+					eachEntity.entity_type_id = eachType.id
+					eachEntity.type = 'SYSTEM'
 					eachEntity.status = 'ACTIVE'
-					eachEntity.type = 'system'
 					eachEntity.created_at = new Date()
 					eachEntity.updated_at = new Date()
+					eachEntity.created_by = 0
 
 					entitiesFinalArray.push(eachEntity)
 				})
@@ -175,10 +183,14 @@ module.exports = {
 	},
 }
 
-function toCamelCase(key) {
-	return key
-		.split(' ')
-		.map((a) => a.trim())
-		.map((a) => a[0].toUpperCase() + a.substring(1))
-		.join('')
+function convertToWords(inputString) {
+	const words = inputString.replace(/_/g, ' ').split(' ')
+
+	const capitalizedWords = words.map((word) => {
+		return word.charAt(0).toUpperCase() + word.slice(1)
+	})
+
+	const result = capitalizedWords.join(' ')
+
+	return result
 }

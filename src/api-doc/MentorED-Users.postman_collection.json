@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "49d7c04a-de94-4706-be1f-02b97ba62d98",
-		"name": "MentorED-Users DEV",
+		"_postman_id": "089ae030-c38b-486b-a313-97ea05a14e60",
+		"name": "MentorED-Users DEV new",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "6350183",
-		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-49d7c04a-de94-4706-be1f-02b97ba62d98?action=share&creator=6350183&source=collection_link"
+		"_exporter_id": "18760682"
 	},
 	"item": [
 		{
@@ -413,7 +412,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n    \"location\": [\"AP\", \"KL\"],\n    \"about\": \"This is test about of mentee\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\"english\"]\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -478,9 +477,9 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user//v1/userRole/list",
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/list",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["", "v1", "userRole", "list"]
+							"path": ["v1", "userRole", "list"]
 						}
 					},
 					"response": []
@@ -706,6 +705,41 @@
 			"name": "Organization",
 			"item": [
 				{
+					"name": "read (Internal API)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisationCode=sl",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "read"],
+							"query": [
+								{
+									"key": "organisationCode",
+									"value": "sl"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Organization",
 					"request": {
 						"method": "POST",
@@ -793,155 +827,7 @@
 			]
 		},
 		{
-			"name": "EntityTypes",
-			"item": [
-				{
-					"name": "Create EntityType",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\": \"education\",\n    \"label\": \"Qualification\",\n    \"data_type\":\"string\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update EntityType",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\": \"education\",\n    \"label\": \"Qualification\",\n    \"data_type\":\"string\",\n    \"status\":\"INACTIVE\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/4",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "update", "4"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read System  EntityTypes",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "read"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read User  EntityTypes",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"read_user_entity\" : true,\n    \"value\" : \"languages\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "read"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete EntityType",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/4",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "delete", "4"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Entities",
+			"name": "entity",
 			"item": [
 				{
 					"name": "Create Entity",
@@ -956,7 +842,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"entity_type_id\":4\n}",
+							"raw": "{\n    \"value\": \"ml\",\n    \"label\": \"Malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -967,7 +853,59 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "entity", "create"]
-						}
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"hm\",\n    \"label\": \"malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/read?read_user_entity=true",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "read"],
+							"query": [
+								{
+									"key": "id",
+									"value": "2",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
+									"key": "value",
+									"value": "ml",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
+									"key": "read_user_entity",
+									"value": "true",
+									"description": "use this param to get all entities, including user created entities."
+								}
+							]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
 				},
@@ -984,7 +922,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"entity_type_id\":4\n}",
+							"raw": "{\n    \"value\": \"english\",\n    \"label\": \"English\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -992,15 +930,40 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/31",
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "update", "31"]
-						}
+							"path": ["v1", "entity", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
 					},
 					"response": []
 				},
 				{
 					"name": "Delete Entity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "entity-type",
+			"item": [
+				{
+					"name": "Create Entity Type",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1012,7 +975,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"STRING\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1020,15 +983,16 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/31",
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "delete", "31"]
-						}
+							"path": ["v1", "entity-type", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
 				},
 				{
-					"name": "Read Entity",
+					"name": "Read All System Entity Type",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1039,20 +1003,138 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/read?id=1",
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "read"],
+							"path": ["v1", "entity-type", "read"]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity Types with entities",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": [\n        \"languages\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"],
 							"query": [
 								{
-									"key": "id",
-									"value": "1"
+									"key": "value",
+									"value": "role_one",
+									"disabled": true
 								},
 								{
-									"key": "read_user_entity",
-									"value": "true",
+									"key": "deleted",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
 									"disabled": true
 								}
 							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity Types",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"roles\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity Type",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "org-admin",
+			"item": [
+				{
+					"name": "inheritEntityType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
 						}
 					},
 					"response": []

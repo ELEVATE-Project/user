@@ -1,10 +1,9 @@
-'use strict'
-const EntityType = require('@database/models/index').EntityType
-const Entity = require('@database/models/index').Entity
+const EntityType = require('../models/index').EntityType
+const Entity = require('../models/index').Entity
 const { Op } = require('sequelize')
-const common = require('@constants/common')
+
 module.exports = class UserEntityData {
-	static async create(data) {
+	static async createEntityType(data) {
 		try {
 			return await EntityType.create(data, { returning: true })
 		} catch (error) {
@@ -12,9 +11,9 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findOne(filter, options = {}) {
+	static async findOneEntityType(filter, options = {}) {
 		try {
-			return await EntityType.findOne({
+			return await EntityType.findOne({ 
 				where: filter,
 				...options,
 				raw: true,
@@ -24,36 +23,55 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAll(filter, options = {}) {
+	static async findAllEntityTypes(orgId, attributes) {
 		try {
-			const entityTypeData = await EntityType.findAll({
-				where: filter,
-				...options,
+			const entityData = await EntityType.findAll({
+				where: {
+					[Op.or]: [
+						{
+							created_by: 0,
+						},
+						{
+							org_id: orgId,
+						},
+					],
+				},
+				attributes,
 				raw: true,
 			})
-			return entityTypeData
+			return entityData
 		} catch (error) {
 			return error
 		}
 	}
-	static async findAllUserEntityTypes(filter, userId) {
+	static async findUserEntityTypesAndEntities(filter, orgId) {
 		try {
-			filter.status = common.activeStatus
 			return await EntityType.findAll({
-				where: filter,
+				where: {
+					...filter,
+					[Op.or]: [
+						{
+							created_by: 0,
+						},
+						{
+							org_id: orgId,
+						},
+					],
+				},
 				include: [
 					{
 						model: Entity,
 						required: false,
 						where: {
-							[Op.or]: [
+							/* [Op.or]: [
 								{
-									created_by: null,
+									created_by: 0,
 								},
 								{
 									created_by: userId,
 								},
-							],
+							], */
+							status: 'ACTIVE',
 						},
 						as: 'entities',
 					},
@@ -64,57 +82,35 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async updateOne(filter, update, options = {}) {
+	static async updateOneEntityType(id, update, options = {}) {
 		try {
-			const [rowsAffected] = await EntityType.update(update, {
-				where: filter,
+			return await EntityType.update(update, {
+				where: {
+					id: id,
+				},
 				...options,
-				individualHooks: true,
 			})
-
-			return rowsAffected
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async delete(filter) {
+	static async deleteOneEntityType(id) {
 		try {
-			const rowsAffected = await EntityType.destroy({
-				where: filter,
+			return await EntityType.destroy({
+				where: {
+					id: id,
+				},
 				individualHooks: true,
 			})
-
-			return rowsAffected
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async findById(id) {
+	static async findEntityTypeById(filter) {
 		try {
-			return await EntityType.findByPk(id)
-		} catch (error) {
-			return error
-		}
-	}
-
-	static async findAllSystemEntityTypes(filter) {
-		try {
-			filter.status = common.activeStatus
-			return await EntityType.findAll({
-				where: filter,
-				include: [
-					{
-						model: Entity,
-						required: false,
-						where: {
-							created_by: null,
-						},
-						as: 'entities',
-					},
-				],
-			})
+			return await EntityType.findByPk(filter)
 		} catch (error) {
 			return error
 		}

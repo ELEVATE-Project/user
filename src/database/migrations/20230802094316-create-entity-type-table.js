@@ -11,18 +11,13 @@ module.exports = {
 			},
 			value: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			label: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			status: {
 				type: Sequelize.STRING,
 				defaultValue: 'ACTIVE',
-			},
-			data_type: {
-				type: Sequelize.STRING, //numeric, alphaNumeric etc
 			},
 			created_by: {
 				type: Sequelize.INTEGER,
@@ -33,13 +28,31 @@ module.exports = {
 			allow_filtering: {
 				type: Sequelize.BOOLEAN,
 			},
+			data_type: {
+				type: Sequelize.STRING,
+			},
+			org_id: {
+				type: Sequelize.INTEGER,
+			},
+			parent_id: {
+				type: Sequelize.INTEGER,
+			},
+			has_entities: {
+				type: Sequelize.BOOLEAN,
+			},
+			allow_custom_entities: {
+				type: Sequelize.BOOLEAN,
+			},
+			model_names: {
+				type: Sequelize.ARRAY(Sequelize.STRING),
+			},
 			created_at: {
-				type: Sequelize.DATE,
 				allowNull: false,
+				type: Sequelize.DATE,
 			},
 			updated_at: {
-				type: Sequelize.DATE,
 				allowNull: false,
+				type: Sequelize.DATE,
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
@@ -47,9 +60,9 @@ module.exports = {
 		})
 
 		// Add an index for the 'value' column
-		await queryInterface.addIndex('entity_types', ['value'], {
+		await queryInterface.addIndex('entity_types', ['value', 'org_id'], {
 			unique: true,
-			name: 'unique_value',
+			name: 'unique_value_org_id',
 			where: {
 				deleted_at: null,
 			},

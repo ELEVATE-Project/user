@@ -52,6 +52,13 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
 			},
+			custom_entity_text: {
+				type: DataTypes.JSON,
+			},
+			meta: {
+				type: DataTypes.JSONB,
+				allowNull: true,
+			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)

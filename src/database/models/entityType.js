@@ -9,38 +9,22 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				type: DataTypes.INTEGER,
 			},
-			value: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				unique: true,
-			},
-			label: {
-				type: DataTypes.STRING,
-				allowNull: false,
-			},
-			status: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				defaultValue: 'ACTIVE',
-			},
-			data_type: {
-				type: DataTypes.STRING,
-				allowNull: false,
-			},
-			created_by: {
-				type: DataTypes.INTEGER,
-			},
-			updated_by: {
-				type: DataTypes.INTEGER,
-			},
-			allow_filtering: {
-				type: DataTypes.BOOLEAN,
-			},
+			value: { type: DataTypes.STRING, allowNull: false },
+			label: { type: DataTypes.STRING, allowNull: false },
+			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
+			created_by: { type: DataTypes.INTEGER, allowNull: true },
+			updated_by: { type: DataTypes.INTEGER, allowNull: true },
+			allow_filtering: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+			data_type: { type: DataTypes.STRING, allowNull: false, defaultValue: 'STRING' },
+			org_id: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+			parent_id: { type: DataTypes.INTEGER, allowNull: true },
+			allow_custom_entities: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+			has_entities: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+			model_names: { type: DataTypes.ARRAY(DataTypes.STRING) },
 		},
 		{ sequelize, modelName: 'EntityType', tableName: 'entity_types', freezeTableName: true, paranoid: true }
 	)
 	EntityType.associate = (models) => {
-		// EntityType.hasMany(models.Entity, { foreignKey: 'id' })
 		EntityType.hasMany(models.Entity, {
 			foreignKey: 'entity_type_id',
 			as: 'entities',
@@ -62,9 +46,7 @@ module.exports = (sequelize, DataTypes) => {
 				}
 			)
 		} catch (error) {
-			// Handle any error that might occur during the soft deletion of associated Entity records
 			console.error('Error during beforeDestroy hook:', error)
-			// Optionally, you can throw the error to prevent the soft deletion of the EntityType record
 			throw error
 		}
 	})

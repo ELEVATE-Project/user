@@ -22,10 +22,12 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 	return response
 }
 
-const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode }) => {
+const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode, result }) => {
 	const error = new Error(message)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
+	error.data = result || []
+
 	return error
 }
 
@@ -54,6 +56,7 @@ module.exports = {
 		'/profile/share',
 		'/user/v1/user/read',
 		'/user/v1/admin/create',
+		'/user/v1/organization/read',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,

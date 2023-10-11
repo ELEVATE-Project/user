@@ -145,6 +145,151 @@ function generateCSVContent(data) {
 	].join('\n')
 }
 
+function validateInput(input, validationData, modelName) {
+	const errors = []
+	for (const field of validationData) {
+		const fieldValue = input[field.value]
+		//console.log('fieldValue', field.allow_custom_entities)
+		if (!fieldValue || field.allow_custom_entities === true) {
+			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
+		}
+
+		if (Array.isArray(fieldValue)) {
+			for (const value of fieldValue) {
+				if (!field.entities.some((entity) => entity.value === value)) {
+					errors.push({
+						param: field.value,
+						msg: `${value} is not a valid entity.`,
+					})
+				}
+			}
+		} else if (!field.entities.some((entity) => entity.value === fieldValue)) {
+			errors.push({
+				param: field.value,
+				msg: `${fieldValue} is not a valid entity.`,
+			})
+		}
+
+		if (modelName && !field.model_names.includes(modelName)) {
+			errors.push({
+				param: field.value,
+				msg: `${field.value} is not allowed for the ${modelName} model.`,
+			})
+		}
+	}
+
+	if (errors.length === 0) {
+		return {
+			success: true,
+			message: 'Validation successful',
+		}
+	}
+
+	return {
+		success: false,
+		errors: errors,
+	}
+}
+function restructureBody(requestBody, entityData, allowedKeys) {
+	const customEntities = {}
+	for (const requestBodyKey in requestBody) {
+		if (requestBody.hasOwnProperty(requestBodyKey)) {
+			const requestBodyValue = requestBody[requestBodyKey]
+			const entityType = entityData.find((entity) => entity.value === requestBodyKey)
+			if (entityType && entityType.allow_custom_entities) {
+				if (Array.isArray(requestBodyValue)) {
+					const customValues = []
+
+					for (const value of requestBodyValue) {
+						const entityExists = entityType.entities.find((entity) => entity.value === value)
+
+						if (!entityExists) {
+							customEntities.custom_entity_text = {
+								...(customEntities.custom_entity_text || {}),
+								[requestBodyKey]: { value: 'other', label: value },
+							}
+
+							// Add the value to customValues to remove it later
+							customValues.push(value)
+						}
+					}
+
+					if (customValues.length > 0) {
+						// Remove customValues from the original array
+						requestBody[requestBodyKey] = requestBody[requestBodyKey].filter(
+							(value) => !customValues.includes(value)
+						)
+					}
+				}
+			}
+			if (Array.isArray(requestBodyValue)) {
+				for (const value of requestBodyValue) {
+					const entityTypeExists = entityData.find((entity) => entity.value === value)
+					// Always move the key to the meta field if it's not allowed and is not a custom entity
+					if (!allowedKeys.includes(requestBodyKey) && entityTypeExists) {
+						requestBody.meta = {
+							...(requestBody.meta || {}),
+							[requestBodyKey]: requestBody[requestBodyKey],
+						}
+						delete requestBody[requestBodyKey]
+					}
+				}
+			}
+		}
+	}
+
+	// Merge customEntities into requestBody
+	Object.assign(requestBody, customEntities)
+
+	return requestBody
+}
+function processDbResponse(session, entityType) {
+	if (session.meta) {
+		entityType.forEach((entity) => {
+			const entityTypeValue = entity.value
+			if (session?.meta?.hasOwnProperty(entityTypeValue)) {
+				// Move the key from session.meta to session root level
+				session[entityTypeValue] = session.meta[entityTypeValue]
+				// Delete the key from session.meta
+				delete session.meta[entityTypeValue]
+			}
+		})
+	}
+
+	const output = { ...session } // Create a copy of the session object
+
+	for (const key in output) {
+		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
+			const matchingEntity = entityType.find((entity) => entity.value === key)
+			const matchingValues = matchingEntity.entities
+				.filter((entity) => output[key].includes(entity.value))
+				.map((entity) => ({
+					value: entity.value,
+					label: entity.label,
+				}))
+			output[key] = matchingValues
+		}
+
+		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
+			const matchingEntity = entityType.find((entity) => entity.value === output.meta[key].value)
+			output.meta[key] = {
+				value: matchingEntity.value,
+				label: matchingEntity.label,
+			}
+		}
+	}
+	const data = output
+	for (const key in data.custom_entity_text) {
+		data[key] = [...data[key], data.custom_entity_text[key]]
+	}
+	delete data.custom_entity_text
+	return data
+}
+function removeParentEntityTypes(data) {
+	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
+	return data.filter((item) => !parentIds.includes(item.id))
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -165,4 +310,8 @@ module.exports = {
 	extractFilename: extractFilename,
 	extractDomainFromEmail: extractDomainFromEmail,
 	generateCSVContent: generateCSVContent,
+	processDbResponse,
+	restructureBody,
+	validateInput,
+	removeParentEntityTypes,
 }
