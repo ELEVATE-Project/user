@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "9c741578-7f71-44f9-9ef9-965e78031869",
-		"name": "MentorED-Users DEV",
+		"_postman_id": "089ae030-c38b-486b-a313-97ea05a14e60",
+		"name": "MentorED-Users DEV new",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "18760682"
 	},
 	"item": [
 		{
@@ -705,6 +705,41 @@
 			"name": "Organization",
 			"item": [
 				{
+					"name": "read (Internal API)",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisationCode=sl",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "read"],
+							"query": [
+								{
+									"key": "organisationCode",
+									"value": "sl"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Organization",
 					"request": {
 						"method": "POST",
@@ -1069,6 +1104,37 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "entity-type", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "org-admin",
+			"item": [
+				{
+					"name": "inheritEntityType",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
 						}
 					},
 					"response": []
