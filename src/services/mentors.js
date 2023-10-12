@@ -1,15 +1,9 @@
 // Dependencies
-const moment = require('moment-timezone')
-
-const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
-const userProfile = require('./userProfile')
+const userProfile = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const ObjectId = require('mongoose').Types.ObjectId
-const sessionAttendees = require('@db/sessionAttendees/queries')
-
-const mentorQueries = require('../../database/queries/mentorextension')
+const mentorQueries = require('@database/queries/mentorExtention')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -157,6 +151,7 @@ module.exports = class MentorsHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -208,6 +203,7 @@ module.exports = class MentorsHelper {
 				return session
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

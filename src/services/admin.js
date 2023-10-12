@@ -7,11 +7,11 @@ const sessionAttendeesHelper = require('./sessionAttendees')
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
 
-const sessionQueries = require('../../database/queries/sessions')
+const sessionQueries = require('@database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
-const mentorQueries = require('../../database/queries/mentorextension')
-const menteeQueries = require('../../database/queries/userextension')
+const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
 
 module.exports = class AdminHelper {
 	/**

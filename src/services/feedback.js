@@ -12,7 +12,7 @@ const questionSetQueries = require('@database/queries/questionSet')
 const questionsQueries = require('@database/queries/questions')
 const feedbackQueries = require('@database/queries/feedback')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const mentorExtensionQueries = require('@database/queries/mentorextension')
+const mentorExtensionQueries = require('@database/queries/mentorExtension')
 
 module.exports = class MenteesHelper {
 	/**
@@ -143,6 +143,7 @@ module.exports = class MenteesHelper {
 				},
 			})
 		} catch (error) {
+			console.error(error)
 			throw error
 		}
 	}

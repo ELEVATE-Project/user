@@ -14,6 +14,7 @@ const md5 = require('md5')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
 const common = require('@constants/common')
+const crypto = require('crypto')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -351,33 +352,48 @@ function deleteProperties(obj, propertiesToDelete) {
 		return obj
 	}
 }
+/**
+ * Generate security checksum.
+ * @method
+ * @name generateCheckSum
+ * @param {String} queryHash - Query hash.
+ * @returns {Number} - checksum key.
+ */
+
+function generateCheckSum(queryHash) {
+	var shasum = crypto.createHash('sha1')
+	shasum.update(queryHash)
+	const checksum = shasum.digest('hex')
+	return checksum
+}
 module.exports = {
 	hash: hash,
-	getCurrentMonthRange: getCurrentMonthRange,
-	getCurrentWeekRange: getCurrentWeekRange,
-	getCurrentQuarterRange: getCurrentQuarterRange,
-	elapsedMinutes: elapsedMinutes,
-	getIstDate: getIstDate,
-	composeEmailBody: composeEmailBody,
-	getDownloadableUrl: getDownloadableUrl,
+	getCurrentMonthRange,
+	getCurrentWeekRange,
+	getCurrentQuarterRange,
+	elapsedMinutes,
+	getIstDate,
+	composeEmailBody,
+	getDownloadableUrl,
 	getTimeZone,
-	utcFormat: utcFormat,
-	md5Hash: md5Hash,
-	internalSet: internalSet,
-	internalDel: internalDel,
-	internalGet: internalGet,
-	redisSet: redisSet,
-	redisGet: redisGet,
-	redisDel: redisDel,
+	utcFormat,
+	md5Hash,
+	internalSet,
+	internalDel,
+	internalGet,
+	redisSet,
+	redisGet,
+	redisDel,
 	extractEmailTemplate,
 	capitalize,
 	isAMentor,
-	isNumeric: isNumeric,
-	epochFormat: epochFormat,
+	isNumeric,
+	epochFormat,
 	processDbResponse,
 	restructureBody,
 	validateInput,
 	removeParentEntityTypes,
 	getTimeDifferenceInMilliseconds,
 	deleteProperties,
+	generateCheckSum,
 }

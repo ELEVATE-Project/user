@@ -1,12 +1,8 @@
 // Dependencies
-const moment = require('moment-timezone')
-
-const sessionAttendees = require('@db/sessionAttendees/queries')
-const userProfile = require('./userProfile')
-const sessionData = require('@db/sessions/queries')
+const userProfile = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const bigBlueButton = require('./bigBlueButton')
+const bigBlueButton = require('@requests/bigBlueButton')
 const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 const ObjectId = require('mongoose').Types.ObjectId
@@ -14,11 +10,12 @@ const ObjectId = require('mongoose').Types.ObjectId
 const { successResponse } = require('@constants/common')
 
 const { UniqueConstraintError } = require('sequelize')
-const menteeQueries = require('../../database/queries/userextension')
+const menteeQueries = require('@database/queries/userExtension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const _ = require('lodash')
 const entityTypeQueries = require('@database/queries/entityType')
+const bigBlueButtonService = require('./bigBlueButton')
 
 module.exports = class MenteesHelper {
 	/**
@@ -266,7 +263,7 @@ module.exports = class MenteesHelper {
 			if (sessionAttendee?.meeting_info?.link) {
 				meetingInfo = sessionAttendee.meeting_info
 			} else {
-				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
+				const attendeeLink = await bigBlueButtonService.joinMeetingAsAttendee(
 					sessionId,
 					menteeDetails.name,
 					session.menteePassword

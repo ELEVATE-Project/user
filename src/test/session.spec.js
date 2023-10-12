@@ -16,10 +16,10 @@ describe('Sessions controller and helper test', () => {
 	let userProfile
 	beforeAll(async () => {
 		await loadMongo()
-		sessionService = require('@services/helper/sessions')
+		sessionService = require('@services/sessions')
 		controller = require('@controllers/v1/sessions')
 		sessionModel = require('@db/sessions/queries')
-		userProfile = require('@services/helper/userProfile')
+		userProfile = require('@requests/user')
 		return
 	})
 

@@ -6,9 +6,9 @@
  */
 
 // Dependencies
-const userHelper = require('@services/helper/user')
-const feedbackHelper = require('@services/helper/feedback')
 const { isAMentor } = require('@generics/utils')
+const userRequest = require('@requests/user')
+const feedbackService = require('@services/feedback')
 
 module.exports = class Users {
 	/**
@@ -23,7 +23,7 @@ module.exports = class Users {
 
 	async pendingFeedbacks(req) {
 		try {
-			const pendingFeedBacks = await feedbackHelper.pending(
+			const pendingFeedBacks = await feedbackService.pending(
 				req.decodedToken.id,
 				isAMentor(req.decodedToken.roles)
 			)
@@ -47,7 +47,7 @@ module.exports = class Users {
 
 	async list(req) {
 		try {
-			const listUser = await userHelper.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
+			const listUser = await userRequest.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
 			return listUser
 		} catch (error) {
 			return error

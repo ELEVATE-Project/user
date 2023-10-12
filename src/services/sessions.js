@@ -8,15 +8,11 @@ const sessionData = require('@db/sessions/queries')
 const notificationTemplateData = require('@db/notification-template/query')
 const sessionAttendeesHelper = require('./sessionAttendees')
 const kafkaCommunication = require('@generics/kafka-communication')
-const apiBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
-const bigBlueButton = require('./bigBlueButton')
-const userProfile = require('./userProfile')
-const utils = require('@generics/utils')
-const sessionMentor = require('./mentors')
 const sessionQueries = require('@database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const mentorExtensionQueries = require('../../database/queries/mentorextension')
+const mentorExtensionQueries = require('@database/queries/mentorExtension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 const postSessionQueries = require('@database/queries/postSessionDetail')
 const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
@@ -25,6 +21,12 @@ const entitiesQueries = require('@database/queries/entity')
 const { Op } = require('sequelize')
 
 const schedulerRequest = require('@requests/scheduler')
+
+const bigBlueButton = require('@requests/bigBlueButton')
+const userProfile = require('@requests/user')
+const utils = require('@generics/utils')
+const sessionMentor = require('./mentors')
+const bigBlueButtonService = require('./bigBlueButton')
 
 module.exports = class SessionsHelper {
 	/**

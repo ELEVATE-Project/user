@@ -6,8 +6,8 @@
  */
 
 // Dependencies
-const menteesHelper = require('@services/helper/mentees')
 const { isAMentor } = require('@generics/utils')
+const menteesService = require('@services/mentees')
 
 module.exports = class Mentees {
 	/**
@@ -18,13 +18,13 @@ module.exports = class Mentees {
 	 * @param {String} req.decodedToken.id - User Id.
 	 * @returns {JSON} - Mentee profile details
 	 */
-	async profile(req) {
+	/* async profile(req) {
 		try {
 			return await menteesHelper.profile(req.decodedToken.id)
 		} catch (error) {
 			return errors
 		}
-	}
+	} */
 	/**
 	 * mentees sessions
 	 * @method
@@ -40,7 +40,7 @@ module.exports = class Mentees {
 
 	async sessions(req) {
 		try {
-			const sessions = await menteesHelper.sessions(
+			const sessions = await menteesService.sessions(
 				req.decodedToken.id,
 				req.query.enrolled,
 				req.pageNo,
@@ -68,7 +68,7 @@ module.exports = class Mentees {
 
 	async reports(req) {
 		try {
-			const reports = await menteesHelper.reports(req.decodedToken.id, req.query.filterType)
+			const reports = await menteesService.reports(req.decodedToken.id, req.query.filterType)
 			return reports
 		} catch (error) {
 			return error
@@ -87,7 +87,7 @@ module.exports = class Mentees {
 
 	async homeFeed(req) {
 		try {
-			const homeFeed = await menteesHelper.homeFeed(
+			const homeFeed = await menteesService.homeFeed(
 				req.decodedToken.id,
 				isAMentor(req.decodedToken.roles),
 				req.pageNo,
@@ -112,7 +112,7 @@ module.exports = class Mentees {
 
 	async joinSession(req) {
 		try {
-			const session = await menteesHelper.joinSession(req.params.id, req.decodedToken.token)
+			const session = await menteesService.joinSession(req.params.id, req.decodedToken.token)
 			return session
 		} catch (error) {
 			return error

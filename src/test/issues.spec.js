@@ -19,7 +19,7 @@ describe('Issues api test', () => {
 
 		beforeAll(async () => {
 			await loadMongo()
-			issuesHelper = require('@services/helper/issues')
+			issuesHelper = require('@services/issues')
 			notificationTemplateData = require('@db/notification-template/query')
 			kafkaCommunication = require('@generics/kafka-communication')
 			issueData = require('@db/issues/query')

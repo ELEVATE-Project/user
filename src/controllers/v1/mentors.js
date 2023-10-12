@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const mentorsHelper = require('@services/helper/mentors')
+const mentorsService = require('@services/mentors')
 
 module.exports = class Mentors {
 	/**
@@ -22,7 +22,7 @@ module.exports = class Mentors {
 	 */
 	async upcomingSessions(req) {
 		try {
-			return await mentorsHelper.upcomingSessions(
+			return await mentorsService.upcomingSessions(
 				req.params.id,
 				req.pageNo,
 				req.pageSize,
@@ -44,9 +44,9 @@ module.exports = class Mentors {
 	 */
 	async profile(req) {
 		try {
-			return await mentorsHelper.read(req.params.id)
+			return await mentorsService.read(req.params.id)
 		} catch (error) {
-			return errors
+			return error
 		}
 	}
 	/**
@@ -64,7 +64,7 @@ module.exports = class Mentors {
 
 	async reports(req) {
 		try {
-			const reports = await mentorsHelper.reports(
+			const reports = await mentorsService.reports(
 				req.decodedToken.id,
 				req.query.filterType,
 				req.decodedToken.roles
@@ -86,7 +86,7 @@ module.exports = class Mentors {
 
 	async share(req) {
 		try {
-			const shareLink = await mentorsHelper.share(req.params.id)
+			const shareLink = await mentorsService.share(req.params.id)
 			return shareLink
 		} catch (error) {
 			return error

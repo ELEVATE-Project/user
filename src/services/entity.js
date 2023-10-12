@@ -1,8 +1,7 @@
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-
-const entityTypeQueries = require('../../database/queries/entity')
+const entityTypeQueries = require('../database/queries/entity')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
 
