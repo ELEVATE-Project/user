@@ -1,5 +1,5 @@
 // Dependencies
-const entityTypeHelper = require('@services/helper/entityType')
+const entityTypeService = require('@services/entityType')
 
 module.exports = class Entity {
 	/**
@@ -12,7 +12,7 @@ module.exports = class Entity {
 
 	async create(req) {
 		try {
-			return await entityTypeHelper.create(req.body, req.decodedToken.id, req.decodedToken.organization_id)
+			return await entityTypeService.create(req.body, req.decodedToken.id, req.decodedToken.organization_id)
 		} catch (error) {
 			return error
 		}
@@ -28,7 +28,7 @@ module.exports = class Entity {
 
 	async update(req) {
 		try {
-			return await entityTypeHelper.update(
+			return await entityTypeService.update(
 				req.body,
 				req.params.id,
 				req.decodedToken.id,
@@ -50,13 +50,13 @@ module.exports = class Entity {
 	async read(req) {
 		try {
 			if (req.body.value) {
-				return await entityTypeHelper.readUserEntityTypes(
+				return await entityTypeService.readUserEntityTypes(
 					req.body,
 					req.decodedToken.id,
 					req.decodedToken.organization_id
 				)
 			}
-			return await entityTypeHelper.readAllSystemEntityTypes(req.decodedToken.organization_id)
+			return await entityTypeService.readAllSystemEntityTypes(req.decodedToken.organization_id)
 		} catch (error) {
 			return error
 		}
@@ -72,7 +72,7 @@ module.exports = class Entity {
 
 	async delete(req) {
 		try {
-			return await entityTypeHelper.delete(req.params.id)
+			return await entityTypeService.delete(req.params.id)
 		} catch (error) {
 			return error
 		}

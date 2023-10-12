@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const adminHelper = require('@services/helper/admin')
+const adminService = require('@services/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utilsHelper = require('@generics/utils')
@@ -36,7 +36,7 @@ module.exports = class Admin {
 				})
 			}
 
-			const user = await adminHelper.deleteUser(req.params.id)
+			const user = await adminService.deleteUser(req.params.id)
 			return user
 		} catch (error) {
 			return error
@@ -64,7 +64,7 @@ module.exports = class Admin {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const createdAccount = await adminHelper.create(req.body)
+			const createdAccount = await adminService.create(req.body)
 			return createdAccount
 		} catch (error) {
 			return error
@@ -83,7 +83,7 @@ module.exports = class Admin {
 
 	async login(req) {
 		try {
-			const loggedInAccount = await adminHelper.login(req.body)
+			const loggedInAccount = await adminService.login(req.body)
 			return loggedInAccount
 		} catch (error) {
 			return error

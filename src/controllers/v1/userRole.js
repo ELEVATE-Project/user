@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const roleHelper = require('@services/helper/userRole')
+const roleService = require('@services/userRole')
 
 module.exports = class userRole {
 	/**
@@ -18,7 +18,7 @@ module.exports = class userRole {
 
 	async list(req) {
 		try {
-			const user = await roleHelper.list()
+			const user = await roleService.list()
 			return user
 		} catch (error) {
 			return error
