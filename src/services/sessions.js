@@ -6,7 +6,6 @@ const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
 const sessionData = require('@db/sessions/queries')
 const notificationTemplateData = require('@db/notification-template/query')
-const sessionAttendeesHelper = require('./sessionAttendees')
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -408,7 +407,7 @@ module.exports = class SessionsHelper {
 					sessionAttendeesIds.push(attendee.mentee_id)
 				})
 
-				const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(sessionAttendeesIds)
+				const attendeesAccounts = await userProfile.getListOfUserDetails(sessionAttendeesIds)
 
 				sessionAttendees.map((attendee) => {
 					for (let index = 0; index < attendeesAccounts.result.length; index++) {
