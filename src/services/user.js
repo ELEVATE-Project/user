@@ -108,7 +108,7 @@ module.exports = class UserHelper {
 			if (!userDetails) {
 				let options = {
 					attributes: {
-						exclude: ['password', 'location', 'refresh_tokens'],
+						exclude: ['password', 'refresh_tokens'],
 					},
 				}
 				if (internal_access_token) {
