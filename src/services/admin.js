@@ -1,8 +1,6 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const sessionData = require('@db/sessions/queries')
-const notificationTemplateData = require('@db/notification-template/query')
-const sessionAttendeesData = require('@db/sessionAttendees/queries')
+
 const sessionAttendeesHelper = require('./sessionAttendees')
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')

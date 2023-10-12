@@ -1,12 +1,6 @@
 // Dependencies
-const sessionAttendees = require('@db/sessionAttendees/queries')
-const sessionData = require('@db/sessions/queries')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const questionsSetData = require('@db/questionsSet/queries')
-const questionsData = require('@db/questions/queries')
-const ObjectId = require('mongoose').Types.ObjectId
-const kafkaCommunication = require('@generics/kafka-communication')
 const sessionQueries = require('@database/queries/sessions')
 const questionSetQueries = require('@database/queries/questionSet')
 const questionsQueries = require('@database/queries/questions')

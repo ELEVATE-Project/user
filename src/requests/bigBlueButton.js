@@ -11,19 +11,19 @@ const request = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
 const utils = require('@generics/utils')
 
-module.exports = class BigBlueButtonRequests {
-	/**
-	 * Create Meeting.
-	 * @method
-	 * @name createMeeting
-	 * @param {String} meetingId - meeting Id.
-	 * @param {String} meetingName - meeting name.
-	 * @param {String} attendeePW - Attendee Password.
-	 * @param {String} moderatorPW - Moderator Password.
-	 * @returns {String} - Meeting success message.
-	 */
+/**
+ * Create Meeting.
+ * @method
+ * @name createMeeting
+ * @param {String} meetingId - meeting Id.
+ * @param {String} meetingName - meeting name.
+ * @param {String} attendeePW - Attendee Password.
+ * @param {String} moderatorPW - Moderator Password.
+ * @returns {String} - Meeting success message.
+ */
 
-	static async createMeeting(meetingId, meetingName, attendeePW, moderatorPW, sessionDuration) {
+const createMeeting = function (meetingId, meetingName, attendeePW, moderatorPW, sessionDuration) {
+	return new Promise(async (resolve, reject) => {
 		try {
 			let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + '%2F' + meetingId
 			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL
@@ -55,21 +55,23 @@ module.exports = class BigBlueButtonRequests {
 
 			const createUrl = bigBlueButtonUrl + endpoints.CREATE_MEETING + '?' + query + '&checksum=' + checksum
 			let response = await request.get(createUrl)
-			return response
+			return resolve(response)
 		} catch (error) {
-			throw error
+			return reject(error)
 		}
-	}
+	})
+}
 
-	/**
-	 * Get meeting recordings.
-	 * @method
-	 * @name getRecordings
-	 * @param {String} meetingId - meeting Id.
-	 * @returns {JSON} - Recording response.
-	 */
+/**
+ * Get meeting recordings.
+ * @method
+ * @name getRecordings
+ * @param {String} meetingId - meeting Id.
+ * @returns {JSON} - Recording response.
+ */
 
-	static async getRecordings(meetingId) {
+const getRecordings = function (meetingId) {
+	return new Promise(async (resolve, reject) => {
 		try {
 			let checkSumGeneration = 'getRecordingsmeetingID=' + meetingId + process.env.BIG_BLUE_BUTTON_SECRET_KEY
 			const checksum = utils.generateCheckSum(checkSumGeneration)
@@ -77,9 +79,86 @@ module.exports = class BigBlueButtonRequests {
 			const meetingInfoUrl =
 				bigBlueButtonUrl + endpoints.GET_RECORDINGS + '?meetingID=' + meetingId + '&checksum=' + checksum
 			let response = await request.get(meetingInfoUrl)
-			return response
+			return resolve(response)
 		} catch (error) {
-			throw error
+			return reject(error)
 		}
-	}
+	})
 }
+
+module.exports = {
+	createMeeting,
+	getRecordings,
+}
+// module.exports = class BigBlueButtonRequests {
+// 	/**
+// 	 * Create Meeting.
+// 	 * @method
+// 	 * @name createMeeting
+// 	 * @param {String} meetingId - meeting Id.
+// 	 * @param {String} meetingName - meeting name.
+// 	 * @param {String} attendeePW - Attendee Password.
+// 	 * @param {String} moderatorPW - Moderator Password.
+// 	 * @returns {String} - Meeting success message.
+// 	 */
+
+// 	static async createMeeting(meetingId, meetingName, attendeePW, moderatorPW, sessionDuration) {
+// 		try {
+// 			let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + '%2F' + meetingId
+// 			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL
+// 			let lastUserTimeout = process.env.BIG_BLUE_BUTTON_LAST_USER_TIMEOUT_MINUTES || 15
+
+// 			meetingName = encodeURIComponent(meetingName)
+// 			let query =
+// 				'name=' +
+// 				meetingName +
+// 				'&meetingID=' +
+// 				meetingId +
+// 				'&record=true' +
+// 				'&autoStartRecording=true' +
+// 				'&meta_endCallbackUrl=' +
+// 				endMeetingCallBackUrl +
+// 				'&attendeePW=' +
+// 				attendeePW +
+// 				'&moderatorPW=' +
+// 				moderatorPW +
+// 				'&logoutURL=' +
+// 				sessionEndUrl +
+// 				'&meetingExpireIfNoUserJoinedInMinutes=' +
+// 				sessionDuration +
+// 				'&meetingExpireWhenLastUserLeftInMinutes=' +
+// 				lastUserTimeout
+
+// 			let checkSumGeneration = 'create' + query + process.env.BIG_BLUE_BUTTON_SECRET_KEY
+// 			const checksum = utils.generateCheckSum(checkSumGeneration)
+
+// 			const createUrl = bigBlueButtonUrl + endpoints.CREATE_MEETING + '?' + query + '&checksum=' + checksum
+// 			let response = await request.get(createUrl)
+// 			return response
+// 		} catch (error) {
+// 			throw error
+// 		}
+// 	}
+
+// 	/**
+// 	 * Get meeting recordings.
+// 	 * @method
+// 	 * @name getRecordings
+// 	 * @param {String} meetingId - meeting Id.
+// 	 * @returns {JSON} - Recording response.
+// 	 */
+
+// 	static async getRecordings(meetingId) {
+// 		try {
+// 			let checkSumGeneration = 'getRecordingsmeetingID=' + meetingId + process.env.BIG_BLUE_BUTTON_SECRET_KEY
+// 			const checksum = utils.generateCheckSum(checkSumGeneration)
+
+// 			const meetingInfoUrl =
+// 				bigBlueButtonUrl + endpoints.GET_RECORDINGS + '?meetingID=' + meetingId + '&checksum=' + checksum
+// 			let response = await request.get(meetingInfoUrl)
+// 			return response
+// 		} catch (error) {
+// 			throw error
+// 		}
+// 	}
+// }

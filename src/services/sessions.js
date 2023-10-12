@@ -22,7 +22,7 @@ const { Op } = require('sequelize')
 
 const schedulerRequest = require('@requests/scheduler')
 
-const bigBlueButton = require('@requests/bigBlueButton')
+const bigBlueButtonRequest = require('@requests/bigBlueButton')
 const userProfile = require('@requests/user')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
@@ -1039,7 +1039,7 @@ module.exports = class SessionsHelper {
 				}
 				let sessionDuration = moment(session.end_date).diff(session.start_date, 'minutes')
 
-				const meetingDetails = await bigBlueButton.createMeeting(
+				const meetingDetails = await bigBlueButtonRequest.createMeeting(
 					session.id,
 					session.title,
 					session.mentee_password,
@@ -1054,7 +1054,7 @@ module.exports = class SessionsHelper {
 					})
 				}
 
-				const moderatorMeetingLink = await bigBlueButton.joinMeetingAsModerator(
+				const moderatorMeetingLink = await bigBlueButtonService.joinMeetingAsModerator(
 					session.id,
 					mentorName,
 					session.mentor_password
@@ -1154,7 +1154,7 @@ module.exports = class SessionsHelper {
 
 	static async completed(sessionId) {
 		try {
-			const recordingInfo = await bigBlueButton.getRecordings(sessionId)
+			const recordingInfo = await bigBlueButtonRequest.getRecordings(sessionId)
 
 			await sessionQueries.updateOne(
 				{
@@ -1205,7 +1205,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const recordingInfo = await bigBlueButton.getRecordings(sessionId)
+			const recordingInfo = await bigBlueButtonRequest.getRecordings(sessionId)
 
 			// let response = await requestUtil.get("https://dev.mentoring.shikshalokam.org/playback/presentation/2.3/6af6737c986d83e8d5ce2ff77af1171e397c739e-1638254682349");
 			// console.log(response);

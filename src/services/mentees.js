@@ -2,10 +2,8 @@
 const userProfile = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const bigBlueButton = require('@requests/bigBlueButton')
 const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
-const ObjectId = require('mongoose').Types.ObjectId
 
 const { successResponse } = require('@constants/common')
 
