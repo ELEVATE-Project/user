@@ -216,10 +216,12 @@ function validateInput(input, validationData, modelName) {
 }
 function restructureBody(requestBody, entityData, allowedKeys) {
 	const customEntities = {}
+	requestBody.custom_entity_text = {}
 	for (const requestBodyKey in requestBody) {
 		if (requestBody.hasOwnProperty(requestBodyKey)) {
 			const requestBodyValue = requestBody[requestBodyKey]
 			const entityType = entityData.find((entity) => entity.value === requestBodyKey)
+
 			if (entityType && entityType.allow_custom_entities) {
 				if (Array.isArray(requestBodyValue)) {
 					const customValues = []
@@ -247,6 +249,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 					}
 				}
 			}
+
 			if (Array.isArray(requestBodyValue)) {
 				const entityTypeExists = entityData.find((entity) => entity.value === requestBodyKey)
 
@@ -264,9 +267,9 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 
 	// Merge customEntities into requestBody
 	Object.assign(requestBody, customEntities)
-
 	return requestBody
 }
+
 function processDbResponse(session, entityType) {
 	if (session.meta) {
 		entityType.forEach((entity) => {

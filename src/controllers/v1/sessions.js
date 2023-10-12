@@ -32,7 +32,8 @@ module.exports = class Sessions {
 					req.params.id,
 					req.body,
 					req.decodedToken.id,
-					req.method
+					req.method,
+					req.decodedToken.organization_id
 				)
 
 				return sessionUpdated
