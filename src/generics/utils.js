@@ -94,6 +94,15 @@ const generateFileName = (name, extension) => {
 	return name + fileExtensionWithTime
 }
 
+const generateRedisConfigForQueue = () => {
+	const parseURL = new URL(process.env.REDIS_HOST)
+	return {
+		connection: {
+			host: parseURL.hostname,
+			port: parseURL.port,
+		},
+	}
+}
 /**
  * md5 hash
  * @function
@@ -303,6 +312,7 @@ module.exports = {
 	md5Hash,
 	validateRoleAccess,
 	generateFileName,
+	generateRedisConfigForQueue,
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,

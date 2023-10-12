@@ -20,15 +20,14 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const roleQueries = require('@database/queries/userRole')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-
-const inviteeFileDir = PROJECT_ROOT_DIRECTORY + common.tempFolderForBulkUpload
+const ProjectRootDir = path.join(__dirname, '../../')
+const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const filePath = data.fileDetails.input_path
-
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
 				if (!response.success) {
@@ -61,7 +60,7 @@ module.exports = class UserInviteHelper {
 					throw new Error('FILE_UPLOAD_MODIFY_ERROR')
 				}
 
-				// send email to admin
+				// // send email to admin
 				if (process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE) {
 					// generate downloadable url
 					const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
@@ -104,7 +103,7 @@ module.exports = class UserInviteHelper {
 
 			await new Promise((resolve, reject) => {
 				writeStream.on('finish', resolve)
-				writeStream.on('error', () => {
+				writeStream.on('error', (err) => {
 					reject(new Error('FAILED_TO_DOWNLOAD_FILE'))
 				})
 			})
@@ -241,7 +240,6 @@ module.exports = class UserInviteHelper {
 	static async sendInviteeEmail(templateCode, userData, inviteeUploadURL = null) {
 		try {
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
-
 			if (templateData) {
 				const payload = {
 					type: common.notificationEmailType,

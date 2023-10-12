@@ -15,10 +15,10 @@ const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
-const invitesQueue = require('@configs/queue')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { Queue } = require('bullmq')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -52,7 +52,10 @@ module.exports = class OrgAdminHelper {
 			}
 
 			//push to queue
+			const redisConfiguration = utils.generateRedisConfigForQueue()
+			const invitesQueue = new Queue(process.env.DEFAULT_QUEUE, redisConfiguration)
 			await invitesQueue.add(
+				'upload_invites',
 				{
 					fileDetails: result,
 					user: {
@@ -62,7 +65,7 @@ module.exports = class OrgAdminHelper {
 					},
 				},
 				{
-					attempts: 3, // Retry this job 5 times
+					removeOnComplete: true,
 					backoff: {
 						type: 'fixed',
 						delay: 600000, // Wait 10 min between attempts
