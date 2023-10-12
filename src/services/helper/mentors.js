@@ -434,8 +434,7 @@ module.exports = class MentorsHelper {
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
-			const filter = { is_session_attended: true }
-			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
+			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

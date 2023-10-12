@@ -118,7 +118,7 @@ exports.unenrollFromUpcomingSessions = async (userId, sessionIds) => {
 		throw error
 	}
 }
-exports.countEnrolledSessions = async (filters, mentee_id) => {
+exports.countEnrolledSessions = async (mentee_id) => {
 	try {
 		let sessionEnrollments = await SessionEnrollment.findAll({
 			where: {
@@ -131,7 +131,9 @@ exports.countEnrolledSessions = async (filters, mentee_id) => {
 		}
 		return await SessionAttendee.count({
 			where: {
-				...filters,
+				joined_at: {
+					[Op.not]: null,
+				},
 				session_id: sessionIds,
 			},
 		})
