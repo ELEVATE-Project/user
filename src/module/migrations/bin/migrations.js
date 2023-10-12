@@ -32,7 +32,7 @@ program
 	.action(() =>
 		migrateMongo
 			.init()
-			.then(() => console.log(`Initialization successful. Please edit the generated file`))
+			.then(() => console.log('Initialization successful. Please edit the generated file'))
 			.catch((err) => handleError(err))
 	)
 
