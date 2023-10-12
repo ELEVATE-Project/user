@@ -52,7 +52,7 @@ module.exports = class MenteesHelper {
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
-			result: { sessionsAttended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
+			result: { sessions_attended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
 		})
 	}
 

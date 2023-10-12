@@ -49,13 +49,13 @@ module.exports = class SessionsHelper {
 			}
 
 			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
-			/* 	if (timeSlot.isTimeSlotAvailable === false) {
+			if (timeSlot.isTimeSlotAvailable === false) {
 				return common.failureResponse({
 					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} */
+			}
 
 			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
 			let elapsedMinutes = duration.asMinutes()
@@ -75,10 +75,13 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const filter = {
-				status: 'ACTIVE',
-			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				orgId
+			)
 
 			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
@@ -93,59 +96,6 @@ module.exports = class SessionsHelper {
 			}
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
-			//validate entities
-			/* 			if (
-				bodyData.hasOwnProperty(common.MEDIUM) ||
-				bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
-				bodyData.hasOwnProperty(common.CATEGORIES)
-			) {
-				let values = []
-				if (bodyData.hasOwnProperty(common.MEDIUM)) values.push(common.MEDIUM)
-				if (bodyData.hasOwnProperty(common.RECOMMENDED_FOR)) values.push(common.RECOMMENDED_FOR)
-				if (bodyData.hasOwnProperty(common.CATEGORIES)) values.push(common.CATEGORIES)
-
-				if (values.length > 0) {
-					const entityTypes = await entityTypeQueries.findAllEntityTypes(
-						{ value: values },
-						{ attributes: ['id', 'value'] }
-					)
-
-					if (!entityTypes) {
-						return common.failureResponse({
-							message: 'SESSION_CREATION_FAILED',
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					}
-
-					for (
-						let pointerToEntityTypes = 0;
-						pointerToEntityTypes < entityTypes.length;
-						pointerToEntityTypes++
-					) {
-						let entityType = entityTypes[pointerToEntityTypes]
-						let entities = await entitiesQueries.findAllEntities(
-							{
-								value: bodyData[entityType.value],
-								entity_type_id: entityType.id,
-							},
-							{ attributes: ['value'] }
-						)
-
-						if (entities.length != bodyData[entityType.value].length) {
-							return common.failureResponse({
-								message: 'SESSION_CREATION_FAILED',
-								statusCode: httpStatusCode.bad_request,
-								responseCode: 'CLIENT_ERROR',
-							})
-						}
-
-						bodyData[entityType.value] = _.map(entities, function (entity) {
-							return entity.valuearea
-						})
-					}
-				}
-			} */
 
 			bodyData.meeting_info = {
 				platform: process.env.DEFAULT_MEETING_SERVICE,
@@ -168,6 +118,7 @@ module.exports = class SessionsHelper {
 			})
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
+
 			const processDbResponse = utils.processDbResponse(data.toJSON(), validationData)
 
 			// Set notification schedulers for the session
@@ -212,7 +163,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Update session data.
 	 */
 
-	static async update(sessionId, bodyData, userId, method) {
+	static async update(sessionId, bodyData, userId, method, orgId) {
 		let isSessionReschedule = false
 		try {
 			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
@@ -259,59 +210,26 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			//validate entities
-			/* 			if (
-				method != common.DELETE_METHOD &&
-				(bodyData.hasOwnProperty(common.MEDIUM) ||
-					bodyData.hasOwnProperty(common.RECOMMENDED_FOR) ||
-					bodyData.hasOwnProperty(common.CATEGORIES))
-			) {
-				let values = []
-				if (bodyData.hasOwnProperty(common.MEDIUM)) values.push(common.MEDIUM)
-				if (bodyData.hasOwnProperty(common.RECOMMENDED_FOR)) values.push(common.RECOMMENDED_FOR)
-				if (bodyData.hasOwnProperty(common.CATEGORIES)) values.push(common.CATEGORIES)
-				if (values.length > 0) {
-					const entityTypes = await entityTypeQueries.findAllEntityTypes(
-						{ value: values },
-						{ attributes: ['id', 'value'] }
-					)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				orgId
+			)
 
-					if (!entityTypes) {
-						return common.failureResponse({
-							message: 'SESSION_UPDATION_FAILED',
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					}
+			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-					for (
-						let pointerToEntityTypes = 0;
-						pointerToEntityTypes < entityTypes.length;
-						pointerToEntityTypes++
-					) {
-						let entityType = entityTypes[pointerToEntityTypes]
-						let entities = await entitiesQueries.findAllEntities(
-							{
-								value: bodyData[entityType.value],
-								entity_type_id: entityType.id,
-							},
-							{ attributes: ['value'] }
-						)
-
-						if (entities.length != bodyData[entityType.value].length) {
-							return common.failureResponse({
-								message: 'SESSION_UPDATION_FAILED',
-								statusCode: httpStatusCode.bad_request,
-								responseCode: 'CLIENT_ERROR',
-							})
-						}
-
-						bodyData[entityType.value] = _.map(entities, function (entity) {
-							return entity.value
-						})
-					}
-				}
-			} */
+			let res = utils.validateInput(bodyData, validationData, 'sessions')
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+			let sessionModel = await sessionQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
 
 			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {
 				let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
