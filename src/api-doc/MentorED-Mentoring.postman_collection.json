@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "bb606f0d-faa2-49b0-84f1-d8b808c52d3f",
+		"_postman_id": "02832ee5-6a9d-4cf8-9818-97f03fb79201",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "18760682"
+		"_exporter_id": "13427084"
 	},
 	"item": [
 		{
@@ -410,7 +410,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/list?page=1&limit=2&status=published,completed&search=ankit",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/list?page=1&limit=2&status=published,completed",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "sessions", "list"],
 							"query": [
@@ -1484,7 +1484,7 @@
 							"raw": "{\n\t\"user_id\":1,\n\t\"current_roles\":[\"mentor\"],\n\t\"new_roles\":[\"mentee\"]\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/roleChange",
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/roleChange",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "roleChange"]
 						}
@@ -1510,9 +1510,54 @@
 							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/inheritEntityType",
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "setOrgPolicies",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6Im9yZ2FkbWluQHR1bmVybGFicy5jb20iLCJuYW1lIjoicHJpeWFua2EiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6NSwidGl0bGUiOiJvcmdfYWRtaW4iLCJ1c2VyX3R5cGUiOjEsInN0YXR1cyI6IkFDVElWRSJ9XX0sImlhdCI6MTY5NjU5NTM0NSwiZXhwIjoxNjk2NjgxNzQ1fQ.-31KTqIJ2u-qEOA2cz5YrITGgUqeUhMcZAmMDbpcjfg"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"session_visibility_policy\": \"parent\",\n    \"mentor_visibility_policy\": \"parent\",\n    \"external_session_visibility_policy\": \"all\",\n    \"external_mentor_visibility_policy\": \"associated\",\n    \"allow_mentor_override\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/setOrgPolicies",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "setOrgPolicies"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getOrgPolicies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6Im9yZ2FkbWluQHR1bmVybGFicy5jb20iLCJuYW1lIjoicHJpeWFua2EiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6NSwidGl0bGUiOiJvcmdfYWRtaW4iLCJ1c2VyX3R5cGUiOjEsInN0YXR1cyI6IkFDVElWRSJ9XX0sImlhdCI6MTY5NjU5NTM0NSwiZXhwIjoxNjk2NjgxNzQ1fQ.-31KTqIJ2u-qEOA2cz5YrITGgUqeUhMcZAmMDbpcjfg"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/getOrgPolicies",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "getOrgPolicies"]
 						}
 					},
 					"response": []
@@ -1541,7 +1586,7 @@
 							"raw": "{\n\t\"jobId\": \"mentoring_session_one_hour_1\",\n\t\"emailTemplateCode\": \"mentor_one_hour_before_session_reminder\"\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/notifications/emailCronJob",
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/notifications/emailCronJob",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "notifications", "emailCronJob"]
 						}
