@@ -1,5 +1,5 @@
 /**
- * name : services/helper/userInvite.js
+ * name : services/userInvite.js
  * author : Priyanka Pradeep
  * created-date : 27-Sep-2023
  * Description : User Invite Service Helper.

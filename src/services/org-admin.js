@@ -1,5 +1,5 @@
 /**
- * name : services/helper/org-admin.js
+ * name : services/org-admin.js
  * author : Priyanka Pradeep
  * created-date : 15-Sep-2023
  * Description : Org Admin Service Helper.

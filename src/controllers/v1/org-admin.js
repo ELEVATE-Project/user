@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const orgAdminService = require('@services/helper/org-admin')
+const orgAdminService = require('@services/org-admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utilsHelper = require('@generics/utils')
