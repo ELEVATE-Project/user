@@ -1484,9 +1484,9 @@
 							"raw": "{\n\t\"user_id\":1,\n\t\"current_roles\":[\"mentor\"],\n\t\"new_roles\":[\"mentee\"]\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/roleChange",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["mentoring", "v1", "org-admin", "roleChange"]
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/roleChange",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "org-admin", "roleChange"]
 						}
 					},
 					"response": []
@@ -1510,9 +1510,9 @@
 							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "org-admin", "inheritEntityType"]
 						}
 					},
 					"response": []
@@ -1537,9 +1537,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/setOrgPolicies",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["mentoring", "v1", "org-admin", "setOrgPolicies"]
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/setOrgPolicies",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "org-admin", "setOrgPolicies"]
 						}
 					},
 					"response": []
@@ -1555,9 +1555,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/getOrgPolicies",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["mentoring", "v1", "org-admin", "getOrgPolicies"]
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/getOrgPolicies",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "org-admin", "getOrgPolicies"]
 						}
 					},
 					"response": []
