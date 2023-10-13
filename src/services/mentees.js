@@ -26,7 +26,6 @@ module.exports = class MenteesHelper {
 	static async read(id, orgId) {
 		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
-
 		delete mentee.user_id
 		delete mentee.organisation_ids
 
@@ -41,13 +40,12 @@ module.exports = class MenteesHelper {
 
 		const processDbResponse = utils.processDbResponse(mentee, validationData)
 
-		const filter = { is_session_attended: true }
-		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
+		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
-			result: { sessionsAttended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
+			result: { sessions_attended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
 		})
 	}
 

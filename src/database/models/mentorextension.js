@@ -47,6 +47,9 @@ module.exports = (sequelize, DataTypes) => {
 			custom_entity_text: {
 				type: DataTypes.JSON,
 			},
+			experience: {
+				type: DataTypes.STRING,
+			},
 		},
 		{
 			sequelize,
