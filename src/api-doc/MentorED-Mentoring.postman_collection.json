@@ -1586,9 +1586,9 @@
 							"raw": "{\n\t\"jobId\": \"mentoring_session_one_hour_1\",\n\t\"emailTemplateCode\": \"mentor_one_hour_before_session_reminder\"\n}"
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/notifications/emailCronJob",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["mentoring", "v1", "notifications", "emailCronJob"]
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/notifications/emailCronJob",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "notifications", "emailCronJob"]
 						}
 					},
 					"response": []
