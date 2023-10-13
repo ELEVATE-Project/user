@@ -19,7 +19,7 @@
 			"@validators*": ["./validators*"],
 			"@utils*": ["./utils*"],
 			"@helpers*": ["./helpers*"],
-			"@database": ["./database*"]
+			"@database*": ["./database*"]
 		}
 	},
 	"exclude": ["node_modules"]

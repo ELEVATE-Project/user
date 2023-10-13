@@ -31,6 +31,7 @@ module.exports = class Account {
 			const createdAccount = await accountService.create(params)
 			return createdAccount
 		} catch (error) {
+			console.log(error)
 			return error
 		}
 	}
