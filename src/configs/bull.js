@@ -1,7 +1,7 @@
 ;('use strict')
 const { Worker } = require('bullmq')
 const fs = require('fs')
-const userInviteHelper = require('@services/helper/userInvite')
+const userInviteHelper = require('@services/userInvite')
 const common = require('@constants/common')
 const utils = require('@generics/utils')
 const path = require('path')

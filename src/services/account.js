@@ -298,13 +298,13 @@ module.exports = class AccountHelper {
 			delete user.password
 			delete user.refresh_tokens
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				user.organization_id
-			)
-			user = utils.processDbResponse(user, validationData)
+			// let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+			// 	{
+			// 		status: 'ACTIVE',
+			// 	},
+			// 	user.organization_id
+			// )
+			// user = utils.processDbResponse(user, validationData)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
