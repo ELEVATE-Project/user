@@ -74,7 +74,6 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let roles = []
 			let role = await roleQueries.findOne({ title: common.roleAdmin })
 			if (!role) {
 				return common.failureResponse({
@@ -83,8 +82,8 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			roles.push(role.id)
-			bodyData.roles = roles
+
+			bodyData.roles = [role.id]
 
 			if (!bodyData.organization_id) {
 				let organization = await organizationQueries.findOne(
@@ -207,15 +206,15 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let orgAdminsIds = organization.org_admin ? organization.org_admin : []
-			orgAdminsIds.push(userId)
-			const orgAdmins = _.uniq(orgAdminsIds)
-			const update = {
-				org_admin: orgAdmins,
-				updated_by: loggedInUserId,
-			}
+			const orgAdmins = _.uniq([...(organization.org_admin || []), userId])
 
-			const orgRowsAffected = await organizationQueries.update({ id: organizationId }, update)
+			const orgRowsAffected = await organizationQueries.update(
+				{ id: organizationId },
+				{
+					org_admin: orgAdmins,
+					updated_by: loggedInUserId,
+				}
+			)
 			if (orgRowsAffected == 0) {
 				return common.failureResponse({
 					message: 'ORG_ADMIN_MAPPING_FAILED',
@@ -224,7 +223,6 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let roleArray = user.roles ? user.roles : []
 			let role = await roleQueries.findOne({ title: common.roleOrgAdmin })
 			if (!role) {
 				return common.failureResponse({
@@ -233,13 +231,12 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			roleArray.push(role.id)
-			const roles = _.uniq(roleArray)
 
+			const roles = _.uniq([...(user.roles || []), role.id])
 			await userQueries.updateUser(
 				{ id: userId },
 				{
-					roles: roles,
+					roles,
 				}
 			)
 
@@ -262,6 +259,57 @@ module.exports = class AdminHelper {
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_ADMIN_MAPPED_SUCCESSFULLY',
 				result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Deactivate Organization
+	 * @method
+	 * @name deactivateOrg
+	 * @param {Number} id - org id
+	 * @param {Object} loggedInUserId - logged in user id
+	 * @returns {JSON} - Deactivated user count
+	 */
+	static async deactivateOrg(id, loggedInUserId) {
+		try {
+			let rowsAffected = await organizationQueries.update(
+				{
+					id,
+				},
+				{
+					status: common.inActiveStatus,
+					updated_by: loggedInUserId,
+				}
+			)
+
+			if (rowsAffected == 0) {
+				return common.failureResponse({
+					message: 'STATUS_UPDATE_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			//deactivate all users in org
+			const modifiedCount = await userQueries.updateUser(
+				{
+					organization_id: id,
+				},
+				{
+					status: common.inActiveStatus,
+					updated_by: loggedInUserId,
+				}
+			)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORG_DEACTIVATED',
+				result: {
+					deactivated_users: modifiedCount,
+				},
 			})
 		} catch (error) {
 			throw error

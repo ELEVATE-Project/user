@@ -20,12 +20,7 @@ module.exports = class OrgAdmin {
 	 */
 	async bulkUserCreate(req) {
 		try {
-			let isOrgAdmin = false
-			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
-				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
-			}
-
-			if (!isOrgAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -52,12 +47,7 @@ module.exports = class OrgAdmin {
 	 */
 	async getBulkInvitesFilesList(req) {
 		try {
-			let isOrgAdmin = false
-			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
-				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
-			}
-
-			if (!isOrgAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -81,12 +71,7 @@ module.exports = class OrgAdmin {
 	 */
 	async getRequestDetails(req) {
 		try {
-			let isOrgAdmin = false
-			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
-				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
-			}
-
-			if (!isOrgAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -115,12 +100,7 @@ module.exports = class OrgAdmin {
 	 */
 	async getRequests(req) {
 		try {
-			let isOrgAdmin = false
-			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
-				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
-			}
-
-			if (!isOrgAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -147,12 +127,7 @@ module.exports = class OrgAdmin {
 	 */
 	async updateRequestStatus(req) {
 		try {
-			let isOrgAdmin = false
-			if (req.decodedToken.roles && req.decodedToken.roles.length > 0) {
-				isOrgAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)
-			}
-
-			if (!isOrgAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -160,7 +135,40 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken.id)
+			const result = await orgAdminHelper.updateRequestStatus(req.body, req.decodedToken.id)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {String} req.params.id - user Id.
+	 * @returns {JSON} - deactivated user response
+	 */
+	async deactivateUser(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!req.body.id || !req.body.email) {
+				throw common.failureResponse({
+					message: 'EMAIL_OR_ID_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgAdminHelper.deactivateUser(req.body, req.decodedToken.id)
+
 			return result
 		} catch (error) {
 			return error
@@ -177,7 +185,7 @@ module.exports = class OrgAdmin {
 	async inheritEntityType(req) {
 		try {
 			let entityTypeDetails = orgAdminService.inheritEntityType(
-				req.body.entity_type_value, 			
+				req.body.entity_type_value,
 				req.body.target_entity_type_label,
 				req.decodedToken.organization_id
 			)

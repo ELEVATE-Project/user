@@ -54,19 +54,16 @@ module.exports = {
 
 	generateOtp: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
 
 	registrationOtp: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('name').notEmpty().withMessage('name field is empty')
 	},
 
 	resetPassword: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('password').notEmpty().withMessage('password field is empty')
 
 		req.checkBody('otp')

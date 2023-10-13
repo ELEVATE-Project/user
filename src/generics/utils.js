@@ -84,6 +84,7 @@ const getDownloadableUrl = async (imgPath) => {
 }
 
 const validateRoleAccess = (roles, requiredRole) => {
+	if (!roles || roles.length === 0) return false
 	return roles.some((role) => role.title == requiredRole)
 }
 
@@ -93,6 +94,15 @@ const generateFileName = (name, extension) => {
 	return name + fileExtensionWithTime
 }
 
+const generateRedisConfigForQueue = () => {
+	const parseURL = new URL(process.env.REDIS_HOST)
+	return {
+		connection: {
+			host: parseURL.hostname,
+			port: parseURL.port,
+		},
+	}
+}
 /**
  * md5 hash
  * @function
@@ -134,6 +144,14 @@ function extractFilename(fileString) {
 
 function extractDomainFromEmail(email) {
 	return email.substring(email.lastIndexOf('@') + 1)
+}
+
+function generateCSVContent(data) {
+	const headers = Object.keys(data[0])
+	return [
+		headers.join(','),
+		...data.map((row) => headers.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
+	].join('\n')
 }
 
 function validateInput(input, validationData, modelName) {
@@ -181,6 +199,7 @@ function validateInput(input, validationData, modelName) {
 		errors: errors,
 	}
 }
+
 function restructureBody(requestBody, entityData, allowedKeys) {
 	const customEntities = {}
 	requestBody.custom_entity_text = {}
@@ -304,6 +323,7 @@ function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
 }
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -314,6 +334,7 @@ module.exports = {
 	md5Hash,
 	validateRoleAccess,
 	generateFileName,
+	generateRedisConfigForQueue,
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
@@ -323,6 +344,7 @@ module.exports = {
 	isNumeric: isNumeric,
 	extractFilename: extractFilename,
 	extractDomainFromEmail: extractDomainFromEmail,
+	generateCSVContent: generateCSVContent,
 	processDbResponse,
 	restructureBody,
 	validateInput,

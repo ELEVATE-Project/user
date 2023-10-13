@@ -20,53 +20,64 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const roleQueries = require('@database/queries/userRole')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
+const ProjectRootDir = path.join(__dirname, '../../')
+const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const filePath = data.fileDetails.input_path
-
-				//download file to local directory
-				let response = await this.downloadCSV(filePath)
+				// download file to local directory
+				const response = await this.downloadCSV(filePath)
 				if (!response.success) {
-					throw new Error('Failed to download file')
+					throw new Error('FAILED_TO_DOWNLOAD')
 				}
-				const folderPath = response.result.destPath
 
-				//extract data from csv
-				let parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
-				if (parsedFileData.result.data.length == 0) {
-					throw new Error('Failed to read csv data')
+				// extract data from csv
+				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
+				if (!parsedFileData.success || parsedFileData.result.data.length == 0) {
+					throw new Error('FAILED_TO_READ_CSV')
 				}
-				const invites = parsedFileData.result.data
+				const invitees = parsedFileData.result.data
 
-				//create outPut file and create invites
-				const createResponse = await this.createUserInvites(invites, data.user, data.fileDetails.id)
-				let outputFilename = path.basename(createResponse.result.outputFilePath)
+				// create outPut file and create invites
+				const createResponse = await this.createUserInvites(invitees, data.user, data.fileDetails.id)
+				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
-				//upload output file to cloud
-				const uploadRes = await this.uploadFileToCloud(outputFilename, folderPath, data.user.id)
-				let update = {
-					output_path: uploadRes.result.uploadDest,
+				// upload output file to cloud
+				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, data.user.id)
+				const output_path = uploadRes.result.uploadDest
+				const update = {
+					output_path,
 					updated_by: data.user.id,
 					status: createResponse.result.isErrorOccured == true ? common.statusFailed : common.statusProcessed,
 				}
 
-				//update output path in file uploads
+				// //update output path in file uploads
 				const rowsAffected = await fileUploadQueries.update({ id: data.fileDetails.id }, update)
-				if (rowsAffected == 0) {
+				if (rowsAffected === 0) {
 					throw new Error('FILE_UPLOAD_MODIFY_ERROR')
 				}
-				//send email to admin
-				await this.sendInviteeEmail(process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE, data.user)
 
-				//delete the downloaded file and output file
+				// // send email to admin
+				if (process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE) {
+					// generate downloadable url
+					const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
+					await this.sendInviteeEmail(
+						process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE,
+						data.user,
+						inviteeUploadURL
+					)
+				}
+
+				// delete the downloaded file and output file
 				utils.clearFile(response.result.downloadPath)
 				utils.clearFile(createResponse.result.outputFilePath)
 
 				return resolve({
 					success: true,
+					message: 'CSV_UPLOADED_SUCCESSFULLY',
 				})
 			} catch (error) {
 				return reject({
@@ -79,10 +90,9 @@ module.exports = class UserInviteHelper {
 
 	static async downloadCSV(filePath) {
 		try {
-			const destPath = PROJECT_ROOT_DIRECTORY + common.tempFolderForBulkUpload
 			const downloadableUrl = await utils.getDownloadableUrl(filePath)
 			const fileName = path.basename(downloadableUrl)
-			const downloadPath = path.join(destPath, fileName)
+			const downloadPath = path.join(inviteeFileDir, fileName)
 
 			const response = await axios.get(downloadableUrl, {
 				responseType: common.responseType,
@@ -91,14 +101,17 @@ module.exports = class UserInviteHelper {
 			const writeStream = fs.createWriteStream(downloadPath)
 			response.data.pipe(writeStream)
 
-			writeStream.on('error', (error) => {
-				throw new Error('Failed to write the downloaded file')
+			await new Promise((resolve, reject) => {
+				writeStream.on('finish', resolve)
+				writeStream.on('error', (err) => {
+					reject(new Error('FAILED_TO_DOWNLOAD_FILE'))
+				})
 			})
 
 			return {
 				success: true,
 				result: {
-					destPath,
+					destPath: inviteeFileDir,
 					fileName,
 					downloadPath,
 				},
@@ -132,44 +145,46 @@ module.exports = class UserInviteHelper {
 		try {
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 
-			let input = []
+			// get the role data from db
+			const allRoles = _.uniq(_.map(csvData, 'roles'))
+			const roleList = await roleQueries.findAll({ title: allRoles })
+			const roleTitlesToIds = {}
+			roleList.forEach((role) => {
+				roleTitlesToIds[role.title] = [role.id]
+			})
+
+			const input = []
 			let isErrorOccured = false
 
+			// process csv data
 			for (const invitee of csvData) {
-				let inviteeData = Object.assign({}, invitee)
-				inviteeData.status = common.statusUploaded
-				inviteeData.organization_id = user.organization_id
-				inviteeData.file_id = fileUploadId
-				const roles = await roleQueries.findAll({ title: [inviteeData.roles] })
-				if (roles && roles.length > 0) {
-					inviteeData.roles = _.map(roles, 'id')
+				const inviteeData = {
+					...invitee,
+					status: common.statusUploaded,
+					organization_id: user.organization_id,
+					file_id: fileUploadId,
+					roles: roleTitlesToIds[invitee.roles] || [],
 				}
 
-				const data = await userInviteQueries.create(inviteeData)
-				let status
-				if (data.id) {
-					status = data.id
-					data.user = user
-					data.role = invitee.roles
-					await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, data)
+				const newInvitee = await userInviteQueries.create(inviteeData)
+
+				if (newInvitee.id) {
+					newInvitee.user = user
+					newInvitee.role = invitee.roles
+					if (process.env.INVITEE_EMAIL_TEMPLATE_CODE) {
+						await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, newInvitee)
+					}
 				} else {
-					status = data
 					isErrorOccured = true
 				}
-				invitee.status = data.id || data
-				isErrorOccured = !data.id
-				console.log(invitee, isErrorOccured, 'invitee')
+
+				invitee.statusOrUserId = newInvitee.id || newInvitee
 				input.push(invitee)
 			}
 
-			const headers = Object.keys(input[0])
-			const csvContent = [
-				headers.join(','),
-				...input.map((row) => headers.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
-			].join('\n')
+			const csvContent = utils.generateCSVContent(input)
+			const outputFilePath = path.join(inviteeFileDir, outputFileName)
 
-			const destPath = PROJECT_ROOT_DIRECTORY + common.tempFolderForBulkUpload
-			const outputFilePath = path.join(destPath, outputFileName)
 			fs.writeFileSync(outputFilePath, csvContent)
 
 			return {
@@ -190,30 +205,29 @@ module.exports = class UserInviteHelper {
 	static async uploadFileToCloud(fileName, folderPath, userId = '', dynamicPath = '') {
 		try {
 			const getSignedUrl = await filesHelper.getSignedUrl(fileName, userId, dynamicPath)
-			if (getSignedUrl.result && Object.keys(getSignedUrl.result).length > 0) {
-				const fileUploadUrl = getSignedUrl.result.signedUrl
+			if (!getSignedUrl.result) {
+				throw new Error('FAILED_TO_GENERATE_SIGNED_URL')
+			}
 
-				const filePath = folderPath + '/' + fileName
-				const fileData = fs.readFileSync(filePath, 'utf-8')
+			const fileUploadUrl = getSignedUrl.result.signedUrl
+			const filePath = `${folderPath}/${fileName}`
+			const fileData = fs.readFileSync(filePath, 'utf-8')
 
-				await request({
-					url: fileUploadUrl,
-					method: 'put',
-					headers: {
-						'x-ms-blob-type': common.azureBlobType,
-						'Content-Type': 'multipart/form-data',
-					},
-					body: fileData,
-				})
+			await request({
+				url: fileUploadUrl,
+				method: 'put',
+				headers: {
+					'x-ms-blob-type': common.azureBlobType,
+					'Content-Type': 'multipart/form-data',
+				},
+				body: fileData,
+			})
 
-				return {
-					success: true,
-					result: {
-						uploadDest: getSignedUrl.result.destFilePath,
-					},
-				}
-			} else {
-				throw new Error('Failed to generate signed URL')
+			return {
+				success: true,
+				result: {
+					uploadDest: getSignedUrl.result.destFilePath,
+				},
 			}
 		} catch (error) {
 			return {
@@ -223,12 +237,10 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async sendInviteeEmail(templateCode, userData) {
+	static async sendInviteeEmail(templateCode, userData, inviteeUploadURL = null) {
 		try {
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
-
 			if (templateData) {
-				// Push successfull invite email to kafka
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
@@ -236,9 +248,10 @@ module.exports = class UserInviteHelper {
 						subject: templateData.subject,
 						body: utils.composeEmailBody(templateData.body, {
 							name: userData.name,
-							role: userData.roles ?? '',
+							role: userData.roles || '',
 							appName: process.env.APP_NAME,
-							adminName: userData.user?.name ?? '',
+							adminName: userData.user?.name || '',
+							inviteeUploadURL,
 						}),
 					},
 				}

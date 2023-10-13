@@ -26,12 +26,12 @@ exports.findOne = async (filter, options) => {
 
 exports.update = async (filter, update, options) => {
 	try {
-		const [res] = await Organization.update(update, {
+		const [updatedCount] = await Organization.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
 		})
-		return res
+		return updatedCount
 	} catch (error) {
 		return error
 	}
@@ -68,6 +68,7 @@ exports.listOrganizations = async (page, limit, search) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
+		filter.status = common.activeStatus
 		return await Organization.findAll({
 			where: filter,
 			...options,
