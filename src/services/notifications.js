@@ -5,7 +5,7 @@ const utils = require('@generics/utils')
 const sessionQueries = require('@database/queries/sessions')
 const notificationQueries = require('@database/queries/notificationTemplate')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
-const userRequest = require('@requests/user')
+const userRequests = require('@requests/user')
 
 module.exports = class Notifications {
 	/**
@@ -77,7 +77,7 @@ module.exports = class Notifications {
 			}
 
 			// Get attendees accound details
-			const attendeesAccounts = await userRequest.getListOfUserDetails(allAttendees)
+			const attendeesAccounts = await userRequests.getListOfUserDetails(allAttendees)
 
 			if (attendeesAccounts.result && attendeesAccounts.result.length > 0) {
 				attendeesInfo.forEach(async function (attendee) {
@@ -115,7 +115,7 @@ module.exports = class Notifications {
 			mentorIds.push(session.mentor_id.toString())
 
 			// Get mentor details
-			const userAccounts = await userRequest.getListOfUserDetails(mentorIds)
+			const userAccounts = await userRequests.getListOfUserDetails(mentorIds)
 
 			if (userAccounts && userAccounts.result.length > 0) {
 				const userAccountDetails = userAccounts.result[0]

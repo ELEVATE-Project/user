@@ -1,6 +1,6 @@
 // Dependencies
 const utils = require('@generics/utils')
-const userProfile = require('@requests/user')
+const userRequests = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const mentorQueries = require('@database/queries/mentorExtention')
@@ -69,7 +69,7 @@ module.exports = class MentorsHelper {
 	 */
 	/* 	static async profile(id) {
 		try {
-			const mentorsDetails = await userProfile.details('', id)
+			const mentorsDetails = await userRequests.details('', id)
 			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
@@ -165,7 +165,7 @@ module.exports = class MentorsHelper {
 	 */
 	static async share(id) {
 		try {
-			const shareLink = await userProfile.share(id)
+			const shareLink = await userRequests.share(id)
 			return shareLink
 		} catch (error) {
 			return error
@@ -177,7 +177,7 @@ module.exports = class MentorsHelper {
 			if (session.length > 0) {
 				const userIds = _.uniqBy(session, 'mentor_id').map((item) => item.mentor_id)
 
-				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
+				let mentorDetails = await userRequests.getListOfUserDetails(userIds)
 				mentorDetails = mentorDetails.result
 
 				for (let i = 0; i < session.length; i++) {

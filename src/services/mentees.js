@@ -1,5 +1,5 @@
 // Dependencies
-const userProfile = require('@requests/user')
+const userRequests = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const feedbackHelper = require('./feedback')
@@ -24,7 +24,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userProfile.details('', id)
+		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 
 		delete mentee.user_id
@@ -192,7 +192,7 @@ module.exports = class MenteesHelper {
 
 	static async joinSession(sessionId, token) {
 		try {
-			const mentee = await userProfile.details(token)
+			const mentee = await userRequests.details(token)
 
 			if (mentee.data.responseCode !== 'OK') {
 				return common.failureResponse({
@@ -383,7 +383,7 @@ module.exports = class MenteesHelper {
 			const mentorIds = [...new Set(sessions.map((session) => session.mentor_id))]
 
 			// Fetch mentor details
-			const mentorDetails = (await userProfile.getListOfUserDetails(mentorIds)).result
+			const mentorDetails = (await userRequests.getListOfUserDetails(mentorIds)).result
 
 			// Map mentor names to sessions
 			sessions.forEach((session) => {

@@ -9,7 +9,7 @@ const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
-const userRequest = require('@requests/user')
+const userRequests = require('@requests/user')
 
 module.exports = class AdminHelper {
 	/**
@@ -78,7 +78,7 @@ module.exports = class AdminHelper {
 				})
 
 				const sessionAttendeesIds = sessionAttendees.map((attendee) => attendee.mentee_id)
-				const attendeesAccounts = await userRequest.getListOfUserDetails(sessionAttendeesIds)
+				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
 				sessionAttendees.forEach((attendee) => {
 					for (const element of attendeesAccounts.result) {

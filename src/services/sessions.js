@@ -21,8 +21,8 @@ const { Op } = require('sequelize')
 
 const schedulerRequest = require('@requests/scheduler')
 
-const bigBlueButtonRequest = require('@requests/bigBlueButton')
-const userProfile = require('@requests/user')
+const bigBlueButtonRequests = require('@requests/bigBlueButton')
+const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
@@ -407,7 +407,7 @@ module.exports = class SessionsHelper {
 					sessionAttendeesIds.push(attendee.mentee_id)
 				})
 
-				const attendeesAccounts = await userProfile.getListOfUserDetails(sessionAttendeesIds)
+				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
 				sessionAttendees.map((attendee) => {
 					for (let index = 0; index < attendeesAccounts.result.length; index++) {
@@ -581,7 +581,7 @@ module.exports = class SessionsHelper {
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
 
-			const mentorName = await userProfile.details('', sessionDetails.mentor_id)
+			const mentorName = await userRequests.details('', sessionDetails.mentor_id)
 			sessionDetails.mentor_name = mentorName.data.result.name
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
@@ -720,7 +720,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userProfile.details('', session.mentor_id)
+			const mentorName = await userRequests.details('', session.mentor_id)
 			session.mentor_name = mentorName.data.result.name
 
 			const sessionAttendeeExist = await sessionAttendeesQueries.findOne({
@@ -814,7 +814,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const mentorName = await userProfile.details('', session.mentor_id)
+			const mentorName = await userRequests.details('', session.mentor_id)
 			session.mentor_name = mentorName.data.result.name
 
 			const deletedRows = await sessionAttendeesQueries.unEnrollFromSession(sessionId, userId)
@@ -1038,7 +1038,7 @@ module.exports = class SessionsHelper {
 				}
 				let sessionDuration = moment(session.end_date).diff(session.start_date, 'minutes')
 
-				const meetingDetails = await bigBlueButtonRequest.createMeeting(
+				const meetingDetails = await bigBlueButtonRequests.createMeeting(
 					session.id,
 					session.title,
 					session.mentee_password,
@@ -1153,7 +1153,7 @@ module.exports = class SessionsHelper {
 
 	static async completed(sessionId) {
 		try {
-			const recordingInfo = await bigBlueButtonRequest.getRecordings(sessionId)
+			const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
 
 			await sessionQueries.updateOne(
 				{
@@ -1204,7 +1204,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			const recordingInfo = await bigBlueButtonRequest.getRecordings(sessionId)
+			const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
 
 			// let response = await requestUtil.get("https://dev.mentoring.shikshalokam.org/playback/presentation/2.3/6af6737c986d83e8d5ce2ff77af1171e397c739e-1638254682349");
 			// console.log(response);
