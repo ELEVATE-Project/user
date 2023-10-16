@@ -135,12 +135,12 @@ module.exports = class SessionsHelper {
 				// Append the session ID to the job ID
 				jobsToCreate[jobIndex].jobId = jobsToCreate[jobIndex].jobId + data.id
 				// Create the scheduler job with the calculated delay and other parameters
-				/* await schedulerRequest.createSchedulerJob(
+				await schedulerRequest.createSchedulerJob(
 					jobsToCreate[jobIndex].jobId,
 					jobsToCreate[jobIndex].delay,
 					jobsToCreate[jobIndex].jobName,
 					jobsToCreate[jobIndex].emailTemplate
-				) */
+				)
 			}
 
 			return common.successResponse({
