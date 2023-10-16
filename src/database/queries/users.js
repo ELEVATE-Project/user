@@ -90,7 +90,7 @@ exports.listUsers = async (roleId, page, limit, search) => {
 
 		const filterQuery = {
 			where: whereClause,
-			attributes: ['id', 'name', 'image'],
+			attributes: ['id', 'name', 'about', 'image'],
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			order: [['name', 'ASC']],

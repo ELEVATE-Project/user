@@ -17,7 +17,7 @@ exports.create = async (data) => {
 			})
 			return message
 		} else {
-			return error
+			return error.message
 		}
 	}
 }

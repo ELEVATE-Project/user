@@ -22,13 +22,7 @@ module.exports = class Admin {
 
 	async deleteUser(req) {
 		try {
-			let isAdmin = false
-			const roles = req.decodedToken.roles
-			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
-			}
-
-			if (!isAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -102,13 +96,7 @@ module.exports = class Admin {
 
 	async addOrgAdmin(req) {
 		try {
-			let isAdmin = false
-			const roles = req.decodedToken.roles
-			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
-			}
-
-			if (!isAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -116,12 +104,36 @@ module.exports = class Admin {
 				})
 			}
 
-			const orgAdminCreation = await adminHelper.addOrgAdmin(
+			const orgAdminCreation = await adminService.addOrgAdmin(
 				req.body.user_id,
 				req.body.org_id,
 				req.decodedToken.id
 			)
 			return orgAdminCreation
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Deactivate Org
+	 * @method
+	 * @name deactivateOrg
+	 * @param {String} req.params.id - org Id.
+	 * @returns {JSON} - deactivated org response
+	 */
+	async deactivateOrg(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await adminService.deactivateOrg(req.params.id, req.decodedToken.id)
+			return result
 		} catch (error) {
 			return error
 		}

@@ -84,5 +84,10 @@
 	"ORG_ROLE_REQ_FAILED": "Organisation request update failed",
 	"ORG_ROLE_REQ_APPROVED": "Organisation request approved successfully",
 	"ORG_ROLE_REQ_UPDATED": "Organisation request updated",
-	"FILE_UPLOAD_MODIFY_ERROR": "File update failed"
+	"FILE_UPLOAD_MODIFY_ERROR": "File update failed",
+	"STATUS_UPDATE_FAILED": "Failed to deactivate user",
+	"USER_DEACTIVATED": "User deactivated Successfully",
+	"USER_CSV_UPLOADED_FAILED": "Failed to Uploaded User Invites CSV",
+	"ORG_DEACTIVATED": "Organization deactivated Successfully",
+	"EMAIL_OR_ID_REQUIRED": "Either 'id' or 'email' fields is required"
 }

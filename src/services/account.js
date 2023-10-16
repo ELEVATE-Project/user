@@ -39,7 +39,7 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
-		const projection = ['password', 'refresh_tokens', 'location', 'otpInfo']
+		const projection = ['password', 'refresh_tokens', 'location']
 
 		try {
 			const email = bodyData.email.toLowerCase()
@@ -66,8 +66,8 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
 			//check user exist in invitee list
-			let role
-			let roles = []
+			let role,
+				roles = []
 			const invitedUserMatch = await userInviteQueries.findOne({
 				email,
 			})
@@ -75,7 +75,14 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				bodyData.roles = roles = invitedUserMatch.roles
-				role = await roleQueries.findOne({ id: invitedUserMatch.roles })
+				role = await roleQueries.findOne(
+					{ id: invitedUserMatch.roles },
+					{
+						attributes: {
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
+						},
+					}
+				)
 			} else {
 				//find organization from email domain
 				let emailDomain = utilsHelper.extractDomainFromEmail(email)
@@ -210,7 +217,10 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({ email: bodyData.email.toLowerCase() })
+			let user = await userQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				status: common.activeStatus,
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -384,7 +394,7 @@ module.exports = class AccountHelper {
 			throw error
 		}
 
-		const user = await userQueries.findOne({ id: decodedToken.data.id })
+		const user = await userQueries.findByPk(decodedToken.data.id)
 
 		/* Check valid user */
 		if (!user) {
@@ -396,33 +406,34 @@ module.exports = class AccountHelper {
 		}
 
 		/* Check valid refresh token stored in db */
-		if (user.refresh_tokens.length) {
-			const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
-			if (!token) {
-				return common.failureResponse({
-					message: 'REFRESH_TOKEN_NOT_FOUND',
-					statusCode: httpStatusCode.internal_server_error,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			/* Generate new access token */
-			const accessToken = utilsHelper.generateToken(
-				{ data: decodedToken.data },
-				process.env.ACCESS_TOKEN_SECRET,
-				common.accessTokenExpiry
-			)
-
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
-				result: { access_token: accessToken },
+		if (!user.refresh_tokens.length) {
+			return common.failureResponse({
+				message: 'REFRESH_TOKEN_NOT_FOUND',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
 			})
 		}
-		return common.failureResponse({
-			message: 'REFRESH_TOKEN_NOT_FOUND',
-			statusCode: httpStatusCode.bad_request,
-			responseCode: 'CLIENT_ERROR',
+
+		const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
+		if (!token) {
+			return common.failureResponse({
+				message: 'REFRESH_TOKEN_NOT_FOUND',
+				statusCode: httpStatusCode.internal_server_error,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		/* Generate new access token */
+		const accessToken = utilsHelper.generateToken(
+			{ data: decodedToken.data },
+			process.env.ACCESS_TOKEN_SECRET,
+			common.accessTokenExpiry
+		)
+
+		return common.successResponse({
+			statusCode: httpStatusCode.ok,
+			message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
+			result: { access_token: accessToken },
 		})
 	}
 
@@ -792,7 +803,8 @@ module.exports = class AccountHelper {
 				const userIdsNotFoundInRedis = []
 				const userDetailsFoundInRedis = []
 				for (let i = 0; i < userIds.length; i++) {
-					let userDetails = (await utilsHelper.redisGet(userIds[i].toString())) || false
+					let userDetails =
+						(await utilsHelper.redisGet(common.redisUserPrefix + userIds[i].toString())) || false
 
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])

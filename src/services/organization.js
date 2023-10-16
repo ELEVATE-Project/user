@@ -144,6 +144,7 @@ module.exports = class OrganizationsHelper {
 				let organizations = await organizationQueries.findAll(
 					{
 						id: orgIdsNotFoundInRedis,
+						status: common.activeStatus,
 					},
 					options
 				)

@@ -28,13 +28,13 @@ module.exports = {
 	},
 
 	read: (req) => {
-		req.checkQuery('organisationId').optional().notEmpty().withMessage('organisationId field is empty')
+		req.checkQuery('organisation_id').optional().notEmpty().withMessage('organisation_id field is empty')
 
-		req.checkQuery('organisationCode').optional().notEmpty().withMessage('organisationCode field is empty')
+		req.checkQuery('organisation_code').optional().notEmpty().withMessage('organisation_code field is empty')
 
 		// Use oneOf to check that at least one of the fields is present
 		req.checkQuery()
-			.oneOf(['organisationId', 'organisationCode'])
-			.withMessage('At least one of organisationId or organisationCode should be present')
+			.oneOf(['organisation_id', 'organisation_code'])
+			.withMessage('At least one of organisation_id or organisation_code should be present')
 	},
 }
