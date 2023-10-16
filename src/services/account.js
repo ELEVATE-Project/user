@@ -39,7 +39,7 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
-		const projection = ['password', 'refresh_tokens', 'location', 'otpInfo']
+		const projection = ['password', 'refresh_tokens', 'location']
 
 		try {
 			const email = bodyData.email.toLowerCase()
@@ -66,8 +66,8 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
 			//check user exist in invitee list
-			let role
-			let roles = []
+			let role,
+				roles = []
 			const invitedUserMatch = await userInviteQueries.findOne({
 				email,
 			})
@@ -75,7 +75,14 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				bodyData.roles = roles = invitedUserMatch.roles
-				role = await roleQueries.findOne({ id: invitedUserMatch.roles })
+				role = await roleQueries.findOne(
+					{ id: invitedUserMatch.roles },
+					{
+						attributes: {
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
+						},
+					}
+				)
 			} else {
 				//find organization from email domain
 				let emailDomain = utilsHelper.extractDomainFromEmail(email)
@@ -298,13 +305,13 @@ module.exports = class AccountHelper {
 			delete user.password
 			delete user.refresh_tokens
 
-			// let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-			// 	{
-			// 		status: 'ACTIVE',
-			// 	},
-			// 	user.organization_id
-			// )
-			// user = utils.processDbResponse(user, validationData)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
+				{
+					status: 'ACTIVE',
+				},
+				user.organization_id
+			)
+			user = utils.processDbResponse(user, validationData)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
