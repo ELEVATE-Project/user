@@ -1,13 +1,13 @@
 'use strict'
 // Dependenices
 const common = require('@constants/common')
-const mentorQueries = require('../../database/queries/mentorextension')
-const menteeQueries = require('../../database/queries/userextension')
+const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
 const httpStatusCode = require('@generics/http-status')
-const sessionQueries = require('../../database/queries/sessions')
+const sessionQueries = require('@database/queries/sessions')
 const adminService = require('./admin')
-const OrganisationExtensionQueries = require('@database/queries/organisationextension')
-const entityTypeQueries = require('../../database/queries/entityType')
+const OrganisationExtensionQueries = require('@database/queries/organisationExtension')
+const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
 
 module.exports = class OrgAdminService {
@@ -200,9 +200,9 @@ module.exports = class OrgAdminService {
 		try {
 			// Get default organisation details
 			let defaultOrgDetails = await userRequests.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
-		
+
 			let defaultOrgId
-			if(defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
+			if (defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
 				defaultOrgId = defaultOrgDetails.data.result.id
 			} else {
 				return common.failureResponse({
@@ -211,14 +211,14 @@ module.exports = class OrgAdminService {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			
+
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
-				org_id: defaultOrgId
+				org_id: defaultOrgId,
 			}
 			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
-			
+
 			// If no matching data found return failure response
 			if (!entityTypeDetails) {
 				return common.failureResponse({
@@ -227,13 +227,13 @@ module.exports = class OrgAdminService {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-	
+
 			// Build data for inheriting entityType
 			entityTypeDetails.parent_id = entityTypeDetails.org_id
 			entityTypeDetails.label = entityLabel
 			entityTypeDetails.org_id = userOrgId
 			delete entityTypeDetails.id
-			
+
 			// Create new inherited entity type
 			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
 			return common.successResponse({
@@ -241,8 +241,8 @@ module.exports = class OrgAdminService {
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: inheritedEntityType,
 			})
-
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

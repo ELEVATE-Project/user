@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const sessionsHelper = require('@services/helper/sessions')
+const sessionService = require('@services/sessions')
 
 module.exports = class Sessions {
 	/**
@@ -28,7 +28,7 @@ module.exports = class Sessions {
 					req.body['time_zone'] = req.headers.timezone
 				}
 
-				const sessionUpdated = await sessionsHelper.update(
+				const sessionUpdated = await sessionService.update(
 					req.params.id,
 					req.body,
 					req.decodedToken.id,
@@ -41,7 +41,7 @@ module.exports = class Sessions {
 				if (req.headers.timezone) {
 					req.body['time_zone'] = req.headers.timezone
 				}
-				const sessionCreated = await sessionsHelper.create(
+				const sessionCreated = await sessionService.create(
 					req.body,
 					req.decodedToken.id,
 					req.decodedToken.organization_id
@@ -66,7 +66,7 @@ module.exports = class Sessions {
 
 	async details(req) {
 		try {
-			const sessionDetails = await sessionsHelper.details(
+			const sessionDetails = await sessionService.details(
 				req.params.id,
 				req.decodedToken ? req.decodedToken.id : ''
 			)
@@ -90,7 +90,7 @@ module.exports = class Sessions {
 
 	async list(req) {
 		try {
-			const sessionDetails = await sessionsHelper.list(
+			const sessionDetails = await sessionService.list(
 				req.decodedToken.id,
 				req.pageNo,
 				req.pageSize,
@@ -114,7 +114,7 @@ module.exports = class Sessions {
 
 	async share(req) {
 		try {
-			const shareSessionDetails = await sessionsHelper.share(req.params.id)
+			const shareSessionDetails = await sessionService.share(req.params.id)
 			return shareSessionDetails
 		} catch (error) {
 			return error
@@ -134,7 +134,7 @@ module.exports = class Sessions {
 
 	async enroll(req) {
 		try {
-			const enrolledSession = await sessionsHelper.enroll(
+			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
 				req.headers['timezone']
@@ -157,7 +157,7 @@ module.exports = class Sessions {
 
 	async unEnroll(req) {
 		try {
-			const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken)
+			const unEnrolledSession = await sessionService.unEnroll(req.params.id, req.decodedToken)
 			return unEnrolledSession
 		} catch (error) {
 			return error
@@ -176,7 +176,7 @@ module.exports = class Sessions {
 
 	async start(req) {
 		try {
-			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken)
+			const sessionsStarted = await sessionService.start(req.params.id, req.decodedToken)
 			return sessionsStarted
 		} catch (error) {
 			return error
@@ -194,7 +194,7 @@ module.exports = class Sessions {
 
 	async completed(req) {
 		try {
-			const sessionsCompleted = await sessionsHelper.completed(req.params.id)
+			const sessionsCompleted = await sessionService.completed(req.params.id)
 			return sessionsCompleted
 		} catch (error) {
 			return error
@@ -212,7 +212,7 @@ module.exports = class Sessions {
 
 	async getRecording(req) {
 		try {
-			const recording = await sessionsHelper.getRecording(req.params.id)
+			const recording = await sessionService.getRecording(req.params.id)
 			return recording
 		} catch (error) {
 			return error
@@ -231,7 +231,7 @@ module.exports = class Sessions {
 
 	async feedback(req) {
 		try {
-			const sessionsFeedBack = await sessionsHelper.feedback(req.params.id, req.body)
+			const sessionsFeedBack = await sessionService.feedback(req.params.id, req.body)
 			return sessionsFeedBack
 		} catch (error) {
 			return error
@@ -252,7 +252,7 @@ module.exports = class Sessions {
 		const internalMeetingId = req.params.id
 		const recordingUrl = req.body.recordingUrl
 		try {
-			const sessionUpdated = await sessionsHelper.updateRecordingUrl(internalMeetingId, recordingUrl)
+			const sessionUpdated = await sessionService.updateRecordingUrl(internalMeetingId, recordingUrl)
 			return sessionUpdated
 		} catch (error) {
 			return error

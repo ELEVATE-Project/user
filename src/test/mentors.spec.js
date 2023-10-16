@@ -17,10 +17,10 @@ describe('Sessions controller and helper test', () => {
 
 	beforeAll(async () => {
 		await loadMongo()
-		mentorsServices = require('@services/helper/mentors')
+		mentorsServices = require('@services/mentors')
 		sessionAttended = require('@db/sessionAttendees/queries')
 		sessionsData = require('@db/sessions/queries')
-		userProfile = require('@services/helper/userProfile')
+		userProfile = require('@requests/user')
 	})
 
 	test('should return Profile of mentor', async () => {

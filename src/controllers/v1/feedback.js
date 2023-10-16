@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const feedbackHelper = require('@services/helper/feedback')
+const feedbackService = require('@services/feedback')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 
@@ -23,7 +23,7 @@ module.exports = class Feedback {
 
 	async forms(req) {
 		try {
-			const feedbackFormData = await feedbackHelper.forms(req.params.id, req.decodedToken.roles)
+			const feedbackFormData = await feedbackService.forms(req.params.id, req.decodedToken.roles)
 			return feedbackFormData
 		} catch (error) {
 			return error
@@ -52,7 +52,7 @@ module.exports = class Feedback {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const feedbackSubmitData = await feedbackHelper.submit(
+			const feedbackSubmitData = await feedbackService.submit(
 				req.params.id,
 				req.body,
 				req.decodedToken.id,

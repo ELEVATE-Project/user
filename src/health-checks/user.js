@@ -17,7 +17,7 @@ const request = require('request')
 
 async function health_check() {
 	try {
-		let healthCheckUrl = process.env.USER_SERIVCE_HOST + '/healthCheckStatus'
+		let healthCheckUrl = process.env.USER_SERVICE_HOST + '/healthCheckStatus'
 
 		const options = {
 			headers: {

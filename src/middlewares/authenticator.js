@@ -17,6 +17,7 @@ module.exports = async function (req, res, next) {
 		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
+		let decodedToken
 
 		const authHeader = req.get('X-auth-token')
 
@@ -89,7 +90,7 @@ module.exports = async function (req, res, next) {
 		}
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+			const userBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 
 			const user = await requests.get(profileUrl, null, true)

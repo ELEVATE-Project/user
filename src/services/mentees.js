@@ -1,24 +1,19 @@
 // Dependencies
-const moment = require('moment-timezone')
-
-const sessionAttendees = require('@db/sessionAttendees/queries')
-const userProfile = require('./userProfile')
-const sessionData = require('@db/sessions/queries')
+const userRequests = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const bigBlueButton = require('./bigBlueButton')
 const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
-const ObjectId = require('mongoose').Types.ObjectId
 
 const { successResponse } = require('@constants/common')
 
 const { UniqueConstraintError } = require('sequelize')
-const menteeQueries = require('../../database/queries/userextension')
+const menteeQueries = require('@database/queries/userExtension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const _ = require('lodash')
 const entityTypeQueries = require('@database/queries/entityType')
+const bigBlueButtonService = require('./bigBlueButton')
 
 module.exports = class MenteesHelper {
 	/**
@@ -29,7 +24,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - profile details
 	 */
 	static async read(id, orgId) {
-		const menteeDetails = await userProfile.details('', id)
+		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
 		delete mentee.organisation_ids
@@ -195,7 +190,7 @@ module.exports = class MenteesHelper {
 
 	static async joinSession(sessionId, token) {
 		try {
-			const mentee = await userProfile.details(token)
+			const mentee = await userRequests.details(token)
 
 			if (mentee.data.responseCode !== 'OK') {
 				return common.failureResponse({
@@ -264,7 +259,7 @@ module.exports = class MenteesHelper {
 			if (sessionAttendee?.meeting_info?.link) {
 				meetingInfo = sessionAttendee.meeting_info
 			} else {
-				const attendeeLink = await bigBlueButton.joinMeetingAsAttendee(
+				const attendeeLink = await bigBlueButtonService.joinMeetingAsAttendee(
 					sessionId,
 					menteeDetails.name,
 					session.menteePassword
@@ -386,7 +381,7 @@ module.exports = class MenteesHelper {
 			const mentorIds = [...new Set(sessions.map((session) => session.mentor_id))]
 
 			// Fetch mentor details
-			const mentorDetails = (await userProfile.getListOfUserDetails(mentorIds)).result
+			const mentorDetails = (await userRequests.getListOfUserDetails(mentorIds)).result
 
 			// Map mentor names to sessions
 			sessions.forEach((session) => {

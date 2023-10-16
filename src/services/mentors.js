@@ -1,15 +1,9 @@
 // Dependencies
-const moment = require('moment-timezone')
-
-const sessionsData = require('@db/sessions/queries')
 const utils = require('@generics/utils')
-const userProfile = require('./userProfile')
+const userRequests = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const ObjectId = require('mongoose').Types.ObjectId
-const sessionAttendees = require('@db/sessionAttendees/queries')
-
-const mentorQueries = require('../../database/queries/mentorextension')
+const mentorQueries = require('@database/queries/mentorExtension')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -75,7 +69,7 @@ module.exports = class MentorsHelper {
 	 */
 	/* 	static async profile(id) {
 		try {
-			const mentorsDetails = await userProfile.details('', id)
+			const mentorsDetails = await userRequests.details('', id)
 			if (mentorsDetails.data.result.isAMentor && mentorsDetails.data.result.deleted === false) {
 				const _id = mentorsDetails.data.result._id
 				const filterSessionAttended = { userId: _id, isSessionAttended: true }
@@ -157,6 +151,7 @@ module.exports = class MentorsHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -170,7 +165,7 @@ module.exports = class MentorsHelper {
 	 */
 	static async share(id) {
 		try {
-			const shareLink = await userProfile.share(id)
+			const shareLink = await userRequests.share(id)
 			return shareLink
 		} catch (error) {
 			return error
@@ -182,7 +177,7 @@ module.exports = class MentorsHelper {
 			if (session.length > 0) {
 				const userIds = _.uniqBy(session, 'mentor_id').map((item) => item.mentor_id)
 
-				let mentorDetails = await userProfile.getListOfUserDetails(userIds)
+				let mentorDetails = await userRequests.getListOfUserDetails(userIds)
 				mentorDetails = mentorDetails.result
 
 				for (let i = 0; i < session.length; i++) {
@@ -208,6 +203,7 @@ module.exports = class MentorsHelper {
 				return session
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -400,7 +396,7 @@ module.exports = class MentorsHelper {
 	 */
 	static async read(id, orgId) {
 		try {
-			let mentorProfile = await userProfile.details('', id)
+			let mentorProfile = await userRequests.details('', id)
 			if (!mentorProfile.data.result) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
@@ -434,7 +430,8 @@ module.exports = class MentorsHelper {
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
-			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
+			const filter = { is_session_attended: true }
+			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

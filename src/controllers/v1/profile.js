@@ -1,5 +1,5 @@
-const menteesHelper = require('@services/helper/mentees')
-const mentorsHelper = require('@services/helper/mentors')
+const menteesHelper = require('@services/mentees')
+const mentorsHelper = require('@services/mentors')
 const { isAMentor } = require('@generics/utils')
 
 module.exports = class Mentees {

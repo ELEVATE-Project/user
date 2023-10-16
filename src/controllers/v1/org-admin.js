@@ -1,4 +1,4 @@
-const orgAdminService = require('@services/helper/org-admin')
+const orgAdminService = require('@services/org-admin')
 
 module.exports = class OrgAdmin {
 	/**
@@ -64,7 +64,7 @@ module.exports = class OrgAdmin {
 	async inheritEntityType(req) {
 		try {
 			let entityTypeDetails = orgAdminService.inheritEntityType(
-				req.body.entity_type_value, 			
+				req.body.entity_type_value,
 				req.body.target_entity_type_label,
 				req.decodedToken.organization_id
 			)

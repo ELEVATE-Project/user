@@ -1,17 +1,15 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const sessionData = require('@db/sessions/queries')
-const notificationTemplateData = require('@db/notification-template/query')
-const sessionAttendeesData = require('@db/sessionAttendees/queries')
-const sessionAttendeesHelper = require('./sessionAttendees')
+
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
 
-const sessionQueries = require('../../database/queries/sessions')
+const sessionQueries = require('@database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
-const mentorQueries = require('../../database/queries/mentorextension')
-const menteeQueries = require('../../database/queries/userextension')
+const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
+const userRequests = require('@requests/user')
 
 module.exports = class AdminHelper {
 	/**
@@ -80,7 +78,7 @@ module.exports = class AdminHelper {
 				})
 
 				const sessionAttendeesIds = sessionAttendees.map((attendee) => attendee.mentee_id)
-				const attendeesAccounts = await sessionAttendeesHelper.getAllAccountsDetail(sessionAttendeesIds)
+				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
 				sessionAttendees.forEach((attendee) => {
 					for (const element of attendeesAccounts.result) {

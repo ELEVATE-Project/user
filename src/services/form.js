@@ -4,10 +4,10 @@ const utils = require('@generics/utils')
 const form = require('@generics/form')
 const KafkaProducer = require('@generics/kafka-communication')
 
-const formQueries = require('../../database/queries/form')
+const formQueries = require('../database/queries/form')
 const { UniqueConstraintError } = require('sequelize')
 
-const entityTypeQueries = require('../../database/queries/entityType')
+const entityTypeQueries = require('../database/queries/entityType')
 
 module.exports = class FormsHelper {
 	/**

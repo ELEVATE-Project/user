@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const userHelper = require('@services/helper/admin')
+const userService = require('@services/admin')
 
 module.exports = class admin {
 	/**
@@ -20,7 +20,7 @@ module.exports = class admin {
 
 	async userDelete(req) {
 		try {
-			const userDelete = await userHelper.userDelete(req.decodedToken, req.query.userId)
+			const userDelete = await userService.userDelete(req.decodedToken, req.query.userId)
 			return userDelete
 		} catch (error) {
 			return error

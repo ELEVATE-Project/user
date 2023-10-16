@@ -19,11 +19,11 @@ async function health_check() {
 	await producer.connect()
 
 	producer.on('producer.connect', () => {
-		console.log(`KafkaProvider: connected`)
+		console.log('KafkaProvider: connected')
 		return true
 	})
 	producer.on('producer.disconnect', () => {
-		console.log(`KafkaProvider: could not connect`)
+		console.log('KafkaProvider: could not connect')
 		return false
 	})
 }
