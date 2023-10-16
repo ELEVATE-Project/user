@@ -394,7 +394,7 @@ module.exports = class AccountHelper {
 			throw error
 		}
 
-		const user = await userQueries.findOne({ id: decodedToken.data.id })
+		const user = await userQueries.findByPk(decodedToken.data.id)
 
 		/* Check valid user */
 		if (!user) {
@@ -406,33 +406,34 @@ module.exports = class AccountHelper {
 		}
 
 		/* Check valid refresh token stored in db */
-		if (user.refresh_tokens.length) {
-			const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
-			if (!token) {
-				return common.failureResponse({
-					message: 'REFRESH_TOKEN_NOT_FOUND',
-					statusCode: httpStatusCode.internal_server_error,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			/* Generate new access token */
-			const accessToken = utilsHelper.generateToken(
-				{ data: decodedToken.data },
-				process.env.ACCESS_TOKEN_SECRET,
-				common.accessTokenExpiry
-			)
-
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
-				result: { access_token: accessToken },
+		if (!user.refresh_tokens.length) {
+			return common.failureResponse({
+				message: 'REFRESH_TOKEN_NOT_FOUND',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
 			})
 		}
-		return common.failureResponse({
-			message: 'REFRESH_TOKEN_NOT_FOUND',
-			statusCode: httpStatusCode.bad_request,
-			responseCode: 'CLIENT_ERROR',
+
+		const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
+		if (!token) {
+			return common.failureResponse({
+				message: 'REFRESH_TOKEN_NOT_FOUND',
+				statusCode: httpStatusCode.internal_server_error,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		/* Generate new access token */
+		const accessToken = utilsHelper.generateToken(
+			{ data: decodedToken.data },
+			process.env.ACCESS_TOKEN_SECRET,
+			common.accessTokenExpiry
+		)
+
+		return common.successResponse({
+			statusCode: httpStatusCode.ok,
+			message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
+			result: { access_token: accessToken },
 		})
 	}
 

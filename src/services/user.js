@@ -147,10 +147,6 @@ module.exports = class UserHelper {
 
 				user.user_roles = roles
 
-				let isAMentor = false
-				if (roles && roles.length > 0) {
-					isAMentor = roles.some((role) => role.title === common.roleMentor)
-				}
 				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
 					{
 						status: 'ACTIVE',
@@ -159,7 +155,7 @@ module.exports = class UserHelper {
 				)
 				const processDbResponse = utils.processDbResponse(user, validationData)
 
-				if (isAMentor) {
+				if (utilsHelper.validateRoleAccess(roles, common.roleMentor)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
