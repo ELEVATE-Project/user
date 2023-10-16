@@ -104,7 +104,7 @@ module.exports = class Admin {
 				})
 			}
 
-			const orgAdminCreation = await adminHelper.addOrgAdmin(
+			const orgAdminCreation = await adminService.addOrgAdmin(
 				req.body.user_id,
 				req.body.org_id,
 				req.decodedToken.id
@@ -132,7 +132,7 @@ module.exports = class Admin {
 				})
 			}
 
-			const result = await adminHelper.deactivateOrg(req.params.id, req.decodedToken.id)
+			const result = await adminService.deactivateOrg(req.params.id, req.decodedToken.id)
 			return result
 		} catch (error) {
 			return error

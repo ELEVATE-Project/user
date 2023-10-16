@@ -803,7 +803,8 @@ module.exports = class AccountHelper {
 				const userIdsNotFoundInRedis = []
 				const userDetailsFoundInRedis = []
 				for (let i = 0; i < userIds.length; i++) {
-					let userDetails = (await utilsHelper.redisGet(userIds[i].toString())) || false
+					let userDetails =
+						(await utilsHelper.redisGet(common.redisUserPrefix + userIds[i].toString())) || false
 
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])

@@ -135,7 +135,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminHelper.updateRequestStatus(req.body, req.decodedToken.id)
+			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken.id)
 			return result
 		} catch (error) {
 			return error
@@ -167,7 +167,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminHelper.deactivateUser(req.body, req.decodedToken.id)
+			const result = await orgAdminService.deactivateUser(req.body, req.decodedToken.id)
 
 			return result
 		} catch (error) {

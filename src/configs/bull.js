@@ -1,7 +1,7 @@
 ;('use strict')
 const { Worker } = require('bullmq')
 const fs = require('fs')
-const userInviteHelper = require('@services/userInvite')
+const userInviteService = require('@services/userInvite')
 const common = require('@constants/common')
 const utils = require('@generics/utils')
 const path = require('path')
@@ -24,7 +24,7 @@ module.exports = function () {
 			async (job) => {
 				if (job.name == 'upload_invites') {
 					console.log(`Processing job ${job.id}: ${job.data}`)
-					let response = await userInviteHelper.uploadInvites(job.data)
+					let response = await userInviteService.uploadInvites(job.data)
 					if (!response.success) {
 						logger.info(`Job with id ${job.id} Error ${response.message}`)
 					}

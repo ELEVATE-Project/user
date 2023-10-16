@@ -13,7 +13,7 @@ const path = require('path')
 const csv = require('csvtojson')
 const axios = require('axios')
 const common = require('@constants/common')
-const filesHelper = require('@services/files')
+const fileService = require('@services/files')
 const request = require('request')
 const userInviteQueries = require('@database/queries/orgUserInvite')
 const fileUploadQueries = require('@database/queries/fileUpload')
@@ -204,7 +204,7 @@ module.exports = class UserInviteHelper {
 
 	static async uploadFileToCloud(fileName, folderPath, userId = '', dynamicPath = '') {
 		try {
-			const getSignedUrl = await filesHelper.getSignedUrl(fileName, userId, dynamicPath)
+			const getSignedUrl = await fileService.getSignedUrl(fileName, userId, dynamicPath)
 			if (!getSignedUrl.result) {
 				throw new Error('FAILED_TO_GENERATE_SIGNED_URL')
 			}
