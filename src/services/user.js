@@ -14,6 +14,7 @@ const roleQueries = require('@database/queries/userRole')
 const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
 const _ = require('lodash')
+const { Op } = require('sequelize')
 
 module.exports = class UserHelper {
 	/**
@@ -186,8 +187,18 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
+			const role = await roleQueries.findOne({ title: common.roleMentor })
+
+			if (!role) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			let user = await userQueries.findOne(
-				{ id: userId, role: common.roleMentor },
+				{ id: userId, roles: { [Op.contains]: [role.id] } },
 				{ attributes: ['share_link'] }
 			)
 
