@@ -173,6 +173,8 @@ services:
   citus:
     image: citusdata/citus:11.2.0
     container_name: 'citus_master'
+    #ports:
+    #  - 5432:5432
     expose:
       - 5432
     # command: >
