@@ -12,8 +12,7 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const menteeQueries = require('@database/queries/userExtension')
-const mentorQueries = require('@database/queries/mentorExtension')
+
 /**
  * Fetches the default organization details for a given organization code/id.
  * @param {string} organisationCode - The code of the organization.
@@ -166,35 +165,8 @@ const list = function (userType, pageNo, pageSize, searchText) {
 				'&search=' +
 				searchText
 			const userDetails = await requests.get(apiUrl, false, true)
-			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
-			let extensionDetails
-			if (userType == common.MENTEE_ROLE) {
-				extensionDetails = await menteeQueries.getUsersByUserIds(ids, {
-					attributes: ['user_id', 'rating'],
-				})
-			} else if (userType == common.MENTOR_ROLE) {
-				extensionDetails = await mentorQueries.getMentorsByUserIds(ids, {
-					attributes: ['user_id', 'rating'],
-				})
-			}
 
-			const extensionDataMap = new Map(extensionDetails.map((newItem) => [newItem.user_id, newItem]))
-
-			userDetails.data.result.data.forEach((existingItem) => {
-				const user_id = existingItem.values[0].id
-				if (extensionDataMap.has(user_id)) {
-					const newItem = extensionDataMap.get(user_id)
-					existingItem.values[0] = { ...existingItem.values[0], ...newItem }
-				}
-				delete existingItem.values[0].user_id
-			})
-			return resolve(
-				common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: userDetails.data.message,
-					result: userDetails.data.result,
-				})
-			)
+			return resolve(userDetails)
 		} catch (error) {
 			return reject(error)
 		}

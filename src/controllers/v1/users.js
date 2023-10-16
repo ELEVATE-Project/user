@@ -7,8 +7,8 @@
 
 // Dependencies
 const { isAMentor } = require('@generics/utils')
-const userRequests = require('@requests/user')
 const feedbackService = require('@services/feedback')
+const userService = require('@services/users')
 
 module.exports = class Users {
 	/**
@@ -47,7 +47,7 @@ module.exports = class Users {
 
 	async list(req) {
 		try {
-			const listUser = await userRequests.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
+			const listUser = await userService.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
 			return listUser
 		} catch (error) {
 			return error
