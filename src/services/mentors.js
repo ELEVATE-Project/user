@@ -396,7 +396,7 @@ module.exports = class MentorsHelper {
 	 */
 	static async read(id, orgId) {
 		try {
-			let mentorProfile = await userProfile.details('', id)
+			let mentorProfile = await userRequests.details('', id)
 			if (!mentorProfile.data.result) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
@@ -430,7 +430,8 @@ module.exports = class MentorsHelper {
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
-			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
+			const filter = { is_session_attended: true }
+			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(filter, id)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
