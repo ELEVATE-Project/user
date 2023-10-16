@@ -189,6 +189,18 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
+	INVITEE_EMAIL_TEMPLATE_CODE: {
+		message: 'Required user invitation email template code',
+		optional: false,
+	},
+	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {
+		message: 'Required admin upload invitee email template code',
+		optional: false,
+	},
+	DEFAULT_QUEUE: {
+		message: 'Required default queue',
+		optional: false,
+	},
 }
 
 let success = true
