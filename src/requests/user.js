@@ -23,7 +23,7 @@ const fetchDefaultOrgDetails = function (organisationCode) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Construct the URL to read organization details
-			let orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisationCode=' + organisationCode
+			let orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_code=' + organisationCode
 			let internalToken = true
 
 			const orgDetails = await requests.get(
