@@ -165,13 +165,8 @@ const list = function (userType, pageNo, pageSize, searchText) {
 				'&search=' +
 				searchText
 			const userDetails = await requests.get(apiUrl, false, true)
-			return resolve(
-				common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: userDetails.data.message,
-					result: userDetails.data.result,
-				})
-			)
+
+			return resolve(userDetails)
 		} catch (error) {
 			return reject(error)
 		}
