@@ -86,4 +86,20 @@ module.exports = class MentorExtensionQueries {
 			throw error
 		}
 	}
+	static async getMentorsByUserIds(ids, options = {}) {
+		try {
+			const result = await MentorExtension.findAll({
+				where: {
+					user_id: ids, // Assuming "user_id" is the field you want to match
+				},
+				...options,
+				returning: true,
+				raw: true,
+			})
+
+			return result
+		} catch (error) {
+			throw error
+		}
+	}
 }

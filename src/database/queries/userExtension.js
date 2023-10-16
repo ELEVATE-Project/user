@@ -82,4 +82,20 @@ module.exports = class MenteeExtensionQueries {
 			throw error
 		}
 	}
+	static async getUsersByUserIds(ids, options = {}) {
+		try {
+			const result = await MenteeExtension.findAll({
+				where: {
+					user_id: ids, // Assuming "user_id" is the field you want to match
+				},
+				...options,
+				returning: true,
+				raw: true,
+			})
+
+			return result
+		} catch (error) {
+			throw error
+		}
+	}
 }

@@ -945,7 +945,12 @@ module.exports = class SessionsHelper {
 				meetingInfo = session.meeting_info
 			} else {
 				let currentDate = moment().utc().format(common.UTC_DATE_TIME_FORMAT)
-				let elapsedMinutes = moment(session.start_date).diff(currentDate, 'minutes')
+
+				const formattedStartDate = moment.unix(session.start_date).format(common.UTC_DATE_TIME_FORMAT)
+
+				const formattedEndDate = moment.unix(session.end_date).format(common.UTC_DATE_TIME_FORMAT)
+
+				let elapsedMinutes = moment(formattedStartDate).diff(currentDate, 'minutes')
 
 				if (elapsedMinutes > 10) {
 					return common.failureResponse({
@@ -954,7 +959,7 @@ module.exports = class SessionsHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				let sessionDuration = moment(session.end_date).diff(session.start_date, 'minutes')
+				let sessionDuration = moment(formattedEndDate).diff(formattedStartDate, 'minutes')
 
 				const meetingDetails = await bigBlueButtonRequests.createMeeting(
 					session.id,
