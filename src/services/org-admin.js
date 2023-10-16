@@ -253,7 +253,7 @@ module.exports = class OrgAdminHelper {
 	static async deactivateUser(filterQuery, loggedInUserId) {
 		try {
 			let rowsAffected = await userQueries.updateUser(filterQuery, {
-				status: common.inActiveStatus,
+				status: common.inactiveStatus,
 				updated_by: loggedInUserId,
 			})
 

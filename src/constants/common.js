@@ -83,7 +83,7 @@ module.exports = {
 	roleAssociationModel: 'UserRole',
 	roleAssociationName: 'user_roles',
 	activeStatus: 'ACTIVE',
-	inActiveStatus: 'INACTIVE',
+	inactiveStatus: 'INACTIVE',
 	roleMentor: 'mentor',
 	roleMentee: 'mentee',
 	redisUserPrefix: 'user_',

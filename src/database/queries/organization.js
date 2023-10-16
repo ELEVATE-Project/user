@@ -68,7 +68,6 @@ exports.listOrganizations = async (page, limit, search) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		filter.status = common.activeStatus
 		return await Organization.findAll({
 			where: filter,
 			...options,
