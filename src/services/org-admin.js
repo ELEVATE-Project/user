@@ -145,6 +145,14 @@ module.exports = class OrgAdminHelper {
 				}
 			)
 
+			if (!requestDetails) {
+				return common.failureResponse({
+					message: 'REQUEST_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			if (!requestDetails.handler) {
 				requestDetails.handler = {}
 			}

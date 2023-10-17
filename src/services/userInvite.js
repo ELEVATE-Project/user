@@ -20,9 +20,8 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const roleQueries = require('@database/queries/userRole')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const ProjectRootDir = path.join(__dirname, '../../')
+const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
-
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
@@ -43,10 +42,12 @@ module.exports = class UserInviteHelper {
 
 				// create outPut file and create invites
 				const createResponse = await this.createUserInvites(invitees, data.user, data.fileDetails.id)
+				console.log(createResponse, 'createResponse response-------')
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
 				// upload output file to cloud
 				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, data.user.id)
+				console.log(uploadRes, 'uploadRes response-------')
 				const output_path = uploadRes.result.uploadDest
 				const update = {
 					output_path,
@@ -80,6 +81,7 @@ module.exports = class UserInviteHelper {
 					message: 'CSV_UPLOADED_SUCCESSFULLY',
 				})
 			} catch (error) {
+				console.log(error, 'error while processing csv------')
 				return reject({
 					success: false,
 					message: error.message,
