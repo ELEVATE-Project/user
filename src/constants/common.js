@@ -47,8 +47,6 @@ module.exports = {
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
 		'/user/v1/userRole/list',
-		'/user/v1/organization/create',
-		'/user/v1/organization/update',
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',
@@ -78,6 +76,8 @@ module.exports = {
 		'/user/v1/org-admin/getRequestDetails',
 		'/user/v1/org-admin/getRequests',
 		'/user/v1/organization/requestOrgRole',
+		'/user/v1/organization/create',
+		'/user/v1/organization/update',
 	],
 	responseType: 'stream',
 	roleAssociationModel: 'UserRole',
