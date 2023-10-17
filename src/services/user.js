@@ -156,7 +156,7 @@ module.exports = class UserHelper {
 				)
 				const processDbResponse = utils.processDbResponse(user, validationData)
 
-				if (utilsHelper.validateRoleAccess(roles, common.roleMentor)) {
+				if (utils.validateRoleAccess(roles, common.roleMentor)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
