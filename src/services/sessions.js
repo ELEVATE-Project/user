@@ -600,10 +600,19 @@ module.exports = class SessionsHelper {
 
 			sessionDetails.rows = await sessionMentor.sessionMentorDetails(sessionDetails.rows)
 
+			//remove meeting_info details except value and platform
+			sessionDetails.rows.forEach((item) => {
+				if (item.meeting_info) {
+					item.meeting_info = {
+						value: item.meeting_info.value,
+						platform: item.meeting_info.platform,
+					}
+				}
+			})
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: sessionDetails,
+				result: { count: sessionDetails.count, data: sessionDetails.rows },
 			})
 		} catch (error) {
 			throw error
