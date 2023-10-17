@@ -32,7 +32,7 @@ module.exports = class OrgAdminHelper {
 
 	static async bulkUserCreate(filePath, tokenInformation) {
 		try {
-			const { id, email, organization_id } = tokenInformation
+			const { id, name, email, organization_id } = tokenInformation
 
 			const creationData = {
 				name: utils.extractFilename(filePath),
@@ -60,6 +60,7 @@ module.exports = class OrgAdminHelper {
 					fileDetails: result,
 					user: {
 						id,
+						name,
 						email,
 						organization_id,
 					},
