@@ -171,10 +171,15 @@ module.exports = class UserInviteHelper {
 				const newInvitee = await userInviteQueries.create(inviteeData)
 
 				if (newInvitee.id) {
-					newInvitee.user = user
-					newInvitee.role = invitee.roles
+					const userData = {
+						name: invitee.name,
+						email: invitee.email,
+						role: invitee.roles,
+						adminName: user.name,
+					}
+
 					if (process.env.INVITEE_EMAIL_TEMPLATE_CODE) {
-						await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, newInvitee)
+						await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, userData)
 					}
 				} else {
 					isErrorOccured = true
@@ -250,9 +255,9 @@ module.exports = class UserInviteHelper {
 						subject: templateData.subject,
 						body: utils.composeEmailBody(templateData.body, {
 							name: userData.name,
-							role: userData.roles || '',
+							role: userData.role || '',
 							appName: process.env.APP_NAME,
-							adminName: userData.user?.name || '',
+							adminName: userData.adminName || '',
 							inviteeUploadURL,
 						}),
 					},
