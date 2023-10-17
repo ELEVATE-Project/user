@@ -20,9 +20,8 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const roleQueries = require('@database/queries/userRole')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const ProjectRootDir = path.join(__dirname, '../../')
+const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
-
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
@@ -30,14 +29,12 @@ module.exports = class UserInviteHelper {
 				const filePath = data.fileDetails.input_path
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
-				console.log(response, 'downloadCSV response-------')
 				if (!response.success) {
 					throw new Error('FAILED_TO_DOWNLOAD')
 				}
 
 				// extract data from csv
 				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
-				console.log(parsedFileData, 'extractDataFromCSV response-------')
 				if (!parsedFileData.success || parsedFileData.result.data.length == 0) {
 					throw new Error('FAILED_TO_READ_CSV')
 				}

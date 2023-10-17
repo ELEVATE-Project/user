@@ -15,6 +15,7 @@ module.exports = function () {
 	try {
 		const ProjectRootDir = path.join(__dirname, '..')
 		const destPath = ProjectRootDir + common.tempFolderForBulkUpload
+
 		if (!fs.existsSync(destPath)) {
 			fs.mkdirSync(destPath)
 		}
