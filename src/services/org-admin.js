@@ -290,20 +290,29 @@ module.exports = class OrgAdminHelper {
 	 * @param {String} entityValue 		- Entity type value
 	 * @param {String} entityLabel 		- Entity type label
 	 * @param {Integer} userOrgId 		- User org id
+	 * @param {Integer} userId 			- Userid
 	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
 	 */
 
-	static async inheritEntityType(entityValue, entityLabel, userOrgId) {
+	static async inheritEntityType(entityValue, entityLabel, userOrgId, userId) {
 		try {
 			let defaultOrgId = await organizationQueries.findOne(
 				{ code: process.env.DEFAULT_ORGANISATION_CODE },
 				{ attributes: ['id'] }
 			)
 			defaultOrgId = defaultOrgId.id
+			if (defaultOrgId === userOrgId) {
+				return common.failureResponse({
+					message: 'USER_IS_FROM_DEFAULT_ORG',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
 				org_id: defaultOrgId,
+				allow_filtering: true,
 			}
 
 			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
@@ -321,6 +330,8 @@ module.exports = class OrgAdminHelper {
 			entityTypeDetails.parent_id = entityTypeDetails.org_id
 			entityTypeDetails.label = entityLabel
 			entityTypeDetails.org_id = userOrgId
+			entityTypeDetails.created_by = userId
+			entityTypeDetails.updated_by = userId
 			delete entityTypeDetails.id
 
 			// Create new inherited entity type
