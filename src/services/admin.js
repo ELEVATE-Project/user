@@ -23,7 +23,7 @@ module.exports = class AdminHelper {
 
 	static async userDelete(decodedToken, userId) {
 		try {
-			if (decodedToken.roles.some((role) => role.title !== common.ADMIN_ROLE)) {
+			if (!decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
 				return common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,

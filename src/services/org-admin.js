@@ -138,7 +138,7 @@ module.exports = class OrgAdminService {
 
 	static async setOrgPolicies(decodedToken, policies) {
 		try {
-			if (decodedToken.roles.some((role) => role.title !== common.ORG_ADMIN_ROLE)) {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
 				return common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
@@ -163,7 +163,7 @@ module.exports = class OrgAdminService {
 
 	static async getOrgPolicies(decodedToken) {
 		try {
-			if (decodedToken.roles.some((role) => role.title !== common.ORG_ADMIN_ROLE)) {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
 				return common.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
@@ -193,11 +193,19 @@ module.exports = class OrgAdminService {
 	 * @param {String} entityValue 		- Entity type value
 	 * @param {String} entityLabel 		- Entity type label
 	 * @param {Integer} userOrgId 		- User org id
+	 * @param {Object} decodedToken 	- User token details
 	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
 	 */
 
-	static async inheritEntityType(entityValue, entityLabel, userOrgId) {
+	static async inheritEntityType(entityValue, entityLabel, userOrgId, decodedToken) {
 		try {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 			// Get default organisation details
 			let defaultOrgDetails = await userRequests.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
 
@@ -212,10 +220,19 @@ module.exports = class OrgAdminService {
 				})
 			}
 
+			if (defaultOrgId === userOrgId) {
+				return common.failureResponse({
+					message: 'USER_IS_FROM_DEFAULT_ORG',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
 				org_id: defaultOrgId,
+				allow_filtering: true,
 			}
 			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
 
@@ -232,6 +249,8 @@ module.exports = class OrgAdminService {
 			entityTypeDetails.parent_id = entityTypeDetails.org_id
 			entityTypeDetails.label = entityLabel
 			entityTypeDetails.org_id = userOrgId
+			entityTypeDetails.created_by = decodedToken.id
+			entityTypeDetails.updated_by = decodedToken.id
 			delete entityTypeDetails.id
 
 			// Create new inherited entity type
