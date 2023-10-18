@@ -16,6 +16,17 @@ module.exports = {
 		// Validate incoming request body
 		req.checkBody('entity_type_value').notEmpty().withMessage('entity_type_value field is empty')
 		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
-	}
-	
+	},
+	setOrgPolicies: (req) => {
+		// Validate incoming request body
+		req.checkBody('session_visibility_policy').notEmpty().withMessage('session_visibility_policy field is empty')
+		req.checkBody('mentor_visibility_policy').notEmpty().withMessage('mentor_visibility_policy field is empty')
+		req.checkBody('external_session_visibility_policy')
+			.notEmpty()
+			.withMessage('external_session_visibility_policy field is empty')
+		req.checkBody('external_mentor_visibility_policy')
+			.notEmpty()
+			.withMessage('external_mentor_visibility_policy field is empty')
+		req.checkBody('allow_mentor_override').notEmpty().withMessage('allow_mentor_override field is empty')
+	},
 }
