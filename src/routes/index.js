@@ -86,6 +86,7 @@ module.exports = (app) => {
 
 	// Global error handling middleware, should be present in last in the stack of a middleware's
 	app.use((error, req, res, next) => {
+		console.error(error)
 		const status = error.statusCode || 500
 		const responseCode = error.responseCode || 'SERVER_ERROR'
 		const message = error.message || ''
