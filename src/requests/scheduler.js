@@ -21,7 +21,7 @@ const mentoringBaseurl = `http://localhost:${process.env.APPLICATION_PORT}`
  * @param {string} notificationTemplate - The template for the notification.
  * @param {function} callback - The callback function to handle the result of the job creation.
  */
-const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate, callback) {
+const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate) {
 	const bodyData = {
 		jobName: jobName,
 		email: email,
@@ -49,21 +49,20 @@ const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate
 
 	const apiUrl = schedulerServiceUrl + apiEndpoints.CREATE_SCHEDULER_JOB
 	try {
+		console.log(apiUrl, 'options', options)
 		request.post(apiUrl, options, (err, data) => {
 			if (err) {
 				console.error('Error in createSchedulerJob POST request:', err)
 			} else {
 				if (data.body.success) {
-					callback(null, data.body.message)
+					console.log('Request made to scheduler successfully (createSchedulerJob)')
 				} else {
 					console.error('Error in createSchedulerJob POST request response:', data.body)
-					callback(data.body, null)
 				}
 			}
 		})
 	} catch (error) {
 		console.error('Error in createSchedulerJob ', error)
-		callback(error, null)
 	}
 }
 
@@ -73,7 +72,7 @@ const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate
  * @param {object} bodyData - The data containing information about the job.
  * @param {function} callback - The callback function to handle the result of the job update.
  */
-const updateDelayOfScheduledJob = function (bodyData, callback) {
+const updateDelayOfScheduledJob = function (bodyData) {
 	const options = {
 		headers: {
 			'Content-Type': 'application/json',
@@ -88,16 +87,14 @@ const updateDelayOfScheduledJob = function (bodyData, callback) {
 				console.error('Error in updateDelayOfScheduledJob POST request:', err)
 			} else {
 				if (data.body.success) {
-					callback(null, data.body.message)
+					console.log('Request made to scheduler successfully (updateDelayOfScheduledJob)')
 				} else {
 					console.error('Error in updateDelayOfScheduledJob POST request response:', data.body)
-					callback(data.body, null)
 				}
 			}
 		})
 	} catch (error) {
 		console.error('Error in updateDelayOfScheduledJob ', error)
-		callback(error, null)
 	}
 }
 
@@ -108,7 +105,7 @@ const updateDelayOfScheduledJob = function (bodyData, callback) {
  * @param {function} callback - The callback function to handle the result of the job removal.
  */
 
-const removeScheduledJob = function (bodyData, callback) {
+const removeScheduledJob = function (bodyData) {
 	const options = {
 		headers: {
 			'Content-Type': 'application/json',
@@ -123,16 +120,14 @@ const removeScheduledJob = function (bodyData, callback) {
 				console.error('Error in removeScheduledJob POST request:', err)
 			} else {
 				if (data.body.success) {
-					callback(null, data.body.message)
+					console.log('Request made to scheduler successfully (removeScheduledJob)')
 				} else {
 					console.error('Error in updateDelayOfScheduledJob POST request response:', data.body)
-					callback(data.body, null)
 				}
 			}
 		})
 	} catch (error) {
 		console.error('Error in removeScheduledJob ', error)
-		callback(error, null)
 	}
 }
 
