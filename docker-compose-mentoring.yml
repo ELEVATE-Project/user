@@ -120,7 +120,7 @@ services:
       - elevate_net
   scheduler:
     build: '../scheduler/'
-    image: elevate/notificatschedulerion:1.0
+    image: elevate/scheduler:1.0
     volumes:
       - ../scheduler/src/:/var/src
     ports:
@@ -135,7 +135,16 @@ services:
       - redis
     networks:
       - elevate_net
-
+  interface:
+    build: '../interface/'
+    image: elevate/interface:1.0
+    volumes:
+      - ../interface/src/:/var/src
+    ports:
+      - '3569:3569'
+    command: ['nodemon', 'app.js']
+    networks:
+      - elevate_net
   # master:
   #   container_name: 'citus_master'
   #   image: 'citusdata/citus:11.2.0'
