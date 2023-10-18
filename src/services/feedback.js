@@ -311,9 +311,11 @@ const getFeedbackQuestions = async function (formCode) {
 const ratingCalculation = async function (ratingData, mentor_id) {
 	try {
 		let mentorDetails = await mentorExtensionQueries.getMentorExtension(mentor_id)
+
 		let mentorRating = mentorDetails.rating
 		let updateData
-		if (mentorRating.average && mentorRating.average) {
+
+		if (mentorRating?.average || mentorRating !== null) {
 			let totalRating = parseFloat(ratingData.response)
 			let ratingBreakup = []
 			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
