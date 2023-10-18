@@ -70,6 +70,7 @@
 	"ENTITY_TYPE_CREATED_SUCCESSFULLY": "Entity type created successfully.",
 	"ENTITY_TYPE_ALREADY_EXISTS": "Entity type already exists.",
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
+	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully",
 	"LOCATION_UPDATE_FAILED": "Location update failed",
 	"LANGUAGE_UPDATE_FAILED": "Language update failed",
 	"ROLE_REQUIRED": "Role required.",
