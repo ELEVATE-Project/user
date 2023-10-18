@@ -184,10 +184,18 @@ module.exports = class OrgAdmin {
 
 	async inheritEntityType(req) {
 		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			let entityTypeDetails = orgAdminService.inheritEntityType(
 				req.body.entity_type_value,
 				req.body.target_entity_type_label,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.id
 			)
 			return entityTypeDetails
 		} catch (error) {
