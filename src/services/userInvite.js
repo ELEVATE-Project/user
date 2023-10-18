@@ -20,9 +20,8 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const roleQueries = require('@database/queries/userRole')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const ProjectRootDir = path.join(__dirname, '../../')
+const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
-
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
@@ -43,10 +42,12 @@ module.exports = class UserInviteHelper {
 
 				// create outPut file and create invites
 				const createResponse = await this.createUserInvites(invitees, data.user, data.fileDetails.id)
+				console.log(createResponse, 'createResponse response-------')
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
 				// upload output file to cloud
 				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, data.user.id)
+				console.log(uploadRes, 'uploadRes response-------')
 				const output_path = uploadRes.result.uploadDest
 				const update = {
 					output_path,
@@ -80,6 +81,7 @@ module.exports = class UserInviteHelper {
 					message: 'CSV_UPLOADED_SUCCESSFULLY',
 				})
 			} catch (error) {
+				console.log(error, 'error while processing csv------')
 				return reject({
 					success: false,
 					message: error.message,
@@ -169,10 +171,15 @@ module.exports = class UserInviteHelper {
 				const newInvitee = await userInviteQueries.create(inviteeData)
 
 				if (newInvitee.id) {
-					newInvitee.user = user
-					newInvitee.role = invitee.roles
+					const userData = {
+						name: invitee.name,
+						email: invitee.email,
+						role: invitee.roles,
+						adminName: user.name,
+					}
+
 					if (process.env.INVITEE_EMAIL_TEMPLATE_CODE) {
-						await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, newInvitee)
+						await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, userData)
 					}
 				} else {
 					isErrorOccured = true
@@ -248,9 +255,9 @@ module.exports = class UserInviteHelper {
 						subject: templateData.subject,
 						body: utils.composeEmailBody(templateData.body, {
 							name: userData.name,
-							role: userData.roles || '',
+							role: userData.role || '',
 							appName: process.env.APP_NAME,
-							adminName: userData.user?.name || '',
+							adminName: userData.adminName || '',
 							inviteeUploadURL,
 						}),
 					},
