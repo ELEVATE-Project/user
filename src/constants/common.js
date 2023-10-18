@@ -53,10 +53,10 @@ module.exports = {
 	internalAccessUrls: [
 		'/user/v1/profile/details',
 		'/user/v1/account/list',
-		'/profile/share',
 		'/user/v1/user/read',
 		'/user/v1/admin/create',
 		'/user/v1/organization/read',
+		'user/v1/user/share',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
