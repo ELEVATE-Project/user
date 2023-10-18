@@ -154,10 +154,6 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			if (!requestDetails.handler) {
-				requestDetails.handler = {}
-			}
-
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_ROLE_REQ_FETCHED',
