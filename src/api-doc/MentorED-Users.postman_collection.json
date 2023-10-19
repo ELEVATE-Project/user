@@ -817,7 +817,7 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisationCode=sl",
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisation_code=sl",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "organization", "read"],
 							"query": [
