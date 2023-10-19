@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "5930a017-ded6-462b-bd1c-5048becf8fc5",
+		"_postman_id": "5d4d24cb-3c5c-4486-8d85-bd10eeaae9c3",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "18760682"
+		"_exporter_id": "6350183",
+		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-5d4d24cb-3c5c-4486-8d85-bd10eeaae9c3?action=share&source=collection_link&creator=6350183"
 	},
 	"item": [
 		{
@@ -89,7 +90,7 @@
 				{
 					"name": "Update Entity",
 					"request": {
-						"method": "POST",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -513,7 +514,7 @@
 				{
 					"name": "Start Session",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -661,7 +662,7 @@
 				{
 					"name": "Update Recording Url",
 					"request": {
-						"method": "PATCH",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1134,7 +1135,7 @@
 				{
 					"name": "Update Question Set",
 					"request": {
-						"method": "PATCH",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1303,7 +1304,7 @@
 				{
 					"name": "Delete User",
 					"request": {
-						"method": "POST",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "X-auth-token",
