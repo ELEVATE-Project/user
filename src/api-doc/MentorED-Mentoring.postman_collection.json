@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "02832ee5-6a9d-4cf8-9818-97f03fb79201",
+		"_postman_id": "5930a017-ded6-462b-bd1c-5048becf8fc5",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "13427084"
+		"_exporter_id": "18760682"
 	},
 	"item": [
 		{
@@ -40,11 +40,8 @@
 				},
 				{
 					"name": "Read Entity",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -172,11 +169,8 @@
 				},
 				{
 					"name": "Read Form",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -267,7 +261,7 @@
 				{
 					"name": "Read All System Entity Type",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -286,11 +280,8 @@
 				},
 				{
 					"name": "Read Entity Types with entities",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -641,11 +632,8 @@
 				},
 				{
 					"name": "Session Feedback",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1173,11 +1161,8 @@
 				},
 				{
 					"name": "Read Question Set",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1589,6 +1574,66 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/notifications/emailCronJob",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "notifications", "emailCronJob"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orchestrated",
+			"item": [
+				{
+					"name": "Profile Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}interface/v1/account/create",
+							"host": ["{{MentoringBaseUrl}}interface"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ],\n    \"designation\": [\n        \"beo\",\n        \"deo\",\n        \"test\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}interface/v1/account/update",
+							"host": ["{{MentoringBaseUrl}}interface"],
+							"path": ["v1", "account", "update"]
 						}
 					},
 					"response": []
