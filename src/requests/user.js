@@ -87,7 +87,7 @@ const getListOfUserDetails = function (userIds) {
 
 		const apiUrl = userBaseUrl + endpoints.LIST_ACCOUNTS
 		try {
-			request.post(apiUrl, options, callback)
+			request.get(apiUrl, options, callback)
 			function callback(err, data) {
 				if (err) {
 					reject({
