@@ -648,7 +648,7 @@
 				{
 					"name": "Delete User",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -861,7 +861,7 @@
 				{
 					"name": "Update Organization",
 					"request": {
-						"method": "POST",
+						"method": "PATCH",
 						"header": [
 							{
 								"key": "internal_access_token",
