@@ -216,6 +216,15 @@ function validateInput(input, validationData, modelName) {
 	}
 }
 function restructureBody(requestBody, entityData, allowedKeys) {
+	const requestBodyKeys = Object.keys(requestBody)
+
+	const entityValues = entityData.map((entity) => entity.value)
+
+	const requestBodyKeysExists = requestBodyKeys.some((element) => entityValues.includes(element))
+
+	if (!requestBodyKeysExists) {
+		return requestBody
+	}
 	const customEntities = {}
 	requestBody.custom_entity_text = {}
 	for (const requestBodyKey in requestBody) {
