@@ -34,6 +34,8 @@ module.exports = class OrgAdminHelper {
 		try {
 			const { id, name, email, organization_id } = tokenInformation
 
+			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
+
 			const creationData = {
 				name: utils.extractFilename(filePath),
 				input_path: filePath,
@@ -63,13 +65,14 @@ module.exports = class OrgAdminHelper {
 						name,
 						email,
 						organization_id,
+						org_name: organization.name,
 					},
 				},
 				{
 					removeOnComplete: true,
 					backoff: {
 						type: 'fixed',
-						delay: 600000, // Wait 10 min between attempts
+						delay: common.backoffRetryQueue, // Wait 10 min between attempts
 					},
 				}
 			)
