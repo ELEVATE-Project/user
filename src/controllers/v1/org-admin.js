@@ -135,7 +135,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken.id)
+			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken)
 			return result
 		} catch (error) {
 			return error

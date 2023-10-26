@@ -217,13 +217,16 @@ module.exports = class OrgAdminHelper {
 	 * @param {Object} req - request data
 	 * @returns {JSON} - Response of request status change.
 	 */
-	static async updateRequestStatus(bodyData, loggedInUserId) {
+	static async updateRequestStatus(bodyData, tokenInformation) {
 		try {
 			const requestId = bodyData.request_id
 			delete bodyData.request_id
 
-			bodyData.handled_by = loggedInUserId
-			const rowsAffected = await orgRoleReqQueries.update({ id: requestId }, bodyData)
+			bodyData.handled_by = tokenInformation.id
+			const rowsAffected = await orgRoleReqQueries.update(
+				{ id: requestId, organization_id: tokenInformation.organization_id },
+				bodyData
+			)
 			if (rowsAffected === 0) {
 				return common.failureResponse({
 					message: 'ORG_ROLE_REQ_FAILED',
@@ -235,10 +238,19 @@ module.exports = class OrgAdminHelper {
 			const requestDetails = await orgRoleReqQueries.requestDetails({ id: requestId })
 
 			const isApproved = bodyData.status === common.statusAccepted
+			const isRejected = bodyData.status === common.statusRejected
+
+			const shouldSendEmail = isApproved || isRejected
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
+			const user = await userQueries.findByPk(requestDetails.requester_id)
+
 			if (isApproved) {
-				await updateRoleForApprovedRequest(requestDetails, bodyData.status)
+				await updateRoleForApprovedRequest(requestDetails, user)
+			}
+
+			if (shouldSendEmail) {
+				await sendRoleRequestStatusEmail(user, bodyData.status)
 			}
 
 			return common.successResponse({
@@ -336,10 +348,9 @@ module.exports = class OrgAdminHelper {
 	}
 }
 
-function updateRoleForApprovedRequest(requestDetails, status) {
+function updateRoleForApprovedRequest(requestDetails, user) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			const user = await userQueries.findByPk(requestDetails.requester_id)
 			const userRoles = await roleQueries.findAll(
 				{ id: user.roles, status: common.activeStatus },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
@@ -374,41 +385,6 @@ function updateRoleForApprovedRequest(requestDetails, status) {
 				}
 			)
 
-			//send email notification
-			let templateData
-			if (status === common.statusAccepted && acceptedTemplateCode) {
-				templateData = await notificationTemplateQueries.findOneEmailTemplate(
-					process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
-				)
-			} else if (status === common.statusRejected) {
-				templateData = await notificationTemplateQueries.findOneEmailTemplate(
-					process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
-				)
-			}
-
-			if (templateData) {
-				//find organization
-				const organization = await organizationQueries.findOne(
-					{ id: user.organization_id },
-					{ attributes: ['name'] }
-				)
-				// Push successfull registration email to kafka
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: user.email,
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: bodyData.name,
-							appName: process.env.APP_NAME,
-							orgName: organization.name,
-						}),
-					},
-				}
-
-				await kafkaCommunication.pushEmailToKafka(payload)
-			}
-
 			return resolve({
 				success: true,
 			})
@@ -416,4 +392,45 @@ function updateRoleForApprovedRequest(requestDetails, status) {
 			return error
 		}
 	})
+}
+
+async function sendRoleRequestStatusEmail(userDetails, status) {
+	try {
+		let templateData
+		if (status === common.statusAccepted) {
+			templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
+			)
+		} else if (status === common.statusRejected) {
+			templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
+			)
+		}
+
+		if (templateData) {
+			const organization = await organizationQueries.findOne(
+				{ id: userDetails.organization_id },
+				{ attributes: ['name'] }
+			)
+
+			const payload = {
+				type: common.notificationEmailType,
+				email: {
+					to: userDetails.email,
+					subject: templateData.subject,
+					body: utilsHelper.composeEmailBody(templateData.body, {
+						name: userDetails.name,
+						appName: process.env.APP_NAME,
+						orgName: organization.name,
+					}),
+				},
+			}
+
+			await kafkaCommunication.pushEmailToKafka(payload)
+		}
+
+		return { success: true }
+	} catch (error) {
+		return error
+	}
 }
