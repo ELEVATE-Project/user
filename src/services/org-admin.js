@@ -17,6 +17,7 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
+const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 
@@ -237,7 +238,7 @@ module.exports = class OrgAdminHelper {
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
 			if (isApproved) {
-				await updateRoleForApprovedRequest(requestDetails)
+				await updateRoleForApprovedRequest(requestDetails, bodyData.status)
 			}
 
 			return common.successResponse({
@@ -335,7 +336,7 @@ module.exports = class OrgAdminHelper {
 	}
 }
 
-function updateRoleForApprovedRequest(requestDetails) {
+function updateRoleForApprovedRequest(requestDetails, status) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const user = await userQueries.findByPk(requestDetails.requester_id)
@@ -350,7 +351,7 @@ function updateRoleForApprovedRequest(requestDetails) {
 
 			let rolesToUpdate = [...systemRoleIds]
 
-			const { title } = await roleQueries.findOne(
+			const newRole = await roleQueries.findOne(
 				{ id: requestDetails.role, status: common.activeStatus },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
@@ -358,7 +359,7 @@ function updateRoleForApprovedRequest(requestDetails) {
 			eventBroadcaster('roleChange', {
 				requestBody: {
 					userId: requestDetails.requester_id,
-					new_roles: [title],
+					new_roles: [newRole.title],
 					old_roles: _.map(userRoles, 'title'),
 				},
 			})
@@ -372,6 +373,41 @@ function updateRoleForApprovedRequest(requestDetails) {
 					roles,
 				}
 			)
+
+			//send email notification
+			let templateData
+			if (status === common.statusAccepted && acceptedTemplateCode) {
+				templateData = await notificationTemplateQueries.findOneEmailTemplate(
+					process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
+				)
+			} else if (status === common.statusRejected) {
+				templateData = await notificationTemplateQueries.findOneEmailTemplate(
+					process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
+				)
+			}
+
+			if (templateData) {
+				//find organization
+				const organization = await organizationQueries.findOne(
+					{ id: user.organization_id },
+					{ attributes: ['name'] }
+				)
+				// Push successfull registration email to kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: user.email,
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, {
+							name: bodyData.name,
+							appName: process.env.APP_NAME,
+							orgName: organization.name,
+						}),
+					},
+				}
+
+				await kafkaCommunication.pushEmailToKafka(payload)
+			}
 
 			return resolve({
 				success: true,
