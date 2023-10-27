@@ -853,8 +853,6 @@ module.exports = class AccountHelper {
 					result: [...users, ...userDetailsFoundInRedis],
 				})
 			} else {
-				console.log('\n\n\nQUERY PARAMS:', params.query)
-				console.log('\n\n\n Params:', params.pageNo, params.pageSize)
 				let role = await roleQueries.findOne(
 					{ title: params.query.type },
 					{
@@ -866,7 +864,7 @@ module.exports = class AccountHelper {
 					role && role.id ? role.id : '',
 					params.pageNo,
 					params.pageSize,
-					params.query.search
+					params.searchText
 				)
 				console.log('USERS:', users)
 				let foundKeys = {}
