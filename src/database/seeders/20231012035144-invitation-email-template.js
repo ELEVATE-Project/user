@@ -4,14 +4,19 @@ module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		const emailTemplates = [
 			{
-				code: 'invite_user',
-				subject: 'Join Us at MentorED',
-				body: '<p>Dear {name},</p> {adminName} invited you to become a {role} on {appName}. We are delighted to have you join us on our dynamic platform that dedicated to fostering meaningful connections and professional growth',
+				code: 'invite_mentor',
+				subject: 'Welcome Aboard as a Mentor!',
+				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a mentor for {orgName}. Your expertise and willingness to share your knowledge will undoubtedly be a tremendous asset to our mentoring program.<br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a Mentor.',
+			},
+			{
+				code: 'invite_mentee',
+				subject: 'Welcome Aboard as a Mentee!',
+				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a mentee for {orgName}. You can now explore learning opportunities with our mentors. <br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a Mentee.',
 			},
 			{
 				code: 'invitee_upload_status',
-				subject: 'Status of Invitees Upload to MentorEd',
-				body: '<p>Dear {name},</p> You have successfully uploaded the list of invitees to the MentorEd platform. For your review, we have included a link to the file detailing the upload status of each invitee: <br><a href={inviteeUploadURL}>Download File</a><br><br>This will provide a comprehensive overview of the invitees and their respective statuses. Thank you for your continued support, and we look forward to our continued collaboration on the MentorEd platform.',
+				subject: 'Bulk upload Status',
+				body: '<p>Dear {name},</p> PFA, status of your bulk upload activity by clicking on the <a href={inviteeUploadURL}>link</a>',
 			},
 		]
 

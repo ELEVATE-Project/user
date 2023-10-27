@@ -43,7 +43,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await database.User.findByPk(id)
+		return await database.User.findByPk(id, { raw: true })
 	} catch (error) {
 		return error
 	}

@@ -189,8 +189,12 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
-	INVITEE_EMAIL_TEMPLATE_CODE: {
-		message: 'Required user invitation email template code',
+	MENTOR_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentor invitation email template code',
+		optional: false,
+	},
+	MENTEE_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentee invitation email template code',
 		optional: false,
 	},
 	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {

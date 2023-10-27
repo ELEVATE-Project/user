@@ -17,6 +17,7 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
+const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 
@@ -33,6 +34,8 @@ module.exports = class OrgAdminHelper {
 	static async bulkUserCreate(filePath, tokenInformation) {
 		try {
 			const { id, name, email, organization_id } = tokenInformation
+
+			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
 
 			const creationData = {
 				name: utils.extractFilename(filePath),
@@ -63,13 +66,14 @@ module.exports = class OrgAdminHelper {
 						name,
 						email,
 						organization_id,
+						org_name: organization.name,
 					},
 				},
 				{
 					removeOnComplete: true,
 					backoff: {
 						type: 'fixed',
-						delay: 600000, // Wait 10 min between attempts
+						delay: common.backoffRetryQueue, // Wait 10 min between attempts
 					},
 				}
 			)
@@ -213,13 +217,16 @@ module.exports = class OrgAdminHelper {
 	 * @param {Object} req - request data
 	 * @returns {JSON} - Response of request status change.
 	 */
-	static async updateRequestStatus(bodyData, loggedInUserId) {
+	static async updateRequestStatus(bodyData, tokenInformation) {
 		try {
 			const requestId = bodyData.request_id
 			delete bodyData.request_id
 
-			bodyData.handled_by = loggedInUserId
-			const rowsAffected = await orgRoleReqQueries.update({ id: requestId }, bodyData)
+			bodyData.handled_by = tokenInformation.id
+			const rowsAffected = await orgRoleReqQueries.update(
+				{ id: requestId, organization_id: tokenInformation.organization_id },
+				bodyData
+			)
 			if (rowsAffected === 0) {
 				return common.failureResponse({
 					message: 'ORG_ROLE_REQ_FAILED',
@@ -231,10 +238,19 @@ module.exports = class OrgAdminHelper {
 			const requestDetails = await orgRoleReqQueries.requestDetails({ id: requestId })
 
 			const isApproved = bodyData.status === common.statusAccepted
+			const isRejected = bodyData.status === common.statusRejected
+
+			const shouldSendEmail = isApproved || isRejected
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
+			const user = await userQueries.findByPk(requestDetails.requester_id)
+
 			if (isApproved) {
-				await updateRoleForApprovedRequest(requestDetails)
+				await updateRoleForApprovedRequest(requestDetails, user)
+			}
+
+			if (shouldSendEmail) {
+				await sendRoleRequestStatusEmail(user, bodyData.status)
 			}
 
 			return common.successResponse({
@@ -343,10 +359,9 @@ module.exports = class OrgAdminHelper {
 	}
 }
 
-function updateRoleForApprovedRequest(requestDetails) {
+function updateRoleForApprovedRequest(requestDetails, user) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			const user = await userQueries.findByPk(requestDetails.requester_id)
 			const userRoles = await roleQueries.findAll(
 				{ id: user.roles, status: common.activeStatus },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
@@ -358,7 +373,7 @@ function updateRoleForApprovedRequest(requestDetails) {
 
 			let rolesToUpdate = [...systemRoleIds]
 
-			const { title } = await roleQueries.findOne(
+			const newRole = await roleQueries.findOne(
 				{ id: requestDetails.role, status: common.activeStatus },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
@@ -366,7 +381,7 @@ function updateRoleForApprovedRequest(requestDetails) {
 			eventBroadcaster('roleChange', {
 				requestBody: {
 					userId: requestDetails.requester_id,
-					new_roles: [title],
+					new_roles: [newRole.title],
 					old_roles: _.map(userRoles, 'title'),
 				},
 			})
@@ -388,4 +403,45 @@ function updateRoleForApprovedRequest(requestDetails) {
 			return error
 		}
 	})
+}
+
+async function sendRoleRequestStatusEmail(userDetails, status) {
+	try {
+		let templateData
+		if (status === common.statusAccepted) {
+			templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
+			)
+		} else if (status === common.statusRejected) {
+			templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
+			)
+		}
+
+		if (templateData) {
+			const organization = await organizationQueries.findOne(
+				{ id: userDetails.organization_id },
+				{ attributes: ['name'] }
+			)
+
+			const payload = {
+				type: common.notificationEmailType,
+				email: {
+					to: userDetails.email,
+					subject: templateData.subject,
+					body: utilsHelper.composeEmailBody(templateData.body, {
+						name: userDetails.name,
+						appName: process.env.APP_NAME,
+						orgName: organization.name,
+					}),
+				},
+			}
+
+			await kafkaCommunication.pushEmailToKafka(payload)
+		}
+
+		return { success: true }
+	} catch (error) {
+		return error
+	}
 }

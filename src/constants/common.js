@@ -105,4 +105,5 @@ module.exports = {
 	roleTypeSystem: 1,
 	inviteeOutputFile: 'output-user-invite',
 	csvExtension: '.csv',
+	backoffRetryQueue: 600000,
 }

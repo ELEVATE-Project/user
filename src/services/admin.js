@@ -234,7 +234,7 @@ module.exports = class AdminHelper {
 
 			const roles = _.uniq([...(user.roles || []), role.id])
 			await userQueries.updateUser(
-				{ id: userId },
+				{ id: userId, organization_id: organizationId },
 				{
 					roles,
 				}
