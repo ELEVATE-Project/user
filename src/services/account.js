@@ -866,9 +866,9 @@ module.exports = class AccountHelper {
 					role && role.id ? role.id : '',
 					params.pageNo,
 					params.pageSize,
-					params.search
+					params.query.search
 				)
-
+				console.log('USERS:', users)
 				let foundKeys = {}
 				let result = []
 
