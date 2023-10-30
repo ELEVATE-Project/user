@@ -206,6 +206,15 @@ module.exports = class AdminHelper {
 				})
 			}
 
+			const userOrg = await organizationQueries.findByPk(user.organization_id)
+			if (userOrg) {
+				return common.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const orgAdmins = _.uniq([...(organization.org_admin || []), userId])
 
 			const orgRowsAffected = await organizationQueries.update(
@@ -238,7 +247,7 @@ module.exports = class AdminHelper {
 				roles,
 			}
 
-			if (organization.code != process.env.DEFAULT_ORGANISATION_CODE) {
+			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE || userOrg.id != organizationId) {
 				return common.failureResponse({
 					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
 					statusCode: httpStatusCode.not_acceptable,
