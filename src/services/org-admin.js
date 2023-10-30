@@ -9,6 +9,7 @@ const adminService = require('./admin')
 const OrganisationExtensionQueries = require('@database/queries/organisationExtension')
 const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
+const utils = require('@generics/utils')
 
 module.exports = class OrgAdminService {
 	/**
@@ -21,11 +22,14 @@ module.exports = class OrgAdminService {
 
 	static async roleChange(bodyData) {
 		try {
-			if (bodyData.current_roles[0] === common.MENTOR_ROLE && bodyData.new_roles[0] === common.MENTEE_ROLE) {
+			if (
+				utils.validateRoleAccess(bodyData.current_roles, common.MENTOR_ROLE) &&
+				utils.validateRoleAccess(bodyData.new_roles, common.MENTEE_ROLE)
+			) {
 				return await this.changeRoleToMentee(bodyData)
 			} else if (
-				bodyData.current_roles[0] === common.MENTEE_ROLE &&
-				bodyData.new_roles[0] === common.MENTOR_ROLE
+				utils.validateRoleAccess(bodyData.current_roles, common.MENTEE_ROLE) &&
+				utils.validateRoleAccess(bodyData.new_roles, common.MENTOR_ROLE)
 			) {
 				return await this.changeRoleToMentor(bodyData)
 			}

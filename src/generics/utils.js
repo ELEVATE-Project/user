@@ -399,6 +399,19 @@ function generateCheckSum(queryHash) {
 	const checksum = shasum.digest('hex')
 	return checksum
 }
+/**
+ * validateRoleAccess.
+ * @method
+ * @name validateRoleAccess
+ * @param {Array} roles - roles array.
+ * @param {String} requiredRole - role to check.
+ * @returns {Number} - checksum key.
+ */
+
+const validateRoleAccess = (roles, requiredRole) => {
+	if (!roles || roles.length === 0) return false
+	return roles.some((role) => role == requiredRole)
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -429,4 +442,5 @@ module.exports = {
 	getTimeDifferenceInMilliseconds,
 	deleteProperties,
 	generateCheckSum,
+	validateRoleAccess,
 }
