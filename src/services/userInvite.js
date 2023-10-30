@@ -22,6 +22,7 @@ const userQueries = require('@database/queries/users')
 const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 module.exports = class UserInviteHelper {
@@ -188,13 +189,13 @@ module.exports = class UserInviteHelper {
 
 			// process csv data
 			for (const invitee of csvData) {
-				//check user exist
+				//update user details if the user exist and in default org
 				const existingUser = existingEmailsMap.get(invitee.email)
 				if (existingUser) {
 					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
 					isErrorOccured = true
 
-					if ([defaultOrgId, user.organization_id].includes(existingUser.organization_id)) {
+					if (existingUser.organization_id === defaultOrgId) {
 						const userUpdateData = {
 							organization_id: user.organization_id,
 							roles: roleTitlesToIds[invitee.roles],
@@ -202,6 +203,15 @@ module.exports = class UserInviteHelper {
 						}
 
 						await userQueries.updateUser({ email: invitee.email }, userUpdateData)
+						//call event to update in mentoring
+						eventBroadcaster('roleChange', {
+							requestBody: {
+								userId: requestDetails.requester_id,
+								new_roles: [title],
+								old_roles: _.map(userRoles, 'title'),
+								org_id: user.organization_id,
+							},
+						})
 					}
 				} else {
 					//create new invitees

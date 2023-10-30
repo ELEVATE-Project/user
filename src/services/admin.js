@@ -233,12 +233,22 @@ module.exports = class AdminHelper {
 			}
 
 			const roles = _.uniq([...(user.roles || []), role.id])
-			await userQueries.updateUser(
-				{ id: userId, organization_id: organizationId },
-				{
-					roles,
-				}
-			)
+
+			let updateObj = {
+				roles,
+			}
+
+			if (organization.code != process.env.DEFAULT_ORGANISATION_CODE) {
+				return common.failureResponse({
+					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			updateObj.organization_id = organizationId
+
+			await userQueries.updateUser({ id: userId }, updateObj)
 
 			const roleData = await roleQueries.findAll(
 				{ id: roles, status: common.activeStatus },
