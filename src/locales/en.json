@@ -90,5 +90,6 @@
 	"USER_CSV_UPLOADED_FAILED": "Failed to Uploaded User Invites CSV",
 	"ORG_DEACTIVATED": "Organization deactivated Successfully",
 	"EMAIL_OR_ID_REQUIRED": "Either 'id' or 'email' fields is required",
-	"REQUEST_NOT_FOUND": "Role Change Request not found."
+	"REQUEST_NOT_FOUND": "Role Change Request not found.",
+	"FAILED_TO_ASSIGN_AS_ADMIN": "User belongs to different organization"
 }
