@@ -2,7 +2,15 @@
 const events = require('@constants/eventEndpoints')
 const requester = require('@utils/requester')
 
-exports.eventBroadcaster = async (action, { requestBody = {}, headers = {}, pathParams = {}, queryParams = {} }) => {
+exports.eventBroadcaster = async (
+	action,
+	{
+		requestBody = {},
+		headers = { internal_access_token: process.env.INTERNAL_ACCESS_TOKEN },
+		pathParams = {},
+		queryParams = {},
+	}
+) => {
 	try {
 		const endPoints = events.eventEndpoints[action]
 		await Promise.all(
