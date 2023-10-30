@@ -380,9 +380,9 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 
 			eventBroadcaster('roleChange', {
 				requestBody: {
-					userId: requestDetails.requester_id,
+					user_id: requestDetails.requester_id,
 					new_roles: [newRole.title],
-					old_roles: _.map(userRoles, 'title'),
+					current_roles: _.map(userRoles, 'title'),
 				},
 			})
 
