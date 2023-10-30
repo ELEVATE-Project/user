@@ -14,6 +14,7 @@ const sessionQueries = require('@database/queries/sessions')
 const _ = require('lodash')
 const entityTypeQueries = require('@database/queries/entityType')
 const bigBlueButtonService = require('./bigBlueButton')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
 
 module.exports = class MenteesHelper {
 	/**
@@ -27,7 +28,7 @@ module.exports = class MenteesHelper {
 		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
-		delete mentee.organisation_ids
+		delete mentee.visible_to_organisations
 
 		let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
 			{
@@ -420,6 +421,19 @@ module.exports = class MenteesHelper {
 	 */
 	static async createMenteeExtension(data, userId, orgId) {
 		try {
+			// Call user service to fetch organisation details --SAAS related changes
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			// Return error if user org does not exists
+			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
+				return common.failureResponse({
+					message: 'ORGANISATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Find organisation policy from organisation_extension table
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+
 			data.user_id = userId
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
@@ -442,6 +456,14 @@ module.exports = class MenteesHelper {
 			}
 			let menteeExtensionsModel = await menteeQueries.getColumns()
 			data = utils.restructureBody(data, validationData, menteeExtensionsModel)
+
+			// Update mentorExtensionCreation data with org policies
+			data.org_id = organisationPolicy.org_id
+			data.visibility = organisationPolicy.mentor_visibility_policy
+			data.visible_to_organisations = userOrgDetails.data.result.related_orgs //need to change this. Take this from organisation table data :related org
+			data.external_session_visibility = organisationPolicy.external_session_visibility_policy
+			data.external_mentor_visibility = organisationPolicy.external_mentor_visibility_policy
+
 			const response = await menteeQueries.createMenteeExtension(data)
 			const processDbResponse = utils.processDbResponse(response.toJSON(), validationData)
 

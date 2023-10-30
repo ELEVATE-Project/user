@@ -111,4 +111,14 @@ module.exports = {
 		'mentoring_session_fifteen_min_',
 	],
 	ORG_ADMIN_ROLE: 'org_admin',
+
+	// Default organization policies
+	DEFAULT_ORGANISATION_POLICY: {
+		session_visibility_policy: 'current',
+		mentor_visibility_policy: 'current',
+		external_session_visibility_policy: 'current',
+		external_mentor_visibility_policy: 'current',
+		allow_mentor_override: false,
+		approval_required_for: [],
+	},
 }

@@ -70,10 +70,11 @@ module.exports = class MentorExtensionQueries {
 					tags: [],
 					configs: null,
 					visibility: null,
-					organisation_ids: [],
+					visible_to_organisations: [],
 					external_session_visibility: null,
 					external_mentor_visibility: null,
 					deleted_at: Date.now(),
+					org_id,
 				},
 				{
 					where: {
