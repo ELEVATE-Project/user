@@ -39,7 +39,7 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
-		const projection = ['password', 'refresh_tokens', 'location']
+		const projection = ['password', 'refresh_tokens']
 
 		try {
 			const email = bodyData.email.toLowerCase()
