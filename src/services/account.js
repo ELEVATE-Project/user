@@ -866,7 +866,7 @@ module.exports = class AccountHelper {
 					params.pageSize,
 					params.searchText
 				)
-
+				console.log('USERS:', users)
 				let foundKeys = {}
 				let result = []
 
@@ -919,6 +919,7 @@ module.exports = class AccountHelper {
 				})
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

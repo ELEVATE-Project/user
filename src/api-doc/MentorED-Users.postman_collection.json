@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "21576128-1f7e-4301-bb97-e881d80b6d6e",
+		"_postman_id": "edebcd56-1d88-4c0f-9995-b2742c42d15d",
 		"name": "MentorED-Users DEV new",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "6350183",
-		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-21576128-1f7e-4301-bb97-e881d80b6d6e?action=share&source=collection_link&creator=6350183"
+		"_exporter_id": "18760682"
 	},
 	"item": [
 		{
@@ -520,11 +519,8 @@
 				},
 				{
 					"name": "Read Form",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -652,7 +648,7 @@
 				{
 					"name": "Delete User",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -826,7 +822,7 @@
 							"path": ["v1", "organization", "read"],
 							"query": [
 								{
-									"key": "organisationCode",
+									"key": "organisation_code",
 									"value": "sl"
 								}
 							]
@@ -865,7 +861,7 @@
 				{
 					"name": "Update Organization",
 					"request": {
-						"method": "POST",
+						"method": "PATCH",
 						"header": [
 							{
 								"key": "internal_access_token",
@@ -983,11 +979,8 @@
 				},
 				{
 					"name": "Read Entity",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1117,7 +1110,7 @@
 				{
 					"name": "Read All System Entity Type",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1136,11 +1129,8 @@
 				},
 				{
 					"name": "Read Entity Types with entities",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -1449,6 +1439,66 @@
 							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orchestrated",
+			"item": [
+				{
+					"name": "Profile Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ],\n    \"designation\": [\n        \"beo\",\n        \"deo\",\n        \"test\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "update"]
 						}
 					},
 					"response": []

@@ -70,6 +70,7 @@
 	"ENTITY_TYPE_CREATED_SUCCESSFULLY": "Entity type created successfully.",
 	"ENTITY_TYPE_ALREADY_EXISTS": "Entity type already exists.",
 	"ENTITY_TYPE_UPDATED_SUCCESSFULLY": "Entity type updated successfully",
+	"ENTITY_TYPE_FETCHED_SUCCESSFULLY": "Entity type fetched successfully",
 	"LOCATION_UPDATE_FAILED": "Location update failed",
 	"LANGUAGE_UPDATE_FAILED": "Language update failed",
 	"ROLE_REQUIRED": "Role required.",
@@ -91,5 +92,6 @@
 	"ORG_DEACTIVATED": "Organization deactivated Successfully",
 	"EMAIL_OR_ID_REQUIRED": "Either 'id' or 'email' fields is required",
 	"REQUEST_NOT_FOUND": "Role Change Request not found.",
-	"FAILED_TO_ASSIGN_AS_ADMIN": "User belongs to different organization"
+	"FAILED_TO_ASSIGN_AS_ADMIN": "User belongs to different organization",
+	"USER_IS_FROM_DEFAULT_ORG": "User is from default org"
 }

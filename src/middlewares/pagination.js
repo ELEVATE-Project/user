@@ -17,9 +17,8 @@ module.exports = (req, res, next) => {
 		req.query.limit && Number(req.query.limit) > 0 && Number(req.query.limit) <= 100 ? Number(req.query.limit) : 100
 
 	req.searchText = req.query.search && req.query.search != '' ? decodeURI(req.query.search) : ''
-	req.searchText = req.query.search && req.query.search != '' ? decodeURI(req.query.search) : ''
-	let buff = new Buffer(req.searchText, 'base64')
-	req.searchText = buff.toString('ascii')
+	/* let buff = new Buffer(req.searchText, 'base64')
+	req.searchText = buff.toString('ascii') */
 	if (containsSpecialChars(req.searchText)) {
 		throw common.failureResponse({
 			message: 'Invalid search text 😥',
