@@ -47,7 +47,7 @@ module.exports = class OrgAdmin {
 
 	async roleChange(req) {
 		try {
-			let changedRoleDetails = orgAdminService.roleChange(req.body)
+			let changedRoleDetails = await orgAdminService.roleChange(req.body)
 			return changedRoleDetails
 		} catch (error) {
 			return error
@@ -63,7 +63,7 @@ module.exports = class OrgAdmin {
 
 	async inheritEntityType(req) {
 		try {
-			let entityTypeDetails = orgAdminService.inheritEntityType(
+			let entityTypeDetails = await orgAdminService.inheritEntityType(
 				req.body.entity_type_value,
 				req.body.target_entity_type_label,
 				req.decodedToken.organization_id,
