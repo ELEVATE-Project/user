@@ -56,6 +56,10 @@ module.exports = class OrgAdminService {
 				})
 			}
 
+			if (bodyData.org_id) {
+				mentorDetails.org_id = bodyData.org_id
+			}
+
 			// Add fetched mentor details to user_extension table
 			const menteeCreationData = await menteeQueries.createMenteeExtension(mentorDetails)
 			if (!menteeCreationData) {
@@ -107,6 +111,10 @@ module.exports = class OrgAdminService {
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
 				})
+			}
+
+			if (bodyData.org_id) {
+				menteeDetails.org_id = bodyData.org_id
 			}
 
 			// Add fetched mentee details to mentor_extension table
