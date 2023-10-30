@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 			visibility: {
 				type: DataTypes.STRING,
 			},
-			organisation_ids: {
+			visible_to_organizations: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 			},
 			external_session_visibility: {
@@ -49,6 +49,9 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			experience: {
 				type: DataTypes.STRING,
+			},
+			org_id: {
+				type: DataTypes.INTEGER,
 			},
 		},
 		{
