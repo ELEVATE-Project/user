@@ -102,7 +102,7 @@ module.exports = class AccountHelper {
 
 				//add default role as mentee
 				role = await roleQueries.findOne(
-					{ title: common.roleMentee },
+					{ title: process.env.DEFAULT_ROLE },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
