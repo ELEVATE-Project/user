@@ -589,14 +589,14 @@ module.exports = class SessionsHelper {
 
 			const sessionDetails = await sessionQueries.findAllSessions(page, limit, search, filters)
 
-			if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
+			/* if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: [],
 				})
-			}
+			} */
 
 			sessionDetails.rows = await sessionMentor.sessionMentorDetails(sessionDetails.rows)
 
@@ -615,6 +615,7 @@ module.exports = class SessionsHelper {
 				result: { count: sessionDetails.count, data: sessionDetails.rows },
 			})
 		} catch (error) {
+			console.log
 			throw error
 		}
 	}
