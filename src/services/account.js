@@ -674,7 +674,7 @@ module.exports = class AccountHelper {
 					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
-					role: roles,
+					roles,
 				},
 			}
 
