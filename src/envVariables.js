@@ -205,6 +205,15 @@ let enviromentVariables = {
 		message: 'Required default queue',
 		optional: false,
 	},
+	DEFAULT_ROLE: {
+		message: 'Required default role',
+		optional: false,
+	},
+	SAMPLE_CSV_FILE_PATH: {
+		message: 'Required sample csv file path',
+		optional: false,
+		default: 'sample/bulk_user_creation.csv',
+	},
 }
 
 let success = true

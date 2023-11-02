@@ -117,6 +117,7 @@
 		"@validators": "validators",
 		"@database": "database",
 		"@utils": "utils",
-		"@helpers": "helpers"
+		"@helpers": "helpers",
+		"@scripts": "scripts"
 	}
 }
