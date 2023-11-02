@@ -5,6 +5,9 @@ const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/userRole')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const orgDomainQueries = require('@database/queries/orgDomain')
+const userInviteQueries = require('@database/queries/orgUserInvite')
+const notificationTemplateQueries = require('@database/queries/notificationTemplate')
+const kafkaCommunication = require('@generics/kafka-communication')
 const { Op } = require('sequelize')
 const _ = require('lodash')
 
@@ -19,9 +22,9 @@ module.exports = class OrganizationsHelper {
 
 	static async create(bodyData, loggedInUserId) {
 		try {
-			let organization = await organizationQueries.findOne({ code: bodyData.code })
+			const existingOrganization = await organizationQueries.findOne({ code: bodyData.code })
 
-			if (organization) {
+			if (existingOrganization) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
@@ -31,13 +34,15 @@ module.exports = class OrganizationsHelper {
 
 			bodyData.created_by = loggedInUserId
 
-			let createOrg = await organizationQueries.create(bodyData)
+			const createdOrganization = await organizationQueries.create(bodyData)
+
+			// Add domains if provided.
 			if (bodyData.domains?.length) {
 				await Promise.all(
 					bodyData.domains.map(async (domain) => {
 						let domainCreationData = {
 							domain: domain,
-							organization_id: createOrg.id,
+							organization_id: createdOrganization.id,
 							created_by: loggedInUserId,
 						}
 						await orgDomainQueries.create(domainCreationData)
@@ -45,13 +50,65 @@ module.exports = class OrganizationsHelper {
 				)
 			}
 
-			const cacheKey = common.redisOrgPrefix + createOrg.id.toString()
+			// Send an invitation to the admin if an email is provided.
+			if (bodyData.admin_email) {
+				const role = await roleQueries.findOne(
+					{ title: common.roleOrgAdmin },
+					{
+						attributes: ['id'],
+					}
+				)
+
+				if (!role.length > 0) {
+					return common.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const inviteeData = {
+					email: bodyData.admin_email,
+					name: common.roleUser,
+					organization_id: createdOrganization.id,
+					roles: [role.id],
+					created_by: loggedInUserId,
+				}
+
+				await userInviteQueries.create(inviteeData)
+
+				//send email invitation
+				const templateCode = process.env.ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE
+				if (templateCode) {
+					const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
+
+					if (templateData) {
+						const payload = {
+							type: common.notificationEmailType,
+							email: {
+								to: bodyData.admin_email,
+								subject: templateData.subject,
+								body: utils.composeEmailBody(templateData.body, {
+									name: inviteeData.name,
+									role: common.roleOrgAdmin,
+									orgName: bodyData.name,
+									appName: process.env.APP_NAME,
+								}),
+							},
+						}
+
+						await kafkaCommunication.pushEmailToKafka(payload)
+					}
+				}
+			}
+
+			const cacheKey = common.redisOrgPrefix + createdOrganization.id.toString()
 			await utils.internalDel(cacheKey)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
-				result: createOrg,
+				result: createdOrganization,
 			})
 		} catch (error) {
 			throw error
