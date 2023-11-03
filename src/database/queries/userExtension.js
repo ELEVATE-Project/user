@@ -16,15 +16,14 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async updateMenteeExtension(userId, data, options = {}) {
+	static async updateMenteeExtension(userId, data, options = {}, customFilter = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
+			const whereClause = customFilter ? customFilter : { user_id: userId };
 			return await MenteeExtension.update(data, {
-				where: {
-					user_id: userId,
-				},
+				where: whereClause,
 				...options,
 			})
 		} catch (error) {

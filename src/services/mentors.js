@@ -10,6 +10,7 @@ const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const entityTypeQueries = require('@database/queries/entityType')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const orgAdminService = require('@services/org-admin')
 
 module.exports = class MentorsHelper {
 	/**
@@ -282,12 +283,15 @@ module.exports = class MentorsHelper {
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
 
-			// Update mentorExtensionCreation data with org policies
-			data.org_id = organisationPolicy.org_id
-			data.visibility = organisationPolicy.mentor_visibility_policy
-			data.visible_to_organisations = userOrgDetails.data.result.related_orgs //need to change this. Take this from organisation table data :related org
-			data.external_session_visibility = organisationPolicy.external_session_visibility_policy
-			data.external_mentor_visibility = organisationPolicy.external_mentor_visibility_policy
+			// construct saas policy data
+			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
+
+			// update mentee extension data
+			data = {
+				...data,
+				...saasPolicyData,
+				visible_to_organisations: userOrgDetails.data.result.related_orgs
+			};
 
 			const response = await mentorQueries.createMentorExtension(data)
 

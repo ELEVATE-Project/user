@@ -114,10 +114,10 @@ module.exports = {
 
 	// Default organization policies
 	DEFAULT_ORGANISATION_POLICY: {
-		session_visibility_policy: 'current',
-		mentor_visibility_policy: 'current',
-		external_session_visibility_policy: 'current',
-		external_mentor_visibility_policy: 'current',
+		session_visibility_policy: 'CURRENT',
+		mentor_visibility_policy: 'CURRENT',
+		external_session_visibility_policy: 'CURRENT',
+		external_mentor_visibility_policy: 'CURRENT',
 		allow_mentor_override: false,
 		approval_required_for: [],
 	},

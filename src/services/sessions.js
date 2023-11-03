@@ -26,6 +26,7 @@ const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
 
 module.exports = class SessionsHelper {
 	/**
@@ -110,13 +111,29 @@ module.exports = class SessionsHelper {
 			}
 
 			bodyData['mentor_org_id'] = orgId
+			// SAAS changes; Include visibility and visible organisations
+			// Call user service to fetch organisation details --SAAS related changes
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 
+			// Return error if user org does not exists
+			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
+				return common.failureResponse({
+					message: 'ORGANISATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Find organisation policy from organisation_extension table
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+			bodyData.visibility = organisationPolicy.session_visibility_policy
+			bodyData.visible_to_organizations = userOrgDetails.data.result.related_orgs
 			const data = await sessionQueries.create(bodyData)
 
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
 			})
+			
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
 

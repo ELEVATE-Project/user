@@ -15,6 +15,7 @@ const _ = require('lodash')
 const entityTypeQueries = require('@database/queries/entityType')
 const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const orgAdminService = require('@services/org-admin')
 
 module.exports = class MenteesHelper {
 	/**
@@ -457,13 +458,16 @@ module.exports = class MenteesHelper {
 			let menteeExtensionsModel = await menteeQueries.getColumns()
 			data = utils.restructureBody(data, validationData, menteeExtensionsModel)
 
-			// Update mentorExtensionCreation data with org policies
-			data.org_id = organisationPolicy.org_id
-			data.visibility = organisationPolicy.mentor_visibility_policy
-			data.visible_to_organisations = userOrgDetails.data.result.related_orgs //need to change this. Take this from organisation table data :related org
-			data.external_session_visibility = organisationPolicy.external_session_visibility_policy
-			data.external_mentor_visibility = organisationPolicy.external_mentor_visibility_policy
+			// construct policy object
+			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
 
+			// Update mentor extension creation data
+			data = {
+				...data,
+				...saasPolicyData,
+				visible_to_organisations: userOrgDetails.data.result.related_orgs
+			};
+			
 			const response = await menteeQueries.createMenteeExtension(data)
 			const processDbResponse = utils.processDbResponse(response.toJSON(), validationData)
 

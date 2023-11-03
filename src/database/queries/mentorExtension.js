@@ -16,15 +16,14 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async updateMentorExtension(userId, data, options = {}) {
+	static async updateMentorExtension(userId, data, options = {}, customFilter = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
+			const whereClause = customFilter ? customFilter : { user_id: userId };
 			return await MentorExtension.update(data, {
-				where: {
-					user_id: userId,
-				},
+				where: whereClause,
 				...options,
 			})
 		} catch (error) {
