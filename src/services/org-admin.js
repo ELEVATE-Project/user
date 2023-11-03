@@ -173,6 +173,15 @@ module.exports = class OrgAdminService {
 					{},										//options
 					{org_id:decodedToken.organization_id} 	//custom filter for where clause
 				)
+				await sessionQueries.updateSession(
+					{ 
+						status: common.PUBLISHED_STATUS,
+						mentor_org_id: decodedToken.organization_id
+					},
+					{
+						visibility: orgPolicies.dataValues.session_visibility_policy
+					}
+				)
 				
 			}
 
