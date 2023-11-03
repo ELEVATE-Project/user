@@ -196,7 +196,6 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			let organization = await organizationQueries.findByPk(organizationId)
 			if (!organization) {
 				return common.failureResponse({
@@ -207,7 +206,7 @@ module.exports = class AdminHelper {
 			}
 
 			const userOrg = await organizationQueries.findByPk(user.organization_id)
-			if (userOrg) {
+			if (!userOrg) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -247,7 +246,7 @@ module.exports = class AdminHelper {
 				roles,
 			}
 
-			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE || userOrg.id != organizationId) {
+			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE && userOrg.id != organizationId) {
 				return common.failureResponse({
 					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
 					statusCode: httpStatusCode.not_acceptable,
@@ -280,6 +279,7 @@ module.exports = class AdminHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

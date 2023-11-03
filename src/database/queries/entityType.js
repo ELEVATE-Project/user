@@ -13,7 +13,7 @@ module.exports = class UserEntityData {
 
 	static async findOneEntityType(filter, options = {}) {
 		try {
-			return await EntityType.findOne({ 
+			return await EntityType.findOne({
 				where: filter,
 				...options,
 				raw: true,
@@ -49,14 +49,14 @@ module.exports = class UserEntityData {
 			return await EntityType.findAll({
 				where: {
 					...filter,
-					[Op.or]: [
+					/* [Op.or]: [
 						{
 							created_by: 0,
 						},
 						{
 							org_id: orgId,
 						},
-					],
+					], */
 				},
 				include: [
 					{
