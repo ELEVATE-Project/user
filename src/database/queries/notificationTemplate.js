@@ -62,4 +62,68 @@ module.exports = class NotificationTemplateData {
 			return error
 		}
 	}
+
+	static async findOne(filter, options = {}) {
+		try {
+			return await NotificationTemplate.findOne({
+				where: filter,
+				...options,
+				raw: true,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async updateTemplate(filter, update, options = {}) {
+		try {
+			const template = await NotificationTemplate.update(update, {
+				where: filter,
+				...options,
+				individualHooks: true,
+			})
+
+			return template
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllNotificationTemplates(filter, options = {}) {
+		try {
+			const templates = await NotificationTemplate.findAll({
+				where: filter,
+				...options,
+				raw: true,
+			})
+
+			// templates.forEach(async(template) => {
+			// 	if (template.email_header) {
+			// 		const header = await this.getEmailHeader(template.email_header)
+			// 		if (header && header.body) {
+			// 			template['body'] = header.body + template['body']
+			// 		}
+			// 	}
+
+			// 	if (template.email_footer) {
+			// 		const footer = await this.getEmailFooter(template.email_footer)
+			// 		if (footer && footer.body) {
+			// 			template['body'] = template['body'] + footer.body
+			// 		}
+			// 	}
+			// })
+
+			return templates
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async create(data) {
+		try {
+			return await NotificationTemplate.create(data)
+		} catch (error) {
+			return error
+		}
+	}
 }

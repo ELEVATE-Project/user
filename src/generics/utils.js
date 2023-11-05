@@ -130,6 +130,16 @@ const utcFormat = () => {
 	return momentTimeZone().utc().format('YYYY-MM-DDTHH:mm:ss')
 }
 
+const validateRoleAccess = (roles, requiredRoles) => {
+	if (!roles || roles.length === 0) return false
+
+	if (!Array.isArray(requiredRoles)) {
+		requiredRoles = [requiredRoles]
+	}
+
+	return roles.some((role) => requiredRoles.includes(role.title))
+}
+
 /**
  * md5 hash
  * @function
@@ -429,4 +439,5 @@ module.exports = {
 	getTimeDifferenceInMilliseconds,
 	deleteProperties,
 	generateCheckSum,
+	validateRoleAccess: validateRoleAccess,
 }
