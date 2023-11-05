@@ -7,6 +7,9 @@
 
 // Dependencies
 const notificationService = require('@services/notification')
+const utilsHelper = require('@generics/utils')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class NotificationTemplate {
 	/**
@@ -25,6 +28,14 @@ module.exports = class NotificationTemplate {
 
 	async create(req) {
 		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.roleAdmin, common.roleOrgAdmin])) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const createdTemplate = await notificationService.create(req.body, req.decodedToken)
 			return createdTemplate
 		} catch (error) {
@@ -48,6 +59,14 @@ module.exports = class NotificationTemplate {
 
 	async update(req) {
 		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.roleAdmin, common.roleOrgAdmin])) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const updatedTemplate = await notificationService.update(req.params.id, req.body, req.decodedToken)
 			return updatedTemplate
 		} catch (error) {
