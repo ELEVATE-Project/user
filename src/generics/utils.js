@@ -130,16 +130,6 @@ const utcFormat = () => {
 	return momentTimeZone().utc().format('YYYY-MM-DDTHH:mm:ss')
 }
 
-const validateRoleAccess = (roles, requiredRoles) => {
-	if (!roles || roles.length === 0) return false
-
-	if (!Array.isArray(requiredRoles)) {
-		requiredRoles = [requiredRoles]
-	}
-
-	return roles.some((role) => requiredRoles.includes(role.title))
-}
-
 /**
  * md5 hash
  * @function
@@ -409,6 +399,24 @@ function generateCheckSum(queryHash) {
 	const checksum = shasum.digest('hex')
 	return checksum
 }
+/**
+ * validateRoleAccess.
+ * @method
+ * @name validateRoleAccess
+ * @param {Array} roles - roles array.
+ * @param {String} requiredRole - role to check.
+ * @returns {Number} - checksum key.
+ */
+
+const validateRoleAccess = (roles, requiredRoles) => {
+	if (!roles || roles.length === 0) return false
+
+	if (!Array.isArray(requiredRoles)) {
+		requiredRoles = [requiredRoles]
+	}
+
+	return roles.some((role) => requiredRoles.includes(role.title))
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -439,5 +447,5 @@ module.exports = {
 	getTimeDifferenceInMilliseconds,
 	deleteProperties,
 	generateCheckSum,
-	validateRoleAccess: validateRoleAccess,
+	validateRoleAccess
 }
