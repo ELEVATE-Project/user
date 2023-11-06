@@ -49,7 +49,6 @@ module.exports = class Entity {
 
 	async read(req) {
 		try {
-			console.log('REQQQQQ: ', req.body)
 			if (req.body.value) {
 				return await entityTypeService.readUserEntityTypes(
 					req.body,
