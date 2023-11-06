@@ -408,9 +408,14 @@ function generateCheckSum(queryHash) {
  * @returns {Number} - checksum key.
  */
 
-const validateRoleAccess = (roles, requiredRole) => {
+const validateRoleAccess = (roles, requiredRoles) => {
 	if (!roles || roles.length === 0) return false
-	return roles.some((role) => role == requiredRole)
+
+	if (!Array.isArray(requiredRoles)) {
+		requiredRoles = [requiredRoles]
+	}
+
+	return roles.some((role) => requiredRoles.includes(role.title))
 }
 
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
