@@ -165,6 +165,14 @@ module.exports = class MentorsHelper {
 	 */
 	static async share(id) {
 		try {
+			const mentorsDetails = await mentorQueries.getMentorExtension(id)
+			if (!mentorsDetails) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'MENTORS_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const shareLink = await userRequests.share(id)
 			return shareLink
 		} catch (error) {
