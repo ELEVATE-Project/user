@@ -51,8 +51,8 @@ module.exports = class UserHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, orgId)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
