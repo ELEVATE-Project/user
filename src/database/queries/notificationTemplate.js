@@ -23,12 +23,13 @@ exports.findOne = async (filter, options = {}) => {
 	}
 }
 
-exports.findOneEmailTemplate = async (code) => {
+exports.findOneEmailTemplate = async (code, orgId) => {
 	try {
 		const filter = {
 			code: code,
 			type: 'email',
 			status: common.activeStatus,
+			org_id: orgId || 1, //Temporary Default Org Id
 		}
 
 		let templateData = await NotificationTemplate.findOne({

@@ -177,7 +177,8 @@ module.exports = class AccountHelper {
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
+				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+				user.organization_id
 			)
 
 			if (templateData) {
@@ -203,6 +204,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
