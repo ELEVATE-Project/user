@@ -29,6 +29,7 @@
 	"ENTITY_DELETED_SUCCESSFULLY": "Entity deleted successfully",
 	"ENTITY_FETCHED_SUCCESSFULLY": "Entity fetched successfully",
 	"OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
+	"DEACTIVATE_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID.",
 	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the otp to complete the registration process.",
 	"PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully.",
 	"OTP_INVALID": "The OTP you entered is wrong.",
@@ -84,5 +85,8 @@
 	"ORG_ROLE_REQ_FAILED": "Organisation request update failed",
 	"ORG_ROLE_REQ_APPROVED": "Organisation request approved successfully",
 	"ORG_ROLE_REQ_UPDATED": "Organisation request updated",
-	"FILE_UPLOAD_MODIFY_ERROR": "File update failed"
+	"FILE_UPLOAD_MODIFY_ERROR": "File update failed",
+	"NOT_ACTIVE_USER": "User not active",
+	"USER_DEACTIVATED": "User deactivated successfully",
+	"USER_IN_FREEZING_PERIOD": "User account is in freezing period"
 }

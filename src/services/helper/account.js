@@ -164,7 +164,7 @@ module.exports = class AccountHelper {
 			}
 
 			await userQueries.updateUser({ id: user.id }, update)
-			await utilsHelper.redisDel(email)
+			// await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
@@ -977,6 +977,127 @@ module.exports = class AccountHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Update role of user
+	 * @method
+	 * @name deactivateUser
+	 * @param {string} bodyData.email - email of user.
+	 * @returns {JSON} change role success response
+	 */
+	static async deactivate(bodyData) {
+		const projection = []
+		const today = new Date()
+		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+		try {
+			if (userRedisData && userRedisData.action == 'deactivateUser' && userRedisData.otp == bodyData.otp) {
+				let user = await userQueries.findOne(
+					{ email: bodyData.email, status: common.activeStatus },
+					{
+						attributes: {
+							exclude: projection,
+						},
+					}
+				)
+				if (!user) {
+					return common.failureResponse({
+						message: 'NOT_ACTIVE_USER',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				let updateUser = false
+				if (user.status_updated_at && today - user.status_updated_at > common.deactivateFreezingPeriod) {
+					updateUser = true
+				} else if (user.status_updated_at == null) {
+					updateUser = true
+				} else {
+					updateUser = false
+				}
+
+				if (updateUser) {
+					const [affectedRows, updatedData] = await userQueries.updateUser(
+						{ email: bodyData.email },
+						{ status: 'INACTIVE', status_updated_at: today }
+					)
+					return common.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'USER_DEACTIVATED',
+						user: user,
+					})
+				} else {
+					return common.failureResponse({
+						statusCode: httpStatusCode.bad_request,
+						message: 'Account cannot be deactivated',
+					})
+				}
+			} else {
+				return common.failureResponse({
+					message: 'USER_IN_FREEZING_PERIOD',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Update role of user
+	 * @method
+	 * @name generateDisableOtp
+	 * @param {string} bodyData.email - email of user.
+	 * @returns {JSON} generate OTP success response
+	 */
+	static async generateDisableOtp(bodyData) {
+		try {
+			let otp
+			let isValidOtpExist = true
+			const user = await userQueries.findOne({ email: bodyData.email })
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+
+			if (userData && userData.action === 'deactivateUser') {
+				otp = userData.otp // If valid then get previuosly generated otp
+			} else {
+				isValidOtpExist = false
+			}
+			if (!isValidOtpExist) {
+				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
+				const redisData = {
+					verify: bodyData.email.toLowerCase(),
+					action: 'deactivateUser',
+					otp,
+				}
+				const res = await utilsHelper.redisSet(
+					bodyData.email.toLowerCase(),
+					redisData,
+					common.otpExpirationTime
+				)
+				if (res !== 'OK') {
+					return common.failureResponse({
+						message: 'UNABLE_TO_SEND_OTP',
+						statusCode: httpStatusCode.internal_server_error,
+						responseCode: 'SERVER_ERROR',
+					})
+				}
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'DEACTIVATE_OTP_SENT_SUCCESSFULLY',
+				result: '',
 			})
 		} catch (error) {
 			throw error

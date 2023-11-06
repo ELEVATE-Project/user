@@ -35,6 +35,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'ACTIVE',
 			},
+			status_updated_at: {
+				type: DataTypes.DATE,
+				defaultValue: null,
+				allowNull: true,
+			},
 			image: DataTypes.STRING,
 			last_logged_in_at: DataTypes.DATE,
 			has_accepted_terms_and_conditions: {

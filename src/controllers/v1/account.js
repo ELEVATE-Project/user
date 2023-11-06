@@ -235,4 +235,32 @@ module.exports = class Account {
 			return error
 		}
 	}
+	/**
+	 * deactivate a user with email
+	 * @method
+	 * @name deactivate
+	 * @param {Object} req -request data.
+	 * @param {String} req.body.email - user email.
+	 * @returns {JSON} - otp success response
+	 */
+
+	async deactivate(req) {
+		const params = req.body
+		try {
+			const result = await accountHelper.deactivate(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	async generateDisableOtp(req) {
+		const params = req.body
+		try {
+			const result = await accountHelper.generateDisableOtp(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }
