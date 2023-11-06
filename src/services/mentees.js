@@ -14,6 +14,8 @@ const sessionQueries = require('@database/queries/sessions')
 const _ = require('lodash')
 const entityTypeQueries = require('@database/queries/entityType')
 const bigBlueButtonService = require('./bigBlueButton')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { Op } = require('sequelize')
 
 module.exports = class MenteesHelper {
 	/**
@@ -29,12 +31,20 @@ module.exports = class MenteesHelper {
 		delete mentee.user_id
 		delete mentee.organisation_ids
 
-		let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-			{
-				status: 'ACTIVE',
+		const defaultOrgId = await getDefaultOrgId()
+		if (!defaultOrgId)
+			return common.failureResponse({
+				message: 'DEFAULT_ORG_ID_NOT_SET',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
+
+		let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			status: 'ACTIVE',
+			org_id: {
+				[Op.in]: [orgId, defaultOrgId],
 			},
-			orgId
-		)
+		})
 
 		validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
@@ -422,12 +432,20 @@ module.exports = class MenteesHelper {
 		try {
 			data.user_id = userId
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
 				},
-				orgId
-			)
+			})
 
 			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
@@ -475,10 +493,22 @@ module.exports = class MenteesHelper {
 			if (data.user_id) {
 				delete data['user_id']
 			}
+
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
 			const filter = {
 				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			let res = utils.validateInput(data, validationData, 'user_extensions')
@@ -534,8 +564,20 @@ module.exports = class MenteesHelper {
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
 				})
 			}
+
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
 			const filter = {
 				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
 			}
 			console.log(mentee)
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
