@@ -583,7 +583,7 @@ module.exports = class MenteesHelper {
 				},
 			}
 			console.log(mentee)
-			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
