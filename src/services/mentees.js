@@ -560,7 +560,7 @@ module.exports = class MenteesHelper {
 	 */
 	static async getMenteeExtension(userId, orgId) {
 		try {
-			const mentee = await menteeQueries.getMenteeExtension(userId, orgId)
+			const mentee = await menteeQueries.getMenteeExtension(userId)
 			if (!mentee) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
