@@ -116,7 +116,6 @@ module.exports = class UserHelper {
 					options.paranoid = false
 				}
 				const user = await userQueries.findOne(filter, options)
-
 				if (!user) {
 					return common.failureResponse({
 						message: 'USER_NOT_FOUND',
@@ -187,20 +186,7 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			const role = await roleQueries.findOne({ title: common.roleMentor })
-
-			if (!role) {
-				return common.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			let user = await userQueries.findOne(
-				{ id: userId, roles: { [Op.contains]: [role.id] } },
-				{ attributes: ['share_link'] }
-			)
+			let user = await userQueries.findOne({ id: userId }, { attributes: ['share_link'] })
 
 			if (!user) {
 				return common.failureResponse({
