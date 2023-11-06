@@ -35,7 +35,7 @@ module.exports = (sequelize, DataTypes) => {
 			visibility: {
 				type: DataTypes.STRING,
 			},
-			visible_to_organisations: {
+			visible_to_organizations: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 			},
 			external_session_visibility: {

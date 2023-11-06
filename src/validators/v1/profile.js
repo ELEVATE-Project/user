@@ -34,10 +34,10 @@ module.exports = {
 
 		req.checkBody('visibility').optional().notEmpty().withMessage('Visibility is required')
 
-		req.checkBody('visible_to_organisations')
+		req.checkBody('visible_to_organizations')
 			.optional()
 			.isArray()
-			.withMessage('visible_to_organisations must be an array')
+			.withMessage('visible_to_organizations must be an array')
 
 		req.checkBody('external_session_visibility')
 			.optional()

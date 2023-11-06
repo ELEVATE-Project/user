@@ -73,7 +73,7 @@ module.exports = class MenteeExtensionQueries {
 					tags: [],
 					configs: null,
 					visibility: null,
-					visible_to_organisations: [],
+					visible_to_organizations: [],
 					external_session_visibility: null,
 					external_mentor_visibility: null,
 					deleted_at: Date.now(),

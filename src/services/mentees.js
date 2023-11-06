@@ -30,7 +30,7 @@ module.exports = class MenteesHelper {
 		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
-		delete mentee.visible_to_organisations
+		delete mentee.visible_to_organizations
 
 		let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
 			{
@@ -549,7 +549,7 @@ module.exports = class MenteesHelper {
 			data = {
 				...data,
 				...saasPolicyData,
-				visible_to_organisations: userOrgDetails.data.result.related_orgs
+				visible_to_organizations: userOrgDetails.data.result.related_orgs
 			};
 			
 			const response = await menteeQueries.createMenteeExtension(data)

@@ -290,7 +290,7 @@ module.exports = class MentorsHelper {
 			data = {
 				...data,
 				...saasPolicyData,
-				visible_to_organisations: userOrgDetails.data.result.related_orgs
+				visible_to_organizations: userOrgDetails.data.result.related_orgs
 			};
 
 			const response = await mentorQueries.createMentorExtension(data)
@@ -443,7 +443,7 @@ module.exports = class MentorsHelper {
 			}
 			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
 
-			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'visible_to_organisations'])
+			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'visible_to_organizations'])
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
 				{
 					status: 'ACTIVE',
