@@ -31,9 +31,17 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async getMenteeExtension(userId) {
+	static async getMenteeExtension(userId, attributes = []) {
 		try {
-			const mentee = await MenteeExtension.findOne({ where: { user_id: userId }, raw: true })
+			const queryOptions = {
+				where: { user_id: userId },
+				raw: true,
+			};
+			// If attributes are passed update query
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes;
+			}
+			const mentee = await MenteeExtension.findOne(queryOptions)
 			return mentee
 		} catch (error) {
 			throw error

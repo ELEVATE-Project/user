@@ -121,4 +121,6 @@ module.exports = {
 		allow_mentor_override: false,
 		approval_required_for: [],
 	},
+	CURRENT: 'CURRENT',
+	ALL: 'ALL'
 }

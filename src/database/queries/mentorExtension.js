@@ -31,12 +31,18 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async getMentorExtension(userId) {
+	static async getMentorExtension(userId, attributes = []) {
 		try {
-			const mentor = await MentorExtension.findOne({
+			const queryOptions = {
 				where: { user_id: userId },
 				raw: true,
-			})
+			};
+	
+			// If attributes are passed update query
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes;
+			}
+			const mentor = await MentorExtension.findOne(queryOptions)
 			return mentor
 		} catch (error) {
 			throw error
