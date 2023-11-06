@@ -185,6 +185,8 @@ services:
     container_name: 'citus_master'
     ports:
       - 5432:5432
+    #expose:
+    #  - 5432
     # command: >
     #   bash -c "while ! pg_isready -h localhost -U postgres -q; do sleep 1; done &&
     #   psql -h localhost -U postgres -d <database_name> -c 'CREATE EXTENSION citus; SELECT create_distributed_table(\"notification_templates\", \"id\");'"

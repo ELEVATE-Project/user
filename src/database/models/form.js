@@ -24,6 +24,9 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: 0,
 			},
+			org_id: {
+				type: DataTypes.INTEGER,
+			},
 		},
 		{ sequelize, modelName: 'Form', tableName: 'forms', freezeTableName: true, paranoid: true }
 	)
