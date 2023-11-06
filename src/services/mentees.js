@@ -558,7 +558,7 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - User ID of the mentee.
 	 * @returns {Promise<Object>} - Mentee extension details.
 	 */
-	static async getMenteeExtension(userId) {
+	static async getMenteeExtension(userId, orgId) {
 		try {
 			const mentee = await menteeQueries.getMenteeExtension(userId, orgId)
 			if (!mentee) {
