@@ -124,15 +124,15 @@ module.exports = class EntityHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
-			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
-			if (!entities.length) {
+			const entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			if (!entityTypes.length) {
 				return common.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const prunedEntities = removeDefaultOrgEntityTypes(entities, orgId)
+			const prunedEntities = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',

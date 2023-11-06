@@ -16,6 +16,7 @@ const entityTypeQueries = require('@database/queries/entityType')
 const bigBlueButtonService = require('./bigBlueButton')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 
 module.exports = class MenteesHelper {
 	/**
@@ -39,14 +40,14 @@ module.exports = class MenteesHelper {
 				responseCode: 'CLIENT_ERROR',
 			})
 
-		let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+		let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 			status: 'ACTIVE',
 			org_id: {
 				[Op.in]: [orgId, defaultOrgId],
 			},
 		})
-
-		validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+		const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
+		//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
 		const processDbResponse = utils.processDbResponse(mentee, validationData)
 
@@ -440,14 +441,15 @@ module.exports = class MenteesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(data, validationData, 'user_extensions')
 			if (!res.success) {
@@ -508,9 +510,10 @@ module.exports = class MenteesHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let res = utils.validateInput(data, validationData, 'user_extensions')
 			if (!res.success) {
 				return common.failureResponse({
@@ -580,9 +583,10 @@ module.exports = class MenteesHelper {
 				},
 			}
 			console.log(mentee)
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			const processDbResponse = utils.processDbResponse(mentee, validationData)
 
 			return common.successResponse({

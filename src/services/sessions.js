@@ -27,6 +27,7 @@ const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 
 module.exports = class SessionsHelper {
 	/**
@@ -86,14 +87,15 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(bodyData, validationData, 'sessions')
 			if (!res.success) {
@@ -230,14 +232,15 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(bodyData, validationData, 'sessions')
 			if (!res.success) {
@@ -532,14 +535,15 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [sessionDetails.mentor_org_id, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, sessionDetails.mentor_org_id)
 
 			const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
 

@@ -11,7 +11,7 @@ const sessionQueries = require('@database/queries/sessions')
 const entityTypeQueries = require('@database/queries/entityType')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
-
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 module.exports = class MentorsHelper {
 	/**
 	 * upcomingSessions.
@@ -256,14 +256,15 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(data, validationData, 'mentor_extensions')
 			if (!res.success) {
@@ -331,15 +332,15 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
-
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 
 			data = utils.restructureBody(updatedMentor[0], validationData, mentorExtensionsModel)
@@ -446,14 +447,15 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				org_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
