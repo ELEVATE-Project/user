@@ -39,6 +39,9 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: true,
 			},
+			org_id: {
+				type: DataTypes.INTEGER,
+			},
 		},
 		{
 			sequelize,
