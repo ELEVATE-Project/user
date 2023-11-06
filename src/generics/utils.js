@@ -412,6 +412,16 @@ const validateRoleAccess = (roles, requiredRole) => {
 	if (!roles || roles.length === 0) return false
 	return roles.some((role) => role == requiredRole)
 }
+
+const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
+	const entityTypeMap = new Map()
+	entityTypes.forEach((entityType) => {
+		if (!entityTypeMap.has(entityType.value)) entityTypeMap.set(entityType.value, entityType)
+		else if (entityType.org_id === orgId) entityTypeMap.set(entityType.value, entityType)
+	})
+	return Array.from(entityTypeMap.values())
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -443,4 +453,5 @@ module.exports = {
 	deleteProperties,
 	generateCheckSum,
 	validateRoleAccess,
+	removeDefaultOrgEntityTypes,
 }

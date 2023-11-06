@@ -9,7 +9,9 @@ const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const entityTypeQueries = require('@database/queries/entityType')
-
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 module.exports = class MentorsHelper {
 	/**
 	 * upcomingSessions.
@@ -246,14 +248,23 @@ module.exports = class MentorsHelper {
 	static async createMentorExtension(data, userId, orgId) {
 		try {
 			data.user_id = userId
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(data, validationData, 'mentor_extensions')
 			if (!res.success) {
@@ -312,15 +323,24 @@ module.exports = class MentorsHelper {
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
 				})
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
+
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
 				},
-				orgId
-			)
+			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
-
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 
 			data = utils.restructureBody(updatedMentor[0], validationData, mentorExtensionsModel)
@@ -418,14 +438,24 @@ module.exports = class MentorsHelper {
 			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
 
 			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
