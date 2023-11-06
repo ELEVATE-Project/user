@@ -83,9 +83,14 @@ const getDownloadableUrl = async (imgPath) => {
 	return imgPath
 }
 
-const validateRoleAccess = (roles, requiredRole) => {
+const validateRoleAccess = (roles, requiredRoles) => {
 	if (!roles || roles.length === 0) return false
-	return roles.some((role) => role.title == requiredRole)
+
+	if (!Array.isArray(requiredRoles)) {
+		requiredRoles = [requiredRoles]
+	}
+
+	return roles.some((role) => requiredRoles.includes(role.title))
 }
 
 const generateFileName = (name, extension) => {
