@@ -13,6 +13,8 @@ const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/userRole')
 const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
+const organizationQueries = require('@database/queries/organization')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
 
@@ -37,14 +39,24 @@ module.exports = class UserHelper {
 				})
 			}
 
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+
 			const filter = {
 				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, orgId)
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-			let res = utils.validateInput(bodyData, validationData, 'users')
+			let res = utils.validateInput(bodyData, prunedEntities, 'users')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -82,6 +94,7 @@ module.exports = class UserHelper {
 				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -148,13 +161,20 @@ module.exports = class UserHelper {
 
 				user.user_roles = roles
 
-				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-					{
-						status: 'ACTIVE',
-					},
-					user.organization_id
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
 				)
-				const processDbResponse = utils.processDbResponse(user, validationData)
+				let defaultOrgId = defaultOrg.id
+
+				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+					status: 'ACTIVE',
+					org_id: {
+						[Op.in]: [user.organization_id, defaultOrgId],
+					},
+				})
+				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+				const processDbResponse = utils.processDbResponse(user, prunedEntities)
 
 				if (utils.validateRoleAccess(roles, common.roleMentor)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
@@ -173,6 +193,7 @@ module.exports = class UserHelper {
 				})
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
