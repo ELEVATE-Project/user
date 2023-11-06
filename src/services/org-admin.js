@@ -354,6 +354,7 @@ module.exports = class OrgAdminHelper {
 				result: inheritedEntityType,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
