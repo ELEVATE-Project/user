@@ -92,9 +92,8 @@ module.exports = async function (req, res, next) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
 			const userBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
-
 			const user = await requests.get(profileUrl, null, true)
-			if (!user) {
+			if (!user || !user.success) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
@@ -107,6 +106,7 @@ module.exports = async function (req, res, next) {
 				user.data.result.user_roles.every((role1) =>
 					decodedToken.data.roles.some((role2) => role1.title === role2.title)
 				)
+
 			if (!isRoleSame) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',

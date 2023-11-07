@@ -27,6 +27,8 @@ const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 
 module.exports = class SessionsHelper {
 	/**
@@ -78,14 +80,23 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(bodyData, validationData, 'sessions')
 			if (!res.success) {
@@ -166,6 +177,7 @@ module.exports = class SessionsHelper {
 				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -228,14 +240,24 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(bodyData, validationData, 'sessions')
 			if (!res.success) {
@@ -457,6 +479,7 @@ module.exports = class SessionsHelper {
 				message: message,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -519,15 +542,25 @@ module.exports = class SessionsHelper {
 			const mentorName = await userRequests.details('', sessionDetails.mentor_id)
 			sessionDetails.mentor_name = mentorName.data.result.name
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					created_by: 0,
-					status: 'ACTIVE',
-				},
-				sessionDetails.mentor_org_id
-			)
+			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [sessionDetails.mentor_org_id, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, sessionDetails.mentor_org_id)
 
 			const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
 
