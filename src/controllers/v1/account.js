@@ -235,24 +235,4 @@ module.exports = class Account {
 			return error
 		}
 	}
-
-	async reActivateOtp(req) {
-		const params = req.body
-		try {
-			const result = await accountHelper.reActivateOtp(params)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	async reActivate(req) {
-		const params = req.body
-		try {
-			const result = await accountHelper.reActivateAccount(params)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
 }
