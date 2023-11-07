@@ -95,6 +95,7 @@ describe('/user/v1/account', function () {
 	// 	expect(res.statusCode).toBe(200)
 	// 	expect(res.body).toMatchSchema(responseSchema.changeRoleSchema)
 	// })
+
 	it('/logout', async () => {
 		let res = await request.post('/user/v1/account/logout').send({
 			refresh_token: userDetails.refreshToken,
