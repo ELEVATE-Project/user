@@ -14,6 +14,8 @@ const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const organizationQueries = require('@database/queries/organization')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { Op } = require('sequelize')
 
 module.exports = class AdminHelper {
 	/**
@@ -207,7 +209,7 @@ module.exports = class AdminHelper {
 			}
 
 			const userOrg = await organizationQueries.findByPk(user.organization_id)
-			if (userOrg) {
+			if (!userOrg) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -247,7 +249,7 @@ module.exports = class AdminHelper {
 				roles,
 			}
 
-			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE || userOrg.id != organizationId) {
+			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE && userOrg.id != organizationId) {
 				return common.failureResponse({
 					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
 					statusCode: httpStatusCode.not_acceptable,
@@ -267,6 +269,15 @@ module.exports = class AdminHelper {
 					},
 				}
 			)
+
+			//update organization in mentoring
+			eventBroadcaster('updateOrganization', {
+				requestBody: {
+					user_id: userId,
+					organization_id: organizationId,
+					roles: _.map(roleData, 'title'),
+				},
+			})
 
 			const result = {
 				user_id: userId,
@@ -294,6 +305,7 @@ module.exports = class AdminHelper {
 	 */
 	static async deactivateOrg(id, loggedInUserId) {
 		try {
+			//deactivate org
 			let rowsAffected = await organizationQueries.update(
 				{
 					id,
@@ -322,6 +334,24 @@ module.exports = class AdminHelper {
 					updated_by: loggedInUserId,
 				}
 			)
+
+			const users = await userQueries.findAll(
+				{
+					organization_id: id,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+
+			const userIds = _.map(users, 'id')
+			for (const userId of userIds) {
+				eventBroadcaster('deactivateUpcomingSession', {
+					queryParams: {
+						user_id: userId,
+					},
+				})
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

@@ -80,7 +80,7 @@ exports.findAll = async (filter, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await Organization.findByPk(id)
+		return await Organization.findByPk(id, { raw: true })
 	} catch (error) {
 		return error
 	}

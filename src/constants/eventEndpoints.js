@@ -14,5 +14,12 @@ module.exports = {
 				route: '/mentoring/v1/org-admin/deactivateUpcomingSession',
 			},
 		],
+		updateOrganization: [
+			{
+				method: 'POST',
+				baseUrl: `${process.env.MENTORING_SERVICE_URL}`,
+				route: '/mentoring/v1/org-admin/updateOrganization',
+			},
+		],
 	},
 }
