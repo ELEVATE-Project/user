@@ -74,7 +74,7 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ title: common.roleAdmin })
+			let role = await roleQueries.findOne({ title: common.ADMIN_ROLE })
 			if (!role) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -232,7 +232,7 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ title: common.roleOrgAdmin }, { attributes: ['id'] })
+			let role = await roleQueries.findOne({ title: common.ORG_ADMIN_ROLE }, { attributes: ['id'] })
 			if (!role) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -260,7 +260,7 @@ module.exports = class AdminHelper {
 			await userQueries.updateUser({ id: userId }, updateObj)
 
 			const roleData = await roleQueries.findAll(
-				{ id: roles, status: common.activeStatus },
+				{ id: roles, status: common.ACTIVE_STATUS },
 				{
 					attributes: {
 						exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -299,7 +299,7 @@ module.exports = class AdminHelper {
 					id,
 				},
 				{
-					status: common.inactiveStatus,
+					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
 				}
 			)
@@ -318,7 +318,7 @@ module.exports = class AdminHelper {
 					organization_id: id,
 				},
 				{
-					status: common.inactiveStatus,
+					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
 				}
 			)

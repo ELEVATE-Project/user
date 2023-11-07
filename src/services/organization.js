@@ -53,7 +53,7 @@ module.exports = class OrganizationsHelper {
 			// Send an invitation to the admin if an email is provided.
 			if (bodyData.admin_email) {
 				const role = await roleQueries.findOne(
-					{ title: common.roleOrgAdmin },
+					{ title: common.ORG_ADMIN_ROLE },
 					{
 						attributes: ['id'],
 					}
@@ -69,7 +69,7 @@ module.exports = class OrganizationsHelper {
 
 				const inviteeData = {
 					email: bodyData.admin_email,
-					name: common.roleUser,
+					name: common.USER_ROLE,
 					organization_id: createdOrganization.id,
 					roles: [role.id],
 					created_by: loggedInUserId,
@@ -90,7 +90,7 @@ module.exports = class OrganizationsHelper {
 								subject: templateData.subject,
 								body: utils.composeEmailBody(templateData.body, {
 									name: inviteeData.name,
-									role: common.roleOrgAdmin,
+									role: common.ORG_ADMIN_ROLE,
 									orgName: bodyData.name,
 									appName: process.env.APP_NAME,
 								}),
@@ -201,7 +201,7 @@ module.exports = class OrganizationsHelper {
 				let organizations = await organizationQueries.findAll(
 					{
 						id: orgIdsNotFoundInRedis,
-						status: common.activeStatus,
+						status: common.ACTIVE_STATUS,
 					},
 					options
 				)
@@ -252,7 +252,7 @@ module.exports = class OrganizationsHelper {
 			const checkForRoleRequest = await orgRoleReqQueries.findOne({
 				requester_id: tokenInformation.id,
 				role: bodyData.role,
-				status: common.statusRequested,
+				status: common.REQUESTED_STATUS,
 			})
 
 			let result
@@ -271,7 +271,7 @@ module.exports = class OrganizationsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: role.title == common.roleMentor ? 'MENTOR_ROLE_REQUESTED' : 'MENTEE_ROLE_REQUESTED',
+				message: role.title == common.MENTOR_ROLE ? 'MENTOR_ROLE_REQUESTED' : 'MENTEE_ROLE_REQUESTED',
 				result,
 			})
 		} catch (error) {

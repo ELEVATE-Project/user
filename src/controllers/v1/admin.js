@@ -22,7 +22,7 @@ module.exports = class Admin {
 
 	async deleteUser(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -96,7 +96,7 @@ module.exports = class Admin {
 
 	async addOrgAdmin(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -124,7 +124,7 @@ module.exports = class Admin {
 	 */
 	async deactivateOrg(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,

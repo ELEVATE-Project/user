@@ -219,7 +219,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				email: bodyData.email.toLowerCase(),
-				status: common.activeStatus,
+				status: common.ACTIVE_STATUS,
 			})
 			if (!user) {
 				return common.failureResponse({
@@ -230,7 +230,7 @@ module.exports = class AccountHelper {
 			}
 
 			let roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.activeStatus },
+				{ id: user.roles, status: common.ACTIVE_STATUS },
 				{
 					attributes: {
 						exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -637,7 +637,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			let roles = await roleQueries.findAll({ id: user.roles, status: common.activeStatus })
+			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
 			if (!roles) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',

@@ -3,10 +3,11 @@ const axios = require('axios')
 const { isEmpty } = require('@utils/generic')
 const { compile } = require('path-to-regexp')
 
-const post = async (baseURL, route, headers = {}, body) => {
+const post = async (baseURL, route, headers = {}, body = {}, queryParams = {}) => {
 	try {
 		baseURL = baseURL.replace(/\/$/, '')
 		let url = baseURL + route
+		if (!isEmpty(queryParams)) url += '?' + new URLSearchParams(queryParams).toString()
 		console.log('URL: ', url)
 		console.log('HEADERS: ', JSON.stringify(headers, null, 2))
 		console.log('BODY: ', JSON.stringify(body, null, 2))

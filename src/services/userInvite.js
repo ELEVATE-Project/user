@@ -53,7 +53,8 @@ module.exports = class UserInviteHelper {
 				const update = {
 					output_path,
 					updated_by: data.user.id,
-					status: createResponse.result.isErrorOccured == true ? common.statusFailed : common.statusProcessed,
+					status:
+						createResponse.result.isErrorOccured == true ? common.FAILED_STATUS : common.PROCESSED_STATUS,
 				}
 
 				// //update output path in file uploads
@@ -183,8 +184,8 @@ module.exports = class UserInviteHelper {
 			])
 
 			const templates = {
-				[common.roleMentor]: mentorTemplateData,
-				[common.roleMentee]: menteeTemplateData,
+				[common.MENTOR_ROLE]: mentorTemplateData,
+				[common.MENTEE_ROLE]: menteeTemplateData,
 			}
 
 			// process csv data
@@ -217,7 +218,7 @@ module.exports = class UserInviteHelper {
 					//create new invitees
 					const inviteeData = {
 						...invitee,
-						status: common.statusUploaded,
+						status: common.UPLOADED_STATUS,
 						organization_id: user.organization_id,
 						file_id: fileUploadId,
 						roles: roleTitlesToIds[invitee.roles] || [],

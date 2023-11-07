@@ -129,7 +129,7 @@ module.exports = class UserHelper {
 				}
 
 				let roles = await roleQueries.findAll(
-					{ id: user.roles, status: common.activeStatus },
+					{ id: user.roles, status: common.ACTIVE_STATUS },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -155,7 +155,7 @@ module.exports = class UserHelper {
 				)
 				const processDbResponse = utils.processDbResponse(user, validationData)
 
-				if (utils.validateRoleAccess(roles, common.roleMentor)) {
+				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
