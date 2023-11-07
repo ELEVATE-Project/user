@@ -45,7 +45,8 @@ module.exports = class Mentees {
 				req.query.enrolled,
 				req.pageNo,
 				req.pageSize,
-				req.searchText
+				req.searchText,
+				isAMentor(req.decodedToken.roles)
 			)
 			return sessions
 		} catch (error) {

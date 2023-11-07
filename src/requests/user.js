@@ -15,15 +15,20 @@ const httpStatusCode = require('@generics/http-status')
 
 /**
  * Fetches the default organization details for a given organization code/id.
- * @param {string} organisationCode - The code of the organization.
+ * @param {string} organisationIdentifier - The code/id of the organization.
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchDefaultOrgDetails = function (organisationCode) {
+const fetchDefaultOrgDetails = function (organisationIdentifier) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			// Construct the URL to read organization details
-			let orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_code=' + organisationCode
+			let orgReadUrl
+			if (!isNaN(organisationIdentifier)) {
+				orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_id=' + organisationIdentifier
+			} else {
+				orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_code=' + organisationIdentifier
+			}
 			let internalToken = true
 
 			const orgDetails = await requests.get(

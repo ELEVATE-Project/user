@@ -16,15 +16,14 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async updateMenteeExtension(userId, data, options = {}) {
+	static async updateMenteeExtension(userId, data, options = {}, customFilter = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
+			const whereClause = customFilter ? customFilter : { user_id: userId };
 			return await MenteeExtension.update(data, {
-				where: {
-					user_id: userId,
-				},
+				where: whereClause,
 				...options,
 			})
 		} catch (error) {
@@ -32,9 +31,17 @@ module.exports = class MenteeExtensionQueries {
 		}
 	}
 
-	static async getMenteeExtension(userId) {
+	static async getMenteeExtension(userId, attributes = []) {
 		try {
-			const mentee = await MenteeExtension.findOne({ where: { user_id: userId }, raw: true })
+			const queryOptions = {
+				where: { user_id: userId },
+				raw: true,
+			};
+			// If attributes are passed update query
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes;
+			}
+			const mentee = await MenteeExtension.findOne(queryOptions)
 			return mentee
 		} catch (error) {
 			throw error
@@ -66,10 +73,11 @@ module.exports = class MenteeExtensionQueries {
 					tags: [],
 					configs: null,
 					visibility: null,
-					organisation_ids: [],
+					visible_to_organizations: [],
 					external_session_visibility: null,
 					external_mentor_visibility: null,
 					deleted_at: Date.now(),
+					org_id,
 				},
 				{
 					where: {

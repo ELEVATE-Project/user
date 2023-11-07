@@ -9,9 +9,12 @@ const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const entityTypeQueries = require('@database/queries/entityType')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const orgAdminService = require('@services/org-admin')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+
 module.exports = class MentorsHelper {
 	/**
 	 * upcomingSessions.
@@ -255,6 +258,20 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
+			// Call user service to fetch organisation details --SAAS related changes
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+
+			// Return error if user org does not exists
+			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
+				return common.failureResponse({
+					message: 'ORGANISATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Find organisation policy from organisation_extension table
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+
 			data.user_id = userId
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
@@ -285,6 +302,16 @@ module.exports = class MentorsHelper {
 			}
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
+
+			// construct saas policy data
+			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
+
+			// update mentee extension data
+			data = {
+				...data,
+				...saasPolicyData,
+				visible_to_organizations: userOrgDetails.data.result.related_orgs,
+			}
 
 			const response = await mentorQueries.createMentorExtension(data)
 
@@ -317,9 +344,21 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
-			if (data.user_id) {
-				delete data['user_id']
-			}
+			// Remove certain data in case it is getting passed
+			const dataToRemove = [
+				'user_id',
+				'visibility',
+				'visible_to_organizations',
+				'external_session_visibility',
+				'external_mentor_visibility',
+			]
+
+			dataToRemove.forEach((key) => {
+				if (data[key]) {
+					delete data[key]
+				}
+			})
+
 			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
 				returning: true,
 				raw: true,
@@ -445,7 +484,7 @@ module.exports = class MentorsHelper {
 			}
 			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
 
-			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
+			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'visible_to_organizations'])
 
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
