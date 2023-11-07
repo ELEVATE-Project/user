@@ -982,4 +982,141 @@ module.exports = class AccountHelper {
 			throw error
 		}
 	}
+
+	static async reActivateOtp(bodyData) {
+		try {
+			let otp
+			let isValidOtpExist = true
+			const user = await userQueries.findOne({ email: bodyData.email })
+
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Check if the user is already active (customize this part based on your logic)
+			if (user.status == 'ACTIVE') {
+				return common.failureResponse({
+					message: 'USER_ALREADY_ACTIVE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+			// const usersData = await userQueries.findAll(bodyData.email.toLowerCase())
+			// console.log(usersData)
+
+			// Check if the deactivation time is before 24 hours
+			if (userData && user) {
+				const currentTime = new Date()
+				const deactivationTime = user.deactivated_at
+
+				// Calculate the time difference in milliseconds
+				const timeDifference = currentTime - deactivationTime
+
+				// Check if the difference is less than 24 hours (in milliseconds)
+				if (timeDifference < 24 * 60 * 60 * 1000) {
+					return common.failureResponse({
+						message: 'REACTIVATION_NOT_ALLOWED_YET',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+
+			if (userData && userData.action === 'reactivation') {
+				otp = userData.otp
+			} else {
+				isValidOtpExist = false
+			}
+
+			if (!isValidOtpExist) {
+				otp = Math.floor(Math.random() * 900000 + 100000) // 6-digit OTP
+				const redisData = {
+					verify: bodyData.email.toLowerCase(),
+					action: 'reactivation',
+					otp,
+				}
+				const res = await utilsHelper.redisSet(
+					bodyData.email.toLowerCase(),
+					redisData,
+					common.otpExpirationTime
+				)
+				if (res !== 'OK') {
+					return common.failureResponse({
+						message: 'UNABLE_TO_SEND_OTP',
+						statusCode: httpStatusCode.internal_server_error,
+						responseCode: 'SERVER_ERROR',
+					})
+				}
+			}
+
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.REACTIVATION_OTP_EMAIL_TEMPLATE_CODE
+			)
+
+			if (templateData) {
+				// Push OTP to Kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: bodyData.email,
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
+					},
+				}
+			}
+
+			if (process.env.APPLICATION_ENV === 'development') {
+				console.log(otp)
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'REACTIVATION_OTP_SENT_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async reActivateAccount(bodyData) {
+		try {
+			const { email, otp } = bodyData
+			const storedData = await utilsHelper.redisGet(email.toLowerCase())
+
+			if (!storedData || storedData.action != 'reactivation' || storedData.otp != otp) {
+				return common.failureResponse({
+					message: 'INVALID_OTP',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let updateParams = {
+				status: 'ACTIVE',
+				activated_at: new Date(),
+			}
+			const result = await userQueries.updateUser({ email: email.toLowerCase() }, updateParams)
+			if (!result.error) {
+				await utilsHelper.redisDel(email.toLowerCase())
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ACCOUNT_REACTIVATED_SUCCESSFULLY',
+				})
+			} else {
+				return common.failureResponse({
+					message: 'ACCOUNT_REACTIVATION_FAILED',
+					statusCode: httpStatusCode.internal_server_error,
+					responseCode: 'SERVER_ERROR',
+				})
+			}
+		} catch (error) {
+			throw error
+		}
+	}
 }

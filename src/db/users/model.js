@@ -77,6 +77,11 @@ const userSchema = new Schema(
 			type: String,
 			default: 'en',
 		},
+		status: {
+			type: String,
+			default: 'active',
+		},
+		updatedAt: Date,
 		deletedAt: Date,
 	},
 	{

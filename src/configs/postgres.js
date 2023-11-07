@@ -17,6 +17,8 @@ module.exports = {
 			createdAt: 'created_at',
 			updatedAt: 'updated_at',
 			deletedAt: 'deleted_at',
+			activatedAt: 'activated_at',
+			deactivatedAt: 'deactivated_at',
 			//schema: 'prefix',
 		},
 	},

@@ -14,7 +14,7 @@ const i18next = require('i18next')
 const Backend = require('i18next-fs-backend')
 const middleware = require('i18next-http-middleware')
 
-require('dotenv').config({ path: './.env' })
+require('dotenv').config({ path: '/Users/sumanv/Documents/ShikshaLokam/Projects/user/src/.env' })
 
 const { elevateLog, correlationIdMiddleware } = require('elevate-logger')
 elevateLog.config(process.env.ERROR_LOG_LEVEL, 'user', process.env.DISABLE_LOG)
@@ -75,6 +75,8 @@ app.all('*', (req, res, next) => {
 			requestFiles: req.files,
 		},
 	})
+	console.log(req.url, req.method, req.body, req.headers)
+
 	next()
 })
 

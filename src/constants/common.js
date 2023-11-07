@@ -49,6 +49,8 @@ module.exports = {
 		'/user/v1/userRole/list',
 		'/user/v1/organization/create',
 		'/user/v1/organization/update',
+		'/user/v1/account/reActivate',
+		'/user/v1/account/reActivateOtp',
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',

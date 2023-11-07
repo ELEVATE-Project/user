@@ -86,4 +86,37 @@ module.exports = {
 	listUser: (req) => {
 		req.checkQuery('type').notEmpty().withMessage('type can not be null').isString()
 	},
+
+	reActivateOtp: (req) => {
+		req.checkBody('email')
+			.trim()
+			.notEmpty()
+			.withMessage('email field is empty')
+			.isEmail()
+			.matches(
+				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+			)
+			.withMessage('email is invalid')
+			.normalizeEmail({ gmail_remove_dots: false })
+	},
+
+	reActivateAccount: (req) => {
+		req.checkBody('email')
+			.trim()
+			.notEmpty()
+			.withMessage('email field is empty')
+			.isEmail()
+			.matches(
+				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+			)
+			.withMessage('email is invalid')
+			.normalizeEmail({ gmail_remove_dots: false })
+		req.checkBody('otp')
+			.notEmpty()
+			.withMessage('otp field is empty')
+			.matches(/^[0-9]+$/)
+			.withMessage('otp should be number')
+			.isLength({ min: 6, max: 6 })
+			.withMessage('otp is invalid')
+	},
 }
