@@ -277,4 +277,33 @@ module.exports = class OrgAdminService {
 			throw error
 		}
 	}
+
+	/**
+	 * Update User Organization.
+	 * @method
+	 * @name updateOrganization
+	 * @param {Object} bodyData
+	 * @returns {JSON} - User data.
+	 */
+	static async updateOrganization(bodyData) {
+		try {
+			const updateData = {
+				org_id: bodyData.organization_id,
+			}
+			let userData
+			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE)) {
+				;[userData] = await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
+			} else {
+				;[userData] = await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'UPDATE_ORG_SUCCESSFULLY',
+				result: userData,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 }
