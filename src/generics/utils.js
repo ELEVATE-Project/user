@@ -414,8 +414,7 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	if (!Array.isArray(requiredRoles)) {
 		requiredRoles = [requiredRoles]
 	}
-
-	return roles.some((role) => requiredRoles.includes(role.title))
+	return roles.some((role) => requiredRoles.includes(role))
 }
 
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
