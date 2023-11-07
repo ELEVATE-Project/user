@@ -364,6 +364,70 @@ module.exports = class AdminHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {Number} id - user id
+	 * @param {Object} loggedInUserId - logged in user id
+	 * @returns {JSON} - Deactivated user data
+	 */
+	static async deactivateUser(bodyData, loggedInUserId) {
+		try {
+			for (let item in bodyData) {
+				filterQuery[item] = {
+					[Op.in]: bodyData[item],
+				}
+			}
+
+			let rowsAffected = await userQueries.updateUser(filterQuery, {
+				status: common.INACTIVE_STATUS,
+				updated_by: loggedInUserId,
+			})
+
+			if (rowsAffected == 0) {
+				return common.failureResponse({
+					message: 'STATUS_UPDATE_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let userIds = []
+			if (bodyData.email) {
+				const users = await userQueries.findAll(
+					{
+						email: {
+							[Op.in]: bodyData.email,
+						},
+					},
+					{
+						attributes: ['id'],
+					}
+				)
+				userIds = _.map(users, 'id')
+			} else {
+				userIds = bodyData.id
+			}
+
+			//check and deactivate upcoming sessions
+			for (const userId of userIds) {
+				eventBroadcaster('deactivateUpcomingSession', {
+					queryParams: {
+						user_id: userId,
+					},
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_DEACTIVATED',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }
 
 function _removeUserKeys() {
