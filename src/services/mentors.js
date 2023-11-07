@@ -290,8 +290,8 @@ module.exports = class MentorsHelper {
 			data = {
 				...data,
 				...saasPolicyData,
-				visible_to_organizations: userOrgDetails.data.result.related_orgs
-			};
+				visible_to_organizations: userOrgDetails.data.result.related_orgs,
+			}
 
 			const response = await mentorQueries.createMentorExtension(data)
 
@@ -324,9 +324,21 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
-			if (data.user_id) {
-				delete data['user_id']
-			}
+			// Remove certain data in case it is getting passed
+			const dataToRemove = [
+				'user_id',
+				'visibility',
+				'visible_to_organizations',
+				'external_session_visibility',
+				'external_mentor_visibility',
+			]
+
+			dataToRemove.forEach((key) => {
+				if (data[key]) {
+					delete data[key]
+				}
+			})
+
 			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
 				returning: true,
 				raw: true,

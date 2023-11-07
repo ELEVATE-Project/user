@@ -31,23 +31,6 @@ module.exports = {
 			.withMessage('Notification config must be a boolean')
 
 		req.checkBody('configs.visibility').optional().notEmpty().withMessage('Visibility config is required')
-
-		req.checkBody('visibility').optional().notEmpty().withMessage('Visibility is required')
-
-		req.checkBody('visible_to_organizations')
-			.optional()
-			.isArray()
-			.withMessage('visible_to_organizations must be an array')
-
-		req.checkBody('external_session_visibility')
-			.optional()
-			.notEmpty()
-			.withMessage('External session visibility is required')
-
-		req.checkBody('external_mentor_visibility')
-			.optional()
-			.notEmpty()
-			.withMessage('External mentor visibility is required')
 	},
 	getMenteeExtension: (req) => {
 		req.checkQuery('id')
