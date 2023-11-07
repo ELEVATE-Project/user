@@ -2,6 +2,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const utils = require('@generics/utils')
+const organizationQueries = require('@database/queries/organization')
 
 module.exports = class NotificationTemplateHelper {
 	/**
@@ -101,7 +102,18 @@ module.exports = class NotificationTemplateHelper {
 			}
 
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
-			if (!notificationTemplates) {
+			console.log('NOTIFICATION TEMPLATES: ', notificationTemplates)
+			let defaultOrgNotificationTemplates
+			if (notificationTemplates.length === 0) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
+				)
+				let defaultOrgId = defaultOrg.id
+				filter = id ? { id, org_id: defaultOrgId } : { code, org_id: defaultOrgId }
+				defaultOrgNotificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
+			}
+			if (notificationTemplates.length === 0 && defaultOrgNotificationTemplates.length === 0) {
 				return common.failureResponse({
 					message: 'NOTIFICATION_TEMPLATE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -111,9 +123,10 @@ module.exports = class NotificationTemplateHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY',
-				result: notificationTemplates ? notificationTemplates : {},
+				result: notificationTemplates.length != 0 ? notificationTemplates : defaultOrgNotificationTemplates,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -122,7 +135,7 @@ module.exports = class NotificationTemplateHelper {
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates({
 				org_id,
 			})
-
+			console.log('NOTIFICATION TEMPLATESSSSSSSSS: ', notificationTemplates)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY',

@@ -86,7 +86,7 @@ module.exports = class NotificationTemplate {
 
 	async read(req) {
 		try {
-			if (!req.params.id || !req.query.code) {
+			if (!req.params.id && !req.query.code) {
 				const template = await notificationService.readAllNotificationTemplates(
 					req.decodedToken.organization_id
 				)
