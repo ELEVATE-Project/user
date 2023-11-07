@@ -14,14 +14,14 @@ module.exports = class NotificationTemplateHelper {
 
 	static async create(bodyData, tokenInformation) {
 		try {
-			const template = await notificationTemplateQueries.findOne({ code: bodyData.code })
+			/* const template = await notificationTemplateQueries.findOne({ code: bodyData.code })
 			if (template) {
 				return common.failureResponse({
 					message: 'NOTIFICATION_TEMPLATE_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
+			} */
 
 			bodyData['org_id'] = tokenInformation.organization_id
 			bodyData['created_by'] = tokenInformation.id
