@@ -14,7 +14,10 @@ module.exports = class NotificationTemplateHelper {
 
 	static async create(bodyData, tokenInformation) {
 		try {
-			const template = await notificationTemplateQueries.findOne({ code: bodyData.code })
+			const template = await notificationTemplateQueries.findOne({
+				code: bodyData.code,
+				org_id: tokenInformation.organization_id,
+			})
 			if (template) {
 				return common.failureResponse({
 					message: 'NOTIFICATION_TEMPLATE_ALREADY_EXISTS',
@@ -33,6 +36,7 @@ module.exports = class NotificationTemplateHelper {
 				result: createdNotification,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
