@@ -1,4 +1,5 @@
 const MenteeExtension = require('../models/index').UserExtension
+const _ = require('lodash')
 
 module.exports = class MenteeExtensionQueries {
 	static async getColumns() {
@@ -21,12 +22,13 @@ module.exports = class MenteeExtensionQueries {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const whereClause = customFilter ? customFilter : { user_id: userId };
+			const whereClause = _.isEmpty(customFilter) ? { user_id: userId } : customFilter
 			return await MenteeExtension.update(data, {
 				where: whereClause,
 				...options,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -36,10 +38,10 @@ module.exports = class MenteeExtensionQueries {
 			const queryOptions = {
 				where: { user_id: userId },
 				raw: true,
-			};
+			}
 			// If attributes are passed update query
 			if (attributes.length > 0) {
-				queryOptions.attributes = attributes;
+				queryOptions.attributes = attributes
 			}
 			const mentee = await MenteeExtension.findOne(queryOptions)
 			return mentee
