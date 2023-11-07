@@ -235,6 +235,7 @@ module.exports = class Account {
 			return error
 		}
 	}
+
 	async reActivateOtp(req) {
 		const params = req.body
 		try {
@@ -244,6 +245,7 @@ module.exports = class Account {
 			return error
 		}
 	}
+
 	async reActivate(req) {
 		const params = req.body
 		try {
