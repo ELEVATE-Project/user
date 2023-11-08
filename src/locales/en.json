@@ -98,7 +98,7 @@
 	"SCHEDULER_SERVICE_DOWN": "Scheduler service is down",
 	"DEFAULT_ORG_ID_NOT_SET": "Failed to set default organization id",
 	"USER_IS_FROM_DEFAULT_ORG": "User is from default org ",
-	"ORGANISATION_NOT_FOUND": "User organisation not found"
+	"ORGANISATION_NOT_FOUND": "User organisation not found",
 	"NOTIFICATION_TEMPLATE_ALREADY_EXISTS": "Notification template already exists",
 	"NOTIFICATION_TEMPLATE_CREATED_SUCCESSFULLY": "Notification template created successfully",
 	"NOTIFICATION_TEMPLATE_UPDATED_SUCCESSFULLY": "Notification template updated successfully",
