@@ -105,5 +105,7 @@
 	"NOTIFICATION_TEMPLATE_NOT_FOUND": "Notification template not found",
 	"UPDATE_ORG_SUCCESSFULLY": "User organization updated successfully",
 	"ORG_EXTENSION_NOT_FOUND": "Organization extension not found.",
-	"ORGANIZATION_NOT_FOUND": "Organization not found"
+	"ORGANIZATION_NOT_FOUND": "Organization not found",
+	"SESSION_DEACTIVATED_SUCCESSFULLY": "Session deactivated successfully.",
+	"SUCCESSFULLY_UNENROLLED_FROM_UPCOMING_SESSION": "Unrolled from upcoming sessions successfully."
 }

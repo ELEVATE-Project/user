@@ -332,4 +332,47 @@ module.exports = class OrgAdminService {
 			throw error
 		}
 	}
+
+	/**
+	 * Deactivate upcoming session.
+	 * @method
+	 * @name deactivateUpcomingSession
+	 * @param {Object} bodyData
+	 * @returns {JSON} - User data.
+	 */
+	static async deactivateUpcomingSession(userId) {
+		try {
+			let message
+			const mentorDetails = await mentorQueries.getMentorExtension(userId)
+			if (mentorDetails?.user_id) {
+				// Delete upcoming sessions of user as mentor
+				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
+				await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+				message = 'SESSION_DEACTIVATED_SUCCESSFULLY'
+			}
+
+			//unenroll from upcoming session
+			const menteeDetails = await menteeQueries.getMenteeExtension(userId)
+			if (menteeDetails?.user_id) {
+				await adminService.unenrollFromUpcomingSessions(userId)
+				message = 'SUCCESSFULLY_UNENROLLED_FROM_UPCOMING_SESSION'
+			}
+
+			if (!mentorDetails?.user_id && !menteeDetails?.user_id) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 }

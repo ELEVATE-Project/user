@@ -95,4 +95,22 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	/**
+	 * deactivateUpcomingSession
+	 * @method
+	 * @name deactivateUpcomingSession
+	 * @param {Object} req - Request data.
+	 * @param {String} req.query.user_id - User id.
+	 * @returns {JSON} - Success Response.
+	 * @throws {Error} - Returns an error if the update fails.
+	 */
+	async deactivateUpcomingSession(req) {
+		try {
+			const response = await orgAdminService.deactivateUpcomingSession(req.query.user_id)
+			return response
+		} catch (error) {
+			return error
+		}
+	}
 }
