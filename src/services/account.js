@@ -862,6 +862,7 @@ module.exports = class AccountHelper {
 
 				let users = await userQueries.listUsers(
 					role && role.id ? role.id : '',
+					params.query.organization_id ? params.query.organization_id : '',
 					params.pageNo,
 					params.pageSize,
 					params.searchText

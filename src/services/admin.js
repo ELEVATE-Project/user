@@ -191,7 +191,7 @@ module.exports = class AdminHelper {
 	static async addOrgAdmin(userId, organizationId, loggedInUserId) {
 		try {
 			let user = await userQueries.findByPk(userId)
-			if (!user) {
+			if (!user?.id) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -200,7 +200,7 @@ module.exports = class AdminHelper {
 			}
 
 			let organization = await organizationQueries.findByPk(organizationId)
-			if (!organization) {
+			if (!organization?.id) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -209,7 +209,7 @@ module.exports = class AdminHelper {
 			}
 
 			const userOrg = await organizationQueries.findByPk(user.organization_id)
-			if (!userOrg) {
+			if (!userOrg?.id) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -235,7 +235,7 @@ module.exports = class AdminHelper {
 			}
 
 			let role = await roleQueries.findOne({ title: common.ORG_ADMIN_ROLE }, { attributes: ['id'] })
-			if (!role) {
+			if (!role?.id) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,

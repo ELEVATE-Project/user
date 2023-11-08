@@ -59,7 +59,7 @@ module.exports = class OrganizationsHelper {
 					}
 				)
 
-				if (!role.length > 0) {
+				if (!role?.id) {
 					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
