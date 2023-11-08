@@ -44,7 +44,7 @@ module.exports = class OrganisationExtensionQueries {
 			if (!org_id) {
 				throw new Error('Org_id Missing')
 			}
-			console.log('Line 38 :', org_id)
+
 			const data = common.DEFAULT_ORGANISATION_POLICY
 			data.org_id = org_id
 			// Try to find the data, and if it doesn't exist, create it

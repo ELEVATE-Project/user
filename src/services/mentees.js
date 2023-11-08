@@ -351,7 +351,7 @@ module.exports = class MenteesHelper {
 				])
 
 				// Throw error if mentor extension not found
-				if (!userPolicyDetails) {
+				if (Object.keys(userPolicyDetails).length === 0) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.bad_request,
 						message: 'MENTORS_NOT_FOUND',
@@ -364,7 +364,7 @@ module.exports = class MenteesHelper {
 					'org_id',
 				])
 				// If no mentee present return error
-				if (!userPolicyDetails) {
+				if (Object.keys(userPolicyDetails).length === 0) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTEE_EXTENSION_NOT_FOUND',
