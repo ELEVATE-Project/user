@@ -318,10 +318,10 @@ module.exports = class MenteesHelper {
 	static async getAllSessions(page, limit, search, userId, isAMentor) {
 		const sessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
 
+		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
+
 		// Filter sessions based on saas policy {session contain enrolled + upcoming session}
 		sessions.rows = await this.filterSessionsBasedOnSaasPolicy(sessions.rows, userId, isAMentor)
-
-		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
 
 		sessions.rows = await this.sessionMentorDetails(sessions.rows)
 
@@ -351,7 +351,7 @@ module.exports = class MenteesHelper {
 				])
 
 				// Throw error if mentor extension not found
-				if (!userPolicyDetails) {
+				if (Object.keys(userPolicyDetails).length === 0) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.bad_request,
 						message: 'MENTORS_NOT_FOUND',
@@ -364,7 +364,7 @@ module.exports = class MenteesHelper {
 					'org_id',
 				])
 				// If no mentee present return error
-				if (!userPolicyDetails) {
+				if (Object.keys(userPolicyDetails).length === 0) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTEE_EXTENSION_NOT_FOUND',
@@ -376,13 +376,14 @@ module.exports = class MenteesHelper {
 			// Filter sessions based on policy
 			const filteredSessions = await Promise.all(
 				sessions.map(async (session) => {
+					let enrolled = session.is_enrolled ? session.is_enrolled : false
 					if (
 						session.visibility === common.CURRENT ||
 						(session.visibility === common.ALL &&
 							userPolicyDetails.external_session_visibility === common.CURRENT)
 					) {
 						// Check if the session's mentor organization matches the user's organization.
-						if (session.mentor_org_id === userPolicyDetails.org_id) {
+						if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
 							return session
 						}
 					} else {
@@ -413,8 +414,8 @@ module.exports = class MenteesHelper {
 		try {
 			const upcomingSessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
 
-			// filter upcoming session based on policy
-			upcomingSessions.rows = await this.filterSessionsBasedOnSaasPolicy(upcomingSessions.rows, userId, isAMentor)
+			// // filter upcoming session based on policy ---> commented at level 1 saas changes. will need at level 3
+			// upcomingSessions.rows = await this.filterSessionsBasedOnSaasPolicy(upcomingSessions.rows, userId, isAMentor)
 
 			const upcomingSessionIds = upcomingSessions.rows.map((session) => session.id)
 

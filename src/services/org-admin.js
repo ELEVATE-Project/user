@@ -161,36 +161,38 @@ module.exports = class OrgAdminService {
 				org_id: decodedToken.organization_id,
 				...policies,
 			})
-			const orgPolicyUpdated = new Date(orgPolicies.dataValues.created_at).getTime() !== new Date(orgPolicies.dataValues.updated_at).getTime()
-			
+			const orgPolicyUpdated =
+				new Date(orgPolicies.dataValues.created_at).getTime() !==
+				new Date(orgPolicies.dataValues.updated_at).getTime()
+
 			// If org policies updated update mentor and mentee extensions uunder the org
 			if (orgPolicyUpdated) {
 				// if org policy is updated update mentor extension and user extension
 				let policyData = await this.constructOrgPolicyObject(orgPolicies.dataValues)
-				
+
 				await mentorQueries.updateMentorExtension(
-					"",										//userId not required
-					policyData,								// data to update
-					{},										//options
-					{org_id:decodedToken.organization_id} 	//custom filter for where clause
+					'', //userId not required
+					policyData, // data to update
+					{}, //options
+					{ org_id: decodedToken.organization_id } //custom filter for where clause
 				)
-				
+
 				await menteeQueries.updateMenteeExtension(
-					"",										//userId not required
-					policyData,								// data to update
-					{},										//options
-					{org_id:decodedToken.organization_id} 	//custom filter for where clause
+					'', //userId not required
+					policyData, // data to update
+					{}, //options
+					{ org_id: decodedToken.organization_id } //custom filter for where clause
 				)
-				await sessionQueries.updateSession(
-					{ 
-						status: common.PUBLISHED_STATUS,
-						mentor_org_id: decodedToken.organization_id
-					},
-					{
-						visibility: orgPolicies.dataValues.session_visibility_policy
-					}
-				)
-				
+				// comenting as part of first level SAAS changes. will need this in the code next level
+				// await sessionQueries.updateSession(
+				// 	{
+				// 		status: common.PUBLISHED_STATUS,
+				// 		mentor_org_id: decodedToken.organization_id
+				// 	},
+				// 	{
+				// 		visibility: orgPolicies.dataValues.session_visibility_policy
+				// 	}
+				// )
 			}
 
 			delete orgPolicies.dataValues.deleted_at
@@ -318,18 +320,22 @@ module.exports = class OrgAdminService {
 	 * @returns {Object} 						- A object that reurn a response object.
 	 */
 	static async constructOrgPolicyObject(organisationPolicy, addOrgId = false) {
-		const { mentor_visibility_policy, external_session_visibility_policy, external_mentor_visibility_policy,org_id } = organisationPolicy;
+		const {
+			mentor_visibility_policy,
+			external_session_visibility_policy,
+			external_mentor_visibility_policy,
+			org_id,
+		} = organisationPolicy
 		// create policy object
 		let policyData = {
 			visibility: mentor_visibility_policy,
 			external_session_visibility: external_session_visibility_policy,
-			external_mentor_visibility: external_mentor_visibility_policy
-		};
+			external_mentor_visibility: external_mentor_visibility_policy,
+		}
 		// add org_id value if requested
-		if(addOrgId){
+		if (addOrgId) {
 			policyData.org_id = org_id
 		}
 		return policyData
 	}
-	
 }
