@@ -29,6 +29,7 @@ const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const menteesService = require('@services/mentees')
 
 module.exports = class SessionsHelper {
 	/**
@@ -144,7 +145,7 @@ module.exports = class SessionsHelper {
 				mentor_id: loggedInUserId,
 				session_id: data.id,
 			})
-			
+
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
 
@@ -488,12 +489,13 @@ module.exports = class SessionsHelper {
 	 * Session details.
 	 * @method
 	 * @name details
-	 * @param {String} id - Session id.
-	 * @param {String} userId - logged in user id.
-	 * @returns {JSON} - Session details
+	 * @param {String} id 						- Session id.
+	 * @param {Number} userId 					- User id.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '') {
+	static async details(id, userId = '', isAMentor = '') {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -515,17 +517,34 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			sessionDetails.is_enrolled = false
 			if (userId) {
 				let sessionAttendee = await sessionAttendeesQueries.findOne({
 					session_id: sessionDetails.id,
 					mentee_id: userId,
 				})
-				sessionDetails.is_enrolled = false
 				if (sessionAttendee) {
 					sessionDetails.is_enrolled = true
 				}
 			}
+
+			// check for accessibility
+			if (userId !== '' && isAMentor !== '') {
+				let sessionPolicyCheck = await menteesService.filterSessionsBasedOnSaasPolicy(
+					[sessionDetails],
+					userId,
+					isAMentor
+				)
+
+				// Throw access error
+				if (sessionPolicyCheck.length === 0) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'SESSION_RESTRICTED',
+					})
+				}
+			}
+
 			if (userId != sessionDetails.mentor_id) {
 				delete sessionDetails?.meeting_info?.link
 				delete sessionDetails?.meeting_info?.meta

@@ -7,6 +7,7 @@
 
 // Dependencies
 const sessionService = require('@services/sessions')
+const { isAMentor } = require('@generics/utils')
 
 module.exports = class Sessions {
 	/**
@@ -68,7 +69,8 @@ module.exports = class Sessions {
 		try {
 			const sessionDetails = await sessionService.details(
 				req.params.id,
-				req.decodedToken ? req.decodedToken.id : ''
+				req.decodedToken ? req.decodedToken.id : '',
+				req.decodedToken ? isAMentor(req.decodedToken.roles) : ''
 			)
 			return sessionDetails
 		} catch (error) {

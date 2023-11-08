@@ -104,5 +104,6 @@
 	"NOTIFICATION_TEMPLATE_UPDATED_SUCCESSFULLY": "Notification template updated successfully",
 	"NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY": "Notification template fetched successfully",
 	"NOTIFICATION_TEMPLATE_NOT_FOUND": "Notification template not found",
-	"PROFILE_RESTRICTED": "User can't access this profile"
+	"PROFILE_RESTRICTED": "User can't access this profile",
+	"SESSION_RESTRICTED": "User can't access this session"
 }
