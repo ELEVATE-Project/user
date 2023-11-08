@@ -12,18 +12,25 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const utilsHelper = require('@generics/utils')
 
 /**
  * Fetches the default organization details for a given organization code/id.
- * @param {string} organisationCode - The code of the organization.
+ * @param {string} orgIdOrCode - The code or id of the organization.
  * @returns {Promise} A promise that resolves with the organization details or rejects with an error.
  */
 
-const fetchDefaultOrgDetails = function (organisationCode) {
+const fetchDefaultOrgDetails = function (orgIdOrCode) {
 	return new Promise(async (resolve, reject) => {
 		try {
+			let orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ
+			if (utilsHelper.isNumeric(orgIdOrCode)) {
+				orgReadUrl = orgReadUrl + '?organisation_id=' + orgIdOrCode
+			} else {
+				orgReadUrl = orgReadUrl + '?organisation_code=' + orgIdOrCode
+			}
+
 			// Construct the URL to read organization details
-			let orgReadUrl = userBaseUrl + endpoints.ORGANIZATION_READ + '?organisation_code=' + organisationCode
 			let internalToken = true
 
 			const orgDetails = await requests.get(
@@ -31,6 +38,7 @@ const fetchDefaultOrgDetails = function (organisationCode) {
 				'', // X-auth-token not required for internal call
 				internalToken
 			)
+
 			return resolve(orgDetails)
 		} catch (error) {
 			return reject(error)

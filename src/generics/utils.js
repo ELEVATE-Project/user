@@ -414,8 +414,13 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	if (!Array.isArray(requiredRoles)) {
 		requiredRoles = [requiredRoles]
 	}
-
-	return roles.some((role) => requiredRoles.includes(role.title))
+	// Check the type of the first element.
+	const firstElementType = typeof roles[0]
+	if (firstElementType === 'object') {
+		return roles.some((role) => requiredRoles.includes(role.title))
+	} else {
+		return roles.some((role) => requiredRoles.includes(role))
+	}
 }
 module.exports = {
 	hash: hash,
@@ -447,5 +452,5 @@ module.exports = {
 	getTimeDifferenceInMilliseconds,
 	deleteProperties,
 	generateCheckSum,
-	validateRoleAccess
+	validateRoleAccess,
 }

@@ -61,7 +61,7 @@ module.exports = {
 	MENTOR_SESSION_REMAINDER_EMAIL_CODE: 'mentor_session_reminder',
 	MENTOR_SESSION_ONE_HOUR_REMAINDER_EMAIL_CODE: 'mentor_one_hour_before_session_reminder',
 	UTC_DATE_TIME_FORMAT: 'YYYY-MM-DDTHH:mm:ss',
-	internalAccessUrs: ['/notifications/emailCronJob', '/org-admin/roleChange'],
+	internalAccessUrs: ['/notifications/emailCronJob', '/org-admin/roleChange', '/org-admin/updateOrganization'],
 	COMPLETED_STATUS: 'COMPLETED',
 	PUBLISHED_STATUS: 'PUBLISHED',
 	LIVE_STATUS: 'LIVE',

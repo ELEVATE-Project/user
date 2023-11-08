@@ -287,19 +287,45 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
-			const updateData = {
-				org_id: bodyData.organization_id,
+			const orgId = bodyData.organization_id
+
+			// Get organization details
+			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+				return common.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-			let userData
+
+			// Get organization policies
+			const orgPolicies = await OrganisationExtensionQueries.getById(orgId)
+			if (!orgPolicies?.org_id) {
+				return common.failureResponse({
+					message: 'ORG_EXTENSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			//Update the policy
+			const updateData = {
+				org_id: orgId,
+				external_session_visibility: orgPolicies.external_session_visibility_policy,
+				external_mentor_visibility: orgPolicies.external_mentor_visibility_policy,
+				visibility: orgPolicies.mentor_visibility_policy,
+				visible_to_organizations: organizationDetails.data.result.related_orgs,
+			}
+
 			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE)) {
-				;[userData] = await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
+				await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
 			} else {
-				;[userData] = await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
+				await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
 			}
 			return common.successResponse({
-				statusCode: httpStatusCode.created,
+				statusCode: httpStatusCode.ok,
 				message: 'UPDATE_ORG_SUCCESSFULLY',
-				result: userData,
 			})
 		} catch (error) {
 			console.log(error)
