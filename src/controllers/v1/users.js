@@ -42,7 +42,7 @@ module.exports = class Users {
 	 * @param {Number} req.pageNo 				- page no.
 	 * @param {Number} req.pageSize 			- page size limit.
 	 * @param {String} req.searchText 			- search text.
-	 * @param {Number} searchText 				- userId.
+	 * @param {Number}  req.decodedToken.id		- userId.
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- List of user.
 	 */

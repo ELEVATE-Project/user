@@ -7,6 +7,7 @@
 
 // Dependencies
 const mentorsService = require('@services/mentors')
+const { isAMentor } = require('@generics/utils')
 
 module.exports = class Mentors {
 	/**
@@ -38,13 +39,15 @@ module.exports = class Mentors {
 	 * mentors profile
 	 * @method
 	 * @name profile
-	 * @param {Object} req - request data.
-	 * @param {String} req.params.id - mentor Id.
-	 * @returns {JSON} - mentors profile details
+	 * @param {Object} req 							- request data.
+	 * @param {String} req.params.id 				- mentor Id.
+	 * @param {Number}  req.decodedToken.id			- userId.
+	 * @param {Boolean} isAMentor 					- user mentor or not.
+	 * @returns {JSON} 								- mentors profile details
 	 */
 	async profile(req) {
 		try {
-			return await mentorsService.read(req.params.id)
+			return await mentorsService.read(req.params.id, '', req.decodedToken.id, isAMentor(req.decodedToken.roles))
 		} catch (error) {
 			return error
 		}

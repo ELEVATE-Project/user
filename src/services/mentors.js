@@ -14,6 +14,7 @@ const orgAdminService = require('@services/org-admin')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const usersService = require('@services/users')
 
 module.exports = class MentorsHelper {
 	/**
@@ -455,14 +456,44 @@ module.exports = class MentorsHelper {
 	}
 
 	/**
-	 * Profile.
+	 * Read.
 	 * @method
-	 * @name profile
-	 * @param {String} userId - user id.
-	 * @returns {JSON} - profile details
+	 * @name read
+	 * @param {Number} id 						- mentor id.
+	 * @param {Number} orgId 					- org_id
+	 * @param {Number} userId 					- User id.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- profile details
 	 */
-	static async read(id, orgId) {
+	static async read(id, orgId, userId = '', isAMentor = '') {
 		try {
+			if (userId !== '' && isAMentor !== '') {
+				// Get mentor visibility and org_id
+				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, ['visibility', 'org_id'])
+
+				// Throw error if extension not found
+				if (Object.keys(requstedMentorExtension).length === 0) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'MENTORS_NOT_FOUND',
+					})
+				}
+
+				requstedMentorExtension = await usersService.filterMentorListBasedOnSaasPolicy(
+					[requstedMentorExtension],
+					userId,
+					isAMentor
+				)
+
+				// Throw access error
+				if (requstedMentorExtension.length === 0) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'PROFILE_RESTRICTED',
+					})
+				}
+			}
+
 			let mentorProfile = await userRequests.details('', id)
 			if (!mentorProfile.data.result) {
 				return common.failureResponse({
