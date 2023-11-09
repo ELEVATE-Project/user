@@ -411,11 +411,13 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 		let templateData
 		if (status === common.statusAccepted) {
 			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
+				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
+				userDetails.organization_id
 			)
 		} else if (status === common.statusRejected) {
 			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
+				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
+				userDetails.organization_id
 			)
 		}
 

@@ -65,7 +65,10 @@ module.exports = class UserInviteHelper {
 				// // send email to admin
 				const templateCode = process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE
 				if (templateCode) {
-					const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
+					const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+						templateCode,
+						data.user.organization_id
+					)
 
 					if (templateData) {
 						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
@@ -178,8 +181,12 @@ module.exports = class UserInviteHelper {
 			const menteeTemplateCode = process.env.MENTEE_INVITATION_EMAIL_TEMPLATE_CODE || null
 
 			const [mentorTemplateData, menteeTemplateData] = await Promise.all([
-				mentorTemplateCode ? notificationTemplateQueries.findOneEmailTemplate(mentorTemplateCode) : null,
-				menteeTemplateCode ? notificationTemplateQueries.findOneEmailTemplate(menteeTemplateCode) : null,
+				mentorTemplateCode
+					? notificationTemplateQueries.findOneEmailTemplate(mentorTemplateCode, user.organization_id)
+					: null,
+				menteeTemplateCode
+					? notificationTemplateQueries.findOneEmailTemplate(menteeTemplateCode, user.organization_id)
+					: null,
 			])
 
 			const templates = {

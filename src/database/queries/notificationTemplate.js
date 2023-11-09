@@ -2,6 +2,7 @@
 const NotificationTemplate = require('@database/models/index').NotificationTemplate
 const { Op } = require('sequelize')
 const common = require('@constants/common')
+const organizationQueries = require('@database/queries/organization')
 
 exports.create = async (data) => {
 	try {
@@ -25,11 +26,26 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findOneEmailTemplate = async (code, orgId) => {
 	try {
+		// Get default orgId using code defined in env
+		const defaultOrg = await organizationQueries.findOne(
+			{ code: process.env.DEFAULT_ORGANISATION_CODE },
+			{ attributes: ['id'] }
+		)
+		const defaultOrgId = defaultOrg.id
+		/**If data exists for both `orgId` and `defaultOrgId`, the query will return the first matching record
+		 * based on the order in which the values are provided in the array `[orgId, defaultOrgId]`.
+		 * If a record with a matching `org_id` equal to `orgId` is found, it will be returned.
+		 * If no match is found for `orgId`, then it will look for a match with `defaultOrgId`.
+		 */
 		const filter = {
 			code: code,
 			type: 'email',
 			status: common.activeStatus,
-			org_id: orgId || 1, //Temporary Default Org Id
+			org_id: orgId
+				? {
+						[Op.or]: [orgId, defaultOrgId],
+				  }
+				: defaultOrgId,
 		}
 
 		let templateData = await NotificationTemplate.findOne({
