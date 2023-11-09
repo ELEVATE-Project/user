@@ -40,8 +40,6 @@ module.exports = class UserHelper {
 			}
 			const extensionDataMap = new Map(extensionDetails.map((newItem) => [newItem.user_id, newItem]))
 
-			// Update count after filtering
-			userDetails.data.result.count = extensionDetails.length
 			userDetails.data.result.data = userDetails.data.result.data.filter((existingItem) => {
 				const user_id = existingItem.values[0].id
 				if (extensionDataMap.has(user_id)) {
@@ -77,9 +75,17 @@ module.exports = class UserHelper {
 	 */
 	static async filterMentorListBasedOnSaasPolicy(userData, userId, isAMentor) {
 		try {
+			// Filter for invalid user data
+			userData = userData.filter((user) => {
+				const visibility = user.visibility
+				const org_id = user.org_id
+				return visibility === common.CURRENT || (visibility === common.ALL && org_id !== undefined)
+			})
+
 			if (userData.length === 0) {
 				return userData
 			}
+
 			let userPolicyDetails
 			// If user is mentor - fetch policy details from mentor extensions else fetch from userExtension
 			if (isAMentor) {
@@ -111,26 +117,28 @@ module.exports = class UserHelper {
 				}
 			}
 
-			// Filter user data based on policy
-			const filteredUserData = await Promise.all(
-				userData.map(async (user) => {
-					if (
-						user.visibility === common.CURRENT ||
-						(user.visibility === common.ALL &&
-							userPolicyDetails.external_mentor_visibility === common.CURRENT)
-					) {
-						// Check if the mentor's organization matches the user's organization(who is calling the api).
-						if (user.org_id === userPolicyDetails.org_id) {
+			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
+				// Filter user data based on policy
+				const filteredUserData = await Promise.all(
+					userData.map(async (user) => {
+						if (
+							user.visibility === common.CURRENT ||
+							(user.visibility === common.ALL &&
+								userPolicyDetails.external_mentor_visibility === common.CURRENT)
+						) {
+							// Check if the mentor's organization matches the user's organization(who is calling the api).
+							if (user.org_id === userPolicyDetails.org_id) {
+								return user
+							}
+						} else {
 							return user
 						}
-					} else {
-						return user
-					}
-				})
-			)
-			// Remove any undefined elements (user that didn't meet the conditions)
-			const result = filteredUserData.filter((user) => user !== undefined)
-			return result
+					})
+				)
+				// Remove any undefined elements (user that didn't meet the conditions)
+				userData = filteredUserData.filter((user) => user !== undefined)
+			}
+			return userData
 		} catch (err) {
 			return err
 		}
