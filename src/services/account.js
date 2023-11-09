@@ -8,6 +8,7 @@
 // Dependencies
 const bcryptJs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const _ = require('lodash')
 
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
@@ -73,10 +74,11 @@ module.exports = class AccountHelper {
 			const invitedUserMatch = await userInviteQueries.findOne({
 				email,
 			})
-
+			let isOrgAdmin = false
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
-				bodyData.roles = roles = invitedUserMatch.roles
+				roles = invitedUserMatch.roles
+
 				role = await roleQueries.findOne(
 					{ id: invitedUserMatch.roles },
 					{
@@ -85,6 +87,22 @@ module.exports = class AccountHelper {
 						},
 					}
 				)
+
+				if (role.title === common.ORG_ADMIN_ROLE) {
+					isOrgAdmin = true
+
+					const defaultRole = await roleQueries.findOne(
+						{ title: process.env.DEFAULT_ROLE },
+						{
+							attributes: {
+								exclude: ['created_at', 'updated_at', 'deleted_at'],
+							},
+						}
+					)
+
+					roles.push(defaultRole.id)
+					bodyData.roles = roles
+				}
 			} else {
 				//find organization from email domain
 				let emailDomain = utilsHelper.extractDomainFromEmail(email)
@@ -137,17 +155,30 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			const roleData = await roleQueries.findAll(
+				{
+					id: {
+						[Op.in]: bodyData.roles,
+					},
+				},
+				{
+					attributes: {
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
+					},
+				}
+			)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
-					roles: [role],
+					roles: roleData,
 				},
 			}
 
-			user.user_roles = [role]
+			user.user_roles = roleData
 
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
@@ -174,6 +205,20 @@ module.exports = class AccountHelper {
 
 			await userQueries.updateUser({ id: user.id }, update)
 			await utilsHelper.redisDel(email)
+
+			//make the user as org admin
+			if (isOrgAdmin) {
+				let organization = await organizationQueries.findByPk(user.organization_id)
+				const orgAdmins = _.uniq([...(organization.org_admin || []), user.id])
+				await organizationQueries.update(
+					{
+						id: user.organization_id,
+					},
+					{
+						org_admin: orgAdmins,
+					}
+				)
+			}
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
