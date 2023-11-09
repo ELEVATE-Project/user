@@ -72,6 +72,7 @@ module.exports = class OrgAdminHelper {
 				},
 				{
 					removeOnComplete: true,
+					attempts: common.NO_OF_ATTEMPTS,
 					backoff: {
 						type: 'fixed',
 						delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
@@ -448,11 +449,13 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 		let templateData
 		if (status === common.ACCEPTED_STATUS) {
 			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
+				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
+				userDetails.organization_id
 			)
 		} else if (status === common.REJECTED_STATUS) {
 			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
+				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
+				userDetails.organization_id
 			)
 		}
 

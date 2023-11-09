@@ -66,7 +66,10 @@ module.exports = class UserInviteHelper {
 				// // send email to admin
 				const templateCode = process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE
 				if (templateCode) {
-					const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
+					const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+						templateCode,
+						data.user.organization_id
+					)
 
 					if (templateData) {
 						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
@@ -179,8 +182,12 @@ module.exports = class UserInviteHelper {
 			const menteeTemplateCode = process.env.MENTEE_INVITATION_EMAIL_TEMPLATE_CODE || null
 
 			const [mentorTemplateData, menteeTemplateData] = await Promise.all([
-				mentorTemplateCode ? notificationTemplateQueries.findOneEmailTemplate(mentorTemplateCode) : null,
-				menteeTemplateCode ? notificationTemplateQueries.findOneEmailTemplate(menteeTemplateCode) : null,
+				mentorTemplateCode
+					? notificationTemplateQueries.findOneEmailTemplate(mentorTemplateCode, user.organization_id)
+					: null,
+				menteeTemplateCode
+					? notificationTemplateQueries.findOneEmailTemplate(menteeTemplateCode, user.organization_id)
+					: null,
 			])
 
 			const templates = {
@@ -196,23 +203,47 @@ module.exports = class UserInviteHelper {
 					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
 					isErrorOccured = true
 
-					if (existingUser.organization_id === defaultOrgId) {
-						const userUpdateData = {
-							organization_id: user.organization_id,
-							roles: roleTitlesToIds[invitee.roles],
-							refresh_tokens: [],
+					const isOrganizationMatch =
+						existingUser.organization_id === defaultOrgId ||
+						existingUser.organization_id === user.organization_id
+					if (isOrganizationMatch) {
+						let userUpdateData = {}
+						if (existingUser.organization_id != user.organization_id) {
+							userUpdateData.organization_id = user.organization_id
+							userUpdateData.refresh_tokens = []
+						}
+						const areAllElementsInArray = _.every(roleTitlesToIds[invitee.roles], (element) =>
+							_.includes(existingUser.roles, element)
+						)
+						if (!areAllElementsInArray) {
+							userUpdateData.roles = roleTitlesToIds[invitee.roles]
+							userUpdateData.refresh_tokens = []
 						}
 
-						await userQueries.updateUser({ email: invitee.email }, userUpdateData)
-						//call event to update in mentoring
-						eventBroadcaster('roleChange', {
-							requestBody: {
-								userId: requestDetails.requester_id,
-								new_roles: [title],
-								old_roles: _.map(userRoles, 'title'),
-								org_id: user.organization_id,
-							},
-						})
+						if (userUpdateData.organization_id || userUpdateData.roles) {
+							await userQueries.updateUser({ email: invitee.email }, userUpdateData)
+							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
+							//call event to update in mentoring
+							if (!userUpdateData?.roles) {
+								eventBroadcaster('updateOrganization', {
+									requestBody: {
+										user_id: existingUser.id,
+										org_id: existingUser.organization_id,
+										roles: _.map(userRoles, 'title'),
+									},
+								})
+							} else {
+								let requestBody = {
+									userId: existingUser.id,
+									new_roles: [invitee.roles],
+									old_roles: _.map(userRoles, 'title'),
+								}
+								if (userUpdateData.organization_id) requestBody.org_id = user.organization_id
+								eventBroadcaster('roleChange', {
+									requestBody,
+								})
+							}
+						}
 					}
 				} else {
 					//create new invitees

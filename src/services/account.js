@@ -558,7 +558,8 @@ module.exports = class AccountHelper {
 			}
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.OTP_EMAIL_TEMPLATE_CODE
+				process.env.OTP_EMAIL_TEMPLATE_CODE,
+				user.organization_id
 			)
 
 			if (templateData) {
@@ -636,7 +637,8 @@ module.exports = class AccountHelper {
 			}
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
+				process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
+				user.organization_id
 			)
 
 			if (templateData) {
