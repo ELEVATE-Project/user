@@ -83,6 +83,7 @@ module.exports = {
 	roleAssociationModel: 'UserRole',
 	roleAssociationName: 'user_roles',
 	activeStatus: 'ACTIVE',
+	inactiveStatus: 'INACTIVE',
 	roleMentor: 'mentor',
 	roleMentee: 'mentee',
 	redisUserPrefix: 'user_',
@@ -105,4 +106,6 @@ module.exports = {
 	inviteeOutputFile: 'output-user-invite',
 	csvExtension: '.csv',
 	deactivateFreezingPeriod: 86400000,
+	deactivateAction: 'deactivateUser',
+	ok: 'OK',
 }

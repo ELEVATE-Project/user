@@ -164,7 +164,7 @@ module.exports = class AccountHelper {
 			}
 
 			await userQueries.updateUser({ id: user.id }, update)
-			// await utilsHelper.redisDel(email)
+			await utilsHelper.redisDel(email)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
@@ -479,7 +479,7 @@ module.exports = class AccountHelper {
 					redisData,
 					common.otpExpirationTime
 				)
-				if (res !== 'OK') {
+				if (res !== common.ok) {
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
@@ -557,7 +557,7 @@ module.exports = class AccountHelper {
 					redisData,
 					common.otpExpirationTime
 				)
-				if (res !== 'OK') {
+				if (res !== common.ok) {
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
@@ -992,10 +992,12 @@ module.exports = class AccountHelper {
 	 */
 	static async deactivate(bodyData) {
 		const projection = []
-		const today = new Date()
-		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+		const today = new Date() // current date to check the freezing time
+		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase()) // get the data of user from with email
 		try {
-			if (userRedisData && userRedisData.action == 'deactivateUser' && userRedisData.otp == bodyData.otp) {
+			// if user data with action deactivate OTP and the OTP passed matches
+			if (userRedisData && userRedisData.action == common.deactivateAction && userRedisData.otp == bodyData.otp) {
+				// fetch the ACTIVE user details with the email
 				let user = await userQueries.findOne(
 					{ email: bodyData.email, status: common.activeStatus },
 					{
@@ -1004,6 +1006,8 @@ module.exports = class AccountHelper {
 						},
 					}
 				)
+
+				// if there is no active users with the given email in the DB return failure response
 				if (!user) {
 					return common.failureResponse({
 						message: 'NOT_ACTIVE_USER',
@@ -1011,32 +1015,45 @@ module.exports = class AccountHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				let updateUser = false
+				let updateUser = false // update user flag to proceed after freezing period check.
+
+				// check if the user status was not updated within the freezing period
 				if (user.status_updated_at && today - user.status_updated_at > common.deactivateFreezingPeriod) {
+					// proceed if the time delta is above the freezing period
 					updateUser = true
 				} else if (user.status_updated_at == null) {
+					// proceed if the status of the user was never modified
 					updateUser = true
 				} else {
+					// DO NOT proceed if the time delta is below the freezing period
 					updateUser = false
 				}
 
+				// update the user based on flag
 				if (updateUser) {
+					// call the update function modify the status and time of update
 					const [affectedRows, updatedData] = await userQueries.updateUser(
 						{ email: bodyData.email },
-						{ status: 'INACTIVE', status_updated_at: today }
+						{ status: common.inactiveStatus, status_updated_at: today }
 					)
+
+					await utilsHelper.redisDel(bodyData.email) //delete the redis data after update.
+
+					// return the success response
 					return common.successResponse({
 						statusCode: httpStatusCode.ok,
 						message: 'USER_DEACTIVATED',
 						user: user,
 					})
 				} else {
+					// return the failure response as the flag is false
 					return common.failureResponse({
 						statusCode: httpStatusCode.bad_request,
 						message: 'Account cannot be deactivated',
 					})
 				}
 			} else {
+				// return the message : user is in freezing period
 				return common.failureResponse({
 					message: 'USER_IN_FREEZING_PERIOD',
 					statusCode: httpStatusCode.bad_request,
@@ -1058,8 +1075,12 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ email: bodyData.email })
+			// get the details of user from DB if the user is ACTIVE
+			const user = await userQueries.findOne({ email: bodyData.email, status: common.activeStatus })
+
+			// check if the user data is present and the user is active
 			if (!user) {
+				// retur failure response
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -1067,26 +1088,33 @@ module.exports = class AccountHelper {
 				})
 			}
 
+			// fetch the user entires from redis
 			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
 
-			if (userData && userData.action === 'deactivateUser') {
+			// check if the user have an OTP for deactivate functionality
+			if (userData && userData.action === common.deactivateAction) {
 				otp = userData.otp // If valid then get previuosly generated otp
 			} else {
-				isValidOtpExist = false
+				isValidOtpExist = false // if no data found in redis , set this flag flase to generate new OTP
 			}
+
 			if (!isValidOtpExist) {
 				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
+				// prepare data to be saved in redis
 				const redisData = {
 					verify: bodyData.email.toLowerCase(),
-					action: 'deactivateUser',
+					action: common.deactivateAction,
 					otp,
 				}
+				// set the value to redis
 				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
 					redisData,
 					common.otpExpirationTime
 				)
-				if (res !== 'OK') {
+				// check if the  data is successfully set in redis
+				if (res !== common.ok) {
+					// return failure response
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
@@ -1094,11 +1122,39 @@ module.exports = class AccountHelper {
 					})
 				}
 			}
-			return common.successResponse({
-				statusCode: httpStatusCode.created,
-				message: 'DEACTIVATE_OTP_SENT_SUCCESSFULLY',
-				result: '',
-			})
+
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.DEACTIVATION_OTP_EMAIL_TEMPLATE_CODE
+			)
+
+			if (templateData) {
+				// Push successfull deactivation email to kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: bodyData.email.toLowerCase(),
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, {
+							name: bodyData.name,
+							appName: process.env.APP_NAME,
+						}),
+					},
+				}
+				let kafkaResponse = await kafkaCommunication.pushEmailToKafka(payload)
+				// return success response
+				return common.successResponse({
+					statusCode: httpStatusCode.created,
+					message: 'DEACTIVATE_OTP_SENT_SUCCESSFULLY',
+					result: '',
+				})
+			} else {
+				// return failure response - email template not present
+				return common.failureResponse({
+					message: 'UNABLE_TO_SEND_OTP',
+					statusCode: httpStatusCode.internal_server_error,
+					responseCode: 'SERVER_ERROR',
+				})
+			}
 		} catch (error) {
 			throw error
 		}
