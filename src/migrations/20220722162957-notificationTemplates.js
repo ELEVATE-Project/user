@@ -15,6 +15,11 @@ let emailTemplates = [
 		body: '<div><p>Dear {name},</p> Your OTP to complete the registration process is {otp}. Please enter the OTP to complete the registration. For your security, please do not share this OTP with anyone.</div>',
 	},
 	{
+		code: 'deactivationotp',
+		subject: 'Your OTP to deactivate your account on MentorED',
+		body: '<div><p>Dear {name},</p> Your OTP to deactivate your account is {otp}. Please enter the OTP to deactivate. For your security, please do not share this OTP with anyone.</div>',
+	},
+	{
 		code: 'user_issue_reported',
 		subject: 'Support request for MentorED',
 		body: '<div><p>Hi Team,</p>{role} {name} is facing issue in <b>{description}</b>-{userEmailId} in 2.1 version of MentorED.</div>',
