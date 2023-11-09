@@ -233,4 +233,43 @@ module.exports = class Account {
 			return error
 		}
 	}
+
+	/**
+	 * otp to verify user during registration
+	 * @method
+	 * @name reactivateOtp
+	 * @param {Object} req -request data.
+	 * @param {String} req.body.email - user email.
+	 * @returns {JSON} - otp success response
+	 */
+
+	async reActivateOtp(req) {
+		const params = req.body
+		try {
+			const result = await accountService.reActivateOtp(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * create mentee account
+	 * @method
+	 * @name reactivate
+	 * @param {Object} req -request data.
+	 * @param {String} req.body.email - user email.
+	 * @param {String} req.body.otp - otp.
+	 * @returns {JSON} - response contains account creation details.
+	 */
+
+	async reActivate(req) {
+		const params = req.body
+		try {
+			const result = await accountService.reActivateAccount(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }

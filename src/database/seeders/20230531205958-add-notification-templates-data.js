@@ -24,6 +24,11 @@ module.exports = {
 				body: '<div><p>Hi Team,</p>{role} {name} is facing an issue in <b>{description}</b>-{userEmailId} in version 2.1 of MentorED.</div>',
 			},
 			{
+				code: 'reactivateotp',
+				subject: 'Your OTP to reactivate on MentorED',
+				body: '<div><p>Dear {name},</p> Your OTP to complete the reactivation process is {otp}. Please enter the OTP to complete the reactivation. For your security, please do not share this OTP with anyone.</div>',
+			},
+			{
 				code: 'email_footer',
 				body: "</div><div style='margin-top:20px;text-align:center;'><div>Regards,</div><div>Team MentorED</div><div style='margin-top:20px;color:#b13e33;text-align:center'><div>Note: Do not reply to this email. This email is sent from an unattended mailbox. Replies will not be read.</div><div>For any queries, please feel free to reach out to us at support@shikshalokam.org</div></div></div></div>",
 			},

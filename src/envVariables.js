@@ -39,6 +39,10 @@ let enviromentVariables = {
 		message: 'Required otp email template code',
 		optional: false,
 	},
+	REACTIVATION_OTP_EMAIL_TEMPLATE_CODE: {
+		message: 'Required reactivate email template code',
+		optional: false,
+	},
 	KAFKA_URL: {
 		message: 'Required kafka connectivity url',
 		optional: false,

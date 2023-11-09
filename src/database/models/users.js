@@ -1,4 +1,7 @@
 'use strict'
+
+const { DATE } = require('sequelize')
+
 module.exports = (sequelize, DataTypes) => {
 	const User = sequelize.define(
 		'User',
@@ -41,6 +44,8 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.BOOLEAN,
 				defaultValue: false,
 			},
+			activated_at: DataTypes.DATE,
+			deactivated_at: { type: DataTypes.DATE, allowNull: false },
 			refresh_tokens: DataTypes.ARRAY(DataTypes.JSONB),
 			languages: DataTypes.ARRAY(DataTypes.STRING),
 			preferred_language: {

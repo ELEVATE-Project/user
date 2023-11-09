@@ -47,6 +47,8 @@ module.exports = {
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
 		'/user/v1/userRole/list',
+		'/user/v1/account/reActivate',
+		'/user/v1/account/reActivateOtp',
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',
@@ -61,6 +63,7 @@ module.exports = {
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
 	refreshTokenLimit: 3,
+	randomOtp: Math.floor(Math.random() * 900000 + 100000), // 6-digit OTP
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
 	roleAdmin: 'admin',
 	roleUser: 'user',
@@ -83,6 +86,7 @@ module.exports = {
 	roleAssociationModel: 'UserRole',
 	roleAssociationName: 'user_roles',
 	activeStatus: 'ACTIVE',
+	action: 'reactivation',
 	inactiveStatus: 'INACTIVE',
 	roleMentor: 'mentor',
 	roleMentee: 'mentee',
@@ -106,4 +110,5 @@ module.exports = {
 	inviteeOutputFile: 'output-user-invite',
 	csvExtension: '.csv',
 	backoffRetryQueue: 600000,
+	activation_limit_time: 86400000,
 }

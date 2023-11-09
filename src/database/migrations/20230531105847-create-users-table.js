@@ -91,6 +91,12 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
+			activated_at: {
+				type: Sequelize.DATE,
+			},
+			deactivated_at: {
+				type: Sequelize.DATE,
+			},
 		})
 	},
 	async down(queryInterface, Sequelize) {
