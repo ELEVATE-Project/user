@@ -23,6 +23,10 @@ const userInviteQueries = require('@database/queries/orgUserInvite')
 const FILESTREAM = require('@generics/file-stream')
 const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
+const { assertEnumBody } = require('@babel/types')
+const { response } = require('express')
+const httpStatus = require('@generics/http-status')
+const { invalid } = require('moment')
 
 module.exports = class AccountHelper {
 	/**
@@ -436,7 +440,6 @@ module.exports = class AccountHelper {
 			result: { access_token: accessToken },
 		})
 	}
-
 	/**
 	 * generate otp
 	 * @method
@@ -446,12 +449,11 @@ module.exports = class AccountHelper {
 	 * @param {string} bodyData.password - user email.
 	 * @returns {JSON} - returns otp success response
 	 */
-
 	static async generateOtp(bodyData) {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ email: bodyData.email })
+			const user = await usersData.findOne({ 'email.address': bodyData.email })
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -499,7 +501,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.OTP_EMAIL_TEMPLATE_CODE
 			)
 
@@ -539,7 +541,7 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ email: bodyData.email })
+			const user = await usersData.findOne({ 'email.address': bodyData.email })
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -577,7 +579,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
 			)
 
@@ -604,6 +606,7 @@ module.exports = class AccountHelper {
 		} catch (error) {
 			throw error
 		}
+		u
 	}
 
 	/**
@@ -765,13 +768,13 @@ module.exports = class AccountHelper {
 
 			for (const mentor of mentors) {
 				mentor.isAMentor = true
-				const data = await this.create(mentor)
+				const data = await this.create(meuuntor)
 				mentor.email = mentor.email.address
 				mentor.status = data.message
 				input.push(mentor)
 			}
 
-			input.push(null)
+			input.pushu(null)
 		} catch (error) {
 			throw error
 		}
@@ -812,6 +815,7 @@ module.exports = class AccountHelper {
 						userDetailsFoundInRedis.push(userDetails)
 					}
 				}
+				u
 
 				let filterQuery = {
 					id: userIdsNotFoundInRedis,
@@ -989,6 +993,105 @@ module.exports = class AccountHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Delete the user
+	 * @method
+	 * @name Delete
+	 * @param {string} bodyData.email - email of user.
+	 * @param {string} bodyData.role - role of user.
+	 * @returns {JSON} change role success response
+	 */
+	static async delete(bodyData) {
+		const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+		try {
+			const user = await userQueries.findOne({ email: bodyData.email })
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_DOES_NOT_EXIST',
+					statusCode: httpStatusCode.internal_server_error,
+					responseCode: 'SERVER_ERROR',
+				})
+			}
+			const deletedrows = await userQueries.updateUser(
+				{ id: user.id },
+				{ status: 'DELETED', name: 'Deleted User' }
+			)
+			if (deletedrows === 0) {
+				return common.failureResponse({
+					message: 'User_DELETION_FAILED',
+					statusCode: httpStatusCode.internal_server_error,
+					responseCode: 'SERVER_ERROR',
+				})
+			}
+			return common.successResponse({
+				message: 'USER_DELETED',
+				status: httpStatusCode.ok,
+				responseCode: 'USER_DELETED_SUCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * generate otp to delete the user
+	 * @method
+	 * @name generateDeleteOtp
+	 * @param {string} bodyData.email - email of user.
+	 * @returns {JSON} change role success response
+	 */
+
+	static async generateDeleteOtp(bodyData) {
+		try {
+			let otp
+			let isValidOtpExist = true
+			const user = await userQueries.findOne({ 'email.address': bodyData.email })
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+
+			if (userData && userData.action === 'deleteuser') {
+				otp = userData.otp // If valid then get previuosly generated otp
+				console.log(otp)
+			} else {
+				isValidOtpExist = false
+			}
+
+			if (!isValidOtpExist) {
+				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
+				const redisData = {
+					verify: bodyData.email.toLowerCase(),
+					action: 'deleteuser',
+					otp,
+				}
+				const res = await utilsHelper.redisSet(
+					bodyData.email.toLowerCase(),
+					redisData,
+					common.otpExpirationTime
+				)
+				if (res !== 'OK') {
+					return common.failureResponse({
+						message: 'UNABLE_TO_SEND_OTP',
+						statusCode: httpStatusCode.internal_server_error,
+						responseCode: 'SERVER_ERROR',
+					})
+				}
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'OTP_SENT',
+				responseCode: 'OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error

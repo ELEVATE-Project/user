@@ -7,6 +7,7 @@
 
 // Dependencies
 const accountService = require('@services/account')
+const AccountHelper = require('@services/account')
 const csv = require('csvtojson')
 
 module.exports = class Account {
@@ -228,6 +229,32 @@ module.exports = class Account {
 		const params = req.body
 		try {
 			const result = await accountService.registrationOtp(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+	/**
+	 * change the user status as delete
+	 * @method
+	 * @name delete
+	 * @param {Object} req -request data.
+	 * @param {String} req.body.email - user email.
+	 * @returns {JSON} - otp success response
+	 */
+	async delete(req) {
+		const params = req.body
+		try {
+			const result = await AccountHelper.delete(params)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+	async generateDeleteOtp(req) {
+		const params = req.body
+		try {
+			const result = await AccountHelper.generateDeleteOtp(params)
 			return result
 		} catch (error) {
 			return error
