@@ -10,6 +10,7 @@ const OrganisationExtensionQueries = require('@database/queries/organisationExte
 const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
+const _ = require('lodash')
 
 module.exports = class OrgAdminService {
 	/**
@@ -50,7 +51,7 @@ module.exports = class OrgAdminService {
 		try {
 			// Check current role based on that swap data
 			// If current role is mentor validate data from mentor_extenion table
-			const mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
+			let mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
 			// If such mentor return error
 			if (!mentorDetails) {
 				return common.failureResponse({
@@ -62,6 +63,27 @@ module.exports = class OrgAdminService {
 
 			if (bodyData.org_id) {
 				mentorDetails.org_id = bodyData.org_id
+				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.org_id)
+				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+					return common.failureResponse({
+						message: 'ORGANIZATION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const orgPolicies = await OrganisationExtensionQueries.getById(bodyData.org_id)
+				if (!orgPolicies?.org_id) {
+					return common.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				mentorDetails.org_id = bodyData.org_id
+				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
+				mentorDetails = _.merge({}, mentorDetails, newPolicy)
+				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
 			}
 
 			// Add fetched mentor details to user_extension table
@@ -108,7 +130,7 @@ module.exports = class OrgAdminService {
 	static async changeRoleToMentor(bodyData) {
 		try {
 			// Get mentee_extension data
-			const menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
+			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return common.failureResponse({
@@ -118,7 +140,27 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.org_id) {
+				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.org_id)
+				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+					return common.failureResponse({
+						message: 'ORGANIZATION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const orgPolicies = await OrganisationExtensionQueries.getById(bodyData.org_id)
+				if (!orgPolicies?.org_id) {
+					return common.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				menteeDetails.org_id = bodyData.org_id
+				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
+				menteeDetails = _.merge({}, menteeDetails, newPolicy)
+				menteeDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
 			}
 
 			// Add fetched mentee details to mentor_extension table
@@ -320,7 +362,7 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
-			const orgId = bodyData.organization_id
+			const orgId = bodyData.org_id
 
 			// Get organization details
 			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
@@ -407,8 +449,8 @@ module.exports = class OrgAdminService {
 			console.log(error)
 			throw error
 		}
-  }
-
+	}
+	/**
 	 * @description 							- constuct organisation policy object for mentor_extension/user_extension.
 	 * @method
 	 * @name 									- constructOrgPolicyObject

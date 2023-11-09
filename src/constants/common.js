@@ -127,5 +127,7 @@ module.exports = {
 		approval_required_for: [],
 	},
 	CURRENT: 'CURRENT',
-	ALL: 'ALL'
+	ALL: 'ALL',
+	PATCH_METHOD: 'PATCH',
+	GET_METHOD: 'GET',
 }
