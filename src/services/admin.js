@@ -198,7 +198,6 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			let organization = await organizationQueries.findByPk(organizationId)
 			if (!organization?.id) {
 				return common.failureResponse({
@@ -209,7 +208,7 @@ module.exports = class AdminHelper {
 			}
 
 			const userOrg = await organizationQueries.findByPk(user.organization_id)
-			if (!userOrg?.id) {
+			if (!userOrg) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -291,6 +290,7 @@ module.exports = class AdminHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

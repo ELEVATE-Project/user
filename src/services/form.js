@@ -4,6 +4,7 @@ const formQueries = require('@database/queries/form')
 const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const form = require('@generics/form')
+const organizationQueries = require('@database/queries/organization')
 
 module.exports = class FormsHelper {
 	/**
@@ -89,16 +90,19 @@ module.exports = class FormsHelper {
 
 	static async read(id, bodyData, orgId) {
 		try {
-			let filter = {}
-
-			if (id) {
-				filter = { id: id, org_id: orgId }
-			} else {
-				filter = { ...bodyData, org_id: orgId }
-			}
-
+			let filter = id ? { id: id, org_id: orgId } : { ...bodyData, org_id: orgId }
 			const form = await formQueries.findOne(filter)
+			let defaultOrgForm
 			if (!form) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
+				)
+				let defaultOrgId = defaultOrg.id
+				filter = id ? { id: id, org_id: defaultOrgId } : { ...bodyData, org_id: defaultOrgId }
+				defaultOrgForm = await formQueries.findOne(filter)
+			}
+			if (!form && !defaultOrgForm) {
 				return common.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -108,9 +112,10 @@ module.exports = class FormsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_FETCHED_SUCCESSFULLY',
-				result: form ? form : {},
+				result: form ? form : defaultOrgForm,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

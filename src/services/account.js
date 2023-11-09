@@ -23,6 +23,8 @@ const userInviteQueries = require('@database/queries/orgUserInvite')
 const FILESTREAM = require('@generics/file-stream')
 const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
+const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 
 module.exports = class AccountHelper {
 	/**
@@ -175,7 +177,8 @@ module.exports = class AccountHelper {
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
+				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+				user.organization_id
 			)
 
 			if (templateData) {
@@ -201,6 +204,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -305,13 +309,21 @@ module.exports = class AccountHelper {
 			delete user.password
 			delete user.refresh_tokens
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				user.organization_id
+			//Change to
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
 			)
-			user = utils.processDbResponse(user, validationData)
+			let defaultOrgId = defaultOrg.id
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [user.organization_id, defaultOrgId],
+				},
+			})
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			user = utils.processDbResponse(user, prunedEntities)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -321,6 +333,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
