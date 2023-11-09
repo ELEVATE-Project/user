@@ -342,6 +342,7 @@ module.exports = class MenteesHelper {
 			if (sessions.length === 0) {
 				return sessions
 			}
+
 			let userPolicyDetails
 			// If user is mentor - fetch policy details from mentor extensions else fetch from userExtension
 			if (isAMentor) {
@@ -373,27 +374,29 @@ module.exports = class MenteesHelper {
 				}
 			}
 
-			// Filter sessions based on policy
-			const filteredSessions = await Promise.all(
-				sessions.map(async (session) => {
-					let enrolled = session.is_enrolled ? session.is_enrolled : false
-					if (
-						session.visibility === common.CURRENT ||
-						(session.visibility === common.ALL &&
-							userPolicyDetails.external_session_visibility === common.CURRENT)
-					) {
-						// Check if the session's mentor organization matches the user's organization.
-						if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
+			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
+				// Filter sessions based on policy
+				const filteredSessions = await Promise.all(
+					sessions.map(async (session) => {
+						let enrolled = session.is_enrolled ? session.is_enrolled : false
+						if (
+							session.visibility === common.CURRENT ||
+							(session.visibility === common.ALL &&
+								userPolicyDetails.external_session_visibility === common.CURRENT)
+						) {
+							// Check if the session's mentor organization matches the user's organization.
+							if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
+								return session
+							}
+						} else {
 							return session
 						}
-					} else {
-						return session
-					}
-				})
-			)
-			// Remove any undefined elements (sessions that didn't meet the conditions)
-			const result = filteredSessions.filter((session) => session !== undefined)
-			return result
+					})
+				)
+				// Remove any undefined elements (sessions that didn't meet the conditions)
+				sessions = filteredSessions.filter((session) => session !== undefined)
+			}
+			return sessions
 		} catch (err) {
 			return err
 		}
