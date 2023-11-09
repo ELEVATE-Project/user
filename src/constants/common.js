@@ -106,4 +106,6 @@ module.exports = {
 	inviteeOutputFile: 'output-user-invite',
 	csvExtension: '.csv',
 	BACK_OFF_RETRY_QUEUE: 600000,
+	PATCH_METHOD: 'PATCH',
+	GET_METHOD: 'GET',
 }
