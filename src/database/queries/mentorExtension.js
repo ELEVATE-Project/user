@@ -16,15 +16,14 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async updateMentorExtension(userId, data, options = {}) {
+	static async updateMentorExtension(userId, data, options = {}, customFilter = {}) {
 		try {
 			if (data.user_id) {
 				delete data['user_id']
 			}
+			const whereClause = customFilter ? customFilter : { user_id: userId };
 			return await MentorExtension.update(data, {
-				where: {
-					user_id: userId,
-				},
+				where: whereClause,
 				...options,
 			})
 		} catch (error) {
@@ -32,12 +31,18 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async getMentorExtension(userId) {
+	static async getMentorExtension(userId, attributes = []) {
 		try {
-			const mentor = await MentorExtension.findOne({
+			const queryOptions = {
 				where: { user_id: userId },
 				raw: true,
-			})
+			};
+	
+			// If attributes are passed update query
+			if (attributes.length > 0) {
+				queryOptions.attributes = attributes;
+			}
+			const mentor = await MentorExtension.findOne(queryOptions)
 			return mentor
 		} catch (error) {
 			throw error
@@ -70,10 +75,11 @@ module.exports = class MentorExtensionQueries {
 					tags: [],
 					configs: null,
 					visibility: null,
-					organisation_ids: [],
+					visible_to_organizations: [],
 					external_session_visibility: null,
 					external_mentor_visibility: null,
 					deleted_at: Date.now(),
+					org_id,
 				},
 				{
 					where: {

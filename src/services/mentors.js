@@ -9,6 +9,12 @@ const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const sessionQueries = require('@database/queries/sessions')
 const entityTypeQueries = require('@database/queries/entityType')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const orgAdminService = require('@services/org-admin')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const usersService = require('@services/users')
 
 module.exports = class MentorsHelper {
 	/**
@@ -253,15 +259,38 @@ module.exports = class MentorsHelper {
 	 */
 	static async createMentorExtension(data, userId, orgId) {
 		try {
-			data.user_id = userId
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			// Call user service to fetch organisation details --SAAS related changes
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			// Return error if user org does not exists
+			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
+				return common.failureResponse({
+					message: 'ORGANISATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Find organisation policy from organisation_extension table
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+
+			data.user_id = userId
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(data, validationData, 'mentor_extensions')
 			if (!res.success) {
@@ -274,6 +303,16 @@ module.exports = class MentorsHelper {
 			}
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
+
+			// construct saas policy data
+			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
+
+			// update mentee extension data
+			data = {
+				...data,
+				...saasPolicyData,
+				visible_to_organizations: userOrgDetails.data.result.related_orgs,
+			}
 
 			const response = await mentorQueries.createMentorExtension(data)
 
@@ -306,9 +345,21 @@ module.exports = class MentorsHelper {
 	 */
 	static async updateMentorExtension(data, userId, orgId) {
 		try {
-			if (data.user_id) {
-				delete data['user_id']
-			}
+			// Remove certain data in case it is getting passed
+			const dataToRemove = [
+				'user_id',
+				'visibility',
+				'visible_to_organizations',
+				'external_session_visibility',
+				'external_mentor_visibility',
+			]
+
+			dataToRemove.forEach((key) => {
+				if (data[key]) {
+					delete data[key]
+				}
+			})
+
 			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
 				returning: true,
 				raw: true,
@@ -320,15 +371,24 @@ module.exports = class MentorsHelper {
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
 				})
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
+
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
 				},
-				orgId
-			)
+			})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
-
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 
 			data = utils.restructureBody(updatedMentor[0], validationData, mentorExtensionsModel)
@@ -396,14 +456,44 @@ module.exports = class MentorsHelper {
 	}
 
 	/**
-	 * Profile.
+	 * Read.
 	 * @method
-	 * @name profile
-	 * @param {String} userId - user id.
-	 * @returns {JSON} - profile details
+	 * @name read
+	 * @param {Number} id 						- mentor id.
+	 * @param {Number} orgId 					- org_id
+	 * @param {Number} userId 					- User id.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- profile details
 	 */
-	static async read(id, orgId) {
+	static async read(id, orgId, userId = '', isAMentor = '') {
 		try {
+			if (userId !== '' && isAMentor !== '') {
+				// Get mentor visibility and org_id
+				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, ['visibility', 'org_id'])
+
+				// Throw error if extension not found
+				if (Object.keys(requstedMentorExtension).length === 0) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'MENTORS_NOT_FOUND',
+					})
+				}
+
+				requstedMentorExtension = await usersService.filterMentorListBasedOnSaasPolicy(
+					[requstedMentorExtension],
+					userId,
+					isAMentor
+				)
+
+				// Throw access error
+				if (requstedMentorExtension.length === 0) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'PROFILE_RESTRICTED',
+					})
+				}
+			}
+
 			let mentorProfile = await userRequests.details('', id)
 			if (!mentorProfile.data.result) {
 				return common.failureResponse({
@@ -425,15 +515,25 @@ module.exports = class MentorsHelper {
 			}
 			mentorProfile = utils.deleteProperties(mentorProfile.data.result, ['created_at', 'updated_at'])
 
-			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'organisation_ids'])
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			mentorExtension = utils.deleteProperties(mentorExtension, ['user_id', 'visible_to_organizations'])
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)

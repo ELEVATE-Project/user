@@ -3,6 +3,9 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entityTypeQueries = require('../database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
+const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 
 module.exports = class EntityHelper {
 	/**
@@ -104,28 +107,39 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readUserEntityTypes(body, userId, organization_id) {
+	static async readUserEntityTypes(body, userId, orgId) {
 		try {
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
 			const filter = {
 				value: body.value,
-				created_by: 0,
 				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
 			}
-			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter, organization_id)
-
-			if (!entities.length) {
+			const entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			if (!entityTypes.length) {
 				return common.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const prunedEntities = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
-				result: { entity_types: entities },
+				result: { entity_types: prunedEntities },
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

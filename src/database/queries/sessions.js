@@ -503,6 +503,8 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 				'mentor_id',
 				'created_at',
 				'meeting_info',
+				'visibility',
+				'mentor_org_id'
 				/* ['meetingInfo.platform', 'meetingInfo.platform'],
 				['meetingInfo.value', 'meetingInfo.value'], */
 			],

@@ -216,68 +216,80 @@ function validateInput(input, validationData, modelName) {
 	}
 }
 function restructureBody(requestBody, entityData, allowedKeys) {
-	const requestBodyKeys = Object.keys(requestBody)
+	try {
+		const requestBodyKeys = Object.keys(requestBody)
 
-	const entityValues = entityData.map((entity) => entity.value)
+		const entityValues = entityData.map((entity) => entity.value)
 
-	const requestBodyKeysExists = requestBodyKeys.some((element) => entityValues.includes(element))
+		const requestBodyKeysExists = requestBodyKeys.some((element) => entityValues.includes(element))
 
-	if (!requestBodyKeysExists) {
-		return requestBody
-	}
-	const customEntities = {}
-	requestBody.custom_entity_text = {}
-	for (const requestBodyKey in requestBody) {
-		if (requestBody.hasOwnProperty(requestBodyKey)) {
-			const requestBodyValue = requestBody[requestBodyKey]
-			const entityType = entityData.find((entity) => entity.value === requestBodyKey)
+		if (!requestBodyKeysExists) {
+			return requestBody
+		}
+		const customEntities = {}
+		requestBody.custom_entity_text = {}
+		for (const requestBodyKey in requestBody) {
+			if (requestBody.hasOwnProperty(requestBodyKey)) {
+				const requestBodyValue = requestBody[requestBodyKey]
+				const entityType = entityData.find((entity) => entity.value === requestBodyKey)
 
-			if (entityType && entityType.allow_custom_entities) {
-				if (Array.isArray(requestBodyValue)) {
-					const customValues = []
+				if (entityType && entityType.allow_custom_entities) {
+					if (Array.isArray(requestBodyValue)) {
+						const customValues = []
 
-					for (const value of requestBodyValue) {
-						const entityExists = entityType.entities.find((entity) => entity.value === value)
+						for (const value of requestBodyValue) {
+							const entityExists = entityType.entities.find((entity) => entity.value === value)
 
-						if (!entityExists) {
-							customEntities.custom_entity_text = customEntities.custom_entity_text || {}
-							customEntities.custom_entity_text[requestBodyKey] =
-								customEntities.custom_entity_text[requestBodyKey] || []
-							customEntities.custom_entity_text[requestBodyKey].push({
-								value: 'other',
-								label: value,
-							})
-							customValues.push(value)
+							if (!entityExists) {
+								customEntities.custom_entity_text = customEntities.custom_entity_text || {}
+								customEntities.custom_entity_text[requestBodyKey] =
+									customEntities.custom_entity_text[requestBodyKey] || []
+								customEntities.custom_entity_text[requestBodyKey].push({
+									value: 'other',
+									label: value,
+								})
+								customValues.push(value)
+							}
+						}
+
+						if (customValues.length > 0) {
+							// Remove customValues from the original array
+							requestBody[requestBodyKey] = requestBody[requestBodyKey].filter(
+								(value) => !customValues.includes(value)
+							)
+						}
+						for (const value of requestBodyValue) {
+							const entityExists = entityType.entities.find((entity) => entity.value === value)
+
+							if (!entityExists) {
+								if (!requestBody[requestBodyKey].includes('other')) {
+									requestBody[requestBodyKey].push('other')
+								}
+							}
 						}
 					}
-
-					if (customValues.length > 0) {
-						// Remove customValues from the original array
-						requestBody[requestBodyKey] = requestBody[requestBodyKey].filter(
-							(value) => !customValues.includes(value)
-						)
-					}
 				}
-			}
 
-			if (Array.isArray(requestBodyValue)) {
-				const entityTypeExists = entityData.find((entity) => entity.value === requestBodyKey)
+				if (Array.isArray(requestBodyValue)) {
+					const entityTypeExists = entityData.find((entity) => entity.value === requestBodyKey)
 
-				// Always move the key to the meta field if it's not allowed and is not a custom entity
-				if (!allowedKeys.includes(requestBodyKey) && entityTypeExists) {
-					requestBody.meta = {
-						...(requestBody.meta || {}),
-						[requestBodyKey]: requestBody[requestBodyKey],
+					// Always move the key to the meta field if it's not allowed and is not a custom entity
+					if (!allowedKeys.includes(requestBodyKey) && entityTypeExists) {
+						requestBody.meta = {
+							...(requestBody.meta || {}),
+							[requestBodyKey]: requestBody[requestBodyKey],
+						}
+						delete requestBody[requestBodyKey]
 					}
-					delete requestBody[requestBodyKey]
 				}
 			}
 		}
+		// Merge customEntities into requestBody
+		Object.assign(requestBody, customEntities)
+		return requestBody
+	} catch (error) {
+		console.error(error)
 	}
-
-	// Merge customEntities into requestBody
-	Object.assign(requestBody, customEntities)
-	return requestBody
 }
 
 function processDbResponse(session, entityType) {
@@ -414,6 +426,7 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	if (!Array.isArray(requiredRoles)) {
 		requiredRoles = [requiredRoles]
 	}
+  
 	// Check the type of the first element.
 	const firstElementType = typeof roles[0]
 	if (firstElementType === 'object') {
@@ -421,7 +434,18 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	} else {
 		return roles.some((role) => requiredRoles.includes(role))
 	}
+
 }
+
+const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
+	const entityTypeMap = new Map()
+	entityTypes.forEach((entityType) => {
+		if (!entityTypeMap.has(entityType.value)) entityTypeMap.set(entityType.value, entityType)
+		else if (entityType.org_id === orgId) entityTypeMap.set(entityType.value, entityType)
+	})
+	return Array.from(entityTypeMap.values())
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -453,4 +477,5 @@ module.exports = {
 	deleteProperties,
 	generateCheckSum,
 	validateRoleAccess,
+	removeDefaultOrgEntityTypes,
 }

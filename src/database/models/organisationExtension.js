@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			org_id: {
 				allowNull: false,
-				autoIncrement: true,
 				primaryKey: true,
 				type: DataTypes.INTEGER,
 			},

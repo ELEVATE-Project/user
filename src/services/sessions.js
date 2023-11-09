@@ -26,6 +26,10 @@ const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
 const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const menteesService = require('@services/mentees')
 
 module.exports = class SessionsHelper {
 	/**
@@ -77,14 +81,23 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(bodyData, validationData, 'sessions')
 			if (!res.success) {
@@ -110,13 +123,29 @@ module.exports = class SessionsHelper {
 			}
 
 			bodyData['mentor_org_id'] = orgId
+			// SAAS changes; Include visibility and visible organisations
+			// Call user service to fetch organisation details --SAAS related changes
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 
+			// Return error if user org does not exists
+			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
+				return common.failureResponse({
+					message: 'ORGANISATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Find organisation policy from organisation_extension table
+			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+			bodyData.visibility = organisationPolicy.session_visibility_policy
+			bodyData.visible_to_organizations = userOrgDetails.data.result.related_orgs
 			const data = await sessionQueries.create(bodyData)
 
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
 			})
+
 			await this.setMentorPassword(data.id, data.mentor_id)
 			await this.setMenteePassword(data.id, data.created_at)
 
@@ -149,6 +178,7 @@ module.exports = class SessionsHelper {
 				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -211,14 +241,24 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				orgId
-			)
+			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
 			let res = utils.validateInput(bodyData, validationData, 'sessions')
 			if (!res.success) {
@@ -440,6 +480,7 @@ module.exports = class SessionsHelper {
 				message: message,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -448,12 +489,13 @@ module.exports = class SessionsHelper {
 	 * Session details.
 	 * @method
 	 * @name details
-	 * @param {String} id - Session id.
-	 * @param {String} userId - logged in user id.
-	 * @returns {JSON} - Session details
+	 * @param {String} id 						- Session id.
+	 * @param {Number} userId 					- User id.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '') {
+	static async details(id, userId = '', isAMentor = '') {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -475,17 +517,34 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			sessionDetails.is_enrolled = false
 			if (userId) {
 				let sessionAttendee = await sessionAttendeesQueries.findOne({
 					session_id: sessionDetails.id,
 					mentee_id: userId,
 				})
-				sessionDetails.is_enrolled = false
 				if (sessionAttendee) {
 					sessionDetails.is_enrolled = true
 				}
 			}
+
+			// check for accessibility
+			if (userId !== '' && isAMentor !== '') {
+				let sessionPolicyCheck = await menteesService.filterSessionsBasedOnSaasPolicy(
+					[sessionDetails],
+					userId,
+					isAMentor
+				)
+
+				// Throw access error
+				if (sessionPolicyCheck.length === 0) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'SESSION_RESTRICTED',
+					})
+				}
+			}
+
 			if (userId != sessionDetails.mentor_id) {
 				delete sessionDetails?.meeting_info?.link
 				delete sessionDetails?.meeting_info?.meta
@@ -502,15 +561,25 @@ module.exports = class SessionsHelper {
 			const mentorName = await userRequests.details('', sessionDetails.mentor_id)
 			sessionDetails.mentor_name = mentorName.data.result.name
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					created_by: 0,
-					status: 'ACTIVE',
-				},
-				sessionDetails.mentor_org_id
-			)
+			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [sessionDetails.mentor_org_id, defaultOrgId],
+				},
+			})
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			const validationData = removeDefaultOrgEntityTypes(entityTypes, sessionDetails.mentor_org_id)
 
 			const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
 
