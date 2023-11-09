@@ -339,11 +339,6 @@ module.exports = class MenteesHelper {
 	 */
 	static async filterSessionsBasedOnSaasPolicy(sessions, userId, isAMentor) {
 		try {
-			sessions = sessions.filter((session) => {
-				const visibility = session.visibility
-				return visibility === common.CURRENT || visibility === common.ALL
-			})
-
 			if (sessions.length === 0) {
 				return sessions
 			}

@@ -75,13 +75,6 @@ module.exports = class UserHelper {
 	 */
 	static async filterMentorListBasedOnSaasPolicy(userData, userId, isAMentor) {
 		try {
-			// Filter for invalid user data
-			userData = userData.filter((user) => {
-				const visibility = user.visibility
-				const org_id = user.org_id
-				return visibility === common.CURRENT || (visibility === common.ALL && org_id !== undefined)
-			})
-
 			if (userData.length === 0) {
 				return userData
 			}
