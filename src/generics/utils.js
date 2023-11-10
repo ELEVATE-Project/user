@@ -262,7 +262,8 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 							value: 'other',
 							label: currentFieldValue,
 						}
-						if (allowedKeys.includes(currentFieldName)) requestBody[currentFieldName] = 'other'
+						if (allowedKeys.includes(currentFieldName))
+							requestBody[currentFieldName] = 'other' //This should cause error at DB write
 						else requestBody.meta[currentFieldName] = 'other'
 					} else if (!allowedKeys.includes(currentFieldName))
 						requestBody.meta[currentFieldName] = currentFieldValue
