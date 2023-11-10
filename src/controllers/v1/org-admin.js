@@ -74,4 +74,43 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	/**
+	 * updateOrganization
+	 * @method
+	 * @name updateOrganization
+	 * @param {Object} req - Request data.
+	 * @param {Object} req.body - Request body containing updated policies.
+	 * @param {String} req.body.user_id - User id.
+	 * @param {String} req.body.org_id - Organization id.
+	 * @param {Array} req.body.roles - User Roles.
+	 * @returns {JSON} - Success Response.
+	 * @throws {Error} - Returns an error if the update fails.
+	 */
+	async updateOrganization(req) {
+		try {
+			const updateOrg = await orgAdminService.updateOrganization(req.body)
+			return updateOrg
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * deactivateUpcomingSession
+	 * @method
+	 * @name deactivateUpcomingSession
+	 * @param {Object} req - Request data.
+	 * @param {String} req.query.user_id - User id.
+	 * @returns {JSON} - Success Response.
+	 * @throws {Error} - Returns an error if the update fails.
+	 */
+	async deactivateUpcomingSession(req) {
+		try {
+			const response = await orgAdminService.deactivateUpcomingSession(req.query.user_id)
+			return response
+		} catch (error) {
+			return error
+		}
+	}
 }

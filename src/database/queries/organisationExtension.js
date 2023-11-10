@@ -24,6 +24,7 @@ module.exports = class OrganisationExtensionQueries {
 				where: {
 					org_id: orgId,
 				},
+				raw: true,
 			})
 			return orgPolicies
 		} catch (error) {

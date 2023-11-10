@@ -426,7 +426,15 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	if (!Array.isArray(requiredRoles)) {
 		requiredRoles = [requiredRoles]
 	}
-	return roles.some((role) => requiredRoles.includes(role))
+  
+	// Check the type of the first element.
+	const firstElementType = typeof roles[0]
+	if (firstElementType === 'object') {
+		return roles.some((role) => requiredRoles.includes(role.title))
+	} else {
+		return roles.some((role) => requiredRoles.includes(role))
+	}
+
 }
 
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {

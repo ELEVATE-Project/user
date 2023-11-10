@@ -10,6 +10,7 @@ const OrganisationExtensionQueries = require('@database/queries/organisationExte
 const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
+const _ = require('lodash')
 
 module.exports = class OrgAdminService {
 	/**
@@ -50,7 +51,7 @@ module.exports = class OrgAdminService {
 		try {
 			// Check current role based on that swap data
 			// If current role is mentor validate data from mentor_extenion table
-			const mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
+			let mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
 			// If such mentor return error
 			if (!mentorDetails) {
 				return common.failureResponse({
@@ -62,6 +63,27 @@ module.exports = class OrgAdminService {
 
 			if (bodyData.org_id) {
 				mentorDetails.org_id = bodyData.org_id
+				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.org_id)
+				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+					return common.failureResponse({
+						message: 'ORGANIZATION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const orgPolicies = await OrganisationExtensionQueries.getById(bodyData.org_id)
+				if (!orgPolicies?.org_id) {
+					return common.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				mentorDetails.org_id = bodyData.org_id
+				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
+				mentorDetails = _.merge({}, mentorDetails, newPolicy)
+				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
 			}
 
 			// Add fetched mentor details to user_extension table
@@ -108,7 +130,7 @@ module.exports = class OrgAdminService {
 	static async changeRoleToMentor(bodyData) {
 		try {
 			// Get mentee_extension data
-			const menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
+			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
 			// If no mentee present return error
 			if (!menteeDetails) {
 				return common.failureResponse({
@@ -118,7 +140,27 @@ module.exports = class OrgAdminService {
 			}
 
 			if (bodyData.org_id) {
+				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.org_id)
+				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+					return common.failureResponse({
+						message: 'ORGANIZATION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const orgPolicies = await OrganisationExtensionQueries.getById(bodyData.org_id)
+				if (!orgPolicies?.org_id) {
+					return common.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				menteeDetails.org_id = bodyData.org_id
+				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
+				menteeDetails = _.merge({}, menteeDetails, newPolicy)
+				menteeDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
 			}
 
 			// Add fetched mentee details to mentor_extension table
@@ -311,6 +353,103 @@ module.exports = class OrgAdminService {
 		}
 	}
 
+	/**
+	 * Update User Organization.
+	 * @method
+	 * @name updateOrganization
+	 * @param {Object} bodyData
+	 * @returns {JSON} - User data.
+	 */
+	static async updateOrganization(bodyData) {
+		try {
+			const orgId = bodyData.org_id
+
+			// Get organization details
+			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+				return common.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get organization policies
+			const orgPolicies = await OrganisationExtensionQueries.getById(orgId)
+			if (!orgPolicies?.org_id) {
+				return common.failureResponse({
+					message: 'ORG_EXTENSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			//Update the policy
+			const updateData = {
+				org_id: orgId,
+				external_session_visibility: orgPolicies.external_session_visibility_policy,
+				external_mentor_visibility: orgPolicies.external_mentor_visibility_policy,
+				visibility: orgPolicies.mentor_visibility_policy,
+				visible_to_organizations: organizationDetails.data.result.related_orgs,
+			}
+
+			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE)) {
+				await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
+			} else {
+				await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'UPDATE_ORG_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Deactivate upcoming session.
+	 * @method
+	 * @name deactivateUpcomingSession
+	 * @param {Object} bodyData
+	 * @returns {JSON} - User data.
+	 */
+	static async deactivateUpcomingSession(userId) {
+		try {
+			let message
+			const mentorDetails = await mentorQueries.getMentorExtension(userId)
+			if (mentorDetails?.user_id) {
+				// Delete upcoming sessions of user as mentor
+				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
+				await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+				message = 'SESSION_DEACTIVATED_SUCCESSFULLY'
+			}
+
+			//unenroll from upcoming session
+			const menteeDetails = await menteeQueries.getMenteeExtension(userId)
+			if (menteeDetails?.user_id) {
+				await adminService.unenrollFromUpcomingSessions(userId)
+				message = 'SUCCESSFULLY_UNENROLLED_FROM_UPCOMING_SESSION'
+			}
+
+			if (!mentorDetails?.user_id && !menteeDetails?.user_id) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 	/**
 	 * @description 							- constuct organisation policy object for mentor_extension/user_extension.
 	 * @method
