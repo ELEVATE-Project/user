@@ -22,7 +22,7 @@ module.exports = class Admin {
 
 	async deleteUser(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -96,7 +96,7 @@ module.exports = class Admin {
 
 	async addOrgAdmin(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -124,7 +124,7 @@ module.exports = class Admin {
 	 */
 	async deactivateOrg(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -133,6 +133,39 @@ module.exports = class Admin {
 			}
 
 			const result = await adminService.deactivateOrg(req.params.id, req.decodedToken.id)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {String} req.params.id - user Id.
+	 * @returns {JSON} - deactivated user response
+	 */
+	async deactivateUser(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!req.body.id && !req.body.email) {
+				throw common.failureResponse({
+					message: 'EMAIL_OR_ID_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await adminService.deactivateUser(req.body, req.decodedToken.id)
+
 			return result
 		} catch (error) {
 			return error

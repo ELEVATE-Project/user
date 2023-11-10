@@ -16,6 +16,7 @@ module.exports = {
 			.withMessage('name is invalid')
 
 		req.checkBody('description').trim().notEmpty().withMessage('description field is empty')
+		req.checkBody('domains').trim().notEmpty().withMessage('domains field is empty')
 	},
 
 	update: (req) => {
