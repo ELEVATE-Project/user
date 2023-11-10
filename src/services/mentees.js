@@ -157,15 +157,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees homeFeed.
 	 */
 
-	static async homeFeed(userId, isAMentor, page, limit, search) {
+	static async homeFeed(userId, isAMentor, page, limit, search, queryParams) {
 		try {
 			/* All Sessions */
 
-			let allSessions = await this.getAllSessions(page, limit, search, userId, isAMentor)
+			let allSessions = await this.getAllSessions(page, limit, search, userId, queryParams, isAMentor)
 
 			/* My Sessions */
 
-			let mySessions = await this.getMySessions(page, limit, search, userId, isAMentor)
+			let mySessions = await this.getMySessions(page, limit, search, userId)
 
 			const result = {
 				all_sessions: allSessions.rows,
@@ -309,7 +309,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId, queryParams) {
+	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
 		let query = utils.processQueryParametersWithExclusions(queryParams)
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
@@ -414,7 +414,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of enrolled sessions
 	 */
 
-	static async getMySessions(page, limit, search, userId, isAMentor) {
+	static async getMySessions(page, limit, search, userId) {
 		try {
 			const upcomingSessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
 

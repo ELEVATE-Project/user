@@ -565,7 +565,7 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 		const query = `
 		WITH filtered_sessions AS (
-			SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at,
+			SELECT id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
 				   (meeting_info - 'link' ) AS meeting_info
 			FROM m_${Session.tableName}
 			WHERE
@@ -575,7 +575,7 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
 		)
-		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, meeting_info,
+		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, visibility, mentor_org_id, meeting_info,
 			   COUNT(*) OVER () as total_count
 		FROM filtered_sessions
 		ORDER BY created_at DESC

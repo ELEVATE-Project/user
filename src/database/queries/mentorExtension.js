@@ -144,7 +144,9 @@ module.exports = class MentorExtensionQueries {
 				`
 				SELECT
 					user_id,
-					rating
+					rating,
+					visibility,
+					org_id
 				FROM
 						${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE

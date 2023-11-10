@@ -576,10 +576,12 @@ module.exports = class MentorsHelper {
 	 * @param {Number} pageSize -  Page size.
 	 * @param {Number} pageNo -  Page number.
 	 * @param {String} searchText -  Search text.
+	 * @param {JSON} queryParams -  Query params.
+	 * @param {Boolean} isAMentor -  Is a mentor.
 	 * @returns {JSON} - User list.
 	 */
 
-	static async list(pageNo, pageSize, searchText, queryParams) {
+	static async list(pageNo, pageSize, searchText, queryParams, isAMentor) {
 		try {
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
@@ -593,21 +595,34 @@ module.exports = class MentorsHelper {
 			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(ids, pageNo, pageSize, filteredQuery)
-			console.log(extensionDetails)
+			// Inside your function
+			extensionDetails.data = extensionDetails.data.filter((item) => item.visibility && item.org_id)
+
+			// Filter user data based on SAAS policy
+			extensionDetails.data = await this.filterMentorListBasedOnSaasPolicy(
+				extensionDetails.data,
+				userId,
+				isAMentor
+			)
+
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
 
-			userDetails.data.result.data.forEach((existingItem, index) => {
+			userDetails.data.result.data = userDetails.data.result.data.filter((existingItem) => {
 				const user_id = existingItem.values[0].id
 				if (extensionDataMap.has(user_id)) {
 					const newItem = extensionDataMap.get(user_id)
 					existingItem.values[0] = { ...existingItem.values[0], ...newItem }
-				} else {
-					// Remove item if user id is not found in extensionDataMap
-					userDetails.data.result.data.splice(index, 1)
+					delete existingItem.values[0].user_id
+					delete existingItem.values[0].visibility
+					delete existingItem.values[0].org_id
+					return true // Keep this item
 				}
-				delete existingItem.values[0].user_id
+
+				return false // Remove this item
 			})
+
 			userDetails.data.result.count = extensionDetails.count
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,

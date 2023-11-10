@@ -604,12 +604,20 @@ module.exports = class SessionsHelper {
 	 * @param {String} req.pageNo - Page No.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
+	 * @param {Boolean} isAMentor - Is a mentor.
 	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, queryParams) {
+	static async list(loggedInUserId, page, limit, search, queryParams, isAMentor) {
 		try {
-			let allSessions = await menteeService.getAllSessions(page, limit, search, loggedInUserId, queryParams)
+			let allSessions = await menteeService.getAllSessions(
+				page,
+				limit,
+				search,
+				loggedInUserId,
+				queryParams,
+				isAMentor
+			)
 
 			const result = {
 				data: allSessions.rows,

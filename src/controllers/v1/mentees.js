@@ -44,8 +44,7 @@ module.exports = class Mentees {
 				req.decodedToken.id,
 				req.pageNo,
 				req.pageSize,
-				req.searchText,
-				isAMentor(req.decodedToken.roles)
+				req.searchText
 			)
 			return sessions
 		} catch (error) {
@@ -76,13 +75,13 @@ module.exports = class Mentees {
 	}
 
 	/**
-	 * Mentees homefeed API.
+	 * Mentees home feed API.
 	 * @method
 	 * @name homeFeed
 	 * @param {Object} req - request data.
 	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {Boolean} req.decodedToken.isAMentor - true/false.
-	 * @returns {JSON} - Mentees homefeed response.
+	 * @returns {JSON} - Mentees home feed response.
 	 */
 
 	async homeFeed(req) {
@@ -92,7 +91,8 @@ module.exports = class Mentees {
 				isAMentor(req.decodedToken.roles),
 				req.pageNo,
 				req.pageSize,
-				req.searchText
+				req.searchText,
+				req.query
 			)
 			return homeFeed
 		} catch (error) {

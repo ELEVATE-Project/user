@@ -108,7 +108,13 @@ module.exports = class Mentors {
 
 	async list(req) {
 		try {
-			return await mentorsService.list(req.pageNo, req.pageSize, req.searchText, req.query)
+			return await mentorsService.list(
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.query,
+				isAMentor(req.decodedToken.roles)
+			)
 		} catch (error) {
 			return error
 		}

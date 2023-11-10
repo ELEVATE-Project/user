@@ -97,7 +97,8 @@ module.exports = class Sessions {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.query
+				req.query,
+				isAMentor(req.decodedToken.roles)
 			)
 			return sessionDetails
 		} catch (error) {
