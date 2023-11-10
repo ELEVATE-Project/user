@@ -240,9 +240,9 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 		const doesAffectedFieldsExist = Object.keys(requestBody).some((element) => entityTypeMap.has(element))
 		if (!doesAffectedFieldsExist) return requestBody
 		requestBody.custom_entity_text = {}
+		if (!requestBody.meta) requestBody.meta = {}
 		for (const currentFieldName in requestBody) {
 			const currentFieldValue = requestBody[currentFieldName]
-			if (!requestBody.meta) requestBody.meta = {}
 			const entityType = entityTypeMap.get(currentFieldName)
 			if (entityType && entityType.get('allow_custom_entities')) {
 				if (Array.isArray(currentFieldValue)) {
@@ -271,6 +271,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 			}
 		}
 		if (Object.keys(requestBody.meta).length === 0) requestBody.meta = null
+		if (Object.keys(requestBody.custom_entity_text).length === 0) requestBody.custom_entity_text = null
 		return requestBody
 	} catch (error) {
 		console.error(error)
