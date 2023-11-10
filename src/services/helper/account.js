@@ -993,7 +993,7 @@ module.exports = class AccountHelper {
 	static async deactivate(bodyData) {
 		const projection = []
 		const today = new Date() // current date to check the freezing time
-		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase()) // get the data of user from with email
+		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase()) // get the data of user from redis with email
 		try {
 			// if user data with action deactivate OTP and the OTP passed matches
 			if (userRedisData && userRedisData.action == common.deactivateAction && userRedisData.otp == bodyData.otp) {
