@@ -13,7 +13,7 @@ module.exports = class UserEntityData {
 
 	static async findOneEntityType(filter, options = {}) {
 		try {
-			return await EntityType.findOne({ 
+			return await EntityType.findOne({
 				where: filter,
 				...options,
 				raw: true,
@@ -23,7 +23,7 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntityTypes(orgId, attributes) {
+	static async findAllEntityTypes(orgId, attributes, filter = {}) {
 		try {
 			const entityData = await EntityType.findAll({
 				where: {
@@ -35,6 +35,7 @@ module.exports = class UserEntityData {
 							org_id: orgId,
 						},
 					],
+					...filter,
 				},
 				attributes,
 				raw: true,
@@ -111,6 +112,36 @@ module.exports = class UserEntityData {
 	static async findEntityTypeById(filter) {
 		try {
 			return await EntityType.findByPk(filter)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllEntityTypesAndEntities(filter) {
+		try {
+			return await EntityType.findAll({
+				where: {
+					...filter,
+				},
+				include: [
+					{
+						model: Entity,
+						required: false,
+						where: {
+							/* [Op.or]: [
+								{
+									created_by: 0,
+								},
+								{
+									created_by: userId,
+								},
+							], */
+							status: 'ACTIVE',
+						},
+						as: 'entities',
+					},
+				],
+			})
 		} catch (error) {
 			return error
 		}

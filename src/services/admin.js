@@ -10,6 +10,7 @@ const notificationTemplateQueries = require('@database/queries/notificationTempl
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
 const userRequests = require('@requests/user')
+const adminService = require('../generics/materializedViews')
 
 module.exports = class AdminHelper {
 	/**
@@ -140,6 +141,33 @@ module.exports = class AdminHelper {
 			return true
 		} catch (error) {
 			console.error('An error occurred in unenrollFromUpcomingSessions:', error)
+			return error
+		}
+	}
+
+	static async triggerViewRebuild(decodedToken, userId) {
+		try {
+			const result = await adminService.triggerViewBuild()
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_REMOVED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			console.error('An error occurred in userDelete:', error)
+			return error
+		}
+	}
+	static async triggerPeriodicViewRefresh(decodedToken, userId) {
+		try {
+			const result = await adminService.triggerPeriodicViewRefresh()
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_REMOVED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			console.error('An error occurred in userDelete:', error)
 			return error
 		}
 	}

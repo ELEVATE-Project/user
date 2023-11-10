@@ -27,7 +27,8 @@ module.exports = class Mentors {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id
+				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id,
+				req.query
 			)
 		} catch (error) {
 			return error
@@ -42,7 +43,7 @@ module.exports = class Mentors {
 	 * @param {String} req.params.id - mentor Id.
 	 * @returns {JSON} - mentors profile details
 	 */
-	async profile(req) {
+	async details(req) {
 		try {
 			return await mentorsService.read(req.params.id)
 		} catch (error) {
@@ -88,6 +89,48 @@ module.exports = class Mentors {
 		try {
 			const shareLink = await mentorsService.share(req.params.id)
 			return shareLink
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * List of available mentors.
+	 * @method
+	 * @name list
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken.id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+
+	async list(req) {
+		try {
+			return await mentorsService.list(req.pageNo, req.pageSize, req.searchText, req.query)
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * List of sessions created by mentor.
+	 * @method
+	 * @name list
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken.id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+
+	async createdSessions(req) {
+		try {
+			const sessionDetails = await mentorsService.createdSessions(
+				req.decodedToken.id,
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.query.status,
+				req.decodedToken.roles
+			)
+			return sessionDetails
 		} catch (error) {
 			return error
 		}

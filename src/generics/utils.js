@@ -259,7 +259,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 					}
 				}
 			}
-
+			console.log('-=-==-=', requestBodyValue)
 			if (Array.isArray(requestBodyValue)) {
 				const entityTypeExists = entityData.find((entity) => entity.value === requestBodyKey)
 
@@ -350,6 +350,17 @@ function removeParentEntityTypes(data) {
 const epochFormat = (date, format) => {
 	return moment.unix(date).utc().format(format)
 }
+function processQueryParametersWithExclusions(query) {
+	const queryArrays = {}
+	const excludedKeys = common.excludedQueryParams
+	for (const queryParam in query) {
+		if (query.hasOwnProperty(queryParam) && !excludedKeys.includes(queryParam)) {
+			queryArrays[queryParam] = query[queryParam].split(',').map((item) => item.trim())
+		}
+	}
+
+	return queryArrays
+}
 
 /**
  * Calculate the time difference in milliseconds between a current date
@@ -399,6 +410,49 @@ function generateCheckSum(queryHash) {
 	const checksum = shasum.digest('hex')
 	return checksum
 }
+
+const generateWhereClause = (tableName) => {
+	let whereClause = ''
+
+	switch (tableName) {
+		case 'sessions':
+			const currentEpochDate = Math.floor(new Date().getTime() / 1000) // Get current date in epoch format
+			whereClause = `deleted_at IS NULL AND start_date >= ${currentEpochDate}`
+			break
+		case 'mentor_extensions':
+			whereClause = `deleted_at IS NULL`
+			break
+		case 'user_extensions':
+			whereClause = `deleted_at IS NULL`
+			break
+		default:
+			whereClause = 'deleted_at IS NULL'
+	}
+
+	return whereClause
+}
+
+function validateFilters(input, validationData, modelName) {
+	const allValues = []
+	validationData.forEach((item) => {
+		// Extract the 'value' property from the main object
+		allValues.push(item.value)
+
+		// Extract the 'value' property from the 'entities' array
+	})
+	console.log(allValues)
+	for (const key in input) {
+		if (input.hasOwnProperty(key)) {
+			if (allValues.includes(key)) {
+				continue
+			} else {
+				delete input[key]
+			}
+		}
+	}
+	return input
+}
+
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -429,4 +483,7 @@ module.exports = {
 	getTimeDifferenceInMilliseconds,
 	deleteProperties,
 	generateCheckSum,
+	generateWhereClause,
+	validateFilters,
+	processQueryParametersWithExclusions,
 }

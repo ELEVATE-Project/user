@@ -61,21 +61,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of sessions
 	 */
 
-	static async sessions(userId, enrolledSessions, page, limit, search = '') {
+	static async sessions(userId, page, limit, search = '') {
 		try {
-			let sessions = []
-
-			if (!enrolledSessions) {
-				/** Upcoming unenrolled sessions {All sessions}*/
-				sessions = await this.getAllSessions(page, limit, search, userId)
-			} else {
-				/** Upcoming user's enrolled sessions {My sessions}*/
-				/* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
+			/** Upcoming user's enrolled sessions {My sessions}*/
+			/* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
                 delays in starting session then status will remain published for that particular interval so fetch that also */
 
-				/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
-				sessions = await this.getMySessions(page, limit, search, userId)
-			}
+			/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
+			sessions = await this.getMySessions(page, limit, search, userId)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
@@ -301,9 +295,16 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId) {
-		const sessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
+	static async getAllSessions(page, limit, search, userId, queryParams) {
+		let query = utils.processQueryParametersWithExclusions(queryParams)
 
+		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+			status: 'ACTIVE',
+		})
+
+		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
+
+		const sessions = await sessionQueries.getUpcomingSessionsFromView(page, limit, search, userId, filteredQuery)
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
 		sessions.rows = await this.sessionMentorDetails(sessions.rows)
 		return sessions

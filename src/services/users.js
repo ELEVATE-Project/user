@@ -33,6 +33,8 @@ module.exports = class UserHelper {
 			}
 
 			const extensionDataMap = new Map(extensionDetails.map((newItem) => [newItem.user_id, newItem]))
+			console.log(extensionDataMap)
+			console.log(userDetails.data.result)
 
 			userDetails.data.result.data.forEach((existingItem) => {
 				const user_id = existingItem.values[0].id
@@ -42,7 +44,7 @@ module.exports = class UserHelper {
 				}
 				delete existingItem.values[0].user_id
 			})
-
+			console.log(userDetails.data.result)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,
