@@ -86,6 +86,7 @@
 	"ORG_ROLE_REQ_APPROVED": "Organisation request approved successfully",
 	"ORG_ROLE_REQ_UPDATED": "Organisation request updated",
 	"FILE_UPLOAD_MODIFY_ERROR": "File update failed",
+	"STATUS_UPDATE_FAILED": "Failed to deactivate user",
 	"NOT_ACTIVE_USER": "User not active",
 	"USER_DEACTIVATED": "User deactivated successfully",
 	"USER_IN_FREEZING_PERIOD": "User account is in freezing period"

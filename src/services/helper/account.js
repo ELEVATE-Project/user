@@ -993,7 +993,7 @@ module.exports = class AccountHelper {
 	static async deactivate(bodyData) {
 		const projection = []
 		const today = new Date() // current date to check the freezing time
-		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase()) // get the data of user from redis with email
+		const userRedisData = await utilsHelper.redisGet(bodyData.email.toLowerCase()) // get the data of user from with email
 		try {
 			// if user data with action deactivate OTP and the OTP passed matches
 			if (userRedisData && userRedisData.action == common.deactivateAction && userRedisData.otp == bodyData.otp) {
@@ -1027,6 +1027,10 @@ module.exports = class AccountHelper {
 				} else {
 					// DO NOT proceed if the time delta is below the freezing period
 					updateUser = false
+					return common.failureResponse({
+						statusCode: httpStatusCode.bad_request,
+						message: 'USER_IN_FREEZING_PERIOD',
+					})
 				}
 
 				// update the user based on flag
@@ -1049,13 +1053,13 @@ module.exports = class AccountHelper {
 					// return the failure response as the flag is false
 					return common.failureResponse({
 						statusCode: httpStatusCode.bad_request,
-						message: 'Account cannot be deactivated',
+						message: 'STATUS_UPDATE_FAILED',
 					})
 				}
 			} else {
 				// return the message : user is in freezing period
 				return common.failureResponse({
-					message: 'USER_IN_FREEZING_PERIOD',
+					message: 'OTP_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -1099,13 +1103,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (!isValidOtpExist) {
-				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
-				// prepare data to be saved in redis
-				const redisData = {
-					verify: bodyData.email.toLowerCase(),
-					action: common.deactivateAction,
-					otp,
-				}
+				const redisData = utils.generateOtp(6, bodyData.email.toLowerCase(), common.deactivateAction)
 				// set the value to redis
 				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
@@ -1124,9 +1122,9 @@ module.exports = class AccountHelper {
 			}
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.DEACTIVATION_OTP_EMAIL_TEMPLATE_CODE
+				process.env.DEACTIVATION_OTP_EMAIL_TEMPLATE_CODE,
+				user.org_id
 			)
-
 			if (templateData) {
 				// Push successfull deactivation email to kafka
 				const payload = {

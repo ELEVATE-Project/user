@@ -280,6 +280,16 @@ function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
 }
+
+const generateOtp = (otpLength, email, action) => {
+	// Generate a random 6-digit number
+	const otp = Math.floor(Math.random() * Math.pow(10, otpLength))
+	return {
+		verify: email.toLowerCase(),
+		action: action,
+		otp,
+	}
+}
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -303,4 +313,5 @@ module.exports = {
 	restructureBody,
 	validateInput,
 	removeParentEntityTypes,
+	generateOtp,
 }

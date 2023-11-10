@@ -32,11 +32,6 @@ module.exports = {
 				allowNull: false,
 				defaultValue: 'ACTIVE',
 			},
-			status_updated_at: {
-				type: Sequelize.DATE,
-				defaultValue: null,
-				allowNull: true,
-			},
 			password: {
 				type: Sequelize.STRING,
 				allowNull: false,
