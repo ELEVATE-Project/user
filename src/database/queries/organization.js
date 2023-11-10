@@ -40,7 +40,7 @@ exports.update = async (filter, update, options) => {
 exports.listOrganizations = async (page, limit, search) => {
 	try {
 		let filterQuery = {
-			where: { status: common.activeStatus },
+			where: { status: common.ACTIVE_STATUS },
 			attributes: ['id', 'name', 'code', 'description'],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
@@ -80,7 +80,7 @@ exports.findAll = async (filter, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await Organization.findByPk(id)
+		return await Organization.findByPk(id, { raw: true })
 	} catch (error) {
 		return error
 	}

@@ -30,7 +30,7 @@ module.exports = class Organization {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
 			}
 
 			if (!isAdmin) {
@@ -64,7 +64,7 @@ module.exports = class Organization {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
 			}
 
 			if (!isAdmin) {

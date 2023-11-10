@@ -129,7 +129,6 @@ module.exports = class UserHelper {
 					options.paranoid = false
 				}
 				const user = await userQueries.findOne(filter, options)
-
 				if (!user) {
 					return common.failureResponse({
 						message: 'USER_NOT_FOUND',
@@ -143,7 +142,7 @@ module.exports = class UserHelper {
 				}
 
 				let roles = await roleQueries.findAll(
-					{ id: user.roles, status: common.activeStatus },
+					{ id: user.roles, status: common.ACTIVE_STATUS },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -176,7 +175,7 @@ module.exports = class UserHelper {
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)
 
-				if (utils.validateRoleAccess(roles, common.roleMentor)) {
+				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
@@ -208,20 +207,7 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			const role = await roleQueries.findOne({ title: common.roleMentor })
-
-			if (!role) {
-				return common.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			let user = await userQueries.findOne(
-				{ id: userId, roles: { [Op.contains]: [role.id] } },
-				{ attributes: ['share_link'] }
-			)
+			let user = await userQueries.findOne({ id: userId }, { attributes: ['share_link'] })
 
 			if (!user) {
 				return common.failureResponse({
