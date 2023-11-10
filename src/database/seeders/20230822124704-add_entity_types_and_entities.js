@@ -222,7 +222,7 @@ module.exports = {
 			const entityTypeRow = {
 				value: key,
 				label: convertToWords(key),
-				data_type: 'STRING',
+				data_type: 'character varying',
 				status: 'ACTIVE',
 				updated_at: new Date(),
 				created_at: new Date(),
@@ -235,9 +235,9 @@ module.exports = {
 
 			// Check if the key is in sessionEntityTypes before adding model_names
 			if (sessionEntityTypes.includes(key)) {
-				entityTypeRow.model_names = ['sessions']
+				entityTypeRow.model_names = ['Session']
 			} else {
-				entityTypeRow.model_names = ['mentor_extensions', 'user_extensions']
+				entityTypeRow.model_names = ['MentorExtension', 'UserExtension']
 			}
 			if (key === 'location') {
 				entityTypeRow.allow_custom_entities = false

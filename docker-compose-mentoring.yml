@@ -137,13 +137,13 @@ services:
     networks:
       - elevate_net
   interface:
-    build: '../interface/'
+    build: '../interface-service/'
     image: elevate/interface:1.0
     volumes:
-      - ../interface/src/:/var/src
+      - ../interface-service/src/:/var/src
     ports:
       - '3569:3569'
-    command: ['nodemon', 'app.js']
+    command: ['node', 'app.js']
     networks:
       - elevate_net
   # master:
@@ -197,6 +197,8 @@ services:
       PGPASSWORD: '${POSTGRES_PASSWORD:-postgres}'
       POSTGRES_DB: 'user-local'
       POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
+      POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
+
     networks:
       - elevate_net
   pgadmin:

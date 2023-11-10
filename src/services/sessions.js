@@ -4,8 +4,8 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-const sessionData = require('@db/sessions/queries')
-const notificationTemplateData = require('@db/notification-template/query')
+//const sessionData = require('@db/sessions/queries')
+//const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -31,6 +31,7 @@ const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteesService = require('@services/mentees')
 
+const menteeService = require('@services/mentees')
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
@@ -99,7 +100,7 @@ module.exports = class SessionsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(bodyData, validationData, 'sessions')
+			let res = utils.validateInput(bodyData, validationData, 'Session')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -110,7 +111,7 @@ module.exports = class SessionsHelper {
 			}
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
-
+			console.log(bodyData)
 			bodyData.meeting_info = {
 				platform: process.env.DEFAULT_MEETING_SERVICE,
 				value: process.env.DEFAULT_MEETING_SERVICE,
@@ -260,7 +261,7 @@ module.exports = class SessionsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(bodyData, validationData, 'sessions')
+			let res = utils.validateInput(bodyData, validationData, 'Session')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -595,93 +596,30 @@ module.exports = class SessionsHelper {
 	}
 
 	/**
-	 * Session list.
+	 * Sessions list
 	 * @method
 	 * @name list
-	 * @param {String} loggedInUserId - LoggedIn user id.
-	 * @param {Number} page - page no.
-	 * @param {Number} limit - page size.
-	 * @param {String} search - search text.
-	 * @returns {JSON} - List of sessions
+	 * @param {Object} req -request data.
+	 * @param {String} req.decodedToken.id - User Id.
+	 * @param {String} req.pageNo - Page No.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - Session List.
 	 */
 
-	static async list(loggedInUserId, page, limit, search, status) {
+	static async list(loggedInUserId, page, limit, search, queryParams) {
 		try {
-			// update sessions which having status as published/live and  exceeds the current date and time
-			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
-			const filterQuery = {
-				[Op.or]: [
-					{
-						status: common.PUBLISHED_STATUS,
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-					{
-						status: common.LIVE_STATUS,
-						'meeting_info.value': {
-							[Op.ne]: common.BBB_VALUE,
-						},
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-				],
+			let allSessions = await menteeService.getAllSessions(page, limit, search, loggedInUserId, queryParams)
+
+			const result = {
+				data: allSessions.rows,
+				count: allSessions.count,
 			}
 
-			await sessionQueries.updateSession(filterQuery, {
-				status: common.COMPLETED_STATUS,
-			})
-
-			let arrayOfStatus = []
-			if (status && status != '') {
-				arrayOfStatus = status.split(',')
-			}
-
-			let filters = {
-				mentor_id: loggedInUserId,
-			}
-			if (arrayOfStatus.length > 0) {
-				// if (arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.length == 1) {
-				// 	filters['endDateUtc'] = {
-				// 		$lt: moment().utc().format(),
-				// 	}
-				// } else
-				if (arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)) {
-					filters['end_date'] = {
-						[Op.gte]: currentDate,
-					}
-				}
-
-				filters['status'] = arrayOfStatus
-			}
-
-			const sessionDetails = await sessionQueries.findAllSessions(page, limit, search, filters)
-
-			/* if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
-				return common.failureResponse({
-					message: 'SESSION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-					result: [],
-				})
-			} */
-
-			sessionDetails.rows = await sessionMentor.sessionMentorDetails(sessionDetails.rows)
-
-			//remove meeting_info details except value and platform
-			sessionDetails.rows.forEach((item) => {
-				if (item.meeting_info) {
-					item.meeting_info = {
-						value: item.meeting_info.value,
-						platform: item.meeting_info.platform,
-					}
-				}
-			})
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: { count: sessionDetails.count, data: sessionDetails.rows },
+				result,
 			})
 		} catch (error) {
 			console.log

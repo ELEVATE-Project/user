@@ -79,7 +79,7 @@ module.exports = class Sessions {
 	}
 
 	/**
-	 * Sessions list
+	 * Get all upcoming sessions by available mentors
 	 * @method
 	 * @name list
 	 * @param {Object} req -request data.
@@ -97,7 +97,7 @@ module.exports = class Sessions {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.query.status
+				req.query
 			)
 			return sessionDetails
 		} catch (error) {

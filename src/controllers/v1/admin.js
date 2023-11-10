@@ -26,4 +26,23 @@ module.exports = class admin {
 			return error
 		}
 	}
+
+	async triggerViewRebuild(req) {
+		try {
+			const userDelete = await userService.triggerViewRebuild(req.decodedToken, req.query.userId)
+			return userDelete
+		} catch (error) {
+			return error
+		}
+	}
+	async triggerPeriodicViewRefresh(req, res) {
+		try {
+			const userDelete = await userService.triggerPeriodicViewRefresh(req.decodedToken, req.query.userId)
+			return userDelete
+			await adminService.triggerPeriodicViewRefresh()
+			res.send({ message: 'Triggered' })
+		} catch (err) {
+			console.log(err)
+		}
+	}
 }

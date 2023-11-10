@@ -1,5 +1,9 @@
 const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
 
+const sequelize = require('sequelize')
+const Sequelize = require('@database/models/index').sequelize
+const common = require('@constants/common')
+
 module.exports = class MentorExtensionQueries {
 	static async getColumns() {
 		try {
@@ -21,7 +25,7 @@ module.exports = class MentorExtensionQueries {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const whereClause = customFilter ? customFilter : { user_id: userId };
+			const whereClause = customFilter ? customFilter : { user_id: userId }
 			return await MentorExtension.update(data, {
 				where: whereClause,
 				...options,
@@ -36,11 +40,11 @@ module.exports = class MentorExtensionQueries {
 			const queryOptions = {
 				where: { user_id: userId },
 				raw: true,
-			};
-	
+			}
+
 			// If attributes are passed update query
 			if (attributes.length > 0) {
-				queryOptions.attributes = attributes;
+				queryOptions.attributes = attributes
 			}
 			const mentor = await MentorExtension.findOne(queryOptions)
 			return mentor
@@ -96,7 +100,7 @@ module.exports = class MentorExtensionQueries {
 		try {
 			const result = await MentorExtension.findAll({
 				where: {
-					user_id: ids, // Assuming "user_id" is the field you want to match
+					user_id: ids,
 				},
 				...options,
 				returning: true,
@@ -106,6 +110,67 @@ module.exports = class MentorExtensionQueries {
 			return result
 		} catch (error) {
 			throw error
+		}
+	}
+
+	static async getAllMentors(options = {}) {
+		try {
+			const result = await MentorExtension.findAll({
+				...options,
+				returning: true,
+				raw: true,
+			})
+
+			return result
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async getMentorsByUserIdsFromView(ids, page, limit, filter) {
+		try {
+			const filterConditions = []
+
+			if (filter && typeof filter === 'object') {
+				for (const key in filter) {
+					if (Array.isArray(filter[key])) {
+						filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
+					}
+				}
+			}
+			const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+
+			const sessionAttendeesData = await Sequelize.query(
+				`
+				SELECT
+					user_id,
+					rating
+				FROM
+						${common.materializedViewsPrefix + MentorExtension.tableName}
+				WHERE
+					user_id IN (${ids.join(',')})
+					${filterClause}
+				OFFSET
+					:offset
+				LIMIT
+					:limit;
+			`,
+				{
+					replacements: {
+						offset: limit * (page - 1),
+						limit: limit,
+						...filter, // Add filter parameters to replacements
+					},
+					type: sequelize.QueryTypes.SELECT,
+				}
+			)
+
+			return {
+				data: sessionAttendeesData,
+				count: sessionAttendeesData.length,
+			}
+		} catch (error) {
+			return error
 		}
 	}
 }

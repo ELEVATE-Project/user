@@ -130,4 +130,6 @@ module.exports = {
 	ALL: 'ALL',
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
+	excludedQueryParams: ['enrolled'],
+	materializedViewsPrefix: 'm_',
 }

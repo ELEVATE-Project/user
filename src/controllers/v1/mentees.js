@@ -42,7 +42,6 @@ module.exports = class Mentees {
 		try {
 			const sessions = await menteesService.sessions(
 				req.decodedToken.id,
-				req.query.enrolled,
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
