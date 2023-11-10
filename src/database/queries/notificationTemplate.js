@@ -1,15 +1,39 @@
 const NotificationTemplate = require('@database/models/index').NotificationTemplate
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+const { Op } = require('sequelize')
 
 module.exports = class NotificationTemplateData {
-	static async findOneEmailTemplate(code) {
+	static async findOneEmailTemplate(code, orgId) {
 		try {
-			const templateData = await NotificationTemplate.findOne({
-				where: {
-					code,
-					type: 'email',
-					status: 'active',
-				},
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId) {
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			/**If data exists for both `orgId` and `defaultOrgId`, the query will return the first matching records
+			 * we will filter required data based on condition from it
+			 * if orgId passed -> get template defined by particular org or get default org template
+			 */
+			const filter = {
+				code: code,
+				type: 'email',
+				status: 'active',
+				org_id: orgId ? { [Op.or]: [orgId, defaultOrgId] } : defaultOrgId,
+			}
+
+			let templateData = await NotificationTemplate.findAll({
+				where: filter,
+				raw: true,
 			})
+
+			// If there are multiple results, find the one matching orgId
+			templateData = templateData.find((template) => template.org_id === orgId) || templateData[0]
+
+			// If no data is found, set an empty object
+			templateData = templateData || {}
 
 			if (templateData && templateData.email_header) {
 				const header = await this.getEmailHeader(templateData.email_header)
@@ -24,7 +48,6 @@ module.exports = class NotificationTemplateData {
 					templateData.body += footer.body
 				}
 			}
-
 			return templateData
 		} catch (error) {
 			return error
@@ -39,6 +62,7 @@ module.exports = class NotificationTemplateData {
 					type: 'emailHeader',
 					status: 'active',
 				},
+				raw: true,
 			})
 
 			return headerData
@@ -55,6 +79,7 @@ module.exports = class NotificationTemplateData {
 					type: 'emailFooter',
 					status: 'active',
 				},
+				raw: true,
 			})
 
 			return footerData

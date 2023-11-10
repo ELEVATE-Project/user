@@ -5,7 +5,6 @@ const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
 const sessionData = require('@db/sessions/queries')
-const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -18,6 +17,7 @@ const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
 const entityTypeQueries = require('@database/queries/entityType')
 const entitiesQueries = require('@database/queries/entity')
 const { Op } = require('sequelize')
+const notificationQueries = require('@database/queries/notificationTemplate')
 
 const schedulerRequest = require('@requests/scheduler')
 
@@ -168,7 +168,8 @@ module.exports = class SessionsHelper {
 					jobsToCreate[jobIndex].jobId,
 					jobsToCreate[jobIndex].delay,
 					jobsToCreate[jobIndex].jobName,
-					jobsToCreate[jobIndex].emailTemplate
+					jobsToCreate[jobIndex].emailTemplate,
+					orgId
 				)
 			}
 
@@ -381,12 +382,14 @@ module.exports = class SessionsHelper {
 				/* Find email template according to request type */
 				let templateData
 				if (method == common.DELETE_METHOD) {
-					templateData = await notificationTemplateData.findOneEmailTemplate(
-						process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE
+					templateData = await notificationQueries.findOneEmailTemplate(
+						process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE,
+						orgId
 					)
 				} else if (isSessionReschedule) {
-					templateData = await notificationTemplateData.findOneEmailTemplate(
-						process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE
+					templateData = await notificationQueries.findOneEmailTemplate(
+						process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE,
+						orgId
 					)
 					console.log('Session rescheduled email code:', process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE)
 
@@ -750,8 +753,9 @@ module.exports = class SessionsHelper {
 			await sessionAttendeesQueries.create(attendee)
 			await sessionEnrollmentQueries.create(_.omit(attendee, 'time_zone'))
 
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
-				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
+			const templateData = await notificationQueries.findOneEmailTemplate(
+				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE,
+				session.mentor_org_id
 			)
 
 			if (templateData) {
@@ -825,8 +829,9 @@ module.exports = class SessionsHelper {
 
 			await sessionEnrollmentQueries.unEnrollFromSession(sessionId, userId)
 
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
-				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE
+			const templateData = await notificationQueries.findOneEmailTemplate(
+				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE,
+				session.mentor_org_id
 			)
 
 			if (templateData) {

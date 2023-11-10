@@ -15,13 +15,14 @@ const mentoringBaseurl = `http://localhost:${process.env.APPLICATION_PORT}`
 /**
  * Create a scheduler job.
  *
- * @param {string} jobId - The unique identifier for the job.
- * @param {number} delay - The delay in milliseconds before the job is executed.
- * @param {string} jobName - The name of the job.
- * @param {string} notificationTemplate - The template for the notification.
- * @param {function} callback - The callback function to handle the result of the job creation.
+ * @param {string} jobId 					- The unique identifier for the job.
+ * @param {number} delay 					- The delay in milliseconds before the job is executed.
+ * @param {string} jobName 					- The name of the job.
+ * @param {string} notificationTemplate 	- The template for the notification.
+ * @param {number} orgId 					- OrganisationId of job creator.
+ * @param {function} callback 				- The callback function to handle the result of the job creation.
  */
-const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate) {
+const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate, orgId) {
 	const bodyData = {
 		jobName: jobName,
 		email: email,
@@ -30,6 +31,7 @@ const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate
 			method: 'post',
 			header: { internal_access_token: process.env.INTERNAL_ACCESS_TOKEN },
 		},
+
 		jobOptions: {
 			jobId: jobId,
 			delay: delay,
@@ -37,6 +39,7 @@ const createSchedulerJob = function (jobId, delay, jobName, notificationTemplate
 			removeOnComplete: true,
 			removeOnFail: false,
 			attempts: 1,
+			creatorOrgId: orgId ? orgId : '',
 		},
 	}
 
