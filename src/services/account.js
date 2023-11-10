@@ -428,6 +428,7 @@ module.exports = class AccountHelper {
 				message: 'LOGGED_OUT_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

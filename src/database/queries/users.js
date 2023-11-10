@@ -31,13 +31,11 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		const [updatedCount] = await database.User.update(update, {
+		return await database.User.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
 		})
-
-		return updatedCount
 	} catch (error) {
 		return error
 	}

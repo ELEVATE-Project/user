@@ -325,7 +325,7 @@ module.exports = class AdminHelper {
 			}
 
 			//deactivate all users in org
-			const modifiedCount = await userQueries.updateUser(
+			const [modifiedCount] = await userQueries.updateUser(
 				{
 					organization_id: id,
 				},
@@ -361,6 +361,7 @@ module.exports = class AdminHelper {
 				},
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -381,7 +382,7 @@ module.exports = class AdminHelper {
 				}
 			}
 
-			let rowsAffected = await userQueries.updateUser(filterQuery, {
+			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
 				status: common.INACTIVE_STATUS,
 				updated_by: loggedInUserId,
 			})
