@@ -285,7 +285,7 @@ module.exports = class OrgAdminHelper {
 				}
 			}
 
-			let rowsAffected = await userQueries.updateUser(filterQuery, {
+			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
 				status: common.INACTIVE_STATUS,
 				updated_by: tokenInformation.id,
 			})
