@@ -60,7 +60,7 @@ services:
         gelf-address: 'udp://0.0.0.0:12201'
         tag: 'redis-logs'
   mentoring:
-    image: shikshalokamqa/elevate-mentoring:2.2
+    image: shikshalokamqa/elevate-mentoring:2.4
     ports:
       - '3000:3000'
     command: ['nodemon', 'app.js']
@@ -78,7 +78,7 @@ services:
     env_file:
       - ${mentoring_env}
   user:
-    image: shikshalokamqa/elevate-user:2.2
+    image: shikshalokamqa/elevate-user:2.4
     ports:
       - '3001:3001'
     command: ['nodemon', 'app.js']
@@ -95,7 +95,7 @@ services:
     env_file:
       - ${users_env}
   notification:
-    image: shikshalokamqa/elevate-notification:2.2
+    image: shikshalokamqa/elevate-notification:2.4
     ports:
       - '3002:3002'
     command: ['nodemon', 'app.js']
@@ -109,7 +109,7 @@ services:
       - ${notification_env}
 
   scheduler:
-    image: shikshalokamqa/elevate-scheduler:2.2
+    image: shikshalokamqa/elevate-scheduler:2.4
     ports:
       - '4000:4000'
     command: ['nodemon', 'app.js']

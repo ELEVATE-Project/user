@@ -54,7 +54,7 @@ services:
       driver: none
   mentoring:
     build: './'
-    image: elevate/mentoring:1.0
+    image: elevate/mentoring:2.4
     volumes:
       - ./src/:/var/src
     ports:
@@ -71,7 +71,7 @@ services:
       - elevate_net
   user:
     build: '../user/'
-    image: elevate/user:1.0
+    image: elevate/user:2.4
     volumes:
       - ../user/src/:/var/src
     ports:
@@ -89,7 +89,7 @@ services:
       - elevate_net
   notification:
     build: '../notification/'
-    image: elevate/notification:1.0
+    image: elevate/notification:2.4
     volumes:
       - ../notification/src/:/var/src
     ports:
