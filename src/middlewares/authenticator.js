@@ -91,7 +91,7 @@ module.exports = async function (req, res, next) {
 		//check for admin user
 		let isAdmin = false
 		if (decodedToken.data.roles) {
-			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
 			if (isAdmin) {
 				req.decodedToken = decodedToken.data
 				return next()
@@ -110,7 +110,7 @@ module.exports = async function (req, res, next) {
 			}
 
 			const roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.activeStatus },
+				{ id: user.roles, status: common.ACTIVE_STATUS },
 				{ attributes: ['title'] }
 			)
 
