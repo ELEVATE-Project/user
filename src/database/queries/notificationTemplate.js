@@ -32,10 +32,8 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 			{ attributes: ['id'] }
 		)
 		const defaultOrgId = defaultOrg.id
-		/**If data exists for both `orgId` and `defaultOrgId`, the query will return the first matching record
-		 * based on the order in which the values are provided in the array `[orgId, defaultOrgId]`.
-		 * If a record with a matching `org_id` equal to `orgId` is found, it will be returned.
-		 * If no match is found for `orgId`, then it will look for a match with `defaultOrgId`.
+		/**If data exists for both `orgId` and `defaultOrgId`, the query will return data for both
+		 * Later we will filter the response
 		 */
 		const filter = {
 			code: code,
@@ -48,10 +46,16 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 				: defaultOrgId,
 		}
 
-		let templateData = await NotificationTemplate.findOne({
+		let templateData = await NotificationTemplate.findAll({
 			where: filter,
 			raw: true,
 		})
+
+		// If there are multiple results, find the one matching orgId
+		templateData = templateData.find((template) => template.org_id === orgId) || templateData[0]
+
+		// If no data is found, set an empty object
+		templateData = templateData || {}
 
 		if (templateData && templateData.email_header) {
 			const header = await this.getEmailHeader(templateData.email_header)
