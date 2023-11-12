@@ -16,6 +16,7 @@ const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const usersService = require('@services/users')
 const moment = require('moment')
+const menteesService = require('@services/mentees')
 
 module.exports = class MentorsHelper {
 	/**
@@ -28,7 +29,7 @@ module.exports = class MentorsHelper {
 	 * @param {String} search - Search text.
 	 * @returns {JSON} - mentors upcoming session details
 	 */
-	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams) {
+	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor) {
 		try {
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			console.log(query)
@@ -70,6 +71,13 @@ module.exports = class MentorsHelper {
 			if (menteeUserId && id != menteeUserId) {
 				upcomingSessions.data = await this.menteeSessionDetails(upcomingSessions.data, menteeUserId)
 			}
+
+			// Filter upcoming sessions based on saas policy
+			upcomingSessions.data = await menteesService.filterSessionsBasedOnSaasPolicy(
+				upcomingSessions.data,
+				menteeUserId,
+				isAMentor
+			)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'UPCOMING_SESSION_FETCHED',
@@ -581,7 +589,7 @@ module.exports = class MentorsHelper {
 	 * @returns {JSON} - User list.
 	 */
 
-	static async list(pageNo, pageSize, searchText, queryParams, isAMentor) {
+	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
 		try {
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
@@ -599,7 +607,7 @@ module.exports = class MentorsHelper {
 			extensionDetails.data = extensionDetails.data.filter((item) => item.visibility && item.org_id)
 
 			// Filter user data based on SAAS policy
-			extensionDetails.data = await this.filterMentorListBasedOnSaasPolicy(
+			extensionDetails.data = await usersService.filterMentorListBasedOnSaasPolicy(
 				extensionDetails.data,
 				userId,
 				isAMentor
