@@ -82,7 +82,7 @@ module.exports = class MenteesHelper {
                 delays in starting session then status will remain published for that particular interval so fetch that also */
 
 			/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
-			sessions = await this.getMySessions(page, limit, search, userId)
+			const sessions = await this.getMySessions(page, limit, search, userId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -319,6 +319,7 @@ module.exports = class MenteesHelper {
 		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
 
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(page, limit, search, userId, filteredQuery)
+
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
 
 		// Filter sessions based on saas policy {session contain enrolled + upcoming session}

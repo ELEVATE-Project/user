@@ -29,7 +29,8 @@ module.exports = class Mentors {
 				req.pageSize,
 				req.searchText,
 				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id,
-				req.query
+				req.query,
+				isAMentor(req.decodedToken.roles)
 			)
 		} catch (error) {
 			return error
@@ -101,9 +102,12 @@ module.exports = class Mentors {
 	 * List of available mentors.
 	 * @method
 	 * @name list
-	 * @param {Object} req - Request data.
-	 * @param {String} req.decodedToken.id - Mentors user id.
-	 * @returns {JSON} - Returns sharable link of the mentor.
+	 * @param {Number} req.pageNo 				- page no.
+	 * @param {Number} req.pageSize 			- page size limit.
+	 * @param {String} req.searchText 			- search text.
+	 * @param {Number}  req.decodedToken.id		- userId.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- List of mentors.
 	 */
 
 	async list(req) {
@@ -113,6 +117,7 @@ module.exports = class Mentors {
 				req.pageSize,
 				req.searchText,
 				req.query,
+				req.decodedToken.id,
 				isAMentor(req.decodedToken.roles)
 			)
 		} catch (error) {

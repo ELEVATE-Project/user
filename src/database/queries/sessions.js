@@ -654,7 +654,9 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 				status,
 				image,
 				mentor_id,
-				meeting_info
+				meeting_info,
+				visibility,
+				mentor_org_id
 			FROM
 					${common.materializedViewsPrefix + Session.tableName}
 			WHERE
