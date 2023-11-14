@@ -1,78 +1,10 @@
 'use strict'
 const entityTypeQueries = require('@database/queries/entityType')
 const { sequelize } = require('@database/models/index')
-const fs = require('fs')
-const path = require('path')
-const Sequelize = require('sequelize')
-
-const modelPath = require('../.sequelizerc')
 const utils = require('@generics/utils')
-/* async function createSequelizeModelFromMaterializedView(materializedViewName, modelName) {
-	try {
-		const model = require('@database/models/index')[modelName]
-		const primaryKeys = model.primaryKeyAttributes
+const common = require('@constants/common')
 
-		const [results, metadata] = await sequelize.query(
-			`SELECT attname AS column_name, atttypid::regtype AS data_type FROM pg_attribute WHERE attrelid = 'public.${materializedViewName}'::regclass AND attnum > 0;`
-		)
-
-		if (results.length === 0) {
-			throw new Error(`Materialized view '${materializedViewName}' not found.`)
-		}
-
-		const mapDataTypes = (data_type) => {
-			const dataTypeMappings = {
-				integer: 'DataTypes.INTEGER',
-				'character varying': 'DataTypes.STRING',
-				'character varying[]': 'DataTypes.ARRAY(DataTypes.STRING)',
-				boolean: 'DataTypes.BOOLEAN',
-				'timestamp with time zone': 'DataTypes.DATE',
-				jsonb: 'DataTypes.JSONB',
-				json: 'DataTypes.JSON',
-			}
-
-			return dataTypeMappings[data_type] || 'DataTypes.STRING'
-		}
-
-		const attributes = results.map((row) => {
-			if (primaryKeys.includes(row.column_name)) {
-				return `${row.column_name}: {
-					type: ${mapDataTypes(row.data_type)},
-					primaryKey: true,
-				  },`
-			}
-			return `${row.column_name}: {
-		  type: ${mapDataTypes(row.data_type)},
-		},`
-		})
-
-		const modelFileContent = `'use strict';
-  module.exports = (sequelize, DataTypes) => {
-	const ${materializedViewName} = sequelize.define(
-	  '${materializedViewName}',
-	  {
-		${attributes.join('\n      ')}
-	  },
-	  {
-		sequelize,
-		modelName: '${materializedViewName}',
-		tableName: '${materializedViewName}',
-		freezeTableName: true,
-		paranoid: true,
-	  }
-	);
-	return ${materializedViewName};
-  };`
-
-		const outputFileName = path.join(modelPath['models-path'], `${materializedViewName}.js`)
-		fs.writeFileSync(outputFileName, modelFileContent, 'utf-8')
-
-		return modelFileContent
-	} catch (error) {
-		console.error('Error:', error)
-		throw error
-	}
-} */
+let refreshInterval
 const groupByModelNames = async (entityTypes) => {
 	const groupedData = new Map()
 	entityTypes.forEach((item) => {
@@ -108,7 +40,6 @@ const filterConcreteAndMetaAttributes = async (modelAttributes, attributesList) 
 
 const rawAttributesTypeModifier = async (rawAttributes) => {
 	try {
-		console.log(rawAttributes)
 		const outputArray = []
 		for (const key in rawAttributes) {
 			const columnInfo = rawAttributes[key]
@@ -144,6 +75,41 @@ const rawAttributesTypeModifier = async (rawAttributes) => {
 		console.log(err)
 	}
 }
+const metaAttributesTypeModifier = (data) => {
+	try {
+		const typeMap = {
+			'ARRAY[STRING]': 'character varying[]',
+			'ARRAY[INTEGER]': 'integer[]',
+			'ARRAY[TEXT]': 'text[]',
+			INTEGER: 'integer',
+			DATE: 'timestamp with time zone',
+			BOOLEAN: 'boolean',
+			JSONB: 'jsonb',
+			JSON: 'json',
+			STRING: 'character varying',
+			BIGINT: 'bigint',
+		}
+
+		const outputArray = data.map((field) => {
+			const { data_type, model_names, ...rest } = field
+			const convertedDataType = typeMap[data_type]
+
+			return convertedDataType
+				? {
+						...rest,
+						data_type: convertedDataType,
+						model_names: Array.isArray(model_names)
+							? model_names.map((modelName) => `'${modelName}'`).join(', ')
+							: model_names,
+				  }
+				: field
+		})
+
+		return outputArray
+	} catch (err) {
+		console.error(err)
+	}
+}
 
 const generateRandomCode = (length) => {
 	const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -158,7 +124,7 @@ const generateRandomCode = (length) => {
 const materializedViewQueryBuilder = async (model, concreteFields, metaFields) => {
 	try {
 		const tableName = model.tableName
-		const temporaryMaterializedViewName = `m_${tableName}_${generateRandomCode(8)}`
+		const temporaryMaterializedViewName = `${common.materializedViewsPrefix}${tableName}_${generateRandomCode(8)}`
 		const concreteFieldsQuery = await concreteFields
 			.map((data) => {
 				return `${data.key}::${data.type} as ${data.key}`
@@ -196,7 +162,7 @@ const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes) => {
 		await Promise.all(
 			modelEntityTypes.entityTypeValueList.map(async (attribute) => {
 				return await sequelize.query(
-					`CREATE INDEX m_idx_${model.tableName}_${attribute} ON m_${model.tableName} (${attribute});`
+					`CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} (${attribute});`
 				)
 			})
 		)
@@ -216,19 +182,19 @@ const deleteMaterializedView = async (viewName) => {
 const renameMaterializedView = async (temporaryMaterializedViewName, tableName) => {
 	const t = await sequelize.transaction()
 	try {
-		let randomViewName = `m_${tableName}_${generateRandomCode(8)}`
-		//const checkOriginalViewQuery = `SELECT EXISTS (SELECT 1 FROM pg_materialized_views WHERE viewname = 'm_${tableName}');`;
-		const checkOriginalViewQuery = `SELECT COUNT(*) from pg_matviews where matviewname = 'm_${tableName}';`
-		const renameOriginalViewQuery = `ALTER MATERIALIZED VIEW m_${tableName} RENAME TO ${randomViewName};`
-		const renameNewViewQuery = `ALTER MATERIALIZED VIEW ${temporaryMaterializedViewName} RENAME TO m_${tableName};`
+		let randomViewName = `${common.materializedViewsPrefix}${tableName}_${generateRandomCode(8)}`
+
+		const checkOriginalViewQuery = `SELECT COUNT(*) from pg_matviews where matviewname = '${common.materializedViewsPrefix}${tableName}';`
+		const renameOriginalViewQuery = `ALTER MATERIALIZED VIEW ${common.materializedViewsPrefix}${tableName} RENAME TO ${randomViewName};`
+		const renameNewViewQuery = `ALTER MATERIALIZED VIEW ${temporaryMaterializedViewName} RENAME TO ${common.materializedViewsPrefix}${tableName};`
 
 		const temp = await sequelize.query(checkOriginalViewQuery)
-		console.log('VIEW EXISTS: ', temp[0][0].count)
+
 		if (temp[0][0].count > 0) await sequelize.query(renameOriginalViewQuery, { transaction: t })
 		else randomViewName = null
 		await sequelize.query(renameNewViewQuery, { transaction: t })
 		await t.commit()
-		console.log('Transaction committed successfully')
+
 		return randomViewName
 	} catch (error) {
 		await t.rollback()
@@ -239,12 +205,12 @@ const renameMaterializedView = async (temporaryMaterializedViewName, tableName) 
 const createViewUniqueIndexOnPK = async (model) => {
 	try {
 		const primaryKeys = model.primaryKeyAttributes
-		/* CREATE UNIQUE INDEX unique_index_name
-ON my_materialized_view (column1, column2); */
+
 		const result = await sequelize.query(`
-            CREATE UNIQUE INDEX m_unique_index_${model.tableName}_${primaryKeys.map((key) => `_${key}`)} 
-            ON m_${model.tableName} (${primaryKeys.map((key) => `${key}`).join(', ')});`)
-		console.log('UNIQUE RESULT: ', result)
+            CREATE UNIQUE INDEX ${common.materializedViewsPrefix}unique_index_${model.tableName}_${primaryKeys.map(
+			(key) => `_${key}`
+		)} 
+            ON ${common.materializedViewsPrefix}${model.tableName} (${primaryKeys.map((key) => `${key}`).join(', ')});`)
 	} catch (err) {
 		console.log(err)
 	}
@@ -252,47 +218,36 @@ ON my_materialized_view (column1, column2); */
 
 const generateMaterializedView = async (modelEntityTypes) => {
 	try {
-		//console.log('MODEL ENTITY TYPES:', modelEntityTypes);
 		const model = require('@database/models/index')[modelEntityTypes.modelName]
-		console.log('MODEL: ', modelEntityTypes.modelName)
+
 		const { concreteAttributes, metaAttributes } = await filterConcreteAndMetaAttributes(
 			Object.keys(model.rawAttributes),
 			modelEntityTypes.entityTypeValueList
 		)
-		//console.log('GENERATE MATERIALIZED VIEW: ', concreteAttributes, metaAttributes);
 
 		const concreteFields = await rawAttributesTypeModifier(model.rawAttributes)
-		console.log(concreteFields, '-=-=-=---------')
+
 		const metaFields = await modelEntityTypes.entityTypes
 			.map((entity) => {
 				if (metaAttributes.includes(entity.value)) return entity
 				else null
 			})
 			.filter(Boolean)
-		console.log('MODIFIED TYPES: ', concreteFields)
-		console.log('META FIELDS: ', metaFields)
-		//if (metaFields.length == 0) return
+
+		const modifiedMetaFields = await metaAttributesTypeModifier(metaFields)
 
 		const { materializedViewGenerationQuery, temporaryMaterializedViewName } = await materializedViewQueryBuilder(
 			model,
 			concreteFields,
-			metaFields
+			modifiedMetaFields
 		)
-		console.log('QUERY:', materializedViewGenerationQuery)
 
 		await sequelize.query(materializedViewGenerationQuery)
-		console.log('GENERATED:')
+
 		const randomViewName = await renameMaterializedView(temporaryMaterializedViewName, model.tableName)
 		if (randomViewName) await deleteMaterializedView(randomViewName)
 		await createIndexesOnAllowFilteringFields(model, modelEntityTypes)
 		await createViewUniqueIndexOnPK(model)
-		/* 		createSequelizeModelFromMaterializedView(`m_${model.tableName}`, modelEntityTypes.modelName)
-			.then((modelRes) => {
-				console.log(`Sequelize model created for '${model.tableName}' and written to '${model.tableName}.js'.`)
-			})
-			.catch((error) => {
-				console.error('Error:', error)
-			}) */
 	} catch (err) {
 		console.log(err)
 	}
@@ -317,63 +272,11 @@ const triggerViewBuild = async () => {
 		const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 		const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
 
-		const createFunctionSQL = `
-		CREATE OR REPLACE FUNCTION transform_jsonb_to_text_array(input_jsonb jsonb) RETURNS text[] AS $$
-		DECLARE
-			result text[];
-			element text;
-		BEGIN
-			IF jsonb_typeof(input_jsonb) = 'object' THEN
-				-- Input is an object, initialize the result array
-				result := ARRAY[]::text[];
-				-- Loop through the object and add keys to the result array
-				FOR element IN SELECT jsonb_object_keys(input_jsonb)
-				LOOP
-					result := array_append(result, element);
-				END LOOP;
-			ELSIF jsonb_typeof(input_jsonb) = 'array' THEN
-				-- Input is an array, initialize the result array
-				result := ARRAY[]::text[];
-				-- Loop through the array and add elements to the result array
-				FOR element IN SELECT jsonb_array_elements_text(input_jsonb)
-				LOOP
-					result := array_append(result, element);
-				END LOOP;
-			ELSE
-				-- If input is neither an object nor an array, return an empty array
-				result := ARRAY[]::text[];
-			END IF;
-			RETURN result;
-		END;
-		$$ LANGUAGE plpgsql;
-	  `
-
-		// Execute the SQL statement to create the function
-		sequelize
-			.query(createFunctionSQL)
-			.then(() => {
-				console.log('Function created successfully')
-			})
-			.catch((error) => {
-				console.error('Error creating function:', error)
-			})
-
 		await Promise.all(
 			entityTypesGroupedByModel.map(async (modelEntityTypes) => {
 				return generateMaterializedView(modelEntityTypes)
 			})
 		)
-		/* 		const materializedViewName = 'm_sessions' // Replace with the actual materialized view name
-
-		createSequelizeModelFromMaterializedView(materializedViewName, 'Session')
-			.then((model) => {
-				console.log(
-					`Sequelize model created for '${materializedViewName}' and written to '${materializedViewName}.js'.`
-				)
-			})
-			.catch((error) => {
-				console.error('Error:', error)
-			}) */
 
 		return entityTypesGroupedByModel
 	} catch (err) {
@@ -388,7 +291,6 @@ const modelNameCollector = async (entityTypes) => {
 		const modelSet = new Set()
 		await Promise.all(
 			entityTypes.map(async ({ model_names }) => {
-				console.log(model_names)
 				if (model_names && Array.isArray(model_names))
 					await Promise.all(
 						model_names.map((model) => {
@@ -397,7 +299,6 @@ const modelNameCollector = async (entityTypes) => {
 					)
 			})
 		)
-		console.log(modelSet)
 		return [...modelSet.values()]
 	} catch (err) {
 		console.log(err)
@@ -407,8 +308,10 @@ const modelNameCollector = async (entityTypes) => {
 const refreshMaterializedView = async (modelName) => {
 	try {
 		const model = require('@database/models/index')[modelName]
-		const [result, metadata] = await sequelize.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY m_${model.tableName}`)
-		console.log(result, metadata)
+		const [result, metadata] = await sequelize.query(
+			`REFRESH MATERIALIZED VIEW CONCURRENTLY ${common.materializedViewsPrefix}${model.tableName}`
+		)
+		return metadata
 	} catch (err) {
 		console.log(err)
 	}
@@ -419,7 +322,10 @@ const refreshNextView = (currentIndex, modelNames) => {
 		if (currentIndex < modelNames.length) {
 			refreshMaterializedView(modelNames[currentIndex])
 			currentIndex++
-		} else currentIndex = 0
+		} else {
+			console.info('All views refreshed. Stopping further refreshes.')
+			clearInterval(refreshInterval) // Stop the setInterval loop
+		}
 		return currentIndex
 	} catch (err) {
 		console.log(err)
@@ -430,12 +336,15 @@ const triggerPeriodicViewRefresh = async () => {
 	try {
 		const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 		const modelNames = await modelNameCollector(allowFilteringEntityTypes)
-		console.log('MODEL NAME: ', modelNames)
-		const interval = 1 * 60 * 1000 // 1 minute * 60 seconds per minute * 1000 milliseconds per second
+		const interval = process.env.REFRESH_VIEW_INTERNAL
 		let currentIndex = 0
-		setInterval(() => {
+
+		// Using the mockSetInterval function to simulate setInterval
+		refreshInterval = setInterval(() => {
 			currentIndex = refreshNextView(currentIndex, modelNames)
 		}, interval / modelNames.length)
+
+		// Immediately trigger the first refresh
 		currentIndex = refreshNextView(currentIndex, modelNames)
 	} catch (err) {
 		console.log(err)
@@ -445,6 +354,7 @@ const triggerPeriodicViewRefresh = async () => {
 const adminService = {
 	triggerViewBuild,
 	triggerPeriodicViewRefresh,
+	refreshMaterializedView,
 }
 
 module.exports = adminService

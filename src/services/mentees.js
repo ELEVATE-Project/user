@@ -551,7 +551,7 @@ module.exports = class MenteesHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'user_extensions')
+			let res = utils.validateInput(data, validationData, 'UserExtension')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -636,7 +636,7 @@ module.exports = class MenteesHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(data, validationData, 'user_extensions')
+			let res = utils.validateInput(data, validationData, 'UserExtension')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',

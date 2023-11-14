@@ -145,26 +145,37 @@ module.exports = class AdminHelper {
 		}
 	}
 
-	static async triggerViewRebuild(decodedToken, userId) {
+	static async triggerViewRebuild(decodedToken) {
 		try {
 			const result = await adminService.triggerViewBuild()
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'USER_REMOVED_SUCCESSFULLY',
-				result,
+				message: 'MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			console.error('An error occurred in userDelete:', error)
 			return error
 		}
 	}
-	static async triggerPeriodicViewRefresh(decodedToken, userId) {
+	static async triggerPeriodicViewRefresh(decodedToken) {
 		try {
 			const result = await adminService.triggerPeriodicViewRefresh()
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'USER_REMOVED_SUCCESSFULLY',
-				result,
+				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.error('An error occurred in userDelete:', error)
+			return error
+		}
+	}
+	static async triggerPeriodicViewRefreshInternal(modelName) {
+		try {
+			const result = await adminService.refreshMaterializedView(modelName)
+			console.log(result)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			console.error('An error occurred in userDelete:', error)
