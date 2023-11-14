@@ -181,6 +181,7 @@ module.exports = class Account {
 	 *
 	 * @param {Object} req - request data with method GET.
 	 * @param {Boolean} req.query.type - User Type mentor/mentee
+	 * @param {Integer} req.query.organization_id - User Organization id
 	 * @param {Number} req.pageNo - page no.
 	 * @param {Number} req.pageSize - page size limit.
 	 * @param {String} req.searchText - search text.

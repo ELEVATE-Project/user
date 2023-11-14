@@ -20,6 +20,7 @@ const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
+const { Op } = require('sequelize')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -71,9 +72,10 @@ module.exports = class OrgAdminHelper {
 				},
 				{
 					removeOnComplete: true,
+					attempts: common.NO_OF_ATTEMPTS,
 					backoff: {
 						type: 'fixed',
-						delay: common.backoffRetryQueue, // Wait 10 min between attempts
+						delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
 					},
 				}
 			)
@@ -237,8 +239,8 @@ module.exports = class OrgAdminHelper {
 
 			const requestDetails = await orgRoleReqQueries.requestDetails({ id: requestId })
 
-			const isApproved = bodyData.status === common.statusAccepted
-			const isRejected = bodyData.status === common.statusRejected
+			const isApproved = bodyData.status === common.ACCEPTED_STATUS
+			const isRejected = bodyData.status === common.REJECTED_STATUS
 
 			const shouldSendEmail = isApproved || isRejected
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
@@ -271,11 +273,21 @@ module.exports = class OrgAdminHelper {
 	 * @param {Object} loggedInUserId - logged in user id
 	 * @returns {JSON} - Deactivated user data
 	 */
-	static async deactivateUser(filterQuery, loggedInUserId) {
+	static async deactivateUser(bodyData, tokenInformation) {
 		try {
-			let rowsAffected = await userQueries.updateUser(filterQuery, {
-				status: common.inactiveStatus,
-				updated_by: loggedInUserId,
+			let filterQuery = {
+				organization_id: tokenInformation.organization_id,
+			}
+
+			for (let item in bodyData) {
+				filterQuery[item] = {
+					[Op.in]: bodyData[item],
+				}
+			}
+
+			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
+				status: common.INACTIVE_STATUS,
+				updated_by: tokenInformation.id,
 			})
 
 			if (rowsAffected == 0) {
@@ -283,6 +295,32 @@ module.exports = class OrgAdminHelper {
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let userIds = []
+			if (bodyData.email) {
+				const users = await userQueries.findAll(
+					{
+						email: {
+							[Op.in]: bodyData.email,
+						},
+					},
+					{
+						attributes: ['id'],
+					}
+				)
+				userIds = _.map(users, 'id')
+			} else {
+				userIds = bodyData.id
+			}
+
+			//check and deactivate upcoming sessions
+			for (const userId of userIds) {
+				eventBroadcaster('deactivateUpcomingSession', {
+					queryParams: {
+						user_id: userId,
+					},
 				})
 			}
 
@@ -364,18 +402,18 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const userRoles = await roleQueries.findAll(
-				{ id: user.roles, status: common.activeStatus },
+				{ id: user.roles, status: common.ACTIVE_STATUS },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
 			const systemRoleIds = userRoles
-				.filter((role) => role.user_type === common.roleTypeSystem)
+				.filter((role) => role.user_type === common.ROLE_TYPE_SYSTEM)
 				.map((role) => role.id)
 
 			let rolesToUpdate = [...systemRoleIds]
 
 			const newRole = await roleQueries.findOne(
-				{ id: requestDetails.role, status: common.activeStatus },
+				{ id: requestDetails.role, status: common.ACTIVE_STATUS },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
@@ -409,13 +447,15 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 async function sendRoleRequestStatusEmail(userDetails, status) {
 	try {
 		let templateData
-		if (status === common.statusAccepted) {
+		if (status === common.ACCEPTED_STATUS) {
 			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE
+				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
+				userDetails.organization_id
 			)
-		} else if (status === common.statusRejected) {
+		} else if (status === common.REJECTED_STATUS) {
 			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE
+				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
+				userDetails.organization_id
 			)
 		}
 

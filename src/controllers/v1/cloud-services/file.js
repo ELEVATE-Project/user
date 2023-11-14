@@ -45,4 +45,20 @@ module.exports = class File {
 			return error
 		}
 	}
+
+	/**
+	 * Get sample bulk upload csv downloadable Url
+	 * @method
+	 * @name getSampleCSV
+	 * @param {JSON} req  request body.
+	 * @returns {JSON} Response with status message and result.
+	 */
+	async getSampleCSV(req) {
+		try {
+			const downlopadUrlResponse = await filesService.getDownloadableUrl(process.env.SAMPLE_CSV_FILE_PATH)
+			return downlopadUrlResponse
+		} catch (error) {
+			return error
+		}
+	}
 }

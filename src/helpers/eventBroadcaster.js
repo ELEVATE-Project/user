@@ -15,7 +15,8 @@ exports.eventBroadcaster = async (
 		const endPoints = events.eventEndpoints[action]
 		await Promise.all(
 			endPoints.map((endPoint) => {
-				if (endPoint.method === 'POST') requester.post(endPoint.baseUrl, endPoint.route, headers, requestBody)
+				if (endPoint.method === 'POST')
+					requester.post(endPoint.baseUrl, endPoint.route, headers, requestBody, queryParams)
 				else if (endPoints.method === 'GET')
 					requester.get(endPoint.baseUrl, endPoint.route, headers, pathParams, queryParams)
 			})

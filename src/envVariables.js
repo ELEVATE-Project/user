@@ -209,6 +209,19 @@ let enviromentVariables = {
 		message: 'Required default queue',
 		optional: false,
 	},
+	DEFAULT_ROLE: {
+		message: 'Required default role',
+		optional: false,
+	},
+	SAMPLE_CSV_FILE_PATH: {
+		message: 'Required sample csv file path',
+		optional: false,
+		default: 'sample/bulk_user_creation.csv',
+	},
+	ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required org admin invitation email template code',
+		optional: false,
+	},
 }
 
 let success = true
