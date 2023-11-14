@@ -76,10 +76,8 @@ module.exports = class AccountHelper {
 			})
 			let isOrgAdmin = false
 			if (invitedUserMatch) {
-				console.log('INVITED USER MATCH')
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
-				console.log('INVITED USER MATCH: ', invitedUserMatch)
 				role = await roleQueries.findOne(
 					{ id: invitedUserMatch.roles },
 					{
@@ -88,8 +86,6 @@ module.exports = class AccountHelper {
 						},
 					}
 				)
-				console.log('ROLE: ', role)
-				console.log(common.ORG_ADMIN_ROLE)
 
 				if (role.title === common.ORG_ADMIN_ROLE) {
 					isOrgAdmin = true
@@ -145,7 +141,6 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-			console.log('BODY DATA: ', bodyData)
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
