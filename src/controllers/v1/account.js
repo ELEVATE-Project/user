@@ -235,7 +235,7 @@ module.exports = class Account {
 	}
 
 	/**
-	 * otp to verify user during registration
+	 * to send reactivate otp for reactivation otp
 	 * @method
 	 * @name reactivateOtp
 	 * @param {Object} req -request data.
@@ -254,7 +254,7 @@ module.exports = class Account {
 	}
 
 	/**
-	 * create mentee account
+	 * re-Activating Account
 	 * @method
 	 * @name reactivate
 	 * @param {Object} req -request data.

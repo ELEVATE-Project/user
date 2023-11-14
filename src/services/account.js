@@ -1084,11 +1084,6 @@ module.exports = class AccountHelper {
 					},
 				}
 			}
-
-			if (process.env.APPLICATION_ENV === 'development') {
-				console.log(otp)
-			}
-
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'REACTIVATION_OTP_SENT_SUCCESSFULLY',
