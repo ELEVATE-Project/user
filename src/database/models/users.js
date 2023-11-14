@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.BOOLEAN,
 				defaultValue: false,
 			},
-			user_updated_at: DataTypes.DATE,
+			status_updated_at: DataTypes.DATE,
 			refresh_tokens: DataTypes.ARRAY(DataTypes.JSONB),
 			languages: DataTypes.ARRAY(DataTypes.STRING),
 			preferred_language: {

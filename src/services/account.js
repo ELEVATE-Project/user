@@ -1075,7 +1075,7 @@ module.exports = class AccountHelper {
 			// Check if the deactivation time is before 24 hours
 			if (user) {
 				const currentTime = new Date()
-				const deactivationTime = user.user_updated_at
+				const deactivationTime = user.status_updated_at
 
 				// Calculate the time difference in milliseconds
 				const timeDifference = currentTime - deactivationTime
@@ -1155,7 +1155,7 @@ module.exports = class AccountHelper {
 			}
 			let updateParams = {
 				status: common.ACTIVE_STATUS,
-				user_updated_at: new Date(),
+				status_updated_at: new Date(),
 			}
 			const result = await userQueries.updateUser({ email: email.toLowerCase() }, updateParams)
 			if (!result.error) {
