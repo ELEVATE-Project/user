@@ -1,9 +1,11 @@
 // DependenciesI
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const entityTypeQueries = require('../../database/queries/entityType')
+const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
-
+const organizationQueries = require('@database/queries/organization')
+const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity type.
@@ -103,14 +105,21 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readUserEntityTypes(body, userId, organization_id) {
+	static async readUserEntityTypes(body, userId, orgId) {
 		try {
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
 			const filter = {
 				value: body.value,
 				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
 			}
-			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter, organization_id)
-
+			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			if (!entities.length) {
 				return common.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
@@ -118,12 +127,14 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const prunedEntities = removeDefaultOrgEntityTypes(entities, orgId)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
-				result: { entity_types: entities },
+				result: { entity_types: prunedEntities },
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

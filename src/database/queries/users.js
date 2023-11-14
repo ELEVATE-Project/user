@@ -43,7 +43,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await database.User.findByPk(id)
+		return await database.User.findByPk(id, { raw: true })
 	} catch (error) {
 		return error
 	}
@@ -75,7 +75,7 @@ exports.findOneWithAssociation = async (filter, options = {}, associationTable, 
 	}
 }
 
-exports.listUsers = async (roleId, page, limit, search) => {
+exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 	try {
 		const offset = (page - 1) * limit
 		const whereClause = {}
@@ -88,9 +88,13 @@ exports.listUsers = async (roleId, page, limit, search) => {
 			whereClause.roles = { [Op.contains]: [roleId] }
 		}
 
+		if (organization_id) {
+			whereClause.organization_id = organization_id
+		}
+
 		const filterQuery = {
 			where: whereClause,
-			attributes: ['id', 'name', 'image'],
+			attributes: ['id', 'name', 'about', 'image'],
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			order: [['name', 'ASC']],

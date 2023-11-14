@@ -28,7 +28,7 @@ module.exports = {
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 
 		if (req.body.role) {
-			req.checkBody('role').trim().not().isIn([common.roleAdmin]).withMessage("User does't have admin access")
+			req.checkBody('role').trim().not().isIn([common.ADMIN_ROLE]).withMessage("User does't have admin access")
 		}
 	},
 
@@ -54,19 +54,16 @@ module.exports = {
 
 	generateOtp: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
 
 	registrationOtp: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('name').notEmpty().withMessage('name field is empty')
 	},
 
 	resetPassword: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('password').notEmpty().withMessage('password field is empty')
 
 		req.checkBody('otp')

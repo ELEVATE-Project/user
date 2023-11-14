@@ -23,12 +23,13 @@ exports.findOne = async (filter, options = {}) => {
 	}
 }
 
-exports.findOneEmailTemplate = async (code) => {
+exports.findOneEmailTemplate = async (code, orgId) => {
 	try {
 		const filter = {
 			code: code,
 			type: 'email',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
+			org_id: orgId || 1, //Temporary Default Org Id
 		}
 
 		let templateData = await NotificationTemplate.findOne({
@@ -55,12 +56,12 @@ exports.findOneEmailTemplate = async (code) => {
 	}
 }
 
-exports.getEmailHeader = async (filter) => {
+exports.getEmailHeader = async (header) => {
 	try {
 		const filterEmailHeader = {
 			code: header,
 			type: 'emailHeader',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
 		}
 
 		const headerData = await NotificationTemplate.findOne({
@@ -73,12 +74,12 @@ exports.getEmailHeader = async (filter) => {
 	}
 }
 
-exports.getEmailFooter = async (filter) => {
+exports.getEmailFooter = async (footer) => {
 	try {
 		const filterEmailFooter = {
 			code: footer,
 			type: 'emailFooter',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
 		}
 
 		const headerData = await NotificationTemplate.findOne({
@@ -86,6 +87,50 @@ exports.getEmailFooter = async (filter) => {
 			raw: true,
 		})
 		return headerData
+	} catch (error) {
+		return error
+	}
+}
+
+exports.updateTemplate = async (filter, update, options = {}) => {
+	try {
+		const template = await NotificationTemplate.update(update, {
+			where: filter,
+			...options,
+			individualHooks: true,
+		})
+
+		return template
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAllNotificationTemplates = async (filter, options = {}) => {
+	try {
+		const templates = await NotificationTemplate.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
+
+		// templates.forEach(async(template) => {
+		// 	if (template.email_header) {
+		// 		const header = await this.getEmailHeader(template.email_header)
+		// 		if (header && header.body) {
+		// 			template['body'] = header.body + template['body']
+		// 		}
+		// 	}
+
+		// 	if (template.email_footer) {
+		// 		const footer = await this.getEmailFooter(template.email_footer)
+		// 		if (footer && footer.body) {
+		// 			template['body'] = template['body'] + footer.body
+		// 		}
+		// 	}
+		// })
+
+		return templates
 	} catch (error) {
 		return error
 	}

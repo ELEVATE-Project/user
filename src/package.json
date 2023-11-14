@@ -29,7 +29,7 @@
 		"bcrypt": "^5.0.1",
 		"bcryptjs": "^2.4.3",
 		"body-parser": "^1.19.0",
-		"bull": "^4.11.3",
+		"bullmq": "^4.12.3",
 		"cli-table": "^0.3.11",
 		"commander": "^9.4.0",
 		"cors": "^2.8.5",
@@ -79,6 +79,7 @@
 		"sequelize-cli": "^6.6.0",
 		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
+		"url": "^0.11.3",
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
@@ -116,6 +117,7 @@
 		"@validators": "validators",
 		"@database": "database",
 		"@utils": "utils",
-		"@helpers": "helpers"
+		"@helpers": "helpers",
+		"@scripts": "scripts"
 	}
 }

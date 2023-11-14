@@ -41,4 +41,15 @@ module.exports = {
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
+
+	addOrgAdmin: (req) => {
+		req.checkBody('user_id').notEmpty().withMessage('user_id field is empty')
+		req.checkBody('org_id').notEmpty().withMessage('org_id field is empty')
+	},
+	deactivateUser: (req) => {
+		const field = req.body.email ? 'email' : req.body.id ? 'id' : null
+		if (field) {
+			req.checkBody(field).isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
+		}
+	},
 }

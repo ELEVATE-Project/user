@@ -1,5 +1,5 @@
 /**
- * name : services/helper/users.js
+ * name : users.js
  * author : Priyanka Pradeep
  * created-date : 17-July-2023
  * Description : User Service Helper.
@@ -13,7 +13,10 @@ const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/userRole')
 const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
+const organizationQueries = require('@database/queries/organization')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
+const { Op } = require('sequelize')
 
 module.exports = class UserHelper {
 	/**
@@ -36,14 +39,24 @@ module.exports = class UserHelper {
 				})
 			}
 
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+
 			const filter = {
 				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter, orgId)
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
 
-			validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-			let res = utils.validateInput(bodyData, validationData, 'users')
+			let res = utils.validateInput(bodyData, prunedEntities, 'users')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -81,6 +94,7 @@ module.exports = class UserHelper {
 				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -108,14 +122,13 @@ module.exports = class UserHelper {
 			if (!userDetails) {
 				let options = {
 					attributes: {
-						exclude: ['password', 'location', 'refresh_tokens'],
+						exclude: ['password', 'refresh_tokens'],
 					},
 				}
 				if (internal_access_token) {
 					options.paranoid = false
 				}
 				const user = await userQueries.findOne(filter, options)
-
 				if (!user) {
 					return common.failureResponse({
 						message: 'USER_NOT_FOUND',
@@ -129,7 +142,7 @@ module.exports = class UserHelper {
 				}
 
 				let roles = await roleQueries.findAll(
-					{ id: user.roles, status: common.activeStatus },
+					{ id: user.roles, status: common.ACTIVE_STATUS },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -147,19 +160,22 @@ module.exports = class UserHelper {
 
 				user.user_roles = roles
 
-				let isAMentor = false
-				if (roles && roles.length > 0) {
-					isAMentor = roles.some((role) => role.title === common.roleMentor)
-				}
-				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-					{
-						status: 'ACTIVE',
-					},
-					user.organization_id
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
 				)
-				const processDbResponse = utils.processDbResponse(user, validationData)
+				let defaultOrgId = defaultOrg.id
 
-				if (isAMentor) {
+				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+					status: 'ACTIVE',
+					org_id: {
+						[Op.in]: [user.organization_id, defaultOrgId],
+					},
+				})
+				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+				const processDbResponse = utils.processDbResponse(user, prunedEntities)
+
+				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
@@ -176,6 +192,7 @@ module.exports = class UserHelper {
 				})
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -190,10 +207,7 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			let user = await userQueries.findOne(
-				{ id: userId, role: common.roleMentor },
-				{ attributes: ['share_link'] }
-			)
+			let user = await userQueries.findOne({ id: userId }, { attributes: ['share_link'] })
 
 			if (!user) {
 				return common.failureResponse({

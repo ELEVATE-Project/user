@@ -18,7 +18,7 @@ module.exports = class FilesHelper {
 	 * @name getSignedUrl
 	 * @param {JSON} req  request body.
 	 * @param {string} req.query.fileName - name of the file
-	 * @param {string} _id  -  userId
+	 * @param {string} id  -  userId
 	 * @returns {JSON} - Response contains signed url
 	 */
 	static async getSignedUrl(fileName, id, dynamicPath) {

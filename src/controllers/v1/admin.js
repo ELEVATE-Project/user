@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const adminHelper = require('@services/helper/admin')
+const adminService = require('@services/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utilsHelper = require('@generics/utils')
@@ -22,13 +22,7 @@ module.exports = class Admin {
 
 	async deleteUser(req) {
 		try {
-			let isAdmin = false
-			const roles = req.decodedToken.roles
-			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
-			}
-
-			if (!isAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -36,7 +30,7 @@ module.exports = class Admin {
 				})
 			}
 
-			const user = await adminHelper.deleteUser(req.params.id)
+			const user = await adminService.deleteUser(req.params.id)
 			return user
 		} catch (error) {
 			return error
@@ -64,7 +58,7 @@ module.exports = class Admin {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const createdAccount = await adminHelper.create(req.body)
+			const createdAccount = await adminService.create(req.body)
 			return createdAccount
 		} catch (error) {
 			return error
@@ -83,7 +77,7 @@ module.exports = class Admin {
 
 	async login(req) {
 		try {
-			const loggedInAccount = await adminHelper.login(req.body)
+			const loggedInAccount = await adminService.login(req.body)
 			return loggedInAccount
 		} catch (error) {
 			return error
@@ -102,13 +96,7 @@ module.exports = class Admin {
 
 	async addOrgAdmin(req) {
 		try {
-			let isAdmin = false
-			const roles = req.decodedToken.roles
-			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.roleAdmin)
-			}
-
-			if (!isAdmin) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -116,12 +104,69 @@ module.exports = class Admin {
 				})
 			}
 
-			const orgAdminCreation = await adminHelper.addOrgAdmin(
+			const orgAdminCreation = await adminService.addOrgAdmin(
 				req.body.user_id,
 				req.body.org_id,
 				req.decodedToken.id
 			)
 			return orgAdminCreation
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Deactivate Org
+	 * @method
+	 * @name deactivateOrg
+	 * @param {String} req.params.id - org Id.
+	 * @returns {JSON} - deactivated org response
+	 */
+	async deactivateOrg(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await adminService.deactivateOrg(req.params.id, req.decodedToken.id)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {String} req.params.id - user Id.
+	 * @returns {JSON} - deactivated user response
+	 */
+	async deactivateUser(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (!req.body.id && !req.body.email) {
+				throw common.failureResponse({
+					message: 'EMAIL_OR_ID_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await adminService.deactivateUser(req.body, req.decodedToken.id)
+
+			return result
 		} catch (error) {
 			return error
 		}

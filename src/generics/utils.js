@@ -83,8 +83,14 @@ const getDownloadableUrl = async (imgPath) => {
 	return imgPath
 }
 
-const validateRoleAccess = (roles, requiredRole) => {
-	return roles.some((role) => role.title == requiredRole)
+const validateRoleAccess = (roles, requiredRoles) => {
+	if (!roles || roles.length === 0) return false
+
+	if (!Array.isArray(requiredRoles)) {
+		requiredRoles = [requiredRoles]
+	}
+
+	return roles.some((role) => requiredRoles.includes(role.title))
 }
 
 const generateFileName = (name, extension) => {
@@ -93,6 +99,15 @@ const generateFileName = (name, extension) => {
 	return name + fileExtensionWithTime
 }
 
+const generateRedisConfigForQueue = () => {
+	const parseURL = new URL(process.env.REDIS_HOST)
+	return {
+		connection: {
+			host: parseURL.hostname,
+			port: parseURL.port,
+		},
+	}
+}
 /**
  * md5 hash
  * @function
@@ -134,6 +149,14 @@ function extractFilename(fileString) {
 
 function extractDomainFromEmail(email) {
 	return email.substring(email.lastIndexOf('@') + 1)
+}
+
+function generateCSVContent(data) {
+	const headers = Object.keys(data[0])
+	return [
+		headers.join(','),
+		...data.map((row) => headers.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
+	].join('\n')
 }
 
 function validateInput(input, validationData, modelName) {
@@ -181,12 +204,15 @@ function validateInput(input, validationData, modelName) {
 		errors: errors,
 	}
 }
+
 function restructureBody(requestBody, entityData, allowedKeys) {
 	const customEntities = {}
+	requestBody.custom_entity_text = {}
 	for (const requestBodyKey in requestBody) {
 		if (requestBody.hasOwnProperty(requestBodyKey)) {
 			const requestBodyValue = requestBody[requestBodyKey]
 			const entityType = entityData.find((entity) => entity.value === requestBodyKey)
+
 			if (entityType && entityType.allow_custom_entities) {
 				if (Array.isArray(requestBodyValue)) {
 					const customValues = []
@@ -195,12 +221,13 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 						const entityExists = entityType.entities.find((entity) => entity.value === value)
 
 						if (!entityExists) {
-							customEntities.custom_entity_text = {
-								...(customEntities.custom_entity_text || {}),
-								[requestBodyKey]: { value: 'other', label: value },
-							}
-
-							// Add the value to customValues to remove it later
+							customEntities.custom_entity_text = customEntities.custom_entity_text || {}
+							customEntities.custom_entity_text[requestBodyKey] =
+								customEntities.custom_entity_text[requestBodyKey] || []
+							customEntities.custom_entity_text[requestBodyKey].push({
+								value: 'other',
+								label: value,
+							})
 							customValues.push(value)
 						}
 					}
@@ -213,17 +240,17 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 					}
 				}
 			}
+
 			if (Array.isArray(requestBodyValue)) {
-				for (const value of requestBodyValue) {
-					const entityTypeExists = entityData.find((entity) => entity.value === value)
-					// Always move the key to the meta field if it's not allowed and is not a custom entity
-					if (!allowedKeys.includes(requestBodyKey) && entityTypeExists) {
-						requestBody.meta = {
-							...(requestBody.meta || {}),
-							[requestBodyKey]: requestBody[requestBodyKey],
-						}
-						delete requestBody[requestBodyKey]
+				const entityTypeExists = entityData.find((entity) => entity.value === requestBodyKey)
+
+				// Always move the key to the meta field if it's not allowed and is not a custom entity
+				if (!allowedKeys.includes(requestBodyKey) && entityTypeExists) {
+					requestBody.meta = {
+						...(requestBody.meta || {}),
+						[requestBodyKey]: requestBody[requestBodyKey],
 					}
+					delete requestBody[requestBodyKey]
 				}
 			}
 		}
@@ -231,9 +258,9 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 
 	// Merge customEntities into requestBody
 	Object.assign(requestBody, customEntities)
-
 	return requestBody
 }
+
 function processDbResponse(session, entityType) {
 	if (session.meta) {
 		entityType.forEach((entity) => {
@@ -253,12 +280,24 @@ function processDbResponse(session, entityType) {
 		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
 			const matchingEntity = entityType.find((entity) => entity.value === key)
 			const matchingValues = matchingEntity.entities
-				.filter((entity) => output[key].includes(entity.value))
+				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : false))
 				.map((entity) => ({
 					value: entity.value,
 					label: entity.label,
 				}))
-			output[key] = matchingValues
+			if (matchingValues.length > 0) {
+				output[key] = matchingValues
+			} else if (Array.isArray(output[key])) {
+				output[key] = output[key].map((item) => {
+					if (item.value && item.label) {
+						return item
+					}
+					return {
+						value: item,
+						label: item,
+					}
+				})
+			}
 		}
 
 		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
@@ -269,13 +308,22 @@ function processDbResponse(session, entityType) {
 			}
 		}
 	}
+
 	const data = output
+
+	// Merge "custom_entity_text" into the respective arrays
 	for (const key in data.custom_entity_text) {
-		data[key] = [...data[key], data.custom_entity_text[key]]
+		if (Array.isArray(data[key])) {
+			data[key] = [...data[key], ...data.custom_entity_text[key]]
+		} else {
+			data[key] = data.custom_entity_text[key]
+		}
 	}
+
 	delete data.custom_entity_text
 	return data
 }
+
 function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
@@ -290,6 +338,15 @@ const generateOtp = (otpLength, email, action) => {
 		otp,
 	}
 }
+const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
+	const entityTypeMap = new Map()
+	entityTypes.forEach((entityType) => {
+		if (!entityTypeMap.has(entityType.value)) entityTypeMap.set(entityType.value, entityType)
+		else if (entityType.org_id === orgId) entityTypeMap.set(entityType.value, entityType)
+	})
+	return Array.from(entityTypeMap.values())
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -300,6 +357,7 @@ module.exports = {
 	md5Hash,
 	validateRoleAccess,
 	generateFileName,
+	generateRedisConfigForQueue,
 	internalSet: internalSet,
 	internalDel: internalDel,
 	internalGet: internalGet,
@@ -309,9 +367,11 @@ module.exports = {
 	isNumeric: isNumeric,
 	extractFilename: extractFilename,
 	extractDomainFromEmail: extractDomainFromEmail,
+	generateCSVContent: generateCSVContent,
 	processDbResponse,
 	restructureBody,
 	validateInput,
 	removeParentEntityTypes,
 	generateOtp,
+	removeDefaultOrgEntityTypes,
 }

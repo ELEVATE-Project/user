@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			file_id: {
 				type: DataTypes.INTEGER,
-				allowNull: false,
+				allowNull: true,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{ sequelize, modelName: 'OrgUserInvite', tableName: 'org_user_invites', freezeTableName: true, paranoid: true }
 	)
+
+	OrgUserInvite.associate = (models) => {
+		OrgUserInvite.belongsTo(models.FileUpload, { as: 'file', foreignKey: 'file_id' })
+	}
 
 	return OrgUserInvite
 }
