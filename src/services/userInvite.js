@@ -183,8 +183,8 @@ module.exports = class UserInviteHelper {
 			])
 
 			const templates = {
-				[common.MENTOR_ROLE]: mentorTemplateData,
-				[common.MENTEE_ROLE]: menteeTemplateData,
+				[common.roleMentor]: mentorTemplateData,
+				[common.roleMentee]: menteeTemplateData,
 			}
 
 			// process csv data
