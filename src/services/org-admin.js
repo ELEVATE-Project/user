@@ -73,7 +73,7 @@ module.exports = class OrgAdminHelper {
 					removeOnComplete: true,
 					backoff: {
 						type: 'fixed',
-						delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
+						delay: common.backoffRetryQueue, // Wait 10 min between attempts
 					},
 				}
 			)
@@ -274,7 +274,7 @@ module.exports = class OrgAdminHelper {
 	static async deactivateUser(filterQuery, loggedInUserId) {
 		try {
 			let rowsAffected = await userQueries.updateUser(filterQuery, {
-				status: common.INACTIVE_STATUS,
+				status: common.inactiveStatus,
 				updated_by: loggedInUserId,
 			})
 

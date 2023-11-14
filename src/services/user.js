@@ -176,7 +176,7 @@ module.exports = class UserHelper {
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)
 
-				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
+				if (utils.validateRoleAccess(roles, common.roleMentor)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
@@ -208,7 +208,7 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			const role = await roleQueries.findOne({ title: common.MENTOR_ROLE })
+			const role = await roleQueries.findOne({ title: common.roleMentor })
 
 			if (!role) {
 				return common.failureResponse({

@@ -104,7 +104,7 @@ module.exports = class AccountHelper {
 
 				//add default role as mentee
 				role = await roleQueries.findOne(
-					{ title: common.MENTEE_ROLE },
+					{ title: common.roleMentee },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -1042,7 +1042,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			if (userData && userData.action === common.ACTION) {
+			if (userData && userData.action === reactivation) {
 				otp = userData.otp
 			} else {
 				isValidOtpExist = false
@@ -1098,7 +1098,7 @@ module.exports = class AccountHelper {
 			const { email, otp } = bodyData
 			const storedData = await utilsHelper.redisGet(email.toLowerCase())
 
-			if (!storedData || storedData.action != common.ACTION || storedData.otp != otp) {
+			if (!storedData || storedData.action != reactivation || storedData.otp != otp) {
 				return common.failureResponse({
 					message: 'INVALID_OTP',
 					statusCode: httpStatusCode.bad_request,
