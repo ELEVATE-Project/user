@@ -1033,7 +1033,7 @@ module.exports = class AccountHelper {
 				const timeDifference = currentTime - deactivationTime
 
 				// Check if the difference is less than 24 hours (in milliseconds)
-				if (timeDifference < 86400000) {
+				if (timeDifference < common.reactive_limit) {
 					return common.failureResponse({
 						message: 'REACTIVATION_NOT_ALLOWED_YET',
 						statusCode: httpStatusCode.bad_request,
@@ -1042,7 +1042,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			if (userData && userData.action === reactivation) {
+			if (userData && userData.action === common.reactive_action) {
 				otp = userData.otp
 			} else {
 				isValidOtpExist = false
@@ -1098,7 +1098,7 @@ module.exports = class AccountHelper {
 			const { email, otp } = bodyData
 			const storedData = await utilsHelper.redisGet(email.toLowerCase())
 
-			if (!storedData || storedData.action != reactivation || storedData.otp != otp) {
+			if (!storedData || storedData.action != common.reactive_action || storedData.otp != otp) {
 				return common.failureResponse({
 					message: 'INVALID_OTP',
 					statusCode: httpStatusCode.bad_request,

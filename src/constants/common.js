@@ -63,6 +63,8 @@ module.exports = {
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
 	refreshTokenLimit: 3,
+	reactive_action: 'reactivation',
+	reactive_limit: 86400000,
 	randomOtp: Math.floor(Math.random() * 900000 + 100000), // 6-digit OTP
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
 	roleAdmin: 'admin',
