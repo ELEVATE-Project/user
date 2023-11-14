@@ -1033,7 +1033,7 @@ module.exports = class AccountHelper {
 				const timeDifference = currentTime - deactivationTime
 
 				// Check if the difference is less than 24 hours (in milliseconds)
-				if (timeDifference < common.ACTIVATION_TIME) {
+				if (timeDifference < 86400000) {
 					return common.failureResponse({
 						message: 'REACTIVATION_NOT_ALLOWED_YET',
 						statusCode: httpStatusCode.bad_request,
