@@ -28,7 +28,7 @@ module.exports = {
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 
 		if (req.body.role) {
-			req.checkBody('role').trim().not().isIn([common.roleAdmin]).withMessage("User does't have admin access")
+			req.checkBody('role').trim().not().isIn([common.ADMIN_ROLE]).withMessage("User does't have admin access")
 		}
 	},
 

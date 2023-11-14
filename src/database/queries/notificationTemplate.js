@@ -28,7 +28,7 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 		const filter = {
 			code: code,
 			type: 'email',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
 			org_id: orgId || 1, //Temporary Default Org Id
 		}
 
@@ -61,7 +61,7 @@ exports.getEmailHeader = async (header) => {
 		const filterEmailHeader = {
 			code: header,
 			type: 'emailHeader',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
 		}
 
 		const headerData = await NotificationTemplate.findOne({
@@ -79,7 +79,7 @@ exports.getEmailFooter = async (footer) => {
 		const filterEmailFooter = {
 			code: footer,
 			type: 'emailFooter',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
 		}
 
 		const headerData = await NotificationTemplate.findOne({

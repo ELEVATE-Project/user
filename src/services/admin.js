@@ -14,6 +14,8 @@ const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const organizationQueries = require('@database/queries/organization')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { Op } = require('sequelize')
 
 module.exports = class AdminHelper {
 	/**
@@ -74,7 +76,7 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ title: common.roleAdmin })
+			let role = await roleQueries.findOne({ title: common.ADMIN_ROLE })
 			if (!role) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -189,7 +191,7 @@ module.exports = class AdminHelper {
 	static async addOrgAdmin(userId, organizationId, loggedInUserId) {
 		try {
 			let user = await userQueries.findByPk(userId)
-			if (!user) {
+			if (!user?.id) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -197,7 +199,7 @@ module.exports = class AdminHelper {
 				})
 			}
 			let organization = await organizationQueries.findByPk(organizationId)
-			if (!organization) {
+			if (!organization?.id) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -231,8 +233,8 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ title: common.roleOrgAdmin }, { attributes: ['id'] })
-			if (!role) {
+			let role = await roleQueries.findOne({ title: common.ORG_ADMIN_ROLE }, { attributes: ['id'] })
+			if (!role?.id) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
@@ -259,13 +261,22 @@ module.exports = class AdminHelper {
 			await userQueries.updateUser({ id: userId }, updateObj)
 
 			const roleData = await roleQueries.findAll(
-				{ id: roles, status: common.activeStatus },
+				{ id: roles, status: common.ACTIVE_STATUS },
 				{
 					attributes: {
 						exclude: ['created_at', 'updated_at', 'deleted_at'],
 					},
 				}
 			)
+
+			//update organization in mentoring
+			eventBroadcaster('updateOrganization', {
+				requestBody: {
+					user_id: userId,
+					org_id: organizationId,
+					roles: _.map(roleData, 'title'),
+				},
+			})
 
 			const result = {
 				user_id: userId,
@@ -294,6 +305,7 @@ module.exports = class AdminHelper {
 	 */
 	static async deactivateOrg(id, loggedInUserId) {
 		try {
+			//deactivate org
 			let rowsAffected = await organizationQueries.update(
 				{
 					id,
@@ -313,7 +325,7 @@ module.exports = class AdminHelper {
 			}
 
 			//deactivate all users in org
-			const modifiedCount = await userQueries.updateUser(
+			const [modifiedCount] = await userQueries.updateUser(
 				{
 					organization_id: id,
 				},
@@ -323,12 +335,95 @@ module.exports = class AdminHelper {
 				}
 			)
 
+			const users = await userQueries.findAll(
+				{
+					organization_id: id,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+
+			const userIds = _.map(users, 'id')
+			for (const userId of userIds) {
+				eventBroadcaster('deactivateUpcomingSession', {
+					queryParams: {
+						user_id: userId,
+					},
+				})
+			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_DEACTIVATED',
 				result: {
 					deactivated_users: modifiedCount,
 				},
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Deactivate User
+	 * @method
+	 * @name deactivateUser
+	 * @param {Number} id - user id
+	 * @param {Object} loggedInUserId - logged in user id
+	 * @returns {JSON} - Deactivated user data
+	 */
+	static async deactivateUser(bodyData, loggedInUserId) {
+		try {
+			for (let item in bodyData) {
+				filterQuery[item] = {
+					[Op.in]: bodyData[item],
+				}
+			}
+
+			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
+				status: common.INACTIVE_STATUS,
+				updated_by: loggedInUserId,
+			})
+
+			if (rowsAffected == 0) {
+				return common.failureResponse({
+					message: 'STATUS_UPDATE_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let userIds = []
+			if (bodyData.email) {
+				const users = await userQueries.findAll(
+					{
+						email: {
+							[Op.in]: bodyData.email,
+						},
+					},
+					{
+						attributes: ['id'],
+					}
+				)
+				userIds = _.map(users, 'id')
+			} else {
+				userIds = bodyData.id
+			}
+
+			//check and deactivate upcoming sessions
+			for (const userId of userIds) {
+				eventBroadcaster('deactivateUpcomingSession', {
+					queryParams: {
+						user_id: userId,
+					},
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
 			throw error
