@@ -247,7 +247,7 @@ module.exports = class Account {
 	async deactivate(req) {
 		const params = req.body
 		try {
-			const result = await accountHelper.deactivate(params)
+			const result = await accountService.deactivate(params)
 			return result
 		} catch (error) {
 			return error
@@ -265,7 +265,7 @@ module.exports = class Account {
 	async generateDisableOtp(req) {
 		const params = req.body
 		try {
-			const result = await accountHelper.generateDisableOtp(params)
+			const result = await accountService.generateDisableOtp(params)
 			return result
 		} catch (error) {
 			return error

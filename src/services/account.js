@@ -1154,7 +1154,7 @@ module.exports = class AccountHelper {
 			let otp
 			let isValidOtpExist = true
 			// get the details of user from DB if the user is ACTIVE
-			const user = await userQueries.findOne({ email: bodyData.email, status: common.activeStatus })
+			const user = await userQueries.findOne({ email: bodyData.email, status: common.ACTIVE_STATUS })
 
 			// check if the user data is present and the user is active
 			if (!user) {
@@ -1177,7 +1177,12 @@ module.exports = class AccountHelper {
 			}
 
 			if (!isValidOtpExist) {
-				const redisData = utils.generateOtp(6, bodyData.email.toLowerCase(), common.deactivateAction)
+				let otp = utils.generateOtp(6)
+				const redisData = {
+					verify: bodyData.email.toLowerCase(),
+					action: common.deactivateAction,
+					otp,
+				}
 				// set the value to redis
 				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),

@@ -331,12 +331,7 @@ function removeParentEntityTypes(data) {
 
 const generateOtp = (otpLength, email, action) => {
 	// Generate a random 6-digit number
-	const otp = Math.floor(Math.random() * Math.pow(10, otpLength))
-	return {
-		verify: email.toLowerCase(),
-		action: action,
-		otp,
-	}
+	return Math.floor(Math.random() * Math.pow(10, otpLength))
 }
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	const entityTypeMap = new Map()
