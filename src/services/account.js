@@ -76,6 +76,7 @@ module.exports = class AccountHelper {
 			})
 			let isOrgAdmin = false
 			if (invitedUserMatch) {
+				console.log('INVITED USER MATCH')
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
 
@@ -142,7 +143,7 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-
+			console.log('BODY DATA: ', bodyData)
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
