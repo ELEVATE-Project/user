@@ -299,7 +299,7 @@ module.exports = class AdminHelper {
 					id,
 				},
 				{
-					status: common.inactiveStatus,
+					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
 				}
 			)
@@ -318,7 +318,7 @@ module.exports = class AdminHelper {
 					organization_id: id,
 				},
 				{
-					status: common.inactiveStatus,
+					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
 				}
 			)

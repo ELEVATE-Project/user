@@ -104,7 +104,7 @@ module.exports = class AccountHelper {
 
 				//add default role as mentee
 				role = await roleQueries.findOne(
-					{ title: common.roleMentee },
+					{ title: common.MENTEE_ROLE },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -1015,7 +1015,7 @@ module.exports = class AccountHelper {
 			let isValidOtpExist = true
 			const user = await userQueries.findOne({ email: bodyData.email })
 
-			if (!user || user.status === common.activeStatus) {
+			if (!user || user.status === common.ACTIVE_STATUS) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND_OR_ACTIVE',
 					statusCode: httpStatusCode.not_found,
@@ -1033,7 +1033,7 @@ module.exports = class AccountHelper {
 				const timeDifference = currentTime - deactivationTime
 
 				// Check if the difference is less than 24 hours (in milliseconds)
-				if (timeDifference < common.activation_limit_time) {
+				if (timeDifference < common.ACTIVATION_TIME) {
 					return common.failureResponse({
 						message: 'REACTIVATION_NOT_ALLOWED_YET',
 						statusCode: httpStatusCode.bad_request,
@@ -1042,7 +1042,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			if (userData && userData.action === common.action) {
+			if (userData && userData.action === common.ACTION) {
 				otp = userData.otp
 			} else {
 				isValidOtpExist = false
@@ -1098,7 +1098,7 @@ module.exports = class AccountHelper {
 			const { email, otp } = bodyData
 			const storedData = await utilsHelper.redisGet(email.toLowerCase())
 
-			if (!storedData || storedData.action != common.action || storedData.otp != otp) {
+			if (!storedData || storedData.action != common.ACTION || storedData.otp != otp) {
 				return common.failureResponse({
 					message: 'INVALID_OTP',
 					statusCode: httpStatusCode.bad_request,
@@ -1106,7 +1106,7 @@ module.exports = class AccountHelper {
 				})
 			}
 			let updateParams = {
-				status: common.activeStatus,
+				status: common.ACTIVE_STATUS,
 				activated_at: new Date(),
 			}
 			const result = await userQueries.updateUser({ email: email.toLowerCase() }, updateParams)

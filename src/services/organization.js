@@ -214,7 +214,7 @@ module.exports = class OrganizationsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: role.title == common.roleMentor ? 'MENTOR_ROLE_REQUESTED' : 'MENTEE_ROLE_REQUESTED',
+				message: role.title == common.MENTOR_ROLE ? 'MENTOR_ROLE_REQUESTED' : 'MENTEE_ROLE_REQUESTED',
 				result,
 			})
 		} catch (error) {
