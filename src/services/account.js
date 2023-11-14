@@ -549,7 +549,7 @@ module.exports = class AccountHelper {
 					redisData,
 					common.otpExpirationTime
 				)
-				if (res !== common.ok) {
+				if (res !== 'OK') {
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
