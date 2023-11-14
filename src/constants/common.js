@@ -83,7 +83,6 @@ module.exports = {
 	roleAssociationModel: 'UserRole',
 	roleAssociationName: 'user_roles',
 	ACTIVE_STATUS: 'ACTIVE',
-	inactiveStatus: 'INACTIVE',
 	INACTIVE_STATUS: 'INACTIVE',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',

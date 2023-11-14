@@ -1112,7 +1112,7 @@ module.exports = class AccountHelper {
 					// call the update function modify the status and time of update
 					const [affectedRows, updatedData] = await userQueries.updateUser(
 						{ email: bodyData.email },
-						{ status: common.inactiveStatus, status_updated_at: today }
+						{ status: common.INACTIVE_STATUS, status_updated_at: today }
 					)
 
 					await utilsHelper.redisDel(bodyData.email) //delete the redis data after update.
