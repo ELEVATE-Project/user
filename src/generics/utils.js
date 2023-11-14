@@ -83,9 +83,14 @@ const getDownloadableUrl = async (imgPath) => {
 	return imgPath
 }
 
-const validateRoleAccess = (roles, requiredRole) => {
+const validateRoleAccess = (roles, requiredRoles) => {
 	if (!roles || roles.length === 0) return false
-	return roles.some((role) => role.title == requiredRole)
+
+	if (!Array.isArray(requiredRoles)) {
+		requiredRoles = [requiredRoles]
+	}
+
+	return roles.some((role) => requiredRoles.includes(role.title))
 }
 
 const generateFileName = (name, extension) => {
@@ -324,6 +329,15 @@ function removeParentEntityTypes(data) {
 	return data.filter((item) => !parentIds.includes(item.id))
 }
 
+const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
+	const entityTypeMap = new Map()
+	entityTypes.forEach((entityType) => {
+		if (!entityTypeMap.has(entityType.value)) entityTypeMap.set(entityType.value, entityType)
+		else if (entityType.org_id === orgId) entityTypeMap.set(entityType.value, entityType)
+	})
+	return Array.from(entityTypeMap.values())
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -349,4 +363,5 @@ module.exports = {
 	restructureBody,
 	validateInput,
 	removeParentEntityTypes,
+	removeDefaultOrgEntityTypes,
 }

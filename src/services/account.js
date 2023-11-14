@@ -8,6 +8,7 @@
 // Dependencies
 const bcryptJs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const _ = require('lodash')
 
 const utilsHelper = require('@generics/utils')
 const httpStatusCode = require('@generics/http-status')
@@ -23,10 +24,14 @@ const userInviteQueries = require('@database/queries/orgUserInvite')
 const FILESTREAM = require('@generics/file-stream')
 const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
+
 const { assertEnumBody } = require('@babel/types')
 const { response } = require('express')
 const httpStatus = require('@generics/http-status')
 const { invalid } = require('moment')
+const { Op } = require('sequelize')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+
 
 module.exports = class AccountHelper {
 	/**
@@ -43,7 +48,7 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData) {
-		const projection = ['password', 'refresh_tokens', 'location']
+		const projection = ['password', 'refresh_tokens']
 
 		try {
 			const email = bodyData.email.toLowerCase()
@@ -75,10 +80,11 @@ module.exports = class AccountHelper {
 			const invitedUserMatch = await userInviteQueries.findOne({
 				email,
 			})
-
+			let isOrgAdmin = false
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
-				bodyData.roles = roles = invitedUserMatch.roles
+				roles = invitedUserMatch.roles
+
 				role = await roleQueries.findOne(
 					{ id: invitedUserMatch.roles },
 					{
@@ -87,6 +93,22 @@ module.exports = class AccountHelper {
 						},
 					}
 				)
+
+				if (role.title === common.ORG_ADMIN_ROLE) {
+					isOrgAdmin = true
+
+					const defaultRole = await roleQueries.findOne(
+						{ title: process.env.DEFAULT_ROLE },
+						{
+							attributes: {
+								exclude: ['created_at', 'updated_at', 'deleted_at'],
+							},
+						}
+					)
+
+					roles.push(defaultRole.id)
+					bodyData.roles = roles
+				}
 			} else {
 				//find organization from email domain
 				let emailDomain = utilsHelper.extractDomainFromEmail(email)
@@ -106,7 +128,7 @@ module.exports = class AccountHelper {
 
 				//add default role as mentee
 				role = await roleQueries.findOne(
-					{ title: common.roleMentee },
+					{ title: process.env.DEFAULT_ROLE },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -139,17 +161,30 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			const roleData = await roleQueries.findAll(
+				{
+					id: {
+						[Op.in]: bodyData.roles,
+					},
+				},
+				{
+					attributes: {
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
+					},
+				}
+			)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
-					roles: [role],
+					roles: roleData,
 				},
 			}
 
-			user.user_roles = [role]
+			user.user_roles = roleData
 
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
@@ -177,9 +212,24 @@ module.exports = class AccountHelper {
 			await userQueries.updateUser({ id: user.id }, update)
 			await utilsHelper.redisDel(email)
 
+			//make the user as org admin
+			if (isOrgAdmin) {
+				let organization = await organizationQueries.findByPk(user.organization_id)
+				const orgAdmins = _.uniq([...(organization.org_admin || []), user.id])
+				await organizationQueries.update(
+					{
+						id: user.organization_id,
+					},
+					{
+						org_admin: orgAdmins,
+					}
+				)
+			}
+
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE
+				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+				user.organization_id
 			)
 
 			if (templateData) {
@@ -205,6 +255,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -223,7 +274,7 @@ module.exports = class AccountHelper {
 		try {
 			let user = await userQueries.findOne({
 				email: bodyData.email.toLowerCase(),
-				status: common.activeStatus,
+				status: common.ACTIVE_STATUS,
 			})
 			if (!user) {
 				return common.failureResponse({
@@ -234,7 +285,7 @@ module.exports = class AccountHelper {
 			}
 
 			let roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.activeStatus },
+				{ id: user.roles, status: common.ACTIVE_STATUS },
 				{
 					attributes: {
 						exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -309,13 +360,21 @@ module.exports = class AccountHelper {
 			delete user.password
 			delete user.refresh_tokens
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(
-				{
-					status: 'ACTIVE',
-				},
-				user.organization_id
+			//Change to
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
 			)
-			user = utils.processDbResponse(user, validationData)
+			let defaultOrgId = defaultOrg.id
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				org_id: {
+					[Op.in]: [user.organization_id, defaultOrgId],
+				},
+			})
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			user = utils.processDbResponse(user, prunedEntities)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
@@ -325,6 +384,7 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -374,6 +434,7 @@ module.exports = class AccountHelper {
 				message: 'LOGGED_OUT_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -501,8 +562,13 @@ module.exports = class AccountHelper {
 				}
 			}
 
+
 			const templateData = await notificationTemplateData.findOneEmailTemplate(
 				process.env.OTP_EMAIL_TEMPLATE_CODE
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.OTP_EMAIL_TEMPLATE_CODE,
+				user.organization_id
+
 			)
 
 			if (templateData) {
@@ -640,7 +706,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			let roles = await roleQueries.findAll({ id: user.roles, status: common.activeStatus })
+			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
 			if (!roles) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -677,7 +743,7 @@ module.exports = class AccountHelper {
 					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
-					role: roles,
+					roles,
 				},
 			}
 
@@ -866,11 +932,12 @@ module.exports = class AccountHelper {
 
 				let users = await userQueries.listUsers(
 					role && role.id ? role.id : '',
+					params.query.organization_id ? params.query.organization_id : '',
 					params.pageNo,
 					params.pageSize,
 					params.searchText
 				)
-
+				console.log('USERS:', users)
 				let foundKeys = {}
 				let result = []
 
@@ -923,6 +990,7 @@ module.exports = class AccountHelper {
 				})
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

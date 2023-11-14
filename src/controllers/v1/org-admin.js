@@ -20,7 +20,7 @@ module.exports = class OrgAdmin {
 	 */
 	async bulkUserCreate(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -47,7 +47,7 @@ module.exports = class OrgAdmin {
 	 */
 	async getBulkInvitesFilesList(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -71,7 +71,7 @@ module.exports = class OrgAdmin {
 	 */
 	async getRequestDetails(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -100,7 +100,7 @@ module.exports = class OrgAdmin {
 	 */
 	async getRequests(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -127,7 +127,7 @@ module.exports = class OrgAdmin {
 	 */
 	async updateRequestStatus(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -135,7 +135,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken.id)
+			const result = await orgAdminService.updateRequestStatus(req.body, req.decodedToken)
 			return result
 		} catch (error) {
 			return error
@@ -151,7 +151,7 @@ module.exports = class OrgAdmin {
 	 */
 	async deactivateUser(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -159,7 +159,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			if (!req.body.id || !req.body.email) {
+			if (!req.body.id && !req.body.email) {
 				throw common.failureResponse({
 					message: 'EMAIL_OR_ID_REQUIRED',
 					statusCode: httpStatusCode.bad_request,
@@ -167,7 +167,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const result = await orgAdminService.deactivateUser(req.body, req.decodedToken.id)
+			const result = await orgAdminService.deactivateUser(req.body, req.decodedToken)
 
 			return result
 		} catch (error) {
@@ -184,7 +184,7 @@ module.exports = class OrgAdmin {
 
 	async inheritEntityType(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.roleOrgAdmin)) {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,

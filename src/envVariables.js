@@ -189,8 +189,12 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
-	INVITEE_EMAIL_TEMPLATE_CODE: {
-		message: 'Required user invitation email template code',
+	MENTOR_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentor invitation email template code',
+		optional: false,
+	},
+	MENTEE_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentee invitation email template code',
 		optional: false,
 	},
 	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {
@@ -199,6 +203,19 @@ let enviromentVariables = {
 	},
 	DEFAULT_QUEUE: {
 		message: 'Required default queue',
+		optional: false,
+	},
+	DEFAULT_ROLE: {
+		message: 'Required default role',
+		optional: false,
+	},
+	SAMPLE_CSV_FILE_PATH: {
+		message: 'Required sample csv file path',
+		optional: false,
+		default: 'sample/bulk_user_creation.csv',
+	},
+	ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required org admin invitation email template code',
 		optional: false,
 	},
 }

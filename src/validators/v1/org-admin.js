@@ -19,7 +19,7 @@ module.exports = {
 	deactivateUser: (req) => {
 		const field = req.body.email ? 'email' : req.body.id ? 'id' : null
 		if (field) {
-			req.checkBody('id').isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
+			req.checkBody(field).isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
 		}
 	},
 	inheritEntityType: (req) => {

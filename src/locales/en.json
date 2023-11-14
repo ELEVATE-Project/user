@@ -91,6 +91,12 @@
 	"USER_CSV_UPLOADED_FAILED": "Failed to Uploaded User Invites CSV",
 	"ORG_DEACTIVATED": "Organization deactivated Successfully",
 	"EMAIL_OR_ID_REQUIRED": "Either 'id' or 'email' fields is required",
+	"REQUEST_NOT_FOUND": "Role Change Request not found.",
+	"FAILED_TO_ASSIGN_AS_ADMIN": "User belongs to different organization",
 	"USER_IS_FROM_DEFAULT_ORG": "User is from default org",
-	"REQUEST_NOT_FOUND": "Role Change Request not found."
+	"NOTIFICATION_TEMPLATE_ALREADY_EXISTS": "Notification template already exists",
+	"NOTIFICATION_TEMPLATE_CREATED_SUCCESSFULLY": "Notification template created successfully",
+	"NOTIFICATION_TEMPLATE_UPDATED_SUCCESSFULLY": "Notification template updated successfully",
+	"NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY": "Notification template fetched successfully",
+	"NOTIFICATION_TEMPLATE_NOT_FOUND": "Notification template not found"
 }

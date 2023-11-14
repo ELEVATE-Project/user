@@ -18,8 +18,11 @@ const request = require('request')
 const userInviteQueries = require('@database/queries/orgUserInvite')
 const fileUploadQueries = require('@database/queries/fileUpload')
 const roleQueries = require('@database/queries/userRole')
+const userQueries = require('@database/queries/users')
+const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 module.exports = class UserInviteHelper {
@@ -50,7 +53,8 @@ module.exports = class UserInviteHelper {
 				const update = {
 					output_path,
 					updated_by: data.user.id,
-					status: createResponse.result.isErrorOccured == true ? common.statusFailed : common.statusProcessed,
+					status:
+						createResponse.result.isErrorOccured == true ? common.FAILED_STATUS : common.PROCESSED_STATUS,
 				}
 
 				// //update output path in file uploads
@@ -60,14 +64,17 @@ module.exports = class UserInviteHelper {
 				}
 
 				// // send email to admin
-				if (process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE) {
-					// generate downloadable url
-					const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
-					await this.sendInviteeEmail(
-						process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE,
-						data.user,
-						inviteeUploadURL
+				const templateCode = process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE
+				if (templateCode) {
+					const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+						templateCode,
+						data.user.organization_id
 					)
+
+					if (templateData) {
+						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
+						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL)
+					}
 				}
 
 				// delete the downloaded file and output file
@@ -152,37 +159,124 @@ module.exports = class UserInviteHelper {
 				roleTitlesToIds[role.title] = [role.id]
 			})
 
+			//get all existing user
+			const emailArr = _.uniq(_.map(csvData, 'email'))
+			const existingUsers = await userQueries.findAll(
+				{ email: emailArr },
+				{
+					attributes: ['id', 'email', 'organization_id', 'roles'],
+				}
+			)
+
+			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser]))
+
+			//find default org id
+			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
+			const defaultOrgId = defaultOrg?.id || null
+
 			const input = []
 			let isErrorOccured = false
 
+			//fetch email template
+			const mentorTemplateCode = process.env.MENTOR_INVITATION_EMAIL_TEMPLATE_CODE || null
+			const menteeTemplateCode = process.env.MENTEE_INVITATION_EMAIL_TEMPLATE_CODE || null
+
+			const [mentorTemplateData, menteeTemplateData] = await Promise.all([
+				mentorTemplateCode
+					? notificationTemplateQueries.findOneEmailTemplate(mentorTemplateCode, user.organization_id)
+					: null,
+				menteeTemplateCode
+					? notificationTemplateQueries.findOneEmailTemplate(menteeTemplateCode, user.organization_id)
+					: null,
+			])
+
+			const templates = {
+				[common.MENTOR_ROLE]: mentorTemplateData,
+				[common.MENTEE_ROLE]: menteeTemplateData,
+			}
+
 			// process csv data
 			for (const invitee of csvData) {
-				const inviteeData = {
-					...invitee,
-					status: common.statusUploaded,
-					organization_id: user.organization_id,
-					file_id: fileUploadId,
-					roles: roleTitlesToIds[invitee.roles] || [],
-				}
+				//update user details if the user exist and in default org
+				const existingUser = existingEmailsMap.get(invitee.email)
+				if (existingUser) {
+					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
+					isErrorOccured = true
 
-				const newInvitee = await userInviteQueries.create(inviteeData)
+					const isOrganizationMatch =
+						existingUser.organization_id === defaultOrgId ||
+						existingUser.organization_id === user.organization_id
+					if (isOrganizationMatch) {
+						let userUpdateData = {}
+						if (existingUser.organization_id != user.organization_id) {
+							userUpdateData.organization_id = user.organization_id
+							userUpdateData.refresh_tokens = []
+						}
+						const areAllElementsInArray = _.every(roleTitlesToIds[invitee.roles], (element) =>
+							_.includes(existingUser.roles, element)
+						)
+						if (!areAllElementsInArray) {
+							userUpdateData.roles = roleTitlesToIds[invitee.roles]
+							userUpdateData.refresh_tokens = []
+						}
 
-				if (newInvitee.id) {
-					const userData = {
-						name: invitee.name,
-						email: invitee.email,
-						role: invitee.roles,
-						adminName: user.name,
-					}
-
-					if (process.env.INVITEE_EMAIL_TEMPLATE_CODE) {
-						await this.sendInviteeEmail(process.env.INVITEE_EMAIL_TEMPLATE_CODE, userData)
+						if (userUpdateData.organization_id || userUpdateData.roles) {
+							await userQueries.updateUser({ email: invitee.email }, userUpdateData)
+							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
+							//call event to update in mentoring
+							if (!userUpdateData?.roles) {
+								eventBroadcaster('updateOrganization', {
+									requestBody: {
+										user_id: existingUser.id,
+										org_id: existingUser.organization_id,
+										roles: _.map(userRoles, 'title'),
+									},
+								})
+							} else {
+								let requestBody = {
+									userId: existingUser.id,
+									new_roles: [invitee.roles],
+									old_roles: _.map(userRoles, 'title'),
+								}
+								if (userUpdateData.organization_id) requestBody.org_id = user.organization_id
+								eventBroadcaster('roleChange', {
+									requestBody,
+								})
+							}
+						}
 					}
 				} else {
-					isErrorOccured = true
+					//create new invitees
+					const inviteeData = {
+						...invitee,
+						status: common.UPLOADED_STATUS,
+						organization_id: user.organization_id,
+						file_id: fileUploadId,
+						roles: roleTitlesToIds[invitee.roles] || [],
+					}
+
+					const newInvitee = await userInviteQueries.create(inviteeData)
+					if (newInvitee.id) {
+						const { name, email, roles } = invitee
+						const userData = {
+							name,
+							email,
+							role: roles,
+							orgName: user.org_name,
+						}
+
+						const templateData = templates[roles]
+						//send email invitation for user
+						if (templateData && Object.keys(templateData).length > 0) {
+							await this.sendInviteeEmail(templateData, userData)
+						}
+					} else {
+						isErrorOccured = true
+					}
+
+					invitee.statusOrUserId = newInvitee.id || newInvitee
 				}
 
-				invitee.statusOrUserId = newInvitee.id || newInvitee
 				input.push(invitee)
 			}
 
@@ -241,27 +335,24 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async sendInviteeEmail(templateCode, userData, inviteeUploadURL = null) {
+	static async sendInviteeEmail(templateData, userData, inviteeUploadURL = null) {
 		try {
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(templateCode)
-			if (templateData) {
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: userData.email,
-						subject: templateData.subject,
-						body: utils.composeEmailBody(templateData.body, {
-							name: userData.name,
-							role: userData.role || '',
-							appName: process.env.APP_NAME,
-							adminName: userData.adminName || '',
-							inviteeUploadURL,
-						}),
-					},
-				}
-
-				await kafkaCommunication.pushEmailToKafka(payload)
+			const payload = {
+				type: common.notificationEmailType,
+				email: {
+					to: userData.email,
+					subject: templateData.subject,
+					body: utils.composeEmailBody(templateData.body, {
+						name: userData.name,
+						role: userData.role || '',
+						orgName: userData.org_name || '',
+						appName: process.env.APP_NAME,
+						inviteeUploadURL,
+					}),
+				},
 			}
+
+			await kafkaCommunication.pushEmailToKafka(payload)
 
 			return {
 				success: true,
