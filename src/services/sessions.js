@@ -163,13 +163,18 @@ module.exports = class SessionsHelper {
 			for (let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++) {
 				// Append the session ID to the job ID
 				jobsToCreate[jobIndex].jobId = jobsToCreate[jobIndex].jobId + data.id
+
+				const reqBody = {
+					job_id: jobsToCreate[jobIndex].jobId,
+					email_template_code: jobsToCreate[jobIndex].emailTemplate,
+					job_creator_org_id: orgId,
+				}
 				// Create the scheduler job with the calculated delay and other parameters
 				await schedulerRequest.createSchedulerJob(
 					jobsToCreate[jobIndex].jobId,
 					jobsToCreate[jobIndex].delay,
 					jobsToCreate[jobIndex].jobName,
-					jobsToCreate[jobIndex].emailTemplate,
-					orgId
+					reqBody
 				)
 			}
 
