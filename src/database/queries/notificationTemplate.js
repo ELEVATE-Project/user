@@ -2,6 +2,7 @@
 const NotificationTemplate = require('@database/models/index').NotificationTemplate
 const { Op } = require('sequelize')
 const common = require('@constants/common')
+const organizationQueries = require('@database/queries/organization')
 
 exports.create = async (data) => {
 	try {
@@ -25,17 +26,36 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findOneEmailTemplate = async (code, orgId) => {
 	try {
+		// Get default orgId using code defined in env
+		const defaultOrg = await organizationQueries.findOne(
+			{ code: process.env.DEFAULT_ORGANISATION_CODE },
+			{ attributes: ['id'] }
+		)
+		const defaultOrgId = defaultOrg.id
+		/**If data exists for both `orgId` and `defaultOrgId`, the query will return data for both
+		 * Later we will filter the response
+		 */
 		const filter = {
 			code: code,
 			type: 'email',
-			status: common.ACTIVE_STATUS,
-			org_id: orgId || 1, //Temporary Default Org Id
+			status: common.activeStatus,
+			org_id: orgId
+				? {
+						[Op.or]: [orgId, defaultOrgId],
+				  }
+				: defaultOrgId,
 		}
 
-		let templateData = await NotificationTemplate.findOne({
+		let templateData = await NotificationTemplate.findAll({
 			where: filter,
 			raw: true,
 		})
+
+		// If there are multiple results, find the one matching orgId
+		templateData = templateData.find((template) => template.org_id === orgId) || templateData[0]
+
+		// If no data is found, set an empty object
+		templateData = templateData || {}
 
 		if (templateData && templateData.email_header) {
 			const header = await this.getEmailHeader(templateData.email_header)
