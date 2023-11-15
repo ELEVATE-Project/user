@@ -550,10 +550,11 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 	}
 }
 
-exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter) => {
+exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter, saasFilter) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 		let filterConditions = []
+		let saasFilterCondition = []
 
 		if (filter && typeof filter === 'object') {
 			for (const key in filter) {
@@ -563,6 +564,26 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			}
 		}
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+		console.log('line 567 saasFilter : ', saasFilter)
+		// SAAS related filtering
+		let saasFilterOrgIdClause = ''
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
+					saasFilterCondition.push(
+						`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
+					)
+				} else if (Array.isArray(saasFilter[key])) {
+					saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
+				} else {
+					saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
+				}
+			}
+		}
+		console.log('line 576 saasFilter : ', saasFilter)
+		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+
+		console.log('line 567 saasFilterClause : ', saasFilterClause)
 		const query = `
 		WITH filtered_sessions AS (
 			SELECT id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
@@ -574,6 +595,7 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			AND end_date > :currentEpochTime
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
+			${saasFilterClause}
 		)
 		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, visibility, mentor_org_id, meeting_info,
 			   COUNT(*) OVER () as total_count
@@ -589,6 +611,8 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			currentEpochTime: currentEpochTime,
 			offset: limit * (page - 1),
 			limit: limit,
+			// mentor_org_id: null
+			// mentor_org_id: saasFilter.mentor_org_id ? saasFilter.mentor_org_id : ''
 		}
 
 		if (filter && typeof filter === 'object') {
@@ -599,6 +623,16 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			}
 		}
 
+		// Replace saas related query replacements
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key])) {
+					replacements[key] = saasFilter[key]
+				}
+			}
+		}
+
+		console.log('Yeahhh+++++++++:', query, replacements)
 		const sessionIds = await Sequelize.query(query, {
 			type: QueryTypes.SELECT,
 			replacements: replacements,

@@ -128,6 +128,7 @@ module.exports = {
 	},
 	CURRENT: 'CURRENT',
 	ALL: 'ALL',
+	ASSOCIATED: 'ASSOCIATED',
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
 	excludedQueryParams: ['enrolled'],

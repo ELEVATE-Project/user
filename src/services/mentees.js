@@ -318,12 +318,21 @@ module.exports = class MenteesHelper {
 
 		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
 
-		const sessions = await sessionQueries.getUpcomingSessionsFromView(page, limit, search, userId, filteredQuery)
-
+		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
+		console.log('saasFilter :', saasFilter)
+		const sessions = await sessionQueries.getUpcomingSessionsFromView(
+			page,
+			limit,
+			search,
+			userId,
+			filteredQuery,
+			saasFilter
+		)
+		console.log('sessions :', sessions)
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
 
-		// Filter sessions based on saas policy {session contain enrolled + upcoming session}
-		sessions.rows = await this.filterSessionsBasedOnSaasPolicy(sessions.rows, userId, isAMentor)
+		// // Filter sessions based on saas policy {session contain enrolled + upcoming session}
+		// sessions.rows = await this.filterSessionsBasedOnSaasPolicy(sessions.rows, userId, isAMentor)
 
 		sessions.rows = await this.sessionMentorDetails(sessions.rows)
 
@@ -339,11 +348,11 @@ module.exports = class MenteesHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- List of filtered sessions
 	 */
-	static async filterSessionsBasedOnSaasPolicy(sessions, userId, isAMentor) {
+	static async filterSessionsBasedOnSaasPolicy(userId, isAMentor) {
 		try {
-			if (sessions.length === 0) {
-				return sessions
-			}
+			// if (sessions.length === 0) {
+			// 	return sessions
+			// }
 
 			let userPolicyDetails
 			// If user is mentor - fetch policy details from mentor extensions else fetch from userExtension
@@ -351,6 +360,7 @@ module.exports = class MenteesHelper {
 				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
 					'external_session_visibility',
 					'org_id',
+					'visible_to_organizations',
 				])
 
 				// Throw error if mentor extension not found
@@ -365,6 +375,7 @@ module.exports = class MenteesHelper {
 				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
 					'external_session_visibility',
 					'org_id',
+					'visible_to_organizations',
 				])
 				// If no mentee present return error
 				if (Object.keys(userPolicyDetails).length === 0) {
@@ -375,30 +386,66 @@ module.exports = class MenteesHelper {
 					})
 				}
 			}
-
+			let filter = {}
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
-				// Filter sessions based on policy
-				const filteredSessions = await Promise.all(
-					sessions.map(async (session) => {
-						let enrolled = session.is_enrolled ? session.is_enrolled : false
-						if (
-							session.visibility === common.CURRENT ||
-							(session.visibility === common.ALL &&
-								userPolicyDetails.external_session_visibility === common.CURRENT)
-						) {
-							// Check if the session's mentor organization matches the user's organization.
-							if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
-								return session
-							}
-						} else {
-							return session
-						}
-					})
-				)
+				// generate filter based on condition
+				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
+					filter.mentor_org_id = userPolicyDetails.org_id
+				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
+					// filter.visible_to_organizations = userPolicyDetails.visible_to_organizations.concat([userPolicyDetails.org_id]);
+					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+						? userPolicyDetails.visible_to_organizations.concat([userPolicyDetails.org_id])
+						: [userPolicyDetails.org_id]
+				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
+					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+						? userPolicyDetails.visible_to_organizations.concat([userPolicyDetails.org_id])
+						: [userPolicyDetails.org_id]
+					filter.visibility = common.ALL
+				}
+				// const filteredSessions = await Promise.all(
+				// 	sessions.map(async (session) => {
+				// 		let enrolled = session.is_enrolled ? session.is_enrolled : false
+				// 		if (
+				// 			session.visibility === common.CURRENT ||
+				// 			(session.visibility === common.ALL &&
+				// 				userPolicyDetails.external_session_visibility === common.CURRENT)
+				// 		) {
+				// 			// Check if the session's mentor organization matches the user's organization.
+				// 			if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
+				// 				return session
+				// 			}
+				// 		} else {
+				// 			return session
+				// 		}
+				// 	})
+				// )
 				// Remove any undefined elements (sessions that didn't meet the conditions)
-				sessions = filteredSessions.filter((session) => session !== undefined)
+				// sessions = filteredSessions.filter((session) => session !== undefined)
 			}
-			return sessions
+
+			// if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
+			// 	// Filter sessions based on policy
+			// 	const filteredSessions = await Promise.all(
+			// 		sessions.map(async (session) => {
+			// 			let enrolled = session.is_enrolled ? session.is_enrolled : false
+			// 			if (
+			// 				session.visibility === common.CURRENT ||
+			// 				(session.visibility === common.ALL &&
+			// 					userPolicyDetails.external_session_visibility === common.CURRENT)
+			// 			) {
+			// 				// Check if the session's mentor organization matches the user's organization.
+			// 				if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
+			// 					return session
+			// 				}
+			// 			} else {
+			// 				return session
+			// 			}
+			// 		})
+			// 	)
+			// 	// Remove any undefined elements (sessions that didn't meet the conditions)
+			// 	sessions = filteredSessions.filter((session) => session !== undefined)
+			// }
+			return filter
 		} catch (err) {
 			return err
 		}
