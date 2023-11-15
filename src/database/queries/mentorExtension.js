@@ -1,5 +1,5 @@
 const MentorExtension = require('@database/models/index').MentorExtension // Adjust the path accordingly
-
+const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const common = require('@constants/common')
@@ -127,9 +127,10 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async getMentorsByUserIdsFromView(ids, page, limit, filter) {
+	static async getMentorsByUserIdsFromView(ids, page, limit, filter, saasFilter) {
 		try {
 			const filterConditions = []
+			let saasFilterCondition = []
 
 			if (filter && typeof filter === 'object') {
 				for (const key in filter) {
@@ -140,8 +141,23 @@ module.exports = class MentorExtensionQueries {
 			}
 			const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-			const sessionAttendeesData = await Sequelize.query(
-				`
+			// SAAS related filtering
+			if (saasFilter && typeof saasFilter === 'object') {
+				for (const key in saasFilter) {
+					if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
+						saasFilterCondition.push(
+							`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
+						)
+					} else if (Array.isArray(saasFilter[key])) {
+						saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
+					} else {
+						saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
+					}
+				}
+			}
+			const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+
+			const query = `
 				SELECT
 					user_id,
 					rating,
@@ -152,20 +168,31 @@ module.exports = class MentorExtensionQueries {
 				WHERE
 					user_id IN (${ids.join(',')})
 					${filterClause}
+					${saasFilterClause}
 				OFFSET
 					:offset
 				LIMIT
 					:limit;
-			`,
-				{
-					replacements: {
-						offset: limit * (page - 1),
-						limit: limit,
-						...filter, // Add filter parameters to replacements
-					},
-					type: sequelize.QueryTypes.SELECT,
+			`
+			const replacements = {
+				offset: limit * (page - 1),
+				limit: limit,
+				...filter, // Add filter parameters to replacements
+			}
+
+			// Replace saas related query replacements
+			if (saasFilter && typeof saasFilter === 'object') {
+				for (const key in saasFilter) {
+					if (Array.isArray(saasFilter[key])) {
+						replacements[key] = saasFilter[key]
+					}
 				}
-			)
+			}
+
+			const sessionAttendeesData = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
 
 			return {
 				data: sessionAttendeesData,

@@ -662,11 +662,12 @@ exports.findAllByIds = async (ids) => {
 	}
 }
 
-exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter) => {
+exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter, saasFilter) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
 		const filterConditions = []
+		let saasFilterCondition = []
 
 		if (filter && typeof filter === 'object') {
 			for (const key in filter) {
@@ -677,50 +678,78 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 		}
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-		const sessionAttendeesData = await Sequelize.query(
-			`
-			SELECT
-				id,
-				title,
-				description,
-				start_date,
-				end_date,
-				status,
-				image,
-				mentor_id,
-				meeting_info,
-				visibility,
-				mentor_org_id
-			FROM
-					${common.materializedViewsPrefix + Session.tableName}
-			WHERE
-				mentor_id = :mentorId
-				AND status = 'PUBLISHED'
-				AND start_date > :currentEpochTime
-				AND started_at IS NULL
-				AND (
-					LOWER(title) LIKE :search
-				)
-				${filterClause}
-			ORDER BY
-				start_date ASC
-			OFFSET
-				:offset
-			LIMIT
-				:limit;
-		`,
-			{
-				replacements: {
-					mentorId: mentorId,
-					currentEpochTime: currentEpochTime,
-					search: `%${search.toLowerCase()}%`,
-					offset: limit * (page - 1),
-					limit: limit,
-					...filter, // Add filter parameters to replacements
-				},
-				type: sequelize.QueryTypes.SELECT,
+		// SAAS related filtering
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
+					saasFilterCondition.push(
+						`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
+					)
+				} else if (Array.isArray(saasFilter[key])) {
+					saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
+				} else {
+					saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
+				}
 			}
-		)
+		}
+
+		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+
+		const query = `
+		SELECT
+			id,
+			title,
+			description,
+			start_date,
+			end_date,
+			status,
+			image,
+			mentor_id,
+			meeting_info,
+			visibility,
+			mentor_org_id
+		FROM
+				${common.materializedViewsPrefix + Session.tableName}
+		WHERE
+			mentor_id = :mentorId
+			AND status = 'PUBLISHED'
+			AND start_date > :currentEpochTime
+			AND started_at IS NULL
+			AND (
+				LOWER(title) LIKE :search
+			)
+			${filterClause}
+			${saasFilterClause}
+		ORDER BY
+			start_date ASC
+		OFFSET
+			:offset
+		LIMIT
+			:limit;
+	`
+
+		const replacements = {
+			mentorId: mentorId,
+			currentEpochTime: currentEpochTime,
+			search: `%${search.toLowerCase()}%`,
+			offset: limit * (page - 1),
+			limit: limit,
+			...filter, // Add filter parameters to replacements
+		}
+
+		// Replace saas related query replacements
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key])) {
+					replacements[key] = saasFilter[key]
+				}
+			}
+		}
+
+		const sessionAttendeesData = await Sequelize.query(query, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 
 		return {
 			data: sessionAttendeesData,
