@@ -41,7 +41,10 @@ module.exports = class AdminHelper {
 			if (isMentor) {
 				removedUserDetails = await mentorQueries.removeMentorDetails(userId)
 				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
-				result.isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+				result.isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(
+					removedSessionsDetail,
+					mentor.org_id ? mentor.org_id : ''
+				)
 			} else {
 				removedUserDetails = await menteeQueries.removeMenteeDetails(userId)
 			}
@@ -67,10 +70,11 @@ module.exports = class AdminHelper {
 		}
 	}
 
-	static async unenrollAndNotifySessionAttendees(removedSessionsDetail) {
+	static async unenrollAndNotifySessionAttendees(removedSessionsDetail, orgId = '') {
 		try {
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE
+				process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE,
+				orgId
 			)
 
 			for (const session of removedSessionsDetail) {

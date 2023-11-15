@@ -98,7 +98,10 @@ module.exports = class OrgAdminService {
 
 			// Delete upcoming sessions of user as mentor
 			const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(bodyData.user_id)
-			const isAttendeesNotified = await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+			const isAttendeesNotified = await adminService.unenrollAndNotifySessionAttendees(
+				removedSessionsDetail,
+				mentorDetails.org_id ? mentorDetails.org_id : ''
+			)
 
 			// Delete mentor Extension
 			if (isAttendeesNotified) {

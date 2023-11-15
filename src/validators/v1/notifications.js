@@ -8,7 +8,7 @@
 module.exports = {
 	emailCronJob: (req) => {
 		// Validate incoming request body
-		req.checkBody('jobId').notEmpty().withMessage('jobId field is empty')
-		req.checkBody('emailTemplateCode').notEmpty().withMessage('emailTemplateCode field is empty')
+		req.checkBody('job_id').notEmpty().withMessage('job_id field is empty')
+		req.checkBody('email_template_code').notEmpty().withMessage('email_template_code field is empty')
 	},
 }
