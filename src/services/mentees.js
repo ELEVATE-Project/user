@@ -75,21 +75,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of sessions
 	 */
 
-	static async sessions(userId, enrolledSessions, page, limit, search = '', isAMentor) {
+	static async sessions(userId, page, limit, search = '') {
 		try {
-			let sessions = []
-
-			if (!enrolledSessions) {
-				/** Upcoming unenrolled sessions {All sessions}*/
-				sessions = await this.getAllSessions(page, limit, search, userId, isAMentor)
-			} else {
-				/** Upcoming user's enrolled sessions {My sessions}*/
-				/* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
+			/** Upcoming user's enrolled sessions {My sessions}*/
+			/* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
                 delays in starting session then status will remain published for that particular interval so fetch that also */
 
-				/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
-				sessions = await this.getMySessions(page, limit, search, userId, isAMentor)
-			}
+			/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
+			const sessions = await this.getMySessions(page, limit, search, userId)
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
@@ -163,15 +157,15 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - Mentees homeFeed.
 	 */
 
-	static async homeFeed(userId, isAMentor, page, limit, search) {
+	static async homeFeed(userId, isAMentor, page, limit, search, queryParams) {
 		try {
 			/* All Sessions */
 
-			let allSessions = await this.getAllSessions(page, limit, search, userId, isAMentor)
+			let allSessions = await this.getAllSessions(page, limit, search, userId, queryParams, isAMentor)
 
 			/* My Sessions */
 
-			let mySessions = await this.getMySessions(page, limit, search, userId, isAMentor)
+			let mySessions = await this.getMySessions(page, limit, search, userId)
 
 			const result = {
 				all_sessions: allSessions.rows,
@@ -315,8 +309,16 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of all sessions
 	 */
 
-	static async getAllSessions(page, limit, search, userId, isAMentor) {
-		const sessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
+	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
+		let query = utils.processQueryParametersWithExclusions(queryParams)
+
+		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+			status: 'ACTIVE',
+		})
+
+		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
+
+		const sessions = await sessionQueries.getUpcomingSessionsFromView(page, limit, search, userId, filteredQuery)
 
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
 
@@ -413,7 +415,7 @@ module.exports = class MenteesHelper {
 	 * @returns {JSON} - List of enrolled sessions
 	 */
 
-	static async getMySessions(page, limit, search, userId, isAMentor) {
+	static async getMySessions(page, limit, search, userId) {
 		try {
 			const upcomingSessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
 
@@ -549,7 +551,7 @@ module.exports = class MenteesHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'user_extensions')
+			let res = utils.validateInput(data, validationData, 'UserExtension')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -634,7 +636,7 @@ module.exports = class MenteesHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(data, validationData, 'user_extensions')
+			let res = utils.validateInput(data, validationData, 'UserExtension')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',

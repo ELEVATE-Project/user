@@ -137,13 +137,13 @@ services:
     networks:
       - elevate_net
   interface:
-    build: '../interface/'
+    build: '../interface-service/'
     image: elevate/interface:1.0
     volumes:
-      - ../interface/src/:/var/src
+      - ../interface-service/src/:/var/src
     ports:
       - '3569:3569'
-    command: ['nodemon', 'app.js']
+    command: ['node', 'app.js']
     networks:
       - elevate_net
   # master:
@@ -183,10 +183,10 @@ services:
   citus:
     image: citusdata/citus:11.2.0
     container_name: 'citus_master'
-    #ports:
-    #  - 5432:5432
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
+    # expose:
+    #   - 5432
     # command: >
     #   bash -c "while ! pg_isready -h localhost -U postgres -q; do sleep 1; done &&
     #   psql -h localhost -U postgres -d <database_name> -c 'CREATE EXTENSION citus; SELECT create_distributed_table(\"notification_templates\", \"id\");'"
@@ -197,6 +197,8 @@ services:
       PGPASSWORD: '${POSTGRES_PASSWORD:-postgres}'
       POSTGRES_DB: 'user-local'
       POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
+      POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
+
     networks:
       - elevate_net
   pgadmin:

@@ -15,6 +15,8 @@ const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const usersService = require('@services/users')
+const moment = require('moment')
+const menteesService = require('@services/mentees')
 
 module.exports = class MentorsHelper {
 	/**
@@ -27,8 +29,15 @@ module.exports = class MentorsHelper {
 	 * @param {String} search - Search text.
 	 * @returns {JSON} - mentors upcoming session details
 	 */
-	static async upcomingSessions(id, page, limit, search = '', menteeUserId) {
+	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor) {
 		try {
+			const query = utils.processQueryParametersWithExclusions(queryParams)
+			console.log(query)
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: 'ACTIVE',
+			})
+			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+
 			const mentorsDetails = await mentorQueries.getMentorExtension(id)
 			if (!mentorsDetails) {
 				return common.failureResponse({
@@ -38,7 +47,13 @@ module.exports = class MentorsHelper {
 				})
 			}
 
-			let upcomingSessions = await sessionQueries.getMentorsUpcomingSessions(page, limit, search, id)
+			let upcomingSessions = await sessionQueries.getMentorsUpcomingSessionsFromView(
+				page,
+				limit,
+				search,
+				id,
+				filteredQuery
+			)
 
 			if (!upcomingSessions.data.length) {
 				return common.successResponse({
@@ -56,6 +71,13 @@ module.exports = class MentorsHelper {
 			if (menteeUserId && id != menteeUserId) {
 				upcomingSessions.data = await this.menteeSessionDetails(upcomingSessions.data, menteeUserId)
 			}
+
+			// Filter upcoming sessions based on saas policy
+			upcomingSessions.data = await menteesService.filterSessionsBasedOnSaasPolicy(
+				upcomingSessions.data,
+				menteeUserId,
+				isAMentor
+			)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'UPCOMING_SESSION_FETCHED',
@@ -292,7 +314,7 @@ module.exports = class MentorsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'mentor_extensions')
+			let res = utils.validateInput(data, validationData, 'MentorExtension')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -553,6 +575,169 @@ module.exports = class MentorsHelper {
 		} catch (error) {
 			console.error(error)
 			return error
+		}
+	}
+	/**
+	 * Get user list.
+	 * @method
+	 * @name create
+	 * @param {Number} pageSize -  Page size.
+	 * @param {Number} pageNo -  Page number.
+	 * @param {String} searchText -  Search text.
+	 * @param {JSON} queryParams -  Query params.
+	 * @param {Boolean} isAMentor -  Is a mentor.
+	 * @returns {JSON} - User list.
+	 */
+
+	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
+		try {
+			const query = utils.processQueryParametersWithExclusions(queryParams)
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: 'ACTIVE',
+			})
+			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+
+			const userType = common.MENTOR_ROLE
+			const userDetails = await userRequests.listWithoutLimit(userType, searchText)
+
+			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
+
+			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(ids, pageNo, pageSize, filteredQuery)
+			// Inside your function
+			extensionDetails.data = extensionDetails.data.filter((item) => item.visibility && item.org_id)
+
+			// Filter user data based on SAAS policy
+			extensionDetails.data = await usersService.filterMentorListBasedOnSaasPolicy(
+				extensionDetails.data,
+				userId,
+				isAMentor
+			)
+
+			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
+
+			userDetails.data.result.data = userDetails.data.result.data.filter((existingItem) => {
+				const user_id = existingItem.values[0].id
+				if (extensionDataMap.has(user_id)) {
+					const newItem = extensionDataMap.get(user_id)
+					existingItem.values[0] = { ...existingItem.values[0], ...newItem }
+					delete existingItem.values[0].user_id
+					delete existingItem.values[0].visibility
+					delete existingItem.values[0].org_id
+					return true // Keep this item
+				}
+
+				return false // Remove this item
+			})
+
+			userDetails.data.result.count = extensionDetails.count
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: userDetails.data.message,
+				result: userDetails.data.result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Sessions list
+	 * @method
+	 * @name list
+	 * @param {Object} req -request data.
+	 * @param {String} req.decodedToken.id - User Id.
+	 * @param {String} req.pageNo - Page No.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - Session List.
+	 */
+
+	static async createdSessions(loggedInUserId, page, limit, search, status, roles) {
+		try {
+			if (!utils.isAMentor(roles)) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'NOT_A_MENTOR',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// update sessions which having status as published/live and  exceeds the current date and time
+			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
+			const filterQuery = {
+				[Op.or]: [
+					{
+						status: common.PUBLISHED_STATUS,
+						end_date: {
+							[Op.lt]: currentDate,
+						},
+					},
+					{
+						status: common.LIVE_STATUS,
+						'meeting_info.value': {
+							[Op.ne]: common.BBB_VALUE,
+						},
+						end_date: {
+							[Op.lt]: currentDate,
+						},
+					},
+				],
+			}
+
+			await sessionQueries.updateSession(filterQuery, {
+				status: common.COMPLETED_STATUS,
+			})
+
+			let arrayOfStatus = []
+			if (status && status != '') {
+				arrayOfStatus = status.split(',')
+			}
+
+			let filters = {
+				mentor_id: loggedInUserId,
+			}
+			if (arrayOfStatus.length > 0) {
+				// if (arrayOfStatus.includes(common.COMPLETED_STATUS) && arrayOfStatus.length == 1) {
+				// 	filters['endDateUtc'] = {
+				// 		$lt: moment().utc().format(),
+				// 	}
+				// } else
+				if (arrayOfStatus.includes(common.PUBLISHED_STATUS) && arrayOfStatus.includes(common.LIVE_STATUS)) {
+					filters['end_date'] = {
+						[Op.gte]: currentDate,
+					}
+				}
+
+				filters['status'] = arrayOfStatus
+			}
+
+			const sessionDetails = await sessionQueries.findAllSessions(page, limit, search, filters)
+
+			if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
+				return common.successResponse({
+					message: 'SESSION_FETCHED_SUCCESSFULLY',
+					statusCode: httpStatusCode.ok,
+					result: [],
+				})
+			}
+
+			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
+
+			//remove meeting_info details except value and platform
+			sessionDetails.rows.forEach((item) => {
+				if (item.meeting_info) {
+					item.meeting_info = {
+						value: item.meeting_info.value,
+						platform: item.meeting_info.platform,
+					}
+				}
+			})
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
+				result: { count: sessionDetails.count, data: sessionDetails.rows },
+			})
+		} catch (error) {
+			throw error
 		}
 	}
 }

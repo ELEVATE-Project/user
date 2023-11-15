@@ -29,4 +29,12 @@ module.exports = {
 			.withMessage('external_mentor_visibility_policy field is empty')
 		req.checkBody('allow_mentor_override').notEmpty().withMessage('allow_mentor_override field is empty')
 	},
+	updateOrganization: (req) => {
+		req.checkBody('user_id').notEmpty().withMessage('user_id field is empty')
+		req.checkBody('org_id').notEmpty().withMessage('org_id field is empty')
+		req.checkBody('roles').notEmpty().withMessage('roles field is empty')
+	},
+	deactivateUpcomingSession: (req) => {
+		req.checkQuery('user_id').notEmpty().withMessage('user_id field is empty')
+	},
 }
