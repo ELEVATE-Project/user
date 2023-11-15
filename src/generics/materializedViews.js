@@ -159,8 +159,10 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 
 const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes) => {
 	try {
+		const uniqueEntityTypeValueList = [...new Set(modelEntityTypes.entityTypeValueList)]
+
 		await Promise.all(
-			modelEntityTypes.entityTypeValueList.map(async (attribute) => {
+			uniqueEntityTypeValueList.map(async (attribute) => {
 				return await sequelize.query(
 					`CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} (${attribute});`
 				)
@@ -336,7 +338,7 @@ const triggerPeriodicViewRefresh = async () => {
 	try {
 		const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 		const modelNames = await modelNameCollector(allowFilteringEntityTypes)
-		const interval = process.env.REFRESH_VIEW_INTERNAL
+		const interval = process.env.REFRESH_VIEW_INTERVAL
 		let currentIndex = 0
 
 		// Using the mockSetInterval function to simulate setInterval
