@@ -9,6 +9,9 @@ module.exports = {
 		await queryInterface.changeColumn('mentor_extensions', 'visible_to_organizations', {
 			type: Sequelize.ARRAY(Sequelize.INTEGER),
 		})
+		await queryInterface.changeColumn('sessions', 'visible_to_organizations', {
+			type: Sequelize.ARRAY(Sequelize.INTEGER),
+		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
@@ -16,6 +19,9 @@ module.exports = {
 			type: Sequelize.ARRAY(Sequelize.STRING),
 		})
 		await queryInterface.changeColumn('mentor_extensions', 'visible_to_organizations', {
+			type: Sequelize.ARRAY(Sequelize.STRING),
+		})
+		await queryInterface.changeColumn('sessions', 'visible_to_organizations', {
 			type: Sequelize.ARRAY(Sequelize.STRING),
 		})
 	},
