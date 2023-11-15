@@ -180,10 +180,35 @@ const list = function (userType, pageNo, pageSize, searchText) {
 	})
 }
 
+/**
+ * User list.
+ * @method
+ * @name list
+ * @param {Boolean} userType - mentor/mentee.
+ * @param {Number} page - page No.
+ * @param {Number} limit - page limit.
+ * @param {String} search - search field.
+ * @returns {JSON} - List of users
+ */
+
+const listWithoutLimit = function (userType, searchText) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const apiUrl = userBaseUrl + endpoints.USERS_LIST + '?type=' + userType + '&search=' + searchText
+			const userDetails = await requests.get(apiUrl, false, true)
+
+			return resolve(userDetails)
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
 module.exports = {
 	fetchDefaultOrgDetails,
 	details,
 	getListOfUserDetails,
 	list,
 	share,
+	listWithoutLimit,
 }

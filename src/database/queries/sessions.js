@@ -1,10 +1,12 @@
 const Session = require('@database/models/index').Session
-const { Op, literal } = require('sequelize')
+const { Op, literal, QueryTypes } = require('sequelize')
 const common = require('@constants/common')
 const sequelize = require('sequelize')
 
 const moment = require('moment')
 const SessionOwnership = require('../models/index').SessionOwnership
+const Sequelize = require('@database/models/index').sequelize
+
 exports.getColumns = async () => {
 	try {
 		return await Object.keys(Session.rawAttributes)
@@ -12,6 +14,15 @@ exports.getColumns = async () => {
 		return error
 	}
 }
+
+exports.getModelName = async () => {
+	try {
+		return await Session.name
+	} catch (error) {
+		return error
+	}
+}
+
 exports.create = async (data) => {
 	try {
 		return await Session.create(data)
@@ -504,7 +515,7 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 				'created_at',
 				'meeting_info',
 				'visibility',
-				'mentor_org_id'
+				'mentor_org_id',
 				/* ['meetingInfo.platform', 'meetingInfo.platform'],
 				['meetingInfo.value', 'meetingInfo.value'], */
 			],
@@ -513,10 +524,6 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 			raw: true,
 		})
 		return sessionData
-		return {
-			data: sessionData.rows,
-			count: sessionData.count,
-		}
 	} catch (error) {
 		console.error(error)
 		return error
@@ -547,6 +554,153 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 			...options,
 			raw: true,
 		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter) => {
+	try {
+		const currentEpochTime = Math.floor(Date.now() / 1000)
+		let filterConditions = []
+
+		if (filter && typeof filter === 'object') {
+			for (const key in filter) {
+				if (Array.isArray(filter[key])) {
+					filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
+				}
+			}
+		}
+		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+		const query = `
+		WITH filtered_sessions AS (
+			SELECT id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
+				   (meeting_info - 'link' ) AS meeting_info
+			FROM m_${Session.tableName}
+			WHERE
+			title ILIKE :search
+			AND mentor_id != :userId
+			AND end_date > :currentEpochTime
+			AND status IN ('PUBLISHED', 'LIVE')
+			${filterClause}
+		)
+		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, visibility, mentor_org_id, meeting_info,
+			   COUNT(*) OVER () as total_count
+		FROM filtered_sessions
+		ORDER BY created_at DESC
+		OFFSET :offset
+		LIMIT :limit;
+	`
+
+		const replacements = {
+			search: `%${search}%`,
+			userId: userId,
+			currentEpochTime: currentEpochTime,
+			offset: limit * (page - 1),
+			limit: limit,
+		}
+
+		if (filter && typeof filter === 'object') {
+			for (const key in filter) {
+				if (Array.isArray(filter[key])) {
+					replacements[key] = filter[key]
+				}
+			}
+		}
+
+		const sessionIds = await Sequelize.query(query, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
+
+		return {
+			rows: sessionIds,
+			count: sessionIds.length > 0 ? sessionIds[0].total_count : 0,
+		}
+	} catch (error) {
+		console.error(error)
+		throw error
+	}
+}
+
+exports.findAllByIds = async (ids) => {
+	try {
+		return await Session.findAll({
+			where: {
+				id: ids,
+			},
+			raw: true,
+			order: [['created_at', 'DESC']],
+		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter) => {
+	try {
+		const currentEpochTime = Math.floor(Date.now() / 1000)
+
+		const filterConditions = []
+
+		if (filter && typeof filter === 'object') {
+			for (const key in filter) {
+				if (Array.isArray(filter[key])) {
+					filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
+				}
+			}
+		}
+		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+
+		const sessionAttendeesData = await Sequelize.query(
+			`
+			SELECT
+				id,
+				title,
+				description,
+				start_date,
+				end_date,
+				status,
+				image,
+				mentor_id,
+				meeting_info,
+				visibility,
+				mentor_org_id
+			FROM
+					${common.materializedViewsPrefix + Session.tableName}
+			WHERE
+				mentor_id = :mentorId
+				AND status = 'PUBLISHED'
+				AND start_date > :currentEpochTime
+				AND started_at IS NULL
+				AND (
+					LOWER(title) LIKE :search
+				)
+				${filterClause}
+			ORDER BY
+				start_date ASC
+			OFFSET
+				:offset
+			LIMIT
+				:limit;
+		`,
+			{
+				replacements: {
+					mentorId: mentorId,
+					currentEpochTime: currentEpochTime,
+					search: `%${search.toLowerCase()}%`,
+					offset: limit * (page - 1),
+					limit: limit,
+					...filter, // Add filter parameters to replacements
+				},
+				type: sequelize.QueryTypes.SELECT,
+			}
+		)
+
+		return {
+			data: sessionAttendeesData,
+			count: sessionAttendeesData.length,
+		}
 	} catch (error) {
 		return error
 	}
