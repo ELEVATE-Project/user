@@ -32,7 +32,6 @@ const { invalid } = require('moment')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 
-
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -510,6 +509,7 @@ module.exports = class AccountHelper {
 	 * @param {string} bodyData.password - user email.
 	 * @returns {JSON} - returns otp success response
 	 */
+
 	static async generateOtp(bodyData) {
 		try {
 			let otp
@@ -562,15 +562,6 @@ module.exports = class AccountHelper {
 				}
 			}
 
-
-			const templateData = await notificationTemplateData.findOneEmailTemplate(
-				process.env.OTP_EMAIL_TEMPLATE_CODE
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.OTP_EMAIL_TEMPLATE_CODE,
-				user.organization_id
-
-			)
-
 			if (templateData) {
 				// Push otp to kafka
 				const payload = {
@@ -593,7 +584,6 @@ module.exports = class AccountHelper {
 			throw error
 		}
 	}
-
 	/**
 	 * otp to verify user during registration
 	 * @method
