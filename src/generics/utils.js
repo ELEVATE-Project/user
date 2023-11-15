@@ -174,7 +174,14 @@ function validateInput(input, validationData, modelName) {
 	const errors = []
 	for (const field of validationData) {
 		const fieldValue = input[field.value]
-		//console.log('fieldValue', field.allow_custom_entities)
+
+		if (modelName && !field.model_names.includes(modelName) && input[field.value]) {
+			errors.push({
+				param: field.value,
+				msg: `${field.value} is not allowed for the ${modelName} model.`,
+			})
+		}
+
 		if (!fieldValue || field.allow_custom_entities === true) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
@@ -192,13 +199,6 @@ function validateInput(input, validationData, modelName) {
 			errors.push({
 				param: field.value,
 				msg: `${fieldValue} is not a valid entity.`,
-			})
-		}
-
-		if (modelName && !field.model_names.includes(modelName)) {
-			errors.push({
-				param: field.value,
-				msg: `${field.value} is not allowed for the ${modelName} model.`,
 			})
 		}
 	}

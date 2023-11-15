@@ -100,7 +100,7 @@ module.exports = class SessionsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(bodyData, validationData, 'Session')
+			let res = utils.validateInput(bodyData, validationData, await sessionQueries.getModelName())
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -111,7 +111,7 @@ module.exports = class SessionsHelper {
 			}
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
-			console.log(bodyData)
+
 			bodyData.meeting_info = {
 				platform: process.env.DEFAULT_MEETING_SERVICE,
 				value: process.env.DEFAULT_MEETING_SERVICE,
@@ -261,7 +261,8 @@ module.exports = class SessionsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(bodyData, validationData, 'Session')
+			let res = utils.validateInput(bodyData, validationData, await sessionQueries.getModelName())
+
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',

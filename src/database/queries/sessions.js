@@ -14,6 +14,15 @@ exports.getColumns = async () => {
 		return error
 	}
 }
+
+exports.getModelName = async () => {
+	try {
+		return await Session.name
+	} catch (error) {
+		return error
+	}
+}
+
 exports.create = async (data) => {
 	try {
 		return await Session.create(data)
