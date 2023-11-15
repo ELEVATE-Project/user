@@ -105,11 +105,11 @@ const triggerPeriodicViewRefresh = async () => {
 		const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
 		const modelNames = await modelNameCollector(allowFilteringEntityTypes)
 
-		let offset = process.env.REFRESH_VIEW_INTERNAL / modelNames.length
+		let offset = process.env.REFRESH_VIEW_INTERVAL / modelNames.length
 		modelNames.map((model, index) => {
 			createSchedulerJob(
 				'repeatable_view_job' + model,
-				process.env.REFRESH_VIEW_INTERNAL,
+				process.env.REFRESH_VIEW_INTERVAL,
 				'repeatable_view_job' + model,
 				true,
 				mentoringBaseurl + '/mentoring/v1/admin/triggerPeriodicViewRefreshInternal?model_name=' + model,
