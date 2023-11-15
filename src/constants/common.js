@@ -66,6 +66,8 @@ module.exports = {
 		'/org-admin/roleChange',
 		'/org-admin/updateOrganization',
 		'/org-admin/deactivateUpcomingSession',
+		'/admin/triggerPeriodicViewRefreshInternal',
+		'/admin/triggerViewRebuildInternal',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	PUBLISHED_STATUS: 'PUBLISHED',

@@ -314,7 +314,7 @@ module.exports = class MentorsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'mentor_extensions')
+			let res = utils.validateInput(data, validationData, 'MentorExtension')
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',

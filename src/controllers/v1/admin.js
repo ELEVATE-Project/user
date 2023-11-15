@@ -6,7 +6,9 @@
  */
 
 // Dependencies
-const userService = require('@services/admin')
+const adminService = require('@services/admin')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class admin {
 	/**
@@ -20,7 +22,7 @@ module.exports = class admin {
 
 	async userDelete(req) {
 		try {
-			const userDelete = await userService.userDelete(req.decodedToken, req.query.userId)
+			const userDelete = await adminService.userDelete(req.decodedToken, req.query.userId)
 			return userDelete
 		} catch (error) {
 			return error
@@ -29,18 +31,43 @@ module.exports = class admin {
 
 	async triggerViewRebuild(req) {
 		try {
-			const userDelete = await userService.triggerViewRebuild(req.decodedToken, req.query.userId)
+			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const userDelete = await adminService.triggerViewRebuild(req.decodedToken)
 			return userDelete
 		} catch (error) {
 			return error
 		}
 	}
-	async triggerPeriodicViewRefresh(req, res) {
+	async triggerPeriodicViewRefresh(req) {
 		try {
-			const userDelete = await userService.triggerPeriodicViewRefresh(req.decodedToken, req.query.userId)
-			return userDelete
-			await adminService.triggerPeriodicViewRefresh()
-			res.send({ message: 'Triggered' })
+			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			return await adminService.triggerPeriodicViewRefresh(req.decodedToken)
+		} catch (err) {
+			console.log(err)
+		}
+	}
+	async triggerViewRebuildInternal(req) {
+		try {
+			return await adminService.triggerViewRebuild()
+		} catch (error) {
+			return error
+		}
+	}
+	async triggerPeriodicViewRefreshInternal(req) {
+		try {
+			return await adminService.triggerPeriodicViewRefreshInternal(req.query.model_name)
 		} catch (err) {
 			console.log(err)
 		}
