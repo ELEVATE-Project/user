@@ -11,8 +11,10 @@ exports.getColumns = async () => {
 }
 exports.create = async (data) => {
 	try {
+		console.log('REACHED CREATE FUNCTION')
 		return await database.User.create(data)
 	} catch (error) {
+		console.log(error)
 		return error
 	}
 }

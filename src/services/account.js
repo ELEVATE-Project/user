@@ -78,7 +78,6 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
-
 				role = await roleQueries.findOne(
 					{ id: invitedUserMatch.roles },
 					{
@@ -101,8 +100,8 @@ module.exports = class AccountHelper {
 					)
 
 					roles.push(defaultRole.id)
-					bodyData.roles = roles
 				}
+				bodyData.roles = roles
 			} else {
 				//find organization from email domain
 				let emailDomain = utilsHelper.extractDomainFromEmail(email)
@@ -142,7 +141,6 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
