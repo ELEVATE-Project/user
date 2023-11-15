@@ -1127,16 +1127,23 @@ module.exports = class AccountHelper {
 
 			if (!isValidOtpExist) {
 				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
-				const redisData = {
-					verify: bodyData.email.toLowerCase(),
-					action: 'deleteuser',
-					otp,
+				if (userData && userData.otp) {
+					otp = userData.otp // If valid, use the previously generated OTP
+					console.log(otp)
+				} else {
+					// If no valid OTP exists, generate a new OTP using the generic function
+					otp = generateOTP()
 				}
+
+				// Now, 'otp' contains the generated OTP, either from userData or a newly generated one
+				console.log(otp)
+
 				const res = await utilsHelper.redisSet(
 					bodyData.email.toLowerCase(),
 					redisData,
 					common.otpExpirationTime
 				)
+
 				if (res !== 'OK') {
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
