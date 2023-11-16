@@ -283,42 +283,37 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
-function processDbResponse(session, entityType) {
-	if (session.meta) {
+function processDbResponse(responseBody, entityType) {
+	if (responseBody.meta) {
 		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
-			if (session?.meta?.hasOwnProperty(entityTypeValue)) {
-				// Move the key from session.meta to session root level
-				session[entityTypeValue] = session.meta[entityTypeValue]
-				// Delete the key from session.meta
-				delete session.meta[entityTypeValue]
+			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+				// Move the key from responseBody.meta to responseBody root level
+				responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
+				// Delete the key from responseBody.meta
+				delete responseBody.meta[entityTypeValue]
 			}
 		})
 	}
 
-	const output = { ...session } // Create a copy of the session object
+	const output = { ...responseBody } // Create a copy of the responseBody object
 
 	for (const key in output) {
 		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
 			const matchingEntity = entityType.find((entity) => entity.value === key)
 			const matchingValues = matchingEntity.entities
-				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : false))
+				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : true))
 				.map((entity) => ({
 					value: entity.value,
 					label: entity.label,
 				}))
 			if (matchingValues.length > 0) {
-				output[key] = matchingValues
+				output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
 			} else if (Array.isArray(output[key])) {
-				output[key] = output[key].map((item) => {
-					if (item.value && item.label) {
-						return item
-					}
-					return {
-						value: item,
-						label: item,
-					}
-				})
+				output[key] = output[key].map((item) => ({
+					value: item.value || item,
+					label: item.label || item,
+				}))
 			}
 		}
 
@@ -335,13 +330,9 @@ function processDbResponse(session, entityType) {
 
 	// Merge "custom_entity_text" into the respective arrays
 	for (const key in data.custom_entity_text) {
-		if (Array.isArray(data[key])) {
-			data[key] = [...data[key], ...data.custom_entity_text[key]]
-		} else {
-			data[key] = data.custom_entity_text[key]
-		}
+		if (Array.isArray(data[key])) data[key] = [...data[key], ...data.custom_entity_text[key]]
+		else data[key] = data.custom_entity_text[key]
 	}
-
 	delete data.custom_entity_text
 	return data
 }
