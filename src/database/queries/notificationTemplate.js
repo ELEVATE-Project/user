@@ -38,7 +38,7 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 		const filter = {
 			code: code,
 			type: 'email',
-			status: common.activeStatus,
+			status: common.ACTIVE_STATUS,
 			org_id: orgId
 				? {
 						[Op.or]: [orgId, defaultOrgId],
