@@ -246,7 +246,7 @@ module.exports = class OrgAdminHelper {
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
 			const user = await userQueries.findByPk(requestDetails.requester_id)
-
+			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(requestDetails, user)
 			}
