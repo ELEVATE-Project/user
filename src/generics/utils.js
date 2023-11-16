@@ -283,56 +283,25 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
-function processDbResponse(responseBody, entityTypes) {
-	console.log('RESPONSE BODY: ', responseBody)
-	console.log('ENTITY TYPE: ', entityTypes)
-	const entityTypeMap = entityTypeMapGenerator(entityTypes)
-	console.log('ENTITY MAP: ', entityTypeMap)
-	Object.keys(responseBody).forEach((field) => {
-		const value = responseBody[field]
-		if (value !== null && entityTypeMap.has(field)) {
-			const entityType = entityTypeMap.get(field)
-			if (Array.isArray(value)) {
-			} else {
-				if (entityType.get('entities').has(value)) {
-					responseBody[field] = {
-						value,
-						label: entityType.get('labels').get(value),
-					}
-				} else {
-					responseBody[field] = {
-						value: 'other',
-						label: entityTypeMap.get('labels'),
-					}
-				}
-			}
-		}
-	})
-
-	if (responseBody.meta) {
-		Object.keys(responseBody.meta).forEach((field) => {
-			const value = responseBody.meta[field]
-		})
-
-		entityTypes.forEach((entity) => {
+function processDbResponse(session, entityType) {
+	if (session.meta) {
+		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
-			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+			if (session?.meta?.hasOwnProperty(entityTypeValue)) {
 				// Move the key from session.meta to session root level
-				responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
+				session[entityTypeValue] = session.meta[entityTypeValue]
 				// Delete the key from session.meta
-
-				delete responseBody.meta[entityTypeValue]
+				delete session.meta[entityTypeValue]
 			}
 		})
 	}
 
-	const output = { ...responseBody } // Create a copy of the session object
+	const output = { ...session } // Create a copy of the session object
 
 	for (const key in output) {
-		if (entityTypes.some((entity) => entity.value === key) && output[key] !== null) {
-			const matchingEntity = entityTypes.find((entity) => entity.value === key)
+		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
+			const matchingEntity = entityType.find((entity) => entity.value === key)
 			const matchingValues = matchingEntity.entities
-
 				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : false))
 				.map((entity) => ({
 					value: entity.value,
@@ -353,8 +322,8 @@ function processDbResponse(responseBody, entityTypes) {
 			}
 		}
 
-		if (output.meta && output.meta[key] && entityTypes.some((entity) => entity.value === output.meta[key].value)) {
-			const matchingEntity = entityTypes.find((entity) => entity.value === output.meta[key].value)
+		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
+			const matchingEntity = entityType.find((entity) => entity.value === output.meta[key].value)
 			output.meta[key] = {
 				value: matchingEntity.value,
 				label: matchingEntity.label,
