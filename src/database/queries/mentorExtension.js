@@ -72,7 +72,7 @@ module.exports = class MentorExtensionQueries {
 				{
 					designation: null,
 					area_of_expertise: [],
-					education_qualification: [],
+					education_qualification: null,
 					rating: null,
 					meta: null,
 					stats: null,
@@ -83,7 +83,6 @@ module.exports = class MentorExtensionQueries {
 					external_session_visibility: null,
 					external_mentor_visibility: null,
 					deleted_at: Date.now(),
-					org_id,
 				},
 				{
 					where: {
