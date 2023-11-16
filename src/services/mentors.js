@@ -600,6 +600,16 @@ module.exports = class MentorsHelper {
 			const userType = common.MENTOR_ROLE
 			const userDetails = await userRequests.listWithoutLimit(userType, searchText)
 
+			if (userDetails.data.result.data.length == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: userDetails.data.message,
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
 			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(ids, pageNo, pageSize, filteredQuery)
