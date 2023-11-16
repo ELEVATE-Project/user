@@ -4,6 +4,7 @@ const userRequests = require('@requests/user')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -14,7 +15,6 @@ const orgAdminService = require('@services/org-admin')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
-const usersService = require('@services/users')
 const moment = require('moment')
 const menteesService = require('@services/mentees')
 
@@ -47,12 +47,16 @@ module.exports = class MentorsHelper {
 				})
 			}
 
+			// Filter upcoming sessions based on saas policy
+			const saasFilter = await menteesService.filterSessionsBasedOnSaasPolicy(menteeUserId, isAMentor)
+
 			let upcomingSessions = await sessionQueries.getMentorsUpcomingSessionsFromView(
 				page,
 				limit,
 				search,
 				id,
-				filteredQuery
+				filteredQuery,
+				saasFilter
 			)
 
 			if (!upcomingSessions.data.length) {
@@ -72,12 +76,6 @@ module.exports = class MentorsHelper {
 				upcomingSessions.data = await this.menteeSessionDetails(upcomingSessions.data, menteeUserId)
 			}
 
-			// Filter upcoming sessions based on saas policy
-			upcomingSessions.data = await menteesService.filterSessionsBasedOnSaasPolicy(
-				upcomingSessions.data,
-				menteeUserId,
-				isAMentor
-			)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'UPCOMING_SESSION_FETCHED',
@@ -329,6 +327,10 @@ module.exports = class MentorsHelper {
 			// construct saas policy data
 			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
 
+			userOrgDetails.data.result.related_orgs = userOrgDetails.data.result.related_orgs
+				? userOrgDetails.data.result.related_orgs.concat([saasPolicyData.org_id])
+				: [saasPolicyData.org_id]
+
 			// update mentee extension data
 			data = {
 				...data,
@@ -491,7 +493,11 @@ module.exports = class MentorsHelper {
 		try {
 			if (userId !== '' && isAMentor !== '') {
 				// Get mentor visibility and org_id
-				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, ['visibility', 'org_id'])
+				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, [
+					'visibility',
+					'org_id',
+					'visible_to_organizations',
+				])
 
 				// Throw error if extension not found
 				if (Object.keys(requstedMentorExtension).length === 0) {
@@ -501,14 +507,11 @@ module.exports = class MentorsHelper {
 					})
 				}
 
-				requstedMentorExtension = await usersService.filterMentorListBasedOnSaasPolicy(
-					[requstedMentorExtension],
-					userId,
-					isAMentor
-				)
+				// Check for accessibility for reading shared mentor profile
+				const isAccessible = await this.checkIfMentorIsAccessible([requstedMentorExtension], userId, isAMentor)
 
 				// Throw access error
-				if (requstedMentorExtension.length === 0) {
+				if (!isAccessible) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'PROFILE_RESTRICTED',
@@ -577,6 +580,69 @@ module.exports = class MentorsHelper {
 			return error
 		}
 	}
+
+	/**
+	 * @description 							- check if mentor is accessible based on user's saas policy.
+	 * @method
+	 * @name checkIfMentorIsAccessible
+	 * @param {Number} userId 					- User id.
+	 * @param {Array}							- Session data
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- List of filtered sessions
+	 */
+	static async checkIfMentorIsAccessible(userData, userId, isAMentor) {
+		try {
+			const userPolicyDetails = isAMentor
+				? await mentorQueries.getMentorExtension(userId, [
+						'external_mentor_visibility',
+						'org_id',
+						'visible_to_organizations',
+				  ])
+				: await menteeQueries.getMenteeExtension(userId, [
+						'external_mentor_visibility',
+						'org_id',
+						'visible_to_organizations',
+				  ])
+
+			// Throw error if mentor/mentee extension not found
+			if (Object.keys(userPolicyDetails).length === 0) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// check the accessibility conditions
+			let isAccessible = false
+			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
+				const { external_mentor_visibility, org_id, visible_to_organizations } = userPolicyDetails
+				const mentor = userData[0]
+
+				switch (external_mentor_visibility) {
+					case common.CURRENT:
+						isAccessible = mentor.org_id === org_id
+						break
+					case common.ASSOCIATED:
+						isAccessible = mentor.visible_to_organizations.some((element) =>
+							visible_to_organizations.includes(element)
+						)
+						break
+					case common.ALL:
+						isAccessible =
+							mentor.visible_to_organizations.some((element) =>
+								visible_to_organizations.includes(element)
+							) || mentor.visibility === common.ALL
+						break
+					default:
+						break
+				}
+			}
+			return isAccessible
+		} catch (err) {
+			return err
+		}
+	}
 	/**
 	 * Get user list.
 	 * @method
@@ -612,15 +678,15 @@ module.exports = class MentorsHelper {
 			}
 			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
 
-			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(ids, pageNo, pageSize, filteredQuery)
-			// Inside your function
-			extensionDetails.data = extensionDetails.data.filter((item) => item.visibility && item.org_id)
-
 			// Filter user data based on SAAS policy
-			extensionDetails.data = await usersService.filterMentorListBasedOnSaasPolicy(
-				extensionDetails.data,
-				userId,
-				isAMentor
+			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
+
+			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				ids,
+				pageNo,
+				pageSize,
+				filteredQuery,
+				saasFilter
 			)
 
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
@@ -650,6 +716,56 @@ module.exports = class MentorsHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * @description 							- Filter mentor list based on user's saas policy.
+	 * @method
+	 * @name filterMentorListBasedOnSaasPolicy
+	 * @param {Number} userId 					- User id.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- List of filtered sessions
+	 */
+	static async filterMentorListBasedOnSaasPolicy(userId, isAMentor) {
+		try {
+			const userPolicyDetails = isAMentor
+				? await mentorQueries.getMentorExtension(userId, [
+						'external_mentor_visibility',
+						'org_id',
+						'visible_to_organizations',
+				  ])
+				: await menteeQueries.getMenteeExtension(userId, [
+						'external_mentor_visibility',
+						'org_id',
+						'visible_to_organizations',
+				  ])
+
+			// Throw error if mentor/mentee extension not found
+			if (Object.keys(userPolicyDetails).length === 0) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const filter = {}
+			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
+				// Filter user data based on policy
+				// generate filter based on condition
+				if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
+					filter.org_id = userPolicyDetails.org_id
+				} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
+					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
+					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+					filter.visibility = common.ALL
+				}
+			}
+			return filter
+		} catch (err) {
+			return err
+		}
+	}
+
 	/**
 	 * Sessions list
 	 * @method

@@ -559,10 +559,11 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 	}
 }
 
-exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter) => {
+exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter, saasFilter) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 		let filterConditions = []
+		let saasFilterCondition = []
 
 		if (filter && typeof filter === 'object') {
 			for (const key in filter) {
@@ -572,6 +573,24 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			}
 		}
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
+
+		// SAAS related filtering
+		let saasFilterOrgIdClause = ''
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
+					saasFilterCondition.push(
+						`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
+					)
+				} else if (Array.isArray(saasFilter[key])) {
+					saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
+				} else {
+					saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
+				}
+			}
+		}
+		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+
 		const query = `
 		WITH filtered_sessions AS (
 			SELECT id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
@@ -583,6 +602,7 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			AND end_date > :currentEpochTime
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
+			${saasFilterClause}
 		)
 		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, visibility, mentor_org_id, meeting_info,
 			   COUNT(*) OVER () as total_count
@@ -604,6 +624,15 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			for (const key in filter) {
 				if (Array.isArray(filter[key])) {
 					replacements[key] = filter[key]
+				}
+			}
+		}
+
+		// Replace saas related query replacements
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key])) {
+					replacements[key] = saasFilter[key]
 				}
 			}
 		}
@@ -637,11 +666,12 @@ exports.findAllByIds = async (ids) => {
 	}
 }
 
-exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter) => {
+exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter, saasFilter) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
 		const filterConditions = []
+		let saasFilterCondition = []
 
 		if (filter && typeof filter === 'object') {
 			for (const key in filter) {
@@ -652,50 +682,78 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 		}
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-		const sessionAttendeesData = await Sequelize.query(
-			`
-			SELECT
-				id,
-				title,
-				description,
-				start_date,
-				end_date,
-				status,
-				image,
-				mentor_id,
-				meeting_info,
-				visibility,
-				mentor_org_id
-			FROM
-					${common.materializedViewsPrefix + Session.tableName}
-			WHERE
-				mentor_id = :mentorId
-				AND status = 'PUBLISHED'
-				AND start_date > :currentEpochTime
-				AND started_at IS NULL
-				AND (
-					LOWER(title) LIKE :search
-				)
-				${filterClause}
-			ORDER BY
-				start_date ASC
-			OFFSET
-				:offset
-			LIMIT
-				:limit;
-		`,
-			{
-				replacements: {
-					mentorId: mentorId,
-					currentEpochTime: currentEpochTime,
-					search: `%${search.toLowerCase()}%`,
-					offset: limit * (page - 1),
-					limit: limit,
-					...filter, // Add filter parameters to replacements
-				},
-				type: sequelize.QueryTypes.SELECT,
+		// SAAS related filtering
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
+					saasFilterCondition.push(
+						`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
+					)
+				} else if (Array.isArray(saasFilter[key])) {
+					saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
+				} else {
+					saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
+				}
 			}
-		)
+		}
+
+		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+
+		const query = `
+		SELECT
+			id,
+			title,
+			description,
+			start_date,
+			end_date,
+			status,
+			image,
+			mentor_id,
+			meeting_info,
+			visibility,
+			mentor_org_id
+		FROM
+				${common.materializedViewsPrefix + Session.tableName}
+		WHERE
+			mentor_id = :mentorId
+			AND status = 'PUBLISHED'
+			AND start_date > :currentEpochTime
+			AND started_at IS NULL
+			AND (
+				LOWER(title) LIKE :search
+			)
+			${filterClause}
+			${saasFilterClause}
+		ORDER BY
+			start_date ASC
+		OFFSET
+			:offset
+		LIMIT
+			:limit;
+	`
+
+		const replacements = {
+			mentorId: mentorId,
+			currentEpochTime: currentEpochTime,
+			search: `%${search.toLowerCase()}%`,
+			offset: limit * (page - 1),
+			limit: limit,
+			...filter, // Add filter parameters to replacements
+		}
+
+		// Replace saas related query replacements
+		if (saasFilter && typeof saasFilter === 'object') {
+			for (const key in saasFilter) {
+				if (Array.isArray(saasFilter[key])) {
+					replacements[key] = saasFilter[key]
+				}
+			}
+		}
+
+		const sessionAttendeesData = await Sequelize.query(query, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
 
 		return {
 			data: sessionAttendeesData,

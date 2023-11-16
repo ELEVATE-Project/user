@@ -12,6 +12,7 @@ const request = require('request')
 const sessionQueries = require('@database/queries/sessions')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
 const mentorExtensionQueries = require('@database/queries/mentorExtension')
+const menteeExtensionQueries = require('@database/queries/userExtension')
 const sessionEnrollmentQueries = require('@database/queries/sessionEnrollments')
 const postSessionQueries = require('@database/queries/postSessionDetail')
 const sessionOwnershipQueries = require('@database/queries/sessionOwnership')
@@ -141,6 +142,9 @@ module.exports = class SessionsHelper {
 			let organisationPolicy = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
 			bodyData.visibility = organisationPolicy.session_visibility_policy
 			bodyData.visible_to_organizations = userOrgDetails.data.result.related_orgs
+				? userOrgDetails.data.result.related_orgs.concat([orgId])
+				: [orgId]
+
 			const data = await sessionQueries.create(bodyData)
 
 			await sessionOwnershipQueries.create({
@@ -541,14 +545,10 @@ module.exports = class SessionsHelper {
 
 			// check for accessibility
 			if (userId !== '' && isAMentor !== '') {
-				let sessionPolicyCheck = await menteesService.filterSessionsBasedOnSaasPolicy(
-					[sessionDetails],
-					userId,
-					isAMentor
-				)
+				let isAccessible = await this.checkIfSessionIsAccessible([sessionDetails], userId, isAMentor)
 
 				// Throw access error
-				if (sessionPolicyCheck.length === 0) {
+				if (!isAccessible) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'SESSION_RESTRICTED',
@@ -602,6 +602,74 @@ module.exports = class SessionsHelper {
 		} catch (error) {
 			console.log(error)
 			throw error
+		}
+	}
+
+	/**
+	 * @description 							- check if session is accessible based on user's saas policy.
+	 * @method
+	 * @name checkIfSessionIsAccessible
+	 * @param {Number} userId 					- User id.
+	 * @param {Array}							- Session data
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- List of filtered sessions
+	 */
+	static async checkIfSessionIsAccessible(sessions, userId, isAMentor) {
+		try {
+			const userPolicyDetails = isAMentor
+				? await mentorExtensionQueries.getMentorExtension(userId, [
+						'external_session_visibility',
+						'org_id',
+						'visible_to_organizations',
+				  ])
+				: await menteeExtensionQueries.getMenteeExtension(userId, [
+						'external_session_visibility',
+						'org_id',
+						'visible_to_organizations',
+				  ])
+
+			// Throw error if mentor/mentee extension not found
+			if (Object.keys(userPolicyDetails).length === 0) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// check the accessibility conditions
+			let isAccessible = false
+			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
+				const { external_session_visibility, org_id, visible_to_organizations } = userPolicyDetails
+				const session = sessions[0]
+				const isEnrolled = session.is_enrolled || false
+
+				switch (external_session_visibility) {
+					case common.CURRENT:
+						isAccessible = isEnrolled || session.mentor_org_id === org_id
+						break
+					case common.ASSOCIATED:
+						isAccessible =
+							isEnrolled ||
+							session.visible_to_organizations.some((element) =>
+								visible_to_organizations.includes(element)
+							)
+						break
+					case common.ALL:
+						isAccessible =
+							isEnrolled ||
+							session.visible_to_organizations.some((element) =>
+								visible_to_organizations.includes(element)
+							) ||
+							session.visibility === common.ALL
+						break
+					default:
+						break
+				}
+			}
+			return isAccessible
+		} catch (err) {
+			return err
 		}
 	}
 

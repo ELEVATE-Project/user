@@ -318,12 +318,19 @@ module.exports = class MenteesHelper {
 
 		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
 
-		const sessions = await sessionQueries.getUpcomingSessionsFromView(page, limit, search, userId, filteredQuery)
+		// Create saas fiter for view query
+		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
+
+		const sessions = await sessionQueries.getUpcomingSessionsFromView(
+			page,
+			limit,
+			search,
+			userId,
+			filteredQuery,
+			saasFilter
+		)
 
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
-
-		// Filter sessions based on saas policy {session contain enrolled + upcoming session}
-		sessions.rows = await this.filterSessionsBasedOnSaasPolicy(sessions.rows, userId, isAMentor)
 
 		sessions.rows = await this.sessionMentorDetails(sessions.rows)
 
@@ -334,23 +341,19 @@ module.exports = class MenteesHelper {
 	 * @description 							- filter sessions based on user's saas policy.
 	 * @method
 	 * @name filterSessionsBasedOnSaasPolicy
-	 * @param {Array} sessions 					- Session data.
 	 * @param {Number} userId 					- User id.
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- List of filtered sessions
 	 */
-	static async filterSessionsBasedOnSaasPolicy(sessions, userId, isAMentor) {
+	static async filterSessionsBasedOnSaasPolicy(userId, isAMentor) {
 		try {
-			if (sessions.length === 0) {
-				return sessions
-			}
-
 			let userPolicyDetails
 			// If user is mentor - fetch policy details from mentor extensions else fetch from userExtension
 			if (isAMentor) {
 				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
 					'external_session_visibility',
 					'org_id',
+					'visible_to_organizations',
 				])
 
 				// Throw error if mentor extension not found
@@ -365,6 +368,7 @@ module.exports = class MenteesHelper {
 				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
 					'external_session_visibility',
 					'org_id',
+					'visible_to_organizations',
 				])
 				// If no mentee present return error
 				if (Object.keys(userPolicyDetails).length === 0) {
@@ -375,30 +379,19 @@ module.exports = class MenteesHelper {
 					})
 				}
 			}
-
+			let filter = {}
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
-				// Filter sessions based on policy
-				const filteredSessions = await Promise.all(
-					sessions.map(async (session) => {
-						let enrolled = session.is_enrolled ? session.is_enrolled : false
-						if (
-							session.visibility === common.CURRENT ||
-							(session.visibility === common.ALL &&
-								userPolicyDetails.external_session_visibility === common.CURRENT)
-						) {
-							// Check if the session's mentor organization matches the user's organization.
-							if (session.mentor_org_id === userPolicyDetails.org_id || enrolled == true) {
-								return session
-							}
-						} else {
-							return session
-						}
-					})
-				)
-				// Remove any undefined elements (sessions that didn't meet the conditions)
-				sessions = filteredSessions.filter((session) => session !== undefined)
+				// generate filter based on condition
+				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
+					filter.mentor_org_id = userPolicyDetails.org_id
+				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
+					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
+					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+					filter.visibility = common.ALL
+				}
 			}
-			return sessions
+			return filter
 		} catch (err) {
 			return err
 		}
@@ -418,9 +411,6 @@ module.exports = class MenteesHelper {
 	static async getMySessions(page, limit, search, userId) {
 		try {
 			const upcomingSessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
-
-			// // filter upcoming session based on policy ---> commented at level 1 saas changes. will need at level 3
-			// upcomingSessions.rows = await this.filterSessionsBasedOnSaasPolicy(upcomingSessions.rows, userId, isAMentor)
 
 			const upcomingSessionIds = upcomingSessions.rows.map((session) => session.id)
 
@@ -565,6 +555,10 @@ module.exports = class MenteesHelper {
 
 			// construct policy object
 			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
+
+			userOrgDetails.data.result.related_orgs = userOrgDetails.data.result.related_orgs
+				? userOrgDetails.data.result.related_orgs.concat([saasPolicyData.org_id])
+				: [saasPolicyData.org_id]
 
 			// Update mentee extension creation data
 			data = {
