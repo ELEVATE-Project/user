@@ -66,10 +66,19 @@ module.exports = async function (req, res, next) {
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
-			err.statusCode = httpStatusCode.unauthorized
-			err.responseCode = 'UNAUTHORIZED'
-			err.message = 'ACCESS_TOKEN_EXPIRED'
-			throw err
+			if (err.name === 'TokenExpiredError') {
+				throw common.failureResponse({
+					message: 'ACCESS_TOKEN_EXPIRED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			} else {
+				throw common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 
 		if (!decodedToken) {
