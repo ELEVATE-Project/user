@@ -251,6 +251,7 @@ module.exports = class OrgAdminHelper {
 				await updateRoleForApprovedRequest(requestDetails, user)
 			}
 
+			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (shouldSendEmail) {
 				await sendRoleRequestStatusEmail(user, bodyData.status)
 			}
@@ -458,7 +459,7 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 				userDetails.organization_id
 			)
 		}
-
+		console.log(templateData, 'templateData')
 		if (templateData) {
 			const organization = await organizationQueries.findOne(
 				{ id: userDetails.organization_id },
@@ -470,14 +471,17 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 				email: {
 					to: userDetails.email,
 					subject: templateData.subject,
-					body: utilsHelper.composeEmailBody(templateData.body, {
+					body: utils.composeEmailBody(templateData.body, {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
 						orgName: organization.name,
 					}),
 				},
 			}
-
+			console.log(
+				{ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name },
+				'payload'
+			)
 			await kafkaCommunication.pushEmailToKafka(payload)
 		}
 
