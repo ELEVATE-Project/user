@@ -310,10 +310,13 @@ function processDbResponse(responseBody, entityType) {
 			if (matchingValues.length > 0) {
 				output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
 			} else if (Array.isArray(output[key])) {
-				output[key] = output[key].map((item) => ({
-					value: item.value || item,
-					label: item.label || item,
-				}))
+				output[key] = output[key].map((item) => {
+					if (item.value && item.label) return item
+					return {
+						value: item,
+						label: item,
+					}
+				})
 			}
 		}
 
