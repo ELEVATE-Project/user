@@ -260,7 +260,10 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 					if (recognizedEntities.length > 0)
 						if (allowedKeys.includes(currentFieldName)) requestBody[currentFieldName] = recognizedEntities
 						else requestBody.meta[currentFieldName] = recognizedEntities
-					if (customEntities.length > 0) requestBody.custom_entity_text[currentFieldName] = customEntities
+					if (customEntities.length > 0) {
+						requestBody[currentFieldName].push('other') //This should cause error at DB write
+						requestBody.custom_entity_text[currentFieldName] = customEntities
+					}
 				} else {
 					if (!entityType.get('entities').has(currentFieldValue)) {
 						requestBody.custom_entity_text[currentFieldName] = {
