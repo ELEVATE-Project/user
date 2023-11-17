@@ -262,7 +262,7 @@ module.exports = class UserInviteHelper {
 							name,
 							email,
 							role: roles,
-							orgName: user.org_name,
+							org_name: user.org_name,
 						}
 
 						const templateData = templates[roles]
@@ -337,6 +337,17 @@ module.exports = class UserInviteHelper {
 
 	static async sendInviteeEmail(templateData, userData, inviteeUploadURL = null) {
 		try {
+			console.log(
+				{
+					name: userData.name,
+					role: userData.role || '',
+					orgName: userData.org_name || '',
+					appName: process.env.APP_NAME,
+					inviteeUploadURL,
+				},
+				'sendInviteeEmail dataa'
+			)
+			console.log(templateData, 'templateData')
 			const payload = {
 				type: common.notificationEmailType,
 				email: {
