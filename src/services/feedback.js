@@ -160,6 +160,7 @@ module.exports = class MenteesHelper {
 			delete updateData.feedback_as
 		}
 		try {
+			//get session details
 			let sessionInfo = await sessionQueries.findOne(
 				{ id: sessionId },
 				{
@@ -175,26 +176,34 @@ module.exports = class MenteesHelper {
 				})
 			}
 
+			//get the feedbacks
 			const feedbacks = await feedbackQueries.findAll({
 				session_id: sessionId,
 				user_id: userId,
 			})
 
+			//check the feedback is exist
 			let feedbackNotExists = []
-			if (feedbacks && feedbacks.length > 0) {
-				feedbackNotExists = updateData.feedbacks.filter(
-					(data) => !feedbacks.some((feedback) => data.question_id == feedback.question_id)
-				)
-			} else {
-				feedbackNotExists = updateData.feedbacks
+			if (updateData.feedbacks && updateData.feedbacks.length > 0) {
+				if (feedbacks && feedbacks.length > 0) {
+					feedbackNotExists = updateData.feedbacks.filter(
+						(data) => !feedbacks.some((feedback) => data.question_id == feedback.question_id)
+					)
+				} else {
+					feedbackNotExists = updateData.feedbacks
+				}
 			}
 
-			feedbackNotExists.map(async function (feedback) {
-				feedback.session_id = sessionId
-				feedback.user_id = userId
-			})
+			if (feedbackNotExists && feedbackNotExists.length > 0) {
+				feedbackNotExists.map(async function (feedback) {
+					feedback.session_id = sessionId
+					feedback.user_id = userId
+				})
+			}
 
+			//mentor feedback
 			if (isAMentor && feedback_as === 'mentor') {
+				//check for already submitted feedback
 				if (
 					sessionInfo.is_feedback_skipped == true ||
 					(feedbacks.length > 0 && feedbackNotExists.length == 0)
@@ -206,13 +215,29 @@ module.exports = class MenteesHelper {
 					})
 				}
 
-				await feedbackQueries.bulkCreate(feedbackNotExists)
+				//update session
+				if (updateData.is_feedback_skipped) {
+					const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, updateData)
+					if (rowsAffected == 0) {
+						return common.failureResponse({
+							message: 'SESSION_NOT_FOUND',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+				}
+
+				//create feedback
+				if (feedbackNotExists && feedbackNotExists.length > 0) {
+					await feedbackQueries.bulkCreate(feedbackNotExists)
+				}
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'FEEDBACK_SUBMITTED',
 				})
 			} else {
+				// mentee feedback
 				const sessionAttendesInfo = await sessionAttendeesQueries.findOne(
 					{
 						session_id: sessionId,
@@ -234,21 +259,38 @@ module.exports = class MenteesHelper {
 					})
 				}
 
-				await feedbackQueries.bulkCreate(feedbackNotExists)
-				if (!updateData.is_feedback_skipped) {
-					feedbackNotExists.map(async function (feedbackInfo) {
-						let questionData = await questionsQueries.findOneQuestion({
-							id: feedbackInfo.question_id,
+				if (updateData.is_feedback_skipped) {
+					const attendeeRowsAffected = await sessionAttendeesQueries.updateOne(
+						{
+							session_id: sessionId,
+							mentee_id: userId,
+						},
+						updateData
+					)
+					if (attendeeRowsAffected[0] == 0) {
+						return common.failureResponse({
+							message: 'SESSION_NOT_FOUND',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
 						})
+					}
+				} else {
+					if (feedbackNotExists && feedbackNotExists.length > 0) {
+						await feedbackQueries.bulkCreate(feedbackNotExists)
+						feedbackNotExists.map(async function (feedbackInfo) {
+							let questionData = await questionsQueries.findOneQuestion({
+								id: feedbackInfo.question_id,
+							})
 
-						if (
-							questionData &&
-							questionData.category &&
-							questionData.category.evaluating == common.MENTOR_EVALUATING
-						) {
-							await ratingCalculation(feedbackInfo, sessionInfo.mentor_id)
-						}
-					})
+							if (
+								questionData &&
+								questionData.category &&
+								questionData.category.evaluating == common.MENTOR_EVALUATING
+							) {
+								await ratingCalculation(feedbackInfo, sessionInfo.mentor_id)
+							}
+						})
+					}
 				}
 
 				return common.successResponse({
@@ -257,6 +299,7 @@ module.exports = class MenteesHelper {
 				})
 			}
 		} catch (error) {
+			console.log(error, 'error')
 			throw error
 		}
 	}
