@@ -1,4 +1,4 @@
-const usersData = require('@db/users/queries')
+const usersData = require('@database/queries/users')
 const { faker } = require('@faker-js/faker')
 const utilsHelper = require('@generics/utils')
 const crypto = require('crypto')
@@ -15,7 +15,7 @@ const insertUser = async () => {
 			isAMentor: false,
 		}
 		bodyData.password = utilsHelper.hashPassword(bodyData.password)
-		await usersData.createUser(bodyData)
+		await usersData.create(bodyData)
 		return {
 			email: email,
 			password: password,

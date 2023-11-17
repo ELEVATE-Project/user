@@ -329,9 +329,11 @@ function removeParentEntityTypes(data) {
 	return data.filter((item) => !parentIds.includes(item.id))
 }
 
-const generateOtp = (otpLength, email, action) => {
-	// Generate a random 6-digit number
-	return Math.floor(Math.random() * Math.pow(10, otpLength))
+const generateOtp = (otpLength) => {
+	// return hard coded otp for integeration testing else generate otp with mentioned length
+	return process.env.RUN_INTEGERATION_TEST.toLowerCase() === 'true'
+		? parseInt(process.env.PRE_SET_OTP)
+		: Math.floor(Math.random() * Math.pow(10, otpLength))
 }
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	const entityTypeMap = new Map()

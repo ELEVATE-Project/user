@@ -1,4 +1,4 @@
-const baseURL = 'http://localhost:3001'
+const baseURL = 'http://localhost:3005'
 var supertest = require('supertest') //require supertest
 var defaults = require('superagent-defaults')
 const { faker } = require('@faker-js/faker')
@@ -29,9 +29,7 @@ const logIn = async () => {
 			email: email,
 			password: password,
 		})
-		//console.log(res.body)
-
-		if (res.body.result.access_token && res.body.result.user._id) {
+		if (res.body.result.access_token && res.body.result.user.id) {
 			defaultHeaders = {
 				'X-auth-token': 'bearer ' + res.body.result.access_token,
 				Connection: 'keep-alive',

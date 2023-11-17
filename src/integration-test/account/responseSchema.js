@@ -1,15 +1,13 @@
 let commonBody = {
 	properties: {
-		message: {
-			type: 'string',
-		},
-		meta: {
-			type: 'object',
-		},
 		responseCode: {
 			type: 'string',
 		},
+		message: {
+			type: 'string',
+		},
 		result: {
+			type: 'object',
 			properties: {
 				access_token: {
 					type: 'string',
@@ -18,80 +16,138 @@ let commonBody = {
 					type: 'string',
 				},
 				user: {
+					type: 'object',
 					properties: {
-						_id: {
-							type: 'string',
-						},
-						areasOfExpertise: {
-							items: {},
-							type: 'array',
-						},
-						createdAt: {
-							type: 'string',
-						},
-						deleted: {
-							type: 'boolean',
-						},
-						designation: {
-							items: {},
-							type: 'array',
-						},
-						educationQualification: {
-							type: 'null',
+						id: {
+							type: 'integer',
 						},
 						email: {
-							properties: {
-								address: {
-									type: 'string',
-								},
-								verified: {
-									type: 'boolean',
-								},
-							},
-							required: ['address', 'verified'],
-							type: 'object',
+							type: 'string',
 						},
-						hasAcceptedTAndC: {
-							type: 'boolean',
-						},
-						isAMentor: {
-							type: 'boolean',
-						},
-						languages: {
-							items: {},
-							type: 'array',
-						},
-						location: {
-							items: {},
-							type: 'array',
+						email_verified: {
+							type: 'string',
 						},
 						name: {
 							type: 'string',
 						},
-						updatedAt: {
+						gender: {
+							type: 'null',
+						},
+						about: {
+							type: 'null',
+						},
+						share_link: {
+							type: 'null',
+						},
+						status: {
 							type: 'string',
+						},
+						status_updated_at: {
+							type: 'null',
+						},
+						image: {
+							type: 'null',
+						},
+						last_logged_in_at: {
+							type: 'null',
+						},
+						has_accepted_terms_and_conditions: {
+							type: 'boolean',
+						},
+						languages: {
+							type: 'null',
+						},
+						preferred_language: {
+							type: 'string',
+						},
+						organization_id: {
+							type: 'integer',
+						},
+						roles: {
+							type: 'array',
+							items: [
+								{
+									type: 'integer',
+								},
+							],
+						},
+						custom_entity_text: {
+							type: 'null',
+						},
+						meta: {
+							type: 'null',
+						},
+						created_at: {
+							type: 'string',
+						},
+						updated_at: {
+							type: 'string',
+						},
+						deleted_at: {
+							type: 'null',
+						},
+						user_roles: {
+							type: 'array',
+							items: [
+								{
+									type: 'object',
+									properties: {
+										id: {
+											type: 'integer',
+										},
+										title: {
+											type: 'string',
+										},
+										user_type: {
+											type: 'integer',
+										},
+										status: {
+											type: 'string',
+										},
+									},
+									required: ['id', 'title', 'user_type', 'status'],
+								},
+							],
 						},
 					},
 					required: [
+						'id',
 						'email',
-						'_id',
+						'email_verified',
 						'name',
-						'isAMentor',
-						'hasAcceptedTAndC',
-						'deleted',
-						'educationQualification',
-						'designation',
-						'location',
-						'areasOfExpertise',
+						'gender',
+						'about',
+						'share_link',
+						'status',
+						'status_updated_at',
+						'image',
+						'has_accepted_terms_and_conditions',
 						'languages',
-						'updatedAt',
-						'createdAt',
+						'preferred_language',
+						'organization_id',
+						'roles',
+						'meta',
+						'created_at',
+						'updated_at',
+						'deleted_at',
+						'user_roles',
 					],
-					type: 'object',
 				},
 			},
 			required: ['access_token', 'refresh_token', 'user'],
+		},
+		meta: {
 			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: {
+					type: 'string',
+				},
+			},
+			required: ['formsVersion', 'correlation'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
@@ -106,7 +162,158 @@ commonBody.properties.result.properties.user.properties['lastLoggedInAt'] = {
 
 const loginSchema = {
 	type: 'object',
-	...commonBody,
+	properties: {
+		responseCode: {
+			type: 'string',
+		},
+		message: {
+			type: 'string',
+		},
+		result: {
+			type: 'object',
+			properties: {
+				access_token: {
+					type: 'string',
+				},
+				refresh_token: {
+					type: 'string',
+				},
+				user: {
+					type: 'object',
+					properties: {
+						id: {
+							type: 'integer',
+						},
+						email: {
+							type: 'string',
+						},
+						email_verified: {
+							type: 'string',
+						},
+						name: {
+							type: 'string',
+						},
+						gender: {
+							type: 'null',
+						},
+						about: {
+							type: 'null',
+						},
+						share_link: {
+							type: 'null',
+						},
+						status: {
+							type: 'string',
+						},
+						status_updated_at: {
+							type: 'null',
+						},
+						image: {
+							type: 'null',
+						},
+						last_logged_in_at: {
+							type: 'string',
+						},
+						has_accepted_terms_and_conditions: {
+							type: 'boolean',
+						},
+						languages: {
+							type: 'null',
+						},
+						preferred_language: {
+							type: 'string',
+						},
+						organization_id: {
+							type: 'integer',
+						},
+						roles: {
+							type: 'array',
+							items: [
+								{
+									type: 'integer',
+								},
+							],
+						},
+						custom_entity_text: {
+							type: 'null',
+						},
+						meta: {
+							type: 'null',
+						},
+						created_at: {
+							type: 'string',
+						},
+						updated_at: {
+							type: 'string',
+						},
+						deleted_at: {
+							type: 'null',
+						},
+						user_roles: {
+							type: 'array',
+							items: [
+								{
+									type: 'object',
+									properties: {
+										id: {
+											type: 'integer',
+										},
+										title: {
+											type: 'string',
+										},
+										user_type: {
+											type: 'integer',
+										},
+										status: {
+											type: 'string',
+										},
+									},
+									required: ['id', 'title', 'user_type', 'status'],
+								},
+							],
+						},
+					},
+					required: [
+						'id',
+						'email',
+						'email_verified',
+						'name',
+						'gender',
+						'about',
+						'share_link',
+						'status',
+						'status_updated_at',
+						'image',
+						'has_accepted_terms_and_conditions',
+						'languages',
+						'preferred_language',
+						'organization_id',
+						'roles',
+						'meta',
+						'created_at',
+						'updated_at',
+						'deleted_at',
+						'user_roles',
+					],
+				},
+			},
+			required: ['access_token', 'refresh_token', 'user'],
+		},
+		meta: {
+			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: {
+					type: 'string',
+				},
+			},
+			required: ['formsVersion', 'correlation'],
+		},
+	},
+	required: ['responseCode', 'message', 'result', 'meta'],
 }
 const generateTokenSchema = {
 	type: 'object',
@@ -125,60 +332,6 @@ const generateTokenSchema = {
 				},
 			},
 			required: ['access_token'],
-		},
-		meta: {
-			type: 'object',
-		},
-	},
-	required: ['responseCode', 'message', 'result', 'meta'],
-}
-const verifyUser = {
-	type: 'object',
-	properties: {
-		responseCode: {
-			type: 'string',
-		},
-		message: {
-			type: 'string',
-		},
-		result: {
-			type: 'object',
-			properties: {
-				_id: {
-					type: 'string',
-				},
-				isAMentor: {
-					type: 'boolean',
-				},
-			},
-			required: ['_id', 'isAMentor'],
-		},
-		meta: {
-			type: 'object',
-		},
-	},
-	required: ['responseCode', 'message', 'result', 'meta'],
-}
-const verifyMentor = {
-	type: 'object',
-	properties: {
-		responseCode: {
-			type: 'string',
-		},
-		message: {
-			type: 'string',
-		},
-		result: {
-			type: 'object',
-			properties: {
-				_id: {
-					type: 'string',
-				},
-				isAMentor: {
-					type: 'boolean',
-				},
-			},
-			required: ['_id', 'isAMentor'],
 		},
 		meta: {
 			type: 'object',
@@ -270,18 +423,32 @@ const listSchema = {
 										{
 											type: 'object',
 											properties: {
-												_id: {
-													type: 'string',
+												id: {
+													type: 'integer',
 												},
 												name: {
 													type: 'string',
 												},
-												areasOfExpertise: {
-													type: 'array',
-													items: {},
+												image: {
+													type: 'null',
 												},
 											},
-											required: ['_id', 'name', 'areasOfExpertise'],
+											required: ['id', 'name', 'image'],
+										},
+										{
+											type: 'object',
+											properties: {
+												id: {
+													type: 'integer',
+												},
+												name: {
+													type: 'string',
+												},
+												image: {
+													type: 'null',
+												},
+											},
+											required: ['id', 'name', 'image'],
 										},
 									],
 								},
@@ -298,6 +465,90 @@ const listSchema = {
 		},
 		meta: {
 			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: {
+					type: 'string',
+				},
+			},
+			required: ['formsVersion', 'correlation'],
+		},
+	},
+	required: ['responseCode', 'message', 'result', 'meta'],
+}
+const generateDisableOTP = {
+	type: 'object',
+	properties: {
+		responseCode: { type: 'string' },
+		message: { type: 'string' },
+		result: { type: 'string' },
+		meta: {
+			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: { type: 'string' },
+			},
+			required: ['formsVersion', 'correlation'],
+		},
+	},
+	required: ['responseCode', 'message', 'result', 'meta'],
+}
+const generateDisableOTPForgetPassword = {
+	type: 'object',
+	properties: {
+		responseCode: { type: 'string' },
+		message: { type: 'string' },
+		result: {
+			type: 'array',
+			items: {},
+		},
+		meta: {
+			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: {
+					type: 'string',
+				},
+			},
+			required: ['formsVersion', 'correlation'],
+		},
+	},
+	required: ['responseCode', 'message', 'result', 'meta'],
+}
+const disableUser = {
+	type: 'object',
+	properties: {
+		responseCode: {
+			type: 'string',
+		},
+		message: {
+			type: 'string',
+		},
+		result: {
+			type: 'array',
+			items: {},
+		},
+		meta: {
+			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: {
+					type: 'string',
+				},
+			},
+			required: ['formsVersion', 'correlation'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
@@ -305,11 +556,12 @@ const listSchema = {
 module.exports = {
 	createProfileSchema,
 	generateTokenSchema,
-	verifyUser,
-	verifyMentor,
 	loginSchema,
 	logoutSchema,
 	changeRoleSchema,
 	acceptTermsAndConditionSchema,
 	listSchema,
+	generateDisableOTP,
+	generateDisableOTPForgetPassword,
+	disableUser,
 }
