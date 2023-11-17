@@ -66,6 +66,8 @@ module.exports = {
 		'/org-admin/roleChange',
 		'/org-admin/updateOrganization',
 		'/org-admin/deactivateUpcomingSession',
+		'/admin/triggerPeriodicViewRefreshInternal',
+		'/admin/triggerViewRebuildInternal',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	PUBLISHED_STATUS: 'PUBLISHED',
@@ -128,6 +130,9 @@ module.exports = {
 	},
 	CURRENT: 'CURRENT',
 	ALL: 'ALL',
+	ASSOCIATED: 'ASSOCIATED',
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
+	excludedQueryParams: ['enrolled'],
+	materializedViewsPrefix: 'm_',
 }

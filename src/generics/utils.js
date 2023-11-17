@@ -174,7 +174,14 @@ function validateInput(input, validationData, modelName) {
 	const errors = []
 	for (const field of validationData) {
 		const fieldValue = input[field.value]
-		//console.log('fieldValue', field.allow_custom_entities)
+
+		if (modelName && !field.model_names.includes(modelName) && input[field.value]) {
+			errors.push({
+				param: field.value,
+				msg: `${field.value} is not allowed for the ${modelName} model.`,
+			})
+		}
+
 		if (!fieldValue || field.allow_custom_entities === true) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
@@ -194,13 +201,6 @@ function validateInput(input, validationData, modelName) {
 				msg: `${fieldValue} is not a valid entity.`,
 			})
 		}
-
-		if (modelName && !field.model_names.includes(modelName)) {
-			errors.push({
-				param: field.value,
-				msg: `${field.value} is not allowed for the ${modelName} model.`,
-			})
-		}
 	}
 
 	if (errors.length === 0) {
@@ -215,114 +215,106 @@ function validateInput(input, validationData, modelName) {
 		errors: errors,
 	}
 }
+
+const entityTypeMapGenerator = (entityTypeData) => {
+	try {
+		const entityTypeMap = new Map()
+		entityTypeData.forEach((entityType) => {
+			const labelsMap = new Map()
+			const entities = entityType.entities.map((entity) => {
+				labelsMap.set(entity.value, entity.label)
+				return entity.value
+			})
+			if (!entityTypeMap.has(entityType.value)) {
+				const entityMap = new Map()
+				entityMap.set('allow_custom_entities', entityType.allow_custom_entities)
+				entityMap.set('entities', new Set(entities))
+				entityMap.set('labels', labelsMap)
+				entityTypeMap.set(entityType.value, entityMap)
+			}
+		})
+		return entityTypeMap
+	} catch (err) {
+		console.log(err)
+	}
+}
+
 function restructureBody(requestBody, entityData, allowedKeys) {
 	try {
-		const requestBodyKeys = Object.keys(requestBody)
-
-		const entityValues = entityData.map((entity) => entity.value)
-
-		const requestBodyKeysExists = requestBodyKeys.some((element) => entityValues.includes(element))
-
-		if (!requestBodyKeysExists) {
-			return requestBody
-		}
-		const customEntities = {}
+		const entityTypeMap = entityTypeMapGenerator(entityData)
+		const doesAffectedFieldsExist = Object.keys(requestBody).some((element) => entityTypeMap.has(element))
+		if (!doesAffectedFieldsExist) return requestBody
 		requestBody.custom_entity_text = {}
-		for (const requestBodyKey in requestBody) {
-			if (requestBody.hasOwnProperty(requestBodyKey)) {
-				const requestBodyValue = requestBody[requestBodyKey]
-				const entityType = entityData.find((entity) => entity.value === requestBodyKey)
-
-				if (entityType && entityType.allow_custom_entities) {
-					if (Array.isArray(requestBodyValue)) {
-						const customValues = []
-
-						for (const value of requestBodyValue) {
-							const entityExists = entityType.entities.find((entity) => entity.value === value)
-
-							if (!entityExists) {
-								customEntities.custom_entity_text = customEntities.custom_entity_text || {}
-								customEntities.custom_entity_text[requestBodyKey] =
-									customEntities.custom_entity_text[requestBodyKey] || []
-								customEntities.custom_entity_text[requestBodyKey].push({
-									value: 'other',
-									label: value,
-								})
-								customValues.push(value)
-							}
-						}
-
-						if (customValues.length > 0) {
-							// Remove customValues from the original array
-							requestBody[requestBodyKey] = requestBody[requestBodyKey].filter(
-								(value) => !customValues.includes(value)
-							)
-						}
-						for (const value of requestBodyValue) {
-							const entityExists = entityType.entities.find((entity) => entity.value === value)
-
-							if (!entityExists) {
-								if (!requestBody[requestBodyKey].includes('other')) {
-									requestBody[requestBodyKey].push('other')
-								}
-							}
-						}
+		if (!requestBody.meta) requestBody.meta = {}
+		for (const currentFieldName in requestBody) {
+			const currentFieldValue = requestBody[currentFieldName]
+			const entityType = entityTypeMap.get(currentFieldName)
+			if (entityType && entityType.get('allow_custom_entities')) {
+				if (Array.isArray(currentFieldValue)) {
+					const recognizedEntities = []
+					const customEntities = []
+					for (const value of currentFieldValue) {
+						if (entityType.get('entities').has(value)) recognizedEntities.push(value)
+						else customEntities.push({ value: 'other', label: value })
 					}
-				}
-
-				if (Array.isArray(requestBodyValue)) {
-					const entityTypeExists = entityData.find((entity) => entity.value === requestBodyKey)
-
-					// Always move the key to the meta field if it's not allowed and is not a custom entity
-					if (!allowedKeys.includes(requestBodyKey) && entityTypeExists) {
-						requestBody.meta = {
-							...(requestBody.meta || {}),
-							[requestBodyKey]: requestBody[requestBodyKey],
-						}
-						delete requestBody[requestBodyKey]
+					if (recognizedEntities.length > 0)
+						if (allowedKeys.includes(currentFieldName)) requestBody[currentFieldName] = recognizedEntities
+						else requestBody.meta[currentFieldName] = recognizedEntities
+					if (customEntities.length > 0) {
+						requestBody[currentFieldName].push('other') //This should cause error at DB write
+						requestBody.custom_entity_text[currentFieldName] = customEntities
 					}
+				} else {
+					if (!entityType.get('entities').has(currentFieldValue)) {
+						requestBody.custom_entity_text[currentFieldName] = {
+							value: 'other',
+							label: currentFieldValue,
+						}
+						if (allowedKeys.includes(currentFieldName))
+							requestBody[currentFieldName] = 'other' //This should cause error at DB write
+						else requestBody.meta[currentFieldName] = 'other'
+					} else if (!allowedKeys.includes(currentFieldName))
+						requestBody.meta[currentFieldName] = currentFieldValue
 				}
 			}
 		}
-		// Merge customEntities into requestBody
-		Object.assign(requestBody, customEntities)
+		if (Object.keys(requestBody.meta).length === 0) requestBody.meta = null
+		if (Object.keys(requestBody.custom_entity_text).length === 0) requestBody.custom_entity_text = null
 		return requestBody
 	} catch (error) {
 		console.error(error)
 	}
 }
 
-function processDbResponse(session, entityType) {
-	if (session.meta) {
+function processDbResponse(responseBody, entityType) {
+	if (responseBody.meta) {
 		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
-			if (session?.meta?.hasOwnProperty(entityTypeValue)) {
-				// Move the key from session.meta to session root level
-				session[entityTypeValue] = session.meta[entityTypeValue]
-				// Delete the key from session.meta
-				delete session.meta[entityTypeValue]
+			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+				// Move the key from responseBody.meta to responseBody root level
+				responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
+				// Delete the key from responseBody.meta
+				delete responseBody.meta[entityTypeValue]
 			}
 		})
 	}
 
-	const output = { ...session } // Create a copy of the session object
+	const output = { ...responseBody } // Create a copy of the responseBody object
 
 	for (const key in output) {
 		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
 			const matchingEntity = entityType.find((entity) => entity.value === key)
 			const matchingValues = matchingEntity.entities
-				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : false))
+				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : true))
 				.map((entity) => ({
 					value: entity.value,
 					label: entity.label,
 				}))
 			if (matchingValues.length > 0) {
-				output[key] = matchingValues
+				output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
 			} else if (Array.isArray(output[key])) {
 				output[key] = output[key].map((item) => {
-					if (item.value && item.label) {
-						return item
-					}
+					if (item.value && item.label) return item
 					return {
 						value: item,
 						label: item,
@@ -344,13 +336,9 @@ function processDbResponse(session, entityType) {
 
 	// Merge "custom_entity_text" into the respective arrays
 	for (const key in data.custom_entity_text) {
-		if (Array.isArray(data[key])) {
-			data[key] = [...data[key], ...data.custom_entity_text[key]]
-		} else {
-			data[key] = data.custom_entity_text[key]
-		}
+		if (Array.isArray(data[key])) data[key] = [...data[key], ...data.custom_entity_text[key]]
+		else data[key] = data.custom_entity_text[key]
 	}
-
 	delete data.custom_entity_text
 	return data
 }
@@ -361,6 +349,17 @@ function removeParentEntityTypes(data) {
 }
 const epochFormat = (date, format) => {
 	return moment.unix(date).utc().format(format)
+}
+function processQueryParametersWithExclusions(query) {
+	const queryArrays = {}
+	const excludedKeys = common.excludedQueryParams
+	for (const queryParam in query) {
+		if (query.hasOwnProperty(queryParam) && !excludedKeys.includes(queryParam)) {
+			queryArrays[queryParam] = query[queryParam].split(',').map((item) => item.trim())
+		}
+	}
+
+	return queryArrays
 }
 
 /**
@@ -426,7 +425,7 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	if (!Array.isArray(requiredRoles)) {
 		requiredRoles = [requiredRoles]
 	}
-  
+
 	// Check the type of the first element.
 	const firstElementType = typeof roles[0]
 	if (firstElementType === 'object') {
@@ -434,7 +433,6 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	} else {
 		return roles.some((role) => requiredRoles.includes(role))
 	}
-
 }
 
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
@@ -444,6 +442,47 @@ const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 		else if (entityType.org_id === orgId) entityTypeMap.set(entityType.value, entityType)
 	})
 	return Array.from(entityTypeMap.values())
+}
+const generateWhereClause = (tableName) => {
+	let whereClause = ''
+
+	switch (tableName) {
+		case 'sessions':
+			const currentEpochDate = Math.floor(new Date().getTime() / 1000) // Get current date in epoch format
+			whereClause = `deleted_at IS NULL AND start_date >= ${currentEpochDate}`
+			break
+		case 'mentor_extensions':
+			whereClause = `deleted_at IS NULL`
+			break
+		case 'user_extensions':
+			whereClause = `deleted_at IS NULL`
+			break
+		default:
+			whereClause = 'deleted_at IS NULL'
+	}
+
+	return whereClause
+}
+
+function validateFilters(input, validationData, modelName) {
+	const allValues = []
+	validationData.forEach((item) => {
+		// Extract the 'value' property from the main object
+		allValues.push(item.value)
+
+		// Extract the 'value' property from the 'entities' array
+	})
+	console.log(allValues)
+	for (const key in input) {
+		if (input.hasOwnProperty(key)) {
+			if (allValues.includes(key)) {
+				continue
+			} else {
+				delete input[key]
+			}
+		}
+	}
+	return input
 }
 
 module.exports = {
@@ -478,4 +517,7 @@ module.exports = {
 	generateCheckSum,
 	validateRoleAccess,
 	removeDefaultOrgEntityTypes,
+	generateWhereClause,
+	validateFilters,
+	processQueryParametersWithExclusions,
 }

@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "5d4d24cb-3c5c-4486-8d85-bd10eeaae9c3",
+		"_postman_id": "d8b7643b-0f23-4360-aa77-1608b9b940e5",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "6350183",
-		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-5d4d24cb-3c5c-4486-8d85-bd10eeaae9c3?action=share&source=collection_link&creator=6350183"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -402,7 +401,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/list?page=1&limit=2&status=published,completed",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/list?page=1&limit=2&recommended_for=hm,deo",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "sessions", "list"],
 							"query": [
@@ -415,13 +414,14 @@
 									"value": "2"
 								},
 								{
-									"key": "status",
-									"value": "published,completed"
-								},
-								{
 									"key": "search",
 									"value": "ankit",
 									"disabled": true
+								},
+								{
+									"key": "recommended_for",
+									"value": "hm,deo",
+									"description": "Filters to be applied should be passed like this."
 								}
 							]
 						},
@@ -543,7 +543,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Leadership session by rajesh\",\n    \"description\": \"description\",\n    \"start_date\": 1693479180,\n    \"end_date\": 1693486379,\n    \"recommended_for\": [\n        \"hm\"\n    ],\n    \"categories\": [\n        \"Educational leadership\"\n    ],\n    \"medium\": [\n        \"1\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"image\": [\n        \"users/1232s2133sdd1-12e2dasd3123.png\"\n    ]\n}",
+							"raw": "{\n    \"title\": \"Leadership session \",\n    \"description\": \"description\",\n    \"start_date\": 1700647200,\n    \"end_date\": 1700650800,\n    \"recommended_for\": [\n        \"hm\"\n    ],\n    \"categories\": [\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"image\": [\n        \"users/1232s2133sdd1-12e2dasd3123.png\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -737,7 +737,7 @@
 			"name": "mentees",
 			"item": [
 				{
-					"name": "Mentees Sessions",
+					"name": "Mentees Enrolled Sessions",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -748,14 +748,10 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/sessions?enrolled=true&page=1&limit=20",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/sessions?page=1&limit=20",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentees", "sessions"],
 							"query": [
-								{
-									"key": "enrolled",
-									"value": "true"
-								},
 								{
 									"key": "search",
 									"value": "my data",
@@ -892,7 +888,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Mentor Profile",
+					"name": "Mentor Details",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -903,15 +899,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/profile/1",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/details/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "profile", "1"]
+							"path": ["v1", "mentors", "details", "1"]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get Mentor upcommingSession",
+					"name": "Upcoming Sessions",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -922,7 +918,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/1?page=1&limit=5",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/1?page=1&limit=5&recommended_for=hm",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentors", "upcomingSessions", "1"],
 							"query": [
@@ -938,6 +934,10 @@
 									"key": "search",
 									"value": "testing5",
 									"disabled": true
+								},
+								{
+									"key": "recommended_for",
+									"value": "hm"
 								}
 							]
 						}
@@ -966,6 +966,50 @@
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/share/1",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentors", "share", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mentor List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/list",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "list"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crearted Sessions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/createdSessions?status=PUBLISHED,COMPLETED",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentors", "createdSessions"],
+							"query": [
+								{
+									"key": "status",
+									"value": "PUBLISHED,COMPLETED"
+								}
+							]
 						}
 					},
 					"response": []
@@ -1334,6 +1378,94 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Build views",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerViewRebuild",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "admin", "triggerViewRebuild"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Build views (Internal)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerViewRebuildInternal",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "admin", "triggerViewRebuildInternal"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Views",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerPeriodicViewRefresh",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "admin", "triggerPeriodicViewRefresh"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Views (Internal)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerPeriodicViewRefreshInternal?model_name=Session",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "admin", "triggerPeriodicViewRefreshInternal"],
+							"query": [
+								{
+									"key": "model_name",
+									"value": "Session"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1467,7 +1599,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"user_id\":1,\n\t\"current_roles\":[\"mentor\"],\n\t\"new_roles\":[\"mentee\"]\n}"
+							"raw": "{\n    \"user_id\": 2,\n    \"current_roles\": [\n        \"mentee\"\n    ],\n    \"new_roles\": [\n        \"mentor\"\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/roleChange",

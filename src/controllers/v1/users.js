@@ -42,21 +42,12 @@ module.exports = class Users {
 	 * @param {Number} req.pageNo 				- page no.
 	 * @param {Number} req.pageSize 			- page size limit.
 	 * @param {String} req.searchText 			- search text.
-	 * @param {Number}  req.decodedToken.id		- userId.
-	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- List of user.
 	 */
 
 	async list(req) {
 		try {
-			const listUser = await userService.list(
-				req.query.type,
-				req.pageNo,
-				req.pageSize,
-				req.searchText,
-				req.decodedToken.id,
-				isAMentor(req.decodedToken.roles)
-			)
+			const listUser = await userService.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
 			return listUser
 		} catch (error) {
 			return error

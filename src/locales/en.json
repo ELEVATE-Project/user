@@ -110,5 +110,7 @@
 	"SESSION_DEACTIVATED_SUCCESSFULLY": "Session deactivated successfully.",
 	"SUCCESSFULLY_UNENROLLED_FROM_UPCOMING_SESSION": "Unrolled from upcoming sessions successfully.",
 	"PROFILE_RESTRICTED": "User can't access this profile",
-	"SESSION_RESTRICTED": "User can't access this session"
+	"SESSION_RESTRICTED": "User can't access this session",
+	"MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY": "Materialized views generated successfully",
+	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully"
 }

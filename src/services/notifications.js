@@ -15,7 +15,7 @@ module.exports = class Notifications {
 	 * @returns
 	 */
 
-	static async sendNotification(notificationJobId, notificataionTemplate) {
+	static async sendNotification(notificationJobId, notificataionTemplate, jobCreatorOrgId = '') {
 		try {
 			// Data contains notificationJobId and notificationTemplate.
 			// Extract sessionId from incoming notificationJobId.
@@ -33,7 +33,7 @@ module.exports = class Notifications {
 			})
 
 			// Get email template based on incoming request.
-			let emailTemplate = await notificationQueries.findOneEmailTemplate(notificataionTemplate)
+			let emailTemplate = await notificationQueries.findOneEmailTemplate(notificataionTemplate, jobCreatorOrgId)
 
 			if (emailTemplate && sessions) {
 				// if notificataionTemplate is {MENTEE_SESSION_REMAINDER_EMAIL_CODE} then notification to all personal registered for the session has to be send.

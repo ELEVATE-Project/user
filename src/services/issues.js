@@ -3,8 +3,7 @@ const httpStatusCode = require('@generics/http-status')
 
 const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
-const notificationTemplateData = require('@db/notification-template/query')
-
+const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const issueQueries = require('../database/queries/issue')
 module.exports = class issuesHelper {
 	/**
@@ -25,8 +24,9 @@ module.exports = class issuesHelper {
 			bodyData.user_id = decodedToken.id
 
 			if (process.env.ENABLE_EMAIL_FOR_REPORT_ISSUE === 'true') {
-				const templateData = await notificationTemplateData.findOneEmailTemplate(
-					process.env.REPORT_ISSUE_EMAIL_TEMPLATE_CODE
+				const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+					process.env.REPORT_ISSUE_EMAIL_TEMPLATE_CODE,
+					decodedToken.organization_id
 				)
 
 				let metaItems = ''
