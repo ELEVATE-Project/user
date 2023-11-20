@@ -260,7 +260,7 @@ exports.findAllSessions = async (page, limit, search, filters) => {
 			],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
-			order: [['title', 'ASC']],
+			order: [['created_at', 'DESC']],
 		}
 
 		if (search) {
@@ -502,7 +502,8 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 					[Op.in]: ['PUBLISHED', 'LIVE'],
 				},
 			},
-			order: [['created_at', 'DESC']],
+			// order: [['created_at', 'DESC']],
+			order: [['start_date', 'ASC']],
 			attributes: [
 				'id',
 				'title',
