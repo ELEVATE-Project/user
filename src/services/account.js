@@ -79,7 +79,7 @@ module.exports = class AccountHelper {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
 				role = await roleQueries.findOne(
-					{ id: invitedUserMatch.roles },
+					{ id: invitedUserMatch.roles.toLowerCase() },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -912,7 +912,7 @@ module.exports = class AccountHelper {
 				})
 			} else {
 				let role = await roleQueries.findOne(
-					{ title: params.query.type },
+					{ title: params.query.type.toLowerCase() },
 					{
 						attributes: ['id'],
 					}
