@@ -657,12 +657,20 @@ module.exports = class MentorsHelper {
 
 	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
 		try {
+			let additionalProjectionString = ''
+
+			if (queryParams.includeExtraData && queryParams.includeExtraData !== '') {
+				additionalProjectionString = queryParams.includeExtraData
+				delete queryParams.includeExtraData
+			}
+
 			const query = utils.processQueryParametersWithExclusions(queryParams)
+
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
 			})
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
 
+			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
 			const userType = common.MENTOR_ROLE
 			const userDetails = await userRequests.listWithoutLimit(userType, searchText)
 
@@ -676,7 +684,8 @@ module.exports = class MentorsHelper {
 				pageNo,
 				pageSize,
 				filteredQuery,
-				saasFilter
+				saasFilter,
+				additionalProjectionString
 			)
 
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
