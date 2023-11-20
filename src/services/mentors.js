@@ -716,6 +716,8 @@ module.exports = class MentorsHelper {
 			})
 
 			userDetails.data.result.count = extensionDetails.count
+			const sortedData = _.sortBy(userDetails.data.result.data, 'key') || []
+			userDetails.data.result.data = sortedData
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
