@@ -126,7 +126,7 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async getMentorsByUserIdsFromView(ids, page, limit, filter, saasFilter) {
+	static async getMentorsByUserIdsFromView(ids, page, limit, filter, saasFilter, additionalProjectionclause = '') {
 		try {
 			const filterConditions = []
 			let saasFilterCondition = []
@@ -156,12 +156,15 @@ module.exports = class MentorExtensionQueries {
 			}
 			const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
 
+			// Create selection clause
+			let projectionClause =
+				'user_id,rating,visibility,org_id,designation,area_of_expertise,education_qualification'
+			if (additionalProjectionclause !== '') {
+				projectionClause += `,${additionalProjectionclause}`
+			}
+
 			const query = `
-				SELECT
-					user_id,
-					rating,
-					visibility,
-					org_id
+				SELECT ${projectionClause}
 				FROM
 						${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
