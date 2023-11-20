@@ -39,7 +39,6 @@ module.exports = class AdminHelper {
 			let updateParams = _generateUpdateParams(userId)
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
-
 			await userQueries.updateUser({ id: userId }, update)
 			await utils.redisDel(common.redisUserPrefix + userId.toString())
 
@@ -442,6 +441,7 @@ function _removeUserKeys() {
 		'languages',
 		'refresh_tokens',
 		'image',
+		'roles',
 	]
 	return removedFields
 }
@@ -455,6 +455,7 @@ function _generateUpdateParams(userId) {
 		preferred_language: 'en',
 		location: [],
 		languages: [],
+		roles: [],
 	}
 	return updateUser
 }
