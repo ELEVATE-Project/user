@@ -415,7 +415,7 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 			let rolesToUpdate = [...systemRoleIds]
 
 			const newRole = await roleQueries.findOne(
-				{ id: requestDetails.role.toLowerCase(), status: common.ACTIVE_STATUS },
+				{ id: requestDetails.role, status: common.ACTIVE_STATUS },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
