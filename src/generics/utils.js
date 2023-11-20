@@ -118,7 +118,8 @@ const getDownloadableUrl = async (imgPath) => {
 }
 
 const getTimeZone = (date, format, tz = null) => {
-	let timeZone = moment(date)
+	let timeZone = typeof date === 'number' || !isNaN(date) ? moment.unix(date) : moment(date)
+
 	if (tz) {
 		timeZone.tz(tz)
 	}
