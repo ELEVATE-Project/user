@@ -550,7 +550,15 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 	}
 }
 
-exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter, saasFilter) => {
+exports.getUpcomingSessionsFromView = async (
+	page,
+	limit,
+	search,
+	userId,
+	filter,
+	saasFilter,
+	additionalProjectionclause = ''
+) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 		let filterConditions = []
@@ -581,11 +589,18 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			}
 		}
 		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+		// Create selection clause
+		let projectionClause = `
+			id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
+			(meeting_info - 'link' ) AS meeting_info
+		`
+		if (additionalProjectionclause !== '') {
+			projectionClause += `,${additionalProjectionclause}`
+		}
 
 		const query = `
 		WITH filtered_sessions AS (
-			SELECT id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
-				   (meeting_info - 'link' ) AS meeting_info
+			SELECT ${projectionClause}
 			FROM m_${Session.tableName}
 			WHERE
 			title ILIKE :search

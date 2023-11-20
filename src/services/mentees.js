@@ -310,6 +310,13 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
+		let additionalProjectionString = ''
+
+		// check for includeExtraData query
+		if (queryParams.includeExtraData && queryParams.includeExtraData !== '') {
+			additionalProjectionString = queryParams.includeExtraData
+			delete queryParams.includeExtraData
+		}
 		let query = utils.processQueryParametersWithExclusions(queryParams)
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
@@ -327,7 +334,8 @@ module.exports = class MenteesHelper {
 			search,
 			userId,
 			filteredQuery,
-			saasFilter
+			saasFilter,
+			additionalProjectionString
 		)
 
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
