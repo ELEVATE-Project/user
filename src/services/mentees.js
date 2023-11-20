@@ -312,10 +312,10 @@ module.exports = class MenteesHelper {
 	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
 		let additionalProjectionString = ''
 
-		// check for includeExtraData query
-		if (queryParams.includeExtraData && queryParams.includeExtraData !== '') {
-			additionalProjectionString = queryParams.includeExtraData
-			delete queryParams.includeExtraData
+		// check for fields query
+		if (queryParams.fields && queryParams.fields !== '') {
+			additionalProjectionString = queryParams.fields
+			delete queryParams.fields
 		}
 		let query = utils.processQueryParametersWithExclusions(queryParams)
 

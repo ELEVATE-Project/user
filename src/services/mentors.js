@@ -659,10 +659,10 @@ module.exports = class MentorsHelper {
 		try {
 			let additionalProjectionString = ''
 
-			// check for includeExtraData query
-			if (queryParams.includeExtraData && queryParams.includeExtraData !== '') {
-				additionalProjectionString = queryParams.includeExtraData
-				delete queryParams.includeExtraData
+			// check for fields query
+			if (queryParams.fields && queryParams.fields !== '') {
+				additionalProjectionString = queryParams.fields
+				delete queryParams.fields
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
