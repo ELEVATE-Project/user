@@ -152,7 +152,8 @@ module.exports = class UserInviteHelper {
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 
 			// get the role data from db
-			const allRoles = _.uniq(_.map(csvData, 'roles'))
+			const allRoles = _.uniq(_.map(csvData, 'roles').map((role) => role.toLowerCase()))
+
 			const roleList = await roleQueries.findAll({ title: allRoles })
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
