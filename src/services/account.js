@@ -79,13 +79,21 @@ module.exports = class AccountHelper {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
 				role = await roleQueries.findOne(
-					{ id: invitedUserMatch.roles.toLowerCase() },
+					{ id: invitedUserMatch.roles },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
 						},
 					}
 				)
+
+				if (!role) {
+					return common.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 
 				if (role.title === common.ORG_ADMIN_ROLE) {
 					isOrgAdmin = true
@@ -968,11 +976,13 @@ module.exports = class AccountHelper {
 					}
 				}
 
+				const sortedData = _.sortBy(result, 'key') || []
+
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_LIST',
 					result: {
-						data: result,
+						data: sortedData,
 						count: users.count,
 					},
 				})
