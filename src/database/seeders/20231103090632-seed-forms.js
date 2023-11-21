@@ -1,6 +1,10 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		try {
+			const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+			if (!defaultOrgId) {
+				throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+			}
 			const formData = [
 				{
 					type: 'editProfile',
@@ -175,6 +179,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -319,6 +324,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -344,6 +350,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -500,6 +507,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -598,6 +606,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -717,6 +726,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -781,95 +791,7 @@ module.exports = {
 						},
 					}),
 					version: 0,
-					updated_at: new Date(),
-					created_at: new Date(),
-				},
-				{
-					type: 'mentorQuestionnaire',
-					sub_type: 'mentorQuestionnaireForm',
-					data: JSON.stringify({
-						fields: {
-							controls: [
-								{
-									name: 'role',
-									label: 'Role',
-									value: '',
-									class: 'ion-margin',
-									type: 'text',
-									position: 'floating',
-									errorMessage: {
-										required: 'Enter your role',
-										pattern: 'This field can only contain alphabets',
-									},
-									validators: {
-										required: true,
-										pattern: '^[a-zA-Z ]*$',
-									},
-								},
-								{
-									name: 'experience',
-									label: 'Year of Experience',
-									value: '',
-									class: 'ion-margin',
-									type: 'number',
-									position: 'floating',
-									errorMessage: {
-										required: 'Enter your experience',
-										pattern: 'This field can only contain numbers',
-									},
-									validators: {
-										required: true,
-									},
-								},
-								{
-									name: 'area_of_expertise',
-									label: 'Area of Expertise',
-									value: '',
-									class: 'ion-margin',
-									type: 'chip',
-									meta: {
-										showSelectAll: true,
-									},
-									position: 'floating',
-									errorMessage: {
-										required: 'Add your Expertise',
-									},
-									options: [
-										{
-											label: 'Scool Management',
-											value: 'SM',
-										},
-										{
-											label: 'Technology',
-											value: 'Tech',
-										},
-										{
-											label: 'Subjec Teaching',
-											value: 'ST',
-										},
-									],
-									validators: {
-										required: true,
-									},
-								},
-								{
-									name: 'about',
-									label: 'About',
-									value: '',
-									class: 'ion-margin',
-									type: 'textarea',
-									position: 'floating',
-									errorMessage: {
-										required: 'Tell us a few lines about yourself',
-									},
-									validators: {
-										required: true,
-									},
-								},
-							],
-						},
-					}),
-					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
@@ -887,6 +809,102 @@ module.exports = {
 						},
 					}),
 					version: 0,
+					org_id: defaultOrgId,
+					updated_at: new Date(),
+					created_at: new Date(),
+				},
+				{
+					type: 'mentorQuestionnaire',
+					sub_type: 'mentorQuestionnaireForm',
+					data: JSON.stringify({
+						fields: {
+							controls: [
+								{
+									name: 'designation',
+									label: 'Your role',
+									class: 'ion-no-margin',
+									value: [{}],
+									type: 'chip',
+									position: '',
+									disabled: false,
+									errorMessage: {
+										required: 'Enter your role',
+									},
+									validators: {
+										required: true,
+									},
+									options: [],
+									meta: {
+										entityType: 'designation',
+										addNewPopupHeader: 'Add a new role',
+										showSelectAll: true,
+										showAddOption: true,
+										errorLabel: 'Designation',
+									},
+								},
+								{
+									name: 'experience',
+									label: 'Your experience in years',
+									value: '',
+									class: 'ion-no-margin',
+									type: 'text',
+									position: 'floating',
+									placeHolder: 'Ex. 5 years',
+									errorMessage: {
+										required: 'Enter your experience in years',
+									},
+									isNumberOnly: true,
+									validators: {
+										required: true,
+										maxLength: 2,
+									},
+									options: [],
+								},
+								{
+									name: 'area_of_expertise',
+									label: 'Your expertise',
+									class: 'ion-no-margin',
+									value: [],
+									type: 'chip',
+									position: '',
+									disabled: false,
+									errorMessage: {
+										required: 'Enter your expertise',
+									},
+									validators: {
+										required: true,
+									},
+									options: [],
+									meta: {
+										entityType: 'area_of_expertise',
+										addNewPopupHeader: 'Add your expertise',
+										showSelectAll: true,
+										showAddOption: true,
+										errorLabel: 'Expertise',
+									},
+								},
+								{
+									name: 'about',
+									label: 'Tell us about yourself',
+									value: '',
+									class: 'ion-no-margin',
+									type: 'textarea',
+									position: 'floating',
+									errorMessage: {
+										required: 'This field cannot be empty',
+									},
+									placeHolder: 'Please use only 150 character',
+									validators: {
+										required: true,
+										maxLength: 150,
+									},
+									options: [],
+								},
+							],
+						},
+					}),
+					version: 0,
+					org_id: defaultOrgId,
 					updated_at: new Date(),
 					created_at: new Date(),
 				},
