@@ -1,21 +1,23 @@
-const usersData = require('@db/users/queries')
+const usersData = require('@database/queries/users')
 const { faker } = require('@faker-js/faker')
 const utilsHelper = require('@generics/utils')
 const crypto = require('crypto')
+const { constant } = require('lodash')
 let bodyData
 
 const insertUser = async () => {
 	try {
-		let email = 'nevil' + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
+		let email = 'sumannn' + crypto.randomBytes(5).toString('hex') + '@pacewisdom.com'
 		let password = faker.internet.password()
 		bodyData = {
-			name: 'Nevil',
+			name: 'Suman',
 			email: { address: email, verified: false },
 			password: password,
 			isAMentor: false,
 		}
 		bodyData.password = utilsHelper.hashPassword(bodyData.password)
-		await usersData.createUser(bodyData)
+		await usersData.create(bodyData)
+		console.log('insertuser')
 		return {
 			email: email,
 			password: password,

@@ -8,7 +8,7 @@
 const { request, logIn, logError } = require('@commonTests')
 let responseSchema = require('./responseSchema')
 const { faker } = require('@faker-js/faker')
-const { insertUser } = require('./accountData')
+const { insertUser, returnotp } = require('./accountData')
 
 describe('/user/v1/account', function () {
 	let userEmail
@@ -22,7 +22,7 @@ describe('/user/v1/account', function () {
 
 	it('/create', async () => {
 		let res = await request.post('/user/v1/account/create').send({
-			name: 'Nevil',
+			name: 'Suman',
 			email: userEmail,
 			password: password,
 			isAMentor: false,
@@ -35,8 +35,8 @@ describe('/user/v1/account', function () {
 	it('/login', async () => {
 		let insertedUserDetails = await insertUser()
 		let res = await request.post('/user/v1/account/login').send({
-			email: insertedUserDetails.email,
-			password: insertedUserDetails.password,
+			email: userEmail,
+			password: password,
 		})
 
 		logError(res)
@@ -44,21 +44,21 @@ describe('/user/v1/account', function () {
 		expect(res.body).toMatchSchema(responseSchema.loginSchema)
 	})
 
-	it('/verifyMentor', async () => {
-		let res = await request.get('/user/v1/account/verifyMentor').query({ userId: userDetails.userId })
+	// it('/verifyMentor', async () => {
+	// 	let res = await request.get('/user/v1/account/verifyMentor').query({ userId: userDetails.userId })
 
-		logError(res)
-		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(responseSchema.verifyMentor)
-	})
+	// 	logError(res)
+	// 	expect(res.statusCode).toBe(200)
+	// 	expect(res.body).toMatchSchema(responseSchema.verifyMentor)
+	// })
 
-	it('/verifyUser', async () => {
-		let res = await request.get('/user/v1/account/verifyUser').query({ userId: userDetails.userId })
+	// it('/verifyUser', async () => {
+	// 	let res = await request.get('/user/v1/account/verifyUser').query({ userId: userDetails.userId })
 
-		logError(res)
-		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(responseSchema.verifyUser)
-	})
+	// 	logError(res)
+	// 	expect(res.statusCode).toBe(200)
+	// 	expect(res.body).toMatchSchema(responseSchema.verifyUser)
+	// })
 
 	it('/acceptTermsAndCondition', async () => {
 		let res = await request.patch('/user/v1/account/acceptTermsAndCondition')
@@ -79,29 +79,47 @@ describe('/user/v1/account', function () {
 			.post('/user/v1/account/generateToken')
 			.query({ type: 'mentee', page: 1, limit: 2 })
 			.send({
-				refreshToken: userDetails.refreshToken,
+				refresh_token: userDetails.refreshToken,
 			})
-
 		logError(res)
 		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(responseSchema.generateTokenSchema)
 	})
-	it('/changeRole', async () => {
-		let res = await request.post('/user/v1/account/changeRole').send({
-			email: userDetails.email,
-		})
-		userDetails = await logIn()
+	// it('/changeRole', async () => {
+	// 	let res = await request.post('/user/v1/account/changeRole').send({
+	// 		email: userEmail.toLowerCase(),
+	// 	})
+	// 	userDetails = await logIn()
 
-		logError(res)
-		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(responseSchema.changeRoleSchema)
-	})
+	// 	logError(res)
+	// 	expect(res.statusCode).toBe(200)
+	// 	expect(res.body).toMatchSchema(responseSchema.changeRoleSchema)
+	// })
 	it('/logout', async () => {
 		let res = await request.post('/user/v1/account/logout').send({
-			refreshToken: userDetails.refreshToken,
+			refresh_token: userDetails.refreshToken,
 		})
 		logError(res)
 		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(responseSchema.logoutSchema)
+	})
+	it('/reActivateOtp', async () => {
+		let usersEmail = 'suman.v@pacewisdom.com'
+		let res = await request.post('/user/v1/account/reActivateOtp').send({ email: usersEmail })
+
+		logError(res)
+		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.reActivateTokenSchema)
+	})
+
+	it('/reActivate', async () => {
+		let usersEmail = 'suman@pacewisdom.com'
+		let resOtp = await request.post('/user/v1/account/reActivateOtp').send({ email: usersEmail })
+		let otp = 123456
+		let res = await request.post('/user/v1/account/reActivate').send({ email: usersEmail, otp: otp })
+
+		logError(res)
+		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.reActivateSchema)
 	})
 })

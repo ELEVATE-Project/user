@@ -17,10 +17,10 @@ const logIn = async () => {
 			timeout: 30000,
 		}
 		await waitOn(opts)
-		let email = 'nevil' + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
+		let email = 'sumannn' + crypto.randomBytes(5).toString('hex') + '@pacewisdom.com'
 		let password = faker.internet.password()
 		let res = await request.post('/user/v1/account/create').send({
-			name: 'Nevil',
+			name: 'Suman',
 			email: email,
 			password: password,
 			isAMentor: false,
@@ -29,9 +29,7 @@ const logIn = async () => {
 			email: email,
 			password: password,
 		})
-		//console.log(res.body)
-
-		if (res.body.result.access_token && res.body.result.user._id) {
+		if (res.body.result.access_token && res.body.result.user.id) {
 			defaultHeaders = {
 				'X-auth-token': 'bearer ' + res.body.result.access_token,
 				Connection: 'keep-alive',

@@ -338,6 +338,13 @@ const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	return Array.from(entityTypeMap.values())
 }
 
+const generateOtp = (otpLength) => {
+	// return hard coded otp for integeration testing else generate otp with mentioned length
+	return process.env.RUN_INTEGERATION_TEST.toLowerCase() === 'true'
+		? parseInt(process.env.PRE_SET_OTP)
+		: Math.floor(Math.random() * Math.pow(10, otpLength))
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -346,6 +353,7 @@ module.exports = {
 	composeEmailBody,
 	getDownloadableUrl,
 	md5Hash,
+	generateOtp,
 	validateRoleAccess,
 	generateFileName,
 	generateRedisConfigForQueue,

@@ -1095,7 +1095,8 @@ module.exports = class AccountHelper {
 			}
 
 			if (!isValidOtpExist) {
-				otp = common.randomOtp // 6-digit OTP
+				//otp = common.randomOtp // 6-digit OTP
+				let otp = utils.generateOtp(6)
 				const redisData = {
 					verify: bodyData.email.toLowerCase(),
 					action: 'reactivation',
@@ -1155,13 +1156,31 @@ module.exports = class AccountHelper {
 				status: common.ACTIVE_STATUS,
 				status_updated_at: new Date(),
 			}
+			const user = await userQueries.findOne({ email: email })
 			const result = await userQueries.updateUser({ email: email.toLowerCase() }, updateParams)
+
+			const tokenDetail = {
+				data: {
+					id: user.id,
+					email: user.email,
+					name: user.name,
+					organization_id: user.organization_id,
+					roles: user.roles,
+				},
+			}
+
+			const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
+			const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
+
 			if (!result.error) {
 				await utilsHelper.redisDel(email.toLowerCase())
+
+				const res = { accessToken, refreshToken, user }
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ACCOUNT_REACTIVATED_SUCCESSFULLY',
+					result: res,
 				})
 			} else {
 				return common.failureResponse({
