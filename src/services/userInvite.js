@@ -198,6 +198,7 @@ module.exports = class UserInviteHelper {
 
 			// process csv data
 			for (const invitee of csvData) {
+				invitee.roles = invitee.roles.toLowerCase()
 				//update user details if the user exist and in default org
 				const existingUser = existingEmailsMap.get(invitee.email)
 				if (existingUser) {
