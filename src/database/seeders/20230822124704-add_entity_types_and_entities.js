@@ -1,5 +1,9 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+		if (!defaultOrgId) {
+			throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+		}
 		const entitiesArray = {
 			medium: [
 				{
@@ -77,120 +81,6 @@ module.exports = {
 					label: 'Professional development',
 				},
 			],
-			location: [
-				{
-					value: 'ap',
-					label: 'Andhra Pradesh',
-				},
-				{
-					value: 'ar',
-					label: 'Arunachal Pradesh',
-				},
-				{
-					value: 'as',
-					label: 'Assam',
-				},
-				{
-					value: 'br',
-					label: 'Bihar',
-				},
-				{
-					value: 'cg',
-					label: 'Chhattisgarh',
-				},
-				{
-					value: 'ga',
-					label: 'Goa',
-				},
-				{
-					value: 'gj',
-					label: 'Gujarat',
-				},
-				{
-					value: 'hr',
-					label: 'Haryana',
-				},
-				{
-					value: 'hp',
-					label: 'Himachal Pradesh',
-				},
-				{
-					value: 'jh',
-					label: 'Jharkhand',
-				},
-				{
-					value: 'kn',
-					label: 'Karnataka',
-				},
-				{
-					value: 'kl',
-					label: 'Kerala',
-				},
-				{
-					value: 'mp',
-					label: 'Madhya Pradesh',
-				},
-				{
-					value: 'mh',
-					label: 'Maharashtra',
-				},
-				{
-					value: 'mn',
-					label: 'Manipur',
-				},
-				{
-					value: 'ml',
-					label: 'Meghalaya',
-				},
-				{
-					value: 'mz',
-					label: 'Mizoram',
-				},
-				{
-					value: 'nl',
-					label: 'Nagaland',
-				},
-				{
-					value: 'od',
-					label: 'Odisha',
-				},
-				{
-					value: 'pb',
-					label: 'Punjab',
-				},
-				{
-					value: 'rj',
-					label: 'Rajasthan',
-				},
-				{
-					value: 'sk',
-					label: 'Sikkim',
-				},
-				{
-					value: 'tn',
-					label: 'Tamil Nadu',
-				},
-				{
-					value: 'ts',
-					label: 'Telangana',
-				},
-				{
-					value: 'tr',
-					label: 'Tripura',
-				},
-				{
-					value: 'up',
-					label: 'Uttar Pradesh',
-				},
-				{
-					value: 'uk',
-					label: 'Uttarakhand',
-				},
-				{
-					value: 'wb',
-					label: 'West Bengal',
-				},
-			],
 			designation: [
 				{
 					value: 'deo',
@@ -216,7 +106,6 @@ module.exports = {
 		}
 
 		const sessionEntityTypes = ['recommended_for', 'categories', 'medium']
-		const user = ['recommended_for', 'categories', 'medium']
 
 		const entityTypeFinalArray = Object.keys(entitiesArray).map((key) => {
 			const entityTypeRow = {
@@ -229,7 +118,7 @@ module.exports = {
 				created_by: 0,
 				updated_by: 0,
 				allow_filtering: true,
-				org_id: 1,
+				org_id: defaultOrgId,
 				has_entities: true,
 			}
 
