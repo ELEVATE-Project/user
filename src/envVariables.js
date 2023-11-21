@@ -218,6 +218,10 @@ let enviromentVariables = {
 		message: 'Required org admin invitation email template code',
 		optional: false,
 	},
+	DEFAULT_ORG_ID: {
+		message: 'Default organization ID, Run seeder `insertDefaultOrg` to obtain it.',
+		optional: false,
+	},
 }
 
 let success = true
