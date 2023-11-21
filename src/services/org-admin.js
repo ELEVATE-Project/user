@@ -12,6 +12,7 @@ const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
+const kafkaCommunication = require('@generics/kafka-communication')
 const roleQueries = require('@database/queries/userRole')
 const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
@@ -246,11 +247,12 @@ module.exports = class OrgAdminHelper {
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
 			const user = await userQueries.findByPk(requestDetails.requester_id)
-
+			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(requestDetails, user)
 			}
 
+			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (shouldSendEmail) {
 				await sendRoleRequestStatusEmail(user, bodyData.status)
 			}
@@ -458,7 +460,7 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 				userDetails.organization_id
 			)
 		}
-
+		console.log(templateData, 'templateData')
 		if (templateData) {
 			const organization = await organizationQueries.findOne(
 				{ id: userDetails.organization_id },
@@ -470,14 +472,17 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 				email: {
 					to: userDetails.email,
 					subject: templateData.subject,
-					body: utilsHelper.composeEmailBody(templateData.body, {
+					body: utils.composeEmailBody(templateData.body, {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
 						orgName: organization.name,
 					}),
 				},
 			}
-
+			console.log(
+				{ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name },
+				'payload'
+			)
 			await kafkaCommunication.pushEmailToKafka(payload)
 		}
 

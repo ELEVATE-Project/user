@@ -87,6 +87,14 @@ module.exports = class AccountHelper {
 					}
 				)
 
+				if (!role) {
+					return common.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
 				if (role.title === common.ORG_ADMIN_ROLE) {
 					isOrgAdmin = true
 
@@ -912,7 +920,7 @@ module.exports = class AccountHelper {
 				})
 			} else {
 				let role = await roleQueries.findOne(
-					{ title: params.query.type },
+					{ title: params.query.type.toLowerCase() },
 					{
 						attributes: ['id'],
 					}
@@ -968,11 +976,13 @@ module.exports = class AccountHelper {
 					}
 				}
 
+				const sortedData = _.sortBy(result, 'key') || []
+
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_LIST',
 					result: {
-						data: result,
+						data: sortedData,
 						count: users.count,
 					},
 				})

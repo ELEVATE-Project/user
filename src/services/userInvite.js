@@ -152,7 +152,8 @@ module.exports = class UserInviteHelper {
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 
 			// get the role data from db
-			const allRoles = _.uniq(_.map(csvData, 'roles'))
+			const allRoles = _.uniq(_.map(csvData, 'roles').map((role) => role.toLowerCase()))
+
 			const roleList = await roleQueries.findAll({ title: allRoles })
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
@@ -262,7 +263,7 @@ module.exports = class UserInviteHelper {
 							name,
 							email,
 							role: roles,
-							orgName: user.org_name,
+							org_name: user.org_name,
 						}
 
 						const templateData = templates[roles]
@@ -337,6 +338,17 @@ module.exports = class UserInviteHelper {
 
 	static async sendInviteeEmail(templateData, userData, inviteeUploadURL = null) {
 		try {
+			console.log(
+				{
+					name: userData.name,
+					role: userData.role || '',
+					orgName: userData.org_name || '',
+					appName: process.env.APP_NAME,
+					inviteeUploadURL,
+				},
+				'sendInviteeEmail dataa'
+			)
+			console.log(templateData, 'templateData')
 			const payload = {
 				type: common.notificationEmailType,
 				email: {

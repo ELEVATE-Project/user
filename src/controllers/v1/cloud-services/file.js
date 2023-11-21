@@ -55,8 +55,8 @@ module.exports = class File {
 	 */
 	async getSampleCSV(req) {
 		try {
-			const downlopadUrlResponse = await filesService.getDownloadableUrl(process.env.SAMPLE_CSV_FILE_PATH)
-			return downlopadUrlResponse
+			const downloadUrlResponse = await filesService.getDownloadableUrl(process.env.SAMPLE_CSV_FILE_PATH)
+			return downloadUrlResponse
 		} catch (error) {
 			return error
 		}
