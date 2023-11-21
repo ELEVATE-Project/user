@@ -801,7 +801,7 @@ module.exports = class MentorsHelper {
 			}
 			// update sessions which having status as published/live and  exceeds the current date and time
 			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
-			const filterQuery = {
+			/* 			const filterQuery = {
 				[Op.or]: [
 					{
 						status: common.PUBLISHED_STATUS,
@@ -823,7 +823,7 @@ module.exports = class MentorsHelper {
 
 			await sessionQueries.updateSession(filterQuery, {
 				status: common.COMPLETED_STATUS,
-			})
+			}) */
 
 			let arrayOfStatus = []
 			if (status && status != '') {

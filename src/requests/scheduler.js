@@ -21,13 +21,13 @@ const mentoringBaseurl = `http://localhost:${process.env.APPLICATION_PORT}`
  * @param {Object} requestBody 				- Job api call request body.
  * @param {function} callback 				- The callback function to handle the result of the job creation.
  */
-const createSchedulerJob = function (jobId, delay, jobName, requestBody = {}) {
+const createSchedulerJob = function (jobId, delay, jobName, requestBody = {}, urlEndpoint, method) {
 	const bodyData = {
 		jobName: jobName,
 		email: email,
 		request: {
-			url: mentoringBaseurl + '/mentoring/v1/notifications/emailCronJob',
-			method: 'post',
+			url: mentoringBaseurl + urlEndpoint,
+			method,
 			header: { internal_access_token: process.env.INTERNAL_ACCESS_TOKEN },
 			reqBody: requestBody,
 		},
