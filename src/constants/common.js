@@ -135,4 +135,6 @@ module.exports = {
 	GET_METHOD: 'GET',
 	excludedQueryParams: ['enrolled'],
 	materializedViewsPrefix: 'm_',
+	mentorExtensionModelName: 'MentorExtension',
+	sessionModelName: 'Session',
 }

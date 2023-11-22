@@ -557,9 +557,8 @@ module.exports = class MentorsHelper {
 				},
 			})
 
-			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
@@ -699,6 +698,16 @@ module.exports = class MentorsHelper {
 				additionalProjectionString
 			)
 
+			if (extensionDetails.data.length > 0) {
+				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.org_id))]
+				extensionDetails.data = await this.processDbDataToAddValueLabels(
+					extensionDetails.data,
+					uniqueOrgIds,
+					common.mentorExtensionModelName,
+					'org_id'
+				)
+			}
+
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
 
 			userDetails.data.result.data = userDetails.data.result.data.filter((existingItem) => {
@@ -709,6 +718,7 @@ module.exports = class MentorsHelper {
 					delete existingItem.values[0].user_id
 					delete existingItem.values[0].visibility
 					delete existingItem.values[0].org_id
+					delete existingItem.values[0].meta
 					return true // Keep this item
 				}
 
@@ -728,7 +738,68 @@ module.exports = class MentorsHelper {
 			throw error
 		}
 	}
+	/**
+	 * @description 							- process data to add value and labels in case of entity type
+	 * @method
+	 * @name processDbDataToAddValueLabels
+	 * @param {Array} responseData 				- data to modify
+	 * @param {Array} orgIds 					- org_ids
+	 * @param {String} modelName 				- model name which the entity search is assocoated to.
+	 * @param {String} orgIdKey 				- In responseData which key represents org_id
+	 * @returns {JSON} 							- modified response data
+	 */
+	static async processDbDataToAddValueLabels(responseData, orgIds, modelName, orgIdKey) {
+		try {
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 
+			if (!orgIds.includes(defaultOrgId)) {
+				orgIds.push(defaultOrgId)
+			}
+
+			const filter = {
+				status: 'ACTIVE',
+				has_entities: true,
+				org_id: {
+					[Op.in]: orgIds,
+				},
+				model_names: {
+					[Op.contains]: [modelName],
+				},
+			}
+
+			// get entityTypes with entities data
+			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			entityTypesWithEntities = JSON.parse(JSON.stringify(entityTypesWithEntities))
+			if (!entityTypesWithEntities.length > 0) {
+				return responseData
+			}
+
+			// Use Array.map with async to process each element asynchronously
+			const result = responseData.map(async (element) => {
+				// Prepare the array of orgIds to search
+				const orgIdToSearch = [element[orgIdKey], defaultOrgId]
+
+				// Filter entity types based on orgIds and remove parent entity types
+				let entitTypeData = entityTypesWithEntities.filter((obj) => orgIdToSearch.includes(obj.org_id))
+				entitTypeData = utils.removeParentEntityTypes(entitTypeData)
+
+				// Process the data asynchronously to add value labels
+				const processDbResponse = await utils.processDbResponse(element, entitTypeData)
+
+				// Return the processed result
+				return processDbResponse
+			})
+			return Promise.all(result)
+		} catch (err) {
+			return err
+		}
+	}
 	/**
 	 * @description 							- Filter mentor list based on user's saas policy.
 	 * @method

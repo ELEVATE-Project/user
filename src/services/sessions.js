@@ -31,8 +31,7 @@ const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
-const menteesService = require('@services/mentees')
-
+const mentorService = require('@services/mentors')
 const menteeService = require('@services/mentees')
 module.exports = class SessionsHelper {
 	/**
@@ -696,6 +695,16 @@ module.exports = class SessionsHelper {
 				queryParams,
 				isAMentor
 			)
+
+			if (allSessions.rows.length > 0) {
+				const uniqueOrgIds = [...new Set(allSessions.rows.map((obj) => obj.mentor_org_id))]
+				allSessions.rows = await mentorService.processDbDataToAddValueLabels(
+					allSessions.rows,
+					uniqueOrgIds,
+					common.sessionModelName,
+					'mentor_org_id'
+				)
+			}
 
 			const result = {
 				data: allSessions.rows,

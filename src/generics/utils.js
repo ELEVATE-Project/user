@@ -183,7 +183,7 @@ function validateInput(input, validationData, modelName) {
 			})
 		}
 
-		if (!fieldValue || field.allow_custom_entities === true) {
+		if (!fieldValue || field.allow_custom_entities === true || field.has_entities === false) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -244,22 +244,37 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	try {
 		const entityTypeMap = entityTypeMapGenerator(entityData)
 		const doesAffectedFieldsExist = Object.keys(requestBody).some((element) => entityTypeMap.has(element))
+		// if request body doesn't have field to restructure break the operation return requestBody
 		if (!doesAffectedFieldsExist) return requestBody
+		// add object custom_entity_text to request body
 		requestBody.custom_entity_text = {}
+		// If request body does not contain meta add meta object
 		if (!requestBody.meta) requestBody.meta = {}
+		// Iterate through each key in request body
 		for (const currentFieldName in requestBody) {
+			// store corrent key's value
 			const currentFieldValue = requestBody[currentFieldName]
+			// Get entity type maped to corrent data
 			const entityType = entityTypeMap.get(currentFieldName)
+			// Check if the current data have any entity type associated with and if allow_custom_entities= true enter to if case
 			if (entityType && entityType.get('allow_custom_entities')) {
+				// If current field value is of type Array enter to this if condition
 				if (Array.isArray(currentFieldValue)) {
 					const recognizedEntities = []
 					const customEntities = []
+					// Iterate though corrent fileds value of type Array
 					for (const value of currentFieldValue) {
+						// If entity has entities which matches value push the data into recognizedEntities array
+						// Else push to customEntities as { value: 'other', label: value }
 						if (entityType.get('entities').has(value)) recognizedEntities.push(value)
 						else customEntities.push({ value: 'other', label: value })
 					}
+					// If wehave data in recognizedEntities
 					if (recognizedEntities.length > 0)
-						if (allowedKeys.includes(currentFieldName)) requestBody[currentFieldName] = recognizedEntities
+						if (allowedKeys.includes(currentFieldName))
+							// If the current field have a concrete column in db assign recognizedEntities to requestBody[currentFieldName]
+							// Else add that into meta
+							requestBody[currentFieldName] = recognizedEntities
 						else requestBody.meta[currentFieldName] = recognizedEntities
 					if (customEntities.length > 0) {
 						requestBody[currentFieldName].push('other') //This should cause error at DB write
@@ -278,6 +293,12 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 						requestBody.meta[currentFieldName] = currentFieldValue
 				}
 			}
+
+			if (entityType && !entityType.get('allow_custom_entities') && !entityType.get('has_entities')) {
+				// check allow = false has entiy false
+				if (!allowedKeys.includes(currentFieldName))
+					requestBody.meta[currentFieldName] = requestBody[currentFieldName]
+			}
 		}
 		if (Object.keys(requestBody.meta).length === 0) requestBody.meta = null
 		if (Object.keys(requestBody.custom_entity_text).length === 0) requestBody.custom_entity_text = null
@@ -288,6 +309,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 }
 
 function processDbResponse(responseBody, entityType) {
+	// Check if the response body has a "meta" property
 	if (responseBody.meta) {
 		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
@@ -301,16 +323,20 @@ function processDbResponse(responseBody, entityType) {
 	}
 
 	const output = { ...responseBody } // Create a copy of the responseBody object
-
+	// Iterate through each key in the output object
 	for (const key in output) {
+		// Check if the key corresponds to an entity type and is not null
 		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
+			// Find the matching entity type for the current key
 			const matchingEntity = entityType.find((entity) => entity.value === key)
+			// Filter and map the matching entity values
 			const matchingValues = matchingEntity.entities
 				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : true))
 				.map((entity) => ({
 					value: entity.value,
 					label: entity.label,
 				}))
+			// Check if there are matching values
 			if (matchingValues.length > 0) {
 				output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
 			} else if (Array.isArray(output[key])) {
@@ -341,6 +367,15 @@ function processDbResponse(responseBody, entityType) {
 		else data[key] = data.custom_entity_text[key]
 	}
 	delete data.custom_entity_text
+
+	// Check if the response body has a "meta" property
+	if (data.meta && Object.keys(data.meta).length > 0) {
+		// Merge properties of data.meta into the top level of data
+		Object.assign(data, data.meta)
+		// Remove the "meta" property from the output
+		delete output.meta
+	}
+
 	return data
 }
 
@@ -473,7 +508,7 @@ function validateFilters(input, validationData, modelName) {
 
 		// Extract the 'value' property from the 'entities' array
 	})
-	console.log(allValues)
+
 	for (const key in input) {
 		if (input.hasOwnProperty(key)) {
 			if (allValues.includes(key)) {
