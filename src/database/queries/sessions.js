@@ -54,13 +54,15 @@ exports.findById = async (id) => {
 
 exports.updateOne = async (filter, update, options = {}) => {
 	try {
-		const [rowsAffected] = await Session.update(update, {
+		const result = await Session.update(update, {
 			where: filter,
 			...options,
-			individualHooks: true, // Pass 'individualHooks: true' option to ensure proper triggering of 'beforeUpdate' hook.
+			individualHooks: true,
 		})
 
-		return rowsAffected
+		const [rowsAffected, updatedRows] = result
+
+		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
 	} catch (error) {
 		return error
 	}

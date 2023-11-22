@@ -111,12 +111,17 @@ module.exports = {
 			jobName: 'notificationBeforeFifteenMin',
 			emailTemplate: 'mentee_session_reminder',
 		},
+		{
+			jobId: 'job_to_mark_session_as_completed_',
+			jobName: 'job_to_mark_session_as_completed_',
+		},
 	],
 	notificationJobIdPrefixes: [
 		'mentoring_session_one_hour_',
 		'mentoring_session_one_day_',
 		'mentoring_session_fifteen_min_',
 	],
+	jobPrefixToMarkSessionAsCompleted: 'job_to_mark_session_as_completed_',
 	ORG_ADMIN_ROLE: 'org_admin',
 
 	// Default organization policies
@@ -133,6 +138,7 @@ module.exports = {
 	ASSOCIATED: 'ASSOCIATED',
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
+	POST_METHOD: 'POST',
 	excludedQueryParams: ['enrolled'],
 	materializedViewsPrefix: 'm_',
 	mentorExtensionModelName: 'MentorExtension',
