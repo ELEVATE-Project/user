@@ -137,4 +137,6 @@ module.exports = {
 	materializedViewsPrefix: 'm_',
 	mentorExtensionModelName: 'MentorExtension',
 	sessionModelName: 'Session',
+	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
+	sessionCompleteEndpoint: '/mentoring/v1/session/complete/',
 }
