@@ -569,8 +569,9 @@ module.exports = class SessionsHelper {
 				sessionDetails.image = await Promise.all(sessionDetails.image)
 			}
 
-			const mentorName = await userRequests.details('', sessionDetails.mentor_id)
-			sessionDetails.mentor_name = mentorName.data.result.name
+			const mentorDetails = await userRequests.details('', sessionDetails.mentor_id)
+			sessionDetails.mentor_name = mentorDetails.data.result.name
+			sessionDetails.organization = mentorDetails.data.result.organization
 
 			const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 
