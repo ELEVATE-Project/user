@@ -128,7 +128,7 @@ module.exports = class UserHelper {
 				if (internal_access_token) {
 					options.paranoid = false
 				}
-				const user = await userQueries.findOne(filter, options)
+				const user = await userQueries.findUserWithOrganization(filter, options)
 				if (!user) {
 					return common.failureResponse({
 						message: 'USER_NOT_FOUND',
