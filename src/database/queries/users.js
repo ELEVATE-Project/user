@@ -94,7 +94,7 @@ exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 					where: {
 						status: 'ACTIVE',
 					},
-					attributes: ['id', 'name', 'code', 'description'],
+					attributes: ['id', 'name', 'code'],
 					as: 'organization',
 				},
 			],
@@ -122,7 +122,7 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 					where: {
 						status: 'ACTIVE',
 					},
-					attributes: ['id', 'name', 'code', 'description'],
+					attributes: ['id', 'name', 'code'],
 					as: 'organization',
 				},
 			],
