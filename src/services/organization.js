@@ -257,14 +257,9 @@ module.exports = class OrganizationsHelper {
 
 			let result
 			if (!checkForRoleRequest) {
-				const roleRequestData = {
-					requester_id: tokenInformation.id,
-					role: bodyData.role,
-					organization_id: tokenInformation.organization_id,
-					meta: bodyData.form_data,
-				}
-
-				result = await orgRoleReqQueries.create(roleRequestData)
+				result = await createRoleRequest(bodyData, tokenInformation)
+			} else if (checkForRoleRequest?.id && checkForRoleRequest.status === common.REJECTED_STATUS) {
+				result = await createRoleRequest(bodyData, tokenInformation)
 			} else {
 				result = checkForRoleRequest
 			}
@@ -316,4 +311,16 @@ module.exports = class OrganizationsHelper {
 			throw error
 		}
 	}
+}
+
+async function createRoleRequest(bodyData, tokenInformation) {
+	const roleRequestData = {
+		requester_id: tokenInformation.id,
+		role: bodyData.role,
+		organization_id: tokenInformation.organization_id,
+		meta: bodyData.form_data,
+	}
+
+	const result = await orgRoleReqQueries.create(roleRequestData)
+	return result
 }
