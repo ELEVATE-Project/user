@@ -111,7 +111,7 @@ module.exports = {
 			const entityTypeRow = {
 				value: key,
 				label: convertToWords(key),
-				data_type: 'character varying',
+				data_type: 'ARRAY[STRING]',
 				status: 'ACTIVE',
 				updated_at: new Date(),
 				created_at: new Date(),
