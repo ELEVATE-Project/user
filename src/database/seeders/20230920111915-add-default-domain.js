@@ -4,15 +4,13 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		let domainData = []
-
-		const defaultOrg = await queryInterface.sequelize.query('SELECT * FROM organizations where code= ? ', {
-			replacements: ['sl'],
-			type: queryInterface.sequelize.QueryTypes.SELECT,
-		})
-
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+		if (!defaultOrgId) {
+			throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+		}
 		let eachRow = {
-			organization_id: defaultOrg[0].id,
-			domain: 'shikshalokam.org',
+			organization_id: defaultOrgId,
+			domain: 'default.org',
 			status: 'ACTIVE',
 			updated_at: new Date(),
 			created_at: new Date(),

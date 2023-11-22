@@ -1,5 +1,9 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+		if (!defaultOrgId) {
+			throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+		}
 		const entitiesArray = {
 			languages: [
 				{
@@ -138,7 +142,7 @@ module.exports = {
 				created_by: 0,
 				updated_by: 0,
 				allow_filtering: true,
-				org_id: 1,
+				org_id: defaultOrgId,
 				has_entities: true,
 				model_names: ['users'],
 			}
@@ -168,7 +172,6 @@ module.exports = {
 					eachEntity.created_at = new Date()
 					eachEntity.updated_at = new Date()
 					eachEntity.created_by = 0
-
 					entitiesFinalArray.push(eachEntity)
 				})
 			}

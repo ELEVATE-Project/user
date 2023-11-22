@@ -16,7 +16,8 @@
 		"elevate-migrations": "module/migrations/bin/migrations.js",
 		"integration": "node app.js",
 		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
-		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate && sequelize-cli db:seed:all"
+		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate ",
+		"db:seed:all": "sequelize-cli db:seed:all"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",

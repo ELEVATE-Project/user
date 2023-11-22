@@ -2,6 +2,10 @@ const moment = require('moment')
 
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+		if (!defaultOrgId) {
+			throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+		}
 		let notificationTemplateData = [
 			{
 				code: 'invite_org_admin',
@@ -13,6 +17,7 @@ module.exports = {
 				updated_at: moment().format(),
 				email_header: 'email_header',
 				email_footer: 'email_footer',
+				org_id: defaultOrgId,
 			},
 		]
 
