@@ -31,8 +31,7 @@ const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
-const menteesService = require('@services/mentees')
-
+const mentorService = require('@services/mentors')
 const menteeService = require('@services/mentees')
 module.exports = class SessionsHelper {
 	/**
@@ -158,16 +157,22 @@ module.exports = class SessionsHelper {
 			const processDbResponse = utils.processDbResponse(data.toJSON(), validationData)
 
 			// Set notification schedulers for the session
-			let jobsToCreate = common.jobsToCreate
+			// Deep clone to avoid unintended modifications to the original object.
+			const jobsToCreate = _.cloneDeep(common.jobsToCreate)
 
 			// Calculate delays for notification jobs
 			jobsToCreate[0].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 1, 'hour')
 			jobsToCreate[1].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 24, 'hour')
 			jobsToCreate[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
 
+			if (data.toJSON().meeting_info.value !== common.BBB_VALUE) {
+				jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes')
+			} else jobsToCreate.pop()
+
 			// Iterate through the jobs and create scheduler jobs
 			for (let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++) {
 				// Append the session ID to the job ID
+
 				jobsToCreate[jobIndex].jobId = jobsToCreate[jobIndex].jobId + data.id
 
 				const reqBody = {
@@ -180,7 +185,11 @@ module.exports = class SessionsHelper {
 					jobsToCreate[jobIndex].jobId,
 					jobsToCreate[jobIndex].delay,
 					jobsToCreate[jobIndex].jobName,
-					reqBody
+					reqBody,
+					reqBody.email_template_code
+						? common.notificationEndPoint
+						: common.sessionCompleteEndpoint + data.id,
+					reqBody.email_template_code ? common.POST_METHOD : common.PATCH_METHOD
 				)
 			}
 
@@ -342,7 +351,8 @@ module.exports = class SessionsHelper {
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
 
 				// If new start date is passed update session notification jobs
-				if (bodyData.start_date && bodyData.start_date !== sessionDetail.start_date) {
+
+				if (bodyData.start_date && bodyData.start_date !== Number(sessionDetail.start_date)) {
 					const updateDelayData = sessionRelatedJobIds.map((jobId) => ({ id: jobId }))
 
 					// Calculate new delays for notification jobs
@@ -366,6 +376,47 @@ module.exports = class SessionsHelper {
 					for (let jobIndex = 0; jobIndex < updateDelayData.length; jobIndex++) {
 						await schedulerRequest.updateDelayOfScheduledJob(updateDelayData[jobIndex])
 					}
+				}
+				if (
+					bodyData.end_date &&
+					bodyData.end_date !== Number(sessionDetail.end_date) &&
+					bodyData?.meeting_info?.value !== common.BBB_VALUE
+				) {
+					const jobId = common.jobPrefixToMarkSessionAsCompleted + sessionDetail.id
+					await schedulerRequest.updateDelayOfScheduledJob({
+						id: jobId,
+						delay: await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes'),
+					})
+				}
+				if (
+					bodyData.meeting_info &&
+					bodyData?.meeting_info?.value !== common.BBB_VALUE &&
+					sessionDetail.meeting_info?.value !== bodyData?.meeting_info?.value
+				) {
+					let jobsToCreate = _.cloneDeep(common.jobsToCreate)
+					jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(
+						sessionDetail.end_date,
+						0,
+						'minutes'
+					)
+					// Iterate through the jobs and create scheduler jobs
+					// Append the session ID to the job ID
+					jobsToCreate[3].jobId = jobsToCreate[3].jobId + sessionDetail.id
+
+					const reqBody = {
+						job_id: jobsToCreate[3].jobId,
+						email_template_code: jobsToCreate[3].emailTemplate,
+						job_creator_org_id: orgId,
+					}
+					// Create the scheduler job with the calculated delay and other parameters
+					await schedulerRequest.createSchedulerJob(
+						jobsToCreate[3].jobId,
+						jobsToCreate[3].delay,
+						jobsToCreate[3].jobName,
+						reqBody,
+						common.sessionCompleteEndpoint + sessionDetail.id,
+						common.PATCH_METHOD
+					)
 				}
 			}
 
@@ -696,6 +747,16 @@ module.exports = class SessionsHelper {
 				queryParams,
 				isAMentor
 			)
+
+			if (allSessions.rows.length > 0) {
+				const uniqueOrgIds = [...new Set(allSessions.rows.map((obj) => obj.mentor_org_id))]
+				allSessions.rows = await mentorService.processDbDataToAddValueLabels(
+					allSessions.rows,
+					uniqueOrgIds,
+					common.sessionModelName,
+					'mentor_org_id'
+				)
+			}
 
 			const result = {
 				data: allSessions.rows,
@@ -1181,27 +1242,30 @@ module.exports = class SessionsHelper {
 
 	static async completed(sessionId) {
 		try {
-			const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
-
-			await sessionQueries.updateOne(
-				{
-					id: sessionId,
-				},
+			const { updatedRows } = await sessionQueries.updateOne(
+				{ id: sessionId },
 				{
 					status: common.COMPLETED_STATUS,
 					completed_at: utils.utcFormat(),
-				}
+				},
+				{ returning: true, raw: true }
 			)
 
-			if (recordingInfo && recordingInfo.data && recordingInfo.data.response) {
-				const recordings = recordingInfo.data.response.recordings
+			const { value } = updatedRows[0].meeting_info
 
-				//update recording info in postsessiontable
-				await postSessionQueries.create({
-					session_id: sessionId,
-					recording_url: recordings.recording.playback.format.url,
-					recording: recordings,
-				})
+			if (value === common.BBB_VALUE) {
+				const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
+
+				if (recordingInfo?.data?.response) {
+					const { recordings } = recordingInfo.data.response
+
+					// Update recording info in postsessiontable
+					await postSessionQueries.create({
+						session_id: sessionId,
+						recording_url: recordings.recording.playback.format.url,
+						recording: recordings,
+					})
+				}
 			}
 
 			return common.successResponse({

@@ -3,6 +3,7 @@ const entityTypeQueries = require('@database/queries/entityType')
 const { sequelize } = require('@database/models/index')
 const utils = require('@generics/utils')
 const common = require('@constants/common')
+const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 
 let refreshInterval
 const groupByModelNames = async (entityTypes) => {
@@ -257,8 +258,10 @@ const generateMaterializedView = async (modelEntityTypes) => {
 
 const getAllowFilteringEntityTypes = async () => {
 	try {
+		const defaultOrgId = await getDefaultOrgId()
+
 		return await entityTypeQueries.findAllEntityTypes(
-			1,
+			defaultOrgId,
 			['id', 'value', 'label', 'data_type', 'org_id', 'has_entities', 'model_names'],
 			{
 				allow_filtering: true,

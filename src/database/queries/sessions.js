@@ -54,13 +54,15 @@ exports.findById = async (id) => {
 
 exports.updateOne = async (filter, update, options = {}) => {
 	try {
-		const [rowsAffected] = await Session.update(update, {
+		const result = await Session.update(update, {
 			where: filter,
 			...options,
-			individualHooks: true, // Pass 'individualHooks: true' option to ensure proper triggering of 'beforeUpdate' hook.
+			individualHooks: true,
 		})
 
-		return rowsAffected
+		const [rowsAffected, updatedRows] = result
+
+		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
 	} catch (error) {
 		return error
 	}
@@ -260,7 +262,7 @@ exports.findAllSessions = async (page, limit, search, filters) => {
 			],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
-			order: [['title', 'ASC']],
+			order: [['created_at', 'DESC']],
 		}
 
 		if (search) {
@@ -502,7 +504,8 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 					[Op.in]: ['PUBLISHED', 'LIVE'],
 				},
 			},
-			order: [['created_at', 'DESC']],
+			// order: [['created_at', 'DESC']],
+			order: [['start_date', 'ASC']],
 			attributes: [
 				'id',
 				'title',
@@ -559,7 +562,15 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 	}
 }
 
-exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter, saasFilter) => {
+exports.getUpcomingSessionsFromView = async (
+	page,
+	limit,
+	search,
+	userId,
+	filter,
+	saasFilter,
+	additionalProjectionclause = ''
+) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 		let filterConditions = []
@@ -590,26 +601,30 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 			}
 		}
 		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+		// Create selection clause
+		let projectionClause = `
+			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_org_id, created_at,
+			(meeting_info - 'link' ) AS meeting_info
+		`
+		if (additionalProjectionclause !== '') {
+			projectionClause += `,${additionalProjectionclause}`
+		}
 
 		const query = `
-		WITH filtered_sessions AS (
-			SELECT id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
-				   (meeting_info - 'link' ) AS meeting_info
-			FROM m_${Session.tableName}
-			WHERE
+		SELECT ${projectionClause}
+		FROM
+				m_${Session.tableName}
+		WHERE
 			title ILIKE :search
 			AND mentor_id != :userId
 			AND end_date > :currentEpochTime
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
 			${saasFilterClause}
-		)
-		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, visibility, mentor_org_id, meeting_info,
-			   COUNT(*) OVER () as total_count
-		FROM filtered_sessions
-		ORDER BY created_at DESC
-		OFFSET :offset
-		LIMIT :limit;
+		OFFSET
+			:offset
+		LIMIT
+			:limit;
 	`
 
 		const replacements = {
@@ -644,7 +659,7 @@ exports.getUpcomingSessionsFromView = async (page, limit, search, userId, filter
 
 		return {
 			rows: sessionIds,
-			count: sessionIds.length > 0 ? sessionIds[0].total_count : 0,
+			count: sessionIds.length,
 		}
 	} catch (error) {
 		console.error(error)

@@ -310,6 +310,13 @@ module.exports = class MenteesHelper {
 	 */
 
 	static async getAllSessions(page, limit, search, userId, queryParams, isAMentor) {
+		let additionalProjectionString = ''
+
+		// check for fields query
+		if (queryParams.fields && queryParams.fields !== '') {
+			additionalProjectionString = queryParams.fields
+			delete queryParams.fields
+		}
 		let query = utils.processQueryParametersWithExclusions(queryParams)
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
@@ -327,7 +334,8 @@ module.exports = class MenteesHelper {
 			search,
 			userId,
 			filteredQuery,
-			saasFilter
+			saasFilter,
+			additionalProjectionString
 		)
 
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
@@ -411,9 +419,7 @@ module.exports = class MenteesHelper {
 	static async getMySessions(page, limit, search, userId) {
 		try {
 			const upcomingSessions = await sessionQueries.getUpcomingSessions(page, limit, search, userId)
-
 			const upcomingSessionIds = upcomingSessions.rows.map((session) => session.id)
-
 			const usersUpcomingSessions = await sessionAttendeesQueries.usersUpcomingSessions(
 				userId,
 				upcomingSessionIds
@@ -423,7 +429,10 @@ module.exports = class MenteesHelper {
 				(usersUpcomingSession) => usersUpcomingSession.session_id
 			)
 
-			let sessionDetails = await sessionQueries.findAndCountAll({ id: usersUpcomingSessionIds })
+			let sessionDetails = await sessionQueries.findAndCountAll(
+				{ id: usersUpcomingSessionIds },
+				{ order: [['start_date', 'ASC']] }
+			)
 
 			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
 
