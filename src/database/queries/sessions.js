@@ -601,7 +601,7 @@ exports.getUpcomingSessionsFromView = async (
 		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
 		// Create selection clause
 		let projectionClause = `
-			id, title, description, start_date, end_date, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_org_id, created_at,
+			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_org_id, created_at,
 			(meeting_info - 'link' ) AS meeting_info
 		`
 		if (additionalProjectionclause !== '') {
