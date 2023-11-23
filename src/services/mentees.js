@@ -478,12 +478,12 @@ module.exports = class MenteesHelper {
 
 			// Fetch mentor details
 			const mentorDetails = (await userRequests.getListOfUserDetails(mentorIds)).result
-
 			// Map mentor names to sessions
 			sessions.forEach((session) => {
 				const mentor = mentorDetails.find((mentorDetail) => mentorDetail.id === session.mentor_id)
 				if (mentor) {
 					session.mentor_name = mentor.name
+					session.organization = mentor.organization
 				}
 			})
 

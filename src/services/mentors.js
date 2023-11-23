@@ -71,7 +71,6 @@ module.exports = class MentorsHelper {
 			}
 
 			upcomingSessions.data = await this.sessionMentorDetails(upcomingSessions.data)
-
 			if (menteeUserId && id != menteeUserId) {
 				upcomingSessions.data = await this.menteeSessionDetails(upcomingSessions.data, menteeUserId)
 			}
@@ -217,6 +216,7 @@ module.exports = class MentorsHelper {
 				for (let i = 0; i < session.length; i++) {
 					let mentorIndex = mentorDetails.findIndex((x) => x.id === session[i].mentor_id)
 					session[i].mentor_name = mentorDetails[mentorIndex].name
+					session[i].organization = mentorDetails[mentorIndex].organization
 				}
 
 				await Promise.all(
@@ -674,7 +674,6 @@ module.exports = class MentorsHelper {
 			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
 			const userType = common.MENTOR_ROLE
 			const userDetails = await userRequests.listWithoutLimit(userType, searchText)
-
 			if (userDetails.data.result.data.length == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
