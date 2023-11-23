@@ -187,9 +187,10 @@ module.exports = class AdminHelper {
 	 * @param {string} organizationId -organization Id.
 	 * @returns {JSON} - delete user response
 	 */
-	static async addOrgAdmin(userId, organizationId, loggedInUserId) {
+	static async addOrgAdmin(userId, organizationId, loggedInUserId, emailId) {
 		try {
-			let user = await userQueries.findByPk(userId)
+			const user = !userId ? await userQueries.findOne({ email: emailId }) : await userQueries.findByPk(userId)
+
 			if (!user?.id) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
