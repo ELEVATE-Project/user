@@ -87,7 +87,19 @@ exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			order: [['name', 'ASC']],
+			include: [
+				{
+					model: Organization,
+					required: false,
+					where: {
+						status: 'ACTIVE',
+					},
+					attributes: ['id', 'name', 'code'],
+					as: 'organization',
+				},
+			],
 			raw: true,
+			nest: true,
 		}
 
 		const { count, rows: users } = await database.User.findAndCountAll(filterQuery)
@@ -98,9 +110,34 @@ exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 	}
 }
 
+
 exports.findAllUserWithOrganization = async (filter, options = {}) => {
 	try {
 		return await database.User.findAll({
+      where: filter,
+			...options,
+			include: [
+				{
+					model: Organization,
+					required: false,
+					where: {
+						status: 'ACTIVE',
+					},
+					attributes: ['id', 'name', 'code'],
+					as: 'organization',
+				},
+			],
+			raw: true,
+			nest: true,
+		})
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findUserWithOrganization = async (filter, options = {}) => {
+	try {
+		return await database.User.findOne({
 			where: filter,
 			...options,
 			include: [
