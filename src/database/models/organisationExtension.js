@@ -15,6 +15,14 @@ module.exports = (sequelize, DataTypes) => {
 			external_mentor_visibility_policy: { type: DataTypes.STRING },
 			approval_required_for: { type: DataTypes.ARRAY(DataTypes.STRING) },
 			allow_mentor_override: DataTypes.BOOLEAN,
+			created_by: {
+				allowNull: true,
+				type: DataTypes.INTEGER,
+			},
+			updated_by: {
+				allowNull: true,
+				type: DataTypes.INTEGER,
+			},
 		},
 		{
 			sequelize,
