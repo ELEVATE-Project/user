@@ -259,6 +259,10 @@ module.exports = class AdminHelper {
 
 			await userQueries.updateUser({ id: userId }, updateObj)
 
+			//delete from cache
+			const redisUserKey = common.redisUserPrefix + userId.toString()
+			await utils.redisDel(redisUserKey)
+
 			const roleData = await roleQueries.findAll(
 				{ id: roles, status: common.ACTIVE_STATUS },
 				{

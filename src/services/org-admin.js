@@ -437,6 +437,10 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 				}
 			)
 
+			//delete from cache
+			const redisUserKey = common.redisUserPrefix + requestDetails.requester_id.toString()
+			await utils.redisDel(redisUserKey)
+
 			return resolve({
 				success: true,
 			})
