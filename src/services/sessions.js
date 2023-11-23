@@ -31,8 +31,6 @@ const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
-const menteesService = require('@services/mentees')
-
 const menteeService = require('@services/mentees')
 module.exports = class SessionsHelper {
 	/**

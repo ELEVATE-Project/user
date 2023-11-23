@@ -141,6 +141,8 @@ module.exports = {
 	POST_METHOD: 'POST',
 	excludedQueryParams: ['enrolled'],
 	materializedViewsPrefix: 'm_',
+	mentorExtensionModelName: 'MentorExtension',
+	sessionModelName: 'Session',
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
 	sessionCompleteEndpoint: '/mentoring/v1/session/complete/',
 }

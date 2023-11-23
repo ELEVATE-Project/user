@@ -603,7 +603,7 @@ exports.getUpcomingSessionsFromView = async (
 		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
 		// Create selection clause
 		let projectionClause = `
-			id, title, description, start_date, end_date, status, image, mentor_id, visibility, mentor_org_id, created_at,
+			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_org_id, created_at,
 			(meeting_info - 'link' ) AS meeting_info
 		`
 		if (additionalProjectionclause !== '') {
@@ -611,23 +611,20 @@ exports.getUpcomingSessionsFromView = async (
 		}
 
 		const query = `
-		WITH filtered_sessions AS (
-			SELECT ${projectionClause}
-			FROM m_${Session.tableName}
-			WHERE
+		SELECT ${projectionClause}
+		FROM
+				m_${Session.tableName}
+		WHERE
 			title ILIKE :search
 			AND mentor_id != :userId
 			AND end_date > :currentEpochTime
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
 			${saasFilterClause}
-		)
-		SELECT id, title, description, start_date, end_date, status, image, mentor_id, created_at, visibility, mentor_org_id, meeting_info,
-			   COUNT(*) OVER () as total_count
-		FROM filtered_sessions
-		ORDER BY created_at DESC
-		OFFSET :offset
-		LIMIT :limit;
+		OFFSET
+			:offset
+		LIMIT
+			:limit;
 	`
 
 		const replacements = {
@@ -662,7 +659,7 @@ exports.getUpcomingSessionsFromView = async (
 
 		return {
 			rows: sessionIds,
-			count: sessionIds.length > 0 ? sessionIds[0].total_count : 0,
+			count: sessionIds.length,
 		}
 	} catch (error) {
 		console.error(error)

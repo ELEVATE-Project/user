@@ -20,6 +20,7 @@ const mentorQueries = require('@database/queries/mentorExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const entityTypeService = require('@services/entity-type')
 
 module.exports = class MenteesHelper {
 	/**
@@ -337,6 +338,15 @@ module.exports = class MenteesHelper {
 			saasFilter,
 			additionalProjectionString
 		)
+		if (sessions.rows.length > 0) {
+			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_org_id))]
+			sessions.rows = await entityTypeService.processEntityTypesToAddValueLabels(
+				sessions.rows,
+				uniqueOrgIds,
+				common.sessionModelName,
+				'mentor_org_id'
+			)
+		}
 
 		sessions.rows = await this.menteeSessionDetails(sessions.rows, userId)
 

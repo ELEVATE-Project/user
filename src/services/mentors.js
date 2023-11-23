@@ -17,6 +17,7 @@ const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const moment = require('moment')
 const menteesService = require('@services/mentees')
+const entityTypeService = require('@services/entity-type')
 
 module.exports = class MentorsHelper {
 	/**
@@ -557,9 +558,8 @@ module.exports = class MentorsHelper {
 				},
 			})
 
-			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
@@ -699,6 +699,16 @@ module.exports = class MentorsHelper {
 				additionalProjectionString
 			)
 
+			if (extensionDetails.data.length > 0) {
+				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.org_id))]
+				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
+					extensionDetails.data,
+					uniqueOrgIds,
+					common.mentorExtensionModelName,
+					'org_id'
+				)
+			}
+
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
 
 			userDetails.data.result.data = userDetails.data.result.data.filter((existingItem) => {
@@ -709,6 +719,7 @@ module.exports = class MentorsHelper {
 					delete existingItem.values[0].user_id
 					delete existingItem.values[0].visibility
 					delete existingItem.values[0].org_id
+					delete existingItem.values[0].meta
 					return true // Keep this item
 				}
 
@@ -728,7 +739,6 @@ module.exports = class MentorsHelper {
 			throw error
 		}
 	}
-
 	/**
 	 * @description 							- Filter mentor list based on user's saas policy.
 	 * @method
