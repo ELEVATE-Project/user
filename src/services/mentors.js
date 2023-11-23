@@ -685,7 +685,10 @@ module.exports = class MentorsHelper {
 					},
 				})
 			}
-			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
+			const ids = userDetails.data.result.data.reduce((acc, item) => {
+				const idsForKey = item.values.map((value) => value.id)
+				return acc.concat(idsForKey)
+			}, [])
 
 			// Filter user data based on SAAS policy
 			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
