@@ -1,5 +1,6 @@
 'use strict'
 const database = require('@database/models/index')
+const Organization = require('@database/models/index').Organization
 const { Op } = require('sequelize')
 
 exports.getColumns = async () => {
@@ -63,20 +64,6 @@ exports.findAll = async (filter, options = {}) => {
 	}
 }
 
-exports.findOneWithAssociation = async (filter, options = {}, associationTable, associatioName) => {
-	try {
-		options.include = [{ model: database[associationTable], as: associatioName }]
-		return await database.User.findOne({
-			where: filter,
-			...options,
-			raw: true,
-			nest: true,
-		})
-	} catch (error) {
-		return error
-	}
-}
-
 exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 	try {
 		const offset = (page - 1) * limit
@@ -108,5 +95,29 @@ exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 		return { count, data: users }
 	} catch (error) {
 		throw error
+	}
+}
+
+exports.findAllUserWithOrganization = async (filter, options = {}) => {
+	try {
+		return await database.User.findAll({
+			where: filter,
+			...options,
+			include: [
+				{
+					model: Organization,
+					required: false,
+					where: {
+						status: 'ACTIVE',
+					},
+					attributes: ['id', 'name', 'code'],
+					as: 'organization',
+				},
+			],
+			raw: true,
+			nest: true,
+		})
+	} catch (error) {
+		return error
 	}
 }

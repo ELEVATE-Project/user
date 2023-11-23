@@ -894,8 +894,7 @@ module.exports = class AccountHelper {
 					options.paranoid = false
 				}
 
-				let users = await userQueries.findAll(filterQuery, options)
-
+				let users = await userQueries.findAllUserWithOrganization(filterQuery, options)
 				let roles = await roleQueries.findAll(
 					{},
 					{
@@ -1043,10 +1042,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ email: bodyData.email },
-				{ role_id: role.id }
-			)
+			const [affectedRows] = await userQueries.updateUser({ email: bodyData.email }, { role_id: role.id })
 			/* If user doc not updated  */
 			if (affectedRows == 0) {
 				return common.failureResponse({
