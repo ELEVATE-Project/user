@@ -213,6 +213,10 @@ let enviromentVariables = {
 		optional: false,
 		default: 540000,
 	},
+	DEFAULT_ORG_ID: {
+		message: 'Default organization ID',
+		optional: false,
+	},
 }
 
 let success = true
