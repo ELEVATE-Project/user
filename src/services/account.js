@@ -152,7 +152,7 @@ module.exports = class AccountHelper {
 			await userQueries.create(bodyData)
 
 			/* FLOW STARTED: user login after registration */
-			user = await userQueries.findOne(
+			user = await userQueries.findUserWithOrganization(
 				{ email: email },
 				{
 					attributes: {
@@ -272,7 +272,7 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({
+			let user = await userQueries.findUserWithOrganization({
 				email: bodyData.email.toLowerCase(),
 				status: common.ACTIVE_STATUS,
 			})
