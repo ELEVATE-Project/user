@@ -190,7 +190,6 @@ module.exports = class AdminHelper {
 	static async addOrgAdmin(userId, organizationId, loggedInUserId, emailId) {
 		try {
 			const user = !userId ? await userQueries.findOne({ email: emailId }) : await userQueries.findByPk(userId)
-
 			if (!user?.id) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -198,6 +197,8 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			userId = user.id
+
 			let organization = await organizationQueries.findByPk(organizationId)
 			if (!organization?.id) {
 				return common.failureResponse({
