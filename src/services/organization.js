@@ -126,7 +126,26 @@ module.exports = class OrganizationsHelper {
 	static async update(id, bodyData, loggedInUserId) {
 		try {
 			bodyData.updated_by = loggedInUserId
-			await organizationQueries.update({ id: id }, bodyData)
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
+
+			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
+
+			if (!_.isEqual(orgDetailsBeforeUpdate.related_orgs, bodyData?.related_orgs)) {
+				if (bodyData.related_orgs && _.isEqual(orgDetails.updatedRows[0].related_orgs, bodyData.related_orgs)) {
+					await organizationQueries.appendRelatedOrg(orgDetails.updatedRows[0].id, bodyData.related_orgs, {
+						returning: true,
+						raw: true,
+					})
+				}
+				const removedOrgIds = _.difference(
+					orgDetailsBeforeUpdate.related_orgs,
+					orgDetails.updatedRows[0].related_orgs
+				)
+				await organizationQueries.removeRelatedOrg(orgDetails.updatedRows[0].id, removedOrgIds, {
+					returning: true,
+					raw: true,
+				})
+			}
 
 			let domains = []
 			if (bodyData.domains?.length) {
