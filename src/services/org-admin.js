@@ -205,6 +205,8 @@ module.exports = class OrgAdminService {
 			const orgPolicies = await OrganisationExtensionQueries.upsert({
 				org_id: decodedToken.organization_id,
 				...policies,
+				created_by: decodedToken.id,
+				updated_by: decodedToken.id,
 			})
 			const orgPolicyUpdated =
 				new Date(orgPolicies.dataValues.created_at).getTime() !==
