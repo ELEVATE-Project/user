@@ -684,7 +684,21 @@ module.exports = class MentorsHelper {
 					},
 				})
 			}
-			const ids = userDetails.data.result.data.map((item) => item.values[0].id)
+
+			// const ids = userDetails.data.result.data.map((item) => item.values[0].id)
+
+			let ids = [];
+
+			// Loop through the data array
+			userDetails.data.result.data.forEach(key => {
+				// Loop through the values array in each key
+				key.values.forEach(user => {
+					// Check if the "user.id" key exists and is not null
+					if (user.id !== null) {
+						ids.push(user.id);
+					}
+				});
+			});
 
 			// Filter user data based on SAAS policy
 			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
