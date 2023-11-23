@@ -58,6 +58,7 @@ exports.listAllRequests = async (filter, page, limit, options = {}) => {
 			...options,
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
+			order: [['created_at', 'DESC']],
 			include: [
 				{
 					model: User,
