@@ -262,11 +262,11 @@ module.exports = class OrgAdminService {
 			}
 			const orgPolicies = await OrganisationExtensionQueries.getById(decodedToken.organization_id)
 			if (orgPolicies) {
-				delete orgPolicies.dataValues.deleted_at
+				delete orgPolicies.deleted_at
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ORG_POLICIES_FETCHED_SUCCESSFULLY',
-					result: { ...orgPolicies.dataValues },
+					result: { ...orgPolicies },
 				})
 			} else {
 				throw new Error(`No organisation extension found for org_id ${decodedToken.organization_id}`)
