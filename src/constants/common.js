@@ -145,6 +145,6 @@ module.exports = {
 	mentorExtensionModelName: 'MentorExtension',
 	sessionModelName: 'Session',
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
-	sessionCompleteEndpoint: '/mentoring/v1/sessions/complete/',
+	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
 }
