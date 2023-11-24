@@ -71,6 +71,13 @@ module.exports = class Organization {
 			}
 
 			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
+				if (req.body.related_orgs) {
+					throw common.failureResponse({
+						message: 'CONTACT_ADMIN_RELATED_ORGANIZATIONS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				throw common.failureResponse({
 					message: 'USER_DOES_NOT_HAVE_ACCESS',
 					statusCode: httpStatusCode.bad_request,

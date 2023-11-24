@@ -10,6 +10,7 @@ const notificationTemplateQueries = require('@database/queries/notificationTempl
 const kafkaCommunication = require('@generics/kafka-communication')
 const { Op } = require('sequelize')
 const _ = require('lodash')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -153,6 +154,13 @@ module.exports = class OrganizationsHelper {
 				await organizationQueries.removeRelatedOrg(orgDetails.updatedRows[0].id, removedOrgIds, {
 					returning: true,
 					raw: true,
+				})
+
+				eventBroadcaster('updateRelatedOrgs', {
+					requestBody: {
+						related_organization_ids: orgDetails.updatedRows[0].related_orgs,
+						organization_id: orgDetails.updatedRows[0].id,
+					},
 				})
 			}
 
