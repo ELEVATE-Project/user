@@ -52,7 +52,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			location: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
+				type: Sequelize.STRING,
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),

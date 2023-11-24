@@ -457,7 +457,7 @@ function _generateUpdateParams(userId) {
 		email: utils.md5Hash(userId) + '@' + 'deletedUser',
 		refresh_tokens: [],
 		preferred_language: 'en',
-		location: [],
+		location: '',
 		languages: [],
 		roles: [],
 	}
