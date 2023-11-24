@@ -26,7 +26,7 @@ module.exports = class MentorExtensionQueries {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const whereClause = _.isEmpty(customFilter) ? customFilter : { user_id: userId }
+			const whereClause = _.isEmpty(customFilter) ? { user_id: userId } : customFilter
 			return await MentorExtension.update(data, {
 				where: whereClause,
 				...options,
