@@ -159,6 +159,7 @@ exports.getEnrolledSessionsCountInDateRange = async (startDate, endDate, mentee_
 					[Op.between]: [startDate, endDate],
 				},
 				session_id: sessionIds,
+				mentee_id: mentee_id,
 			},
 		})
 	} catch (error) {
@@ -183,6 +184,7 @@ exports.getAttendedSessionsCountInDateRange = async (startDate, endDate, mentee_
 					[Op.between]: [startDate, endDate],
 				},
 				session_id: sessionIds,
+				mentee_id: mentee_id,
 			},
 		})
 	} catch (error) {
