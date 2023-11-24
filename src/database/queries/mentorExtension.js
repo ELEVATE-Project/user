@@ -3,6 +3,7 @@ const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const common = require('@constants/common')
+const _ = require('lodash')
 
 module.exports = class MentorExtensionQueries {
 	static async getColumns() {
@@ -25,8 +26,7 @@ module.exports = class MentorExtensionQueries {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const whereClause = customFilter ? customFilter : { user_id: userId }
-			console.log('WHERE CLAUSEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE:', whereClause)
+			const whereClause = _.isEmpty(customFilter) ? customFilter : { user_id: userId }
 			return await MentorExtension.update(data, {
 				where: whereClause,
 				...options,
