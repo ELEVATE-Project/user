@@ -63,6 +63,7 @@ module.exports = {
 	refreshTokenLimit: 3,
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
 	ADMIN_ROLE: 'admin',
+	ORG_ADMIN_ROLE: 'org_admin',
 	USER_ROLE: 'user',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
