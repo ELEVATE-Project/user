@@ -21,5 +21,12 @@ module.exports = {
 				route: '/mentoring/v1/org-admin/updateOrganization',
 			},
 		],
+		updateRelatedOrgs: [
+			{
+				method: 'POST',
+				baseUrl: `${process.env.MENTORING_SERVICE_URL}`,
+				route: '/mentoring/v1/org-admin/updateRelatedOrgs',
+			},
+		],
 	},
 }
