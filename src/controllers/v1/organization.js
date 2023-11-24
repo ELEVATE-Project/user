@@ -63,11 +63,19 @@ module.exports = class Organization {
 		try {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
+			const requiredRolesArray = [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE]
+
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isAdmin = utilsHelper.validateRoleAccess(roles, requiredRolesArray)
 			}
 
-			if (!isAdmin) {
+			if (req.params.id != req.decodedToken.organization_id) {
+				throw common.failureResponse({
+					message: 'USER_DOES_NOT_HAVE_ACCESS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else if (!isAdmin) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,

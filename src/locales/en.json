@@ -98,5 +98,6 @@
 	"NOTIFICATION_TEMPLATE_CREATED_SUCCESSFULLY": "Notification template created successfully",
 	"NOTIFICATION_TEMPLATE_UPDATED_SUCCESSFULLY": "Notification template updated successfully",
 	"NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY": "Notification template fetched successfully",
-	"NOTIFICATION_TEMPLATE_NOT_FOUND": "Notification template not found"
+	"NOTIFICATION_TEMPLATE_NOT_FOUND": "Notification template not found",
+	"USER_DOES_NOT_HAVE_ACCESS": "User does not have access to perform this action"
 }

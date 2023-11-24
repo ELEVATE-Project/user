@@ -105,9 +105,10 @@ module.exports = class Admin {
 			}
 
 			const orgAdminCreation = await adminService.addOrgAdmin(
-				req.body.user_id,
+				req.body?.user_id,
 				req.body.org_id,
-				req.decodedToken.id
+				req.decodedToken.id,
+				req.body?.email
 			)
 			return orgAdminCreation
 		} catch (error) {
