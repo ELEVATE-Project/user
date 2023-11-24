@@ -113,4 +113,21 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	/**
+	 * updateRelatedOrgs
+	 * @method
+	 * @name updateRelatedOrgs
+	 * @param {Array} req.body.related_organization_ids - Related orgs ids.
+	 * @param {Integer} req.body.organization_id - Id of the organisation .
+	 * @returns {JSON} - Success Response.
+	 * @throws {Error} - Error response.
+	 */
+	async updateRelatedOrgs(req) {
+		try {
+			return await orgAdminService.updateRelatedOrgs(req.body.related_organization_ids, req.body.organization_id)
+		} catch (error) {
+			return error
+		}
+	}
 }
