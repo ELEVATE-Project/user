@@ -61,21 +61,22 @@ module.exports = class Organization {
 
 	async update(req) {
 		try {
-			let isAdmin = false
+			let isAdmin,
+				isOrgAdmin = false
 			const roles = req.decodedToken.roles
-			const requiredRolesArray = [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE]
 
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, requiredRolesArray)
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
 			}
 
-			if (req.params.id != req.decodedToken.organization_id) {
+			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
 				throw common.failureResponse({
 					message: 'USER_DOES_NOT_HAVE_ACCESS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} else if (!isAdmin) {
+			} else if (!isAdmin && !isOrgAdmin) {
 				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,

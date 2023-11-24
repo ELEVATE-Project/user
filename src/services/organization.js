@@ -127,11 +127,20 @@ module.exports = class OrganizationsHelper {
 		try {
 			bodyData.updated_by = loggedInUserId
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
-
+			if (!orgDetailsBeforeUpdate) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
 			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
 
-			if (!_.isEqual(orgDetailsBeforeUpdate.related_orgs, bodyData?.related_orgs)) {
-				if (bodyData.related_orgs && _.isEqual(orgDetails.updatedRows[0].related_orgs, bodyData.related_orgs)) {
+			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, bodyData?.related_orgs)) {
+				if (
+					bodyData?.related_orgs &&
+					_.isEqual(orgDetails.updatedRows[0].related_orgs, bodyData.related_orgs)
+				) {
 					await organizationQueries.appendRelatedOrg(orgDetails.updatedRows[0].id, bodyData.related_orgs, {
 						returning: true,
 						raw: true,
