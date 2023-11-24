@@ -26,6 +26,7 @@ module.exports = class MentorExtensionQueries {
 				delete data['user_id']
 			}
 			const whereClause = customFilter ? customFilter : { user_id: userId }
+			console.log('WHERE CLAUSEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE:', whereClause)
 			return await MentorExtension.update(data, {
 				where: whereClause,
 				...options,
