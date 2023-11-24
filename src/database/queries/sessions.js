@@ -236,7 +236,7 @@ exports.removeAndReturnMentorSessions = async (userId) => {
 				},
 			}
 		)
-		const removedSessions = updatedSessions[0] === sessionIds.length ? sessionIdAndTitle : []
+		const removedSessions = updatedSessions[0] > 0 ? sessionIdAndTitle : []
 		return removedSessions
 	} catch (error) {
 		return error
@@ -286,6 +286,9 @@ exports.getAllUpcomingSessions = async (paranoid) => {
 			where: {
 				start_date: {
 					[Op.gt]: currentEpochTime,
+				},
+				status: {
+					[Op.not]: common.INACTIVE_STATUS,
 				},
 			},
 			raw: true,
@@ -774,6 +777,49 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			data: sessionAttendeesData,
 			count: sessionAttendeesData.length,
 		}
+	} catch (error) {
+		return error
+	}
+}
+
+exports.deactivateAndReturnMentorSessions = async (userId) => {
+	try {
+		const currentEpochTime = moment().unix()
+		const currentDateTime = moment().format('YYYY-MM-DD HH:mm:ssZ')
+
+		const foundSessionOwnerships = await SessionOwnership.findAll({
+			attributes: ['session_id'],
+			where: {
+				mentor_id: userId,
+			},
+			raw: true,
+		})
+		const sessionIds = foundSessionOwnerships.map((ownership) => ownership.session_id)
+		const foundSessions = await Session.findAll({
+			where: {
+				id: { [Op.in]: sessionIds },
+				[Op.or]: [{ start_date: { [Op.gt]: currentEpochTime } }, { status: common.PUBLISHED_STATUS }],
+			},
+			raw: true,
+		})
+
+		const sessionIdAndTitle = foundSessions.map((session) => {
+			return { id: session.id, title: session.title }
+		})
+		const upcomingSessionIds = foundSessions.map((session) => session.id)
+
+		const updatedSessions = await Session.update(
+			{
+				status: common.INACTIVE_STATUS,
+			},
+			{
+				where: {
+					id: { [Op.in]: upcomingSessionIds },
+				},
+			}
+		)
+		const removedSessions = updatedSessions[0] > 0 ? sessionIdAndTitle : []
+		return removedSessions
 	} catch (error) {
 		return error
 	}

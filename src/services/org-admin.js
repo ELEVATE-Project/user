@@ -425,8 +425,8 @@ module.exports = class OrgAdminService {
 			let message
 			const mentorDetails = await mentorQueries.getMentorExtension(userId)
 			if (mentorDetails?.user_id) {
-				// Delete upcoming sessions of user as mentor
-				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
+				// Deactivate upcoming sessions of user as mentor
+				const removedSessionsDetail = await sessionQueries.deactivateAndReturnMentorSessions(userId)
 				await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
 				message = 'SESSION_DEACTIVATED_SUCCESSFULLY'
 			}

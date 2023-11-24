@@ -145,4 +145,5 @@ module.exports = {
 	sessionModelName: 'Session',
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
 	sessionCompleteEndpoint: '/mentoring/v1/session/complete/',
+	INACTIVE_STATUS: 'INACTIVE',
 }
