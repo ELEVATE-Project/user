@@ -68,6 +68,7 @@ module.exports = {
 		'/org-admin/deactivateUpcomingSession',
 		'/admin/triggerPeriodicViewRefreshInternal',
 		'/admin/triggerViewRebuildInternal',
+		'/sessions/completed',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	PUBLISHED_STATUS: 'PUBLISHED',
