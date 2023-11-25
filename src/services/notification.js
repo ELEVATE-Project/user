@@ -88,7 +88,7 @@ module.exports = class NotificationTemplateHelper {
 
 	static async read(id = null, code = null, organizationId) {
 		try {
-			let filter = { organizationId }
+			let filter = { organization_id: organizationId }
 
 			if (id) {
 				filter.id = id
@@ -116,7 +116,7 @@ module.exports = class NotificationTemplateHelper {
 	static async readAllNotificationTemplates(organizationId) {
 		try {
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates({
-				organizationId,
+				organization_id: organizationId,
 			})
 
 			return common.successResponse({
