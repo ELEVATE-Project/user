@@ -82,7 +82,7 @@ module.exports = class OrgAdmin {
 	 * @param {Object} req - Request data.
 	 * @param {Object} req.body - Request body containing updated policies.
 	 * @param {String} req.body.user_id - User id.
-	 * @param {String} req.body.org_id - Organization id.
+	 * @param {String} req.body.organization_id - Organization id.
 	 * @param {Array} req.body.roles - User Roles.
 	 * @returns {JSON} - Success Response.
 	 * @throws {Error} - Returns an error if the update fails.

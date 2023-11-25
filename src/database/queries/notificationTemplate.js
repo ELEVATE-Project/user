@@ -21,7 +21,7 @@ module.exports = class NotificationTemplateData {
 				code: code,
 				type: 'email',
 				status: 'active',
-				org_id: orgId ? { [Op.or]: [orgId, defaultOrgId] } : defaultOrgId,
+				organization_id: orgId ? { [Op.or]: [orgId, defaultOrgId] } : defaultOrgId,
 			}
 
 			let templateData = await NotificationTemplate.findAll({
@@ -30,7 +30,7 @@ module.exports = class NotificationTemplateData {
 			})
 
 			// If there are multiple results, find the one matching orgId
-			templateData = templateData.find((template) => template.org_id === orgId) || templateData[0]
+			templateData = templateData.find((template) => template.organization_id === orgId) || templateData[0]
 
 			// If no data is found, set an empty object
 			templateData = templateData || {}

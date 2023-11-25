@@ -31,7 +31,7 @@ module.exports = {
 	},
 	updateOrganization: (req) => {
 		req.checkBody('user_id').notEmpty().withMessage('user_id field is empty')
-		req.checkBody('org_id').notEmpty().withMessage('org_id field is empty')
+		req.checkBody('organization_id').notEmpty().withMessage('organization_id field is empty')
 		req.checkBody('roles').notEmpty().withMessage('roles field is empty')
 	},
 	deactivateUpcomingSession: (req) => {

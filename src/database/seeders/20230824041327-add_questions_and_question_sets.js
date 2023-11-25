@@ -99,7 +99,7 @@ module.exports = {
 					status: 'PUBLISHED',
 					updated_at: new Date(),
 					created_at: new Date(),
-					org_id: defaultOrgId,
+					organization_id: defaultOrgId,
 				}
 
 				questionSetFinalArray.push(questionSetRow)

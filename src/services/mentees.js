@@ -46,7 +46,7 @@ module.exports = class MenteesHelper {
 
 		let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 			status: 'ACTIVE',
-			org_id: {
+			organization_id: {
 				[Op.in]: [orgId, defaultOrgId],
 			},
 		})
@@ -339,12 +339,12 @@ module.exports = class MenteesHelper {
 			additionalProjectionString
 		)
 		if (sessions.rows.length > 0) {
-			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_org_id))]
+			const uniqueOrgIds = [...new Set(sessions.rows.map((obj) => obj.mentor_organization_id))]
 			sessions.rows = await entityTypeService.processEntityTypesToAddValueLabels(
 				sessions.rows,
 				uniqueOrgIds,
 				common.sessionModelName,
-				'mentor_org_id'
+				'mentor_organization_id'
 			)
 		}
 
@@ -370,7 +370,7 @@ module.exports = class MenteesHelper {
 			if (isAMentor) {
 				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
 					'external_session_visibility',
-					'org_id',
+					'organization_id',
 					'visible_to_organizations',
 				])
 
@@ -385,7 +385,7 @@ module.exports = class MenteesHelper {
 			} else {
 				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
 					'external_session_visibility',
-					'org_id',
+					'organization_id',
 					'visible_to_organizations',
 				])
 				// If no mentee present return error
@@ -398,10 +398,10 @@ module.exports = class MenteesHelper {
 				}
 			}
 			let filter = {}
-			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
+			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				// generate filter based on condition
 				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
-					filter.mentor_org_id = userPolicyDetails.org_id
+					filter.mentor_organization_id = userPolicyDetails.organization_id
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
 					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
@@ -552,7 +552,7 @@ module.exports = class MenteesHelper {
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
@@ -576,8 +576,8 @@ module.exports = class MenteesHelper {
 			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
 
 			userOrgDetails.data.result.related_orgs = userOrgDetails.data.result.related_orgs
-				? userOrgDetails.data.result.related_orgs.concat([saasPolicyData.org_id])
-				: [saasPolicyData.org_id]
+				? userOrgDetails.data.result.related_orgs.concat([saasPolicyData.organization_id])
+				: [saasPolicyData.organization_id]
 
 			// Update mentee extension creation data
 			data = {
@@ -641,7 +641,7 @@ module.exports = class MenteesHelper {
 
 			const filter = {
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
@@ -713,7 +713,7 @@ module.exports = class MenteesHelper {
 
 			const filter = {
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}

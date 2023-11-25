@@ -29,10 +29,10 @@ module.exports = class UserHelper {
 				})
 			} else if (userType == common.MENTOR_ROLE) {
 				extensionDetails = await mentorQueries.getMentorsByUserIds(ids, {
-					attributes: ['user_id', 'rating', 'visibility', 'org_id'],
+					attributes: ['user_id', 'rating', 'visibility', 'organization_id'],
 				})
 				// Inside your function
-				extensionDetails = extensionDetails.filter((item) => item.visibility && item.org_id)
+				extensionDetails = extensionDetails.filter((item) => item.visibility && item.organization_id)
 			}
 			const extensionDataMap = new Map(extensionDetails.map((newItem) => [newItem.user_id, newItem]))
 
@@ -43,7 +43,7 @@ module.exports = class UserHelper {
 					existingItem.values[0] = { ...existingItem.values[0], ...newItem }
 					delete existingItem.values[0].user_id
 					delete existingItem.values[0].visibility
-					delete existingItem.values[0].org_id
+					delete existingItem.values[0].organization_id
 					return true // Keep this item
 				}
 

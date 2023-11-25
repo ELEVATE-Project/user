@@ -4,7 +4,7 @@ module.exports = (sequelize, DataTypes) => {
 	const OrganisationExtension = sequelize.define(
 		'OrganisationExtension',
 		{
-			org_id: {
+			organization_id: {
 				allowNull: false,
 				primaryKey: true,
 				type: DataTypes.INTEGER,
