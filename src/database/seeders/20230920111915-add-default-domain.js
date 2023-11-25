@@ -17,10 +17,10 @@ module.exports = {
 		}
 
 		domainData.push(eachRow)
-		await queryInterface.bulkInsert('org_domains', domainData, {})
+		await queryInterface.bulkInsert('organization_domains', domainData, {})
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.bulkDelete('org_domains', null, {})
+		await queryInterface.bulkDelete('organization_domains', null, {})
 	},
 }
