@@ -126,10 +126,17 @@ module.exports = class MentorExtensionQueries {
 		}
 	}
 
-	static async getMentorsByUserIdsFromView(ids, page, limit, filter, saasFilter, additionalProjectionclause = '') {
+	static async getMentorsByUserIdsFromView(
+		ids,
+		page,
+		limit,
+		filter,
+		saasFilter = '',
+		additionalProjectionclause = ''
+	) {
 		try {
 			const filterConditions = []
-			let saasFilterCondition = []
+			// let saasFilterCondition = []
 
 			if (filter && typeof filter === 'object') {
 				for (const key in filter) {
@@ -140,23 +147,8 @@ module.exports = class MentorExtensionQueries {
 			}
 			const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-			// SAAS related filtering
-			if (saasFilter && typeof saasFilter === 'object') {
-				for (const key in saasFilter) {
-					if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
-						saasFilterCondition.push(
-							`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
-						)
-					} else if (Array.isArray(saasFilter[key])) {
-						saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
-					} else {
-						saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
-					}
-				}
-			}
-			const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+			const saasFilterClause = saasFilter != '' ? saasFilter : ''
 
-			// Create selection clause
 			let projectionClause =
 				'user_id,rating,meta,visibility,org_id,designation,area_of_expertise,education_qualification'
 			if (additionalProjectionclause !== '') {
@@ -180,15 +172,6 @@ module.exports = class MentorExtensionQueries {
 				offset: limit * (page - 1),
 				limit: limit,
 				...filter, // Add filter parameters to replacements
-			}
-
-			// Replace saas related query replacements
-			if (saasFilter && typeof saasFilter === 'object') {
-				for (const key in saasFilter) {
-					if (Array.isArray(saasFilter[key])) {
-						replacements[key] = saasFilter[key]
-					}
-				}
 			}
 
 			const sessionAttendeesData = await Sequelize.query(query, {

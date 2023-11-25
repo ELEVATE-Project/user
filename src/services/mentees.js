@@ -371,7 +371,6 @@ module.exports = class MenteesHelper {
 				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
 					'external_session_visibility',
 					'org_id',
-					'visible_to_organizations',
 				])
 
 				// Throw error if mentor extension not found
@@ -386,7 +385,6 @@ module.exports = class MenteesHelper {
 				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
 					'external_session_visibility',
 					'org_id',
-					'visible_to_organizations',
 				])
 				// If no mentee present return error
 				if (Object.keys(userPolicyDetails).length === 0) {
@@ -397,16 +395,16 @@ module.exports = class MenteesHelper {
 					})
 				}
 			}
-			let filter = {}
+
+			let filter = ''
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
 				// generate filter based on condition
 				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
-					filter.mentor_org_id = userPolicyDetails.org_id
+					filter = `AND "mentor_org_id" = ${userPolicyDetails.org_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
-					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT')`
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
-					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
-					filter.visibility = common.ALL
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL'`
 				}
 			}
 			return filter

@@ -668,16 +668,8 @@ module.exports = class SessionsHelper {
 	static async checkIfSessionIsAccessible(sessions, userId, isAMentor) {
 		try {
 			const userPolicyDetails = isAMentor
-				? await mentorExtensionQueries.getMentorExtension(userId, [
-						'external_session_visibility',
-						'org_id',
-						'visible_to_organizations',
-				  ])
-				: await menteeExtensionQueries.getMenteeExtension(userId, [
-						'external_session_visibility',
-						'org_id',
-						'visible_to_organizations',
-				  ])
+				? await mentorExtensionQueries.getMentorExtension(userId, ['external_session_visibility', 'org_id'])
+				: await menteeExtensionQueries.getMenteeExtension(userId, ['external_session_visibility', 'org_id'])
 
 			// Throw error if mentor/mentee extension not found
 			if (Object.keys(userPolicyDetails).length === 0) {
@@ -691,7 +683,7 @@ module.exports = class SessionsHelper {
 			// check the accessibility conditions
 			let isAccessible = false
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
-				const { external_session_visibility, org_id, visible_to_organizations } = userPolicyDetails
+				const { external_session_visibility, org_id } = userPolicyDetails
 				const session = sessions[0]
 				const isEnrolled = session.is_enrolled || false
 
@@ -702,16 +694,13 @@ module.exports = class SessionsHelper {
 					case common.ASSOCIATED:
 						isAccessible =
 							isEnrolled ||
-							session.visible_to_organizations.some((element) =>
-								visible_to_organizations.includes(element)
-							)
+							(session.visible_to_organizations.includes(org_id) && session.visibility != common.CURRENT)
 						break
 					case common.ALL:
 						isAccessible =
 							isEnrolled ||
-							session.visible_to_organizations.some((element) =>
-								visible_to_organizations.includes(element)
-							) ||
+							(session.visible_to_organizations.includes(org_id) &&
+								session.visibility != common.CURRENT) ||
 							session.visibility === common.ALL
 						break
 					default:

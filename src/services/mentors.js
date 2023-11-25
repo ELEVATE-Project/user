@@ -593,16 +593,8 @@ module.exports = class MentorsHelper {
 	static async checkIfMentorIsAccessible(userData, userId, isAMentor) {
 		try {
 			const userPolicyDetails = isAMentor
-				? await mentorQueries.getMentorExtension(userId, [
-						'external_mentor_visibility',
-						'org_id',
-						'visible_to_organizations',
-				  ])
-				: await menteeQueries.getMenteeExtension(userId, [
-						'external_mentor_visibility',
-						'org_id',
-						'visible_to_organizations',
-				  ])
+				? await mentorQueries.getMentorExtension(userId, ['external_mentor_visibility', 'org_id'])
+				: await menteeQueries.getMenteeExtension(userId, ['external_mentor_visibility', 'org_id'])
 
 			// Throw error if mentor/mentee extension not found
 			if (Object.keys(userPolicyDetails).length === 0) {
@@ -616,23 +608,20 @@ module.exports = class MentorsHelper {
 			// check the accessibility conditions
 			let isAccessible = false
 			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
-				const { external_mentor_visibility, org_id, visible_to_organizations } = userPolicyDetails
+				const { external_mentor_visibility, org_id } = userPolicyDetails
 				const mentor = userData[0]
-
 				switch (external_mentor_visibility) {
 					case common.CURRENT:
 						isAccessible = mentor.org_id === org_id
 						break
 					case common.ASSOCIATED:
-						isAccessible = mentor.visible_to_organizations.some((element) =>
-							visible_to_organizations.includes(element)
-						)
+						isAccessible =
+							mentor.visible_to_organizations.includes(org_id) && mentor.visibility != common.CURRENT
 						break
 					case common.ALL:
 						isAccessible =
-							mentor.visible_to_organizations.some((element) =>
-								visible_to_organizations.includes(element)
-							) || mentor.visibility === common.ALL
+							(mentor.visible_to_organizations.includes(org_id) && mentor.visibility != common.CURRENT) ||
+							mentor.visibility === common.ALL
 						break
 					default:
 						break
@@ -768,16 +757,8 @@ module.exports = class MentorsHelper {
 	static async filterMentorListBasedOnSaasPolicy(userId, isAMentor) {
 		try {
 			const userPolicyDetails = isAMentor
-				? await mentorQueries.getMentorExtension(userId, [
-						'external_mentor_visibility',
-						'org_id',
-						'visible_to_organizations',
-				  ])
-				: await menteeQueries.getMenteeExtension(userId, [
-						'external_mentor_visibility',
-						'org_id',
-						'visible_to_organizations',
-				  ])
+				? await mentorQueries.getMentorExtension(userId, ['external_mentor_visibility', 'org_id'])
+				: await menteeQueries.getMenteeExtension(userId, ['external_mentor_visibility', 'org_id'])
 
 			// Throw error if mentor/mentee extension not found
 			if (Object.keys(userPolicyDetails).length === 0) {
@@ -787,19 +768,32 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const filter = {}
+
+			let filter = ''
 			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
 				// Filter user data based on policy
 				// generate filter based on condition
 				if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
-					filter.org_id = userPolicyDetails.org_id
+					/**
+					 * if user external_mentor_visibility is current. He can only see his/her organizations mentors
+					 * so we will check mentor's org_id and user org_id are matching
+					 */
+					filter = `AND "org_id" = ${userPolicyDetails.org_id}`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
-					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+					/**
+					 * If user external_mentor_visibility is associated
+					 * <<point**>> first we need to check if mentor's visible_to_organizations contain the user org_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+					 */
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT')`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
-					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
-					filter.visibility = common.ALL
+					/**
+					 * We need to check if mentor's visible_to_organizations contain the user org_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+					 * OR if mentor visibility is ALL that mentor is also accessible
+					 */
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL'`
 				}
 			}
+
 			return filter
 		} catch (err) {
 			return err
