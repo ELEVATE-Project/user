@@ -6,7 +6,7 @@ const menteeQueries = require('@database/queries/userExtension')
 const httpStatusCode = require('@generics/http-status')
 const sessionQueries = require('@database/queries/sessions')
 const adminService = require('./admin')
-const OrganisationExtensionQueries = require('@database/queries/organisationExtension')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
@@ -152,7 +152,7 @@ module.exports = class OrgAdminService {
 					})
 				}
 
-				const orgPolicies = await OrganisationExtensionQueries.getById(bodyData.org_id)
+				const orgPolicies = await organisationExtensionQueries.getById(bodyData.org_id)
 				if (!orgPolicies?.org_id) {
 					return common.failureResponse({
 						message: 'ORG_EXTENSION_NOT_FOUND',
@@ -202,7 +202,7 @@ module.exports = class OrgAdminService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			const orgPolicies = await OrganisationExtensionQueries.upsert({
+			const orgPolicies = await organisationExtensionQueries.upsert({
 				org_id: decodedToken.organization_id,
 				...policies,
 				created_by: decodedToken.id,
@@ -270,7 +270,7 @@ module.exports = class OrgAdminService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			const orgPolicies = await OrganisationExtensionQueries.getById(decodedToken.organization_id)
+			const orgPolicies = await organisationExtensionQueries.getById(decodedToken.organization_id)
 			if (orgPolicies) {
 				delete orgPolicies.deleted_at
 				return common.successResponse({
@@ -388,7 +388,7 @@ module.exports = class OrgAdminService {
 			}
 
 			// Get organization policies
-			const orgPolicies = await OrganisationExtensionQueries.getById(orgId)
+			const orgPolicies = await organisationExtensionQueries.getById(orgId)
 			if (!orgPolicies?.org_id) {
 				return common.failureResponse({
 					message: 'ORG_EXTENSION_NOT_FOUND',
