@@ -61,9 +61,9 @@ module.exports = class OrgAdminService {
 				})
 			}
 
-			if (bodyData.org_id) {
-				mentorDetails.org_id = bodyData.org_id
-				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.org_id)
+			if (bodyData.organization_id) {
+				mentorDetails.organization_id = bodyData.organization_id
+				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
 				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 					return common.failureResponse({
 						message: 'ORGANIZATION_NOT_FOUND',
@@ -72,15 +72,15 @@ module.exports = class OrgAdminService {
 					})
 				}
 
-				const orgPolicies = await OrganisationExtensionQueries.getById(bodyData.org_id)
-				if (!orgPolicies?.org_id) {
+				const orgPolicies = await organisationExtensionQueries.getById(bodyData.organization_id)
+				if (!orgPolicies?.organization_id) {
 					return common.failureResponse({
 						message: 'ORG_EXTENSION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				mentorDetails.org_id = bodyData.org_id
+				mentorDetails.organization_id = bodyData.organization_id
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				mentorDetails = _.merge({}, mentorDetails, newPolicy)
 				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
@@ -100,7 +100,7 @@ module.exports = class OrgAdminService {
 			const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(bodyData.user_id)
 			const isAttendeesNotified = await adminService.unenrollAndNotifySessionAttendees(
 				removedSessionsDetail,
-				mentorDetails.org_id ? mentorDetails.org_id : ''
+				mentorDetails.organization_id ? mentorDetails.organization_id : ''
 			)
 
 			// Delete mentor Extension
@@ -142,8 +142,8 @@ module.exports = class OrgAdminService {
 				})
 			}
 
-			if (bodyData.org_id) {
-				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.org_id)
+			if (bodyData.organization_id) {
+				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
 				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
 					return common.failureResponse({
 						message: 'ORGANIZATION_NOT_FOUND',
@@ -152,15 +152,15 @@ module.exports = class OrgAdminService {
 					})
 				}
 
-				const orgPolicies = await organisationExtensionQueries.getById(bodyData.org_id)
-				if (!orgPolicies?.org_id) {
+				const orgPolicies = await organisationExtensionQueries.getById(bodyData.organization_id)
+				if (!orgPolicies?.organization_id) {
 					return common.failureResponse({
 						message: 'ORG_EXTENSION_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				menteeDetails.org_id = bodyData.org_id
+				menteeDetails.organization_id = bodyData.organization_id
 				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
 				menteeDetails = _.merge({}, menteeDetails, newPolicy)
 				menteeDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
@@ -203,7 +203,7 @@ module.exports = class OrgAdminService {
 				})
 			}
 			const orgPolicies = await organisationExtensionQueries.upsert({
-				org_id: decodedToken.organization_id,
+				organization_id: decodedToken.organization_id,
 				...policies,
 				created_by: decodedToken.id,
 				updated_by: decodedToken.id,
@@ -229,20 +229,20 @@ module.exports = class OrgAdminService {
 					'', //userId not required
 					policyData, // data to update
 					{}, //options
-					{ org_id: decodedToken.organization_id } //custom filter for where clause
+					{ organization_id: decodedToken.organization_id } //custom filter for where clause
 				)
 
 				await menteeQueries.updateMenteeExtension(
 					'', //userId not required
 					policyData, // data to update
 					{}, //options
-					{ org_id: decodedToken.organization_id } //custom filter for where clause
+					{ organization_id: decodedToken.organization_id } //custom filter for where clause
 				)
 				// commenting as part of first level SAAS changes. will need this in the code next level
 				// await sessionQueries.updateSession(
 				// 	{
 				// 		status: common.PUBLISHED_STATUS,
-				// 		mentor_org_id: decodedToken.organization_id
+				// 		mentor_org_ id: decodedToken.organization _id
 				// 	},
 				// 	{
 				// 		visibility: orgPolicies.dataValues.session_visibility_policy
@@ -279,7 +279,7 @@ module.exports = class OrgAdminService {
 					result: { ...orgPolicies },
 				})
 			} else {
-				throw new Error(`No organisation extension found for org_id ${decodedToken.organization_id}`)
+				throw new Error(`No organisation extension found for organization_id ${decodedToken.organization_id}`)
 			}
 		} catch (error) {
 			throw new Error(`Error reading organisation policies: ${error.message}`)
@@ -331,7 +331,7 @@ module.exports = class OrgAdminService {
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
-				org_id: defaultOrgId,
+				organization_id: defaultOrgId,
 				allow_filtering: true,
 			}
 			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
@@ -348,7 +348,7 @@ module.exports = class OrgAdminService {
 			// Build data for inheriting entityType
 			entityTypeDetails.parent_id = entityTypeDetails.id
 			entityTypeDetails.label = entityLabel
-			entityTypeDetails.org_id = userOrgId
+			entityTypeDetails.organization_id = userOrgId
 			entityTypeDetails.created_by = decodedToken.id
 			entityTypeDetails.updated_by = decodedToken.id
 			delete entityTypeDetails.id
@@ -375,7 +375,7 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
-			const orgId = bodyData.org_id
+			const orgId = bodyData.organization_id
 
 			// Get organization details
 			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
@@ -389,7 +389,7 @@ module.exports = class OrgAdminService {
 
 			// Get organization policies
 			const orgPolicies = await organisationExtensionQueries.getById(orgId)
-			if (!orgPolicies?.org_id) {
+			if (!orgPolicies?.organization_id) {
 				return common.failureResponse({
 					message: 'ORG_EXTENSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -399,7 +399,7 @@ module.exports = class OrgAdminService {
 
 			//Update the policy
 			const updateData = {
-				org_id: orgId,
+				organization_id: orgId,
 				external_session_visibility: orgPolicies.external_session_visibility_policy,
 				external_mentor_visibility: orgPolicies.external_mentor_visibility_policy,
 				visibility: orgPolicies.mentor_visibility_policy,
@@ -468,7 +468,7 @@ module.exports = class OrgAdminService {
 	 * @method
 	 * @name 									- constructOrgPolicyObject
 	 * @param {Object} organisationPolicy 		- organisation policy data
-	 * @param {Boolean} addOrgId 				- Boolean that specifies if org_id needs to be added or not
+	 * @param {Boolean} addOrgId 				- Boolean that specifies if org_ id needs to be added or not
 	 * @returns {Object} 						- A object that reurn a response object.
 	 */
 	static async constructOrgPolicyObject(organisationPolicy, addOrgId = false) {
@@ -476,7 +476,7 @@ module.exports = class OrgAdminService {
 			mentor_visibility_policy,
 			external_session_visibility_policy,
 			external_mentor_visibility_policy,
-			org_id,
+			organization_id,
 		} = organisationPolicy
 		// create policy object
 		let policyData = {
@@ -484,16 +484,16 @@ module.exports = class OrgAdminService {
 			external_session_visibility: external_session_visibility_policy,
 			external_mentor_visibility: external_mentor_visibility_policy,
 		}
-		// add org_id value if requested
+		// add org_ id value if requested
 		if (addOrgId) {
-			policyData.org_id = org_id
+			policyData.organization_id = organization_id
 		}
 		return policyData
 	}
 
 	static async updateRelatedOrgs(relatedOrgs, orgId) {
 		try {
-			const orgPolicies = await OrganisationExtensionQueries.getById(orgId)
+			const orgPolicies = await organisationExtensionQueries.getById(orgId)
 			if (
 				orgPolicies.external_mentor_visibility_policy == common.ASSOCIATED ||
 				orgPolicies.mentor_visibility_policy == common.ASSOCIATED
@@ -509,13 +509,13 @@ module.exports = class OrgAdminService {
 						null,
 						updateData,
 						{ raw: true, returning: true },
-						{ org_id: orgId }
+						{ organization_id: orgId }
 					),
 					menteeQueries.updateMenteeExtension(
 						null,
 						updateData,
 						{ raw: true, returning: true },
-						{ org_id: orgId }
+						{ organization_id: orgId }
 					),
 				])
 			}

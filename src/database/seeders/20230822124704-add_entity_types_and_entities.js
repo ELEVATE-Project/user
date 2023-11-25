@@ -118,7 +118,7 @@ module.exports = {
 				created_by: 0,
 				updated_by: 0,
 				allow_filtering: true,
-				org_id: defaultOrgId,
+				organization_id: defaultOrgId,
 				has_entities: true,
 			}
 

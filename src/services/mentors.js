@@ -305,7 +305,7 @@ module.exports = class MentorsHelper {
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
@@ -329,8 +329,8 @@ module.exports = class MentorsHelper {
 			let saasPolicyData = await orgAdminService.constructOrgPolicyObject(organisationPolicy, true)
 
 			userOrgDetails.data.result.related_orgs = userOrgDetails.data.result.related_orgs
-				? userOrgDetails.data.result.related_orgs.concat([saasPolicyData.org_id])
-				: [saasPolicyData.org_id]
+				? userOrgDetails.data.result.related_orgs.concat([saasPolicyData.organization_id])
+				: [saasPolicyData.organization_id]
 
 			// update mentee extension data
 			data = {
@@ -407,7 +407,7 @@ module.exports = class MentorsHelper {
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
@@ -485,7 +485,7 @@ module.exports = class MentorsHelper {
 	 * @method
 	 * @name read
 	 * @param {Number} id 						- mentor id.
-	 * @param {Number} orgId 					- org_id
+	 * @param {Number} orgId 					- org id
 	 * @param {Number} userId 					- User id.
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- profile details
@@ -493,10 +493,10 @@ module.exports = class MentorsHelper {
 	static async read(id, orgId, userId = '', isAMentor = '') {
 		try {
 			if (userId !== '' && isAMentor !== '') {
-				// Get mentor visibility and org_id
+				// Get mentor visibility and org id
 				let requstedMentorExtension = await mentorQueries.getMentorExtension(id, [
 					'visibility',
-					'org_id',
+					'organization_id',
 					'visible_to_organizations',
 				])
 
@@ -553,7 +553,7 @@ module.exports = class MentorsHelper {
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
@@ -595,12 +595,12 @@ module.exports = class MentorsHelper {
 			const userPolicyDetails = isAMentor
 				? await mentorQueries.getMentorExtension(userId, [
 						'external_mentor_visibility',
-						'org_id',
+						'organization_id',
 						'visible_to_organizations',
 				  ])
 				: await menteeQueries.getMenteeExtension(userId, [
 						'external_mentor_visibility',
-						'org_id',
+						'organization_id',
 						'visible_to_organizations',
 				  ])
 
@@ -615,13 +615,13 @@ module.exports = class MentorsHelper {
 
 			// check the accessibility conditions
 			let isAccessible = false
-			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
-				const { external_mentor_visibility, org_id, visible_to_organizations } = userPolicyDetails
+			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
+				const { external_mentor_visibility, organization_id, visible_to_organizations } = userPolicyDetails
 				const mentor = userData[0]
 
 				switch (external_mentor_visibility) {
 					case common.CURRENT:
-						isAccessible = mentor.org_id === org_id
+						isAccessible = mentor.organization_id === organization_id
 						break
 					case common.ASSOCIATED:
 						isAccessible = mentor.visible_to_organizations.some((element) =>
@@ -703,12 +703,12 @@ module.exports = class MentorsHelper {
 			)
 
 			if (extensionDetails.data.length > 0) {
-				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.org_id))]
+				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
 					extensionDetails.data,
 					uniqueOrgIds,
 					common.mentorExtensionModelName,
-					'org_id'
+					'organization_id'
 				)
 			}
 
@@ -726,7 +726,7 @@ module.exports = class MentorsHelper {
 							value = { ...value, ...newItem }
 							delete value.user_id
 							delete value.visibility
-							delete value.org_id
+							delete value.organization_id
 							delete value.meta
 							return value
 						}
@@ -770,12 +770,12 @@ module.exports = class MentorsHelper {
 			const userPolicyDetails = isAMentor
 				? await mentorQueries.getMentorExtension(userId, [
 						'external_mentor_visibility',
-						'org_id',
+						'organization_id',
 						'visible_to_organizations',
 				  ])
 				: await menteeQueries.getMenteeExtension(userId, [
 						'external_mentor_visibility',
-						'org_id',
+						'organization_id',
 						'visible_to_organizations',
 				  ])
 
@@ -788,11 +788,11 @@ module.exports = class MentorsHelper {
 				})
 			}
 			const filter = {}
-			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.org_id) {
+			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
 				// Filter user data based on policy
 				// generate filter based on condition
 				if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
-					filter.org_id = userPolicyDetails.org_id
+					filter.organization_id = userPolicyDetails.organization_id
 				} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
 					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
 				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {

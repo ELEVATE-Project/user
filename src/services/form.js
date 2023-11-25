@@ -21,7 +21,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData, orgId) {
 		try {
-			bodyData['org_id'] = orgId
+			bodyData['organization_id'] = orgId
 			const form = await formQueries.createForm(bodyData)
 
 			await utils.internalDel('formVersion')
@@ -59,16 +59,16 @@ module.exports = class FormsHelper {
 			if (id) {
 				filter = {
 					id: id,
-					org_id: orgId,
+					organization_id: orgId,
 				}
 			} else {
 				filter = {
 					type: bodyData.type,
 					sub_type: bodyData.sub_type,
-					org_id: orgId,
+					organization_id: orgId,
 				}
 			}
-			bodyData['org_id'] = orgId
+			bodyData['organization_id'] = orgId
 			const result = await formQueries.updateOneForm(filter, bodyData)
 
 			if (result === 'ENTITY_ALREADY_EXISTS') {
@@ -114,9 +114,9 @@ module.exports = class FormsHelper {
 		try {
 			let filter = {}
 			if (id) {
-				filter = { id: id, org_id: orgId }
+				filter = { id: id, organization_id: orgId }
 			} else {
-				filter = { ...bodyData, org_id: orgId }
+				filter = { ...bodyData, organization_id: orgId }
 			}
 			const form = await formQueries.findOneForm(filter)
 			let defaultOrgForm
@@ -128,7 +128,7 @@ module.exports = class FormsHelper {
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
-				filter = id ? { id: id, org_id: defaultOrgId } : { ...bodyData, org_id: defaultOrgId }
+				filter = id ? { id: id, organization_id: defaultOrgId } : { ...bodyData, organization_id: defaultOrgId }
 				defaultOrgForm = await formQueries.findOneForm(filter)
 			}
 			if (!form && !defaultOrgForm) {

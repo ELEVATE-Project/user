@@ -1,10 +1,10 @@
 'use strict'
 const { Model } = require('sequelize')
 module.exports = (sequelize, DataTypes) => {
-	const OrganisationExtension = sequelize.define(
-		'OrganisationExtension',
+	const OrganizationExtension = sequelize.define(
+		'OrganizationExtension',
 		{
-			org_id: {
+			organization_id: {
 				allowNull: false,
 				primaryKey: true,
 				type: DataTypes.INTEGER,
@@ -26,12 +26,12 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{
 			sequelize,
-			modelName: 'OrganisationExtension',
-			tableName: 'organisation_extension',
+			modelName: 'OrganizationExtension',
+			tableName: 'organization_extension',
 			freezeTableName: true,
 			paranoid: true,
 		}
 	)
 
-	return OrganisationExtension
+	return OrganizationExtension
 }

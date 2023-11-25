@@ -110,7 +110,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: true,
 			},
-			mentor_org_id: {
+			mentor_organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},

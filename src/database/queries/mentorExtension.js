@@ -159,7 +159,7 @@ module.exports = class MentorExtensionQueries {
 
 			// Create selection clause
 			let projectionClause =
-				'user_id,rating,meta,visibility,org_id,designation,area_of_expertise,education_qualification'
+				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
 			if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}

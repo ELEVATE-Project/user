@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
 			updated_by: { type: DataTypes.INTEGER, allowNull: true },
 			allow_filtering: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 			data_type: { type: DataTypes.STRING, allowNull: false, defaultValue: 'STRING' },
-			org_id: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+			organization_id: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
 			parent_id: { type: DataTypes.INTEGER, allowNull: true },
 			allow_custom_entities: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 			has_entities: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
