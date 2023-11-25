@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			org_id: {
+			organization_id: {
 				type: DataTypes.INTEGER,
 			},
 			subject: {

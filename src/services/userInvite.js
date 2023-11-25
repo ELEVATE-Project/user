@@ -230,7 +230,7 @@ module.exports = class UserInviteHelper {
 								eventBroadcaster('updateOrganization', {
 									requestBody: {
 										user_id: existingUser.id,
-										org_id: existingUser.organization_id,
+										organization_id: existingUser.organization_id,
 										roles: _.map(userRoles, 'title'),
 									},
 								})
@@ -240,7 +240,7 @@ module.exports = class UserInviteHelper {
 									new_roles: [invitee.roles],
 									old_roles: _.map(userRoles, 'title'),
 								}
-								if (userUpdateData.organization_id) requestBody.org_id = user.organization_id
+								if (userUpdateData.organization_id) requestBody.organization_id = user.organization_id
 								eventBroadcaster('roleChange', {
 									requestBody,
 								})

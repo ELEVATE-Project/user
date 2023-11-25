@@ -1,7 +1,7 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const OrgDomain = sequelize.define(
-		'OrgDomain',
+	const OrganizationDomain = sequelize.define(
+		'OrganizationDomain',
 		{
 			id: {
 				type: DataTypes.INTEGER,
@@ -31,8 +31,8 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{
 			sequelize,
-			modelName: 'OrgDomain',
-			tableName: 'org_domains',
+			modelName: 'OrganizationDomain',
+			tableName: 'organization_domains',
 			indexes: [
 				{
 					unique: true,
@@ -44,9 +44,9 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
-	OrgDomain.associate = (models) => {
-		OrgDomain.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
+	OrganizationDomain.associate = (models) => {
+		OrganizationDomain.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
 	}
 
-	return OrgDomain
+	return OrganizationDomain
 }

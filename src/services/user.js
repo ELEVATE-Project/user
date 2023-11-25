@@ -47,7 +47,7 @@ module.exports = class UserHelper {
 
 			const filter = {
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
@@ -168,7 +168,7 @@ module.exports = class UserHelper {
 
 				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 					status: 'ACTIVE',
-					org_id: {
+					organization_id: {
 						[Op.in]: [user.organization_id, defaultOrgId],
 					},
 				})

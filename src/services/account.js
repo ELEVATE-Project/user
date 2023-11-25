@@ -369,7 +369,7 @@ module.exports = class AccountHelper {
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
 			})

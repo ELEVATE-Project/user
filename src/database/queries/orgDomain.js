@@ -1,9 +1,9 @@
 'use strict'
-const OrgDomain = require('../models/index').OrgDomain
+const organizationDomain = require('../models/index').OrganizationDomain
 
 exports.create = async (data) => {
 	try {
-		let createdDomain = await OrgDomain.create(data)
+		let createdDomain = await organizationDomain.create(data)
 		return createdDomain.get({ plain: true })
 	} catch (error) {
 		return error
@@ -12,7 +12,7 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await OrgDomain.findOne({
+		return await organizationDomain.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -24,7 +24,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		return await OrgDomain.findAll({
+		return await organizationDomain.findAll({
 			where: filter,
 			...options,
 			raw: true,

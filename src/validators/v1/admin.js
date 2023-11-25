@@ -43,7 +43,7 @@ module.exports = {
 	},
 
 	addOrgAdmin: (req) => {
-		req.checkBody('org_id').notEmpty().withMessage('org_id field is empty')
+		req.checkBody('organization_id').notEmpty().withMessage('organization_id field is empty')
 
 		req.checkBody(['user_id', 'email']).custom(() => {
 			const user_id = req.body.user_id

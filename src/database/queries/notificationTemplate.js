@@ -39,7 +39,7 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 			code: code,
 			type: 'email',
 			status: common.ACTIVE_STATUS,
-			org_id: orgId
+			organization_id: orgId
 				? {
 						[Op.or]: [orgId, defaultOrgId],
 				  }
@@ -52,7 +52,7 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 		})
 
 		// If there are multiple results, find the one matching orgId
-		templateData = templateData.find((template) => template.org_id === orgId) || templateData[0]
+		templateData = templateData.find((template) => template.organization_id === orgId) || templateData[0]
 
 		// If no data is found, set an empty object
 		templateData = templateData || {}

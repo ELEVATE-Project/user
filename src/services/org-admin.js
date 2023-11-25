@@ -363,7 +363,7 @@ module.exports = class OrgAdminHelper {
 			// Fetch entity type data using defaultOrgId and entityValue
 			const filter = {
 				value: entityValue,
-				org_id: defaultOrgId,
+				organization_id: defaultOrgId,
 				allow_filtering: true,
 			}
 
@@ -379,9 +379,9 @@ module.exports = class OrgAdminHelper {
 			}
 
 			// Build data for inheriting entityType
-			entityTypeDetails.parent_id = entityTypeDetails.org_id
+			entityTypeDetails.parent_id = entityTypeDetails.organization_id
 			entityTypeDetails.label = entityLabel
-			entityTypeDetails.org_id = userOrgId
+			entityTypeDetails.organization_id = userOrgId
 			entityTypeDetails.created_by = userId
 			entityTypeDetails.updated_by = userId
 			delete entityTypeDetails.id
