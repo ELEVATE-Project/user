@@ -1,12 +1,12 @@
 'use strict'
-const OrganisationExtension = require('@database/models/index').OrganisationExtension
+const OrganizationExtension = require('@database/models/index').OrganizationExtension
 const common = require('@constants/common')
 
-module.exports = class OrganisationExtensionQueries {
+module.exports = class OrganizationExtensionQueries {
 	static async upsert(data) {
 		try {
 			if (!data.organization_id) throw new Error('organization_id Missing')
-			const [orgPolicies] = await OrganisationExtension.upsert(data, {
+			const [orgPolicies] = await OrganizationExtension.upsert(data, {
 				returning: true,
 				where: {
 					organization_id: data.organization_id,
@@ -20,7 +20,7 @@ module.exports = class OrganisationExtensionQueries {
 
 	static async getById(orgId) {
 		try {
-			const orgPolicies = await OrganisationExtension.findOne({
+			const orgPolicies = await OrganizationExtension.findOne({
 				where: {
 					organization_id: orgId,
 				},
@@ -49,7 +49,7 @@ module.exports = class OrganisationExtensionQueries {
 			const data = common.DEFAULT_ORGANISATION_POLICY
 			data.organization_id = organizationId
 			// Try to find the data, and if it doesn't exist, create it
-			const [orgPolicies, created] = await OrganisationExtension.findOrCreate({
+			const [orgPolicies, created] = await OrganizationExtension.findOrCreate({
 				where: {
 					organization_id: organizationId,
 				},
