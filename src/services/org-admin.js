@@ -212,10 +212,18 @@ module.exports = class OrgAdminService {
 				new Date(orgPolicies.dataValues.created_at).getTime() !==
 				new Date(orgPolicies.dataValues.updated_at).getTime()
 
-			// If org policies updated update mentor and mentee extensions uunder the org
+			// If org policies updated update mentor and mentee extensions under the org
 			if (orgPolicyUpdated) {
 				// if org policy is updated update mentor extension and user extension
 				let policyData = await this.constructOrgPolicyObject(orgPolicies.dataValues)
+
+				if (
+					policyData?.external_mentor_visibility == common.ASSOCIATED ||
+					policyData?.mentor_visibility_policy == common.ASSOCIATED
+				) {
+					const organizationDetails = await userRequests.fetchDefaultOrgDetails(decodedToken.organization_id)
+					policyData.visible_to_organizations = organizationDetails.data.result.related_orgs
+				}
 
 				await mentorQueries.updateMentorExtension(
 					'', //userId not required
@@ -230,7 +238,7 @@ module.exports = class OrgAdminService {
 					{}, //options
 					{ org_id: decodedToken.organization_id } //custom filter for where clause
 				)
-				// comenting as part of first level SAAS changes. will need this in the code next level
+				// commenting as part of first level SAAS changes. will need this in the code next level
 				// await sessionQueries.updateSession(
 				// 	{
 				// 		status: common.PUBLISHED_STATUS,
@@ -481,5 +489,42 @@ module.exports = class OrgAdminService {
 			policyData.org_id = org_id
 		}
 		return policyData
+	}
+
+	static async updateRelatedOrgs(relatedOrgs, orgId) {
+		try {
+			const orgPolicies = await OrganisationExtensionQueries.getById(orgId)
+			if (
+				orgPolicies.external_mentor_visibility_policy == common.ASSOCIATED ||
+				orgPolicies.mentor_visibility_policy == common.ASSOCIATED
+			) {
+				relatedOrgs.push(orgId) //Adding there own org id since its used for querying
+
+				const updateData = {
+					visible_to_organizations: relatedOrgs,
+				}
+
+				await Promise.all([
+					mentorQueries.updateMentorExtension(
+						null,
+						updateData,
+						{ raw: true, returning: true },
+						{ org_id: orgId }
+					),
+					menteeQueries.updateMenteeExtension(
+						null,
+						updateData,
+						{ raw: true, returning: true },
+						{ org_id: orgId }
+					),
+				])
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'RELATED_ORG_UPDATED',
+			})
+		} catch (error) {
+			throw error
+		}
 	}
 }

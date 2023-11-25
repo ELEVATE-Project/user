@@ -37,4 +37,8 @@ module.exports = {
 	deactivateUpcomingSession: (req) => {
 		req.checkQuery('user_id').notEmpty().withMessage('user_id field is empty')
 	},
+	updateRelatedOrgs: (req) => {
+		req.checkBody('related_organization_ids').notEmpty().withMessage('related_organization_ids field is empty')
+		req.checkBody('organization_id').notEmpty().withMessage('organization_id field is empty')
+	},
 }

@@ -112,5 +112,6 @@
 	"PROFILE_RESTRICTED": "User can't access this profile",
 	"SESSION_RESTRICTED": "User can't access this session",
 	"MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY": "Materialized views generated successfully",
-	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully"
+	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully",
+	"RELATED_ORG_UPDATED": "Related organizations updated successfully"
 }
