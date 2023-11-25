@@ -1,7 +1,7 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const OrgRoleRequest = sequelize.define(
-		'OrgRoleRequest',
+	const OrganizationRoleRequests = sequelize.define(
+		'OrganizationRoleRequests',
 		{
 			id: {
 				type: DataTypes.INTEGER,
@@ -40,17 +40,17 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{
 			sequelize,
-			modelName: 'OrgRoleRequest',
-			tableName: 'org_role_requests',
+			modelName: 'OrganizationRoleRequests',
+			tableName: 'organization_role_requests',
 			freezeTableName: true,
 			paranoid: true,
 		}
 	)
 
-	OrgRoleRequest.associate = (models) => {
-		OrgRoleRequest.belongsTo(models.User, { as: 'requester', foreignKey: 'requester_id' })
-		OrgRoleRequest.belongsTo(models.User, { as: 'handler', foreignKey: 'handled_by' })
+	OrganizationRoleRequests.associate = (models) => {
+		OrganizationRoleRequests.belongsTo(models.User, { as: 'requester', foreignKey: 'requester_id' })
+		OrganizationRoleRequests.belongsTo(models.User, { as: 'handler', foreignKey: 'handled_by' })
 	}
 
-	return OrgRoleRequest
+	return OrganizationRoleRequests
 }

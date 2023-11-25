@@ -41,12 +41,11 @@ module.exports = {
 
 		let notificationTemplateData = []
 		emailTemplates.forEach(async function (emailTemplate) {
-			emailTemplate['org_id'] = 1
 			emailTemplate['status'] = 'ACTIVE'
 			emailTemplate['type'] = 'email'
 			emailTemplate['updated_at'] = moment().format()
 			emailTemplate['created_at'] = moment().format()
-			emailTemplate['org_id'] = defaultOrgId
+			emailTemplate['organization_id'] = defaultOrgId
 			if (emailTemplate.code == 'email_footer') {
 				emailTemplate['type'] = 'emailFooter'
 			} else if (emailTemplate.code == 'email_header') {

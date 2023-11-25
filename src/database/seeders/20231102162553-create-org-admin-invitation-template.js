@@ -17,7 +17,7 @@ module.exports = {
 				updated_at: moment().format(),
 				email_header: 'email_header',
 				email_footer: 'email_footer',
-				org_id: defaultOrgId,
+				organization_id: defaultOrgId,
 			},
 		]
 

@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "edebcd56-1d88-4c0f-9995-b2742c42d15d",
+		"_postman_id": "615444c7-583f-44b9-9b96-8b92f9cb0df1",
 		"name": "MentorED-Users DEV new",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "18760682"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nikolas\",\n    \"email\":\"tacape1645@meogl.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -38,7 +38,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"password\",\n    \"role\":\"mentor\"\n}",
+							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -76,9 +76,8 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankitstar00786@yahoo.com",
-									"type": "text",
-									"disabled": true
+									"value": "nevil@tunerlabs.com",
+									"type": "text"
 								},
 								{
 									"key": "password",
@@ -89,11 +88,12 @@
 								{
 									"key": "email",
 									"value": "priyanka@tunerlabs.com",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
-									"value": "password",
+									"value": "testing",
 									"type": "text"
 								}
 							]
@@ -309,7 +309,8 @@
 							{
 								"key": "X-auth-token",
 								"value": "bearer {{token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -317,7 +318,7 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdom.com",
+									"value": "nevil@tunerlabs.com",
 									"type": "text"
 								},
 								{
@@ -327,7 +328,7 @@
 								},
 								{
 									"key": "name",
-									"value": "Ankit",
+									"value": "Nevil",
 									"type": "text"
 								}
 							]
@@ -385,6 +386,11 @@
 								"key": "X-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
+							},
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -392,9 +398,9 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user/read/3",
+							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "user", "read", "3"]
+							"path": ["v1", "user", "read", "1"]
 						}
 					},
 					"response": []
@@ -740,7 +746,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user_id\": 2,\n    \"org_id\": 1\n}",
+							"raw": "{\n    \"email\": \"nevil@tunerlabs.com\",\n    \"organization_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -817,13 +823,18 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisation_code=sl",
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisation_id=1",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "organization", "read"],
 							"query": [
 								{
 									"key": "organisation_code",
-									"value": "sl"
+									"value": "ls",
+									"disabled": true
+								},
+								{
+									"key": "organisation_id",
+									"value": "1"
 								}
 							]
 						}
@@ -837,13 +848,19 @@
 						"header": [
 							{
 								"key": "internal_access_token",
-								"value": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"MentorEd\",\n    \"code\":\"mentor112\",\n    \"description\":\"testing org\"\n}",
+							"raw": "{\n    \"name\": \"orgrr\",\n    \"code\": \"mentor112\",\n    \"description\": \"testing org\",\n    \"domains\": [\"cc.com\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -864,14 +881,14 @@
 						"method": "PATCH",
 						"header": [
 							{
-								"key": "internal_access_token",
-								"value": "internal_access_token",
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"MentorEd\",\n    \"description\":\"testing org\"\n}",
+							"raw": "{\n    \"name\": \"MentorEd\",\n    \"description\": \"testing org\",\n    \"related_orgs\": [\n        3,\n        4\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -879,9 +896,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/2",
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "organization", "update", "2"]
+							"path": ["v1", "organization", "update", "1"]
 						}
 					},
 					"response": []
@@ -1224,6 +1241,66 @@
 			]
 		},
 		{
+			"name": "Orchestrated",
+			"item": [
+				{
+					"name": "Profile Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ],\n    \"designation\": [\n        \"beo\",\n        \"deo\",\n        \"test\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "update"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Org Admin",
 			"item": [
 				{
@@ -1407,7 +1484,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"request_id\": 3,\n\t\"comments\": [\"All uploaded documents verified\", \"Profile information verified\"],\n\t\"status\": \"APPROVED\"\n}\n"
+							"raw": "{\n\t\"request_id\": 1,\n\t\"comments\": [\"All uploaded documents verified\", \"Profile information verified\"],\n\t\"status\": \"APPROVED\"\n}\n"
 						},
 						"url": {
 							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus",
@@ -1439,66 +1516,6 @@
 							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Orchestrated",
-			"item": [
-				{
-					"name": "Profile Create",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}interface"],
-							"path": ["v1", "account", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Profile Update",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}"
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ],\n    \"designation\": [\n        \"beo\",\n        \"deo\",\n        \"test\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
-							"host": ["{{UserDevBaseUrl}}interface"],
-							"path": ["v1", "account", "update"]
 						}
 					},
 					"response": []

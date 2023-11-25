@@ -17,7 +17,7 @@ module.exports = class FormsHelper {
 
 	static async create(bodyData, orgId) {
 		try {
-			const form = await formQueries.findOne({ type: bodyData.type, org_id: orgId })
+			const form = await formQueries.findOne({ type: bodyData.type, organization_id: orgId })
 			if (form) {
 				return common.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -25,7 +25,7 @@ module.exports = class FormsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			bodyData['org_id'] = orgId
+			bodyData['organization_id'] = orgId
 			await formQueries.create(bodyData)
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
@@ -51,15 +51,15 @@ module.exports = class FormsHelper {
 			let filter = {}
 
 			if (id) {
-				filter = { id: id, org_id: orgId }
+				filter = { id: id, organization_id: orgId }
 			} else {
 				filter = {
 					type: bodyData.type,
 					sub_type: bodyData.sub_type,
-					org_id: orgId,
+					organization_id: orgId,
 				}
 			}
-			bodyData['org_id'] = orgId
+			bodyData['organization_id'] = orgId
 			const result = await formQueries.updateOneForm(filter, bodyData)
 			if (result == 0) {
 				return common.failureResponse({
@@ -90,7 +90,7 @@ module.exports = class FormsHelper {
 
 	static async read(id, bodyData, orgId) {
 		try {
-			let filter = id ? { id: id, org_id: orgId } : { ...bodyData, org_id: orgId }
+			let filter = id ? { id: id, organization_id: orgId } : { ...bodyData, organization_id: orgId }
 			const form = await formQueries.findOne(filter)
 			let defaultOrgForm
 			if (!form) {
@@ -99,7 +99,7 @@ module.exports = class FormsHelper {
 					{ attributes: ['id'] }
 				)
 				let defaultOrgId = defaultOrg.id
-				filter = id ? { id: id, org_id: defaultOrgId } : { ...bodyData, org_id: defaultOrgId }
+				filter = id ? { id: id, organization_id: defaultOrgId } : { ...bodyData, organization_id: defaultOrgId }
 				defaultOrgForm = await formQueries.findOne(filter)
 			}
 			if (!form && !defaultOrgForm) {

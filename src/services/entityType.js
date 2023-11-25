@@ -19,7 +19,7 @@ module.exports = class EntityHelper {
 	static async create(bodyData, id, orgId) {
 		bodyData.created_by = id
 		bodyData.updated_by = id
-		bodyData.org_id = orgId
+		bodyData.organization_id = orgId
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return common.successResponse({
@@ -50,7 +50,7 @@ module.exports = class EntityHelper {
 	 */
 
 	static async update(bodyData, id, loggedInUserId, orgId) {
-		;(bodyData.updated_by = loggedInUserId), (bodyData.org_id = orgId)
+		;(bodyData.updated_by = loggedInUserId), (bodyData.organization_id = orgId)
 		try {
 			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, bodyData, {
 				returning: true,
@@ -115,7 +115,7 @@ module.exports = class EntityHelper {
 			const filter = {
 				value: body.value,
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}

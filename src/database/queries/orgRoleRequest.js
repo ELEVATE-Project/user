@@ -1,11 +1,11 @@
 'use strict'
-const OrgRoleRequest = require('../models/index').OrgRoleRequest
+const OrganizationRoleRequests = require('../models/index').OrganizationRoleRequests
 const User = require('../models/index').User
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		let createdReq = await OrgRoleRequest.create(data)
+		let createdReq = await OrganizationRoleRequests.create(data)
 		return createdReq.get({ plain: true })
 	} catch (error) {
 		return error
@@ -14,7 +14,7 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await OrgRoleRequest.findOne({
+		return await OrganizationRoleRequests.findOne({
 			where: filter,
 			...options,
 			raw: true,
@@ -26,7 +26,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.requestDetails = async (filter, options = {}) => {
 	try {
-		const reqDetails = await OrgRoleRequest.findOne({
+		const reqDetails = await OrganizationRoleRequests.findOne({
 			where: filter,
 			...options,
 			include: [
@@ -47,6 +47,7 @@ exports.requestDetails = async (filter, options = {}) => {
 		const result = reqDetails.get({ plain: true })
 		return result
 	} catch (error) {
+		console.log(error)
 		return error
 	}
 }
@@ -74,7 +75,7 @@ exports.listAllRequests = async (filter, page, limit, options = {}) => {
 			],
 		}
 
-		const result = await OrgRoleRequest.findAndCountAll(filterQuery)
+		const result = await OrganizationRoleRequests.findAndCountAll(filterQuery)
 		const transformedResult = {
 			count: result.count,
 			data: result.rows.map((row) => {
@@ -89,7 +90,7 @@ exports.listAllRequests = async (filter, page, limit, options = {}) => {
 
 exports.update = async (filter, update, options = {}) => {
 	try {
-		const [res] = await OrgRoleRequest.update(update, {
+		const [res] = await OrganizationRoleRequests.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,

@@ -90,7 +90,7 @@ module.exports = class Admin {
 	 * @name addOrgAdmin
 	 * @param {Object} bodyData - organization and user data.
 	 * @param {string} bodyData.user_id - org admin id.
-	 * @param {string} bodyData.org_id - organization id.
+	 * @param {string} bodyData.organization_id - organization id.
 	 * @returns {JSON} - returns user response
 	 */
 
@@ -106,7 +106,7 @@ module.exports = class Admin {
 
 			const orgAdminCreation = await adminService.addOrgAdmin(
 				req.body?.user_id,
-				req.body.org_id,
+				req.body.organization_id,
 				req.decodedToken.id,
 				req.body?.email
 			)

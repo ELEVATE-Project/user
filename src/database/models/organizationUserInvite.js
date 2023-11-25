@@ -1,7 +1,7 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-	const OrgUserInvite = sequelize.define(
-		'OrgUserInvite',
+	const OrganizationUserInvite = sequelize.define(
+		'OrganizationUserInvite',
 		{
 			id: {
 				type: DataTypes.INTEGER,
@@ -34,12 +34,18 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 		},
-		{ sequelize, modelName: 'OrgUserInvite', tableName: 'org_user_invites', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'OrganizationUserInvite',
+			tableName: 'organization_user_invites',
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
 
-	OrgUserInvite.associate = (models) => {
-		OrgUserInvite.belongsTo(models.FileUpload, { as: 'file', foreignKey: 'file_id' })
+	OrganizationUserInvite.associate = (models) => {
+		OrganizationUserInvite.belongsTo(models.FileUpload, { as: 'file', foreignKey: 'file_id' })
 	}
 
-	return OrgUserInvite
+	return OrganizationUserInvite
 }

@@ -1,10 +1,10 @@
 'use strict'
-const OrgUserInvite = require('../models/index').OrgUserInvite
+const organizationUserInvite = require('../models/index').OrganizationUserInvite
 const { UniqueConstraintError, ValidationError } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		const createData = await OrgUserInvite.create(data)
+		const createData = await organizationUserInvite.create(data)
 		const result = createData.get({ plain: true })
 		return result
 	} catch (error) {
@@ -24,7 +24,7 @@ exports.create = async (data) => {
 
 exports.update = async (filter, update, options) => {
 	try {
-		const [res] = await OrgUserInvite.update(update, {
+		const [res] = await organizationUserInvite.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -37,7 +37,7 @@ exports.update = async (filter, update, options) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await OrgUserInvite.findOne({
+		return await organizationUserInvite.findOne({
 			where: filter,
 			...options,
 			raw: true,

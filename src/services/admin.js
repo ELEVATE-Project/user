@@ -278,7 +278,7 @@ module.exports = class AdminHelper {
 			eventBroadcaster('updateOrganization', {
 				requestBody: {
 					user_id: userId,
-					org_id: organizationId,
+					organization_id: organizationId,
 					roles: _.map(roleData, 'title'),
 				},
 			})
