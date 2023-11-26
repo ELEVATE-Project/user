@@ -694,14 +694,17 @@ module.exports = class SessionsHelper {
 					case common.ASSOCIATED:
 						isAccessible =
 							isEnrolled ||
-							(session.visible_to_organizations.includes(org_id) && session.visibility != common.CURRENT)
+							(session.visible_to_organizations.includes(org_id) &&
+								session.visibility != common.CURRENT) ||
+							session.mentor_org_id === org_id
 						break
 					case common.ALL:
 						isAccessible =
 							isEnrolled ||
 							(session.visible_to_organizations.includes(org_id) &&
 								session.visibility != common.CURRENT) ||
-							session.visibility === common.ALL
+							session.visibility === common.ALL ||
+							session.mentor_org_id === org_id
 						break
 					default:
 						break
