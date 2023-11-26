@@ -7,12 +7,12 @@ module.exports = (sequelize, DataTypes) => {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
-				primaryKey: true,
 				type: DataTypes.INTEGER,
 			},
 			session_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			recording: {
 				type: DataTypes.JSON,

@@ -6,7 +6,6 @@ module.exports = {
 			id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			questions: {
@@ -16,10 +15,16 @@ module.exports = {
 			code: {
 				type: Sequelize.STRING,
 				allowNull: false,
+				primaryKey: true,
 			},
 			status: {
 				type: Sequelize.STRING,
 				allowNull: false,
+			},
+			organization_id: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
 			},
 			meta: {
 				type: Sequelize.JSON,
