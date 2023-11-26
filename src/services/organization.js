@@ -329,7 +329,6 @@ module.exports = class OrganizationsHelper {
 			}
 
 			const organisationDetails = await organizationQueries.findOne(filter)
-
 			if (!organisationDetails) {
 				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',

@@ -24,6 +24,7 @@ module.exports = {
 			organization_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			handled_by: {
 				type: Sequelize.INTEGER,

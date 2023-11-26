@@ -11,6 +11,8 @@ module.exports = {
 			},
 			entity_type_id: {
 				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
 			},
 			value: {
 				type: Sequelize.STRING,

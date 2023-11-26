@@ -31,8 +31,10 @@ module.exports = {
 			data_type: {
 				type: Sequelize.STRING,
 			},
-			org_id: {
+			organization_id: {
 				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
 			},
 			parent_id: {
 				type: Sequelize.INTEGER,
@@ -60,7 +62,7 @@ module.exports = {
 		})
 
 		// Add an index for the 'value' column
-		await queryInterface.addIndex('entity_types', ['value', 'org_id'], {
+		await queryInterface.addIndex('entity_types', ['value', 'organization_id'], {
 			unique: true,
 			name: 'unique_value_org_id',
 			where: {

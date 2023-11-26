@@ -1,6 +1,7 @@
 const EntityType = require('../models/index').EntityType
 const Entity = require('../models/index').Entity
 const { Op } = require('sequelize')
+const Sequelize = require('@database/models/index').sequelize
 
 module.exports = class UserEntityData {
 	static async createEntityType(data) {
@@ -23,7 +24,7 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntityTypes(orgId, attributes) {
+	static async findAllEntityTypes(orgId, attributes, filter = {}) {
 		try {
 			const entityData = await EntityType.findAll({
 				where: {
@@ -35,6 +36,7 @@ module.exports = class UserEntityData {
 							organization_id: orgId,
 						},
 					],
+					...filter,
 				},
 				attributes,
 				raw: true,
@@ -46,21 +48,54 @@ module.exports = class UserEntityData {
 	}
 	static async findUserEntityTypesAndEntities(filter) {
 		try {
-			return await EntityType.findAll({
+			const entityTypes = await EntityType.findAll({
 				where: filter,
-				include: [
-					{
-						model: Entity,
-						required: false,
-						where: {
-							status: 'ACTIVE',
-						},
-						as: 'entities',
-					},
-				],
 			})
+
+			const result = await Promise.all(
+				entityTypes.map(async (entityType) => {
+					const entities = await Entity.findAll({
+						where: { entity_type_id: entityType.id },
+						//attributes: { exclude: ['entity_type_id'] },
+					})
+
+					return {
+						...entityType.toJSON(),
+						entities: entities.map((entity) => entity.toJSON()),
+					}
+				})
+			)
+
+			return result
 		} catch (error) {
-			return error
+			console.error('Error fetching data:', error)
+			throw error
+		}
+	}
+
+	static async findUserEntityTypesAndEntitiesRaw(filter) {
+		try {
+			const [result, metadata] = await Sequelize.query(
+				`SELECT
+				et.*,
+				jsonb_agg(e.*) AS entities
+			FROM
+				entity_types et
+			LEFT JOIN
+				entities e ON et.id = e.entity_type_id
+			WHERE
+				et.status = 'ACTIVE'
+				AND et.value IN ('medium')
+				AND et.organization_id IN (1,1)
+			GROUP BY
+				et.id
+			ORDER BY
+				et.id;`
+			)
+			return result
+		} catch (error) {
+			console.error('Error fetching data:', error)
+			throw error
 		}
 	}
 
@@ -93,6 +128,32 @@ module.exports = class UserEntityData {
 	static async findEntityTypeById(filter) {
 		try {
 			return await EntityType.findByPk(filter)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findAllEntityTypesAndEntities(filter) {
+		try {
+			const entityTypes = await EntityType.findAll({
+				where: filter,
+			})
+
+			const result = await Promise.all(
+				entityTypes.map(async (entityType) => {
+					const entities = await Entity.findAll({
+						where: { entity_type_id: entityType.id, status: 'ACTIVE' },
+						//attributes: { exclude: ['entity_type_id'] },
+					})
+
+					return {
+						...entityType.toJSON(),
+						entities: entities.map((entity) => entity.toJSON()),
+					}
+				})
+			)
+
+			return result
 		} catch (error) {
 			return error
 		}

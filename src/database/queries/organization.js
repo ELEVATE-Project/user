@@ -1,19 +1,36 @@
 'use strict'
-const { Organization, sequelize } = require('@database/models/index')
+const { Organization, sequelize, organizationCode } = require('@database/models/index')
 const { Op } = require('sequelize')
 const common = require('@constants/common')
 
 exports.create = async (data) => {
 	try {
 		const createdOrg = await Organization.create(data)
+		await organizationCode.create({
+			code: data.code,
+			organization_id: createdOrg.toJSON().id,
+		})
 		return createdOrg.get({ plain: true })
 	} catch (error) {
+		console.error(error)
 		return error
 	}
 }
 
 exports.findOne = async (filter, options) => {
 	try {
+		if (filter.code) {
+			const organization = await organizationCode.findOne({
+				where: { code: filter.code },
+				attributes: ['organization_id'],
+				raw: true,
+			})
+			if (!organization) {
+				return null
+			}
+			delete filter.code
+			filter.id = organization.organization_id
+		}
 		return await Organization.findOne({
 			where: filter,
 			...options,

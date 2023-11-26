@@ -38,6 +38,12 @@ const insertQuery = `
     RETURNING id;
 `
 
+const insertCodeQuery = `
+    INSERT INTO organization_codes (code , organization_id, updated_at, created_at)
+    VALUES (?, ?, NOW(), NOW())
+    RETURNING organization_id;
+`
+
 const defaultValues = ['Default Organization', 'default_code', 'Default Organisation', 'ACTIVE']
 const queryParams = defaultValues.map((value, index) => (value === 'default' ? null : value))
 
@@ -53,10 +59,14 @@ const queryParams = defaultValues.map((value, index) => (value === 'default' ? n
 			)
 			return
 		}
-
 		// If no existing row, proceed with the insertion
 		const [result] = await sequelize.query(insertQuery, { replacements: queryParams, raw: true })
 		const insertedRowId = result[0].id
+		const [resultCode] = await sequelize.query(insertCodeQuery, {
+			replacements: ['default_code', insertedRowId],
+			raw: true,
+		})
+
 		console.log('Default org ID:', `\x1b[1m\x1b[32m${insertedRowId}\x1b[0m`)
 	} catch (error) {
 		console.error(`Error creating function: ${error.message}`)

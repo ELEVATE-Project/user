@@ -6,7 +6,6 @@ module.exports = {
 			id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			name: {
@@ -16,7 +15,7 @@ module.exports = {
 			input_path: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
+				primaryKey: true,
 			},
 			status: {
 				type: Sequelize.STRING,
@@ -34,6 +33,7 @@ module.exports = {
 			organization_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			created_by: {
 				type: Sequelize.INTEGER,

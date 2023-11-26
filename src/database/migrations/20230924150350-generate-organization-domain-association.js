@@ -3,6 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
+		return true
 		await queryInterface.addConstraint('org_domains', {
 			fields: ['organization_id'],
 			type: 'foreign key',
