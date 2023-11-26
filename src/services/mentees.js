@@ -370,7 +370,7 @@ module.exports = class MenteesHelper {
 			if (isAMentor) {
 				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
 					'external_session_visibility',
-					'org_id',
+					'organization_id',
 				])
 
 				// Throw error if mentor extension not found
@@ -384,7 +384,7 @@ module.exports = class MenteesHelper {
 			} else {
 				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
 					'external_session_visibility',
-					'org_id',
+					'organization_id',
 				])
 				// If no mentee present return error
 				if (Object.keys(userPolicyDetails).length === 0) {
@@ -397,14 +397,14 @@ module.exports = class MenteesHelper {
 			}
 
 			let filter = ''
-			if (userPolicyDetails.external_session_visibility && userPolicyDetails.org_id) {
+			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				// generate filter based on condition
 				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
-					filter = `AND "mentor_org_id" = ${userPolicyDetails.org_id}`
+					filter = `AND "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
-					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_org_id" = ${userPolicyDetails.org_id}`
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
-					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_org_id" = ${userPolicyDetails.org_id}`
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_organization_id" = ${userPolicyDetails.org_id}`
 				}
 			}
 			return filter
