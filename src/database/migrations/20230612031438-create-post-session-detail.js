@@ -6,11 +6,12 @@ module.exports = {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
-				primaryKey: true,
 				type: Sequelize.INTEGER,
 			},
 			session_id: {
 				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
 			},
 			recording: {
 				type: Sequelize.JSON,

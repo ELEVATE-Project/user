@@ -6,16 +6,17 @@ module.exports = {
 			id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			mentor_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			session_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			created_at: {
 				allowNull: false,

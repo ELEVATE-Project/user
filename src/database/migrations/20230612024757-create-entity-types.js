@@ -33,6 +33,8 @@ module.exports = {
 			},
 			org_id: {
 				type: Sequelize.INTEGER,
+				primaryKey: true,
+				allowNull: false,
 			},
 			parent_id: {
 				type: Sequelize.INTEGER,
