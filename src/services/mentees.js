@@ -402,9 +402,9 @@ module.exports = class MenteesHelper {
 				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
 					filter = `AND "mentor_org_id" = ${userPolicyDetails.org_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
-					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT')`
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_org_id" = ${userPolicyDetails.org_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
-					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL'`
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_org_id" = ${userPolicyDetails.org_id}`
 				}
 			}
 			return filter

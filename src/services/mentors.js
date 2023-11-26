@@ -784,13 +784,13 @@ module.exports = class MentorsHelper {
 					 * If user external_mentor_visibility is associated
 					 * <<point**>> first we need to check if mentor's visible_to_organizations contain the user org_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 					 */
-					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT')`
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "org_id" = ${userPolicyDetails.org_id}`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
 					/**
 					 * We need to check if mentor's visible_to_organizations contain the user org_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 					 * OR if mentor visibility is ALL that mentor is also accessible
 					 */
-					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL'`
+					filter = `AND (${userPolicyDetails.org_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "org_id" = ${userPolicyDetails.org_id}`
 				}
 			}
 
