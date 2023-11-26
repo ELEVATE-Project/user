@@ -3,6 +3,7 @@ const { QueryTypes } = require('sequelize')
 const sequelize = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const common = require('@constants/common')
+const _ = require('lodash')
 
 module.exports = class MentorExtensionQueries {
 	static async getColumns() {
@@ -25,7 +26,7 @@ module.exports = class MentorExtensionQueries {
 			if (data.user_id) {
 				delete data['user_id']
 			}
-			const whereClause = customFilter ? customFilter : { user_id: userId }
+			const whereClause = _.isEmpty(customFilter) ? { user_id: userId } : customFilter
 			return await MentorExtension.update(data, {
 				where: whereClause,
 				...options,
@@ -150,7 +151,7 @@ module.exports = class MentorExtensionQueries {
 			const saasFilterClause = saasFilter != '' ? saasFilter : ''
 
 			let projectionClause =
-				'user_id,rating,meta,visibility,org_id,designation,area_of_expertise,education_qualification'
+				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
 			if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}

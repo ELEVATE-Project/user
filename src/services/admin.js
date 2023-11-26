@@ -43,7 +43,7 @@ module.exports = class AdminHelper {
 				const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(userId)
 				result.isAttendeesNotified = await this.unenrollAndNotifySessionAttendees(
 					removedSessionsDetail,
-					mentor.org_id ? mentor.org_id : ''
+					mentor.organization_id ? mentor.organization_id : ''
 				)
 			} else {
 				removedUserDetails = await menteeQueries.removeMenteeDetails(userId)

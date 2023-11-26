@@ -475,7 +475,7 @@ const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	const entityTypeMap = new Map()
 	entityTypes.forEach((entityType) => {
 		if (!entityTypeMap.has(entityType.value)) entityTypeMap.set(entityType.value, entityType)
-		else if (entityType.org_id === orgId) entityTypeMap.set(entityType.value, entityType)
+		else if (entityType.organization_id === orgId) entityTypeMap.set(entityType.value, entityType)
 	})
 	return Array.from(entityTypeMap.values())
 }

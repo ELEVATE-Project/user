@@ -67,7 +67,7 @@ const getAllowFilteringEntityTypes = async () => {
 	try {
 		return await entityTypeQueries.findAllEntityTypes(
 			defaultOrgId,
-			['id', 'value', 'label', 'data_type', 'org_id', 'has_entities', 'model_names'],
+			['id', 'value', 'label', 'data_type', 'organization_id', 'has_entities', 'model_names'],
 			{
 				allow_filtering: true,
 			}

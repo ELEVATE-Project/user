@@ -23,7 +23,7 @@ module.exports = class NotificationTemplateHelper {
 				})
 			}
 
-			bodyData['org_id'] = tokenInformation.organization_id
+			bodyData['organization_id'] = tokenInformation.organization_id
 			bodyData['created_by'] = tokenInformation.id
 
 			const createdNotification = await notificationTemplateQueries.create(bodyData)
@@ -48,7 +48,7 @@ module.exports = class NotificationTemplateHelper {
 	static async update(id, bodyData, tokenInformation) {
 		try {
 			let filter = {
-				org_id: tokenInformation.organization_id,
+				organization_id: tokenInformation.organization_id,
 			}
 
 			if (id) {
@@ -57,7 +57,7 @@ module.exports = class NotificationTemplateHelper {
 				filter.code = bodyData.code
 			}
 
-			bodyData['org_id'] = tokenInformation.organization_id
+			bodyData['organization_id'] = tokenInformation.organization_id
 			bodyData['updated_by'] = tokenInformation.id
 
 			const result = await notificationTemplateQueries.updateTemplate(filter, bodyData)
@@ -86,9 +86,9 @@ module.exports = class NotificationTemplateHelper {
 	 * @returns {JSON} - Read Notification template.
 	 */
 
-	static async read(id = null, code = null, org_id) {
+	static async read(id = null, code = null, organizationId) {
 		try {
-			let filter = { org_id }
+			let filter = { organization_id: organizationId }
 
 			if (id) {
 				filter.id = id
@@ -113,10 +113,10 @@ module.exports = class NotificationTemplateHelper {
 			throw error
 		}
 	}
-	static async readAllNotificationTemplates(org_id) {
+	static async readAllNotificationTemplates(organizationId) {
 		try {
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates({
-				org_id,
+				organization_id: organizationId,
 			})
 
 			return common.successResponse({

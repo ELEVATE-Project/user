@@ -532,6 +532,39 @@
 				},
 				{
 					"name": "Session Create",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Function to generate a random timestamp in the future",
+									"function getRandomFutureTimestamp() {",
+									"    const now = Math.floor(Date.now() / 1000); // Current timestamp in seconds",
+									"    const oneHourInSeconds = 3600; // 1 hour in seconds",
+									"",
+									"    // Generate a random number of hours between 1 and 24",
+									"    const randomHours = Math.floor(Math.random() * 24) + 1;",
+									"",
+									"    // Calculate the future timestamp by adding the random number of hours",
+									"    const futureTimestamp = now + randomHours * oneHourInSeconds;",
+									"",
+									"    return futureTimestamp;",
+									"}",
+									"",
+									"// Get the start and end timestamps",
+									"const startTimestamp = getRandomFutureTimestamp();",
+									"const endTimestamp = startTimestamp + 3600; // 1 hour apart",
+									"",
+									"",
+									"// Set the timestamps in the request body",
+									"pm.variables.set('startTimestamp', startTimestamp);",
+									"pm.variables.set('endTimestamp', endTimestamp);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -543,7 +576,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Leadership session \",\n    \"description\": \"description\",\n    \"start_date\": 1700647200,\n    \"end_date\": 1700650800,\n    \"recommended_for\": [\n        \"hm\"\n    ],\n    \"categories\": [\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"image\": [\n        \"users/1232s2133sdd1-12e2dasd3123.png\"\n    ]\n}",
+							"raw": "{\n    \"title\": \"ssss\",\n    \"description\": \"description\",\n    \"start_date\": 1700845214,\n    \"end_date\": 1700847314,\n    \"recommended_for\": [\n        \"hm\"\n    ],\n    \"categories\": [\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"image\": [\n        \"users/1232s2133sdd1-12e2dasd3123.png\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -604,29 +637,18 @@
 							}
 						],
 						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "start_date",
-									"value": "1692616200",
-									"type": "text"
-								},
-								{
-									"key": "end_date",
-									"value": "1692619800",
-									"type": "text"
-								},
-								{
-									"key": "title",
-									"value": "session no three",
-									"type": "text"
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"test\",\n    \"description\": \"description\",\n    \"start_date\": 1700568950,\n    \"end_date\": 1700570750,\n    \"recommended_for\": [\n        \"hm\"\n    ],\n    \"categories\": [\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"image\": [\n        \"users/1232s2133sdd1-12e2dasd3123.png\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							]
+							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update/3",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update/41",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "update", "3"]
+							"path": ["v1", "sessions", "update", "41"]
 						}
 					},
 					"response": []
@@ -1404,9 +1426,16 @@
 						"method": "GET",
 						"header": [
 							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							},
+							{
 								"key": "X-auth-token",
 								"value": "bearer {{token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -1524,9 +1553,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/read/",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/read",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "profile", "read", ""]
+							"path": ["v1", "profile", "read"]
 						}
 					},
 					"response": []
@@ -1599,7 +1628,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user_id\": 2,\n    \"current_roles\": [\n        \"mentee\"\n    ],\n    \"new_roles\": [\n        \"mentor\"\n    ]\n}"
+							"raw": "{\n    \"user_id\": 1,\n    \"current_roles\": [\n        \"mentee\"\n    ],\n    \"new_roles\": [\n        \"mentor\"\n    ]\n}"
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/roleChange",
@@ -1642,12 +1671,12 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6Im9yZ2FkbWluQHR1bmVybGFicy5jb20iLCJuYW1lIjoicHJpeWFua2EiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6NSwidGl0bGUiOiJvcmdfYWRtaW4iLCJ1c2VyX3R5cGUiOjEsInN0YXR1cyI6IkFDVElWRSJ9XX0sImlhdCI6MTY5NjU5NTM0NSwiZXhwIjoxNjk2NjgxNzQ1fQ.-31KTqIJ2u-qEOA2cz5YrITGgUqeUhMcZAmMDbpcjfg"
+								"value": "bearer {{token}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"session_visibility_policy\": \"parent\",\n    \"mentor_visibility_policy\": \"parent\",\n    \"external_session_visibility_policy\": \"all\",\n    \"external_mentor_visibility_policy\": \"associated\",\n    \"allow_mentor_override\": false\n}",
+							"raw": "{\n    \"session_visibility_policy\": \"ALL\",\n    \"mentor_visibility_policy\": \"ALL\",\n    \"external_session_visibility_policy\": \"ALL\",\n    \"external_mentor_visibility_policy\": \"ALL\",\n    \"allow_mentor_override\": false\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1669,13 +1698,40 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjo3LCJlbWFpbCI6Im9yZ2FkbWluQHR1bmVybGFicy5jb20iLCJuYW1lIjoicHJpeWFua2EiLCJvcmdhbml6YXRpb25faWQiOjEsInJvbGVzIjpbeyJpZCI6NSwidGl0bGUiOiJvcmdfYWRtaW4iLCJ1c2VyX3R5cGUiOjEsInN0YXR1cyI6IkFDVElWRSJ9XX0sImlhdCI6MTY5NjU5NTM0NSwiZXhwIjoxNjk2NjgxNzQ1fQ.-31KTqIJ2u-qEOA2cz5YrITGgUqeUhMcZAmMDbpcjfg"
+								"value": "bearer {{token}}"
 							}
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/getOrgPolicies",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "org-admin", "getOrgPolicies"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update related orgs",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"related_organization_ids\": [\n        4\n    ],\n    \"organization_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/updateRelatedOrgs",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "org-admin", "updateRelatedOrgs"]
 						}
 					},
 					"response": []
@@ -1734,6 +1790,28 @@
 							"raw": "{{MentoringBaseUrl}}interface/v1/account/create",
 							"host": ["{{MentoringBaseUrl}}interface"],
 							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Create Copy",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": [\n        \"medium\",\n        \"languages\"\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/interface/v1/entity-type/read",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["interface", "v1", "entity-type", "read"]
 						}
 					},
 					"response": []

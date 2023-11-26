@@ -32,7 +32,7 @@ module.exports = class UserEntityData {
 							created_by: 0,
 						},
 						{
-							org_id: orgId,
+							organization_id: orgId,
 						},
 					],
 					...filter,

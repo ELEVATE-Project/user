@@ -82,7 +82,7 @@ module.exports = class OrgAdmin {
 	 * @param {Object} req - Request data.
 	 * @param {Object} req.body - Request body containing updated policies.
 	 * @param {String} req.body.user_id - User id.
-	 * @param {String} req.body.org_id - Organization id.
+	 * @param {String} req.body.organization_id - Organization id.
 	 * @param {Array} req.body.roles - User Roles.
 	 * @returns {JSON} - Success Response.
 	 * @throws {Error} - Returns an error if the update fails.
@@ -109,6 +109,23 @@ module.exports = class OrgAdmin {
 		try {
 			const response = await orgAdminService.deactivateUpcomingSession(req.query.user_id)
 			return response
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * updateRelatedOrgs
+	 * @method
+	 * @name updateRelatedOrgs
+	 * @param {Array} req.body.related_organization_ids - Related orgs ids.
+	 * @param {Integer} req.body.organization_id - Id of the organisation .
+	 * @returns {JSON} - Success Response.
+	 * @throws {Error} - Error response.
+	 */
+	async updateRelatedOrgs(req) {
+		try {
+			return await orgAdminService.updateRelatedOrgs(req.body.related_organization_ids, req.body.organization_id)
 		} catch (error) {
 			return error
 		}

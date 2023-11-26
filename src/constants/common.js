@@ -68,6 +68,7 @@ module.exports = {
 		'/org-admin/deactivateUpcomingSession',
 		'/admin/triggerPeriodicViewRefreshInternal',
 		'/admin/triggerViewRebuildInternal',
+		'/org-admin/updateRelatedOrgs',
 		'/sessions/completed',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
@@ -145,6 +146,6 @@ module.exports = {
 	mentorExtensionModelName: 'MentorExtension',
 	sessionModelName: 'Session',
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
-	sessionCompleteEndpoint: '/mentoring/v1/session/complete/',
+	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
 }

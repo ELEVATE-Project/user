@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.JSON,
 				allowNull: true,
 			},
-			org_id: {
+			organization_id: {
 				type: DataTypes.INTEGER,
 			},
 		},

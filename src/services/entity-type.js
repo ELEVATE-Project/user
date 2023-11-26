@@ -21,7 +21,7 @@ module.exports = class EntityHelper {
 	static async create(bodyData, id, orgId) {
 		bodyData.created_by = id
 		bodyData.updated_by = id
-		bodyData.org_id = orgId
+		bodyData.organization_id = orgId
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return common.successResponse({
@@ -53,7 +53,7 @@ module.exports = class EntityHelper {
 
 	static async update(bodyData, id, loggedInUserId, orgId) {
 		bodyData.updated_by = loggedInUserId
-		bodyData.org_id = orgId
+		bodyData.organization_id = orgId
 		try {
 			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, bodyData, {
 				returning: true,
@@ -121,7 +121,7 @@ module.exports = class EntityHelper {
 			const filter = {
 				value: body.value,
 				status: 'ACTIVE',
-				org_id: {
+				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
@@ -171,9 +171,9 @@ module.exports = class EntityHelper {
 	 * @method
 	 * @name processEntityTypesToAddValueLabels
 	 * @param {Array} responseData 				- data to modify
-	 * @param {Array} orgIds 					- org_ids
+	 * @param {Array} orgIds 					- org ids
 	 * @param {String} modelName 				- model name which the entity search is assocoated to.
-	 * @param {String} orgIdKey 				- In responseData which key represents org_id
+	 * @param {String} orgIdKey 				- In responseData which key represents org id
 	 * @returns {JSON} 							- modified response data
 	 */
 	static async processEntityTypesToAddValueLabels(responseData, orgIds, modelName, orgIdKey) {
@@ -193,7 +193,7 @@ module.exports = class EntityHelper {
 			const filter = {
 				status: 'ACTIVE',
 				has_entities: true,
-				org_id: {
+				organization_id: {
 					[Op.in]: orgIds,
 				},
 				model_names: {
@@ -214,7 +214,7 @@ module.exports = class EntityHelper {
 				const orgIdToSearch = [element[orgIdKey], defaultOrgId]
 
 				// Filter entity types based on orgIds and remove parent entity types
-				let entitTypeData = entityTypesWithEntities.filter((obj) => orgIdToSearch.includes(obj.org_id))
+				let entitTypeData = entityTypesWithEntities.filter((obj) => orgIdToSearch.includes(obj.organization_id))
 				entitTypeData = utils.removeParentEntityTypes(entitTypeData)
 
 				// Process the data asynchronously to add value labels

@@ -521,7 +521,7 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 				'created_at',
 				'meeting_info',
 				'visibility',
-				'mentor_org_id',
+				'mentor_organization_id',
 				/* ['meetingInfo.platform', 'meetingInfo.platform'],
 				['meetingInfo.value', 'meetingInfo.value'], */
 			],
@@ -590,7 +590,7 @@ exports.getUpcomingSessionsFromView = async (
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 		// Create selection clause
 		let projectionClause = `
-			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_org_id, created_at,
+			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
 			(meeting_info - 'link' ) AS meeting_info
 		`
 		if (additionalProjectionclause !== '') {
@@ -688,7 +688,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			mentor_id,
 			meeting_info,
 			visibility,
-			mentor_org_id
+			mentor_organization_id
 		FROM
 				${common.materializedViewsPrefix + Session.tableName}
 		WHERE
