@@ -16,16 +16,22 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			password: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			organization_id: DataTypes.INTEGER,
-			user_id: DataTypes.INTEGER,
+			user_id: { type: DataTypes.INTEGER, allowNull: true },
 			meta: {
 				type: DataTypes.JSONB,
 				allowNull: true,
 			},
 		},
-		{ sequelize, modelName: 'UserCredential', tableName: 'users_credentials', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'UserCredential',
+			tableName: 'users_credentials',
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
 
 	return UserCredential

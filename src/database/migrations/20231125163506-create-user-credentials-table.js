@@ -15,7 +15,7 @@ module.exports = {
 			},
 			password: {
 				type: Sequelize.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			organization_id: {
 				type: Sequelize.INTEGER,
@@ -23,7 +23,7 @@ module.exports = {
 			},
 			user_id: {
 				type: Sequelize.INTEGER,
-				allowNull: false,
+				allowNull: true,
 			},
 			meta: {
 				type: Sequelize.JSONB,
