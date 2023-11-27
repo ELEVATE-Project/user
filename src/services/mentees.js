@@ -365,48 +365,41 @@ module.exports = class MenteesHelper {
 	 */
 	static async filterSessionsBasedOnSaasPolicy(userId, isAMentor) {
 		try {
-			let userPolicyDetails
-			// If user is mentor - fetch policy details from mentor extensions else fetch from userExtension
-			if (isAMentor) {
-				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
-					'external_session_visibility',
-					'organization_id',
-					'visible_to_organizations',
-				])
+			const userPolicyDetails = isAMentor
+				? await mentorQueries.getMentorExtension(userId, ['external_session_visibility', 'organization_id'])
+				: await menteeQueries.getMenteeExtension(userId, ['external_session_visibility', 'organization_id'])
 
-				// Throw error if mentor extension not found
-				if (Object.keys(userPolicyDetails).length === 0) {
-					return common.failureResponse({
-						statusCode: httpStatusCode.bad_request,
-						message: 'MENTORS_NOT_FOUND',
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-			} else {
-				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
-					'external_session_visibility',
-					'organization_id',
-					'visible_to_organizations',
-				])
-				// If no mentee present return error
-				if (Object.keys(userPolicyDetails).length === 0) {
-					return common.failureResponse({
-						statusCode: httpStatusCode.not_found,
-						message: 'MENTEE_EXTENSION_NOT_FOUND',
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			// Throw error if mentor/mentee extension not found
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-			let filter = {}
+
+			let filter = ''
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				// generate filter based on condition
 				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
-					filter.mentor_organization_id = userPolicyDetails.organization_id
+					/**
+					 * If {userPolicyDetails.external_session_visibility === CURRENT} user will be able to sessions-
+					 *  -created by his/her organization mentors.
+					 * So will check if mentor_organization_id equals user's  organization_id
+					 */
+					filter = `AND "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
-					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
+					/**
+					 * user external_session_visibility is ASSOCIATED
+					 * user can see sessions where session's visible_to_organizations contain user's organization_id and -
+					 *  - session's visibility not CURRENT (In case of same organization session has to be fetched for that we added OR condition {"mentor_organization_id" = ${userPolicyDetails.organization_id}})
+					 */
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
-					filter.visible_to_organizations = userPolicyDetails.visible_to_organizations
-					filter.visibility = common.ALL
+					/**
+					 * user's external_session_visibility === ALL (ASSOCIATED sessions + sessions whose visibility is ALL)
+					 */
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				}
 			}
 			return filter

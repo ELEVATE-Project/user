@@ -571,13 +571,12 @@ exports.getUpcomingSessionsFromView = async (
 	search,
 	userId,
 	filter,
-	saasFilter,
+	saasFilter = '',
 	additionalProjectionclause = ''
 ) => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 		let filterConditions = []
-		let saasFilterCondition = []
 
 		if (filter && typeof filter === 'object') {
 			for (const key in filter) {
@@ -588,22 +587,7 @@ exports.getUpcomingSessionsFromView = async (
 		}
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-		// SAAS related filtering
-		let saasFilterOrgIdClause = ''
-		if (saasFilter && typeof saasFilter === 'object') {
-			for (const key in saasFilter) {
-				if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
-					saasFilterCondition.push(
-						`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
-					)
-				} else if (Array.isArray(saasFilter[key])) {
-					saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
-				} else {
-					saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
-				}
-			}
-		}
-		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 		// Create selection clause
 		let projectionClause = `
 			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
@@ -646,15 +630,6 @@ exports.getUpcomingSessionsFromView = async (
 			}
 		}
 
-		// Replace saas related query replacements
-		if (saasFilter && typeof saasFilter === 'object') {
-			for (const key in saasFilter) {
-				if (Array.isArray(saasFilter[key])) {
-					replacements[key] = saasFilter[key]
-				}
-			}
-		}
-
 		const sessionIds = await Sequelize.query(query, {
 			type: QueryTypes.SELECT,
 			replacements: replacements,
@@ -684,12 +659,11 @@ exports.findAllByIds = async (ids) => {
 	}
 }
 
-exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter, saasFilter) => {
+exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorId, filter, saasFilter = '') => {
 	try {
 		const currentEpochTime = Math.floor(Date.now() / 1000)
 
 		const filterConditions = []
-		let saasFilterCondition = []
 
 		if (filter && typeof filter === 'object') {
 			for (const key in filter) {
@@ -700,22 +674,7 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 		}
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-		// SAAS related filtering
-		if (saasFilter && typeof saasFilter === 'object') {
-			for (const key in saasFilter) {
-				if (Array.isArray(saasFilter[key]) && saasFilter.visibility) {
-					saasFilterCondition.push(
-						`("${key}" @> ARRAY[:${key}]::integer[] OR "visibility" = '${saasFilter.visibility}')`
-					)
-				} else if (Array.isArray(saasFilter[key])) {
-					saasFilterCondition.push(`"${key}" @> ARRAY[:${key}]::integer[]`)
-				} else {
-					saasFilterCondition.push(`${key} = ${saasFilter[key]}`)
-				}
-			}
-		}
-
-		const saasFilterClause = saasFilterCondition.length > 0 ? `AND ` + saasFilterCondition[0] : ''
+		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 
 		const query = `
 		SELECT
@@ -757,15 +716,6 @@ exports.getMentorsUpcomingSessionsFromView = async (page, limit, search, mentorI
 			offset: limit * (page - 1),
 			limit: limit,
 			...filter, // Add filter parameters to replacements
-		}
-
-		// Replace saas related query replacements
-		if (saasFilter && typeof saasFilter === 'object') {
-			for (const key in saasFilter) {
-				if (Array.isArray(saasFilter[key])) {
-					replacements[key] = saasFilter[key]
-				}
-			}
 		}
 
 		const sessionAttendeesData = await Sequelize.query(query, {

@@ -671,16 +671,14 @@ module.exports = class SessionsHelper {
 				? await mentorExtensionQueries.getMentorExtension(userId, [
 						'external_session_visibility',
 						'organization_id',
-						'visible_to_organizations',
 				  ])
 				: await menteeExtensionQueries.getMenteeExtension(userId, [
 						'external_session_visibility',
 						'organization_id',
-						'visible_to_organizations',
 				  ])
 
 			// Throw error if mentor/mentee extension not found
-			if (Object.keys(userPolicyDetails).length === 0) {
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
@@ -691,28 +689,42 @@ module.exports = class SessionsHelper {
 			// check the accessibility conditions
 			let isAccessible = false
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
-				const { external_session_visibility, organization_id, visible_to_organizations } = userPolicyDetails
+				const { external_session_visibility, organization_id } = userPolicyDetails
 				const session = sessions[0]
 				const isEnrolled = session.is_enrolled || false
 
 				switch (external_session_visibility) {
+					/**
+					 * If {userPolicyDetails.external_session_visibility === CURRENT} user will be able to sessions-
+					 *  -created by his/her organization mentors.
+					 * So will check if mentor_organization_id equals user's  organization_id
+					 */
 					case common.CURRENT:
 						isAccessible = isEnrolled || session.mentor_organization_id === organization_id
 						break
+					/**
+					 * user external_session_visibility is ASSOCIATED
+					 * user can see sessions where session's visible_to_organizations contain user's organization_id and -
+					 *  - session's visibility not CURRENT (In case of same organization session has to be
+					 * fetched for that we added OR condition {"mentor_organization_id" = ${userPolicyDetails.organization_id}})
+					 */
 					case common.ASSOCIATED:
 						isAccessible =
 							isEnrolled ||
-							session.visible_to_organizations.some((element) =>
-								visible_to_organizations.includes(element)
-							)
+							(session.visible_to_organizations.includes(organization_id) &&
+								session.visibility != common.CURRENT) ||
+							session.mentor_organization_id === organization_id
 						break
+					/**
+					 * user's external_session_visibility === ALL (ASSOCIATED sessions + sessions whose visibility is ALL)
+					 */
 					case common.ALL:
 						isAccessible =
 							isEnrolled ||
-							session.visible_to_organizations.some((element) =>
-								visible_to_organizations.includes(element)
-							) ||
-							session.visibility === common.ALL
+							(session.visible_to_organizations.includes(organization_id) &&
+								session.visibility != common.CURRENT) ||
+							session.visibility === common.ALL ||
+							session.mentor_organization_id === organization_id
 						break
 					default:
 						break
