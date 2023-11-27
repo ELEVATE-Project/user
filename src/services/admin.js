@@ -16,6 +16,7 @@ const roleQueries = require('@database/queries/userRole')
 const organizationQueries = require('@database/queries/organization')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
+const UserCredentialQueries = require('@database/queries/userCredential')
 
 module.exports = class AdminHelper {
 	/**
@@ -40,6 +41,8 @@ module.exports = class AdminHelper {
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
 			await userQueries.updateUser({ id: userId }, update)
+			await UserCredentialQueries.updateUser({ id: userId }, update)
+
 			await utils.redisDel(common.redisUserPrefix + userId.toString())
 
 			//code for remove user folder from cloud
@@ -65,7 +68,7 @@ module.exports = class AdminHelper {
 	static async create(bodyData) {
 		try {
 			const email = bodyData.email.toLowerCase()
-			const user = await userQueries.findOne({ email: email })
+			const user = await UserCredentialQueries.findOne({ email: email })
 
 			if (user) {
 				return common.failureResponse({
@@ -95,8 +98,14 @@ module.exports = class AdminHelper {
 			}
 
 			bodyData.password = utils.hashPassword(bodyData.password)
-			await userQueries.create(bodyData)
-
+			const createdUser = await userQueries.create(bodyData)
+			const userCredentialsBody = {
+				email: bodyData.email,
+				password: bodyData.password,
+				organization_id: createdUser.organization_id,
+				user_id: createdUser.id,
+			}
+			await UserCredentialQueries.create(userCredentialsBody)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
@@ -117,8 +126,19 @@ module.exports = class AdminHelper {
 	 */
 	static async login(bodyData) {
 		try {
-			let user = await userQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			if (!userCredentials) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
+			let user = await userQueries.findOne({
+				id: userCredentials.user_id,
+				organization_id: userCredentials.organization_id,
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -189,7 +209,28 @@ module.exports = class AdminHelper {
 	 */
 	static async addOrgAdmin(userId, organizationId, loggedInUserId, emailId) {
 		try {
-			const user = !userId ? await userQueries.findOne({ email: emailId }) : await userQueries.findByPk(userId)
+			let userCredentials
+			if (emailId) {
+				userCredentials = await UserCredentialQueries.findOne({
+					email: emailId.toLowerCase(),
+				})
+			} else {
+				userCredentials = await UserCredentialQueries.findOne({
+					user_id: userId,
+				})
+			}
+
+			if (!userCredentials?.id) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const user = await userQueries.findOne({
+				id: userCredentials.user_id,
+				organization_id: userCredentials.organization_id,
+			})
 			if (!user?.id) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -259,7 +300,7 @@ module.exports = class AdminHelper {
 
 			updateObj.organization_id = organizationId
 
-			await userQueries.updateUser({ id: userId }, updateObj)
+			await userQueries.updateUser({ id: userId, organization_id: userCredentials.organization_id }, updateObj)
 
 			//delete from cache
 			const redisUserKey = common.redisUserPrefix + userId.toString()
@@ -387,6 +428,22 @@ module.exports = class AdminHelper {
 				}
 			}
 
+			let userIds = []
+
+			if (bodyData.email) {
+				const userCredentials = await UserCredentialQueries.findAll(
+					{ email: { [Op.in]: bodyData.email } },
+					{
+						attributes: ['user_id'],
+					}
+				)
+				userIds = _.map(userCredentials, 'user_id')
+				delete filterQuery.email
+				filterQuery.id = userIds
+			} else {
+				userIds = bodyData.id
+			}
+
 			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
 				status: common.INACTIVE_STATUS,
 				updated_by: loggedInUserId,
@@ -398,23 +455,6 @@ module.exports = class AdminHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
-
-			let userIds = []
-			if (bodyData.email) {
-				const users = await userQueries.findAll(
-					{
-						email: {
-							[Op.in]: bodyData.email,
-						},
-					},
-					{
-						attributes: ['id'],
-					}
-				)
-				userIds = _.map(users, 'id')
-			} else {
-				userIds = bodyData.id
 			}
 
 			//check and deactivate upcoming sessions

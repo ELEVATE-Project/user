@@ -26,7 +26,7 @@ const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
-
+const UserCredentialQueries = require('@database/queries/userCredential')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -46,7 +46,7 @@ module.exports = class AccountHelper {
 
 		try {
 			const email = bodyData.email.toLowerCase()
-			let user = await userQueries.findOne({ email: email })
+			let user = await UserCredentialQueries.findOne({ email: email })
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -149,11 +149,19 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-			await userQueries.create(bodyData)
+			const insertedUser = await userQueries.create(bodyData)
+
+			const userCredentialsBody = {
+				email: bodyData.email,
+				password: bodyData.password,
+				organization_id: insertedUser.organization_id,
+				user_id: insertedUser.id,
+			}
+			const userCredentials = await UserCredentialQueries.create(userCredentialsBody)
 
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findUserWithOrganization(
-				{ email: email },
+				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
 				{
 					attributes: {
 						exclude: projection,
@@ -209,7 +217,7 @@ module.exports = class AccountHelper {
 				last_logged_in_at: new Date().getTime(),
 			}
 
-			await userQueries.updateUser({ id: user.id }, update)
+			await userQueries.updateUser({ id: user.id, organization_id: userCredentials.organization_id }, update)
 			await utilsHelper.redisDel(email)
 
 			//make the user as org admin
@@ -272,8 +280,17 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			if (!userCredentials) {
+				return common.failureResponse({
+					message: 'EMAIL_ID_NOT_REGISTERED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			let user = await userQueries.findUserWithOrganization({
-				email: bodyData.email.toLowerCase(),
+				id: userCredentials.user_id,
+				organization_id: userCredentials.organization_id,
 				status: common.ACTIVE_STATUS,
 			})
 			if (!user) {
@@ -302,7 +319,7 @@ module.exports = class AccountHelper {
 
 			user.user_roles = roles
 
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (!isPasswordCorrect) {
 				return common.failureResponse({
 					message: 'USERNAME_OR_PASSWORD_IS_INVALID',
@@ -355,7 +372,7 @@ module.exports = class AccountHelper {
 				last_logged_in_at: new Date().getTime(),
 			}
 
-			await userQueries.updateUser({ id: user.id }, updateParams)
+			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, updateParams)
 
 			delete user.password
 			delete user.refresh_tokens
@@ -417,7 +434,7 @@ module.exports = class AccountHelper {
 
 			/* Destroy refresh token for user */
 			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: user.id },
+				{ id: user.id, organization_id: user.organization_id },
 				{ refresh_tokens: refreshTokens }
 			)
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
@@ -516,7 +533,18 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ email: bodyData.email })
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			if (!userCredentials) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const user = await userQueries.findOne({
+				id: userCredentials.user_id,
+				organization_id: userCredentials.organization_id,
+			})
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -534,7 +562,7 @@ module.exports = class AccountHelper {
 				isValidOtpExist = false
 			}
 
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (isPasswordCorrect) {
 				return common.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
@@ -605,8 +633,8 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const user = await userQueries.findOne({ email: bodyData.email })
-			if (user) {
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			if (userCredentials) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -686,15 +714,22 @@ module.exports = class AccountHelper {
 	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			if (!userCredentials) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			let user = await userQueries.findOne(
-				{ email: bodyData.email },
+				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
 				{
 					attributes: {
 						exclude: projection,
 					},
 				}
 			)
-
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -702,7 +737,6 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
 			if (!roles) {
 				return common.failureResponse({
@@ -770,7 +804,10 @@ module.exports = class AccountHelper {
 				password: bodyData.password,
 			}
 
-			await userQueries.updateUser({ id: user.id }, updateParams)
+			await userQueries.updateUser(
+				{ id: user.id, organization_id: userCredentials.organization_id },
+				updateParams
+			)
 			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
@@ -999,7 +1036,7 @@ module.exports = class AccountHelper {
 	 * @param {string} userId - userId.
 	 * @returns {JSON} - returns accept the term success response
 	 */
-	static async acceptTermsAndCondition(userId) {
+	static async acceptTermsAndCondition(userId, orgId) {
 		try {
 			const user = await userQueries.findByPk(userId)
 
@@ -1011,7 +1048,10 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			await userQueries.updateUser({ id: userId }, { has_accepted_terms_and_conditions: true })
+			await userQueries.updateUser(
+				{ id: userId, organization_id: orgId },
+				{ has_accepted_terms_and_conditions: true }
+			)
 			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
 
 			return common.successResponse({
@@ -1041,8 +1081,18 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const [affectedRows] = await userQueries.updateUser({ email: bodyData.email }, { role_id: role.id })
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			if (!userCredentials) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const [affectedRows] = await userQueries.updateUser(
+				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
+				{ role_id: role.id }
+			)
 			/* If user doc not updated  */
 			if (affectedRows == 0) {
 				return common.failureResponse({
