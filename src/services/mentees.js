@@ -400,11 +400,24 @@ module.exports = class MenteesHelper {
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				// generate filter based on condition
 				if (userPolicyDetails.external_session_visibility === common.CURRENT) {
+					/**
+					 * If {userPolicyDetails.external_session_visibility === CURRENT} user will be able to sessions-
+					 *  -created by his/her organization mentors.
+					 * So will check if mentor_organization_id equals user's  organization_id
+					 */
 					filter = `AND "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ASSOCIATED) {
+					/**
+					 * user external_session_visibility is ASSOCIATED
+					 * user can see sessions where session's visible_to_organizations contain user's organization_id and -
+					 *  - session's visibility not CURRENT (In case of same organization session has to be fetched for that we added OR condition {"mentor_organization_id" = ${userPolicyDetails.organization_id}})
+					 */
 					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_session_visibility === common.ALL) {
-					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_organization_id" = ${userPolicyDetails.org_id}`
+					/**
+					 * user's external_session_visibility === ALL (ASSOCIATED sessions + sessions whose visibility is ALL)
+					 */
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "mentor_organization_id" = ${userPolicyDetails.organization_id}`
 				}
 			}
 			return filter

@@ -668,8 +668,14 @@ module.exports = class SessionsHelper {
 	static async checkIfSessionIsAccessible(sessions, userId, isAMentor) {
 		try {
 			const userPolicyDetails = isAMentor
-				? await mentorExtensionQueries.getMentorExtension(userId, ['external_session_visibility', 'organization_id'])
-				: await menteeExtensionQueries.getMenteeExtension(userId, ['external_session_visibility', 'organization_id'])
+				? await mentorExtensionQueries.getMentorExtension(userId, [
+						'external_session_visibility',
+						'organization_id',
+				  ])
+				: await menteeExtensionQueries.getMenteeExtension(userId, [
+						'external_session_visibility',
+						'organization_id',
+				  ])
 
 			// Throw error if mentor/mentee extension not found
 			if (Object.keys(userPolicyDetails).length === 0) {
@@ -688,9 +694,20 @@ module.exports = class SessionsHelper {
 				const isEnrolled = session.is_enrolled || false
 
 				switch (external_session_visibility) {
+					/**
+					 * If {userPolicyDetails.external_session_visibility === CURRENT} user will be able to sessions-
+					 *  -created by his/her organization mentors.
+					 * So will check if mentor_organization_id equals user's  organization_id
+					 */
 					case common.CURRENT:
 						isAccessible = isEnrolled || session.mentor_organization_id === organization_id
 						break
+					/**
+					 * user external_session_visibility is ASSOCIATED
+					 * user can see sessions where session's visible_to_organizations contain user's organization_id and -
+					 *  - session's visibility not CURRENT (In case of same organization session has to be
+					 * fetched for that we added OR condition {"mentor_organization_id" = ${userPolicyDetails.organization_id}})
+					 */
 					case common.ASSOCIATED:
 						isAccessible =
 							isEnrolled ||
@@ -698,6 +715,9 @@ module.exports = class SessionsHelper {
 								session.visibility != common.CURRENT) ||
 							session.mentor_organization_id === organization_id
 						break
+					/**
+					 * user's external_session_visibility === ALL (ASSOCIATED sessions + sessions whose visibility is ALL)
+					 */
 					case common.ALL:
 						isAccessible =
 							isEnrolled ||

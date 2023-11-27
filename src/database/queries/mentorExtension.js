@@ -137,7 +137,6 @@ module.exports = class MentorExtensionQueries {
 	) {
 		try {
 			const filterConditions = []
-			// let saasFilterCondition = []
 
 			if (filter && typeof filter === 'object') {
 				for (const key in filter) {
