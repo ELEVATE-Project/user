@@ -81,7 +81,7 @@ module.exports = class UserInviteHelper {
 					}
 				}
 
-				// delete the downloaded file and output file
+				// delete the downloaded file and output file.
 				utils.clearFile(response.result.downloadPath)
 				utils.clearFile(createResponse.result.outputFilePath)
 
