@@ -27,6 +27,7 @@ const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 
 const UserCredentialQueries = require('@database/queries/userCredential')
+const { Op } = require('sequelize')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
