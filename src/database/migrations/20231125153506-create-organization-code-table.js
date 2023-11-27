@@ -2,30 +2,15 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable('org_domains', {
-			id: {
-				type: Sequelize.INTEGER,
-				allowNull: false,
-				autoIncrement: true,
-			},
-			organization_id: {
-				type: Sequelize.INTEGER,
-				allowNull: false,
-			},
-			domain: {
+		await queryInterface.createTable('organization_codes', {
+			code: {
 				type: Sequelize.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
-			status: {
-				type: Sequelize.STRING,
-				defaultValue: 'ACTIVE',
-			},
-			created_by: {
+			organization_id: {
 				type: Sequelize.INTEGER,
-			},
-			updated_by: {
-				type: Sequelize.INTEGER,
+				allowNull: false,
 			},
 			created_at: {
 				allowNull: false,
@@ -42,6 +27,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable('org_domains')
+		await queryInterface.dropTable('organization_codes')
 	},
 }

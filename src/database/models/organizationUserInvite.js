@@ -43,9 +43,5 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
-	OrganizationUserInvite.associate = (models) => {
-		OrganizationUserInvite.belongsTo(models.FileUpload, { as: 'file', foreignKey: 'file_id' })
-	}
-
 	return OrganizationUserInvite
 }

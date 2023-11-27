@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
 			organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			handled_by: {
 				type: DataTypes.INTEGER,
@@ -46,11 +47,6 @@ module.exports = (sequelize, DataTypes) => {
 			paranoid: true,
 		}
 	)
-
-	OrganizationRoleRequests.associate = (models) => {
-		OrganizationRoleRequests.belongsTo(models.User, { as: 'requester', foreignKey: 'requester_id' })
-		OrganizationRoleRequests.belongsTo(models.User, { as: 'handler', foreignKey: 'handled_by' })
-	}
 
 	return OrganizationRoleRequests
 }

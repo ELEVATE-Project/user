@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
 			id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			name: {
@@ -16,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
 			input_path: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				unique: true,
+				primaryKey: true,
 			},
 			status: {
 				type: DataTypes.STRING,
@@ -34,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
 			organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
@@ -47,7 +47,6 @@ module.exports = (sequelize, DataTypes) => {
 
 	FileUpload.associate = (models) => {
 		FileUpload.belongsTo(models.User, { foreignKey: 'created_by', as: 'uploaded_by' })
-		FileUpload.hasMany(models.OrganizationUserInvite, { as: 'invitees', foreignKey: 'file_id' })
 	}
 
 	return FileUpload

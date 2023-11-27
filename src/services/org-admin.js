@@ -194,13 +194,15 @@ module.exports = class OrgAdminHelper {
 				attributes: {
 					exclude: ['created_at', 'updated_at', 'deleted_at'],
 				},
+				raw: true,
 			}
 
 			let requestList = await orgRoleReqQueries.listAllRequests(
 				filterQuery,
 				params.pageNo,
 				params.pageSize,
-				options
+				options,
+				params.decodedToken.organization_id
 			)
 
 			return common.successResponse({

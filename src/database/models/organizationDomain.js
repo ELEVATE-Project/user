@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
 			id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			organization_id: {
@@ -16,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
 			domain: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				unique: true,
+				primaryKey: true,
 			},
 			status: {
 				type: DataTypes.STRING,
@@ -44,9 +43,9 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
-	OrganizationDomain.associate = (models) => {
+	/* 	OrganizationDomain.associate = (models) => {
 		OrganizationDomain.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
-	}
+	} */
 
 	return OrganizationDomain
 }
