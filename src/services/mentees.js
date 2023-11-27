@@ -365,35 +365,17 @@ module.exports = class MenteesHelper {
 	 */
 	static async filterSessionsBasedOnSaasPolicy(userId, isAMentor) {
 		try {
-			let userPolicyDetails
-			// If user is mentor - fetch policy details from mentor extensions else fetch from userExtension
-			if (isAMentor) {
-				userPolicyDetails = await mentorQueries.getMentorExtension(userId, [
-					'external_session_visibility',
-					'organization_id',
-				])
+			const userPolicyDetails = isAMentor
+				? await mentorQueries.getMentorExtension(userId, ['external_session_visibility', 'organization_id'])
+				: await menteeQueries.getMenteeExtension(userId, ['external_session_visibility', 'organization_id'])
 
-				// Throw error if mentor extension not found
-				if (Object.keys(userPolicyDetails).length === 0) {
-					return common.failureResponse({
-						statusCode: httpStatusCode.bad_request,
-						message: 'MENTORS_NOT_FOUND',
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-			} else {
-				userPolicyDetails = await menteeQueries.getMenteeExtension(userId, [
-					'external_session_visibility',
-					'organization_id',
-				])
-				// If no mentee present return error
-				if (Object.keys(userPolicyDetails).length === 0) {
-					return common.failureResponse({
-						statusCode: httpStatusCode.not_found,
-						message: 'MENTEE_EXTENSION_NOT_FOUND',
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			// Throw error if mentor/mentee extension not found
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			let filter = ''

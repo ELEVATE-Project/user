@@ -501,7 +501,7 @@ module.exports = class MentorsHelper {
 				])
 
 				// Throw error if extension not found
-				if (Object.keys(requstedMentorExtension).length === 0) {
+				if (!requstedMentorExtension || Object.keys(requstedMentorExtension).length === 0) {
 					return common.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTORS_NOT_FOUND',
@@ -598,7 +598,7 @@ module.exports = class MentorsHelper {
 				: await menteeQueries.getMenteeExtension(userId, ['external_mentor_visibility', 'organization_id'])
 
 			// Throw error if mentor/mentee extension not found
-			if (Object.keys(userPolicyDetails).length === 0) {
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
@@ -778,7 +778,7 @@ module.exports = class MentorsHelper {
 				: await menteeQueries.getMenteeExtension(userId, ['external_mentor_visibility', 'organization_id'])
 
 			// Throw error if mentor/mentee extension not found
-			if (Object.keys(userPolicyDetails).length === 0) {
+			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
 				return common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
