@@ -27,6 +27,7 @@ const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 
 const UserCredentialQueries = require('@database/queries/userCredential')
+const { Op } = require('sequelize')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -80,7 +81,7 @@ module.exports = class UserInviteHelper {
 					}
 				}
 
-				// delete the downloaded file and output file
+				// delete the downloaded file and output file.
 				utils.clearFile(response.result.downloadPath)
 				utils.clearFile(createResponse.result.outputFilePath)
 
