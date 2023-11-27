@@ -1,7 +1,6 @@
 'use strict'
 const UserCredential = require('@database/models/index').UserCredential
 
-
 exports.create = async (data) => {
 	try {
 		const res = await UserCredential.create(data)
@@ -10,7 +9,7 @@ exports.create = async (data) => {
 		console.log(error)
 		return error
 	}
-}I
+}
 
 exports.findOne = async (filter, options = {}) => {
 	try {
@@ -35,8 +34,6 @@ exports.updateUser = async (filter, update, options = {}) => {
 		return error
 	}
 }
-
-
 
 exports.findAll = async (filter, options = {}) => {
 	try {
