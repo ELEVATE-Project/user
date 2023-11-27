@@ -69,7 +69,10 @@ module.exports = class UserHelper {
 			let userModel = await userQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
-			const [affectedRows, updatedData] = await userQueries.updateUser({ id: id }, bodyData)
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: id, organization_id: orgId },
+				bodyData
+			)
 			if (affectedRows == 0) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',

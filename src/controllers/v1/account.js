@@ -163,7 +163,10 @@ module.exports = class Account {
 	 */
 	async acceptTermsAndCondition(req) {
 		try {
-			const result = await accountService.acceptTermsAndCondition(req.decodedToken.id)
+			const result = await accountService.acceptTermsAndCondition(
+				req.decodedToken.id,
+				req.decodedToken.organization_id
+			)
 			return result
 		} catch (error) {
 			return error

@@ -22,6 +22,7 @@ const notificationTemplateQueries = require('@database/queries/notificationTempl
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
+const UserCredentialQueries = require('@database/queries/userCredential')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -288,7 +289,21 @@ module.exports = class OrgAdminHelper {
 					[Op.in]: bodyData[item],
 				}
 			}
+			let userIds = []
 
+			if (bodyData.email) {
+				const userCredentials = await UserCredentialQueries.findAll(
+					{ email: { [Op.in]: bodyData.email } },
+					{
+						attributes: ['user_id'],
+					}
+				)
+				userIds = _.map(userCredentials, 'user_id')
+				delete filterQuery.email
+				filterQuery.id = userIds
+			} else {
+				userIds = bodyData.id
+			}
 			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
 				status: common.INACTIVE_STATUS,
 				updated_by: tokenInformation.id,
@@ -300,23 +315,6 @@ module.exports = class OrgAdminHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
-
-			let userIds = []
-			if (bodyData.email) {
-				const users = await userQueries.findAll(
-					{
-						email: {
-							[Op.in]: bodyData.email,
-						},
-					},
-					{
-						attributes: ['id'],
-					}
-				)
-				userIds = _.map(users, 'id')
-			} else {
-				userIds = bodyData.id
 			}
 
 			//check and deactivate upcoming sessions

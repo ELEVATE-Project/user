@@ -25,6 +25,9 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
+
+const UserCredentialQueries = require('@database/queries/userCredential')
+
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
@@ -161,9 +164,18 @@ module.exports = class UserInviteHelper {
 			})
 
 			//get all existing user
-			const emailArr = _.uniq(_.map(csvData, 'email'))
+			const emailArray = _.uniq(_.map(csvData, 'email'))
+
+			const userCredentials = await UserCredentialQueries.findAll(
+				{ email: { [Op.in]: emailArray } },
+				{
+					attributes: ['user_id'],
+				}
+			)
+			const userIds = _.map(userCredentials, 'user_id')
+
 			const existingUsers = await userQueries.findAll(
-				{ email: emailArr },
+				{ id: userIds },
 				{
 					attributes: ['id', 'email', 'organization_id', 'roles'],
 				}
@@ -223,7 +235,11 @@ module.exports = class UserInviteHelper {
 						}
 
 						if (userUpdateData.organization_id || userUpdateData.roles) {
-							await userQueries.updateUser({ email: invitee.email }, userUpdateData)
+							const userCredentials = await UserCredentialQueries.findOne({
+								email: invitee.email.toLowerCase(),
+							})
+
+							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
 							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
 							//call event to update in mentoring
 							if (!userUpdateData?.roles) {
