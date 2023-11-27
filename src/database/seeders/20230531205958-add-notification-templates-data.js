@@ -17,12 +17,12 @@ module.exports = {
 			{
 				code: 'emailotp',
 				subject: 'MentorED - Reset Otp',
-				body: '<p>Dear {name},</p> Your OTP to reset your password is {otp}. Please enter the OTP to reset your password. For your security, please do not share this OTP with anyone.',
+				body: '<p>Dear {name},</p> Your OTP to reset your password is <strong>{otp}</strong>. Please enter the OTP to reset your password. For your security, please do not share this OTP with anyone.',
 			},
 			{
 				code: 'registrationotp',
 				subject: 'Your OTP to sign-up on MentorED',
-				body: '<div><p>Dear {name},</p> Your OTP to complete the registration process is {otp}. Please enter the OTP to complete the registration. For your security, please do not share this OTP with anyone.</div>',
+				body: '<div><p>Dear {name},</p> Your OTP to complete the registration process is <strong>{otp}</strong>. Please enter the OTP to complete the registration. For your security, please do not share this OTP with anyone.</div>',
 			},
 			{
 				code: 'user_issue_reported',
