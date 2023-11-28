@@ -47,7 +47,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'en',
 			},
-			organization_id: DataTypes.INTEGER,
+			organization_id: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				primaryKey: true,
+			},
 			roles: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
@@ -64,7 +68,6 @@ module.exports = (sequelize, DataTypes) => {
 	)
 	User.associate = (models) => {
 		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
-		User.hasMany(models.FileUpload, { foreignKey: 'id', as: 'invite_file_uploads' })
 	}
 	return User
 }

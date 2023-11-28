@@ -45,9 +45,5 @@ module.exports = (sequelize, DataTypes) => {
 		{ sequelize, modelName: 'FileUpload', tableName: 'file_uploads', freezeTableName: true, paranoid: true }
 	)
 
-	FileUpload.associate = (models) => {
-		FileUpload.belongsTo(models.User, { foreignKey: 'created_by', as: 'uploaded_by' })
-	}
-
 	return FileUpload
 }
