@@ -222,6 +222,10 @@ let enviromentVariables = {
 		message: 'Default organization ID, Run seeder `insertDefaultOrg` to obtain it.',
 		optional: false,
 	},
+	PORTAL_URL: {
+		message: 'Required portal url',
+		optional: false,
+	},
 }
 
 let success = true
