@@ -39,6 +39,7 @@ module.exports = {
 			organization_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			has_accepted_terms_and_conditions: {
 				type: Sequelize.BOOLEAN,
