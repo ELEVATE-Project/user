@@ -352,6 +352,8 @@ module.exports = class SessionsHelper {
 				// If new start date is passed update session notification jobs
 
 				if (bodyData.start_date && bodyData.start_date !== Number(sessionDetail.start_date)) {
+					isSessionReschedule = true
+
 					const updateDelayData = sessionRelatedJobIds.map((jobId) => ({ id: jobId }))
 
 					// Calculate new delays for notification jobs
@@ -381,6 +383,8 @@ module.exports = class SessionsHelper {
 					bodyData.end_date !== Number(sessionDetail.end_date) &&
 					bodyData?.meeting_info?.value !== common.BBB_VALUE
 				) {
+					isSessionReschedule = true
+
 					const jobId = common.jobPrefixToMarkSessionAsCompleted + sessionDetail.id
 					await schedulerRequest.updateDelayOfScheduledJob({
 						id: jobId,
