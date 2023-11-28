@@ -301,7 +301,12 @@ module.exports = class AdminHelper {
 			updateObj.organization_id = organizationId
 
 			await userQueries.updateUser({ id: userId, organization_id: userCredentials.organization_id }, updateObj)
-
+			await UserCredentialQueries.updateUser(
+				{
+					email: userCredentials.email,
+				},
+				{ organization_id: organizationId }
+			)
 			//delete from cache
 			const redisUserKey = common.redisUserPrefix + userId.toString()
 			await utils.redisDel(redisUserKey)

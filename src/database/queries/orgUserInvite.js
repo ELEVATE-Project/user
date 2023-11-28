@@ -46,3 +46,15 @@ exports.findOne = async (filter, options = {}) => {
 		return error
 	}
 }
+
+exports.deleteOne = async (id, options = {}) => {
+	try {
+		const result = await organizationUserInvite.destroy({
+			where: { id: id },
+			...options,
+		})
+		return result // Returns the number of rows deleted
+	} catch (error) {
+		return error
+	}
+}

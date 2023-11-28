@@ -11,6 +11,7 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { Op } = require('sequelize')
 const _ = require('lodash')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const UserCredentialQueries = require('@database/queries/userCredential')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -76,8 +77,12 @@ module.exports = class OrganizationsHelper {
 					created_by: loggedInUserId,
 				}
 
-				await userInviteQueries.create(inviteeData)
-
+				const createdInvite = await userInviteQueries.create(inviteeData)
+				await UserCredentialQueries.create({
+					email: bodyData.admin_email,
+					organization_id: createdOrganization.id,
+					organization_user_invite_id: createdInvite.id,
+				})
 				//send email invitation
 				const templateCode = process.env.ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE
 				if (templateCode) {
