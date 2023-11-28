@@ -39,6 +39,19 @@ module.exports = class UserHelper {
 				})
 			}
 
+			const user = await userQueries.findOne({
+				id: id,
+				organization_id: orgId,
+			})
+
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+
 			let defaultOrg = await organizationQueries.findOne(
 				{ code: process.env.DEFAULT_ORGANISATION_CODE },
 				{ attributes: ['id'] }
@@ -73,13 +86,6 @@ module.exports = class UserHelper {
 				{ id: id, organization_id: orgId },
 				bodyData
 			)
-			if (affectedRows == 0) {
-				return common.failureResponse({
-					message: 'USER_NOT_FOUND',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
 
 			const redisUserKey = common.redisUserPrefix + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
