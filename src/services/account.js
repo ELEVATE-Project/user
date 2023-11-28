@@ -46,7 +46,12 @@ module.exports = class AccountHelper {
 
 		try {
 			const email = bodyData.email.toLowerCase()
-			let user = await UserCredentialQueries.findOne({ email: email })
+			let user = await UserCredentialQueries.findOne({
+				email: email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
+			})
 			if (user) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -71,9 +76,28 @@ module.exports = class AccountHelper {
 			//check user exist in invitee list
 			let role,
 				roles = []
-			const invitedUserMatch = await userInviteQueries.findOne({
-				email,
-			})
+
+			let invitedUserMatch = false
+
+			const invitedUserId = await UserCredentialQueries.findOne(
+				{
+					email: email,
+					organization_user_invite_id: {
+						[Op.ne]: null,
+					},
+					password: {
+						[Op.eq]: null,
+					},
+				},
+				{ attributes: ['organization_user_invite_id'], raw: true }
+			)
+
+			if (invitedUserId) {
+				invitedUserMatch = await userInviteQueries.findOne({
+					id: invitedUserId.organization_user_invite_id,
+				})
+			}
+
 			let isOrgAdmin = false
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
@@ -128,6 +152,7 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
+
 				role = await roleQueries.findOne(
 					{ title: process.env.DEFAULT_ROLE },
 					{
@@ -136,6 +161,7 @@ module.exports = class AccountHelper {
 						},
 					}
 				)
+
 				if (!role) {
 					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
@@ -157,11 +183,23 @@ module.exports = class AccountHelper {
 				organization_id: insertedUser.organization_id,
 				user_id: insertedUser.id,
 			}
-			const userCredentials = await UserCredentialQueries.create(userCredentialsBody)
-
+			let userCredentials
+			if (invitedUserMatch) {
+				userCredentials = await UserCredentialQueries.updateUser(
+					{
+						email: bodyData.email,
+					},
+					{ user_id: insertedUser.id, password: bodyData.password },
+					{
+						raw: true,
+					}
+				)
+			} else {
+				userCredentials = await UserCredentialQueries.create(userCredentialsBody)
+			}
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findUserWithOrganization(
-				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
+				{ id: insertedUser.id, organization_id: insertedUser.organization_id },
 				{
 					attributes: {
 						exclude: projection,
@@ -280,7 +318,13 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const userCredentials = await UserCredentialQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
+			})
+
 			if (!userCredentials) {
 				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
@@ -533,7 +577,12 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const userCredentials = await UserCredentialQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
+			})
 			if (!userCredentials) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -633,7 +682,12 @@ module.exports = class AccountHelper {
 		try {
 			let otp
 			let isValidOtpExist = true
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const userCredentials = await UserCredentialQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
+			})
 			if (userCredentials) {
 				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -714,7 +768,12 @@ module.exports = class AccountHelper {
 	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const userCredentials = await UserCredentialQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
+			})
 			if (!userCredentials) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -756,7 +815,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (isPasswordCorrect) {
 				return common.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
@@ -807,6 +866,12 @@ module.exports = class AccountHelper {
 			await userQueries.updateUser(
 				{ id: user.id, organization_id: userCredentials.organization_id },
 				updateParams
+			)
+			await UserCredentialQueries.updateUser(
+				{
+					email: userCredentials.email,
+				},
+				{ password: bodyData.password }
 			)
 			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
@@ -1081,7 +1146,12 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const userCredentials = await UserCredentialQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
+			})
 			if (!userCredentials) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',

@@ -20,11 +20,13 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			organization_id: DataTypes.INTEGER,
 			user_id: { type: DataTypes.INTEGER, allowNull: true },
+			organization_user_invite_id: { type: DataTypes.INTEGER, allowNull: true },
 			meta: {
 				type: DataTypes.JSONB,
 				allowNull: true,
 			},
 		},
+
 		{
 			sequelize,
 			modelName: 'UserCredential',

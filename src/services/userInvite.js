@@ -241,6 +241,13 @@ module.exports = class UserInviteHelper {
 							})
 
 							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
+
+							await UserCredentialQueries.updateUser(
+								{
+									email: invitee.email.toLowerCase(),
+								},
+								{ organization_id: userUpdateData.organization_id }
+							)
 							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
 							//call event to update in mentoring
 							if (!userUpdateData?.roles) {
@@ -279,7 +286,12 @@ module.exports = class UserInviteHelper {
 					}
 
 					const newInvitee = await userInviteQueries.create(inviteeData)
-					if (newInvitee.id) {
+					const newUserCred = await UserCredentialQueries.create({
+						email: newInvitee.email,
+						organization_id: newInvitee.organization_id,
+						organization_user_invite_id: newInvitee.id,
+					})
+					if (newUserCred.id) {
 						const { name, email, roles } = invitee
 						const userData = {
 							name,
@@ -295,6 +307,7 @@ module.exports = class UserInviteHelper {
 						}
 					} else {
 						isErrorOccured = true
+						await userInviteQueries.deleteOne(newInvitee.id)
 					}
 
 					invitee.statusOrUserId = newInvitee.id || newInvitee
