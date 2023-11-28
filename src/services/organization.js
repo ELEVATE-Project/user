@@ -302,7 +302,7 @@ module.exports = class OrganizationsHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: role.title == common.MENTOR_ROLE ? 'MENTOR_ROLE_REQUESTED' : 'MENTEE_ROLE_REQUESTED',
+				message: 'ROLE_CHANGE_REQUESTED',
 				result,
 			})
 		} catch (error) {
