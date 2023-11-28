@@ -120,21 +120,11 @@ module.exports = async function (req, res, next) {
 
 			const roles = await roleQueries.findAll(
 				{ id: user.roles, status: common.ACTIVE_STATUS },
-				{ attributes: ['title'] }
+				{ attributes: ['id', 'title', 'user_type', 'status'] }
 			)
 
-			/* Invalidate token when user role is updated */
-			const isRoleSame =
-				roles.length === decodedToken.data.roles.length &&
-				roles.every((role1) => decodedToken.data.roles.some((role2) => role1.title === role2.title))
-
-			if (!isRoleSame) {
-				throw common.failureResponse({
-					message: 'USER_ROLE_UPDATED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+			//update the token role as same as current user role
+			decodedToken.data.roles = roles
 		}
 		req.decodedToken = decodedToken.data
 		next()
