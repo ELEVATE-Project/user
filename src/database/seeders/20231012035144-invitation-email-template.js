@@ -10,12 +10,12 @@ module.exports = {
 			{
 				code: 'invite_mentor',
 				subject: 'Welcome Aboard as a Mentor!',
-				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a mentor for {orgName}. Your expertise and willingness to share your knowledge will undoubtedly be a tremendous asset to our mentoring program.<br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a Mentor.',
+				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a mentor for {orgName}. Your expertise and willingness to share your knowledge will undoubtedly be a tremendous asset to our mentoring program.<br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a Mentor. <br><br> Click to register: {portalURL}',
 			},
 			{
 				code: 'invite_mentee',
 				subject: 'Welcome Aboard as a Mentee!',
-				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a mentee for {orgName}. You can now explore learning opportunities with our mentors. <br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a Mentee.',
+				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a mentee for {orgName}. You can now explore learning opportunities with our mentors. <br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a Mentee. <br><br> Click to register: {portalURL}',
 			},
 			{
 				code: 'invitee_upload_status',

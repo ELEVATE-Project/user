@@ -10,7 +10,7 @@ module.exports = {
 			{
 				code: 'invite_org_admin',
 				subject: 'Welcome Aboard as a Organization Admin!',
-				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a organization admin for {orgName}. You can now explore {appName}. <br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a organization admin.',
+				body: '<p>Dear {name},</p> We are delighted to inform you that you have been successfully onboarded as a organization admin for {orgName}. You can now explore {appName}. <br>We request you to register on our Mentoring Platform (if not already), to start your journey with us as a organization admin. <br><br> Click to register: {portalURL}',
 				status: 'ACTIVE',
 				type: 'email',
 				created_at: moment().format(),
