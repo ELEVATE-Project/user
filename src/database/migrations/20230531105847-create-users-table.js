@@ -16,7 +16,6 @@ module.exports = {
 			email: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			email_verified: {
 				type: Sequelize.STRING,
