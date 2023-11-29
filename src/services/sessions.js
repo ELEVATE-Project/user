@@ -1262,9 +1262,10 @@ module.exports = class SessionsHelper {
 				{ returning: true, raw: true }
 			)
 			if (!updatedRows)
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					result: [],
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
 				})
 
 			const { value } = updatedRows[0].meeting_info
