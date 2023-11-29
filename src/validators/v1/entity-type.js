@@ -27,6 +27,8 @@ module.exports = {
 			.withMessage('type field is empty')
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('type is invalid, must not contain spaces')
+
+		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 	},
 
 	update: (req) => {
@@ -48,6 +50,7 @@ module.exports = {
 			.withMessage('status is invalid, must be in all caps')
 
 		req.checkBody('deleted').optional().isBoolean().withMessage('deleted is invalid')
+		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 
 		req.checkBody('type')
 			.optional()
