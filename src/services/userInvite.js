@@ -260,9 +260,9 @@ module.exports = class UserInviteHelper {
 								})
 							} else {
 								let requestBody = {
-									userId: existingUser.id,
+									user_id: existingUser.id,
 									new_roles: [invitee.roles],
-									old_roles: _.map(userRoles, 'title'),
+									current_roles: _.map(userRoles, 'title'),
 								}
 								if (userUpdateData.organization_id) requestBody.organization_id = user.organization_id
 								eventBroadcaster('roleChange', {
