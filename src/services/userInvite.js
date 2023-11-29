@@ -216,6 +216,12 @@ module.exports = class UserInviteHelper {
 				invitee.email = invitee.email.toLowerCase()
 
 				//validate the fields
+				if (!utils.isValidName(invitee.name)) {
+					invitee.statusOrUserId = 'NAME_INVALID'
+					input.push(invitee)
+					continue
+				}
+
 				if (!utils.isValidEmail(invitee.email)) {
 					invitee.statusOrUserId = 'EMAIL_INVALID'
 					input.push(invitee)

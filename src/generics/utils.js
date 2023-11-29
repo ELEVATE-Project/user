@@ -353,6 +353,11 @@ function isValidEmail(email) {
 	return emailRegex.test(email)
 }
 
+function isValidName(name) {
+	const nameRegex = /^[A-Za-z\s'-]+$/
+	return nameRegex.test(name)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -380,4 +385,5 @@ module.exports = {
 	removeParentEntityTypes,
 	removeDefaultOrgEntityTypes,
 	isValidEmail,
+	isValidName,
 }
