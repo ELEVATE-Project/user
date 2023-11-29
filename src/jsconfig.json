@@ -14,7 +14,8 @@
 			"@middlewares*": ["./middlewares*"],
 			"@public*": ["./public*"],
 			"@routes*": ["./routes*"],
-			"@services*": ["./services*"]
+			"@services*": ["./services*"],
+			"@database*": ["./database*"]
 		}
 	},
 	"exclude": ["node_modules"]
