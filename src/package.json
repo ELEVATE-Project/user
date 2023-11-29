@@ -9,7 +9,9 @@
 		"prod": "node app.js",
 		"stage": "node app.js",
 		"prepare": "cd .. && husky install src/.husky",
-		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand"
+		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
+		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate ",
+		"db:seed:all": "sequelize-cli db:seed:all"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
@@ -29,7 +31,11 @@
 		"jsonwebtoken": "^8.5.1",
 		"kafkajs": "^2.2.2",
 		"module-alias": "^2.2.2",
+		"pg": "^8.11.3",
+		"pg-hstore": "^2.3.4",
 		"require-all": "^3.0.0",
+		"sequelize": "^6.35.1",
+		"sequelize-cli": "^6.6.2",
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
