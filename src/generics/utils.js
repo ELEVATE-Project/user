@@ -348,6 +348,11 @@ const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	return Array.from(entityTypeMap.values())
 }
 
+function isValidEmail(email) {
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+	return emailRegex.test(email)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -374,4 +379,5 @@ module.exports = {
 	validateInput,
 	removeParentEntityTypes,
 	removeDefaultOrgEntityTypes,
+	isValidEmail,
 }
