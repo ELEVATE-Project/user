@@ -1251,7 +1251,7 @@ module.exports = class SessionsHelper {
 			const { updatedRows } = await sessionQueries.updateOne(
 				{
 					id: sessionId,
-					start_at: {
+					started_at: {
 						[Op.not]: null,
 					},
 				},
