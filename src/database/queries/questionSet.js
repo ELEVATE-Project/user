@@ -34,4 +34,17 @@ module.exports = class QuestionsData {
 			return error
 		}
 	}
+
+	static async findQuestionsSets(filter, projection) {
+		try {
+			const questionSets = await QuestionsSet.findAll({
+				where: filter,
+				attributes: projection,
+				raw: true,
+			})
+			return questionSets
+		} catch (error) {
+			return error
+		}
+	}
 }
