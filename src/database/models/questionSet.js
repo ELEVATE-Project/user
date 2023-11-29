@@ -25,11 +25,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.JSON,
 				allowNull: true,
 			},
-			organization_id: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-				primaryKey: true,
-			},
 		},
 		{ sequelize, modelName: 'QuestionSet', tableName: 'question_sets', freezeTableName: true, paranoid: true }
 	)
