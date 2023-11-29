@@ -27,6 +27,8 @@ module.exports = {
 			.withMessage('data_type field is empty')
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
+
+		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 	},
 
 	update: (req) => {
@@ -51,6 +53,8 @@ module.exports = {
 			.optional()
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
+
+		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 	},
 
 	read: (req) => {
