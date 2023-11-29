@@ -10,8 +10,10 @@ module.exports = class questionsHelper {
 	 * @returns {JSON} - Create questions
 	 */
 
-	static async create(bodyData) {
+	static async create(bodyData, decodedToken) {
 		try {
+			bodyData['created_by'] = decodedToken.id
+			bodyData['updated_by'] = decodedToken.id
 			let question = await questionQueries.createQuestion(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -19,6 +21,7 @@ module.exports = class questionsHelper {
 				result: question,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -32,9 +35,9 @@ module.exports = class questionsHelper {
 	 * @returns {JSON} - Update questions.
 	 */
 
-	static async update(questionId, bodyData) {
+	static async update(questionId, bodyData, decodedToken) {
 		try {
-			const filter = { id: questionId }
+			const filter = { id: questionId, created_by: decodedToken.id }
 			const result = await questionQueries.updateOneQuestion(filter, bodyData)
 
 			if (result === 'QUESTION_NOT_FOUND') {
@@ -49,6 +52,7 @@ module.exports = class questionsHelper {
 				message: 'QUESTION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

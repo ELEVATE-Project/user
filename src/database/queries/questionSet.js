@@ -4,7 +4,6 @@ module.exports = class QuestionsData {
 	static async createQuestionsSet(data) {
 		try {
 			const questionSet = await QuestionsSet.create(data)
-
 			return questionSet
 		} catch (error) {
 			throw error

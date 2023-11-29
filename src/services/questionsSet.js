@@ -13,7 +13,7 @@ module.exports = class questionsSetHelper {
 	 * @returns {JSON} - Create question set
 	 */
 
-	static async create(bodyData) {
+	static async create(bodyData, decodedToken) {
 		try {
 			let questions = await questionQueries.find({ id: bodyData.questions })
 			if (questions.length != bodyData.questions.length) {
@@ -23,8 +23,10 @@ module.exports = class questionsSetHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			let questionSet = await questionsSetQueries.findOneQuestionsSet(bodyData)
+			const questionSetData = {
+				code: bodyData.code,
+			}
+			let questionSet = await questionsSetQueries.findOneQuestionsSet(questionSetData)
 			if (questionSet) {
 				return common.failureResponse({
 					message: 'QUESTIONS_SET_ALREADY_EXISTS',
@@ -32,7 +34,10 @@ module.exports = class questionsSetHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			questionSet = await questionsSetQueries.createQuestionsSet(bodyData)
+			questionSetData['questions'] = bodyData.questions
+			questionSetData['created_by'] = decodedToken.id
+			questionSetData['updated_by'] = decodedToken.id
+			questionSet = await questionsSetQueries.createQuestionsSet(questionSetData)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -40,6 +45,7 @@ module.exports = class questionsSetHelper {
 				result: questionSet,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -53,7 +59,7 @@ module.exports = class questionsSetHelper {
 	 * @returns {JSON} - Update question set.
 	 */
 
-	static async update(questionSetId, bodyData) {
+	static async update(questionSetId, bodyData, decodedToken) {
 		try {
 			if (bodyData.questions) {
 				let questionInfo = await questionQueries.find({ id: bodyData.questions })
@@ -67,17 +73,14 @@ module.exports = class questionsSetHelper {
 			}
 			const filter = {
 				id: questionSetId,
+				created_by: decodedToken.id,
 			}
-			let questionSet = await questionsSetQueries.findOneQuestionsSet(bodyData)
-			if (questionSet) {
-				return common.failureResponse({
-					message: 'QUESTIONS_SET_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+			const questionSetData = {
+				code: bodyData.code,
+				created_by: decodedToken.id,
+				questions: bodyData.questions,
 			}
-			questionSet = await questionsSetQueries.updateOneQuestionsSet(filter, bodyData)
-
+			const questionSet = await questionsSetQueries.updateOneQuestionsSet(filter, questionSetData)
 			if (questionSet === 'QUESTIONS_SET_NOT_FOUND') {
 				return common.failureResponse({
 					message: 'QUESTIONS_SET_NOT_FOUND',
@@ -91,6 +94,7 @@ module.exports = class questionsSetHelper {
 				message: 'QUESTIONS_SET_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
