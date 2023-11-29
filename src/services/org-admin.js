@@ -567,7 +567,12 @@ module.exports = class OrgAdminService {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY',
-				result: { ...orgExtension.dataValues },
+				result: {
+					organization_id: orgExtension.organization_id,
+					mentee_feedback_question_set: orgExtension.mentee_feedback_question_set,
+					mentor_feedback_question_set: orgExtension.mentor_feedback_question_set,
+					updated_by: orgExtension.updated_by,
+				},
 			})
 		} catch (error) {
 			console.log(error)
