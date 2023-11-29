@@ -100,5 +100,6 @@
 	"USER_DOES_NOT_HAVE_ACCESS": "User does not have access to perform this action",
 	"CONTACT_ADMIN_RELATED_ORGANIZATIONS": "Please contact the admin for setting related organizations",
 	"ROLE_CHANGE_REQUESTED": "Admin has received your request. Further information will be received through Email.",
-	"ROLE_INVALID": "Role is invalid."
+	"ROLE_INVALID": "Role is invalid.",
+	"NAME_INVALID": "Name is invalid."
 }
