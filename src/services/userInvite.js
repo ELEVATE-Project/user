@@ -211,7 +211,23 @@ module.exports = class UserInviteHelper {
 
 			// process csv data
 			for (const invitee of csvData) {
+				//convert the fields to lower case
 				invitee.roles = invitee.roles.toLowerCase()
+				invitee.email = invitee.email.toLowerCase()
+
+				//validate the fields
+				if (!utils.isValidEmail(invitee.email)) {
+					invitee.statusOrUserId = 'EMAIL_INVALID'
+					input.push(invitee)
+					continue
+				}
+
+				if (!roleTitlesToIds.hasOwnProperty(invitee.roles)) {
+					invitee.statusOrUserId = 'ROLE_INVALID'
+					input.push(invitee)
+					continue
+				}
+
 				//update user details if the user exist and in default org
 				const existingUser = existingEmailsMap.get(invitee.email)
 				if (existingUser) {
@@ -276,7 +292,6 @@ module.exports = class UserInviteHelper {
 						}
 					}
 				} else {
-					//create new invitees
 					const inviteeData = {
 						...invitee,
 						status: common.UPLOADED_STATUS,
