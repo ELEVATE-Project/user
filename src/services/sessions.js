@@ -1249,13 +1249,23 @@ module.exports = class SessionsHelper {
 	static async completed(sessionId) {
 		try {
 			const { updatedRows } = await sessionQueries.updateOne(
-				{ id: sessionId },
+				{
+					id: sessionId,
+					start_at: {
+						[Op.not]: null,
+					},
+				},
 				{
 					status: common.COMPLETED_STATUS,
 					completed_at: utils.utcFormat(),
 				},
 				{ returning: true, raw: true }
 			)
+			if (!updatedRows)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					result: [],
+				})
 
 			const { value } = updatedRows[0].meeting_info
 
