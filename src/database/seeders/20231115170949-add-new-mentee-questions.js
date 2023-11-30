@@ -60,12 +60,12 @@ module.exports = {
 				questionsFinalArray = questionsArray.map((question) => ({ ...question, ...additionalObject }))
 				questionsFinalArray.forEach((question) => {
 					question.rendering_data = JSON.stringify(question.rendering_data)
+					question.category = JSON.stringify(question.category)
 				})
-
 				//INSERT QUESTIONS
 				await queryInterface.bulkInsert('questions', questionsFinalArray, {})
 
-				//get questions
+				//Get questions
 				const getQuestions = await queryInterface.sequelize.query(
 					'SELECT id FROM questions WHERE name IN (:questionNames)',
 					{

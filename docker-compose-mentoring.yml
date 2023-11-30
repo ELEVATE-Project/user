@@ -114,6 +114,8 @@ services:
     command: ['nodemon', 'app.js']
     environment:
       - KAFKA_HOST=kafka:9092
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/notification-local
+
     depends_on:
       - kafka
       - mongo

@@ -553,7 +553,10 @@ exports.mentorsSessionWithPendingFeedback = async (mentorId, options = {}, compl
 		return await Session.findAll({
 			where: {
 				id: { [Op.notIn]: completedSessionIds },
-				status: 'COMPLETED',
+				status: common.COMPLETED_STATUS,
+				started_at: {
+					[Op.not]: null,
+				},
 				is_feedback_skipped: false,
 				mentor_id: mentorId,
 			},
