@@ -152,6 +152,10 @@ function extractDomainFromEmail(email) {
 }
 
 function generateCSVContent(data) {
+	// If data is empty
+	if (data.length === 0) {
+		return 'No Data Found'
+	}
 	const headers = Object.keys(data[0])
 	return [
 		headers.join(','),
