@@ -142,8 +142,10 @@ module.exports = class SessionsHelper {
 			bodyData.visible_to_organizations = userOrgDetails.data.result.related_orgs
 				? userOrgDetails.data.result.related_orgs.concat([orgId])
 				: [orgId]
-			bodyData.mentee_feedback_question_set = organisationPolicy.mentee_feedback_question_set
-			bodyData.mentor_feedback_question_set = organisationPolicy.mentor_feedback_question_set
+			if (organisationPolicy.mentee_feedback_question_set)
+				bodyData.mentee_feedback_question_set = organisationPolicy.mentee_feedback_question_set
+			if (organisationPolicy.mentor_feedback_question_set)
+				bodyData.mentor_feedback_question_set = organisationPolicy.mentor_feedback_question_set
 			const data = await sessionQueries.create(bodyData)
 
 			await sessionOwnershipQueries.create({
