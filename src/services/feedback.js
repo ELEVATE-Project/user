@@ -359,17 +359,11 @@ const getFeedbackQuestions = async function (formCode) {
 
 const ratingCalculation = async function (ratingData, mentor_id) {
 	try {
-		console.log('RATING DATAAAAAAAAAAAAAAAAAAA: ', ratingData)
-		console.log('MENTOR_IDDDDDDDDDDDDDDDDDDDDD:', mentor_id)
 		let mentorDetails = await mentorExtensionQueries.getMentorExtension(mentor_id)
-		console.log('MENTOR DETAILS: ', mentorDetails)
-
 		let mentorRating = mentorDetails.rating
 		let updateData
 
-		console.log('MENTOR RATING: ', mentorRating)
 		if (mentorRating?.average || mentorRating !== null) {
-			console.log('HEREEEEEEEEEEEE')
 			let totalRating = parseFloat(ratingData.value)
 			let ratingBreakup = []
 			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
@@ -408,7 +402,6 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 				},
 			}
 		} else {
-			console.log('NOT FOUND THE AVERAGE OR MENTOR RATING')
 			updateData = {
 				rating: {
 					average: parseFloat(ratingData.value),
@@ -422,8 +415,6 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 				},
 			}
 		}
-		console.log('UPDATE DATA: ', updateData)
-
 		await mentorExtensionQueries.updateMentorExtension(mentor_id, updateData)
 		return
 	} catch (error) {
