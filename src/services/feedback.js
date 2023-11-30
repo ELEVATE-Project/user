@@ -411,11 +411,11 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 			console.log('NOT FOUND THE AVERAGE OR MENTOR RATING')
 			updateData = {
 				rating: {
-					average: parseFloat(ratingData.response),
+					average: parseFloat(ratingData.value),
 					votes: 1,
 					breakup: [
 						{
-							star: Number(ratingData.response),
+							star: Number(ratingData.value),
 							votes: 1,
 						},
 					],
