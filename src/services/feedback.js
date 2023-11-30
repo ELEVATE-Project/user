@@ -370,7 +370,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 		console.log('MENTOR RATING: ', mentorRating)
 		if (mentorRating?.average || mentorRating !== null) {
 			console.log('HEREEEEEEEEEEEE')
-			let totalRating = parseFloat(ratingData.response)
+			let totalRating = parseFloat(ratingData.value)
 			let ratingBreakup = []
 			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
 				let breakupFound = false
@@ -378,7 +378,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 					mentorRating.breakup.map((breakupData) => {
 						totalRating = totalRating + parseFloat(breakupData.star * breakupData.votes)
 
-						if (breakupData['star'] == Number(ratingData.response)) {
+						if (breakupData['star'] == Number(ratingData.value)) {
 							breakupFound = true
 							return {
 								star: breakupData.star,
@@ -392,7 +392,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 
 				if (!breakupFound) {
 					ratingBreakup.push({
-						star: Number(ratingData.response),
+						star: Number(ratingData.value),
 						votes: 1,
 					})
 				}
