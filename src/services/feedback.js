@@ -279,12 +279,15 @@ module.exports = class MenteesHelper {
 					if (feedbackNotExists && feedbackNotExists.length > 0) {
 						console.log('FEEEEDBACK NOT EXISTSSSSSSSSSSSSSSSSSSSS: ', feedbackNotExists)
 						await feedbackQueries.bulkCreate(feedbackNotExists)
-						feedbackNotExists.map(async function (feedbackInfo) {
+						for (const feedbackInfo of feedbackNotExists) {
 							console.log('FEEDBACK INFOOOOOOOOOOOOOOOOOOOOO: ', feedbackInfo)
+
 							let questionData = await questionsQueries.findOneQuestion({
 								id: feedbackInfo.question_id,
 							})
+
 							console.log('QUESTION DATAAAAAAAAAA: ', questionData)
+
 							if (
 								questionData &&
 								questionData.category &&
@@ -292,7 +295,7 @@ module.exports = class MenteesHelper {
 							) {
 								await ratingCalculation(feedbackInfo, sessionInfo.mentor_id)
 							}
-						})
+						}
 					}
 				}
 
@@ -359,11 +362,14 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 		console.log('RATING DATAAAAAAAAAAAAAAAAAAA: ', ratingData)
 		console.log('MENTOR_IDDDDDDDDDDDDDDDDDDDDD:', mentor_id)
 		let mentorDetails = await mentorExtensionQueries.getMentorExtension(mentor_id)
+		console.log('MENTOR DETAILS: ', mentorDetails)
 
 		let mentorRating = mentorDetails.rating
 		let updateData
 
+		console.log('MENTOR RATING: ', mentorRating)
 		if (mentorRating?.average || mentorRating !== null) {
+			console.log('HEREEEEEEEEEEEE')
 			let totalRating = parseFloat(ratingData.response)
 			let ratingBreakup = []
 			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
@@ -402,6 +408,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 				},
 			}
 		} else {
+			console.log('NOT FOUND THE AVERAGE OR MENTOR RATING')
 			updateData = {
 				rating: {
 					average: parseFloat(ratingData.response),
@@ -415,6 +422,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 				},
 			}
 		}
+		console.log('UPDATE DATA: ', updateData)
 
 		await mentorExtensionQueries.updateMentorExtension(mentor_id, updateData)
 		return
