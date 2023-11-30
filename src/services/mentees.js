@@ -325,7 +325,7 @@ module.exports = class MenteesHelper {
 		})
 
 		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
-
+		console.log('FILTERED QUERY: ', filteredQuery)
 		// Create saas fiter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
 
@@ -371,7 +371,7 @@ module.exports = class MenteesHelper {
 
 			// Throw error if mentor/mentee extension not found
 			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
-				return common.failureResponse({
+				throw common.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -404,7 +404,8 @@ module.exports = class MenteesHelper {
 			}
 			return filter
 		} catch (err) {
-			return err
+			console.log(err)
+			throw err
 		}
 	}
 
