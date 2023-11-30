@@ -101,5 +101,6 @@
 	"CONTACT_ADMIN_RELATED_ORGANIZATIONS": "Please contact the admin for setting related organizations",
 	"ROLE_CHANGE_REQUESTED": "Admin has received your request. Further information will be received through Email.",
 	"ROLE_INVALID": "Role is invalid.",
-	"NAME_INVALID": "Name is invalid."
+	"NAME_INVALID": "Name is invalid.",
+	"ROLE_CHANGE_APPROVED": "Your request for becoming a mentor has been approved. Check email or login again to start your journey."
 }

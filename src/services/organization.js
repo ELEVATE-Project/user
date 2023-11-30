@@ -290,24 +290,33 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 
-			const checkForRoleRequest = await orgRoleReqQueries.findOne({
-				requester_id: tokenInformation.id,
-				role: bodyData.role,
-				status: common.REQUESTED_STATUS,
-			})
+			const checkForRoleRequest = await orgRoleReqQueries.findOne(
+				{
+					requester_id: tokenInformation.id,
+					role: bodyData.role,
+				},
+				{
+					order: [['created_at', 'DESC']],
+				}
+			)
 
 			let result
-			if (!checkForRoleRequest) {
-				result = await createRoleRequest(bodyData, tokenInformation)
-			} else if (checkForRoleRequest?.id && checkForRoleRequest.status === common.REJECTED_STATUS) {
+			let isAccepted = false
+			if (
+				!checkForRoleRequest ||
+				(checkForRoleRequest?.id && checkForRoleRequest.status === common.REJECTED_STATUS)
+			) {
 				result = await createRoleRequest(bodyData, tokenInformation)
 			} else {
+				if (checkForRoleRequest.status === common.ACCEPTED_STATUS) {
+					isAccepted = true
+				}
 				result = checkForRoleRequest
 			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: 'ROLE_CHANGE_REQUESTED',
+				message: isAccepted ? 'ROLE_CHANGE_APPROVED' : 'ROLE_CHANGE_REQUESTED',
 				result,
 			})
 		} catch (error) {
