@@ -175,7 +175,6 @@ module.exports = class AdminHelper {
 				data: {
 					id: user.id,
 					name: user.name,
-					email: user.email,
 					organization_id: user.organization_id,
 					roles: roles,
 				},

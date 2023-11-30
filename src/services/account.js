@@ -223,7 +223,6 @@ module.exports = class AccountHelper {
 			const tokenDetail = {
 				data: {
 					id: user.id,
-					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
 					roles: roleData,
@@ -375,7 +374,6 @@ module.exports = class AccountHelper {
 			const tokenDetail = {
 				data: {
 					id: user.id,
-					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
 					roles: roles,
@@ -830,7 +828,6 @@ module.exports = class AccountHelper {
 			const tokenDetail = {
 				data: {
 					id: user.id,
-					email: user.email,
 					name: user.name,
 					organization_id: user.organization_id,
 					roles,
@@ -891,6 +888,7 @@ module.exports = class AccountHelper {
 		}
 	}
 
+	//Is this api used ?
 	/**
 	 * Bulk create mentors
 	 * @method

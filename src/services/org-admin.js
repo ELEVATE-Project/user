@@ -36,7 +36,8 @@ module.exports = class OrgAdminHelper {
 
 	static async bulkUserCreate(filePath, tokenInformation) {
 		try {
-			const { id, name, email, organization_id } = tokenInformation
+			const { id, organization_id } = tokenInformation
+			const { name, email } = await userQueries.findOne({ id }, { attributes: ['name', 'email'] })
 
 			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
 
