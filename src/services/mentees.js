@@ -372,8 +372,8 @@ module.exports = class MenteesHelper {
 			// Throw error if mentor/mentee extension not found
 			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
 				throw common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'ROLE_CHANGED_RELOGIN_ERROR',
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
