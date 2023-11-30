@@ -396,13 +396,11 @@ module.exports = class AdminHelper {
 			)
 
 			const userIds = _.map(users, 'id')
-			for (const userId of userIds) {
-				eventBroadcaster('deactivateUpcomingSession', {
-					queryParams: {
-						user_id: userId,
-					},
-				})
-			}
+			eventBroadcaster('deactivateUpcomingSession', {
+				requestBody: {
+					user_ids: userIds,
+				},
+			})
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -463,13 +461,11 @@ module.exports = class AdminHelper {
 			}
 
 			//check and deactivate upcoming sessions
-			for (const userId of userIds) {
-				eventBroadcaster('deactivateUpcomingSession', {
-					queryParams: {
-						user_id: userId,
-					},
-				})
-			}
+			eventBroadcaster('deactivateUpcomingSession', {
+				requestBody: {
+					user_ids: userIds,
+				},
+			})
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
