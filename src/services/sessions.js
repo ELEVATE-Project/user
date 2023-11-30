@@ -1251,9 +1251,6 @@ module.exports = class SessionsHelper {
 			const { updatedRows } = await sessionQueries.updateOne(
 				{
 					id: sessionId,
-					started_at: {
-						[Op.not]: null,
-					},
 				},
 				{
 					status: common.COMPLETED_STATUS,
@@ -1276,7 +1273,7 @@ module.exports = class SessionsHelper {
 				if (recordingInfo?.data?.response) {
 					const { recordings } = recordingInfo.data.response
 
-					// Update recording info in postsessiontable
+					// Update recording info in post_session_table
 					await postSessionQueries.create({
 						session_id: sessionId,
 						recording_url: recordings.recording.playback.format.url,
