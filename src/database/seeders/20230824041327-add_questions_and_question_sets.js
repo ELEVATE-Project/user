@@ -66,6 +66,9 @@ module.exports = {
 						type: 'rating',
 						no_of_stars: 5,
 						status: 'PUBLISHED',
+						category: {
+							evaluating: 'mentor',
+						},
 						rendering_data: {
 							validators: {
 								required: false,
@@ -81,6 +84,9 @@ module.exports = {
 						type: 'rating',
 						no_of_stars: 5,
 						status: 'PUBLISHED',
+						category: {
+							evaluating: 'mentor',
+						},
 						rendering_data: {
 							validators: {
 								required: false,

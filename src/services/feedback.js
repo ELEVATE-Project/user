@@ -176,7 +176,7 @@ module.exports = class MenteesHelper {
 				})
 			}
 
-			//get the feedbacks
+			//get the feedbacks of that particular user for that session
 			const feedbacks = await feedbackQueries.findAll({
 				session_id: sessionId,
 				user_id: userId,
@@ -277,11 +277,10 @@ module.exports = class MenteesHelper {
 				} else {
 					if (feedbackNotExists && feedbackNotExists.length > 0) {
 						await feedbackQueries.bulkCreate(feedbackNotExists)
-						feedbackNotExists.map(async function (feedbackInfo) {
+						for (const feedbackInfo of feedbackNotExists) {
 							let questionData = await questionsQueries.findOneQuestion({
 								id: feedbackInfo.question_id,
 							})
-
 							if (
 								questionData &&
 								questionData.category &&
@@ -289,7 +288,7 @@ module.exports = class MenteesHelper {
 							) {
 								await ratingCalculation(feedbackInfo, sessionInfo.mentor_id)
 							}
-						})
+						}
 					}
 				}
 
@@ -354,12 +353,11 @@ const getFeedbackQuestions = async function (formCode) {
 const ratingCalculation = async function (ratingData, mentor_id) {
 	try {
 		let mentorDetails = await mentorExtensionQueries.getMentorExtension(mentor_id)
-
 		let mentorRating = mentorDetails.rating
 		let updateData
 
 		if (mentorRating?.average || mentorRating !== null) {
-			let totalRating = parseFloat(ratingData.response)
+			let totalRating = parseFloat(ratingData.value)
 			let ratingBreakup = []
 			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
 				let breakupFound = false
@@ -367,7 +365,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 					mentorRating.breakup.map((breakupData) => {
 						totalRating = totalRating + parseFloat(breakupData.star * breakupData.votes)
 
-						if (breakupData['star'] == Number(ratingData.response)) {
+						if (breakupData['star'] == Number(ratingData.value)) {
 							breakupFound = true
 							return {
 								star: breakupData.star,
@@ -381,7 +379,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 
 				if (!breakupFound) {
 					ratingBreakup.push({
-						star: Number(ratingData.response),
+						star: Number(ratingData.value),
 						votes: 1,
 					})
 				}
@@ -399,18 +397,17 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 		} else {
 			updateData = {
 				rating: {
-					average: parseFloat(ratingData.response),
+					average: parseFloat(ratingData.value),
 					votes: 1,
 					breakup: [
 						{
-							star: Number(ratingData.response),
+							star: Number(ratingData.value),
 							votes: 1,
 						},
 					],
 				},
 			}
 		}
-
 		await mentorExtensionQueries.updateMentorExtension(mentor_id, updateData)
 		return
 	} catch (error) {

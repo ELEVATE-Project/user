@@ -1,7 +1,7 @@
 const EntityType = require('../models/index').EntityType
 const Entity = require('../models/index').Entity
 const { Op } = require('sequelize')
-const Sequelize = require('@database/models/index').sequelize
+//const Sequelize = require('../database/models/index').sequelize
 
 module.exports = class UserEntityData {
 	static async createEntityType(data) {
@@ -73,7 +73,7 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findUserEntityTypesAndEntitiesRaw(filter) {
+	/* 	static async findUserEntityTypesAndEntitiesRaw(filter) {
 		try {
 			const [result, metadata] = await Sequelize.query(
 				`SELECT
@@ -97,7 +97,7 @@ module.exports = class UserEntityData {
 			console.error('Error fetching data:', error)
 			throw error
 		}
-	}
+	} */
 
 	static async updateOneEntityType(id, update, options = {}) {
 		try {
