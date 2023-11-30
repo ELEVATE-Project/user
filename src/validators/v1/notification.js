@@ -27,7 +27,6 @@ module.exports = {
 	},
 
 	read: (req) => {
-		console.log(req.params.id, req.query.code, 'kjkkkkkkk')
 		if (req.params.id || req.query.code) {
 			if (req.params.id) {
 				req.checkParams('id').notEmpty().withMessage('id param is empty')

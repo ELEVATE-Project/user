@@ -101,13 +101,13 @@ module.exports = class OrgAdmin {
 	 * @method
 	 * @name deactivateUpcomingSession
 	 * @param {Object} req - Request data.
-	 * @param {String} req.query.user_id - User id.
+	 * @param {String} req.body.user_ids - User ids.
 	 * @returns {JSON} - Success Response.
 	 * @throws {Error} - Returns an error if the update fails.
 	 */
 	async deactivateUpcomingSession(req) {
 		try {
-			const response = await orgAdminService.deactivateUpcomingSession(req.query.user_id)
+			const response = await orgAdminService.deactivateUpcomingSession(req.body.user_ids)
 			return response
 		} catch (error) {
 			return error

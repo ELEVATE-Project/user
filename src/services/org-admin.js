@@ -13,6 +13,7 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const questionsSetQueries = require('../database/queries/questionSet')
 const { Op } = require('sequelize')
+const user = require('@health-checks/user')
 
 module.exports = class OrgAdminService {
 	/**
@@ -430,35 +431,39 @@ module.exports = class OrgAdminService {
 	 * @param {Object} bodyData
 	 * @returns {JSON} - User data.
 	 */
-	static async deactivateUpcomingSession(userId) {
+	static async deactivateUpcomingSession(userIds) {
 		try {
-			let message
-			const mentorDetails = await mentorQueries.getMentorExtension(userId)
-			if (mentorDetails?.user_id) {
-				// Deactivate upcoming sessions of user as mentor
-				const removedSessionsDetail = await sessionQueries.deactivateAndReturnMentorSessions(userId)
-				await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
-				message = 'SESSION_DEACTIVATED_SUCCESSFULLY'
-			}
+			let deactivatedIdsList = []
+			let failedUserIds = []
+			for (let key in userIds) {
+				const userId = userIds[key]
+				const mentorDetails = await mentorQueries.getMentorExtension(userId)
+				if (mentorDetails?.user_id) {
+					// Deactivate upcoming sessions of user as mentor
+					const removedSessionsDetail = await sessionQueries.deactivateAndReturnMentorSessions(userId)
+					await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+					deactivatedIdsList.push(userId)
+				}
 
-			//unenroll from upcoming session
-			const menteeDetails = await menteeQueries.getMenteeExtension(userId)
-			if (menteeDetails?.user_id) {
-				await adminService.unenrollFromUpcomingSessions(userId)
-				message = 'SUCCESSFULLY_UNENROLLED_FROM_UPCOMING_SESSION'
-			}
+				//unenroll from upcoming session
+				const menteeDetails = await menteeQueries.getMenteeExtension(userId)
+				if (menteeDetails?.user_id) {
+					await adminService.unenrollFromUpcomingSessions(userId)
+					deactivatedIdsList.push(userId)
+				}
 
-			if (!mentorDetails?.user_id && !menteeDetails?.user_id) {
-				return common.failureResponse({
-					message: 'USER_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				if (!mentorDetails?.user_id && !menteeDetails?.user_id) {
+					failedUserIds.push(userId)
+				}
 			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message,
+				message: failedUserIds.length > 0 ? 'SESSION_DEACTIVATION_FAILED' : 'SESSION_DEACTIVATED_SUCCESSFULLY',
+				result: {
+					deactivatedIdsList: deactivatedIdsList,
+					failedUserIds: failedUserIds,
+				},
 			})
 		} catch (error) {
 			console.log(error)
