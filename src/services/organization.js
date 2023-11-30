@@ -33,7 +33,7 @@ module.exports = class OrganizationService {
 				})
 			}
 			const extensionData = {
-				organization_id: decodedToken.id,
+				organization_id: decodedToken.organization_id,
 				mentee_feedback_question_set: bodyData.mentee_feedback_question_set,
 				mentor_feedback_question_set: bodyData.mentor_feedback_question_set,
 				updated_by: decodedToken.id,
