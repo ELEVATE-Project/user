@@ -5,6 +5,8 @@ const utils = require('@generics/utils')
 const kafkaCommunication = require('@generics/kafka-communication')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const issueQueries = require('../database/queries/issue')
+const userRequests = require('@requests/user')
+
 module.exports = class issuesHelper {
 	/**
 	 * Report an issue.
@@ -17,9 +19,11 @@ module.exports = class issuesHelper {
 
 	static async create(bodyData, decodedToken) {
 		try {
-			const name = decodedToken.name
+			const userDetails = (await userRequests.details('', decodedToken.id)).data.result
+
+			const name = userDetails.name
 			const role = decodedToken.roles.some((role) => role.title === 'mentor') ? 'Mentor' : 'Mentee'
-			const userEmailId = decodedToken.email
+			const userEmailId = userDetails.email
 			const email = process.env.SUPPORT_EMAIL_ID
 			bodyData.user_id = decodedToken.id
 

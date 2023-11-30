@@ -787,17 +787,16 @@ module.exports = class SessionsHelper {
 	 * @param {String} sessionId - Session id.
 	 * @param {Object} userTokenData
 	 * @param {String} userTokenData.id - user id.
-	 * @param {String} userTokenData.email - user email.
-	 * @param {String} userTokenData.name - user name.
 	 * @param {String} timeZone - timezone.
 	 * @returns {JSON} - Enroll session.
 	 */
 
 	static async enroll(sessionId, userTokenData, timeZone) {
-		const userId = userTokenData.id
-		const email = userTokenData.email
-		const name = userTokenData.name
+		const userDetails = (await userRequests.details('', userTokenData.id)).data.result
 
+		const userId = userTokenData.id
+		const email = userDetails.email
+		const name = userDetails.name
 		try {
 			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
@@ -883,16 +882,15 @@ module.exports = class SessionsHelper {
 	 * @param {String} sessionId - Session id.
 	 * @param {Object} userTokenData
 	 * @param {String} userTokenData._id - user id.
-	 * @param {String} userTokenData.email - user email.
-	 * @param {String} userTokenData.name - user name.
 	 * @returns {JSON} - UnEnroll session.
 	 */
 
 	static async unEnroll(sessionId, userTokenData) {
-		const userId = userTokenData.id
-		const name = userTokenData.name
-		const email = userTokenData.email
+		const userDetails = (await userRequests.details('', userTokenData.id)).data.result
 
+		const userId = userTokenData.id
+		const name = userDetails.name
+		const email = userDetails.email
 		try {
 			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
