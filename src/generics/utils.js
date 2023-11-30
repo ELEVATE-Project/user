@@ -157,10 +157,26 @@ function generateCSVContent(data) {
 		return 'No Data Found'
 	}
 	const headers = Object.keys(data[0])
-	return [
-		headers.join(','),
-		...data.map((row) => headers.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
-	].join('\n')
+	console.log(data, 'data')
+	console.log(headers, 'headers')
+	// return [
+	// 	headers.join(','),
+	// 	// ...data.map((row) => headers.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
+	// 	...data.map((row) => headers.map((fieldName) => {
+	// 		console.log(fieldName, row[fieldName], JSON.stringify(row[fieldName]),"hhhh")
+	// 		JSON.stringify(row[fieldName])
+	// 	}).join(',')),
+	// ].join('\n')
+	const csvRows = data.map((row) =>
+		headers
+			.map((fieldName) => {
+				const fieldValue = row[fieldName]
+				return typeof fieldValue === 'string' && fieldValue.includes(',') ? `"${fieldValue}"` : fieldValue
+			})
+			.join(',')
+	)
+
+	return [headers.join(','), ...csvRows].join('\n')
 }
 
 function validateInput(input, validationData, modelName) {

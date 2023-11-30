@@ -28,6 +28,7 @@ const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 
 const UserCredentialQueries = require('@database/queries/userCredential')
 const { Op } = require('sequelize')
+const createCsvWriter = require('csv-writer').createObjectCsvWriter
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -36,19 +37,23 @@ module.exports = class UserInviteHelper {
 				const filePath = data.fileDetails.input_path
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
+				console.log(response, 'response')
 				if (!response.success) {
 					throw new Error('FAILED_TO_DOWNLOAD')
 				}
 
 				// extract data from csv
 				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
+				console.log(parsedFileData, 'parsedFileData')
 				if (!parsedFileData.success) {
 					throw new Error('FAILED_TO_READ_CSV')
 				}
 				const invitees = parsedFileData.result.data
+				console.log(invitees, 'invitees')
 
 				// create outPut file and create invites
 				const createResponse = await this.createUserInvites(invitees, data.user, data.fileDetails.id)
+				console.log(createResponse, 'createResponse')
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
 				// upload output file to cloud
@@ -84,7 +89,7 @@ module.exports = class UserInviteHelper {
 
 				// delete the downloaded file and output file.
 				utils.clearFile(response.result.downloadPath)
-				utils.clearFile(createResponse.result.outputFilePath)
+				// utils.clearFile(createResponse.result.outputFilePath)
 
 				return resolve({
 					success: true,
@@ -337,11 +342,27 @@ module.exports = class UserInviteHelper {
 
 				input.push(invitee)
 			}
-
-			const csvContent = utils.generateCSVContent(input)
+			console.log(input, 'input')
+			// const csvContent = utils.generateCSVContent(input)
+			// console.log(csvContent,"csvContent")
 			const outputFilePath = path.join(inviteeFileDir, outputFileName)
 
-			fs.writeFileSync(outputFilePath, csvContent)
+			// fs.writeFileSync(outputFilePath, csvContent)
+			const headers = Object.keys(input[0])
+			let headingArray = []
+			for (let key in headers) {
+				headingArray.push({ id: headers[key], title: headers[key] })
+			}
+			console.log(headingArray, 'headingArray')
+			const csvWriter = createCsvWriter({
+				path: outputFilePath,
+				header: headingArray, // assuming emptyData is an array of objects
+			})
+
+			csvWriter
+				.writeRecords(input)
+				.then(() => console.log('CSV file created successfully'))
+				.catch((error) => console.error('Error:', error))
 
 			return {
 				success: true,

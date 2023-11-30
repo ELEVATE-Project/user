@@ -35,6 +35,7 @@
 		"commander": "^9.4.0",
 		"cors": "^2.8.5",
 		"crypto": "^1.0.1",
+		"csv-writer": "^1.6.0",
 		"csvtojson": "^2.0.10",
 		"dotenv": "^10.0.0",
 		"elevate-cloud-storage": "2.0.0",
