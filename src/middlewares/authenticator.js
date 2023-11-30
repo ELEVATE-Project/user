@@ -123,7 +123,6 @@ module.exports = async function (req, res, next) {
 
 		req.decodedToken = {
 			id: decodedToken.data.id,
-			email: decodedToken.data.email,
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
