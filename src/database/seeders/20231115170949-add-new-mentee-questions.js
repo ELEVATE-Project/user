@@ -38,7 +38,6 @@ module.exports = {
 				const questionSetId = getQuestionSet[0].id
 
 				const additionalObject = {
-					question_set_id: questionSetId,
 					status: 'PUBLISHED',
 					type: 'rating',
 					no_of_stars: 5,

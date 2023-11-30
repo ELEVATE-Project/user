@@ -23,6 +23,16 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 				type: DataTypes.INTEGER,
 			},
+			mentee_feedback_question_set: {
+				allowNull: true,
+				type: DataTypes.STRING,
+				defaultValue: 'MENTEE_QS1',
+			},
+			mentor_feedback_question_set: {
+				allowNull: true,
+				type: DataTypes.STRING,
+				defaultValue: 'MENTOR_QS2',
+			},
 		},
 		{
 			sequelize,

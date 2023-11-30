@@ -130,4 +130,12 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	async setDefaultQuestionSets(req) {
+		try {
+			return await orgAdminService.setDefaultQuestionSets(req.body, req.decodedToken)
+		} catch (error) {
+			return error
+		}
+	}
 }
