@@ -176,7 +176,7 @@ module.exports = class MenteesHelper {
 				})
 			}
 
-			//get the feedbacks
+			//get the feedbacks of that particular user for that session
 			const feedbacks = await feedbackQueries.findAll({
 				session_id: sessionId,
 				user_id: userId,
@@ -202,6 +202,7 @@ module.exports = class MenteesHelper {
 			}
 
 			//mentor feedback
+			console.log('SESSION INFO: ', sessionInfo)
 			if (isAMentor && feedback_as === 'mentor') {
 				//check for already submitted feedback
 				if (
@@ -276,12 +277,14 @@ module.exports = class MenteesHelper {
 					}
 				} else {
 					if (feedbackNotExists && feedbackNotExists.length > 0) {
+						console.log('FEEEEDBACK NOT EXISTSSSSSSSSSSSSSSSSSSSS: ', feedbackNotExists)
 						await feedbackQueries.bulkCreate(feedbackNotExists)
 						feedbackNotExists.map(async function (feedbackInfo) {
+							console.log('FEEDBACK INFOOOOOOOOOOOOOOOOOOOOO: ', feedbackInfo)
 							let questionData = await questionsQueries.findOneQuestion({
 								id: feedbackInfo.question_id,
 							})
-
+							console.log('QUESTION DATAAAAAAAAAA: ', questionData)
 							if (
 								questionData &&
 								questionData.category &&
@@ -353,6 +356,8 @@ const getFeedbackQuestions = async function (formCode) {
 
 const ratingCalculation = async function (ratingData, mentor_id) {
 	try {
+		console.log('RATING DATAAAAAAAAAAAAAAAAAAA: ', ratingData)
+		console.log('MENTOR_IDDDDDDDDDDDDDDDDDDDDD:', mentor_id)
 		let mentorDetails = await mentorExtensionQueries.getMentorExtension(mentor_id)
 
 		let mentorRating = mentorDetails.rating
