@@ -378,7 +378,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 					mentorRating.breakup.map((breakupData) => {
 						totalRating = totalRating + parseFloat(breakupData.star * breakupData.votes)
 
-						if (breakupData['star'] == Number(ratingData.breakupData)) {
+						if (breakupData['star'] == Number(ratingData.value)) {
 							breakupFound = true
 							return {
 								star: breakupData.star,
