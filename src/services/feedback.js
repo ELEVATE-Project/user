@@ -202,7 +202,6 @@ module.exports = class MenteesHelper {
 			}
 
 			//mentor feedback
-			console.log('SESSION INFO: ', sessionInfo)
 			if (isAMentor && feedback_as === 'mentor') {
 				//check for already submitted feedback
 				if (
@@ -277,17 +276,11 @@ module.exports = class MenteesHelper {
 					}
 				} else {
 					if (feedbackNotExists && feedbackNotExists.length > 0) {
-						console.log('FEEEEDBACK NOT EXISTSSSSSSSSSSSSSSSSSSSS: ', feedbackNotExists)
 						await feedbackQueries.bulkCreate(feedbackNotExists)
 						for (const feedbackInfo of feedbackNotExists) {
-							console.log('FEEDBACK INFOOOOOOOOOOOOOOOOOOOOO: ', feedbackInfo)
-
 							let questionData = await questionsQueries.findOneQuestion({
 								id: feedbackInfo.question_id,
 							})
-
-							console.log('QUESTION DATAAAAAAAAAA: ', questionData)
-
 							if (
 								questionData &&
 								questionData.category &&
