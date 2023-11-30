@@ -42,7 +42,7 @@ module.exports = class UserInviteHelper {
 
 				// extract data from csv
 				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
-				if (!parsedFileData.success || parsedFileData.result.data.length == 0) {
+				if (!parsedFileData.success) {
 					throw new Error('FAILED_TO_READ_CSV')
 				}
 				const invitees = parsedFileData.result.data
@@ -53,6 +53,7 @@ module.exports = class UserInviteHelper {
 
 				// upload output file to cloud
 				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, data.user.id)
+
 				const output_path = uploadRes.result.uploadDest
 				const update = {
 					output_path,
@@ -188,7 +189,7 @@ module.exports = class UserInviteHelper {
 			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
 			const defaultOrgId = defaultOrg?.id || null
 
-			const input = []
+			let input = []
 			let isErrorOccured = false
 
 			//fetch email template
