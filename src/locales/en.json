@@ -114,5 +114,6 @@
 	"MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY": "Materialized views generated successfully",
 	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully",
 	"RELATED_ORG_UPDATED": "Related organizations updated successfully",
-	"ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY": "Default Questionsets Set Successfully"
+	"ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY": "Default Questionsets Set Successfully",
+	"SESSION_DEACTIVATION_FAILED": "Failed to deactivate session."
 }
