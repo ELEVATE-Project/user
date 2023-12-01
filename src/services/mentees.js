@@ -365,19 +365,22 @@ module.exports = class MenteesHelper {
 	 */
 	static async filterSessionsBasedOnSaasPolicy(userId, isAMentor) {
 		try {
-			const userPolicyDetails = isAMentor
-				? await mentorQueries.getMentorExtension(userId, ['external_session_visibility', 'organization_id'])
-				: await menteeQueries.getMenteeExtension(userId, ['external_session_visibility', 'organization_id'])
+			const mentorExtension = await mentorQueries.getMentorExtension(userId, [
+				'external_session_visibility',
+				'organization_id',
+			])
 
-			// Throw error if mentor/mentee extension not found
-			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
-				return common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+			const menteeExtension = await menteeQueries.getMenteeExtension(userId, [
+				'external_session_visibility',
+				'organization_id',
+			])
+			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
+				throw common.failureResponse({
+					statusCode: httpStatusCode.unauthorized,
+					message: 'ROLE_CHANGE_LOGIN_AGAIN',
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
-
+			const userPolicyDetails = menteeExtension || mentorExtension
 			let filter = ''
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				// generate filter based on condition
@@ -404,7 +407,8 @@ module.exports = class MenteesHelper {
 			}
 			return filter
 		} catch (err) {
-			return err
+			console.log(err)
+			throw err
 		}
 	}
 
