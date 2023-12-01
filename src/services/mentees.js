@@ -374,7 +374,7 @@ module.exports = class MenteesHelper {
 				'external_session_visibility',
 				'organization_id',
 			])
-			const organizationName = menteeExtension
+			const organizationName = mentorExtension
 				? await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id)?.data?.result.name
 				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
