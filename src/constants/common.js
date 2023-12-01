@@ -91,7 +91,6 @@ module.exports = {
 		'/mentees/joinSession/',
 		'/mentors/upcomingSessions/',
 		'/issues/create',
-		'/mentees/homeFeed',
 	],
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
