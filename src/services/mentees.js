@@ -375,7 +375,7 @@ module.exports = class MenteesHelper {
 				'organization_id',
 			])
 			const organizationName = mentorExtension
-				? await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id)?.data?.result.name
+				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
 				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
 				throw common.failureResponse({
