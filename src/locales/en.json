@@ -115,5 +115,6 @@
 	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully",
 	"RELATED_ORG_UPDATED": "Related organizations updated successfully",
 	"ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY": "Default Questionsets Set Successfully",
-	"SESSION_DEACTIVATION_FAILED": "Failed to deactivate session."
+	"SESSION_DEACTIVATION_FAILED": "Failed to deactivate session.",
+	"ROLE_CHANGE_LOGIN_AGAIN": "Congratulations! You are now a mentor to the organisation <org name>. Please re-login to start your journey as a mentor."
 }
