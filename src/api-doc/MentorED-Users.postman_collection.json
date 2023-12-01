@@ -645,6 +645,31 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "getSampleCSV",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSampleCSV"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1516,6 +1541,98 @@
 							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
 							"host": ["{{MentoringBaseUrl}}"],
 							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notification Templates",
+			"item": [
+				{
+					"name": "Create Notification Templates",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\" : \"email\",\n    \"code\": \"tl-email-invite\",\n    \"subject\": \"Hi Welcome Backk\",\n    \"body\": \"<p>Dear User,</p> Welcome back to mentorEd\",\n    \"email_header\": \"email_header\",\n    \"email_footer\":\"email_footer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Notification Templates",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template", "14"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification Templates",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\" : \"email\",\n    \"code\": \"tl-email-invite\",\n    \"subject\": \"Hi Welcome Back We missed You\" ,\n    \"body\": \"<p>Dear User,</p> Welcome back to mentorEd\",\n    \"email_header\": \"email_header\",\n    \"email_footer\":\"email_footer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template", "14"]
 						}
 					},
 					"response": []
