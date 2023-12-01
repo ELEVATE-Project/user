@@ -374,10 +374,13 @@ module.exports = class MenteesHelper {
 				'external_session_visibility',
 				'organization_id',
 			])
+			const organizationName = mentorExtension
+				? await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id)?.data?.result.name
+				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
 				throw common.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
-					message: 'ROLE_CHANGE_LOGIN_AGAIN',
+					message: `Congratulations! You are now a mentor to the organisation ${organizationName}. Please re-login to start your journey as a mentor.`,
 					responseCode: 'CLIENT_ERROR',
 				})
 			const userPolicyDetails = menteeExtension || mentorExtension
