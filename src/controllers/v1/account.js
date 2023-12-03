@@ -237,4 +237,29 @@ module.exports = class Account {
 			return error
 		}
 	}
+
+	/**
+	 * Account Search
+	 * @method
+	 * @name list
+	 * @param {Object} req -request data with method POST.
+	 * @param {Object} req.body -request body contains user deatils.
+	 * @param {Array} req.body.userIds -contains userIds.
+	 * @returns {JSON} - all accounts data
+	 * @param {Object} req - request data with method GET.
+	 * @param {Boolean} req.query.type - User Type mentor/mentee
+	 * @param {Integer} req.query.organization_id - User Organization id
+	 * @param {Number} req.pageNo - page no.
+	 * @param {Number} req.pageSize - page size limit.
+	 * @param {String} req.searchText - search text.
+	 * @returns {JSON} - List of user.
+	 */
+	async search(req) {
+		try {
+			const result = await accountService.search(req)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }
