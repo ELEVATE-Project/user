@@ -133,7 +133,8 @@ module.exports = class MentorExtensionQueries {
 		limit,
 		filter,
 		saasFilter = '',
-		additionalProjectionclause = ''
+		additionalProjectionclause = '',
+		returnOnlyUserId
 	) {
 		try {
 			const filterConditions = []
@@ -145,22 +146,32 @@ module.exports = class MentorExtensionQueries {
 					}
 				}
 			}
+
+			const excludeUserIds = ids.length === 0
+			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+
 			const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-			const saasFilterClause = saasFilter != '' ? saasFilter : ''
+			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
+			if (excludeUserIds && Object.keys(filter).length === 0) {
+				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
+			}
 
 			let projectionClause =
 				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
-			if (additionalProjectionclause !== '') {
+
+			if (returnOnlyUserId) {
+				projectionClause = 'user_id'
+			} else if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}
 
 			const query = `
 				SELECT ${projectionClause}
 				FROM
-						${common.materializedViewsPrefix + MentorExtension.tableName}
+					${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
-					user_id IN (${ids.join(',')})
+					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
 				OFFSET
@@ -168,20 +179,21 @@ module.exports = class MentorExtensionQueries {
 				LIMIT
 					:limit;
 			`
+
 			const replacements = {
 				offset: limit * (page - 1),
 				limit: limit,
 				...filter, // Add filter parameters to replacements
 			}
 
-			const sessionAttendeesData = await Sequelize.query(query, {
+			const mentors = await Sequelize.query(query, {
 				type: QueryTypes.SELECT,
 				replacements: replacements,
 			})
 
 			return {
-				data: sessionAttendeesData,
-				count: sessionAttendeesData.length,
+				data: mentors,
+				count: mentors.length,
 			}
 		} catch (error) {
 			return error
