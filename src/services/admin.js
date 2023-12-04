@@ -17,6 +17,7 @@ const organizationQueries = require('@database/queries/organization')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const adminService = require('../generics/materializedViews')
 
 module.exports = class AdminHelper {
 	/**
@@ -472,6 +473,43 @@ module.exports = class AdminHelper {
 			})
 		} catch (error) {
 			throw error
+		}
+	}
+	static async triggerViewRebuild(decodedToken) {
+		try {
+			const result = await adminService.triggerViewBuild()
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.error('An error occurred in userDelete:', error)
+			return error
+		}
+	}
+	static async triggerPeriodicViewRefresh(decodedToken) {
+		try {
+			const result = await adminService.triggerPeriodicViewRefresh()
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.error('An error occurred in userDelete:', error)
+			return error
+		}
+	}
+	static async triggerPeriodicViewRefreshInternal(modelName) {
+		try {
+			const result = await adminService.refreshMaterializedView(modelName)
+			console.log(result)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.error('An error occurred in userDelete:', error)
+			return error
 		}
 	}
 }
