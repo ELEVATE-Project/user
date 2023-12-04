@@ -694,7 +694,7 @@ module.exports = class MentorsHelper {
 			if (extensionDetails.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: userDetails.data.message,
+					message: 'MENTOR_LIST',
 					result: {
 						data: [],
 						count: 0,
@@ -707,7 +707,7 @@ module.exports = class MentorsHelper {
 			if (userDetails.data.result.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: userDetails.data.message,
+					message: 'MENTOR_LIST',
 					result: {
 						data: [],
 						count: 0,
