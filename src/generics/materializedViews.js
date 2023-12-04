@@ -59,6 +59,7 @@ const rawAttributesTypeModifier = async (rawAttributes) => {
 				JSON: 'json',
 				STRING: 'character varying',
 				BIGINT: 'bigint',
+				TEXT: 'text',
 			}
 			const conversion = typeMap[type]
 			if (conversion) {
@@ -89,6 +90,7 @@ const metaAttributesTypeModifier = (data) => {
 			JSON: 'json',
 			STRING: 'character varying',
 			BIGINT: 'bigint',
+			TEXT: 'text',
 		}
 
 		const outputArray = data.map((field) => {
