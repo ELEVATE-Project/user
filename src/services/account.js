@@ -1210,7 +1210,7 @@ module.exports = class AccountHelper {
 				params.pageNo,
 				params.pageSize,
 				params.searchText,
-				params.query.userIds ? params.query.userIds.split(',').map(Number) : false
+				params.body.user_ids ? params.body.user_ids : false
 			)
 
 			/* Required to resolve all promises first before preparing response object else sometime 
