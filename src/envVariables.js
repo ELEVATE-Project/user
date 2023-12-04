@@ -226,6 +226,19 @@ let enviromentVariables = {
 		message: 'Required portal url',
 		optional: false,
 	},
+	SCHEDULER_SERVICE_HOST: {
+		message: 'Required scheduler service host',
+		optional: false,
+	},
+	SCHEDULER_SERVICE_BASE_URL: {
+		message: 'Required scheduler service base url',
+		optional: false,
+	},
+	REFRESH_VIEW_INTERVAL: {
+		message: 'Interval to refresh views in milliseconds',
+		optional: false,
+		default: 540000,
+	},
 }
 
 let success = true
