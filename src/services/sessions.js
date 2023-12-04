@@ -1196,7 +1196,7 @@ module.exports = class SessionsHelper {
 
 	static async setMentorPassword(sessionId, userId) {
 		try {
-			let hashPassword = utils.hash(sessionId + userId)
+			let hashPassword = utils.hash('' + sessionId + userId + '')
 			const result = await sessionQueries.updateOne(
 				{
 					id: sessionId,
