@@ -198,6 +198,7 @@ module.exports = class MenteesHelper {
 				feedbackNotExists.map(async function (feedback) {
 					feedback.session_id = sessionId
 					feedback.user_id = userId
+					feedback.response = feedback.value
 				})
 			}
 
