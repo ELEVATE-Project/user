@@ -10,7 +10,7 @@ module.exports = {
 			{
 				code: 'mentor_request_accepted',
 				subject: 'MentorED - Congratulations! Your Mentor Request has been approved',
-				body: '<p>Dear {name},</p> We hope this message finds you in great spirits. We are pleased to inform you that your request to become a mentor for organisation {orgName}. Your dedication and expertise make you a valuable addition to our mentorship community. Login to {appName} to start your journey as a mentor now.',
+				body: '<p>Dear {name},</p> We hope this message finds you in great spirits. We are pleased to inform you that your request to become a mentor for organisation {orgName} has been accepted. Your dedication and expertise make you a valuable addition to our mentorship community. Login to {appName} to start your journey as a mentor now. <br><br> Click here to login: {portalURL}',
 			},
 			{
 				code: 'mentor_request_rejected',

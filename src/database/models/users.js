@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			gender: DataTypes.STRING,
 			location: DataTypes.STRING,
-			about: DataTypes.STRING,
+			about: DataTypes.TEXT,
 			share_link: DataTypes.STRING,
 			status: {
 				type: DataTypes.STRING,
