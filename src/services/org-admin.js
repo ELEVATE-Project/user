@@ -479,6 +479,7 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
 						orgName: organization.name,
+						portalURL: process.env.PORTAL_URL,
 					}),
 				},
 			}
