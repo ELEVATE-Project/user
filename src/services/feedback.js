@@ -357,7 +357,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 		let updateData
 
 		if (mentorRating?.average || mentorRating !== null) {
-			let totalRating = parseFloat(ratingData.value)
+			let totalRating = parseFloat(ratingData.response)
 			let ratingBreakup = []
 			if (mentorRating.breakup && mentorRating.breakup.length > 0) {
 				let breakupFound = false
@@ -365,7 +365,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 					mentorRating.breakup.map((breakupData) => {
 						totalRating = totalRating + parseFloat(breakupData.star * breakupData.votes)
 
-						if (breakupData['star'] == Number(ratingData.value)) {
+						if (breakupData['star'] == Number(ratingData.response)) {
 							breakupFound = true
 							return {
 								star: breakupData.star,
@@ -379,7 +379,7 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 
 				if (!breakupFound) {
 					ratingBreakup.push({
-						star: Number(ratingData.value),
+						star: Number(ratingData.response),
 						votes: 1,
 					})
 				}
@@ -397,11 +397,11 @@ const ratingCalculation = async function (ratingData, mentor_id) {
 		} else {
 			updateData = {
 				rating: {
-					average: parseFloat(ratingData.value),
+					average: parseFloat(ratingData.response),
 					votes: 1,
 					breakup: [
 						{
-							star: Number(ratingData.value),
+							star: Number(ratingData.response),
 							votes: 1,
 						},
 					],
