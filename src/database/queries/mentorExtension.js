@@ -129,8 +129,8 @@ module.exports = class MentorExtensionQueries {
 
 	static async getMentorsByUserIdsFromView(
 		ids,
-		page,
-		limit,
+		page = null,
+		limit = null,
 		filter,
 		saasFilter = '',
 		additionalProjectionclause = '',
@@ -166,7 +166,7 @@ module.exports = class MentorExtensionQueries {
 				projectionClause += `,${additionalProjectionclause}`
 			}
 
-			const query = `
+			let query = `
 				SELECT ${projectionClause}
 				FROM
 					${common.materializedViewsPrefix + MentorExtension.tableName}
@@ -174,16 +174,22 @@ module.exports = class MentorExtensionQueries {
 					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
-				OFFSET
-					:offset
-				LIMIT
-					:limit;
 			`
 
 			const replacements = {
-				offset: limit * (page - 1),
-				limit: limit,
 				...filter, // Add filter parameters to replacements
+			}
+
+			if (page !== null && limit !== null) {
+				query += `
+					OFFSET
+						:offset
+					LIMIT
+						:limit;
+				`
+
+				replacements.offset = limit * (page - 1)
+				replacements.limit = limit
 			}
 
 			const mentors = await Sequelize.query(query, {

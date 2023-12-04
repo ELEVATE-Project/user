@@ -216,10 +216,8 @@ const search = function (userType, pageNo, pageSize, searchText, userIds) {
 				'&limit=' +
 				pageSize +
 				'&search=' +
-				searchText +
-				'&userIds=' +
-				userIds
-			const userDetails = await requests.get(apiUrl, false, true)
+				searchText
+			const userDetails = await requests.post(apiUrl, { user_ids: userIds }, false, true)
 
 			return resolve(userDetails)
 		} catch (error) {

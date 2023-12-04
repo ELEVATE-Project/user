@@ -684,8 +684,8 @@ module.exports = class MentorsHelper {
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
-				pageNo,
-				pageSize,
+				null,
+				null,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
@@ -716,8 +716,8 @@ module.exports = class MentorsHelper {
 			}
 			extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				userDetails.data.result.data.map((item) => item.id),
-				pageNo,
-				pageSize,
+				null,
+				null,
 				filteredQuery,
 				saasFilter,
 				additionalProjectionString,
