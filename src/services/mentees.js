@@ -271,7 +271,7 @@ module.exports = class MenteesHelper {
 				const attendeeLink = await bigBlueButtonService.joinMeetingAsAttendee(
 					sessionId,
 					menteeDetails.name,
-					session.menteePassword
+					session.mentee_password
 				)
 				meetingInfo = {
 					value: common.BBB_VALUE,
