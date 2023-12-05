@@ -11,6 +11,13 @@ exports.getColumns = async () => {
 		return error
 	}
 }
+exports.getModelName = async () => {
+	try {
+		return await database.User.name
+	} catch (error) {
+		return error
+	}
+}
 exports.create = async (data) => {
 	try {
 		console.log('REACHED CREATE FUNCTION')
