@@ -25,6 +25,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
+		console.log('HERE::::::::::::')
 		return await UserCredential.update(update, {
 			where: filter,
 			...options,
