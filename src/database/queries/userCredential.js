@@ -33,7 +33,8 @@ exports.updateUser = async (filter, update, options = {}) => {
 			individualHooks: true,
 		})
 	} catch (error) {
-		return error
+		console.log(error)
+		throw error
 	}
 }
 
