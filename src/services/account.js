@@ -533,7 +533,7 @@ module.exports = class AccountHelper {
 		if (!user.refresh_tokens.length) {
 			return common.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
-				statusCode: httpStatusCode.bad_request,
+				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
@@ -542,7 +542,7 @@ module.exports = class AccountHelper {
 		if (!token) {
 			return common.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
-				statusCode: httpStatusCode.internal_server_error,
+				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
