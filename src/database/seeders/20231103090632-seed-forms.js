@@ -24,9 +24,15 @@ module.exports = {
 										required: 'Enter your name',
 										pattern: 'This field can only contain alphabets',
 									},
-									validators: { required: true, pattern: '^[^0-9!@#%$&()\\-`.+,/"]*$' },
+									validators: {
+										required: true,
+										pattern: '^[^0-9!@#%$&()\\-`.+,/"]*$',
+									},
 									options: [],
-									meta: { showValidationError: true },
+									meta: {
+										showValidationError: true,
+										maxLength: 250,
+									},
 								},
 								{
 									name: 'location',
@@ -35,11 +41,17 @@ module.exports = {
 									class: 'ion-no-margin',
 									type: 'select',
 									position: 'floating',
-									multiple: false,
-									errorMessage: { required: 'Please select your location' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Please select your location',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
-									meta: { entityType: 'location', errorLabel: 'Location' },
+									meta: {
+										entityType: 'location',
+										errorLabel: 'Location',
+									},
 								},
 								{
 									name: 'designation',
@@ -49,9 +61,12 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									multiple: true,
-									errorMessage: { required: 'Enter your role' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter your role',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
 									meta: {
 										entityType: 'designation',
@@ -69,9 +84,14 @@ module.exports = {
 									type: 'text',
 									position: 'floating',
 									placeHolder: 'Ex. 5 years',
-									errorMessage: { required: 'Enter your experience in years' },
+									errorMessage: {
+										required: 'Enter your experience in years',
+									},
 									isNumberOnly: true,
-									validators: { required: true, maxLength: 2 },
+									validators: {
+										required: true,
+										maxLength: 2,
+									},
 									options: [],
 								},
 								{
@@ -81,9 +101,14 @@ module.exports = {
 									class: 'ion-no-margin',
 									type: 'textarea',
 									position: 'floating',
-									errorMessage: { required: 'This field cannot be empty' },
-									placeHolder: 'Please use only 150 character',
-									validators: { required: true, maxLength: 150 },
+									errorMessage: {
+										required: 'This field cannot be empty',
+									},
+									placeHolder: 'Please use only 150 characters',
+									validators: {
+										required: true,
+										maxLength: 150,
+									},
 									options: [],
 								},
 								{
@@ -94,9 +119,12 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									multiple: true,
-									errorMessage: { required: 'Enter your expertise' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter your expertise',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
 									meta: {
 										entityType: 'area_of_expertise',
@@ -113,11 +141,18 @@ module.exports = {
 									class: 'ion-no-margin',
 									type: 'text',
 									position: 'floating',
-									errorMessage: { required: 'Enter education qualification' },
+									errorMessage: {
+										required: 'Enter education qualification',
+									},
 									placeHolder: 'Ex. BA, B.ED',
-									validators: { required: true },
+									validators: {
+										required: true,
+									},
 									options: [],
-									meta: { errorLabel: 'Education qualification' },
+									meta: {
+										errorLabel: 'Education qualification',
+										maxLength: 250,
+									},
 								},
 								{
 									name: 'languages',
@@ -127,9 +162,12 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									multiple: true,
-									errorMessage: { required: 'Enter language' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter language',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
 									meta: {
 										entityType: 'languages',
@@ -151,7 +189,6 @@ module.exports = {
 					type: 'session',
 					sub_type: 'sessionForm',
 					data: JSON.stringify({
-						template_name: 'defaultTemplate',
 						fields: {
 							controls: [
 								{
@@ -162,8 +199,13 @@ module.exports = {
 									type: 'text',
 									placeHolder: 'Ex. Name of your session',
 									position: 'floating',
-									errorMessage: { required: 'Enter session title' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter session title',
+									},
+									validators: {
+										required: true,
+										maxLength: 250,
+									},
 								},
 								{
 									name: 'description',
@@ -173,8 +215,13 @@ module.exports = {
 									type: 'textarea',
 									placeHolder: 'Tell the community something about your session',
 									position: 'floating',
-									errorMessage: { required: 'Enter description' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter description',
+									},
+									validators: {
+										required: true,
+										maxLength: 250,
+									},
 								},
 								{
 									name: 'start_date',
@@ -185,9 +232,13 @@ module.exports = {
 									dependedChild: 'end_date',
 									type: 'date',
 									placeHolder: 'YYYY-MM-DD hh:mm',
-									errorMessage: { required: 'Enter start date' },
+									errorMessage: {
+										required: 'Enter start date',
+									},
 									position: 'floating',
-									validators: { required: true },
+									validators: {
+										required: true,
+									},
 								},
 								{
 									name: 'end_date',
@@ -198,21 +249,27 @@ module.exports = {
 									dependedParent: 'start_date',
 									type: 'date',
 									placeHolder: 'YYYY-MM-DD hh:mm',
-									position: 'floating',
-									errorMessage: { required: 'Enter end date' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter end date',
+									},
+									validators: {
+										required: true,
+									},
 								},
 								{
 									name: 'recommended_for',
 									label: 'Recommended for',
-									multiple: true,
 									class: 'ion-no-margin',
 									value: '',
 									type: 'chip',
 									position: '',
 									disabled: false,
-									errorMessage: { required: 'Enter recommended for' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter recommended for',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
 									meta: {
 										entityType: 'recommended_for',
@@ -225,14 +282,17 @@ module.exports = {
 								{
 									name: 'categories',
 									label: 'Categories',
-									multiple: true,
 									class: 'ion-no-margin',
 									value: '',
 									type: 'chip',
 									position: '',
 									disabled: false,
-									errorMessage: { required: 'Enter categories' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter categories',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
 									meta: {
 										entityType: 'categories',
@@ -243,7 +303,6 @@ module.exports = {
 								},
 								{
 									name: 'medium',
-									multiple: true,
 									label: 'Select medium',
 									alertLabel: 'medium',
 									class: 'ion-no-margin',
@@ -251,8 +310,12 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									errorMessage: { required: 'Enter select medium' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter select medium',
+									},
+									validators: {
+										required: true,
+									},
 									options: [],
 									meta: {
 										entityType: 'medium',
