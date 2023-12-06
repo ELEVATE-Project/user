@@ -19,19 +19,22 @@ exports.findOne = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
+		console.log(error)
 		return error
 	}
 }
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
+		console.log('HERE::::::::::::')
 		return await UserCredential.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
 		})
 	} catch (error) {
-		return error
+		console.log(error)
+		throw error
 	}
 }
 
