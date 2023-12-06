@@ -144,7 +144,7 @@ module.exports = {
 				allow_filtering: true,
 				organization_id: defaultOrgId,
 				has_entities: true,
-				model_names: ['users'],
+				model_names: ['User'],
 			}
 
 			if (key === 'location') {

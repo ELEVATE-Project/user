@@ -1,11 +1,19 @@
 'use strict'
 const database = require('@database/models/index')
 const Organization = require('@database/models/index').Organization
-const { Op } = require('sequelize')
+const { Op, QueryTypes } = require('sequelize')
+const Sequelize = require('@database/models/index').sequelize
 
 exports.getColumns = async () => {
 	try {
 		return await Object.keys(database.User.rawAttributes)
+	} catch (error) {
+		return error
+	}
+}
+exports.getModelName = async () => {
+	try {
+		return await database.User.name
 	} catch (error) {
 		return error
 	}
@@ -110,11 +118,10 @@ exports.listUsers = async (roleId, organization_id, page, limit, search) => {
 	}
 }
 
-
 exports.findAllUserWithOrganization = async (filter, options = {}) => {
 	try {
 		return await database.User.findAll({
-      where: filter,
+			where: filter,
 			...options,
 			include: [
 				{
@@ -156,5 +163,74 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		return error
+	}
+}
+exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds) => {
+	try {
+		const offset = (page - 1) * limit
+
+		const filterConditions = []
+
+		if (search) {
+			filterConditions.push(`users.name ILIKE :search`)
+		}
+
+		if (roleId) {
+			filterConditions.push(`users.roles @> ARRAY[:roleId]::integer[]`)
+		}
+
+		if (organization_id) {
+			filterConditions.push(`users.organization_id = :organization_id`)
+		}
+		if (userIds) {
+			filterConditions.push(`users.id IN (:userIds)`)
+		}
+
+		const filterClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : ''
+
+		const filterQuery = `
+            SELECT
+                users.id,
+                users.name,
+                users.about,
+                users.image,
+                jsonb_build_object(
+                    'id', organization.id,
+                    'name', organization.name,
+                    'code', organization.code
+                ) AS organization
+            FROM
+                m_${database.User.tableName} AS users
+            LEFT JOIN
+                ${Organization.tableName} AS organization
+            ON
+                users.organization_id = organization.id
+                AND organization.status = 'ACTIVE'
+            ${filterClause}
+            ORDER BY
+                users.name ASC
+            OFFSET
+                :offset
+            LIMIT
+                :limit;
+        `
+
+		const replacements = {
+			search: `%${search}%`,
+			roleId: roleId,
+			organization_id: organization_id,
+			offset: parseInt(offset, 10),
+			limit: parseInt(limit, 10),
+			userIds: userIds,
+		}
+
+		const users = await Sequelize.query(filterQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
+
+		return { count: users.length, data: users }
+	} catch (error) {
+		throw error
 	}
 }

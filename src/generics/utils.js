@@ -361,7 +361,20 @@ function isValidName(name) {
 	const nameRegex = /^[A-Za-z\s'-]+$/
 	return nameRegex.test(name)
 }
+const generateWhereClause = (tableName) => {
+	let whereClause = ''
 
+	switch (tableName) {
+		case 'users':
+			whereClause = `deleted_at IS NULL AND status = 'ACTIVE'`
+			break
+
+		default:
+			whereClause = 'deleted_at IS NULL'
+	}
+
+	return whereClause
+}
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -390,4 +403,5 @@ module.exports = {
 	removeDefaultOrgEntityTypes,
 	isValidEmail,
 	isValidName,
+	generateWhereClause,
 }

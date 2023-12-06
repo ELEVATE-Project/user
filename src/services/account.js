@@ -533,7 +533,7 @@ module.exports = class AccountHelper {
 		if (!user.refresh_tokens.length) {
 			return common.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
-				statusCode: httpStatusCode.bad_request,
+				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
@@ -542,7 +542,7 @@ module.exports = class AccountHelper {
 		if (!token) {
 			return common.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
-				statusCode: httpStatusCode.internal_server_error,
+				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
@@ -1175,6 +1175,77 @@ module.exports = class AccountHelper {
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Account List
+	 * @method
+	 * @name list method post
+	 * @param {Object} req -request data.
+	 * @param {Array} userIds -contains userIds.
+	 * @returns {JSON} - all accounts data
+	 * User list.
+	 * @method
+	 * @name list method get
+	 * @param {Boolean} userType - mentor/mentee.
+	 * @param {Number} page - page No.
+	 * @param {Number} limit - page limit.
+	 * @param {String} search - search field.
+	 * @returns {JSON} - List of users
+	 */
+	static async search(params) {
+		try {
+			let role = await roleQueries.findOne(
+				{ title: params.query.type.toLowerCase() },
+				{
+					attributes: ['id'],
+				}
+			)
+
+			let users = await userQueries.listUsersFromView(
+				role && role.id ? role.id : '',
+				params.query.organization_id ? params.query.organization_id : '',
+				params.pageNo,
+				params.pageSize,
+				params.searchText,
+				params.body.user_ids ? params.body.user_ids : false
+			)
+
+			/* Required to resolve all promises first before preparing response object else sometime 
+					it will push unresolved promise object if you put this logic in below for loop */
+
+			await Promise.all(
+				users.data.map(async (user) => {
+					/* Assigned image url from the stored location */
+					if (user.image) {
+						user.image = await utilsHelper.getDownloadableUrl(user.image)
+					}
+					return user
+				})
+			)
+			if (users.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USER_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_LIST',
+				result: {
+					data: users.data,
+					count: users.count,
+				},
+			})
+		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
