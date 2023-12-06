@@ -217,6 +217,7 @@ exports.findPendingFeedbackSessions = async (menteeId, completedSessionIds) => {
 		const filteredSessionIds = sessionIds.filter((sessionId) => !completedSessionIds.includes(sessionId))
 		return await SessionAttendee.findAll({
 			where: {
+				mentee_id: menteeId,
 				joined_at: {
 					[Op.not]: null,
 				},
