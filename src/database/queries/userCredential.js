@@ -19,6 +19,7 @@ exports.findOne = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
+		console.log(error)
 		return error
 	}
 }
