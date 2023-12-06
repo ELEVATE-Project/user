@@ -42,8 +42,7 @@ module.exports = class AdminHelper {
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
 			await userQueries.updateUser({ email: user.email }, update)
-			console.log('UPDATE: ', update)
-			console.log('USER ID: ', userId)
+			delete update.id
 			await UserCredentialQueries.updateUser({ user_id: userId }, update)
 
 			await utils.redisDel(common.redisUserPrefix + userId.toString())
