@@ -203,7 +203,28 @@ const listWithoutLimit = function (userType, searchText) {
 		}
 	})
 }
+const search = function (userType, pageNo, pageSize, searchText, userIds) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const apiUrl =
+				userBaseUrl +
+				endpoints.SEARCH_USERS +
+				'?type=' +
+				userType +
+				'&page=' +
+				pageNo +
+				'&limit=' +
+				pageSize +
+				'&search=' +
+				searchText
+			const userDetails = await requests.post(apiUrl, { user_ids: userIds }, false, true)
 
+			return resolve(userDetails)
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
 module.exports = {
 	fetchDefaultOrgDetails,
 	details,
@@ -211,4 +232,5 @@ module.exports = {
 	list,
 	share,
 	listWithoutLimit,
+	search,
 }

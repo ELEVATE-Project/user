@@ -677,35 +677,51 @@ module.exports = class MentorsHelper {
 				status: 'ACTIVE',
 			})
 
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'Session')
 			const userType = common.MENTOR_ROLE
-			const userDetails = await userRequests.listWithoutLimit(userType, searchText)
-			if (userDetails.data.result.data.length == 0) {
+
+			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
+
+			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				[],
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+			if (extensionDetails.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
-					message: userDetails.data.message,
+					message: 'MENTOR_LIST',
 					result: {
 						data: [],
 						count: 0,
 					},
 				})
 			}
+			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
-			const ids = userDetails.data.result.data.reduce((acc, item) => {
-				const idsForKey = item.values.map((value) => value.id)
-				return acc.concat(idsForKey)
-			}, [])
-
-			// Filter user data based on SAAS policy
-			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
-
-			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
-				ids,
-				pageNo,
-				pageSize,
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, mentorIds)
+			if (userDetails.data.result.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTOR_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				userDetails.data.result.data.map((item) => item.id),
+				null,
+				null,
 				filteredQuery,
 				saasFilter,
-				additionalProjectionString
+				additionalProjectionString,
+				false
 			)
 
 			if (extensionDetails.data.length > 0) {
@@ -720,38 +736,44 @@ module.exports = class MentorsHelper {
 
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
 
-			userDetails.data.result.data = userDetails.data.result.data.map((group) => {
-				// Map over each value in the values array of the current group
-				group.values = group.values
-					.map((value) => {
-						const user_id = value.id
+			userDetails.data.result.data = userDetails.data.result.data
+				.map((value) => {
+					// Map over each value in the values array of the current group
+					const user_id = value.id
+					// Check if extensionDataMap has an entry with the key equal to the user_id
+					if (extensionDataMap.has(user_id)) {
+						const newItem = extensionDataMap.get(user_id)
+						value = { ...value, ...newItem }
+						delete value.user_id
+						delete value.visibility
+						delete value.organization_id
+						delete value.meta
+						return value
+					}
+					return null
+				})
+				.filter((value) => value !== null)
 
-						// Check if extensionDataMap has an entry with the key equal to the user_id
-						if (extensionDataMap.has(user_id)) {
-							const newItem = extensionDataMap.get(user_id)
-							value = { ...value, ...newItem }
-							delete value.user_id
-							delete value.visibility
-							delete value.organization_id
-							delete value.meta
-							return value
-						}
+			let foundKeys = {}
+			let result = []
 
-						// If the entry doesn't exist in extensionDataMap, return null
-						return null
+			for (let user of userDetails.data.result.data) {
+				let firstChar = user.name.charAt(0)
+				firstChar = firstChar.toUpperCase()
+
+				if (!foundKeys[firstChar]) {
+					result.push({
+						key: firstChar,
+						values: [user],
 					})
-					// Filter out values that are null (entries that didn't exist in extensionDataMap)
-					.filter((value) => value !== null)
+					foundKeys[firstChar] = result.length
+				} else {
+					let index = foundKeys[firstChar] - 1
+					result[index].values.push(user)
+				}
+			}
 
-				// Return the updated group
-				return group
-			})
-			// filter out empty values data
-			const filteredData = userDetails.data.result.data.filter((entry) => entry.values.length > 0)
-			userDetails.data.result.data = filteredData
-
-			userDetails.data.result.count = extensionDetails.count
-			const sortedData = _.sortBy(userDetails.data.result.data, 'key') || []
+			const sortedData = _.sortBy(result, 'key') || []
 			userDetails.data.result.data = sortedData
 
 			return common.successResponse({

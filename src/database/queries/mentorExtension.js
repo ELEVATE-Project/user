@@ -129,11 +129,12 @@ module.exports = class MentorExtensionQueries {
 
 	static async getMentorsByUserIdsFromView(
 		ids,
-		page,
-		limit,
+		page = null,
+		limit = null,
 		filter,
 		saasFilter = '',
-		additionalProjectionclause = ''
+		additionalProjectionclause = '',
+		returnOnlyUserId
 	) {
 		try {
 			const filterConditions = []
@@ -145,43 +146,60 @@ module.exports = class MentorExtensionQueries {
 					}
 				}
 			}
-			const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
-			const saasFilterClause = saasFilter != '' ? saasFilter : ''
+			const excludeUserIds = ids.length === 0
+			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+
+			const filterClause = filterConditions.length > 0 ? `${filterConditions.join(' AND ')}` : ''
+
+			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
+			if (excludeUserIds && Object.keys(filter).length === 0) {
+				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
+			}
 
 			let projectionClause =
 				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
-			if (additionalProjectionclause !== '') {
+
+			if (returnOnlyUserId) {
+				projectionClause = 'user_id'
+			} else if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
 			}
 
-			const query = `
+			let query = `
 				SELECT ${projectionClause}
 				FROM
-						${common.materializedViewsPrefix + MentorExtension.tableName}
+					${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
-					user_id IN (${ids.join(',')})
+					${userFilterClause}
 					${filterClause}
 					${saasFilterClause}
-				OFFSET
-					:offset
-				LIMIT
-					:limit;
 			`
+
 			const replacements = {
-				offset: limit * (page - 1),
-				limit: limit,
 				...filter, // Add filter parameters to replacements
 			}
 
-			const sessionAttendeesData = await Sequelize.query(query, {
+			if (page !== null && limit !== null) {
+				query += `
+					OFFSET
+						:offset
+					LIMIT
+						:limit;
+				`
+
+				replacements.offset = limit * (page - 1)
+				replacements.limit = limit
+			}
+
+			const mentors = await Sequelize.query(query, {
 				type: QueryTypes.SELECT,
 				replacements: replacements,
 			})
 
 			return {
-				data: sessionAttendeesData,
-				count: sessionAttendeesData.length,
+				data: mentors,
+				count: mentors.length,
 			}
 		} catch (error) {
 			return error

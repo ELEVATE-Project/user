@@ -207,7 +207,7 @@ paths:
                         type: string
                       deleted_at:
                         type: 'null'
-                      org_id:
+                      organization_id:
                         type: number
                   meta:
                     type: object
@@ -270,7 +270,7 @@ paths:
                       updated_at: '2023-07-18T20:48:10.492Z'
                       created_at: '2023-07-18T20:48:10.492Z'
                       deleted_at: null
-                      org_id: 1
+                      organization_id: 1
                     meta:
                       formsVersion:
                         - id: 16
@@ -284,7 +284,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/form/createForm400Response'
   /mentoring/v1/form/update/{formId}:
-    patch:
+    put:
       operationId: formUpdate
       summary: Update form
       tags:
@@ -456,7 +456,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/form/updateForm400Response'
   /mentoring/v1/form/read/{formId}:
-    get:
+    post:
       operationId: formRead
       summary: Get form data
       tags:
@@ -570,7 +570,7 @@ paths:
                         type: string
                       deleted_at:
                         type: 'null'
-                      org_id:
+                      organization_id:
                         type: number
                   meta:
                     type: object
@@ -633,7 +633,7 @@ paths:
                       updated_at: '2023-07-18T20:48:10.492Z'
                       created_at: '2023-07-18T20:48:10.492Z'
                       deleted_at: null
-                      org_id: 1
+                      organization_id: 1
                     meta:
                       formsVersion:
                         - id: 16
@@ -648,7 +648,7 @@ paths:
                 $ref: '#/components/schemas/form/readForm400Response'
   /mentoring/v1/entity/create:
     post:
-      summary: Create user entity
+      summary: Create entity
       tags:
         - Entity APIs
       description: |-
@@ -767,8 +767,8 @@ paths:
         schema:
           type: string
   /mentoring/v1/entity/update/{id}:
-    patch:
-      summary: Update user entity
+    put:
+      summary: Update entity
       tags:
         - Entity APIs
       description: |-
@@ -897,8 +897,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/entity/updateUserEntity400Response'
   /mentoring/v1/entity/read/{id}:
-    get:
-      summary: Get user entity details
+    post:
+      summary: Get entity details
       tags:
         - Entity APIs
       description: |-
@@ -992,8 +992,8 @@ paths:
                       meeting_platform: BBB
     parameters: []
   /mentoring/v1/entity/delete/{id}:
-    patch:
-      summary: Delete user entity
+    delete:
+      summary: Delete entity
       tags:
         - Entity APIs
       description: |-
@@ -1110,6 +1110,11 @@ paths:
           schema:
             type: string
           example: John
+        - in: path
+          name: recommended_for
+          description: Filters to be applied should be passed like this
+          schema: &ref_19
+            type: string
       responses:
         '200':
           description: ok
@@ -1159,7 +1164,7 @@ paths:
                               type: string
                             mentor_name:
                               type: string
-                            org_id:
+                            organization_id:
                               type: number
               examples:
                 example1:
@@ -1183,7 +1188,7 @@ paths:
                           meeting_info.value: BBB
                           meeting_info.platform: BigBlueButton (Default)
                           mentor_name: Newell
-                          org_id: 1
+                          organization_id: 1
         '400':
           description: Bad Request. Session Not Found
           content:
@@ -1280,7 +1285,7 @@ paths:
                         type: string
                       organization_ids:
                         type: string
-                      mentor_org_id:
+                      mentor_organization_id:
                         type: number
                       seats_remaining:
                         type: number
@@ -1294,7 +1299,7 @@ paths:
                         type: boolean
                       mentor_name:
                         type: string
-                      org_id:
+                      organization_id:
                         type: array
                         items:
                           type: number
@@ -1331,14 +1336,14 @@ paths:
                       meta: {}
                       visibility: string
                       organization_ids: string
-                      mentor_org_id: 1
+                      mentor_organization_id: 1
                       seats_remaining: 25
                       seats_limit: 25
                       updated_at: '2023-09-20T11:56:42.412Z'
                       deleted_at: null
                       is_enrolled: false
                       mentor_name: Newell
-                      org_id:
+                      organization_id:
                         - 1
                         - 2
                     meta: {}
@@ -2073,7 +2078,7 @@ paths:
                 $ref: '#/components/schemas/sessions/updateRecordingUrl400Response'
   /mentoring/v1/mentees/sessions?enrolled={enrolled}&page={page}&limit={limit}:
     get:
-      summary: Get list of session
+      summary: Get list of enrolled session
       tags:
         - Mentee APIs
       description: |-
@@ -2090,12 +2095,6 @@ paths:
           required: true
           schema:
             type: string
-        - in: path
-          name: enrolled
-          description: enrolled status of mentee `true`
-          schema:
-            type: boolean
-          example: true
         - in: path
           name: page
           description: Please add page number
@@ -2160,7 +2159,7 @@ paths:
                               type: boolean
                             mentor_name:
                               type: string
-                            org_id:
+                            organization_id:
                               type: number
                           required:
                             - id
@@ -2175,7 +2174,7 @@ paths:
                             - created_at
                             - is_enrolled
                             - mentor_name
-                            - org_id
+                            - organization_id
                       count:
                         type: number
                   meta:
@@ -2214,7 +2213,7 @@ paths:
                           created_at: '2023-09-13T16:51:46.377Z'
                           is_enrolled: false
                           mentor_name: Nevil M
-                          org_id: 5
+                          organization_id: 5
                         - id: 2
                           title: >-
                             Digital Revolution in Indian Classrooms: EdTech
@@ -2236,7 +2235,7 @@ paths:
                           created_at: '2023-08-25T10:42:43.708Z'
                           is_enrolled: false
                           mentor_name: Aanya Sharma
-                          org_id: 5
+                          organization_id: 5
                       count: 2
                     meta:
                       correlation: ecf6f2b6-6e21-445a-9242-303dc0ccd0b7
@@ -2513,7 +2512,7 @@ paths:
                                         type: boolean
                                   label:
                                     type: string
-                            org_id:
+                            organization_id:
                               type: number
                       correlation:
                         type: string
@@ -2576,220 +2575,10 @@ paths:
                               label: >-
                                 How would you rate the engagement in the
                                 session?
-                          org_id: 22
+                          organization_id: 22
                       correlation: 87a59ed4-483d-4d02-a6ae-9aad8b218f45
                       meeting_platform: BBB
-  /mentoring/v1/profile/read:
-    get:
-      summary: Read profile
-      tags:
-        - Profile APIs
-      description: |-
-        This API is associated with  profile 
-         - Endpoint for list session `/mentoring/v1/profile/read` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters:
-        - name: X-auth-token
-          in: header
-          description: >-
-            To make use of the API, you require X-auth-token. This is Available
-            in login API Response.
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                $schema: http://json-schema.org/draft-04/schema#
-                type: object
-                properties:
-                  response_code:
-                    type: string
-                  message:
-                    type: string
-                  result:
-                    type: object
-                    properties:
-                      email:
-                        type: string
-                      verified:
-                        type: boolean
-                      total_sessions_attended:
-                        type: string
-                      total_sessions_hosted:
-                        type: string
-                      terms_and_conditions:
-                        type: boolean
-                      id:
-                        type: number
-                      name:
-                        type: string
-                      designation:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                      location:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                      areas_of_expertise:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                      languages:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                      education_qualification:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                      updated_at:
-                        type: string
-                      created_at:
-                        type: string
-                      last_logged_in_at:
-                        type: string
-                      about:
-                        type: string
-                      experience:
-                        type: string
-                      gender:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                      image:
-                        type: string
-                  user_roles:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: number
-                        title:
-                          type: string
-                        user_type:
-                          type: number
-                        status:
-                          type: string
-              examples:
-                mentee:
-                  value:
-                    response_code: OK
-                    message: Profile fetched successfully.
-                    result:
-                      email: example@mail.com
-                      verified: true
-                      total_sessions_attended: '1'
-                      terms_and_conditions: false
-                      id: 4564
-                      name: Nevil
-                      designation:
-                        - value: teacher
-                          label: Teacher
-                      location:
-                        - value: kl
-                          label: Kerala
-                      areas_of_expertise:
-                        - value: educational_leadership
-                          label: Educational Leadership
-                      languages:
-                        - value: en
-                          label: English
-                      education_qualification:
-                        - value: bcom
-                          label: B.Com
-                      updated_at: '2022-05-18T05:24:52.431Z'
-                      created_at: '2022-05-18T05:24:52.431Z'
-                      last_logged_in_at: '2022-05-18T05:24:52.431Z'
-                      about: This is test about of mentee
-                      experience: '4.2'
-                      gender:
-                        - value: male
-                          label: MALE
-                      image: https://cloudstorage.com/container/abc.png
-                      user_roles:
-                        - id: 1
-                          title: mentee
-                          user_type: 0
-                          status: ACTIVE
-                mentor:
-                  value:
-                    response_code: OK
-                    message: Profile fetched successfully.
-                    result:
-                      email: example@mail.com
-                      verified: true
-                      total_sessions_attended: '1'
-                      total_sessions_hosted: '23'
-                      terms_and_conditions: false
-                      id: 4564
-                      name: Nevil
-                      designation:
-                        - value: teacher
-                          label: Teacher
-                      location:
-                        - value: kl
-                          label: Kerala
-                      areas_of_expertise:
-                        - value: educational_leadership
-                          label: Educational Leadership
-                      languages:
-                        - value: en
-                          label: English
-                      education_qualification:
-                        - value: bcom
-                          label: B.Com
-                      updated_at: '2022-05-18T05:24:52.431Z'
-                      created_at: '2022-05-18T05:24:52.431Z'
-                      last_logged_in_at: '2022-05-18T05:24:52.431Z'
-                      about: This is test about of mentee
-                      experience: '4.2'
-                      gender:
-                        - value: male
-                          label: MALE
-                      image: https://cloudstorage.com/container/abc.png
-                    user_roles:
-                      - id: 1
-                        title: mentor
-                        user_type: 0
-                        status: ACTIVE
-  /mentoring/v1/mentors/profile/{mentorId}:
+  /mentoring/v1/mentors/details/{mentorId}:
     get:
       summary: Mentor profile
       tags:
@@ -3172,7 +2961,7 @@ paths:
                               type: string
                         mentor_name:
                           type: string
-                        org_id:
+                        organization_id:
                           type: number
                   meta:
                     type: object
@@ -3202,7 +2991,7 @@ paths:
                         meeting_info:
                           platform: BigBlueButton (Default)
                         mentor_name: Nevil M
-                        org_id: 22
+                        organization_id: 22
                     meta:
                       correlation: 1c9b58a1-4d30-46df-8eba-e6954ee9d70e
         '400':
@@ -4472,15 +4261,16 @@ paths:
   /mentoring/v1/mentors/share/{mentorId}:
     get:
       summary: Share mentor profile
-      tags:
+      tags: &ref_16
         - Mentor APIs
       description: |-
         This API is associated with mentor profile 
          - Endpoint for share mentor profile is `/mentoring/v1/mentors/share` 
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
-      parameters:
-        - name: X-auth-token
+      parameters: &ref_17
+        - &ref_20
+          name: X-auth-token
           in: header
           description: >-
             To make use of the API, you require X-auth-token. This is Available
@@ -4492,7 +4282,7 @@ paths:
           name: mentorId
           required: true
           description: Please append a valid mentorId
-          schema:
+          schema: &ref_21
             type: string
           example: 21
       responses:
@@ -4527,7 +4317,7 @@ paths:
                       share_link: 07fc31acad0de174f940fc39c3718d93
                     meta:
                       correlation: 59a1e835-6786-4e99-98f5-2987229f8e4d
-        '400':
+        '400': &ref_18
           description: Bad request
           content:
             application.json:
@@ -5251,172 +5041,6 @@ paths:
                     notification: true
                     visibility: public
     parameters: *ref_3
-  /mentoring/v1/profile/getExtension:
-    get:
-      summary: Read extention details
-      tags:
-        - Profile APIs
-      description: |-
-        This API is associated with profile
-         - Endpoint for listing session `/mentoring/v1/profile/getExtension` 
-         - It is mandatory to provide values for parameters marked with `required` 
-         - Mandatory parameter cannot be empty or null
-      parameters: *ref_4
-      responses:
-        '200':
-          description: ok
-          content:
-            application.json:
-              schema:
-                $schema: http://json-schema.org/draft-04/schema#
-                type: object
-                properties:
-                  responseCode:
-                    type: string
-                  message:
-                    type: string
-                  result:
-                    type: object
-                    properties:
-                      user_id:
-                        type: number
-                      designation:
-                        type: string
-                      area_of_expertise:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                          required:
-                            - value
-                            - label
-                      education_qualification:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            value:
-                              type: string
-                            label:
-                              type: string
-                          required:
-                            - value
-                            - label
-                      rating:
-                        type: object
-                        properties:
-                          average:
-                            type: number
-                          count:
-                            type: number
-                      experience:
-                        type: string
-                      stats:
-                        type: object
-                        properties:
-                          sessions_attended:
-                            type: number
-                          students_mentored:
-                            type: number
-                      tags:
-                        type: array
-                        items:
-                          type: string
-                      configs:
-                        type: object
-                        properties:
-                          notification:
-                            type: boolean
-                          visibility:
-                            type: string
-                      visibility:
-                        type: string
-                      organisation_ids:
-                        type: array
-                        items:
-                          type: number
-                      external_session_visibility:
-                        type: string
-                      external_mentor_visibility:
-                        type: string
-                      created_at:
-                        type: string
-                      updated_at:
-                        type: string
-                      deleted_at:
-                        type: 'null'
-                  meta:
-                    type: object
-                    properties:
-                      formsVersion:
-                        type: array
-                        items:
-                          type: string
-                      correlation:
-                        type: string
-                      meeting_platform:
-                        type: string
-              examples:
-                example1:
-                  value:
-                    responseCode: OK
-                    message: Mentee extension fetched successfully.
-                    result:
-                      user_id: 1
-                      designation: Lead Mentor
-                      area_of_expertise:
-                        - value: technology
-                          label: Technology
-                        - value: leadership
-                          label: Leadership
-                      education_qualification:
-                        - value: mba
-                          label: MBA
-                        - value: b_tech
-                          label: B.Tech
-                      rating:
-                        average: 5
-                        count: 20
-                      meta:
-                        age: 35
-                        experience: 10 years
-                      stats:
-                        sessions_attended: 50
-                        students_mentored: 30
-                      tags:
-                        - Experienced
-                        - Technical
-                      configs:
-                        notification: true
-                        visibility: public
-                      visibility: visible
-                      organisation_ids:
-                        - 1
-                        - 2
-                      external_session_visibility: limited
-                      external_mentor_visibility: hidden
-                      created_at: '2023-08-08T19:04:04.607Z'
-                      updated_at: '2023-08-08T19:06:13.237Z'
-                      deleted_at: null
-                    meta:
-                      formsVersion: []
-                      correlation: 1bac1a53-e9df-4321-804d-04c69ffb3d0e
-                      meeting_platform: BBB
-        '400': *ref_5
-      requestBody:
-        description: ''
-        content: {}
-    parameters:
-      - in: path
-        name: id
-        description: user ID
-        schema:
-          type: number
-        required: true
   /mentoring/v1/entity-type/create:
     post:
       summary: Create entity type
@@ -5527,10 +5151,16 @@ paths:
                       correlation: 3babe76b-d277-4073-8a59-8dfb94face9b
                       meeting_platform: BBB
         '400': *ref_7
+    parameters:
+      - in: path
+        name: ''
+        description: ''
+        schema:
+          type: string
   /mentoring/v1/entity-type/read:
     get:
       summary: Read entity type
-      tags: &ref_8
+      tags:
         - Entity Type
       description: |-
         You can use this API to create a user entity  
@@ -5549,8 +5179,6 @@ paths:
                   type: array
                   items:
                     type: string
-                read_user_entity:
-                  type: boolean
             examples:
               example1:
                 value:
@@ -5664,7 +5292,8 @@ paths:
   /mentoring/v1/entity-type/update/{id}:
     post:
       summary: Update entity type
-      tags: *ref_8
+      tags:
+        - Entity Type
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/update` 
@@ -5737,7 +5366,7 @@ paths:
                         type: string
                       deleted_at:
                         type: 'null'
-                      org_id:
+                      organization_id:
                         type: number
                       has_entities:
                         type: boolean
@@ -5765,7 +5394,7 @@ paths:
                       created_at: '2023-09-06T12:01:09.025Z'
                       updated_at: '2023-09-22T12:47:42.510Z'
                       deleted_at: null
-                      org_id: 1
+                      organization_id: 1
                       has_entities: true
                     meta:
                       correlation: 5f384234-cd5a-467e-a5ac-b43365d2a7a3
@@ -5774,7 +5403,8 @@ paths:
   /mentoring/v1/entity-type/delete/{id}:
     delete:
       summary: Delete entity type
-      tags: *ref_8
+      tags:
+        - Entity Type
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/delete` 
@@ -5817,6 +5447,931 @@ paths:
                       correlation: b6841b40-4977-47b5-ac83-3c1e9aa40771
                       meeting_platform: BBB
         '400': *ref_7
+  /mentoring/v1/org-admin/roleChange:
+    post:
+      summary: To change a users role
+      tags:
+        - Organization Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for changing a users role is `/mentoring/v1/org-admin/roleChange` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                user_id:
+                  type: number
+                current_roles:
+                  type: array
+                  items:
+                    type: string
+                new_roles:
+                  type: array
+                  items:
+                    type: string
+            examples:
+              example1:
+                value:
+                  user_id: 2
+                  current_roles:
+                    - mentor
+                  new_roles:
+                    - Mentee
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      user_id:
+                        type: number
+                      roles:
+                        type: array
+                        items:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: User role was updated, please login again.
+                    result:
+                      user_id: 2
+                      roles:
+                        - mentee
+                    meta:
+                      correlation: 2ef3d979-941b-44ff-b442-773aec204484
+                      meetingPlatform: BBB
+  /mentoring/v1/org-admin/inheritEntityType:
+    post:
+      summary: To inherit an entity type
+      tags:
+        - Organization Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for inheriting  an entity type is `/mentoring/v1/org-admin/inheritEntityType` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                entity_type_value:
+                  type: string
+                target_entity_type_label:
+                  type: string
+            examples:
+              example1:
+                value:
+                  entity_type_value: categories
+                  target_entity_type_label: training
+      responses:
+        '200':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      allow_filtering:
+                        type: boolean
+                      data_type:
+                        type: string
+                      organization_id:
+                        type: number
+                      parent_id:
+                        type: number
+                      allow_custom_entities:
+                        type: boolean
+                      has_entities:
+                        type: boolean
+                      model_names:
+                        type: array
+                        items:
+                          type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                      deleted_at:
+                        type: 'null'
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity type created successfully
+                    result:
+                      id: 7
+                      value: categories
+                      label: training
+                      status: ACTIVE
+                      created_by: 2
+                      updated_by: 2
+                      allow_filtering: true
+                      data_type: ARRAY[STRING]
+                      organization_id: 3
+                      parent_id: 3
+                      allow_custom_entities: true
+                      has_entities: true
+                      model_names:
+                        - Session
+                      created_at: '2023-11-30T10:40:56.808Z'
+                      updated_at: '2023-12-05T15:03:27.214Z'
+                      deleted_at: null
+                    meta:
+                      correlation: 94fa4434-18b1-4475-a30f-5aab3b353cef
+                      meetingPlatform: BBB
+  /mentoring/v1/org-admin/getOrgPolicies:
+    get:
+      summary: To get current organization policy
+      tags:
+        - Organization Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for getting organization policy is `/mentoring/v1/org-admin/getOrgPolicies` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content: {}
+      responses:
+        '200': &ref_8
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      organization_id:
+                        type: number
+                      session_visibility_policy:
+                        type: string
+                      mentor_visibility_policy:
+                        type: string
+                      external_session_visibility_policy:
+                        type: string
+                      external_mentor_visibility_policy:
+                        type: string
+                      approval_required_for:
+                        type: array
+                        items:
+                          type: string
+                      allow_mentor_override:
+                        type: boolean
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      mentee_feedback_question_set:
+                        type: string
+                      mentor_feedback_question_set:
+                        type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: ORG_POLICIES_FETCHED_SUCCESSFULLY
+                    result:
+                      organization_id: 3
+                      session_visibility_policy: ALL
+                      mentor_visibility_policy: ALL
+                      external_session_visibility_policy: ALL
+                      external_mentor_visibility_policy: ALL
+                      approval_required_for: []
+                      allow_mentor_override: false
+                      created_by: 2
+                      updated_by: 2
+                      mentee_feedback_question_set: MENTEE_QS1
+                      mentor_feedback_question_set: MENTOR_QS2
+                      created_at: '2023-12-01T12:20:50.758Z'
+                      updated_at: '2023-12-05T15:06:06.117Z'
+                    meta:
+                      correlation: de6f9bef-4a80-4dba-af31-e19d54f36ad5
+                      meetingPlatform: BBB
+  /mentoring/v1/org-admin/updateRelatedOrgs:
+    post:
+      summary: To set related organizations
+      tags:
+        - Organization Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for setting related organization policy is `/mentoring/v1/org-admin/updateRelatedOrgs` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                message:
+                  type: string
+                result:
+                  type: array
+                  items:
+                    type: string
+                meta:
+                  type: object
+                  properties:
+                    correlation:
+                      type: string
+                    meetingPlatform:
+                      type: string
+            examples:
+              example1:
+                value:
+                  responseCode: OK
+                  message: Related organizations updated successfully
+                  result: []
+                  meta:
+                    correlation: 252e274b-f6e0-4c29-922b-957fd9374119
+                    meetingPlatform: BBB
+      responses:
+        '200': *ref_8
+  /mentoring/v1/org-admin/setOrgPolicies:
+    post:
+      summary: To set organization policy
+      tags:
+        - Organization Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for setting organization policy is `/mentoring/v1/org-admin/setOrgPoliciessetOrgPolicies` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                session_visibility_policy:
+                  type: string
+                mentor_visibility_policy:
+                  type: string
+                external_session_visibility_policy:
+                  type: string
+                external_mentor_visibility_policy:
+                  type: string
+                allow_mentor_override:
+                  type: boolean
+            examples:
+              example1:
+                value:
+                  session_visibility_policy: ALL
+                  mentor_visibility_policy: ALL
+                  external_session_visibility_policy: ALL
+                  external_mentor_visibility_policy: ALL
+                  allow_mentor_override: false
+      responses:
+        '200':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      mentee_feedback_question_set:
+                        type: string
+                      mentor_feedback_question_set:
+                        type: string
+                      organization_id:
+                        type: number
+                      session_visibility_policy:
+                        type: string
+                      mentor_visibility_policy:
+                        type: string
+                      external_session_visibility_policy:
+                        type: string
+                      external_mentor_visibility_policy:
+                        type: string
+                      allow_mentor_override:
+                        type: boolean
+                      created_by:
+                        type: number
+                      updated_by:
+                        type: number
+                      approval_required_for:
+                        type: array
+                        items:
+                          type: string
+                      created_at:
+                        type: string
+                      updated_at:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: ORG_POLICIES_SET_SUCCESSFULLY
+                    result:
+                      mentee_feedback_question_set: MENTEE_QS1
+                      mentor_feedback_question_set: MENTOR_QS2
+                      organization_id: 3
+                      session_visibility_policy: ALL
+                      mentor_visibility_policy: ALL
+                      external_session_visibility_policy: ALL
+                      external_mentor_visibility_policy: ALL
+                      allow_mentor_override: false
+                      created_by: 2
+                      updated_by: 2
+                      approval_required_for: []
+                      created_at: '2023-12-01T12:20:50.758Z'
+                      updated_at: '2023-12-05T15:06:06.117Z'
+                    meta:
+                      correlation: d6a37a47-16ef-4e3f-a35d-7a3a60551655
+                      meetingPlatform: BBB
+  /mentoring/v1/admin/userDelete:
+    delete:
+      summary: To delete a user
+      tags:
+        - Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for deleting a user is `/mentoring/v1/admin/userDelete` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: &ref_9
+        content: {}
+      responses:
+        '200':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      isAttendeesNotified:
+                        type: boolean
+                      areUserDetailsCleared:
+                        type: boolean
+                      isUnenrolledFromSessions:
+                        type: boolean
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: User details removed successfully.
+                    result:
+                      isAttendeesNotified: true
+                      areUserDetailsCleared: true
+                      isUnenrolledFromSessions: true
+                    meta:
+                      correlation: 914727e4-a358-4ad9-8db3-bf64f50fc539
+                      meetingPlatform: BBB
+    parameters:
+      - in: path
+        name: userId
+        description: ID of the user that needs to be deleted
+        schema:
+          type: number
+        required: true
+      - &ref_10
+        in: path
+        name: ''
+        description: ''
+        schema: &ref_15
+          type: string
+  /mentoring/v1/admin/triggerViewRebuild:
+    get:
+      summary: To build or rebuild materialized views
+      tags:
+        - Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for creating view is `/mentoring/v1/admin/triggerViewRebuild` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: *ref_9
+      responses: &ref_11
+        '200':
+          description: Created
+          content:
+            application.json:
+              schema: &ref_13
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Materialized views generated successfully
+                    result: []
+                    meta:
+                      correlation: b04f35d7-29fb-4a16-b32f-6f852b291753
+                      meetingPlatform: BBB
+    parameters: &ref_12
+      - *ref_10
+  /mentoring/v1/admin/triggerViewRebuildInternal:
+    get:
+      summary: >-
+        To build or rebuild materialized views, this is supposed to be called
+        internally.
+      tags:
+        - Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for creating view is `/mentoring/v1/admin/triggerViewRebuildInternal` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: *ref_9
+      responses: *ref_11
+    parameters: *ref_12
+  /mentoring/v1/admin/triggerPeriodicViewRefresh:
+    get:
+      summary: To refresh all the views data generated via build API.
+      tags:
+        - Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for refreshing view is `/mentoring/v1/admin/triggerPeriodicViewRefresh` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: *ref_9
+      responses: &ref_14
+        '200':
+          description: Created
+          content:
+            application.json:
+              schema: *ref_13
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Materialized views refresh initiated successfully
+                    result: []
+                    meta:
+                      correlation: a3f1403d-7c2e-4d67-b43b-26a7a2e4bdea
+                      meetingPlatform: BBB
+    parameters: *ref_12
+  /mentoring/v1/admin/triggerPeriodicViewRefreshInternal:
+    get:
+      summary: To refresh a single view, this is supposed to be called internally
+      tags:
+        - Admin APIs
+      description: |-
+        You can use this API to create a user entity  
+         - The API Endpoint for refreshing view is `/mentoring/v1/admin/triggerPeriodicViewRefreshInternal` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: *ref_9
+      responses: *ref_14
+    parameters:
+      - in: path
+        name: model_name
+        description: Model name of the views table
+        schema: *ref_15
+        required: true
+  /mentoring/v1/mentors/list:
+    get:
+      summary: Get all the available mentor
+      tags: *ref_16
+      description: |-
+        This API is associated with mentor profile 
+         - Endpoint for listing all mentor is `/mentoring/v1/mentors/list` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_17
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            key:
+                              type: string
+                            values:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  id:
+                                    type: number
+                                  name:
+                                    type: string
+                                  about:
+                                    type: string
+                                  image:
+                                    type: 'null'
+                                  organization:
+                                    type: object
+                                    properties:
+                                      id:
+                                        type: number
+                                      code:
+                                        type: string
+                                      name:
+                                        type: string
+                                  rating:
+                                    type:
+                                      - object
+                                      - 'null'
+                                    properties:
+                                      average:
+                                        type: number
+                                      votes:
+                                        type: number
+                                      breakup:
+                                        type: array
+                                        items:
+                                          type: object
+                                          properties:
+                                            star:
+                                              type: number
+                                            votes:
+                                              type: number
+                                          required:
+                                            - star
+                                            - votes
+                                  designation:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        value:
+                                          type: string
+                                        label:
+                                          type: string
+                                      required:
+                                        - value
+                                        - label
+                                  area_of_expertise:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        value:
+                                          type: string
+                                        label:
+                                          type: string
+                                      required:
+                                        - value
+                                        - label
+                                  education_qualification:
+                                    type: string
+                                required:
+                                  - id
+                                  - name
+                                  - about
+                                  - image
+                                  - organization
+                                  - rating
+                                  - designation
+                                  - area_of_expertise
+                                  - education_qualification
+                          required:
+                            - key
+                            - values
+                      count:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: User list fetched successfully.
+                    result:
+                      data:
+                        - key: J
+                          values:
+                            - id: 60
+                              name: Joffin Joy TL
+                              about: I build this thing.
+                              image: null
+                              organization:
+                                id: 2
+                                code: tl
+                                name: Tunerlabs
+                              rating:
+                                average: 4
+                                votes: 48
+                                breakup:
+                                  - star: 1
+                                    votes: 7
+                                  - star: 2
+                                    votes: 3
+                                  - star: 3
+                                    votes: 4
+                                  - star: 4
+                                    votes: 15
+                                  - star: 5
+                                    votes: 19
+                              designation:
+                                - value: beo
+                                  label: Block education officer
+                                - value: deo
+                                  label: District education officer
+                                - value: te
+                                  label: Teacher
+                              area_of_expertise:
+                                - value: communication
+                                  label: Communication
+                                - value: educational_leadership
+                                  label: Educational leadership
+                                - value: sqaa
+                                  label: SQAA
+                              education_qualification: B.Tech
+                        - key: M
+                          values:
+                            - id: 82
+                              name: Meghana
+                              about: testing
+                              image: null
+                              organization:
+                                id: 16
+                                code: sl
+                                name: shikshalokam
+                              rating: null
+                              designation:
+                                - value: co
+                                  label: Cluster officials
+                              area_of_expertise:
+                                - value: communication
+                                  label: Communication
+                              education_qualification: BE
+                      count: 2
+                    meta:
+                      correlation: 5937d5ad-b600-42d3-bca4-9e4c9045e2a7
+                      meetingPlatform: BBB
+        '400': *ref_18
+    parameters:
+      - in: path
+        name: area_of_expertise
+        description: Filters to be applied should be passed like this
+        schema: *ref_19
+  /mentoring/v1/mentors/createdSessions:
+    get:
+      summary: Get all the available mentor
+      tags: *ref_16
+      description: |-
+        This API is associated with mentor profile 
+         - Endpoint for listing all sessions created by mentor is `/mentoring/v1/mentors/createdSessions` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters:
+        - *ref_20
+        - in: path
+          name: status
+          required: true
+          description: Values in:PUBLISHED,COMPLETED and LIVE
+          schema: *ref_21
+          example: 21
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      count:
+                        type: number
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            title:
+                              type: string
+                            mentor_id:
+                              type: number
+                            description:
+                              type: string
+                            status:
+                              type: string
+                            start_date:
+                              type: string
+                            end_date:
+                              type: string
+                            image:
+                              type: array
+                              items:
+                                type: string
+                            created_at:
+                              type: string
+                            meeting_info:
+                              type: object
+                              properties:
+                                value:
+                                  type: string
+                                platform:
+                                  type: string
+                            mentor_name:
+                              type: string
+                            organization:
+                              type: object
+                              properties:
+                                id:
+                                  type: number
+                                name:
+                                  type: string
+                                code:
+                                  type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Session fetched successfully.
+                    result:
+                      count: 1
+                      data:
+                        - id: 162
+                          title: Introduction to Python
+                          mentor_id: 10
+                          description: >-
+                            Python is a widely used general-purpose, high level
+                            programming language. It was created by Guido van
+                            Rossum in 1991 and further developed by the Python
+                            Software Foundation. It was designed with an
+                            emphasis on code readability, and its syntax allows
+                            programmers to express their concepts in fewer lines
+                            of code.
+                          status: COMPLETED
+                          start_date: '1701774006'
+                          end_date: '1701777618'
+                          image:
+                            - >-
+                              https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/session/undefined-1701770609877-3720230404141603_webp
+                          created_at: '2023-12-05T10:03:30.169Z'
+                          meeting_info:
+                            value: Gmeet
+                            platform: Google meet
+                          mentor_name: Nevil
+                          organization:
+                            id: 2
+                            name: Tunerlabs
+                            code: tl
+                    meta:
+                      correlation: f6a04881-f8d5-4082-bcb8-fe116fa2ad00
+                      meetingPlatform: BBB
+        '400': *ref_18
+    parameters: []
 components:
   schemas:
     form:
@@ -6395,7 +6950,7 @@ components:
               organization_ids:
                 type: string
                 format: nullable
-              mentor_org_id:
+              mentor_organization_id:
                 type: integer
                 example: 1
               seats_remaining:
@@ -8317,6 +8872,16 @@ tags:
       description: ''
       url: ''
   - name: Profile APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Organization Admin APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Admin APIs
     description: ''
     externalDocs:
       description: ''
