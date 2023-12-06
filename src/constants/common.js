@@ -114,4 +114,5 @@ module.exports = {
 	GET_METHOD: 'GET',
 	NO_OF_ATTEMPTS: 3,
 	materializedViewsPrefix: 'm_',
+	DELETED_STATUS: 'DELETED',
 }
