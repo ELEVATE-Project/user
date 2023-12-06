@@ -677,7 +677,7 @@ module.exports = class MentorsHelper {
 				status: 'ACTIVE',
 			})
 
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'Session')
 			const userType = common.MENTOR_ROLE
 
 			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)

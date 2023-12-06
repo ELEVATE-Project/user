@@ -56,12 +56,21 @@ module.exports = {
 	},
 
 	read: (req) => {
-		req.checkBody('entity_type_id')
+		req.checkQuery('id')
 			.trim()
+			.optional()
 			.notEmpty()
-			.withMessage('Entity type field is empty')
+			.withMessage('id param is empty')
 			.isNumeric()
-			.withMessage('Entity type is invalid, must be an integer')
+			.withMessage('id param is invalid, must be an integer')
+
+		req.checkQuery('value')
+			.trim()
+			.optional()
+			.notEmpty()
+			.withMessage('value field is empty')
+			.matches(/^[A-Za-z0-9 ]+$/)
+			.withMessage('value is invalid, must not contain spaces')
 	},
 
 	delete: (req) => {

@@ -563,7 +563,7 @@ module.exports = class MenteesHelper {
 			let res = utils.validateInput(data, validationData, 'UserExtension')
 			if (!res.success) {
 				return common.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
+					message: 'MENTEE_EXTENSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
