@@ -385,18 +385,6 @@ module.exports = class MentorsHelper {
 				}
 			})
 
-			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
-				returning: true,
-				raw: true,
-			})
-
-			if (updateCount === '0') {
-				return common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: 'MENTOR_EXTENSION_NOT_FOUND',
-				})
-			}
-
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
 				return common.failureResponse({
@@ -411,14 +399,26 @@ module.exports = class MentorsHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
-
-			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
 
-			data = utils.restructureBody(updatedMentor[0], validationData, mentorExtensionsModel)
+			data = utils.restructureBody(data, validationData, mentorExtensionsModel)
 
-			const processDbResponse = utils.processDbResponse(data, validationData)
+			const [updateCount, updatedMentor] = await mentorQueries.updateMentorExtension(userId, data, {
+				returning: true,
+				raw: true,
+			})
+
+			if (updateCount === '0') {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTOR_EXTENSION_NOT_FOUND',
+				})
+			}
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			const processDbResponse = utils.processDbResponse(updatedMentor[0], validationData)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_UPDATED',
@@ -557,10 +557,11 @@ module.exports = class MentorsHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
-
+			console.log('mentorExtension', mentorExtension)
 			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
+			console.log(processDbResponse)
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
