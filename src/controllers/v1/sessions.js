@@ -197,7 +197,9 @@ module.exports = class Sessions {
 
 	async completed(req) {
 		try {
-			const sessionsCompleted = await sessionService.completed(req.params.id)
+			let isBBB
+			req.query.bbb ? (isBBB = true) : (isBBB = false)
+			const sessionsCompleted = await sessionService.completed(req.params.id, isBBB)
 			return sessionsCompleted
 		} catch (error) {
 			return error

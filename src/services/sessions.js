@@ -166,10 +166,7 @@ module.exports = class SessionsHelper {
 			jobsToCreate[0].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 1, 'hour')
 			jobsToCreate[1].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 24, 'hour')
 			jobsToCreate[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
-
-			if (data.toJSON().meeting_info.value !== common.BBB_VALUE) {
-				jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes')
-			} else jobsToCreate.pop()
+			jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes')
 
 			// Iterate through the jobs and create scheduler jobs
 			for (let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++) {
@@ -381,11 +378,7 @@ module.exports = class SessionsHelper {
 						await schedulerRequest.updateDelayOfScheduledJob(updateDelayData[jobIndex])
 					}
 				}
-				if (
-					bodyData.end_date &&
-					bodyData.end_date !== Number(sessionDetail.end_date) &&
-					bodyData?.meeting_info?.value !== common.BBB_VALUE
-				) {
+				if (bodyData.end_date && bodyData.end_date !== Number(sessionDetail.end_date)) {
 					isSessionReschedule = true
 
 					const jobId = common.jobPrefixToMarkSessionAsCompleted + sessionDetail.id
@@ -393,36 +386,6 @@ module.exports = class SessionsHelper {
 						id: jobId,
 						delay: await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes'),
 					})
-				}
-				if (
-					bodyData.meeting_info &&
-					bodyData?.meeting_info?.value !== common.BBB_VALUE &&
-					sessionDetail.meeting_info?.value !== bodyData?.meeting_info?.value
-				) {
-					let jobsToCreate = _.cloneDeep(common.jobsToCreate)
-					jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(
-						sessionDetail.end_date,
-						0,
-						'minutes'
-					)
-					// Iterate through the jobs and create scheduler jobs
-					// Append the session ID to the job ID
-					jobsToCreate[3].jobId = jobsToCreate[3].jobId + sessionDetail.id
-
-					const reqBody = {
-						job_id: jobsToCreate[3].jobId,
-						email_template_code: jobsToCreate[3].emailTemplate,
-						job_creator_org_id: orgId,
-					}
-					// Create the scheduler job with the calculated delay and other parameters
-					await schedulerRequest.createSchedulerJob(
-						jobsToCreate[3].jobId,
-						jobsToCreate[3].delay,
-						jobsToCreate[3].jobName,
-						reqBody,
-						common.sessionCompleteEndpoint + sessionDetail.id,
-						common.PATCH_METHOD
-					)
 				}
 			}
 
@@ -1247,9 +1210,27 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - updated session data.
 	 */
 
-	static async completed(sessionId) {
+	static async completed(sessionId, isBBB) {
 		try {
-			const { updatedRows } = await sessionQueries.updateOne(
+			const sessionDetails = await sessionQueries.findOne({
+				id: sessionId,
+			})
+			if (!sessionDetails) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (sessionDetails.meeting_info.value == common.BBB_VALUE && sessionDetails.started_at != null && !isBBB) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					result: [],
+				})
+			}
+
+			await sessionQueries.updateOne(
 				{
 					id: sessionId,
 				},
@@ -1257,18 +1238,10 @@ module.exports = class SessionsHelper {
 					status: common.COMPLETED_STATUS,
 					completed_at: utils.utcFormat(),
 				},
-				{ returning: true, raw: true }
+				{ returning: false, raw: true }
 			)
-			if (!updatedRows)
-				return common.failureResponse({
-					message: 'SESSION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
 
-			const { value } = updatedRows[0].meeting_info
-
-			if (value === common.BBB_VALUE) {
+			if (sessionDetails.meeting_info.value == common.BBB_VALUE) {
 				const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
 
 				if (recordingInfo?.data?.response) {
@@ -1288,7 +1261,7 @@ module.exports = class SessionsHelper {
 				result: [],
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
