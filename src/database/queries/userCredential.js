@@ -7,7 +7,7 @@ exports.create = async (data) => {
 		return res.get({ plain: true })
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 
@@ -20,13 +20,12 @@ exports.findOne = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 
 exports.updateUser = async (filter, update, options = {}) => {
 	try {
-		console.log('HERE::::::::::::')
 		return await UserCredential.update(update, {
 			where: filter,
 			...options,
@@ -46,6 +45,7 @@ exports.findAll = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		console.log(error)
+		throw error
 	}
 }
