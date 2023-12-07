@@ -72,6 +72,7 @@ module.exports = {
 		'/sessions/completed',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
+	UNFULFILLED_STATUS: 'UNFULFILLED',
 	PUBLISHED_STATUS: 'PUBLISHED',
 	LIVE_STATUS: 'LIVE',
 	MENTOR_EVALUATING: 'mentor',

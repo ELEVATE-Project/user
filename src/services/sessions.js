@@ -1235,7 +1235,7 @@ module.exports = class SessionsHelper {
 					id: sessionId,
 				},
 				{
-					status: common.COMPLETED_STATUS,
+					status: sessionDetails.started_at == null ? common.UNFULFILLED_STATUS : common.COMPLETED_STATUS,
 					completed_at: utils.utcFormat(),
 				},
 				{ returning: false, raw: true }
