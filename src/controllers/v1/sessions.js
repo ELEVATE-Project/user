@@ -198,8 +198,7 @@ module.exports = class Sessions {
 
 	async completed(req) {
 		try {
-			let isBBB
-			req.query.source == common.BBB_VALUE ? (isBBB = true) : (isBBB = false)
+			const isBBB = req.query.source == common.BBB_VALUE ? true : false
 			const sessionsCompleted = await sessionService.completed(req.params.id, isBBB)
 			return sessionsCompleted
 		} catch (error) {
