@@ -1241,7 +1241,7 @@ module.exports = class SessionsHelper {
 				{ returning: false, raw: true }
 			)
 
-			if (sessionDetails.meeting_info.value == common.BBB_VALUE) {
+			if (sessionDetails.meeting_info.value == common.BBB_VALUE && isBBB) {
 				const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
 
 				if (recordingInfo?.data?.response) {
