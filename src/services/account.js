@@ -435,6 +435,10 @@ module.exports = class AccountHelper {
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			user = utils.processDbResponse(user, prunedEntities)
 
+			if (user && user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({
