@@ -31,7 +31,7 @@ module.exports = {
 									options: [],
 									meta: {
 										showValidationError: true,
-										maxLength: 250,
+										maxLength: 255,
 									},
 								},
 								{
@@ -52,6 +52,7 @@ module.exports = {
 										entityType: 'location',
 										errorLabel: 'Location',
 									},
+									multiple: false,
 								},
 								{
 									name: 'designation',
@@ -75,6 +76,7 @@ module.exports = {
 										showAddOption: true,
 										errorLabel: 'Designation',
 									},
+									multiple: true,
 								},
 								{
 									name: 'experience',
@@ -133,6 +135,7 @@ module.exports = {
 										showAddOption: true,
 										errorLabel: 'Expertise',
 									},
+									multiple: true,
 								},
 								{
 									name: 'education_qualification',
@@ -151,7 +154,7 @@ module.exports = {
 									options: [],
 									meta: {
 										errorLabel: 'Education qualification',
-										maxLength: 250,
+										maxLength: 255,
 									},
 								},
 								{
@@ -176,6 +179,7 @@ module.exports = {
 										showAddOption: true,
 										errorLabel: 'Medium',
 									},
+									multiple: true,
 								},
 							],
 						},
@@ -204,7 +208,7 @@ module.exports = {
 									},
 									validators: {
 										required: true,
-										maxLength: 250,
+										maxLength: 255,
 									},
 								},
 								{
@@ -220,7 +224,7 @@ module.exports = {
 									},
 									validators: {
 										required: true,
-										maxLength: 250,
+										maxLength: 255,
 									},
 								},
 								{
@@ -278,6 +282,7 @@ module.exports = {
 										showSelectAll: true,
 										showAddOption: true,
 									},
+									multiple: true,
 								},
 								{
 									name: 'categories',
@@ -300,6 +305,7 @@ module.exports = {
 										showSelectAll: true,
 										showAddOption: true,
 									},
+									multiple: true,
 								},
 								{
 									name: 'medium',
@@ -323,6 +329,7 @@ module.exports = {
 										showSelectAll: true,
 										showAddOption: true,
 									},
+									multiple: true,
 								},
 							],
 						},
