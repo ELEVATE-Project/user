@@ -374,6 +374,14 @@ module.exports = class MenteesHelper {
 				'external_session_visibility',
 				'organization_id',
 			])
+
+			if (!mentorExtension || !menteeExtension) {
+				throw common.failureResponse({
+					statusCode: httpStatusCode.unauthorized,
+					message: 'USER_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const organizationName = mentorExtension
 				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
 				: ''
