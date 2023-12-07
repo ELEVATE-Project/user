@@ -8,6 +8,7 @@
 // Dependencies
 const sessionService = require('@services/sessions')
 const { isAMentor } = require('@generics/utils')
+const common = require('@constants/common')
 
 module.exports = class Sessions {
 	/**
@@ -198,7 +199,7 @@ module.exports = class Sessions {
 	async completed(req) {
 		try {
 			let isBBB
-			req.query.bbb ? (isBBB = true) : (isBBB = false)
+			req.query.source == common.BBB_VALUE ? (isBBB = true) : (isBBB = false)
 			const sessionsCompleted = await sessionService.completed(req.params.id, isBBB)
 			return sessionsCompleted
 		} catch (error) {

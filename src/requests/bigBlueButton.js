@@ -25,7 +25,7 @@ const utils = require('@generics/utils')
 const createMeeting = function (meetingId, meetingName, attendeePW, moderatorPW, sessionDuration) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + '%2F' + meetingId + '%3Fbbb%3Dtrue'
+			let endMeetingCallBackUrl = process.env.MEETING_END_CALLBACK_EVENTS + '%2F' + meetingId + '%3Fsource%3DBBB'
 			let sessionEndUrl = process.env.BIG_BLUE_BUTTON_SESSION_END_URL
 			let lastUserTimeout = process.env.BIG_BLUE_BUTTON_LAST_USER_TIMEOUT_MINUTES || 15
 
