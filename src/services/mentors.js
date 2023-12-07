@@ -409,10 +409,20 @@ module.exports = class MentorsHelper {
 				raw: true,
 			})
 
-			if (updateCount === '0') {
-				return common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: 'MENTOR_EXTENSION_NOT_FOUND',
+			if (updateCount === 0) {
+				const fallbackUpdatedUser = await mentorQueries.getMentorExtension(userId)
+				if (!fallbackUpdatedUser) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'MENTOR_EXTENSION_NOT_FOUND',
+					})
+				}
+
+				const processDbResponse = utils.processDbResponse(fallbackUpdatedUser, validationData)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTOR_EXTENSION_UPDATED',
+					result: processDbResponse,
 				})
 			}
 
@@ -557,11 +567,11 @@ module.exports = class MentorsHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
-			console.log('mentorExtension', mentorExtension)
+
 			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
-			console.log(processDbResponse)
+
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
