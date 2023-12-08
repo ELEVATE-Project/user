@@ -134,7 +134,7 @@ module.exports = class AdminHelper {
 			}
 			await Promise.all(
 				usersUpcomingSessions.map(async (session) => {
-					await sessionQueries.updateEnrollmentCount(session.session_id, false)
+					await sessionQueries.updateEnrollmentCount(session.session_id, true)
 				})
 			)
 
