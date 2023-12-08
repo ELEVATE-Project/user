@@ -375,7 +375,7 @@ module.exports = class MenteesHelper {
 				'organization_id',
 			])
 
-			if (!mentorExtension || !menteeExtension) {
+			if (!mentorExtension && !menteeExtension) {
 				throw common.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
 					message: 'USER_NOT_FOUND',
