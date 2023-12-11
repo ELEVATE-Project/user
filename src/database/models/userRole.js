@@ -1,4 +1,5 @@
 'use strict'
+const process = require('process')
 module.exports = (sequelize, DataTypes) => {
 	const UserRole = sequelize.define(
 		'UserRole',
@@ -28,7 +29,8 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			organization_id: {
 				type: DataTypes.INTEGER,
-				allowNull: true,
+				allowNull: false,
+				defaultValue: parseInt(process.env.DEFAULT_ORG_ID),
 			},
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }
