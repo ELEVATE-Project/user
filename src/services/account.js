@@ -95,7 +95,7 @@ module.exports = class AccountHelper {
 			if (invitedUserId) {
 				invitedUserMatch = await userInviteQueries.findOne({
 					id: invitedUserId.organization_user_invite_id,
-				})
+				}) //add org id here to optimize the query
 			}
 
 			let isOrgAdmin = false
