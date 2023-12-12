@@ -22,7 +22,12 @@ module.exports = class PermissionsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'PERMISSION_CREATED_SUCCESSFULLY',
-				result: permissions,
+				result: {
+					Id: permissions.id,
+					status: permissions.status,
+					module: permissions.module,
+					actions: permissions.actions,
+				},
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
@@ -67,7 +72,7 @@ module.exports = class PermissionsHelper {
 					statusCode: httpStatusCode.created,
 					message: 'PERMISSION_UPDATED_SUCCESSFULLY',
 					result: {
-						id: updatedPermission.id,
+						Id: updatedPermission.id,
 						status: updatedPermission.status,
 						module: updatedPermission.module,
 						actions: updatedPermission.actions,
@@ -105,6 +110,7 @@ module.exports = class PermissionsHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PERMISSION_DELETED_SUCCESSFULLY',
+				result: {},
 			})
 		} catch (error) {
 			throw error
@@ -130,7 +136,7 @@ module.exports = class PermissionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else {
-				const result = {
+				const results = {
 					data: permissions.rows,
 					count: permissions.count,
 				}
@@ -138,7 +144,7 @@ module.exports = class PermissionsHelper {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PERMISSION_FETCHED_SUCCESSFULLY',
-					result,
+					result: { results },
 				})
 			}
 		} catch (error) {

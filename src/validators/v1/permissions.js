@@ -4,14 +4,14 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('code field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('code is invalid, must not contain spaces')
 
 		req.checkBody('module')
 			.trim()
 			.notEmpty()
 			.withMessage('module field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('module is invalid, must not contain spaces')
 
 		const allowedActions = ['ALL', 'READ', 'WRITE', 'UPDATE', 'DELETE']
@@ -38,14 +38,14 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('code field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('code is invalid, must not contain spaces')
 
 		req.checkBody('module')
 			.trim()
 			.notEmpty()
 			.withMessage('module field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('module is invalid, must not contain spaces')
 
 		const allowedActions = ['ALL', 'READ', 'WRITE', 'UPDATE', 'DELETE']

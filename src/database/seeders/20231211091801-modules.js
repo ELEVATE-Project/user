@@ -4,11 +4,11 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		const modulesData = [
-			{ code: 'All', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'ManageSession', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'Mentee', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'Modules', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'Permissions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'all', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'manage_session', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'mentee', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'modules', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'permissions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 		]
 
 		// Insert the data into the 'modules' table

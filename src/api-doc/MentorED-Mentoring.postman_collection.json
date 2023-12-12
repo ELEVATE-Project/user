@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "46da8400-88fd-4974-b0b5-32461871d5d0",
+		"_postman_id": "2f0649b3-7ba1-4d93-b371-443444cc407c",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "24204448",
+		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-2f0649b3-7ba1-4d93-b371-443444cc407c?action=share&source=collection_link&creator=24204448"
 	},
 	"item": [
 		{
@@ -2006,6 +2007,270 @@
 							"raw": "{{MentoringBaseUrl}}interface/v1/account/update",
 							"host": ["{{MentoringBaseUrl}}interface"],
 							"path": ["v1", "account", "update"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Permissions",
+			"item": [
+				{
+					"name": "Create Permissions",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"code\": \"sessioncreation\", \n\"module\": \"sessions\", \n\"actions\": \"WRITE\",\n\"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Permissions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10&search=c2Vzc2lvbg==",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "c2Vzc2lvbg=="
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Permissions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"code\": \"sessioncreate\", \n\"module\": \"sessions\", \n\"actions\": \"READ\",\n\"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/update/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "update", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "update id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Permissions",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/delete/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "delete", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delete id"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Module",
+			"item": [
+				{
+					"name": "Create Module",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJlbWFpbCI6InN1bWFuLnZAcGFjZXdpc2RvbS5jb20iLCJuYW1lIjoiU3VtYW4gViIsIm9yZ2FuaXphdGlvbl9pZCI6MSwicm9sZXMiOlt7ImlkIjozLCJ0aXRsZSI6Im1lbnRlZSIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIn1dfSwiaWF0IjoxNzAyMjg3MDY3LCJleHAiOjE3MDIzNzM0Njd9.O9XNHKFbAsiA8VGiJ1ashPY2rE56ITOSsiJeMrOdU9E",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\" : \"SystemAdmin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Module",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\" : \"AllSessionss\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/update/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "update", ":id"],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "update Id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Module",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/list?page=1&limit=10&search=cw==",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "cw=="
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Module",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/delete/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "delete", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delete Id"
+								}
+							]
 						}
 					},
 					"response": []

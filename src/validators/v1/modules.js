@@ -4,7 +4,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('code field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('code is invalid, must not contain spaces')
 
 		req.checkBody('status')
@@ -23,7 +23,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('code field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('code is invalid, must not contain spaces')
 
 		req.checkBody('status')

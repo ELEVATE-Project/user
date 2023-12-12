@@ -56,6 +56,7 @@ module.exports = class UserRolePermissionData {
 		try {
 			const deletedRows = await Permissions.destroy({
 				where: { id },
+				force: true,
 			})
 
 			return deletedRows

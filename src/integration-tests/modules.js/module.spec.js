@@ -8,7 +8,7 @@ describe('mentoring/v1/modules ', function () {
 	})
 	it('/create', async () => {
 		let res = await request.post('/mentoring/v1/modules/create').send({
-			code: 'SystemAdmin',
+			code: 'system_admin',
 		})
 		//console.log(res.body)
 		expect(res.statusCode).toBe(201)
@@ -17,7 +17,7 @@ describe('mentoring/v1/modules ', function () {
 
 	it('/update', async () => {
 		let res = await request.post('/mentoring/v1/modules/update/3').send({
-			code: 'Mennnnn',
+			code: 'ment',
 		})
 		//console.log(res.body)
 		expect(res.statusCode).toBe(201)
@@ -25,7 +25,7 @@ describe('mentoring/v1/modules ', function () {
 	})
 
 	it('/delete', async () => {
-		let res = await request.post('/mentoring/v1/modules/delete/8')
+		let res = await request.post('/mentoring/v1/modules/delete/4')
 		//console.log(res.body)
 		expect(res.statusCode).toBe(202)
 		expect(res.body).toMatchSchema(schema.deleteSchema)

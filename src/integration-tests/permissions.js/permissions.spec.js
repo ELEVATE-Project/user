@@ -8,8 +8,8 @@ describe('mentoring/v1/permissions ', function () {
 	})
 	it('/create', async () => {
 		let res = await request.post('/mentoring/v1/permissions/create').send({
-			code: 'sessioncreation',
-			module: 'sessions',
+			code: 'edit_session',
+			module: 'session_edit',
 			actions: 'WRITE',
 			status: 'ACTIVE',
 		})
@@ -19,8 +19,8 @@ describe('mentoring/v1/permissions ', function () {
 	})
 
 	it('/update', async () => {
-		let res = await request.post('/mentoring/v1/permissions/update/6').send({
-			code: 'sessioncreate',
+		let res = await request.post('/mentoring/v1/permissions/update/2').send({
+			code: 'sessicre',
 			module: 'sessions',
 			actions: 'READ',
 			status: 'ACTIVE',
@@ -31,7 +31,7 @@ describe('mentoring/v1/permissions ', function () {
 	})
 
 	it('/delete', async () => {
-		let res = await request.post('/mentoring/v1/permissions/delete/6')
+		let res = await request.post('/mentoring/v1/permissions/delete/3')
 		//console.log(res.body)
 		expect(res.statusCode).toBe(202)
 		expect(res.body).toMatchSchema(schema.deleteSchema)

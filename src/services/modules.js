@@ -1,8 +1,8 @@
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const modulesQueries = require('../database/queries/modules')
-const permissionsQueries = require('../database/queries/permissions')
+const modulesQueries = require('@database/queries/modules')
+const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
 const { filter, constant, isNull } = require('lodash')
@@ -23,7 +23,11 @@ module.exports = class modulesHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'MODULES_CREATED_SUCCESSFULLY',
-				result: modules,
+				result: {
+					Id: modules.id,
+					code: modules.code,
+					status: modules.status,
+				},
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
@@ -61,7 +65,7 @@ module.exports = class modulesHelper {
 				newModuleCode
 			)
 
-			if (updatedModules === 'MODULES_NOT_UPDATED') {
+			if (!updatedModules && !updatePermissions) {
 				return common.failureResponse({
 					message: 'MODULES_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
@@ -114,6 +118,7 @@ module.exports = class modulesHelper {
 				return common.successResponse({
 					statusCode: httpStatusCode.accepted,
 					message: 'MODULES_DELETED_SUCCESSFULLY',
+					result: {},
 				})
 			}
 		} catch (error) {
@@ -140,7 +145,7 @@ module.exports = class modulesHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else {
-				const result = {
+				const results = {
 					data: modules.rows,
 					count: modules.count,
 				}
@@ -148,7 +153,7 @@ module.exports = class modulesHelper {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MODULES_FETCHED_SUCCESSFULLY',
-					result,
+					result: results,
 				})
 			}
 		} catch (error) {

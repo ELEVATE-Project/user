@@ -1064,8 +1064,7 @@ paths:
   /mentoring/v1/sessions/list?page={page}&limit={limit}&status={status}&search={search}:
     get:
       summary: Get list of sessions
-      tags:
-        - Session APIs
+      tags: []
       description: >-
         You can use this API to get a list of session based on certain
         conditions 
@@ -1073,7 +1072,8 @@ paths:
          - It is mandatory to provide values for parameters marked with `required` 
          - Mandatory parameter cannot be empty or null
       parameters:
-        - name: X-auth-token
+        - &ref_24
+          name: X-auth-token
           required: true
           in: header
           description: >-
@@ -1081,13 +1081,15 @@ paths:
             in the login API Response.
           schema:
             type: string
-        - in: path
+        - &ref_25
+          in: path
           name: page
           description: Please add page number
           schema:
             type: number
           example: 1
-        - in: path
+        - &ref_26
+          in: path
           name: limit
           description: Number of records to limit
           schema:
@@ -1107,7 +1109,7 @@ paths:
           description: >-
             Please search for information such as author name or title of
             session.
-          schema:
+          schema: &ref_27
             type: string
           example: John
         - in: path
@@ -1189,7 +1191,7 @@ paths:
                           meeting_info.platform: BigBlueButton (Default)
                           mentor_name: Newell
                           organization_id: 1
-        '400':
+        '400': &ref_28
           description: Bad Request. Session Not Found
           content:
             application.json:
@@ -4261,8 +4263,7 @@ paths:
   /mentoring/v1/mentors/share/{mentorId}:
     get:
       summary: Share mentor profile
-      tags: &ref_16
-        - Mentor APIs
+      tags: &ref_16 []
       description: |-
         This API is associated with mentor profile 
          - Endpoint for share mentor profile is `/mentoring/v1/mentors/share` 
@@ -5292,8 +5293,7 @@ paths:
   /mentoring/v1/entity-type/update/{id}:
     post:
       summary: Update entity type
-      tags:
-        - Entity Type
+      tags: []
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/update` 
@@ -5403,15 +5403,14 @@ paths:
   /mentoring/v1/entity-type/delete/{id}:
     delete:
       summary: Delete entity type
-      tags:
-        - Entity Type
+      tags: []
       description: |-
         You can use this API to create a user entity  
          - The API Endpoint for creating a user entity is `/mentoring/v1/entity-type/delete` 
          - It is mandatory to provide values for parameters that are marked as `required` 
          - This is a mandatory parameter and cannot be empty or null.
       parameters: *ref_6
-      requestBody:
+      requestBody: &ref_23
         content: {}
       responses:
         '201':
@@ -6371,7 +6370,579 @@ paths:
                       correlation: f6a04881-f8d5-4082-bcb8-fe116fa2ad00
                       meetingPlatform: BBB
         '400': *ref_18
-    parameters: []
+    parameters: &ref_22 []
+  /mentoring/v1/permissions/create:
+    post:
+      summary: Creating new permissions for userRoles
+      tags:
+        - Permissions
+      description: |-
+        This API is associated with userPermissionRoles
+         - Endpoint for creating permissions  `/mentoring/v1/permissions/create` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: &ref_29
+        - *ref_20
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      Id:
+                        type: number
+                      status:
+                        type: string
+                      module:
+                        type: string
+                      actions:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permission created successfully
+                    result:
+                      Id: 6
+                      status: ACTIVE
+                      module: session_edit
+                      actions: WRITE
+                    meta:
+                      correlation: c36c52d6-6f66-481b-9dc2-d315a77a9b6e
+                      meetingPlatform: BBB
+        '400': &ref_30
+          description: Bad request
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  error:
+                    type: array
+                    items:
+                      type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                  message:
+                    type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error: []
+                    meta:
+                      correlation: 32016da1-8bf1-4157-afad-34508aa609c8
+                    message: permission already exists
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+                module:
+                  type: string
+                actions:
+                  type: string
+                status:
+                  type: string
+              required:
+                - code
+                - module
+                - actions
+            examples:
+              example1:
+                value:
+                  code: edit_session
+                  module: session_edit
+                  actions: WRITE
+                  status: ACTIVE
+    parameters: *ref_22
+  /mentoring/v1/permissions/update/{id}:
+    post:
+      summary: Update permissions by id
+      tags:
+        - Permissions
+      description: |-
+        You can use this API to update permissions
+         - The API Endpoint for updating permissions is `/mentoring/v1/permissions/update` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+                module:
+                  type: string
+                actions:
+                  type: string
+                status:
+                  type: string
+              required:
+                - code
+                - module
+                - actions
+            examples: &ref_31
+              example1:
+                value:
+                  code: session_creation
+                  module: sessions
+                  actions: WRITE
+                  status: ACTIVE
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permission updated successfully
+                    result: {}
+                    meta:
+                      correlation: c7d9ba71-e4e7-44ac-8a78-2edfd1a1f69d
+                      meetingPlatform: BBB
+        '400': *ref_7
+  /mentoring/v1/permissions/delete/{id}:
+    delete:
+      summary: Delete permissions by id
+      tags:
+        - Permissions
+      description: |-
+        You can use this API to delete permission  
+         - The API Endpoint for deleting permissions is `/mentoring/v1/permissions/delete` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: *ref_23
+      responses:
+        '202':
+          description: Created
+          content:
+            application.json:
+              schema: &ref_32
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permission deleted successfully
+                    result: {}
+                    meta:
+                      correlation: a3f7cde4-83f2-4143-a5c4-7e3291085cb4
+                      meetingPlatform: BBB
+        '400': *ref_7
+  /mentoring/v1/permissions/list?page={page}&limit={limit}&search={search}:
+    get:
+      summary: Get list of permissions
+      tags:
+        - Permissions
+      description: |-
+        You can use this API to get a list of permissions
+         - The API Endpoint for getting a list of permissions is `/mentoring/v1/permissions/list` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: &ref_33
+        - *ref_24
+        - *ref_25
+        - *ref_26
+        - in: path
+          name: search
+          description: Please search for information such as 'code' names
+          schema: *ref_27
+          example: John
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      results:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: number
+                                code:
+                                  type: string
+                                module:
+                                  type: string
+                                actions:
+                                  type: string
+                                status:
+                                  type: string
+                              required:
+                                - id
+                                - code
+                                - module
+                                - actions
+                                - status
+                          count:
+                            type: number
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permissions fetched successfully
+                    result:
+                      results:
+                        data:
+                          - id: 1
+                            code: all_session
+                            module: all
+                            actions: ALL
+                            status: ACTIVE
+                          - id: 5
+                            code: delete_session
+                            module: permissions
+                            actions: DELETE
+                            status: ACTIVE
+                          - id: 2
+                            code: read_session
+                            module: manage_session
+                            actions: READ
+                            status: ACTIVE
+                          - id: 3
+                            code: session_creation
+                            module: sessions
+                            actions: WRITE
+                            status: ACTIVE
+                          - id: 4
+                            code: update_session
+                            module: modules
+                            actions: UPDATE
+                            status: ACTIVE
+                        count: 5
+                    meta:
+                      correlation: 52af783b-f8b8-46d6-a61d-b17c521344ac
+                      meetingPlatform: BBB
+        '400': *ref_28
+  /mentoring/v1/modules/create:
+    post:
+      summary: Creating new modules
+      tags:
+        - Modules
+      description: |-
+        This API is associated with modules
+         - Endpoint for creating modules  `/mentoring/v1/modules/create` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_29
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      Id:
+                        type: number
+                      code:
+                        type: string
+                      status:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module created successfully
+                    result:
+                      Id: 6
+                      code: system_admin
+                      status: ACTIVE
+                    meta:
+                      correlation: f9a97b88-d663-437f-ae6e-cc2628294f0e
+                      meetingPlatform: BBB
+        '400': *ref_30
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+              required:
+                - code
+            examples:
+              example1:
+                value:
+                  code: system_admin
+    parameters: *ref_22
+  /mentoring/v1/modules/update/{id}:
+    post:
+      summary: Update modules by id
+      tags:
+        - Modules
+      description: |-
+        You can use this API to update modules by id
+         - The API Endpoint for updating modules `/mentoring/v1/modules/update` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+              required:
+                - code
+            examples: *ref_31
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      status:
+                        type: string
+                      code:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module updated successfully
+                    result:
+                      id: 5
+                      status: ACTIVE
+                      code: system
+                    meta:
+                      correlation: dea5b252-75d2-40ed-a5a7-f8dec087467e
+                      meetingPlatform: BBB
+        '400': *ref_7
+  /mentoring/v1/modules/delete/{id}:
+    delete:
+      summary: Delete modules by id
+      tags:
+        - Modules
+      description: |-
+        You can use this API to delete modules  
+         - The API Endpoint for deleting modules is `/mentoring/v1/modules/delete` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody: *ref_23
+      responses:
+        '202':
+          description: Created
+          content:
+            application.json:
+              schema: *ref_32
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module deleted successfully
+                    result: {}
+                    meta:
+                      correlation: 471d834a-4954-4564-ae91-6a1f24bec1e5
+                      meetingPlatform: BBB
+        '400': *ref_7
+  /mentoring/v1/modules/list?page={page}&limit={limit}&search={search}:
+    get:
+      summary: Get list of modules
+      tags:
+        - Modules
+      description: |-
+        You can use this API to get a list of modules
+         - The API Endpoint for getting a list of modules is `/mentoring/v1/modules/list` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_33
+      responses:
+        '200':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            code:
+                              type: string
+                            status:
+                              type: string
+                          required:
+                            - id
+                            - code
+                            - status
+                      count:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module fetched successfully
+                    result:
+                      data:
+                        - id: 6
+                          code: adminsystem
+                          status: ACTIVE
+                        - id: 2
+                          code: manage_session
+                          status: ACTIVE
+                        - id: 4
+                          code: modules
+                          status: ACTIVE
+                        - id: 5
+                          code: system
+                          status: ACTIVE
+                      count: 4
+                    meta:
+                      correlation: 4cbb42f7-ed92-41a1-b93d-d689121cda08
+                      meetingPlatform: BBB
+        '400': *ref_28
 components:
   schemas:
     form:
@@ -8845,6 +9416,9 @@ components:
                     type: string
             correlation:
               type: string
+    schema-1:
+      type: object
+      properties: {}
   securitySchemes:
     bearer:
       type: apiKey
@@ -8882,6 +9456,16 @@ tags:
       description: ''
       url: ''
   - name: Admin APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Permissions
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Modules
     description: ''
     externalDocs:
       description: ''
