@@ -15,6 +15,9 @@ const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
 const common = require('@constants/common')
 const crypto = require('crypto')
+const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
+const httpStatusCode = require('@generics/http-status')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -520,7 +523,51 @@ function validateFilters(input, validationData, modelName) {
 	}
 	return input
 }
+async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
+	try {
+		const userPolicyDetails = isAMentor
+			? await mentorQueries.getMentorExtension(userId, ['external_mentor_visibility', 'organization_id'])
+			: await menteeQueries.getMenteeExtension(userId, ['external_mentor_visibility', 'organization_id'])
 
+		// Throw error if mentor/mentee extension not found
+		if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
+			return common.failureResponse({
+				statusCode: httpStatusCode.not_found,
+				message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		let filter = ''
+		if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
+			// Filter user data based on policy
+			// generate filter based on condition
+			if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
+				/**
+				 * if user external_mentor_visibility is current. He can only see his/her organizations mentors
+				 * so we will check mentor's organization_id and user organization_id are matching
+				 */
+				filter = `AND "organization_id" = ${userPolicyDetails.organization_id}`
+			} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
+				/**
+				 * If user external_mentor_visibility is associated
+				 * <<point**>> first we need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+				 */
+				filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "organization_id" = ${userPolicyDetails.organization_id}`
+			} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
+				/**
+				 * We need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+				 * OR if mentor visibility is ALL that mentor is also accessible
+				 */
+				filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
+			}
+		}
+
+		return filter
+	} catch (err) {
+		return err
+	}
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -556,4 +603,5 @@ module.exports = {
 	generateWhereClause,
 	validateFilters,
 	processQueryParametersWithExclusions,
+	filterUserListBasedOnSaasPolicy,
 }

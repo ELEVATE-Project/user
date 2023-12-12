@@ -18,6 +18,7 @@ module.exports = async function (req, res, next) {
 		let guestUrl = false
 		let roleValidation = false
 		let decodedToken
+		let permissionCheck = false
 
 		const authHeader = req.get('X-auth-token')
 
@@ -43,6 +44,12 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
+		// check if the path needs permission check
+		common.permissionCheck.map(function (path) {
+			if (req.path.includes(path)) {
+				permissionCheck = true
+			}
+		})
 		if ((internalAccess || guestUrl) && !authHeader) {
 			next()
 			return
@@ -65,6 +72,22 @@ module.exports = async function (req, res, next) {
 		}
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+			// if the api needs permission check
+			if (permissionCheck) {
+				isAllowedRole = common.userRolePermissionCheck(
+					decodedToken.data.roles,
+					req.path.split('/').filter(Boolean).slice(-2, -1)[0]
+				)
+
+				// if the permission doesn't match, throw failure message
+				if (!isAllowedRole) {
+					throw common.failureResponse({
+						message: 'UNAUTHORIZED_REQUEST',
+						statusCode: httpStatusCode.unauthorized,
+						responseCode: 'UNAUTHORIZED',
+					})
+				}
+			}
 		} catch (err) {
 			if (err.name === 'TokenExpiredError') {
 				throw common.failureResponse({

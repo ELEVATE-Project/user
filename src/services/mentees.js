@@ -758,4 +758,130 @@ module.exports = class MenteesHelper {
 			return error
 		}
 	}
+	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor, token) {
+		try {
+			let additionalProjectionString = ''
+
+			// check for fields query
+			// if (queryParams.fields && queryParams.fields !== '') {
+			// 	additionalProjectionString = queryParams.fields
+			// 	delete queryParams.fields
+			// }
+
+			// const query = utils.processQueryParametersWithExclusions(queryParams)
+			const query = {}
+
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: 'ACTIVE',
+			})
+
+			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+			const userType = common.MENTEE_ROLE
+
+			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
+
+			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+				[],
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+			if (extensionDetails.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			const menteeIds = extensionDetails.data.map((item) => item.user_id)
+
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, menteeIds, token)
+
+			if (userDetails.data.result.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+				userDetails.data.result.data.map((item) => item.id),
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				false
+			)
+
+			if (extensionDetails.data.length > 0) {
+				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
+				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
+					extensionDetails.data,
+					uniqueOrgIds,
+					common.mentorExtensionModelName,
+					'organization_id'
+				)
+			}
+
+			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
+
+			userDetails.data.result.data = userDetails.data.result.data
+				.map((value) => {
+					// Map over each value in the values array of the current group
+					const user_id = value.id
+					// Check if extensionDataMap has an entry with the key equal to the user_id
+					if (extensionDataMap.has(user_id)) {
+						const newItem = extensionDataMap.get(user_id)
+						value = { ...value, ...newItem }
+						delete value.user_id
+						delete value.visibility
+						delete value.organization_id
+						delete value.meta
+						return value
+					}
+					return null
+				})
+				.filter((value) => value !== null)
+
+			let foundKeys = {}
+			let result = []
+
+			for (let user of userDetails.data.result.data) {
+				let firstChar = user.name.charAt(0)
+				firstChar = firstChar.toUpperCase()
+
+				if (!foundKeys[firstChar]) {
+					result.push({
+						key: firstChar,
+						values: [user],
+					})
+					foundKeys[firstChar] = result.length
+				} else {
+					let index = foundKeys[firstChar] - 1
+					result[index].values.push(user)
+				}
+			}
+
+			const sortedData = _.sortBy(result, 'key') || []
+			userDetails.data.result.data = sortedData
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: userDetails.data.message,
+				result: userDetails.data.result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

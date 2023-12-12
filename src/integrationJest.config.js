@@ -10,12 +10,14 @@ module.exports = {
 		'@services/(.*)': '<rootDir>/services/$1',
 		'@controllers/(.*)': '<rootDir>/controllers/$1',
 		'@db/(.*)': '<rootDir>/db/$1',
+		'@database/(.*)': '<rootDir>/database/$1',
 		'@generics/(.*)': '<rootDir>/generics/$1',
 		'@constants/(.*)': '<rootDir>/constants/$1',
 		'@configs/(.*)': '<rootDir>/configs/$1',
 		'@health-checks/(.*)': '<rootDir>/health-checks/$1',
 		'@commonTests': '<rootDir>/integration-tests/commonTests',
 	},
+	testMatch: ['<rootDir>/integration-tests/**/*.spec.js'],
 	reporters: ['default', ['jest-junit', { suiteName: 'jest tests', outputDirectory: '../dev-ops/report' }]],
 }
 /* Add env variables used by jest here because jest do not have access to app or docker env files.

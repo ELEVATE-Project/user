@@ -39,6 +39,16 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	return error
 }
 
+const userRolePermissionCheck = (userRoleId, module) => {
+	/* 
+		Logic for checking the userRole permission from DB
+	*/
+
+	// Mock function implementation for the time being
+	let result = userRoleId[0].id == 3 && module == 'mentees' ? true : false
+	return result
+}
+
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -148,4 +158,6 @@ module.exports = {
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
 	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
+	permissionCheck: ['/mentoring/v1/mentees/list'],
+	userRolePermissionCheck,
 }

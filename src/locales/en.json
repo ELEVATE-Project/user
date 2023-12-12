@@ -116,5 +116,6 @@
 	"RELATED_ORG_UPDATED": "Related organizations updated successfully",
 	"ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY": "Default Questionsets Set Successfully",
 	"SESSION_DEACTIVATION_FAILED": "Failed to deactivate session.",
-	"MENTOR_LIST": "Mentor list fetched successfully."
+	"MENTOR_LIST": "Mentor list fetched successfully.",
+	"MENTEE_LIST": "Mentee list fetched successfully."
 }

@@ -203,7 +203,7 @@ const listWithoutLimit = function (userType, searchText) {
 		}
 	})
 }
-const search = function (userType, pageNo, pageSize, searchText, userIds) {
+const search = function (userType, pageNo, pageSize, searchText, userIds, token) {
 	return new Promise(async (resolve, reject) => {
 		try {
 			const apiUrl =
@@ -217,7 +217,7 @@ const search = function (userType, pageNo, pageSize, searchText, userIds) {
 				pageSize +
 				'&search=' +
 				searchText
-			const userDetails = await requests.post(apiUrl, { user_ids: userIds }, false, true)
+			const userDetails = await requests.post(apiUrl, { user_ids: userIds }, token, true)
 
 			return resolve(userDetails)
 		} catch (error) {

@@ -12,8 +12,8 @@ const logIn = async () => {
 		let opts = {
 			resources: [baseURL],
 			delay: 1000, // initial delay in ms, default 0
-			interval: 500, // poll interval in ms, default 250ms
-			timeout: 30000,
+			interval: 1000, // poll interval in ms, default 250ms
+			timeout: 60000,
 		}
 		await waitOn(opts)
 		let email = 'nevil' + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
@@ -22,15 +22,13 @@ const logIn = async () => {
 			name: 'Nevil',
 			email: email,
 			password: password,
-			isAMentor: false,
+			role: 'mentee',
 		})
 		res = await request.post('/user/v1/account/login').send({
 			email: email,
 			password: password,
 		})
-		//console.log(res.body)
-
-		if (res.body.result.access_token && res.body.result.user._id) {
+		if (res.body.result.access_token && res.body.result.user.id) {
 			defaultHeaders = {
 				'X-auth-token': 'bearer ' + res.body.result.access_token,
 				Connection: 'keep-alive',
@@ -38,18 +36,17 @@ const logIn = async () => {
 			}
 			global.request = defaults(supertest(baseURL))
 			global.request.set(defaultHeaders)
-			global.userId = res.body.result.user._id
+			global.userId = res.body.result.user.id
 			/* .end(function (err, res) {
 				let successCodes = [200, 201, 202]
 				if (!successCodes.includes(res.statusCode)) {
 					console.log('Response Body', res.body)
 				}
 			}) */
-
 			return {
 				token: res.body.result.access_token,
 				refreshToken: res.body.result.refresh_token,
-				userId: res.body.result.user._id,
+				userId: res.body.result.user.id,
 				email: email,
 				password: password,
 			}
@@ -86,7 +83,7 @@ const mentorLogIn = async () => {
 			password: password,
 		})
 
-		if (res.body.result.access_token && res.body.result.user._id) {
+		if (res.body.result.access_token && res.body.result.user.id) {
 			defaultHeaders = {
 				'X-auth-token': 'bearer ' + res.body.result.access_token,
 				Connection: 'keep-alive',
@@ -99,11 +96,11 @@ const mentorLogIn = async () => {
 					console.log('Response Body', res.body)
 				}
 			}) */
-			global.userId = res.body.result.user._id
+			global.userId = res.body.result.user.id
 			return {
 				token: res.body.result.access_token,
 				refreshToken: res.body.result.refresh_token,
-				userId: res.body.result.user._id,
+				userId: res.body.result.user.id,
 				email: email,
 				password: password,
 			}
