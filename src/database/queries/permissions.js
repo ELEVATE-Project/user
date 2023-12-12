@@ -42,15 +42,10 @@ module.exports = class UserRolePermissionData {
 
 	static async updatePermissionById(id, updatedata) {
 		try {
-			const [rowsUpdated, [updatedPermission]] = await Permissions.update(updatedata, {
+			const updatedPermission = await Permissions.update(updatedata, {
 				where: { id },
 				returning: true,
 			})
-
-			if (rowsUpdated === 0) {
-				throw new Error('PERMISSION_NOT_UPDATED')
-			}
-
 			return updatedPermission
 		} catch (error) {
 			throw error
@@ -63,11 +58,7 @@ module.exports = class UserRolePermissionData {
 				where: { id },
 			})
 
-			if (deletedRows === 0) {
-				throw new Error('PERMISSION_NOT_DELETED')
-			}
-
-			return 'PERMISSION_DELETED_SUCCESSFULLY'
+			return deletedRows
 		} catch (error) {
 			throw error
 		}

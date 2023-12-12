@@ -56,7 +56,7 @@ module.exports = class PermissionsHelper {
 
 			const updatedPermission = await permissionsQueries.updatePermissionById(id, bodyData)
 
-			if (updatedPermission === 'PERMISSION_NOT_UPDATED') {
+			if (!updatedPermission) {
 				return common.failureResponse({
 					message: 'PERMISSION_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
@@ -95,7 +95,7 @@ module.exports = class PermissionsHelper {
 				throw new Error('PERMISSION_NOT_FOUND')
 			}
 			const deletePermission = await permissionsQueries.deletePermissionById(id)
-			if (deletePermission != 'PERMISSION_DELETED_SUCCESSFULLY') {
+			if (!deletePermission) {
 				return common.failureResponse({
 					message: 'PERMISSION_NOT_DELETED',
 					statusCode: httpStatusCode.bad_request,
@@ -142,7 +142,6 @@ module.exports = class PermissionsHelper {
 				})
 			}
 		} catch (error) {
-			console.log
 			throw error
 		}
 	}

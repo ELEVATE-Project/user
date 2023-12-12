@@ -152,7 +152,6 @@ module.exports = class modulesHelper {
 				})
 			}
 		} catch (error) {
-			console.log
 			throw error
 		}
 	}
