@@ -20,13 +20,14 @@ servers:
 paths:
   '/notification/v1/email/send':
     post:
-      summary: Send email
+      summary: Send Email
       tags:
         - Email APIs
-      description: "This API is associated with sending email through API \n - Then
-        Endpoint for sending email `/notification/v1/email/send` \n - It is mandatory to
-        provide values for parameters marked with `required` \n - Mandatory parameter
-        cannot be empty or null"
+      description: |
+        This API is associated with sending email through API.
+        - Endpoint for sending email `/notification/v1/email/send`
+        - It is mandatory to provide values for parameters marked as `required`.
+        - Mandatory parameters cannot be empty or null.
 
       parameters:
         - name: internal_access_token
