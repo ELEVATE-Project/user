@@ -374,6 +374,14 @@ module.exports = class MenteesHelper {
 				'external_session_visibility',
 				'organization_id',
 			])
+
+			if (!mentorExtension && !menteeExtension) {
+				throw common.failureResponse({
+					statusCode: httpStatusCode.unauthorized,
+					message: 'USER_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const organizationName = mentorExtension
 				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
 				: ''
@@ -668,12 +676,24 @@ module.exports = class MenteesHelper {
 				raw: true,
 			})
 
-			if (updateCount === '0') {
-				return common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: 'MENTEE_EXTENSION_NOT_FOUND',
+			if (updateCount === 0) {
+				const fallbackUpdatedUser = await menteeQueries.getMenteeExtension(userId)
+				console.log(fallbackUpdatedUser)
+				if (!fallbackUpdatedUser) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'MENTEE_EXTENSION_NOT_FOUND',
+					})
+				}
+				const processDbResponse = utils.processDbResponse(fallbackUpdatedUser, validationData)
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_EXTENSION_UPDATED',
+					result: processDbResponse,
 				})
 			}
+
 			const processDbResponse = utils.processDbResponse(updatedUser[0], validationData)
 
 			return common.successResponse({
