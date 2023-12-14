@@ -250,8 +250,6 @@ Refer to [How To Set Up a Node.js Application for Production on Ubuntu 22.04](ht
 $ sudo npm install pm2@latest -g
 ```
 
-Certainly! Here's the nicely formatted set of instructions for setting up repositories and creating .env files:
-
 ## Setting up Repositories
 
 ### Clone the repositories
