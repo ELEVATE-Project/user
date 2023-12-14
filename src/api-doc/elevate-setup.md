@@ -859,7 +859,7 @@ npm run db:seed:all
 
 ## Start the Services
 
-1. Navigate to the src folder of all 5 services.
+Navigate to the src folder of all 5 services and run pm2 start command:
 
     ```bash
     $ cd /opt/backend/mentoring/src
@@ -877,8 +877,6 @@ npm run db:seed:all
     $ cd /opt/backend/scheduler/src
     scheduler/src$ pm2 start app.js -i 2 --name elevate-scheduler
     ```
-
-2. This concludes the services and dependency setup.
 
 #### Run pm2 ls command
 
