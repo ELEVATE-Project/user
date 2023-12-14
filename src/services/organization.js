@@ -99,6 +99,7 @@ module.exports = class OrganizationsHelper {
 									role: common.ORG_ADMIN_ROLE,
 									orgName: bodyData.name,
 									appName: process.env.APP_NAME,
+									portalURL: process.env.PORTAL_URL,
 								}),
 							},
 						}
