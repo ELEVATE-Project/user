@@ -18,22 +18,13 @@ module.exports = class UserRoleModulesData {
 		}
 	}
 
-	static async findAllModules(page, limit, search) {
+	static async findAllModules(filter, attributes, options) {
 		try {
-			const offset = (page - 1) * limit
-
-			const whereCondition = {
-				code: { [Op.iLike]: `%${search}%` },
-			}
-
-			const options = {
-				where: whereCondition,
-				offset,
-				limit,
-				attributes: ['id', 'code', 'status'],
-			}
-
-			const permissions = await Modules.findAndCountAll(options)
+			const permissions = await Modules.findAndCountAll({
+				where: filter,
+				attributes,
+				options,
+			})
 			return permissions
 		} catch (error) {
 			throw error
@@ -61,15 +52,6 @@ module.exports = class UserRoleModulesData {
 			return deletedRows
 		} catch (error) {
 			throw error
-		}
-	}
-
-	static async findModulesId(filter) {
-		try {
-			const ModulesData = await Modules.findByPk(filter)
-			return ModulesData
-		} catch (error) {
-			return error
 		}
 	}
 }

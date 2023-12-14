@@ -1,3 +1,4 @@
+const common = require('@constants/common')
 module.exports = (sequelize, DataTypes) => {
 	const Module = sequelize.define(
 		'Module',
@@ -14,12 +15,10 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
-				allowNull: false,
-				defaultValue: 'ACTIVE',
+				defaultValue: common.ACTIVE_STATUS,
 			},
 		},
 		{
-			// timestamps: false,
 			sequelize,
 			modelName: 'Module',
 			tableName: 'modules',
@@ -31,7 +30,6 @@ module.exports = (sequelize, DataTypes) => {
 
 	Module.addHook('beforeDestroy', async (instance, options) => {
 		try {
-			console.log('instances ====> ', instance.code)
 			// Soft-delete associated Permissions records with matching module
 			await sequelize.models.Permission.update(
 				{ deleted_at: new Date() }, // Set the deleted_at column to the current timestamp

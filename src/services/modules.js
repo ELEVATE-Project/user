@@ -136,7 +136,17 @@ module.exports = class modulesHelper {
 
 	static async list(page, limit, search) {
 		try {
-			const modules = await modulesQueries.findAllModules(page, limit, search)
+			const offset = common.getPaginationOffset(page, limit)
+
+			const filter = {
+				code: { [Op.iLike]: `%${search}%` },
+			}
+			const options = {
+				offset,
+				limit,
+			}
+			const attributes = ['id', 'code', 'status']
+			const modules = await modulesQueries.findAllModules(filter, attributes, options)
 
 			if (modules.rows == 0 || modules.count == 0) {
 				return common.failureResponse({

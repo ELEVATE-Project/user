@@ -1,3 +1,4 @@
+const common = require('@constants/common')
 module.exports = (sequelize, DataTypes) => {
 	const Permission = sequelize.define(
 		'Permission',
@@ -23,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
 			status: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: 'ACTIVE',
+				defaultValue: common.ACTIVE_STATUS,
 			},
 		},
 		{

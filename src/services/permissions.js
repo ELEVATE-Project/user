@@ -127,7 +127,17 @@ module.exports = class PermissionsHelper {
 
 	static async list(page, limit, search) {
 		try {
-			const permissions = await permissionsQueries.findAllPermissions(page, limit, search)
+			const offset = common.getPaginationOffset(page, limit)
+
+			const filter = {
+				code: { [Op.iLike]: `%${search}%` },
+			}
+			const options = {
+				offset,
+				limit,
+			}
+			const attributes = ['id', 'code', 'module', 'actions', 'status']
+			const permissions = await permissionsQueries.findAllPermissions(filter, attributes, options)
 
 			if (permissions.rows == 0 || permissions.count == 0) {
 				return common.failureResponse({

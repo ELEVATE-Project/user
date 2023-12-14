@@ -12,7 +12,6 @@ module.exports = {
 			.matches(/^[A-Za-z]*$/)
 			.withMessage('status is invalid, must not contain spaces')
 			.optional({ checkFalsy: true })
-			.notEmpty()
 			.withMessage('status field must be a non-empty string when provided')
 	},
 

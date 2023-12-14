@@ -18,22 +18,13 @@ module.exports = class UserRolePermissionData {
 		}
 	}
 
-	static async findAllPermissions(page, limit, search) {
+	static async findAllPermissions(filter, attributes, options = {}) {
 		try {
-			const offset = (page - 1) * limit
-
-			const whereCondition = {
-				code: { [Op.iLike]: `%${search}%` },
-			}
-
-			const options = {
-				where: whereCondition,
-				offset,
-				limit,
-				attributes: ['id', 'code', 'module', 'actions', 'status'],
-			}
-
-			const permissions = await Permissions.findAndCountAll(options)
+			const permissions = await Permissions.findAndCountAll({
+				where: filter,
+				attributes,
+				...options,
+			})
 			return permissions
 		} catch (error) {
 			throw error

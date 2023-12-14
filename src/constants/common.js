@@ -39,6 +39,10 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	return error
 }
 
+function getPaginationOffset(page, limit) {
+	return (page - 1) * limit
+}
+
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -46,6 +50,7 @@ module.exports = {
 	},
 	successResponse,
 	failureResponse,
+	getPaginationOffset,
 	guestUrls: [
 		'/sessions/completed',
 		'/sessions/updateRecordingUrl',
@@ -148,4 +153,5 @@ module.exports = {
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
 	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
+	ACTIVE_STATUS: 'ACTIVE',
 }
