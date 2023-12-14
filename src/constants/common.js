@@ -115,4 +115,5 @@ module.exports = {
 	NO_OF_ATTEMPTS: 3,
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
+	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
 }
