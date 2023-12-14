@@ -878,8 +878,6 @@ npm run db:seed:all
     scheduler/src$ pm2 start app.js -i 2 --name elevate-scheduler
     ```
 
-    Replace `elevate-mentoring`, `elevate-user`, `elevate-notification`, `elevate-interface`, and `elevate-scheduler` with appropriate names.
-
 2. This concludes the services and dependency setup.
 
 #### Run pm2 ls command
