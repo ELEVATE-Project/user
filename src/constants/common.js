@@ -60,7 +60,7 @@ module.exports = {
 		'/user/v1/account/search',
 	],
 	notificationEmailType: 'email',
-	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
+	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}m`,
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,
 	refreshTokenLimit: 3,
