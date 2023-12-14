@@ -191,6 +191,7 @@ module.exports = class UserInviteHelper {
 
 			let input = []
 			let isErrorOccured = false
+			let isOrgUpdate = false
 
 			//fetch email template
 			const mentorTemplateCode = process.env.MENTOR_INVITATION_EMAIL_TEMPLATE_CODE || null
@@ -237,6 +238,7 @@ module.exports = class UserInviteHelper {
 
 				//update user details if the user exist and in default org
 				const existingUser = existingEmailsMap.get(invitee.email)
+
 				if (existingUser) {
 					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
 					isErrorOccured = true
@@ -246,8 +248,17 @@ module.exports = class UserInviteHelper {
 						existingUser.organization_id === user.organization_id
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
+
 						if (existingUser.organization_id != user.organization_id) {
-							userUpdateData.organization_id = user.organization_id
+							await userQueries.changeOrganization(
+								existingUser.id,
+								existingUser.organization_id,
+								user.organization_id,
+								{
+									organization_id: user.organization_id,
+								}
+							)
+							isOrgUpdate = true
 							userUpdateData.refresh_tokens = []
 						}
 						const areAllElementsInArray = _.every(roleTitlesToIds[invitee.roles], (element) =>
@@ -258,19 +269,19 @@ module.exports = class UserInviteHelper {
 							userUpdateData.refresh_tokens = []
 						}
 
-						if (userUpdateData.organization_id || userUpdateData.roles) {
+						if (isOrgUpdate || userUpdateData.roles) {
 							const userCredentials = await UserCredentialQueries.findOne({
-								email: invitee.email.toLowerCase(),
+								email: invitee.email,
 							})
 
 							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
-
 							await UserCredentialQueries.updateUser(
 								{
-									email: invitee.email.toLowerCase(),
+									email: invitee.email,
 								},
-								{ organization_id: userUpdateData.organization_id }
+								{ organization_id: user.organization_id }
 							)
+
 							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
 							//call event to update in mentoring
 							if (!userUpdateData?.roles) {
