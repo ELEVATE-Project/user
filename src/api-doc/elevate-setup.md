@@ -252,6 +252,12 @@ Refer to [official Citus single-node setup](https://docs.citusdata.com/en/stable
 
 Refer to [How To Set Up a Node.js Application for Production on Ubuntu 22.04](https://www.digitalocean.com/community/tutorials/how-to-set-up-a-node-js-application-for-production-on-ubuntu-22-04).
 
+**Exit the postgres user account**
+
+```bash
+$ exit
+```
+
 ```bash
 $ sudo npm install pm2@latest -g
 ```
@@ -263,7 +269,7 @@ $ sudo npm install pm2@latest -g
 ```bash
 $ cd /opt/
 $ sudo mkdir backend
-$ cd /backend/
+$ cd backend/
 $ git clone -b develop-2.5 --single-branch "https://github.com/ELEVATE-Project/mentoring.git"
 $ git clone -b develop-2.5 --single-branch "https://github.com/ELEVATE-Project/user.git"
 $ git clone -b develop-2.5 --single-branch "https://github.com/ELEVATE-Project/notification.git"
@@ -457,7 +463,7 @@ Copy-paste the following env variables to the `.env` file:
 
 ```env
 ACCESS_TOKEN_EXPIRY=1
-ACCESS_TOKEN_SECRET=asd798f6a98sd76f
+ACCESS_TOKEN_SECRET=asadsd8as7df9as8df987asdf
 API_DOC_URL=/user/api-doc
 APP_NAME=MentorED
 APPLICATION_ENV=development
@@ -484,7 +490,7 @@ INTERNAL_CACHE_EXP_TIME=86400
 IV=09sdf8g098sdf/Q==
 KAFKA_GROUP_ID=mentoring
 KAFKA_TOPIC=
-KAFKA_URL=localhost:9095
+KAFKA_URL=localhost:9092
 KEY=fasd98fg9a8sydg98a7usd89fg
 MENTOR_SECRET_CODE=4567
 MONGODB_URL=mongodb://localhost:27017/elevate-users
@@ -492,7 +498,7 @@ NOTIFICATION_KAFKA_TOPIC=dev.notifications
 OTP_EMAIL_TEMPLATE_CODE=emailotp
 OTP_EXP_TIME=86400
 RATING_KAFKA_TOPIC=dev.mentor_rating
-REDIS_HOST=redis://redis:6379
+REDIS_HOST=redis://localhost:6379
 REFRESH_TOKEN_EXPIRY=183
 REFRESH_TOKEN_SECRET=as9d87fa9s87df98as7d9f87a9sd87f98as7dg987asf
 REGISTRATION_EMAIL_TEMPLATE_CODE=registration
@@ -632,7 +638,7 @@ DISABLE_LOG=false
 
 DEFAULT_QUEUE='email'
 
-REDIS_HOST='redis'
+REDIS_HOST='localhost'
 REDIS_PORT=6379
 ```
 
@@ -712,13 +718,13 @@ GRANT ALL ON SCHEMA public TO shikshalokam;
 **Exit the postgres user account**
 
 ```bash
-exit
+exit (run twice)
 ```
 
 **Install sequelize-cli globally**
 
 ```bash
-npm i sequelize-cli -g
+sudo npm i sequelize-cli -g
 ```
 
 **Navigate to the src folder of mentoring, user, and notification services and run sequelize-cli migration command:**
@@ -762,6 +768,12 @@ psql -p 9700
 \c elevate_mentoring
 ```
 
+**Enable Citus for elevate_mentoring**
+
+```sql
+CREATE EXTENSION citus;
+```
+
 **Within elevate_mentoring, run the following queries:**
 
 ```sql
@@ -788,6 +800,12 @@ SELECT create_distributed_table('user_extensions', 'user_id');
 \c elevate_user
 ```
 
+**Enable Citus for elevate_user**
+
+```sql
+CREATE EXTENSION citus;
+```
+
 **Within elevate_user, run the following queries:**
 
 ```sql
@@ -810,13 +828,13 @@ SELECT create_distributed_table('users', 'organization_id');
 **Exit the postgres user**
 
 ```bash
-exit
+exit (run twice)
 ```
 
-**Navigate to the src/script directory of the user service**
+**Navigate to the src/scripts directory of the user service**
 
 ```bash
-cd /opt/backend/user/src/script
+cd /opt/backend/user/src/scripts
 ```
 
 **Run the insertDefaultOrg.js script**
@@ -867,22 +885,22 @@ npm run db:seed:all
 
 Navigate to the src folder of all 5 services and run pm2 start command:
 
-    ```bash
-    $ cd /opt/backend/mentoring/src
-    mentoring/src$ pm2 start app.js -i 2 --name elevate-mentoring
+```bash
+$ cd /opt/backend/mentoring/src
+mentoring/src$ pm2 start app.js -i 2 --name elevate-mentoring
 
-    $ cd /opt/backend/user/src
-    user/src$ pm2 start app.js -i 2 --name elevate-user
+$ cd /opt/backend/user/src
+user/src$ pm2 start app.js -i 2 --name elevate-user
 
-    $ cd /opt/backend/notification/src
-    notification/src$ pm2 start app.js -i 2 --name elevate-notification
+$ cd /opt/backend/notification/src
+notification/src$ pm2 start app.js -i 2 --name elevate-notification
 
-    $ cd /opt/backend/interface-service/src
-    interface-service/src$ pm2 start app.js -i 2 --name elevate-interface
+$ cd /opt/backend/interface-service/src
+interface-service/src$ pm2 start app.js -i 2 --name elevate-interface
 
-    $ cd /opt/backend/scheduler/src
-    scheduler/src$ pm2 start app.js -i 2 --name elevate-scheduler
-    ```
+$ cd /opt/backend/scheduler/src
+scheduler/src$ pm2 start app.js -i 2 --name elevate-scheduler
+```
 
 #### Run pm2 ls command
 
