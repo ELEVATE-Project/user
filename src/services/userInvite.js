@@ -217,6 +217,7 @@ module.exports = class UserInviteHelper {
 
 			let input = []
 			let isErrorOccured = false
+			let isOrgUpdate = false
 
 			// process csv data
 			for (const invitee of csvData) {
@@ -255,7 +256,15 @@ module.exports = class UserInviteHelper {
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
 						if (existingUser.organization_id != user.organization_id) {
-							userUpdateData.organization_id = user.organization_id
+							await userQueries.changeOrganization(
+								existingUser.id,
+								existingUser.organization_id,
+								user.organization_id,
+								{
+									organization_id: user.organization_id,
+								}
+							)
+							isOrgUpdate = true
 							userUpdateData.refresh_tokens = []
 						}
 						const areAllElementsInArray = _.every(roleTitlesToIds[invitee.roles], (element) =>
@@ -266,18 +275,18 @@ module.exports = class UserInviteHelper {
 							userUpdateData.refresh_tokens = []
 						}
 
-						if (userUpdateData.organization_id || userUpdateData.roles) {
+						if (isOrgUpdate || userUpdateData.roles) {
 							const userCredentials = await UserCredentialQueries.findOne({
-								email: invitee.email.toLowerCase(),
+								email: invitee.email,
 							})
 
 							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
 
 							await UserCredentialQueries.updateUser(
 								{
-									email: invitee.email.toLowerCase(),
+									email: invitee.email,
 								},
-								{ organization_id: userUpdateData.organization_id }
+								{ organization_id: user.organization_id }
 							)
 							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
 							//call event to update in mentoring

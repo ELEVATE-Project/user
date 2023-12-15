@@ -234,3 +234,38 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 		throw error
 	}
 }
+
+exports.changeOrganization = async (id, currentOrgId, newOrgId, updateBody = {}) => {
+	const transaction = await Sequelize.transaction()
+	try {
+		const existingUserRow = await database.User.findOne({
+			where: { id, organization_id: currentOrgId },
+			raw: true,
+			transaction,
+		})
+
+		if (!existingUserRow) throw new Error('User not found')
+
+		await database.User.destroy({
+			where: { id, organization_id: currentOrgId },
+			force: true,
+			transaction,
+		})
+
+		const newUserRow = await database.User.create(
+			{
+				...existingUserRow,
+				...updateBody,
+				organization_id: newOrgId,
+				id,
+			},
+			{ transaction }
+		)
+
+		await transaction.commit()
+		return newUserRow
+	} catch (error) {
+		await transaction.rollback()
+		throw error
+	}
+}
