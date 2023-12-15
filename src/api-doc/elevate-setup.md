@@ -185,7 +185,7 @@ Refer to [Redis Ubuntu 22.04 setup guide](https://www.digitalocean.com/community
 
 ## Install Single-Node Citus (Distributed Database)
 
-Refer to [official Citus single-node setup](ttps://docs.citusdata.com/en/stable/installation/single_node_debian.html)
+Refer to [official Citus single-node setup](https://docs.citusdata.com/en/stable/installation/single_node_debian.html)
 
 1. Download and install Citus:
 
