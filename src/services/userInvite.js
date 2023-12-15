@@ -189,9 +189,6 @@ module.exports = class UserInviteHelper {
 			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
 			const defaultOrgId = defaultOrg?.id || null
 
-			let input = []
-			let isErrorOccured = false
-
 			//fetch email template
 			const mentorTemplateCode = process.env.MENTOR_INVITATION_EMAIL_TEMPLATE_CODE || null
 			const menteeTemplateCode = process.env.MENTEE_INVITATION_EMAIL_TEMPLATE_CODE || null
@@ -209,6 +206,17 @@ module.exports = class UserInviteHelper {
 				[common.MENTOR_ROLE]: mentorTemplateData,
 				[common.MENTEE_ROLE]: menteeTemplateData,
 			}
+
+			//get existing invitees
+			const allEmails = _.uniq(_.map(csvData, 'email').map((userEmail) => userEmail.toLowerCase()))
+			const emailList = await userInviteQueries.findAll({ email: allEmails })
+			const existingInvitees = {}
+			emailList.forEach((userInvitee) => {
+				existingInvitees[userInvitee.email] = [userInvitee.id]
+			})
+
+			let input = []
+			let isErrorOccured = false
 
 			// process csv data
 			for (const invitee of csvData) {
@@ -307,32 +315,43 @@ module.exports = class UserInviteHelper {
 						roles: roleTitlesToIds[invitee.roles] || [],
 					}
 
-					const newInvitee = await userInviteQueries.create(inviteeData)
-					const newUserCred = await UserCredentialQueries.create({
-						email: newInvitee.email,
-						organization_id: newInvitee.organization_id,
-						organization_user_invite_id: newInvitee.id,
-					})
-					if (newUserCred.id) {
-						const { name, email, roles } = invitee
-						const userData = {
-							name,
-							email,
-							role: roles,
-							org_name: user.org_name,
-						}
+					if (existingInvitees.hasOwnProperty(invitee.email)) {
+						invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
+						input.push(invitee)
+						continue
+					}
 
-						const templateData = templates[roles]
-						//send email invitation for user
-						if (templateData && Object.keys(templateData).length > 0) {
-							await this.sendInviteeEmail(templateData, userData)
+					const newInvitee = await userInviteQueries.create(inviteeData)
+					if (newInvitee.id) {
+						invitee.statusOrUserId = newInvitee.id
+						const newUserCred = await UserCredentialQueries.create({
+							email: newInvitee.email,
+							organization_id: newInvitee.organization_id,
+							organization_user_invite_id: newInvitee.id,
+						})
+						if (newUserCred.id) {
+							const { name, email, roles } = invitee
+							const userData = {
+								name,
+								email,
+								role: roles,
+								org_name: user.org_name,
+							}
+
+							const templateData = templates[roles]
+							//send email invitation for user
+							if (templateData && Object.keys(templateData).length > 0) {
+								await this.sendInviteeEmail(templateData, userData)
+							}
+						} else {
+							isErrorOccured = true
+							await userInviteQueries.deleteOne(newInvitee.id)
+							invitee.statusOrUserId = newUserCred
 						}
 					} else {
 						isErrorOccured = true
-						await userInviteQueries.deleteOne(newInvitee.id)
+						invitee.statusOrUserId = newInvitee
 					}
-
-					invitee.statusOrUserId = newInvitee.id || newInvitee
 				}
 
 				input.push(invitee)
