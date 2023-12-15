@@ -297,16 +297,17 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			await userQueries.updateUser(
-				{ id: userId, organization_id: userCredentials.organization_id },
-				{ roles: roles }
-			)
-
 			//update organization
 			if (userOrg.id != organizationId) {
 				await userQueries.changeOrganization(userId, userOrg.id, organizationId, {
 					organization_id: organizationId,
+					roles: roles,
 				})
+			} else {
+				await userQueries.updateUser(
+					{ id: userId, organization_id: userCredentials.organization_id },
+					{ roles: roles }
+				)
 			}
 
 			await UserCredentialQueries.updateUser(
