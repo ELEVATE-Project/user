@@ -31,10 +31,10 @@ module.exports = class UserRoleModulesData {
 		}
 	}
 
-	static async updateModulesById(id, updatedata) {
+	static async updateModules(filter, updatedata) {
 		try {
 			const [rowsUpdated, [updatedModules]] = await Modules.update(updatedata, {
-				where: { id },
+				where: filter,
 				returning: true,
 			})
 			return updatedModules

@@ -1,10 +1,9 @@
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const permissionsQueries = require('../database/queries/permissions')
+const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
-const { filter } = require('lodash')
 
 module.exports = class PermissionsHelper {
 	/**
@@ -53,14 +52,12 @@ module.exports = class PermissionsHelper {
 
 	static async update(id, bodyData) {
 		try {
+			const filter = { id }
 			const permissions = await permissionsQueries.findPermissionById(id)
-
 			if (!permissions) {
 				throw new Error('PERMISSION_NOT_FOUND')
 			}
-
-			const updatedPermission = await permissionsQueries.updatePermissionById(id, bodyData)
-
+			const updatedPermission = await permissionsQueries.updatePermissions(filter, bodyData)
 			if (!updatedPermission) {
 				return common.failureResponse({
 					message: 'PERMISSION_NOT_UPDATED',

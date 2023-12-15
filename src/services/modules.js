@@ -5,7 +5,6 @@ const modulesQueries = require('@database/queries/modules')
 const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
-const { filter, constant, isNull } = require('lodash')
 
 module.exports = class modulesHelper {
 	/**
@@ -57,13 +56,11 @@ module.exports = class modulesHelper {
 			if (!modules) {
 				throw new Error('MODULES_NOT_FOUND')
 			}
-			const oldModuleCode = modules.code
-			const updatedModules = await modulesQueries.updateModulesById(id, bodyData)
-			const newModuleCode = updatedModules.code
-			const updatePermissions = await permissionsQueries.updatePermissionsBasedOnModuleUpdate(
-				oldModuleCode,
-				newModuleCode
-			)
+			const filter = { id }
+			const oldModuleCode = { module: modules.code }
+			const updatedModules = await modulesQueries.updateModules(filter, bodyData)
+			const newModuleCode = { module: updatedModules.code }
+			const updatePermissions = permissionsQueries.updatePermissions(oldModuleCode, newModuleCode)
 
 			if (!updatedModules && !updatePermissions) {
 				return common.failureResponse({

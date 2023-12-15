@@ -1,7 +1,6 @@
 'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
-const common = require('@constants/common')
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable('modules', {
@@ -17,7 +16,7 @@ module.exports = {
 			},
 			status: {
 				type: Sequelize.STRING,
-				defaultValue: common.ACTIVE_STATUS,
+				allowNull: false,
 			},
 			deleted_at: {
 				type: Sequelize.DATE,

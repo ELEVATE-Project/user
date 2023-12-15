@@ -1,7 +1,6 @@
 'use strict'
-
 /** @type {import('sequelize-cli').Migration} */
-const common = require('@constants/common')
+
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable('permissions', {
@@ -21,11 +20,11 @@ module.exports = {
 			},
 			actions: {
 				allowNull: false,
-				type: Sequelize.ENUM('ALL', 'READ', 'WRITE', 'UPDATE', 'DELETE'),
+				type: Sequelize.ARRAY(Sequelize.STRING),
 			},
 			status: {
 				type: Sequelize.STRING,
-				defaultValue: common.ACTIVE_STATUS,
+				allowNull: false,
 			},
 			deleted_at: {
 				type: Sequelize.DATE,

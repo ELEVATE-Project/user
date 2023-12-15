@@ -1,4 +1,3 @@
-const common = require('@constants/common')
 module.exports = (sequelize, DataTypes) => {
 	const Module = sequelize.define(
 		'Module',
@@ -15,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: common.ACTIVE_STATUS,
+				defaultValue: 'ACTIVE',
 			},
 		},
 		{

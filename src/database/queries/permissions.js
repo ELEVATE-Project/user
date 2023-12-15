@@ -31,10 +31,10 @@ module.exports = class UserRolePermissionData {
 		}
 	}
 
-	static async updatePermissionById(id, updatedata) {
+	static async updatePermissions(filter, updateData) {
 		try {
-			const updatedPermission = await Permissions.update(updatedata, {
-				where: { id },
+			const [rowsUpdated, [updatedPermission]] = await Permissions.update(updateData, {
+				where: filter,
 				returning: true,
 			})
 			return updatedPermission

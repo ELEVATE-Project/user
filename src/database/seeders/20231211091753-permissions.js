@@ -8,7 +8,7 @@ module.exports = {
 				{
 					code: 'all_session',
 					module: 'all',
-					actions: 'ALL',
+					actions: ['ALL', 'READ'],
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -16,7 +16,7 @@ module.exports = {
 				{
 					code: 'read_session',
 					module: 'manage_session',
-					actions: 'READ',
+					actions: ['READ'],
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -24,7 +24,7 @@ module.exports = {
 				{
 					code: 'write_session',
 					module: 'mentee',
-					actions: 'WRITE',
+					actions: ['WRITE'],
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -32,7 +32,7 @@ module.exports = {
 				{
 					code: 'update_session',
 					module: 'modules',
-					actions: 'UPDATE',
+					actions: ['UPDATE'],
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -40,7 +40,7 @@ module.exports = {
 				{
 					code: 'delete_session',
 					module: 'permissions',
-					actions: 'DELETE',
+					actions: ['DELETE'],
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
