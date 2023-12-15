@@ -229,6 +229,7 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			const user = await userQueries.findOne({
 				id: userCredentials.user_id,
 				organization_id: userCredentials.organization_id,
@@ -288,10 +289,6 @@ module.exports = class AdminHelper {
 
 			const roles = _.uniq([...(user.roles || []), role.id])
 
-			let updateObj = {
-				roles,
-			}
-
 			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE && userOrg.id != organizationId) {
 				return common.failureResponse({
 					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
@@ -300,9 +297,19 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			updateObj.organization_id = organizationId
+			//update organization
+			if (userOrg.id != organizationId) {
+				await userQueries.changeOrganization(userId, userOrg.id, organizationId, {
+					organization_id: organizationId,
+					roles: roles,
+				})
+			} else {
+				await userQueries.updateUser(
+					{ id: userId, organization_id: userCredentials.organization_id },
+					{ roles: roles }
+				)
+			}
 
-			await userQueries.updateUser({ id: userId, organization_id: userCredentials.organization_id }, updateObj)
 			await UserCredentialQueries.updateUser(
 				{
 					email: userCredentials.email,
@@ -322,7 +329,7 @@ module.exports = class AdminHelper {
 				}
 			)
 
-			//update organization in mentoring
+			// update organization in mentoring
 			eventBroadcaster('updateOrganization', {
 				requestBody: {
 					user_id: userId,
