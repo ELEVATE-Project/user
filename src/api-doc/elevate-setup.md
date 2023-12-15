@@ -26,6 +26,8 @@ $ sudo apt-get install build-essential
 
 ## Install Kafka
 
+Refer to [Kafka Ubuntu 22.04 setup guide](https://www.fosstechnix.com/install-apache-kafka-on-ubuntu-22-04-lts/)
+
 1. Install OpenJDK 11:
 
     ```bash
@@ -136,6 +138,8 @@ $ sudo apt-get install build-essential
 
 ## Install Redis
 
+Refer to [Redis Ubuntu 22.04 setup guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-22-04)
+
 1. Update the package list:
 
     ```bash
@@ -180,6 +184,8 @@ $ sudo apt-get install build-essential
     ```
 
 ## Install Single-Node Citus (Distributed Database)
+
+Refer to [official Citus single-node setup](ttps://docs.citusdata.com/en/stable/installation/single_node_debian.html)
 
 1. Download and install Citus:
 
@@ -735,6 +741,8 @@ npx sequelize-cli db:migrate
 **Now all the tables must be available in the Citus databases**
 
 ## Setting up Distribution Columns in Citus PostgreSQL Database
+
+Refer [Choosing Distribution Column](https://docs.citusdata.com/en/stable/sharding/data_modeling.html) for more information regarding Citus distribution columns.
 
 **Login into the postgres user**
 
