@@ -56,11 +56,12 @@ module.exports = class modulesHelper {
 			if (!modules) {
 				throw new Error('MODULES_NOT_FOUND')
 			}
-			const filter = { id }
-			const oldModuleCode = { module: modules.code }
-			const updatedModules = await modulesQueries.updateModules(filter, bodyData)
-			const newModuleCode = { module: updatedModules.code }
-			const updatePermissions = permissionsQueries.updatePermissions(oldModuleCode, newModuleCode)
+
+			const updatedModules = await modulesQueries.updateModules({ id }, bodyData)
+			const updatePermissions = permissionsQueries.updatePermissions(
+				{ module: modules.code },
+				{ module: updatedModules.code }
+			)
 
 			if (!updatedModules && !updatePermissions) {
 				return common.failureResponse({

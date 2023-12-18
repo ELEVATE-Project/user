@@ -10,7 +10,7 @@ describe('mentoring/v1/permissions ', function () {
 		let res = await request.post('/mentoring/v1/permissions/create').send({
 			code: 'edit_session',
 			module: 'session_edit',
-			actions: 'WRITE',
+			actions: ['WRITE'],
 			status: 'ACTIVE',
 		})
 		//console.log(res.body)
@@ -22,7 +22,7 @@ describe('mentoring/v1/permissions ', function () {
 		let res = await request.post('/mentoring/v1/permissions/update/2').send({
 			code: 'sessicre',
 			module: 'sessions',
-			actions: 'READ',
+			actions: ['READ'],
 			status: 'ACTIVE',
 		})
 		//console.log(res.body)

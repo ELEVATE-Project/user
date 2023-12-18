@@ -1,7 +1,7 @@
 const Permissions = require('@database/models/index').Permission
 const { Op } = require('sequelize')
 
-module.exports = class UserRolePermissionData {
+module.exports = class permissionData {
 	static async createPermission(data) {
 		try {
 			return await Permissions.create(data, { returning: true })
@@ -62,22 +62,6 @@ module.exports = class UserRolePermissionData {
 			return permissionData
 		} catch (error) {
 			return error
-		}
-	}
-
-	static async updatePermissionsBasedOnModuleUpdate(oldModuleCode, newModuleCode) {
-		try {
-			// Find and update permissions based on the old module code
-			const updatedPermissionss = await Permissions.update(
-				{ module: newModuleCode },
-				{
-					where: { module: oldModuleCode },
-					returning: true,
-				}
-			)
-			return updatedPermissionss
-		} catch (error) {
-			throw error
 		}
 	}
 }
