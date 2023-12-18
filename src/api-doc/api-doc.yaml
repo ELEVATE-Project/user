@@ -1,4 +1,3 @@
----
 openapi: 3.0.0
 info:
   title: Elevate User
@@ -1099,7 +1098,9 @@ paths:
       description: |
         This API is associated with requesting a specific role within an organization.
         - Endpoint: `/user/v1/organization/requestOrgRole`
+
         - Mandatory parameters marked as `required` must have valid values.
+
         - Parameters cannot be empty or null.
       tags:
         - Organization
@@ -1157,22 +1158,112 @@ paths:
           required: true
           schema:
             type: string
-
+        - in: query
+          name: ''
+          description: ''
+          schema: &ref_1
+            type: string
+        - in: path
+          name: page
+          description: Please add page number
+          schema: &ref_0
+            type: number
+        - in: path
+          name: limit
+          description: Number of records to limit
+          schema: *ref_0
+        - in: path
+          name: search
+          description: Please search for information such as 'code' names
+          schema: *ref_1
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/userRole/userRoleListResponse200'
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            title:
+                              type: string
+                            user_type:
+                              type: number
+                            visibility:
+                              type: string
+                            status:
+                              type: string
+                            organization_id:
+                              type: number
+                      count:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Roles fetched successfully
+                    result:
+                      data:
+                        - id: 6
+                          title: system_manager
+                          user_type: 1
+                          visibility: PUBLIC
+                          status: ACTIVE
+                          organization_id: 1
+                      count: 1
+                    meta:
+                      formsVersion: []
+                      correlation: b36f45cf-039c-466d-9c50-4649fa4e0856
         '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/profile/Unauthorized401Response'
-
-  '/user/v1/entity-type/create':
+                $ref: '#/components/schemas/profile/Unauthorized401Response'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                filters:
+                  type: object
+                  properties:
+                    organization_id:
+                      type: number
+              required:
+                - filters
+            examples:
+              example1:
+                value:
+                  filters:
+                    organization_id: 1
+  /user/v1/entity-type/create:
     post:
       summary: Create Entity Type
       tags:
@@ -1545,6 +1636,7 @@ paths:
         - Entity APIs
       description: |
         This API is associated with updating an entity.
+
         - Endpoint for updating an entity: `/user/v1/entity/update`.
         - It is mandatory to provide values for parameters marked with `required`.
         - Mandatory parameters cannot be empty or null.
@@ -1992,6 +2084,7 @@ paths:
       summary: Get Bulk Invite Files List
       description: |
         Get a list of uploaded bulk invite CSV files.
+
         - Endpoint: `/user/v1/org-admin/getBulkInvitesFilesList`.
         - It is mandatory to provide values for parameters marked with `required`.
         - Mandatory parameters cannot be empty or null.
@@ -2131,6 +2224,7 @@ paths:
         - Notification APIs
       description: |
         This API is associated with notification create or update.
+
         - Endpoint: `/user/v1/notification/template`.
         - It is mandatory to provide values for parameters marked with `required`.
         - Mandatory parameters cannot be empty or null.
@@ -2158,8 +2252,257 @@ paths:
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/notification/createNotification400Response'
+                $ref: >-
+                  #/components/schemas/notification/createNotification400Response
+  /user/v1/userRole/Create:
+    post:
+      summary: Create User Role
+      description: >
+        Create roles for users.
 
+        - Endpoint: `/user/v1/userRole/Create`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags:
+        - User Roles APIs
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the user
+          required: true
+          schema: 'ref_2'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                title:
+                  type: string
+                user_type:
+                  type: number
+                status:
+                  type: string
+                visibility:
+                  type: string
+                organization_id:
+                  type: number
+              required:
+                - user_type
+                - status
+                - title
+                - visibility
+                - organization_id
+            examples:
+              example1:
+                value:
+                  title: system_admin
+                  user_type: 1
+                  status: ACTIVE
+                  visibility: PUBLIC
+                  organization_id: 1
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      user_type:
+                        type: number
+                      status:
+                        type: string
+                      visibility:
+                        type: string
+                      organization_id:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Roles added successfully
+                    result:
+                      title: system_admin
+                      user_type: 1
+                      status: ACTIVE
+                      visibility: PUBLIC
+                      organization_id: 1
+                    meta:
+                      formsVersion: []
+                      correlation: 483b441a-c4c2-4c71-9aae-8dcf2d7ee5e8
+  /user/v1/userRole/update/{id}:
+    post:
+      summary: Update User Roles
+      tags:
+        - User Roles APIs
+      description: |
+        Use this API to update an user Role.
+
+        - Endpoint: `/user/v1/userRole/update/{id}`
+        - Provide values for parameters marked as `required`.
+        - The X-auth-token is mandatory and cannot be empty or null.
+      parameters: 'ref_3'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                title:
+                  type: string
+                user_type:
+                  type: number
+                status:
+                  type: string
+                visibility:
+                  type: string
+                organization_id:
+                  type: number
+              required:
+                - title
+                - user_type
+                - status
+                - visibility
+                - organization_id
+            examples:
+              example1:
+                value:
+                  title: system_
+                  user_type: 1
+                  status: ACTIVE
+                  visibility: PUBLIC
+                  organization_id: 3
+      responses:
+        '201':
+          description: OK. Roles updated successfully
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      user_type:
+                        type: number
+                      status:
+                        type: string
+                      visibility:
+                        type: string
+                      organization_id:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Roles updated successfully
+                    result:
+                      title: system_
+                      user_type: 1
+                      status: ACTIVE
+                      visibility: PUBLIC
+                      organization_id: 3
+                    meta:
+                      formsVersion: []
+                      correlation: 7672e4b5-2fa7-4022-a18b-cd574898e590
+  /user/v1/userRole/delete/{id}:
+    delete:
+      summary: Delete User Role
+      tags:
+        - User Roles APIs
+      description: >
+        This API is associated with deleting an role.
+
+        - Endpoint for deleting a user role: `/user/v1/userRole/delete/{id}`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      parameters:
+        - 'ref_4'
+        - in: path
+          name: id
+          required: true
+          description: Please append a valid user role ID to the request URL.
+          schema: 'ref_5'
+          example: 31
+      responses:
+        '202':
+          description: OK. Accepted
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      formsVersion:
+                        type: array
+                        items:
+                          type: string
+                      correlation:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module deleted successfully
+                    result: {}
+                    meta:
+                      formsVersion: []
+                      correlation: 645c901e-a7db-49a3-8d4c-dfc4f0b6dadb
 components:
   schemas:
     user:
@@ -4542,3 +4885,9 @@ components:
       type: apiKey
       name: X-auth-token
       in: header
+tags:
+  - name: User Roles APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''

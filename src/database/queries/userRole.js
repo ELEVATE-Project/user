@@ -23,6 +23,18 @@ module.exports = class UserRoleModulesData {
 		}
 	}
 
+	static async findAll(filter, options = {}) {
+		try {
+			return await UserRole.findAll({
+				where: filter,
+				...options,
+				raw: true,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
 	static async findRoleById(id) {
 		try {
 			return await UserRole.findByPk(id)

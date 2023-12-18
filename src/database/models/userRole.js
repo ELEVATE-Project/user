@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: common.ACTIVE_STATUS,
+				defaultValue: 'ACTIVE',
 			},
 			visibility: {
 				type: DataTypes.STRING,
