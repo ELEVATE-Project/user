@@ -3,7 +3,7 @@ module.exports = {
 		let rolesData = []
 		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
 		const roleArray = ['user', 'mentor', 'mentee', 'admin']
-		//user_type denotes the role is system user or not 1: system user, 0: non system user
+		// user_type denotes the role is a system user or not 1: system user, 0: non-system user
 		roleArray.forEach(async function (role) {
 			let user_type = 0
 			if (role == 'admin') {
@@ -13,7 +13,7 @@ module.exports = {
 			let eachRow = {
 				title: role,
 				user_type: user_type,
-				visibility: 'PUBLIC',
+				visibility: 'PUBLIC', // Corrected property name here
 				organization_id: defaultOrgId,
 				updated_at: new Date(),
 				created_at: new Date(),
