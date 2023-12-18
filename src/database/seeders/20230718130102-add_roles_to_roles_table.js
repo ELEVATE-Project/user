@@ -1,6 +1,7 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		let rolesData = []
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
 		const roleArray = ['user', 'mentor', 'mentee', 'admin']
 		//user_type denotes the role is system user or not 1: system user, 0: non system user
 		roleArray.forEach(async function (role) {
@@ -12,6 +13,8 @@ module.exports = {
 			let eachRow = {
 				title: role,
 				user_type: user_type,
+				visibility: 'PUBLIC',
+				organization_id: defaultOrgId,
 				updated_at: new Date(),
 				created_at: new Date(),
 			}

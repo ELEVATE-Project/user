@@ -6,7 +6,7 @@ module.exports = {
 		let roleData = []
 		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
 		let eachRow = {
-			title: 'org_admin',
+			title: 'system_manager',
 			user_type: 1,
 			visibility: 'PUBLIC',
 			organization_id: defaultOrgId,
@@ -19,6 +19,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.bulkDelete('user_roles', { title: 'org_admin' })
+		await queryInterface.bulkDelete('user_roles', { title: 'system_manager' })
 	},
 }

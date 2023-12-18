@@ -1,5 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
+	const defaultOrgId = sequelize.options.defaultOrgId
 	const UserRole = sequelize.define(
 		'UserRole',
 		{
@@ -20,7 +21,16 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: 'ACTIVE',
+				defaultValue: common.ACTIVE_STATUS,
+			},
+			visibility: {
+				type: DataTypes.STRING,
+				defaultValue: 'PUBLIC',
+			},
+			organization_id: {
+				type: DataTypes.INTEGER,
+				defaultValue: defaultOrgId,
+				allowNull: false,
 			},
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }
