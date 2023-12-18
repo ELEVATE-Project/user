@@ -241,7 +241,7 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			userId = user.id
+			userId = user.id //un-necessary
 
 			let organization = await organizationQueries.findByPk(organizationId)
 			if (!organization?.id) {
@@ -261,6 +261,9 @@ module.exports = class AdminHelper {
 				})
 			}
 
+			// Create a unique array of organization administrators (orgAdmins) by combining the existing
+			// organization admins (organization.org_admin) with the userId. The lodash uniq function ensures
+			// that the resulting array contains only unique values.
 			const orgAdmins = _.uniq([...(organization.org_admin || []), userId])
 
 			const orgRowsAffected = await organizationQueries.update(
@@ -300,7 +303,7 @@ module.exports = class AdminHelper {
 			//update organization
 			if (userOrg.id != organizationId) {
 				await userQueries.changeOrganization(userId, userOrg.id, organizationId, {
-					organization_id: organizationId,
+					//organization_id: organizationId,
 					roles: roles,
 				})
 			} else {

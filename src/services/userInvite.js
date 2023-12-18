@@ -155,10 +155,7 @@ module.exports = class UserInviteHelper {
 	static async createUserInvites(csvData, user, fileUploadId) {
 		try {
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
-
-			// get the role data from db
 			const allRoles = _.uniq(_.map(csvData, 'roles').map((role) => role.toLowerCase()))
-
 			const roleList = await roleQueries.findAll({ title: allRoles })
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
@@ -167,7 +164,6 @@ module.exports = class UserInviteHelper {
 
 			//get all existing user
 			const emailArray = _.uniq(_.map(csvData, 'email'))
-
 			const userCredentials = await UserCredentialQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
 				{
@@ -175,14 +171,12 @@ module.exports = class UserInviteHelper {
 				}
 			)
 			const userIds = _.map(userCredentials, 'user_id')
-
 			const existingUsers = await userQueries.findAll(
 				{ id: userIds },
 				{
 					attributes: ['id', 'email', 'organization_id', 'roles'],
 				}
 			)
-
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser]))
 
 			//find default org id
@@ -288,7 +282,7 @@ module.exports = class UserInviteHelper {
 								eventBroadcaster('updateOrganization', {
 									requestBody: {
 										user_id: existingUser.id,
-										organization_id: existingUser.organization_id,
+										organization_id: user.organization_id,
 										roles: _.map(userRoles, 'title'),
 									},
 								})
