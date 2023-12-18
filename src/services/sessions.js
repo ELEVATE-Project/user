@@ -454,44 +454,44 @@ module.exports = class SessionsHelper {
 									oldStartDate: utils.getTimeZone(
 										sessionDetail.start_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldStartTime: utils.getTimeZone(
 										sessionDetail.startDateUtc
 											? sessionDetail.startDateUtc
 											: sessionDetail.start_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldEndDate: utils.getTimeZone(
 										sessionDetail.end_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldEndTime: utils.getTimeZone(
 										sessionDetail.end_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newStartDate: utils.getTimeZone(
 										bodyData['start_date'] ? bodyData['start_date'] : sessionDetail.start_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newStartTime: utils.getTimeZone(
 										bodyData['start_date'] ? bodyData['start_date'] : sessionDetail.start_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newEndDate: utils.getTimeZone(
 										bodyData['end_date'] ? bodyData['end_date'] : sessionDetail.end_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newEndTime: utils.getTimeZone(
 										bodyData['end_date'] ? bodyData['end_date'] : sessionDetail.end_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 								}),
 							},
