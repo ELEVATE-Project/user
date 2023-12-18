@@ -383,6 +383,7 @@ module.exports = class OrgAdminService {
 	static async updateOrganization(bodyData) {
 		try {
 			const orgId = bodyData.organization_id
+			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
 			// Get organization details
 			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
