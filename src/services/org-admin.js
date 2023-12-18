@@ -379,7 +379,6 @@ module.exports = class OrgAdminService {
 	static async updateOrganization(bodyData) {
 		try {
 			const orgId = bodyData.organization_id
-
 			// Get organization details
 			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
@@ -391,7 +390,7 @@ module.exports = class OrgAdminService {
 			}
 
 			// Get organization policies
-			const orgPolicies = await organisationExtensionQueries.getById(orgId)
+			const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
 			if (!orgPolicies?.organization_id) {
 				return common.failureResponse({
 					message: 'ORG_EXTENSION_NOT_FOUND',
@@ -408,12 +407,9 @@ module.exports = class OrgAdminService {
 				visibility: orgPolicies.mentor_visibility_policy,
 				visible_to_organizations: organizationDetails.data.result.related_orgs,
 			}
-
-			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE)) {
+			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE))
 				await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
-			} else {
-				await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
-			}
+			else await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'UPDATE_ORG_SUCCESSFULLY',
