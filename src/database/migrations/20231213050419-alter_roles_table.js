@@ -13,7 +13,7 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.removeColumn('user_roles', 'visiblity')
+		await queryInterface.removeColumn('user_roles', 'visibility')
 		await queryInterface.removeColumn('user_roles', 'organization_id')
 	},
 }
