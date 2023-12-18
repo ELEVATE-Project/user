@@ -75,7 +75,9 @@ module.exports = class OrgAdminService {
 					})
 				}
 
-				const orgPolicies = await organisationExtensionQueries.getById(bodyData.organization_id)
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					bodyData.organization_id
+				)
 				if (!orgPolicies?.organization_id) {
 					return common.failureResponse({
 						message: 'ORG_EXTENSION_NOT_FOUND',
@@ -155,7 +157,9 @@ module.exports = class OrgAdminService {
 					})
 				}
 
-				const orgPolicies = await organisationExtensionQueries.getById(bodyData.organization_id)
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					bodyData.organization_id
+				)
 				if (!orgPolicies?.organization_id) {
 					return common.failureResponse({
 						message: 'ORG_EXTENSION_NOT_FOUND',
