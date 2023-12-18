@@ -10,10 +10,10 @@ const createSchema = {
 		result: {
 			type: 'object',
 			properties: {
-				Id: {
+				id: {
 					type: 'integer',
 				},
-				status: {
+				code: {
 					type: 'string',
 				},
 				module: {
@@ -22,12 +22,155 @@ const createSchema = {
 				actions: {
 					type: 'string',
 				},
+				status: {
+					type: 'string',
+				},
 			},
-			required: ['Id', 'status', 'module', 'actions'],
+			required: ['id', 'code', 'module', 'actions', 'status'],
 		},
 		meta: {
 			type: 'object',
 			properties: {
+				formsVersion: {
+					type: 'array',
+					items: [
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+					],
+				},
 				correlation: {
 					type: 'string',
 				},
@@ -35,7 +178,7 @@ const createSchema = {
 					type: 'string',
 				},
 			},
-			required: ['correlation', 'meetingPlatform'],
+			required: ['formsVersion', 'correlation', 'meetingPlatform'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
@@ -52,10 +195,162 @@ const updateSchema = {
 		},
 		result: {
 			type: 'object',
+			properties: {
+				id: {
+					type: 'integer',
+				},
+				status: {
+					type: 'string',
+				},
+				actions: {
+					type: 'string',
+				},
+			},
+			required: ['id', 'status', 'actions'],
 		},
 		meta: {
 			type: 'object',
 			properties: {
+				formsVersion: {
+					type: 'array',
+					items: [
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+					],
+				},
 				correlation: {
 					type: 'string',
 				},
@@ -63,7 +358,7 @@ const updateSchema = {
 					type: 'string',
 				},
 			},
-			required: ['correlation', 'meetingPlatform'],
+			required: ['formsVersion', 'correlation', 'meetingPlatform'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
@@ -79,11 +374,152 @@ const deleteSchema = {
 			type: 'string',
 		},
 		result: {
-			type: 'object',
+			type: 'array',
+			items: {},
 		},
 		meta: {
 			type: 'object',
 			properties: {
+				formsVersion: {
+					type: 'array',
+					items: [
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+						{
+							type: 'object',
+							properties: {
+								id: {
+									type: 'integer',
+								},
+								type: {
+									type: 'string',
+								},
+								version: {
+									type: 'integer',
+								},
+							},
+							required: ['id', 'type', 'version'],
+						},
+					],
+				},
 				correlation: {
 					type: 'string',
 				},
@@ -91,7 +527,7 @@ const deleteSchema = {
 					type: 'string',
 				},
 			},
-			required: ['correlation', 'meetingPlatform'],
+			required: ['formsVersion', 'correlation', 'meetingPlatform'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
@@ -109,131 +545,57 @@ const listSchema = {
 		result: {
 			type: 'object',
 			properties: {
-				results: {
-					type: 'object',
-					properties: {
-						data: {
-							type: 'array',
-							items: [
-								{
-									type: 'object',
-									properties: {
-										id: {
-											type: 'integer',
-										},
-										code: {
-											type: 'string',
-										},
-										module: {
-											type: 'string',
-										},
-										actions: {
-											type: 'string',
-										},
-										status: {
-											type: 'string',
-										},
-									},
-									required: ['id', 'code', 'module', 'actions', 'status'],
-								},
-								{
-									type: 'object',
-									properties: {
-										id: {
-											type: 'integer',
-										},
-										code: {
-											type: 'string',
-										},
-										module: {
-											type: 'string',
-										},
-										actions: {
-											type: 'string',
-										},
-										status: {
-											type: 'string',
-										},
-									},
-									required: ['id', 'code', 'module', 'actions', 'status'],
-								},
-								{
-									type: 'object',
-									properties: {
-										id: {
-											type: 'integer',
-										},
-										code: {
-											type: 'string',
-										},
-										module: {
-											type: 'string',
-										},
-										actions: {
-											type: 'string',
-										},
-										status: {
-											type: 'string',
-										},
-									},
-									required: ['id', 'code', 'module', 'actions', 'status'],
-								},
-								{
-									type: 'object',
-									properties: {
-										id: {
-											type: 'integer',
-										},
-										code: {
-											type: 'string',
-										},
-										module: {
-											type: 'string',
-										},
-										actions: {
-											type: 'string',
-										},
-										status: {
-											type: 'string',
-										},
-									},
-									required: ['id', 'code', 'module', 'actions', 'status'],
-								},
-								{
-									type: 'object',
-									properties: {
-										id: {
-											type: 'integer',
-										},
-										code: {
-											type: 'string',
-										},
-										module: {
-											type: 'string',
-										},
-										actions: {
-											type: 'string',
-										},
-										status: {
-											type: 'string',
-										},
-									},
-									required: ['id', 'code', 'module', 'actions', 'status'],
-								},
-							],
+				data: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							id: {
+								type: 'integer',
+							},
+							code: {
+								type: 'string',
+							},
+							module: {
+								type: 'string',
+							},
+							actions: {
+								type: 'string',
+							},
+							status: {
+								type: 'string',
+							},
 						},
-						count: {
-							type: 'integer',
-						},
+						required: ['id', 'code', 'module', 'actions', 'status'],
 					},
-					required: ['data', 'count'],
+				},
+				count: {
+					type: 'integer',
 				},
 			},
-			required: ['results'],
+			required: ['data', 'count'],
 		},
 		meta: {
 			type: 'object',
 			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {
+						type: 'object',
+						properties: {
+							id: {
+								type: 'integer',
+							},
+							type: {
+								type: 'string',
+							},
+							version: {
+								type: 'integer',
+							},
+						},
+						required: ['id', 'type', 'version'],
+					},
+				},
 				correlation: {
 					type: 'string',
 				},
@@ -241,7 +603,7 @@ const listSchema = {
 					type: 'string',
 				},
 			},
-			required: ['correlation', 'meetingPlatform'],
+			required: ['formsVersion', 'correlation', 'meetingPlatform'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
