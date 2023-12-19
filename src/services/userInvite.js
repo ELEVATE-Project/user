@@ -154,32 +154,37 @@ module.exports = class UserInviteHelper {
 
 	static async createUserInvites(csvData, user, fileUploadId) {
 		try {
+			// Generate output file name
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
+
+			// Extract unique roles from CSV data
 			const allRoles = _.uniq(_.map(csvData, 'roles').map((role) => role.toLowerCase()))
+
+			// Retrieve role details from the database
 			const roleList = await roleQueries.findAll({ title: allRoles })
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
 				roleTitlesToIds[role.title] = [role.id]
 			})
 
-			//get all existing user
+			// Get all existing user emails
 			const emailArray = _.uniq(_.map(csvData, 'email'))
+
+			// Retrieve user credentials for existing users
 			const userCredentials = await UserCredentialQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
-				{
-					attributes: ['user_id'],
-				}
+				{ attributes: ['user_id'] }
 			)
+
+			// Retrieve details of existing users
 			const userIds = _.map(userCredentials, 'user_id')
 			const existingUsers = await userQueries.findAll(
 				{ id: userIds },
-				{
-					attributes: ['id', 'email', 'organization_id', 'roles'],
-				}
+				{ attributes: ['id', 'email', 'organization_id', 'roles'] }
 			)
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser]))
 
-			//find default org id
+			// Find the default organization id
 			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
 			const defaultOrgId = defaultOrg?.id || null
 
@@ -187,7 +192,7 @@ module.exports = class UserInviteHelper {
 			let isErrorOccured = false
 			let isOrgUpdate = false
 
-			//fetch email template
+			// Fetch email templates for mentor and mentee roles
 			const mentorTemplateCode = process.env.MENTOR_INVITATION_EMAIL_TEMPLATE_CODE || null
 			const menteeTemplateCode = process.env.MENTEE_INVITATION_EMAIL_TEMPLATE_CODE || null
 
@@ -205,13 +210,13 @@ module.exports = class UserInviteHelper {
 				[common.MENTEE_ROLE]: menteeTemplateData,
 			}
 
-			// process csv data
+			// Process CSV data
 			for (const invitee of csvData) {
-				//convert the fields to lower case
+				// Convert fields to lower case
 				invitee.roles = invitee.roles.toLowerCase()
 				invitee.email = invitee.email.toLowerCase()
 
-				//validate the fields
+				// Validate fields
 				if (!utils.isValidName(invitee.name)) {
 					invitee.statusOrUserId = 'NAME_INVALID'
 					input.push(invitee)
@@ -230,7 +235,7 @@ module.exports = class UserInviteHelper {
 					continue
 				}
 
-				//update user details if the user exist and in default org
+				// Update user details if the user exists and is in the default organization
 				const existingUser = existingEmailsMap.get(invitee.email)
 
 				if (existingUser) {
@@ -240,10 +245,12 @@ module.exports = class UserInviteHelper {
 					const isOrganizationMatch =
 						existingUser.organization_id === defaultOrgId ||
 						existingUser.organization_id === user.organization_id
+
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
 
 						if (existingUser.organization_id != user.organization_id) {
+							// Change user organization
 							await userQueries.changeOrganization(
 								existingUser.id,
 								existingUser.organization_id,
@@ -255,15 +262,19 @@ module.exports = class UserInviteHelper {
 							isOrgUpdate = true
 							userUpdateData.refresh_tokens = []
 						}
+
 						const areAllElementsInArray = _.every(roleTitlesToIds[invitee.roles], (element) =>
 							_.includes(existingUser.roles, element)
 						)
+
 						if (!areAllElementsInArray) {
+							// Update user roles
 							userUpdateData.roles = roleTitlesToIds[invitee.roles]
 							userUpdateData.refresh_tokens = []
 						}
 
 						if (isOrgUpdate || userUpdateData.roles) {
+							// Update user in the database
 							const userCredentials = await UserCredentialQueries.findOne({
 								email: invitee.email,
 							})
@@ -277,7 +288,8 @@ module.exports = class UserInviteHelper {
 							)
 
 							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
-							//call event to update in mentoring
+
+							// Call event to update in mentoring
 							if (!userUpdateData?.roles) {
 								eventBroadcaster('updateOrganization', {
 									requestBody: {
@@ -292,18 +304,21 @@ module.exports = class UserInviteHelper {
 									new_roles: [invitee.roles],
 									current_roles: _.map(userRoles, 'title'),
 								}
+
 								if (isOrgUpdate) requestBody.organization_id = user.organization_id
+
 								eventBroadcaster('roleChange', {
 									requestBody,
 								})
 
-								//delete from cache
+								// Delete from cache
 								const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
 								await utils.redisDel(redisUserKey)
 							}
 						}
 					}
 				} else {
+					// Create a new invitee
 					const inviteeData = {
 						...invitee,
 						status: common.UPLOADED_STATUS,
@@ -318,7 +333,9 @@ module.exports = class UserInviteHelper {
 						organization_id: newInvitee.organization_id,
 						organization_user_invite_id: newInvitee.id,
 					})
+
 					if (newUserCred.id) {
+						// Send email invitation for the new user
 						const { name, email, roles } = invitee
 						const userData = {
 							name,
@@ -328,7 +345,7 @@ module.exports = class UserInviteHelper {
 						}
 
 						const templateData = templates[roles]
-						//send email invitation for user
+
 						if (templateData && Object.keys(templateData).length > 0) {
 							await this.sendInviteeEmail(templateData, userData)
 						}
@@ -343,9 +360,9 @@ module.exports = class UserInviteHelper {
 				input.push(invitee)
 			}
 
+			// Generate CSV content and write to file
 			const csvContent = utils.generateCSVContent(input)
 			const outputFilePath = path.join(inviteeFileDir, outputFileName)
-
 			fs.writeFileSync(outputFilePath, csvContent)
 
 			return {
@@ -356,6 +373,7 @@ module.exports = class UserInviteHelper {
 				},
 			}
 		} catch (error) {
+			// Return error message if an exception occurs
 			return {
 				success: false,
 				message: error,
