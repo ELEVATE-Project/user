@@ -806,6 +806,8 @@ module.exports = class SessionsHelper {
 			await sessionAttendeesQueries.create(attendee)
 			await sessionEnrollmentQueries.create(_.omit(attendee, 'time_zone'))
 
+			await sessionQueries.updateEnrollmentCount(sessionId, false)
+
 			const templateData = await notificationQueries.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE,
 				session.mentor_organization_id
@@ -830,7 +832,6 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			await sessionQueries.updateEnrollmentCount(sessionId, false)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -881,13 +882,15 @@ module.exports = class SessionsHelper {
 
 			await sessionEnrollmentQueries.unEnrollFromSession(sessionId, userId)
 
+			await sessionQueries.updateEnrollmentCount(sessionId)
+
 			const templateData = await notificationQueries.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE,
 				session.mentor_organization_id
 			)
 
 			if (templateData) {
-				// Push successfull unenrollment to session in kafka
+				// Push successful unenrollment to session in kafka
 				const payload = {
 					type: 'email',
 					email: {
@@ -903,8 +906,6 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
-			await sessionQueries.updateEnrollmentCount(sessionId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
