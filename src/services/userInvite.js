@@ -154,6 +154,7 @@ module.exports = class UserInviteHelper {
 
 	static async createUserInvites(csvData, user, fileUploadId) {
 		try {
+			console.log('CREATE USER INVITE DATAAAAAAAAAAAAAAA: ', { csvData, user, fileUploadId })
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 			const allRoles = _.uniq(_.map(csvData, 'roles').map((role) => role.toLowerCase()))
 			const roleList = await roleQueries.findAll({ title: allRoles })
@@ -296,11 +297,9 @@ module.exports = class UserInviteHelper {
 								eventBroadcaster('roleChange', {
 									requestBody,
 								})
-
-								//delete from cache
-								const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
-								await utils.redisDel(redisUserKey)
 							}
+							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
+							await utils.redisDel(redisUserKey)
 						}
 					}
 				} else {
