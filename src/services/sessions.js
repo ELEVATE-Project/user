@@ -388,7 +388,6 @@ module.exports = class SessionsHelper {
 					})
 				}
 			}
-
 			if (method == common.DELETE_METHOD || isSessionReschedule) {
 				const sessionAttendees = await sessionAttendeesQueries.findAll({
 					session_id: sessionId,
@@ -453,52 +452,46 @@ module.exports = class SessionsHelper {
 									name: attendee.attendeeName,
 									sessionTitle: sessionDetail.title,
 									oldStartDate: utils.getTimeZone(
-										sessionDetail.startDateUtc
-											? sessionDetail.startDateUtc
-											: sessionDetail.startDate,
+										sessionDetail.start_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldStartTime: utils.getTimeZone(
 										sessionDetail.startDateUtc
 											? sessionDetail.startDateUtc
-											: sessionDetail.startDate,
+											: sessionDetail.start_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldEndDate: utils.getTimeZone(
-										sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate,
+										sessionDetail.end_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldEndTime: utils.getTimeZone(
-										sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate,
+										sessionDetail.end_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newStartDate: utils.getTimeZone(
-										bodyData['startDateUtc']
-											? bodyData['startDateUtc']
-											: sessionDetail.startDateUtc,
+										bodyData['start_date'] ? bodyData['start_date'] : sessionDetail.start_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newStartTime: utils.getTimeZone(
-										bodyData['startDateUtc']
-											? bodyData['startDateUtc']
-											: sessionDetail.startDateUtc,
+										bodyData['start_date'] ? bodyData['start_date'] : sessionDetail.start_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newEndDate: utils.getTimeZone(
-										bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc,
+										bodyData['end_date'] ? bodyData['end_date'] : sessionDetail.end_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newEndTime: utils.getTimeZone(
-										bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc,
+										bodyData['end_date'] ? bodyData['end_date'] : sessionDetail.end_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 								}),
 							},
