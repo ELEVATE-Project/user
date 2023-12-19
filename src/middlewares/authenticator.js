@@ -22,6 +22,8 @@ module.exports = async function (req, res, next) {
 
 		common.internalAccessUrls.map(function (path) {
 			if (req.path.includes(path)) {
+				console.log('REQUEST PATH: ', req.path)
+				console.log('INTERNAL ACCESS PATH: ', path)
 				if (
 					req.headers.internal_access_token &&
 					process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token
