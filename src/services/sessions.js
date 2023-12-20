@@ -558,7 +558,7 @@ module.exports = class SessionsHelper {
 
 			// check for accessibility
 			if (userId !== '' && isAMentor !== '') {
-				let isAccessible = await this.checkIfSessionIsAccessible([sessionDetails], userId, isAMentor)
+				let isAccessible = await this.checkIfSessionIsAccessible(sessionDetails, userId, isAMentor)
 
 				// Throw access error
 				if (!isAccessible) {
@@ -630,6 +630,7 @@ module.exports = class SessionsHelper {
 	 */
 	static async checkIfSessionIsAccessible(sessions, userId, isAMentor) {
 		try {
+			if (isAMentor && sessions.mentor_id === userId) return true
 			const userPolicyDetails = isAMentor
 				? await mentorExtensionQueries.getMentorExtension(userId, [
 						'external_session_visibility',
@@ -653,7 +654,7 @@ module.exports = class SessionsHelper {
 			let isAccessible = false
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				const { external_session_visibility, organization_id } = userPolicyDetails
-				const session = sessions[0]
+				const session = sessions
 				const isEnrolled = session.is_enrolled || false
 
 				switch (external_session_visibility) {
