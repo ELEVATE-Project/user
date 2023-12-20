@@ -628,9 +628,9 @@ module.exports = class SessionsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- List of filtered sessions
 	 */
-	static async checkIfSessionIsAccessible(sessions, userId, isAMentor) {
+	static async checkIfSessionIsAccessible(session, userId, isAMentor) {
 		try {
-			if (isAMentor && sessions.mentor_id === userId) return true
+			if (isAMentor && session.mentor_id === userId) return true
 			const userPolicyDetails = isAMentor
 				? await mentorExtensionQueries.getMentorExtension(userId, [
 						'external_session_visibility',
@@ -654,7 +654,6 @@ module.exports = class SessionsHelper {
 			let isAccessible = false
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				const { external_session_visibility, organization_id } = userPolicyDetails
-				const session = sessions
 				const isEnrolled = session.is_enrolled || false
 
 				switch (external_session_visibility) {
