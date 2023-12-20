@@ -15,6 +15,7 @@ exports.unEnrollFromSession = async (sessionId, userId) => {
 				session_id: sessionId,
 				mentee_id: userId,
 			},
+			force: true, // Setting force to true for a hard delete
 		})
 
 		return result
