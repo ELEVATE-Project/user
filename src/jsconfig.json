@@ -19,8 +19,8 @@
 			"@validators*": ["./validators*"],
 			"@utils*": ["./utils*"],
 			"@helpers*": ["./helpers*"],
-			"@database": ["./database*"],
-			"@scripts": ["./scripts*"]
+			"@database*": ["./database*"],
+			"@scripts*": ["./scripts*"]
 		}
 	},
 	"exclude": ["node_modules"]
