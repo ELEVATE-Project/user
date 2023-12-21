@@ -11,9 +11,8 @@ module.exports = class modules {
 	 */
 
 	async create(req) {
-		const params = req.body
 		try {
-			const createdModules = await modulesService.create(params)
+			const createdModules = await modulesService.create(req.body)
 			return createdModules
 		} catch (error) {
 			return error
@@ -29,10 +28,8 @@ module.exports = class modules {
 	 */
 
 	async update(req) {
-		const params = req.body
-		const id = req.params.id
 		try {
-			const updatedModules = await modulesService.update(id, params)
+			const updatedModules = await modulesService.update(req.params.id, req.body)
 			return updatedModules
 		} catch (error) {
 			return error
@@ -51,10 +48,7 @@ module.exports = class modules {
 
 	async list(req) {
 		try {
-			const page = req.pageNo
-			const limit = req.pageSize
-			const search = req.searchText
-			const modulesDetails = await modulesService.list(page, limit, search)
+			const modulesDetails = await modulesService.list(req.pageNo, req.pageSize, req.searchText)
 			return modulesDetails
 		} catch (error) {
 			return error
@@ -70,9 +64,8 @@ module.exports = class modules {
 	 */
 
 	async delete(req) {
-		const id = req.params.id
 		try {
-			const modulesDelete = await modulesService.delete(id)
+			const modulesDelete = await modulesService.delete(req.params.id)
 			return modulesDelete
 		} catch (error) {
 			return error
