@@ -4,7 +4,7 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		// Update query to delete rows where deleted_at is not null
-		await queryInterface.sequelize.query('DELETE FROM session_attendees WHERE deleted_at IS NOT NULL')
+		//await queryInterface.sequelize.query('DELETE FROM session_attendees WHERE deleted_at IS NOT NULL')
 
 		// Remove the current primary key
 		await queryInterface.removeConstraint('session_attendees', 'session_attendees_pkey')
