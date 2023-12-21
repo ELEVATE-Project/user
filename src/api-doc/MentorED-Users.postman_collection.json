@@ -1,424 +1,11 @@
 {
 	"info": {
-		"_postman_id": "e318392d-fcb8-4f78-a69c-fbebd346a868",
-		"name": "MentorED-Users",
+		"_postman_id": "615444c7-583f-44b9-9b96-8b92f9cb0df1",
+		"name": "MentorED-Users DEV new",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "7997930"
+		"_exporter_id": "21498549"
 	},
 	"item": [
-		{
-			"name": "Profile",
-			"item": [
-				{
-					"name": "Profile Details",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/profile/details/628483242d53327460469bec",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "profile", "details", "628483242d53327460469bec"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Profile Update",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n   \n    \"designation\": [{ \"value\": \"1\", \"label\": \"Teacher\" }, { \"value\": \"2\", \"label\": \"District Official\" }],\n    \"location\": [{ \"value\": \"1\", \"label\": \"Bangalore\" }],\n    \"about\": \"This is test about of mentee\",\n    \"areasOfExpertise\": [{ \"value\": \"1\", \"label\": \"Educational Leadership\" }, { \"value\": \"2\", \"label\": \"SQAA\" }],\n    \"experience\": 4.2,\n    \"hasAcceptedTAndC\": true,\n    \"gender\": \"MALE\",\n    \"educationQualification\": \"B.A.\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/profile/update",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "profile", "update"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "form",
-			"item": [
-				{
-					"name": "Create Form",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read Form",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"type of form\",\n\t\"subType\": \"sub type of form\",\n\t\"action\": \"actions\",\n    \"templateName\": \"template name\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/read/61ee56ebfc2b962cf281dd01",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "read", "61ee56ebfc2b962cf281dd01"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Form",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"session\",\n    \"subType\": \"createSessions\",\n    \"action\": \"sessionField\",\n    \"data\": {\n        \"templateName\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"title\",\n                    \"label\": \"title\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"text\",\n                    \"position\":\"floating\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"minLength\": 5\n                    }\n                },\n                {\n                    \"name\": \"categories\",\n                    \"label\": \"Select categories\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                },\n                {\n                    \"name\": \"ages\",\n                    \"label\": \"Select age\",\n                    \"value\": \"\",\n                    \"class\": \"ion-margin\",\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"validators\": {\n                        \"required\": true\n                    }\n                }\n            ]\n        }\n    }\n}\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/update/61ee56ebfc2b962cf281dd01",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "update", "61ee56ebfc2b962cf281dd01"]
-						},
-						"description": "NOTE: Id is required in params and that should be objectId"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "System User",
-			"item": [
-				{
-					"name": "Create",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "internal_access_token",
-								"value": "{{internal_access_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\":\"system\",\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\",\n,    \"role\":\"admin\"\n\n, \"secretCode\":\"W5bF7gesuS0xsNWmpsKy\"\n\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/systemUsers/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "systemUsers", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Login",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/systemUsers/login",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "systemUsers", "login"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "entity",
-			"item": [
-				{
-					"name": "Create User Entity",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\": \"DM\",\n    \"label\": \"DM\",\n    \"type\": \"roles\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "create"]
-						},
-						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
-					},
-					"response": []
-				},
-				{
-					"name": "Read User Entity",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/read?type=roles&deleted=false&status=ACTIVE",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "read"],
-							"query": [
-								{
-									"key": "type",
-									"value": "roles"
-								},
-								{
-									"key": "deleted",
-									"value": "false"
-								},
-								{
-									"key": "status",
-									"value": "ACTIVE"
-								}
-							]
-						},
-						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
-					},
-					"response": []
-				},
-				{
-					"name": "Update User Entity",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/delete/628d754878bfa4f6931d0ff8",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "delete", "628d754878bfa4f6931d0ff8"]
-						},
-						"description": "NOET: All body req parameters are optional to update."
-					},
-					"response": []
-				},
-				{
-					"name": "Deletes User Entity",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userentity/delete/6285a9a0cc79ec00165e71e3",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userentity", "delete", "6285a9a0cc79ec00165e71e3"]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "mentors",
-			"item": [
-				{
-					"name": "Users list",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/mentors/list?pageNo=1&pageSize=5&searchText=test",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "mentors", "list"],
-							"query": [
-								{
-									"key": "pageNo",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "5"
-								},
-								{
-									"key": "searchText",
-									"value": "test"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "file-upload",
-			"item": [
-				{
-					"name": "get Signed Url",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSignedUrl?fileName=laptop1.jpg",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "cloud-services", "file", "getSignedUrl"],
-							"query": [
-								{
-									"key": "fileName",
-									"value": "laptop1.jpg"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Signed Url",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSignedUrl?fileName=logo1.jpeg",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "cloud-services", "file", "getSignedUrl"],
-							"query": [
-								{
-									"key": "fileName",
-									"value": "logo1.jpeg"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
 		{
 			"name": "Account",
 			"item": [
@@ -429,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"Ankit\",\n    \"email\":\"vipin@gmail.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":false\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -451,7 +38,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"shahu\",\n    \"email\":\"ankit.s@pacewisdomss.com\",\n    \"password\":\"testing\",\n    \"isAMentor\":true,\n    \"secretCode\":\"4567\"\n}",
+							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -475,7 +62,7 @@
 								"exec": [
 									"var jsonBody = JSON.parse(responseBody);",
 									"pm.environment.set(\"token\", jsonBody.result.access_token);",
-									"pm.environment.set(\"refreshToken\", jsonBody.result.refresh_token);"
+									"pm.environment.set(\"refresh_token\", jsonBody.result.refresh_token);"
 								],
 								"type": "text/javascript"
 							}
@@ -489,9 +76,8 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankitstar00786@yahoo.com",
-									"type": "text",
-									"disabled": true
+									"value": "nevil@tunerlabs.com",
+									"type": "text"
 								},
 								{
 									"key": "password",
@@ -501,12 +87,13 @@
 								},
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdomss.com",
-									"type": "text"
+									"value": "priyanka@tunerlabs.com",
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
-									"value": "test123",
+									"value": "testing",
 									"type": "text"
 								}
 							]
@@ -539,77 +126,10 @@
 					"response": []
 				},
 				{
-					"name": "Change Role Copy",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "ankit.s@pacewisdom.cdd",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/changeRole",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "changeRole"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify Mentor",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "urlencoded",
-							"urlencoded": []
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/verifyMentor?userId=62a820225ff93f30cfe5f990",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "verifyMentor"],
-							"query": [
-								{
-									"key": "userId",
-									"value": "62a820225ff93f30cfe5f990"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Reset Password",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"body": {
 							"mode": "urlencoded",
 							"urlencoded": [
@@ -659,8 +179,8 @@
 									"disabled": true
 								},
 								{
-									"key": "refreshToken",
-									"value": "{{refreshToken}}",
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
 									"type": "text"
 								}
 							]
@@ -730,8 +250,8 @@
 							"mode": "urlencoded",
 							"urlencoded": [
 								{
-									"key": "refreshToken",
-									"value": "{{refreshToken}}",
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
 									"type": "text"
 								}
 							]
@@ -756,13 +276,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/list?type=mentee&page=1&limit=2",
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list?type=mentor&page=1&limit=2&search=p",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "account", "list"],
 							"query": [
 								{
 									"key": "type",
-									"value": "mentee"
+									"value": "mentor"
 								},
 								{
 									"key": "page",
@@ -771,6 +291,10 @@
 								{
 									"key": "limit",
 									"value": "2"
+								},
+								{
+									"key": "search",
+									"value": "p"
 								}
 							]
 						}
@@ -785,7 +309,8 @@
 							{
 								"key": "X-auth-token",
 								"value": "bearer {{token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -793,7 +318,7 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdom.com",
+									"value": "nevil@tunerlabs.com",
 									"type": "text"
 								},
 								{
@@ -803,7 +328,7 @@
 								},
 								{
 									"key": "name",
-									"value": "Ankit",
+									"value": "Nevil",
 									"type": "text"
 								}
 							]
@@ -815,14 +340,104 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "List User with Id",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userIds\" : [4,5,6]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "list"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Admin",
+			"name": "User",
 			"item": [
 				{
-					"name": "Delete User",
+					"name": "Read User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "read", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/update",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "update"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Share User",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -837,9 +452,1187 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/628483242d53327460469bec",
+							"raw": "{{UserDevBaseUrl}}user/v1/user/share/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "admin", "deleteUser", "628483242d53327460469bec"]
+							"path": ["v1", "user", "share", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Role",
+			"item": [
+				{
+					"name": "List User Roles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/list",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userRole", "list"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Form",
+			"item": [
+				{
+					"name": "Create Form",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"profile\",\n    \"sub_type\": \"profileForm\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"name\",\n                    \"label\": \"Your name\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Please enter your full name\",\n                    \"errorMessage\": \"This field can only contain alphabets\",\n                    \"showValidationError\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"pattern\": \"^[^0-9!@#%$&()\\\\-`.+,/\\\"]*$\"\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"location\",\n                    \"label\": \"Select your location\",\n                    \"value\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        }\n                    ],\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"select\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Location\",\n                    \"errorMessage\": \"Please select your location\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        },\n                        {\n                            \"value\": \"AR\",\n                            \"label\": \"Arunachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"As\",\n                            \"label\": \"Assam\"\n                        },\n                        {\n                            \"value\": \"BR\",\n                            \"label\": \"Bihar\"\n                        },\n                        {\n                            \"value\": \"CG\",\n                            \"label\": \"Chhattisgarh\"\n                        },\n                        {\n                            \"value\": \"GA\",\n                            \"label\": \"Goa\"\n                        },\n                        {\n                            \"value\": \"GJ\",\n                            \"label\": \"Gujarat\"\n                        },\n                        {\n                            \"value\": \"HR\",\n                            \"label\": \"Haryana\"\n                        },\n                        {\n                            \"value\": \"HP\",\n                            \"label\": \"Himachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"JH\",\n                            \"label\": \"Jharkhand\"\n                        },\n                        {\n                            \"value\": \"KN\",\n                            \"label\": \"Karnataka\"\n                        },\n                        {\n                            \"value\": \"KL\",\n                            \"label\": \"Kerala\"\n                        },\n                        {\n                            \"value\": \"MP\",\n                            \"label\": \"Madhya Pradesh\"\n                        },\n                        {\n                            \"value\": \"MH\",\n                            \"label\": \"Maharashtra\"\n                        },\n                        {\n                            \"value\": \"MN\",\n                            \"label\": \"Manipur\"\n                        },\n                        {\n                            \"value\": \"ML\",\n                            \"label\": \"Meghalaya\"\n                        },\n                        {\n                            \"value\": \"MZ\",\n                            \"label\": \"Mizoram\"\n                        },\n                        {\n                            \"value\": \"NL\",\n                            \"label\": \"Nagaland\"\n                        },\n                        {\n                            \"value\": \"OD\",\n                            \"label\": \"Odisha\"\n                        },\n                        {\n                            \"value\": \"PB\",\n                            \"label\": \"Punjab\"\n                        },\n                        {\n                            \"value\": \"RJ\",\n                            \"label\": \"Rajasthan\"\n                        },\n                        {\n                            \"value\": \"SK\",\n                            \"label\": \"Sikkim\"\n                        },\n                        {\n                            \"value\": \"TN\",\n                            \"label\": \"Tamil Nadu\"\n                        },\n                        {\n                            \"value\": \"TS\",\n                            \"label\": \"Telangana\"\n                        },\n                        {\n                            \"value\": \"TR\",\n                            \"label\": \"Tripura\"\n                        },\n                        {\n                            \"value\": \"UP\",\n                            \"label\": \"Uttar Pradesh\"\n                        },\n                        {\n                            \"value\": \"UK\",\n                            \"label\": \"Uttarakhand\"\n                        },\n                        {\n                            \"value\": \"WB\",\n                            \"label\": \"West Bengal\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"designation\",\n                    \"label\": \"Your role\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Designation\",\n                    \"errorMessage\": \"Enter your role\",\n                    \"addNewPopupHeader\": \"Add a new role\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        },\n                        {\n                            \"value\": \"BEO\",\n                            \"label\": \"Block education officer\"\n                        },\n                        {\n                            \"value\": \"DEO\",\n                            \"label\": \"District education officer\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"experience\",\n                    \"label\": \"Your experience in years\",\n                    \"value\": \"10\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Ex. 5 years\",\n                    \"errorMessage\": \"Enter your experience in years\",\n                    \"isNumberOnly\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 2\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"about\",\n                    \"label\": \"Tell us about yourself\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"textarea\",\n                    \"position\": \"floating\",\n                    \"errorMessage\": \"This field cannot be empty\",\n                    \"placeHolder\": \"Please use only 150 character\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 150\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"areasOfExpertise\",\n                    \"label\": \"Your expertise\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Expertise\",\n                    \"errorMessage\": \"Enter your expertise\",\n                    \"addNewPopupHeader\": \"Add your expertise\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        },\n                        {\n                            \"value\": \"schoolProcess\",\n                            \"label\": \"School process\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"educationQualification\",\n                    \"label\": \"Education qualification\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Education qualification\",\n                    \"errorMessage\": \"Enter education qualification\",\n                    \"placeHolder\": \"Ex. BA, B.ED\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"languages\",\n                    \"label\": \"Languages\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Medium\",\n                    \"errorMessage\": \"Enter language\",\n                    \"addNewPopupHeader\": \"Add new language\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        },\n                        {\n                            \"value\": \"hindi\",\n                            \"label\": \"Hindi\"\n                        }\n                    ]\n                }\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Form",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"profile\",\n\t\"sub_type\": \"profileForm\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "read", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Form",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"profile\",\n    \"sub_type\": \"profileForm\",\n    \"data\": {\n        \"template_name\": \"defaultTemplate\",\n        \"fields\": {\n            \"controls\": [\n                {\n                    \"name\": \"name\",\n                    \"label\": \"Your name\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Please enter your full name\",\n                    \"errorMessage\": \"This field can only contain alphabets\",\n                    \"showValidationError\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"pattern\": \"^[^0-9!@#%$&()\\\\-`.+,/\\\"]*$\"\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"location\",\n                    \"label\": \"Select your location\",\n                    \"value\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        }\n                    ],\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"select\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Location\",\n                    \"errorMessage\": \"Please select your location\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": [\n                        {\n                            \"value\": \"AP\",\n                            \"label\": \"Andhra Pradesh\"\n                        },\n                        {\n                            \"value\": \"AR\",\n                            \"label\": \"Arunachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"As\",\n                            \"label\": \"Assam\"\n                        },\n                        {\n                            \"value\": \"BR\",\n                            \"label\": \"Bihar\"\n                        },\n                        {\n                            \"value\": \"CG\",\n                            \"label\": \"Chhattisgarh\"\n                        },\n                        {\n                            \"value\": \"GA\",\n                            \"label\": \"Goa\"\n                        },\n                        {\n                            \"value\": \"GJ\",\n                            \"label\": \"Gujarat\"\n                        },\n                        {\n                            \"value\": \"HR\",\n                            \"label\": \"Haryana\"\n                        },\n                        {\n                            \"value\": \"HP\",\n                            \"label\": \"Himachal Pradesh\"\n                        },\n                        {\n                            \"value\": \"JH\",\n                            \"label\": \"Jharkhand\"\n                        },\n                        {\n                            \"value\": \"KN\",\n                            \"label\": \"Karnataka\"\n                        },\n                        {\n                            \"value\": \"KL\",\n                            \"label\": \"Kerala\"\n                        },\n                        {\n                            \"value\": \"MP\",\n                            \"label\": \"Madhya Pradesh\"\n                        },\n                        {\n                            \"value\": \"MH\",\n                            \"label\": \"Maharashtra\"\n                        },\n                        {\n                            \"value\": \"MN\",\n                            \"label\": \"Manipur\"\n                        },\n                        {\n                            \"value\": \"ML\",\n                            \"label\": \"Meghalaya\"\n                        },\n                        {\n                            \"value\": \"MZ\",\n                            \"label\": \"Mizoram\"\n                        },\n                        {\n                            \"value\": \"NL\",\n                            \"label\": \"Nagaland\"\n                        },\n                        {\n                            \"value\": \"OD\",\n                            \"label\": \"Odisha\"\n                        },\n                        {\n                            \"value\": \"PB\",\n                            \"label\": \"Punjab\"\n                        },\n                        {\n                            \"value\": \"RJ\",\n                            \"label\": \"Rajasthan\"\n                        },\n                        {\n                            \"value\": \"SK\",\n                            \"label\": \"Sikkim\"\n                        },\n                        {\n                            \"value\": \"TN\",\n                            \"label\": \"Tamil Nadu\"\n                        },\n                        {\n                            \"value\": \"TS\",\n                            \"label\": \"Telangana\"\n                        },\n                        {\n                            \"value\": \"TR\",\n                            \"label\": \"Tripura\"\n                        },\n                        {\n                            \"value\": \"UP\",\n                            \"label\": \"Uttar Pradesh\"\n                        },\n                        {\n                            \"value\": \"UK\",\n                            \"label\": \"Uttarakhand\"\n                        },\n                        {\n                            \"value\": \"WB\",\n                            \"label\": \"West Bengal\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"designation\",\n                    \"label\": \"Your role\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Designation\",\n                    \"errorMessage\": \"Enter your role\",\n                    \"addNewPopupHeader\": \"Add a new role\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"teacher\",\n                            \"label\": \"Teacher\"\n                        },\n                        {\n                            \"value\": \"HM\",\n                            \"label\": \"Head master\"\n                        },\n                        {\n                            \"value\": \"BEO\",\n                            \"label\": \"Block education officer\"\n                        },\n                        {\n                            \"value\": \"DEO\",\n                            \"label\": \"District education officer\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"experience\",\n                    \"label\": \"Your experience in years\",\n                    \"value\": \"10\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"placeHolder\": \"Ex. 5 years\",\n                    \"errorMessage\": \"Enter your experience in years\",\n                    \"isNumberOnly\": true,\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 2\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"about\",\n                    \"label\": \"Tell us about yourself\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"textarea\",\n                    \"position\": \"floating\",\n                    \"errorMessage\": \"This field cannot be empty\",\n                    \"placeHolder\": \"Please use only 150 character\",\n                    \"validators\": {\n                        \"required\": true,\n                        \"maxLength\": 150\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"areasOfExpertise\",\n                    \"label\": \"Your expertise\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Expertise\",\n                    \"errorMessage\": \"Enter your expertise\",\n                    \"addNewPopupHeader\": \"Add your expertise\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"eduLdship\",\n                            \"label\": \"Educational leadership\"\n                        },\n                        {\n                            \"value\": \"schoolProcess\",\n                            \"label\": \"School process\"\n                        }\n                    ]\n                },\n                {\n                    \"name\": \"educationQualification\",\n                    \"label\": \"Education qualification\",\n                    \"value\": \"mentor\",\n                    \"class\": \"ion-no-margin\",\n                    \"type\": \"text\",\n                    \"position\": \"floating\",\n                    \"errorLabel\": \"Education qualification\",\n                    \"errorMessage\": \"Enter education qualification\",\n                    \"placeHolder\": \"Ex. BA, B.ED\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"options\": []\n                },\n                {\n                    \"name\": \"languages\",\n                    \"label\": \"Languages\",\n                    \"class\": \"ion-no-margin\",\n                    \"value\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        }\n                    ],\n                    \"type\": \"chip\",\n                    \"position\": \"\",\n                    \"disabled\": false,\n                    \"showSelectAll\": true,\n                    \"errorLabel\": \"Medium\",\n                    \"errorMessage\": \"Enter language\",\n                    \"addNewPopupHeader\": \"Add new language\",\n                    \"validators\": {\n                        \"required\": true\n                    },\n                    \"showAddOption\": true,\n                    \"options\": [\n                        {\n                            \"value\": \"english\",\n                            \"label\": \"English\"\n                        },\n                        {\n                            \"value\": \"hindi\",\n                            \"label\": \"Hindi\"\n                        }\n                    ]\n                }\n            ]\n        }\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/update",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "update"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "File-upload",
+			"item": [
+				{
+					"name": "Get Signed Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSignedUrl?fileName=laptop1.jpg",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSignedUrl"],
+							"query": [
+								{
+									"key": "fileName",
+									"value": "laptop1.jpg"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Downloable Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getDownloadableUrl?filePath=users/2-1695710833829-user_creation.csv",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getDownloadableUrl"],
+							"query": [
+								{
+									"key": "filePath",
+									"value": "users/2-1695710833829-user_creation.csv"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getSampleCSV",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSampleCSV"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "deleteUser", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"system\",\n    \"email\": \"system@admin.com\",\n    \"password\": \"testing\",\n    \"secret_code\": \"W5bF7gesuS0xsNWmpsKy\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"",
+									"var jsonBody = JSON.parse(responseBody);",
+									"pm.environment.set(\"token\", jsonBody.result.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"system@admin.com\",\n    \"password\":\"testing\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/login",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Assign Org Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nevil@tunerlabs.com\",\n    \"organization_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/addOrgAdmin",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "addOrgAdmin"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Org",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deactivateOrg/2",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "deactivateOrg", "2"],
+							"query": [
+								{
+									"key": "status",
+									"value": "completed",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Organization",
+			"item": [
+				{
+					"name": "Read Organization",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisation_id=1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "read"],
+							"query": [
+								{
+									"key": "organisation_code",
+									"value": "ls",
+									"disabled": true
+								},
+								{
+									"key": "organisation_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Organization",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"orgrr\",\n    \"code\": \"mentor112\",\n    \"description\": \"testing org\",\n    \"domains\": [\"cc.com\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Organization",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"MentorEd\",\n    \"description\": \"testing org\",\n    \"related_orgs\": [\n        3,\n        4\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "update", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Organization",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/list?page=1&limit=10",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request Org Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": 2,\n  \"form_data\": {\n    \"Why you want to be a mentor\": \"To share knowledge\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/requestOrgRole",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "requestOrgRole"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Entity",
+			"item": [
+				{
+					"name": "Create Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"ml\",\n    \"label\": \"Malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"hm\",\n    \"label\": \"malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/read?read_user_entity=true",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "read"],
+							"query": [
+								{
+									"key": "id",
+									"value": "2",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
+									"key": "value",
+									"value": "ml",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
+									"key": "read_user_entity",
+									"value": "true",
+									"description": "use this param to get all entities, including user created entities."
+								}
+							]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"english\",\n    \"label\": \"English\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Entity Type",
+			"item": [
+				{
+					"name": "Create Entity Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"STRING\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read All System Entity Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity Types with entities",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": [\n        \"languages\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"],
+							"query": [
+								{
+									"key": "value",
+									"value": "role_one",
+									"disabled": true
+								},
+								{
+									"key": "deleted",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity Types",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"roles\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity Type",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orchestrated",
+			"item": [
+				{
+					"name": "Profile Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Profile Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ],\n    \"designation\": [\n        \"beo\",\n        \"deo\",\n        \"test\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "update"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Org Admin",
+			"item": [
+				{
+					"name": "Bulk User Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [""],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file_path",
+									"value": "org-admin/test.csv",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/bulkUserCreate",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "bulkUserCreate"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bulk Invite Files List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getBulkInvitesFilesList?page=1&limit=10&status=REQUESTED",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getBulkInvitesFilesList"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "REQUESTED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Request Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequestDetails/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getRequestDetails", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": [1,2]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/deactivateUser",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "deactivateUser"],
+							"query": [
+								{
+									"key": "status",
+									"value": "completed",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Of  Requests",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"filters\": {\n    \"role\": [\n      \"3\"\n    ],\n    \"status\": [\n      \"REQUESTED\"\n    ],\n    \"handled_by\": [\n      1\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequests",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getRequests"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Request Status",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"request_id\": 1,\n\t\"comments\": [\"All uploaded documents verified\", \"Profile information verified\"],\n\t\"status\": \"APPROVED\"\n}\n"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "updateRequestStatus"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Inherit Entity Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notification Templates",
+			"item": [
+				{
+					"name": "Create Notification Templates",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\" : \"email\",\n    \"code\": \"tl-email-invite\",\n    \"subject\": \"Hi Welcome Backk\",\n    \"body\": \"<p>Dear User,</p> Welcome back to mentorEd\",\n    \"email_header\": \"email_header\",\n    \"email_footer\":\"email_footer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Notification Templates",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template", "14"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification Templates",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\" : \"email\",\n    \"code\": \"tl-email-invite\",\n    \"subject\": \"Hi Welcome Back We missed You\" ,\n    \"body\": \"<p>Dear User,</p> Welcome back to mentorEd\",\n    \"email_header\": \"email_header\",\n    \"email_footer\":\"email_footer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template", "14"]
 						}
 					},
 					"response": []

@@ -10,7 +10,8 @@ const SystemUsers = require('./model')
 module.exports = class SystemUsersData {
 	static async findUsersByEmail(email) {
 		try {
-			const userData = await SystemUsers.findOne({ 'email.address': email }).lean()
+			const userData = await SystemUsers.findOne({ email: email }).lean()
+
 			return userData
 		} catch (error) {
 			return error

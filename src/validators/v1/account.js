@@ -4,7 +4,7 @@
  * Date : 20-Oct-2021
  * Description : Validations of accounts controller
  */
-
+const common = require('@constants/common')
 module.exports = {
 	create: (req) => {
 		req.checkBody('name')
@@ -27,7 +27,9 @@ module.exports = {
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 
-		req.checkBody('isAMentor').optional().isBoolean().withMessage('isAMentor is invalid')
+		if (req.body.role) {
+			req.checkBody('role').trim().not().isIn([common.ADMIN_ROLE]).withMessage("User does't have admin access")
+		}
 	},
 
 	login: (req) => {
@@ -43,28 +45,25 @@ module.exports = {
 	},
 
 	logout: (req) => {
-		req.checkBody('refreshToken').notEmpty().withMessage('refreshToken field is empty')
+		req.checkBody('refresh_token').notEmpty().withMessage('refresh_token field is empty')
 	},
 
 	generateToken: (req) => {
-		req.checkBody('refreshToken').notEmpty().withMessage('refreshToken field is empty')
+		req.checkBody('refresh_token').notEmpty().withMessage('refresh_token field is empty')
 	},
 
 	generateOtp: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
 
 	registrationOtp: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('name').notEmpty().withMessage('name field is empty')
 	},
 
 	resetPassword: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-
 		req.checkBody('password').notEmpty().withMessage('password field is empty')
 
 		req.checkBody('otp')
@@ -78,6 +77,7 @@ module.exports = {
 
 	changeRole: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
+		req.checkBody('role').notEmpty().withMessage('role field is empty')
 	},
 
 	listUser: (req) => {

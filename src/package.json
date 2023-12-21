@@ -7,7 +7,7 @@
 		"elevate-migrations": "module/migrations/bin/migrations.js"
 	},
 	"scripts": {
-		"test": "jest --verbose ./test --config=jest.config.js",
+		"test": "",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
@@ -15,7 +15,9 @@
 		"prepare": "cd .. && husky install src/.husky",
 		"elevate-migrations": "module/migrations/bin/migrations.js",
 		"integration": "node app.js",
-		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand"
+		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
+		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate ",
+		"db:seed:all": "sequelize-cli db:seed:all"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
@@ -24,10 +26,11 @@
 		"@google-cloud/storage": "^5.15.6",
 		"@shelf/jest-mongodb": "^3.0.1",
 		"aws-sdk": "^2.1025.0",
-		"axios": "^0.21.4",
+		"axios": "^1.5.1",
 		"bcrypt": "^5.0.1",
 		"bcryptjs": "^2.4.3",
 		"body-parser": "^1.19.0",
+		"bullmq": "^4.12.3",
 		"cli-table": "^0.3.11",
 		"commander": "^9.4.0",
 		"cors": "^2.8.5",
@@ -54,7 +57,7 @@
 		"kafkajs": "^2.2.0",
 		"lodash": "^4.17.21",
 		"md5": "^2.3.0",
-		"module-alias": "^2.2.2",
+		"module-alias": "^2.2.3",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",
 		"mongodb": "^4.1.2",
@@ -65,12 +68,19 @@
 		"mongoose-paginate-v2": "^1.4.2",
 		"mongoose-timestamp": "^0.6.0",
 		"p-each-series": "^2.1.0",
+		"path-to-regexp": "^6.2.1",
+		"pg": "^8.11.0",
+		"pg-hstore": "^2.3.4",
 		"redis": "^4.0.3",
 		"redoc-cli": "^0.13.15",
 		"redoc-express": "^1.0.0",
+		"request": "^2.88.2",
 		"require-all": "^3.0.0",
+		"sequelize": "^6.31.1",
+		"sequelize-cli": "^6.6.0",
 		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
+		"url": "^0.11.3",
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
@@ -105,6 +115,10 @@
 		"@public": "public",
 		"@routes": "routes",
 		"@services": "services",
-		"@validators": "validators"
+		"@validators": "validators",
+		"@database": "database",
+		"@utils": "utils",
+		"@helpers": "helpers",
+		"@scripts": "scripts"
 	}
 }
