@@ -11,10 +11,8 @@ module.exports = class permissions {
 	 */
 
 	async create(req) {
-		const params = req.body
-		const role = req.decodedToken.roles
 		try {
-			const createdPermissions = await permissionsService.create(params)
+			const createdPermissions = await permissionsService.create(req.body)
 			return createdPermissions
 		} catch (error) {
 			return error
@@ -30,11 +28,8 @@ module.exports = class permissions {
 	 */
 
 	async update(req) {
-		const params = req.body
-		const id = req.params.id
-		const role = req.decodedToken.roles
 		try {
-			const updatedPermissions = await permissionsService.update(id, params)
+			const updatedPermissions = await permissionsService.update(req.params.id, req.body)
 			return updatedPermissions
 		} catch (error) {
 			return error
@@ -53,10 +48,7 @@ module.exports = class permissions {
 
 	async list(req) {
 		try {
-			const page = req.pageNo
-			const limit = req.pageSize
-			const search = req.searchText
-			const PermissionsDetails = await permissionsService.list(page, limit, search)
+			const PermissionsDetails = await permissionsService.list(req.pageNo, req.pageSize, req.searchText)
 			return PermissionsDetails
 		} catch (error) {
 			return error
@@ -72,10 +64,8 @@ module.exports = class permissions {
 	 */
 
 	async delete(req) {
-		const role = req.decodedToken.roles
-		const id = req.params.id
 		try {
-			const permissionsDelete = await permissionsService.delete(id)
+			const permissionsDelete = await permissionsService.delete(req.params.id)
 			return permissionsDelete
 		} catch (error) {
 			return error
