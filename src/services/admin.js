@@ -43,7 +43,7 @@ module.exports = class AdminHelper {
 			const update = _.merge(removeKeys, updateParams)
 			await userQueries.updateUser({ email: user.email }, update)
 			delete update.id
-			await UserCredentialQueries.updateUser({ email: user.email }, update)
+			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
 
 			await utils.redisDel(common.redisUserPrefix + userId.toString())
 
