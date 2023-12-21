@@ -6,7 +6,8 @@
  */
 
 // Dependencies
-const menteesHelper = require('@services/helper/mentees')
+const { isAMentor } = require('@generics/utils')
+const menteesService = require('@services/mentees')
 
 module.exports = class Mentees {
 	/**
@@ -14,22 +15,22 @@ module.exports = class Mentees {
 	 * @method
 	 * @name profile
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @returns {JSON} - Mentee profile details
 	 */
-	async profile(req) {
+	/* async profile(req) {
 		try {
-			return await menteesHelper.profile(req.decodedToken._id)
+			return await menteesHelper.profile(req.decodedToken.id)
 		} catch (error) {
 			return errors
 		}
-	}
+	} */
 	/**
 	 * mentees sessions
 	 * @method
 	 * @name sessions
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {Boolean} req.query.enrolled - Enrolled key true/false.
 	 * @param {Number} req.pageNo - page no.
 	 * @param {Number} req.pageSize - page size limit.
@@ -39,9 +40,8 @@ module.exports = class Mentees {
 
 	async sessions(req) {
 		try {
-			const sessions = await menteesHelper.sessions(
-				req.decodedToken._id,
-				req.query.enrolled,
+			const sessions = await menteesService.sessions(
+				req.decodedToken.id,
 				req.pageNo,
 				req.pageSize,
 				req.searchText
@@ -57,7 +57,7 @@ module.exports = class Mentees {
 	 * @method
 	 * @name reports
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.query.filterType - filterType.
 	 * @param {String} [req.query.filterType = "MONTHLY"] - Monthly reports.
 	 * @param {String} [req.query.filterType = "WEEKLY"] - Weekly report.
@@ -67,7 +67,7 @@ module.exports = class Mentees {
 
 	async reports(req) {
 		try {
-			const reports = await menteesHelper.reports(req.decodedToken._id, req.query.filterType)
+			const reports = await menteesService.reports(req.decodedToken.id, req.query.filterType)
 			return reports
 		} catch (error) {
 			return error
@@ -75,25 +75,26 @@ module.exports = class Mentees {
 	}
 
 	/**
-	 * Mentees homefeed API.
+	 * Mentees home feed API.
 	 * @method
 	 * @name homeFeed
 	 * @param {Object} req - request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {Boolean} req.decodedToken.isAMentor - true/false.
-	 * @returns {JSON} - Mentees homefeed response.
+	 * @returns {JSON} - Mentees home feed response.
 	 */
 
 	async homeFeed(req) {
 		try {
-			const homefeed = await menteesHelper.homeFeed(
-				req.decodedToken._id,
-				req.decodedToken.isAMentor,
+			const homeFeed = await menteesService.homeFeed(
+				req.decodedToken.id,
+				isAMentor(req.decodedToken.roles),
 				req.pageNo,
 				req.pageSize,
-				req.searchText
+				req.searchText,
+				req.query
 			)
-			return homefeed
+			return homeFeed
 		} catch (error) {
 			return error
 		}
@@ -111,10 +112,77 @@ module.exports = class Mentees {
 
 	async joinSession(req) {
 		try {
-			const session = await menteesHelper.joinSession(req.params.id, req.decodedToken.token)
+			const session = await menteesService.joinSession(req.params.id, req.decodedToken.token)
 			return session
 		} catch (error) {
 			return error
 		}
 	}
+
+	// To be removed later
+	// /**
+	//  * Create a new mentee extension.
+	//  * @method
+	//  * @name createMenteeExtension
+	//  * @param {Object} req - Request data.
+	//  * @param {Object} req.body - Mentee extension data excluding userid.
+	//  * @returns {Promise<Object>} - Created mentee extension details.
+	//  */
+	// async create(req) {
+	// 	try {
+	// 		return await menteesHelper.createMenteeExtension(req.body, req.decodedToken.id)
+	// 	} catch (error) {
+	// 		console.error(error)
+	// 		return error
+	// 	}
+	// }
+
+	// /**
+	//  * Update a mentee extension.
+	//  * @method
+	//  * @name updateMenteeExtension
+	//  * @param {Object} req - Request data.
+	//  * @param {String} req.decodedToken.id - User ID of the mentee.
+	//  * @param {Object} req.body - Updated mentee extension data excluding userid.
+	//  * @returns {Promise<Object>} - Updated mentee extension details.
+	//  */
+	// async update(req) {
+	// 	try {
+	// 		return await menteesHelper.updateMenteeExtension(req.body, req.decodedToken.id)
+	// 	} catch (error) {
+	// 		return error
+	// 	}
+	// }
+
+	// /**
+	//  * Get mentee extension by user ID.
+	//  * @method
+	//  * @name getMenteeExtension
+	//  * @param {Object} req - Request data.
+	//  * @param {String} req.params.id - User ID of the mentee.
+	//  * @returns {Promise<Object>} - Mentee extension details.
+	//  */
+	// async getMenteeExtension(req) {
+	// 	try {
+	// 		return await menteesHelper.getMenteeExtension(req.query.id || req.decodedToken.id) // params since read will be public for mentees
+	// 	} catch (error) {
+	// 		return error
+	// 	}
+	// }
+
+	// /**
+	//  * Delete a mentee extension by user ID.
+	//  * @method
+	//  * @name deleteMenteeExtension
+	//  * @param {Object} req - Request data.
+	//  * @param {String} req.decodedToken.id - User ID of the mentee.
+	//  * @returns {Promise<Boolean>} - True if deleted successfully, otherwise false.
+	//  */
+	// async deleteMenteeExtension(req) {
+	// 	try {
+	// 		return await menteesHelper.deleteMenteeExtension(req.decodedToken.id)
+	// 	} catch (error) {
+	// 		return error
+	// 	}
+	// }
 }

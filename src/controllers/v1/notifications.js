@@ -6,56 +6,25 @@
  */
 
 // Dependencies
-const notificationsHelper = require('@services/helper/notifications')
+const notificationsService = require('@services/notifications')
 const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Notifications {
 	/**
-	 * Notification email cron job before 15min.
-	 * @method
-	 * @name emailCronJobBeforeFifteenMin
-	 * @returns {JSON} - Send email notification.
+	 * @description			- Notification email cron job.
+	 * @method				- post
+	 * @name 				- emailCronJob
+	 * @returns {JSON} 		- Send email notification.
 	 */
 
-	async emailCronJobBeforeFifteenMin() {
+	async emailCronJob(req) {
 		try {
-			notificationsHelper.sendNotificationBefore15mins()
-			return {
-				statusCode: httpStatusCode.ok,
-			}
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Notification email cron job before 24hrs.
-	 * @method
-	 * @name emailCronJobBeforeOneDay
-	 * @returns {JSON} - Send email notification.
-	 */
-
-	async emailCronJobBeforeOneDay() {
-		try {
-			notificationsHelper.sendNotificationBefore24Hour()
-			return {
-				statusCode: httpStatusCode.ok,
-			}
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Notification email cron job before 1hr.
-	 * @method
-	 * @name emailCronJobBeforeOneHour
-	 * @returns {JSON} - Send email notification.
-	 */
-
-	async emailCronJobBeforeOneHour() {
-		try {
-			notificationsHelper.sendNotificationBefore1Hour()
+			// Make a call to notification service
+			notificationsService.sendNotification(
+				req.body.job_id,
+				req.body.email_template_code,
+				req.body.job_creator_org_id ? parseInt(req.body.job_creator_org_id, 10) : ''
+			)
 			return {
 				statusCode: httpStatusCode.ok,
 			}

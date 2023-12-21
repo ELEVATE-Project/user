@@ -177,31 +177,31 @@ services:
   #     - fbdata:/usr/share/filebeat/data/
   #     - logs:/info/logs
 
-  #     - type: bind
-  #       source: ../user/src/user.log
-  #       target: /usr/share/filebeat/user.log
-  #       read_only: true
-  #     - type: bind
-  #       source: ../notification/src/notification.log
-  #       target: /usr/share/filebeat/notification.log
-  #       read_only: true
-  #     - type: bind
-  #       source: ./src/mentoring.log
-  #       target: /usr/share/filebeat/mentoring.log
-  #       read_only: true
-  #     - type: bind
-  #       source: ../scheduler/src/scheduler.log
-  #       target: /usr/share/filebeat/scheduler.log
-  #       read_only: true
-  #   command: filebeat -strict.perms=false
-  #   restart: on-failure
-  #   networks:
-  #     - elevate_net
-  #   depends_on:
-  #     - mongo
-  #     - elasticsearch
-  #     - mentoring
-  #     - user
+  #    - type: bind
+  #      source: ../user/src/user.log
+  #      target: /usr/share/filebeat/user.log
+  #      read_only: true
+  #    - type: bind
+  #      source: ../notification/src/notification.log
+  #      target: /usr/share/filebeat/notification.log
+  #      read_only: true
+  #    - type: bind
+  #      source: ./src/mentoring.log
+  #      target: /usr/share/filebeat/mentoring.log
+  #      read_only: true
+  #    - type: bind
+  #      source: ../scheduler/src/scheduler.log
+  #      target: /usr/share/filebeat/scheduler.log
+  #      read_only: true
+  #  command: filebeat -strict.perms=false
+  #  restart: on-failure
+  #  networks:
+  #    - elevate_net
+  #  depends_on:
+  #    - mongo
+  #    - elasticsearch
+  #    - mentoring
+  #    - user
 networks:
   elevate_net:
     external: false

@@ -17,6 +17,7 @@ module.exports = async function (req, res, next) {
 		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
+		let decodedToken
 
 		const authHeader = req.get('X-auth-token')
 
@@ -65,10 +66,19 @@ module.exports = async function (req, res, next) {
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
-			err.statusCode = httpStatusCode.unauthorized
-			err.responseCode = 'UNAUTHORIZED'
-			err.message = 'ACCESS_TOKEN_EXPIRED'
-			throw err
+			if (err.name === 'TokenExpiredError') {
+				throw common.failureResponse({
+					message: 'ACCESS_TOKEN_EXPIRED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			} else {
+				throw common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 
 		if (!decodedToken) {
@@ -79,39 +89,44 @@ module.exports = async function (req, res, next) {
 			})
 		}
 
-		if (decodedToken.data.role === common.ADMIN_ROLE) {
-			req.decodedToken = decodedToken.data
-			return next()
+		let isAdmin = false
+		if (decodedToken.data.roles) {
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			if (isAdmin) {
+				req.decodedToken = decodedToken.data
+				return next()
+			}
 		}
-
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
-			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data._id
-
+			const userBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
+			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 			const user = await requests.get(profileUrl, null, true)
-
-			if (user.data.result.isAMentor !== decodedToken.data.isAMentor) {
-				throw common.failureResponse({
-					message: 'USER_ROLE_UPDATED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
-			if (user.data.result.deleted) {
+			if (!user || !user.success) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
+			if (user.data.result.deleted_at !== null) {
+				throw common.failureResponse({
+					message: 'USER_ROLE_UPDATED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+
+			decodedToken.data.roles = user.data.result.user_roles
 		}
+
 		req.decodedToken = {
-			_id: decodedToken.data._id,
-			email: decodedToken.data.email,
-			isAMentor: decodedToken.data.isAMentor,
+			id: decodedToken.data.id,
+			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,
+			organization_id: decodedToken.data.organization_id,
 		}
 		next()
 	} catch (err) {

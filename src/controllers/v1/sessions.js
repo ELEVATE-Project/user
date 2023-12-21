@@ -6,7 +6,9 @@
  */
 
 // Dependencies
-const sessionsHelper = require('@services/helper/sessions')
+const sessionService = require('@services/sessions')
+const { isAMentor } = require('@generics/utils')
+const common = require('@constants/common')
 
 module.exports = class Sessions {
 	/**
@@ -25,23 +27,27 @@ module.exports = class Sessions {
 		try {
 			if (req.params.id) {
 				if (req.headers.timezone) {
-					req.body['timeZone'] = req.headers.timezone
+					req.body['time_zone'] = req.headers.timezone
 				}
 
-				const sessionUpdated = await sessionsHelper.update(
+				const sessionUpdated = await sessionService.update(
 					req.params.id,
 					req.body,
-					req.decodedToken._id,
-					req.method
+					req.decodedToken.id,
+					req.method,
+					req.decodedToken.organization_id
 				)
 
 				return sessionUpdated
 			} else {
 				if (req.headers.timezone) {
-					req.body['timeZone'] = req.headers.timezone
+					req.body['time_zone'] = req.headers.timezone
 				}
-
-				const sessionCreated = await sessionsHelper.create(req.body, req.decodedToken._id)
+				const sessionCreated = await sessionService.create(
+					req.body,
+					req.decodedToken.id,
+					req.decodedToken.organization_id
+				)
 
 				return sessionCreated
 			}
@@ -62,9 +68,10 @@ module.exports = class Sessions {
 
 	async details(req) {
 		try {
-			const sessionDetails = await sessionsHelper.details(
+			const sessionDetails = await sessionService.details(
 				req.params.id,
-				req.decodedToken ? req.decodedToken._id : ''
+				req.decodedToken ? req.decodedToken.id : '',
+				req.decodedToken ? isAMentor(req.decodedToken.roles) : ''
 			)
 			return sessionDetails
 		} catch (error) {
@@ -73,11 +80,11 @@ module.exports = class Sessions {
 	}
 
 	/**
-	 * Sessions list
+	 * Get all upcoming sessions by available mentors
 	 * @method
 	 * @name list
 	 * @param {Object} req -request data.
-	 * @param {String} req.decodedToken._id - User Id.
+	 * @param {String} req.decodedToken.id - User Id.
 	 * @param {String} req.pageNo - Page No.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
@@ -86,12 +93,13 @@ module.exports = class Sessions {
 
 	async list(req) {
 		try {
-			const sessionDetails = await sessionsHelper.list(
-				req.decodedToken._id,
+			const sessionDetails = await sessionService.list(
+				req.decodedToken.id,
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.query.status
+				req.query,
+				isAMentor(req.decodedToken.roles)
 			)
 			return sessionDetails
 		} catch (error) {
@@ -110,7 +118,7 @@ module.exports = class Sessions {
 
 	async share(req) {
 		try {
-			const shareSessionDetails = await sessionsHelper.share(req.params.id)
+			const shareSessionDetails = await sessionService.share(req.params.id)
 			return shareSessionDetails
 		} catch (error) {
 			return error
@@ -130,10 +138,10 @@ module.exports = class Sessions {
 
 	async enroll(req) {
 		try {
-			const enrolledSession = await sessionsHelper.enroll(
+			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
-				req.headers['timeZone']
+				req.headers['timezone']
 			)
 			return enrolledSession
 		} catch (error) {
@@ -153,7 +161,7 @@ module.exports = class Sessions {
 
 	async unEnroll(req) {
 		try {
-			const unEnrolledSession = await sessionsHelper.unEnroll(req.params.id, req.decodedToken)
+			const unEnrolledSession = await sessionService.unEnroll(req.params.id, req.decodedToken)
 			return unEnrolledSession
 		} catch (error) {
 			return error
@@ -172,7 +180,7 @@ module.exports = class Sessions {
 
 	async start(req) {
 		try {
-			const sessionsStarted = await sessionsHelper.start(req.params.id, req.decodedToken.token)
+			const sessionsStarted = await sessionService.start(req.params.id, req.decodedToken)
 			return sessionsStarted
 		} catch (error) {
 			return error
@@ -190,7 +198,8 @@ module.exports = class Sessions {
 
 	async completed(req) {
 		try {
-			const sessionsCompleted = await sessionsHelper.completed(req.params.id)
+			const isBBB = req.query.source == common.BBB_VALUE ? true : false
+			const sessionsCompleted = await sessionService.completed(req.params.id, isBBB)
 			return sessionsCompleted
 		} catch (error) {
 			return error
@@ -208,7 +217,7 @@ module.exports = class Sessions {
 
 	async getRecording(req) {
 		try {
-			const recording = await sessionsHelper.getRecording(req.params.id)
+			const recording = await sessionService.getRecording(req.params.id)
 			return recording
 		} catch (error) {
 			return error
@@ -227,7 +236,7 @@ module.exports = class Sessions {
 
 	async feedback(req) {
 		try {
-			const sessionsFeedBack = await sessionsHelper.feedback(req.params.id, req.body)
+			const sessionsFeedBack = await sessionService.feedback(req.params.id, req.body)
 			return sessionsFeedBack
 		} catch (error) {
 			return error
@@ -248,7 +257,7 @@ module.exports = class Sessions {
 		const internalMeetingId = req.params.id
 		const recordingUrl = req.body.recordingUrl
 		try {
-			const sessionUpdated = await sessionsHelper.updateRecordingUrl(internalMeetingId, recordingUrl)
+			const sessionUpdated = await sessionService.updateRecordingUrl(internalMeetingId, recordingUrl)
 			return sessionUpdated
 		} catch (error) {
 			return error

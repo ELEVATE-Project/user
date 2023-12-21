@@ -6,7 +6,10 @@
  */
 
 // Dependencies
-const questionsHelper = require('@services/helper/questions')
+const questionsService = require('@services/questions')
+const utilsHelper = require('@generics/utils')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Questions {
 	/**
@@ -19,7 +22,14 @@ module.exports = class Questions {
 
 	async create(req) {
 		try {
-			const createdQuestion = await questionsHelper.create(req.body)
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const createdQuestion = await questionsService.create(req.body, req.decodedToken)
 			return createdQuestion
 		} catch (error) {
 			return error
@@ -36,7 +46,14 @@ module.exports = class Questions {
 
 	async update(req) {
 		try {
-			const updatedQuestion = await questionsHelper.update(req.params.id, req.body)
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
+				throw common.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const updatedQuestion = await questionsService.update(req.params.id, req.body, req.decodedToken)
 			return updatedQuestion
 		} catch (error) {
 			return error
@@ -53,7 +70,7 @@ module.exports = class Questions {
 
 	async read(req) {
 		try {
-			const questionData = await questionsHelper.read(req.params.id)
+			const questionData = await questionsService.read(req.params.id)
 			return questionData
 		} catch (error) {
 			return error

@@ -71,5 +71,6 @@
 	"SESSION_SEAT_FULL": "Session seats full.",
 	"APP_CONFIG_FETCHED_SUCCESSFULLY": "App config fetched successfully.",
 	"USER_REMOVED_SUCCESSFULLY": "User details removed successfully.",
-	"USER_NOT_REMOVED_SUCCESSFULLY": "Error while removing user details."
+	"USER_NOT_REMOVED_SUCCESSFULLY": "Error while removing user details.",
+	"INVALID_SECRET_CODE": "गलत कोड, दोबारा प्रयास करें।"
 }

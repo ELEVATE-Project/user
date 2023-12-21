@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const feedbackHelper = require('@services/helper/feedback')
+const feedbackService = require('@services/feedback')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 
@@ -23,7 +23,7 @@ module.exports = class Feedback {
 
 	async forms(req) {
 		try {
-			const feedbackFormData = await feedbackHelper.forms(req.params.id, req.decodedToken.isAMentor)
+			const feedbackFormData = await feedbackService.forms(req.params.id, req.decodedToken.roles)
 			return feedbackFormData
 		} catch (error) {
 			return error
@@ -37,25 +37,26 @@ module.exports = class Feedback {
 	 * @param {Object} req - request data.
 	 * @param {String} req.params.id - form id.
 	 * @param {Object} req.body - Form submission data.
-	 * @param {String} req.decodedToken._id - User Id.
-	 * @param {String} req.decodedToken.isAMentor - User Mentor key.
+	 * @param {String} req.decodedToken.id - User Id.
+	 * @param {String} req.decodedToken.roles - User role.
 	 * @returns {JSON} - returns feedback submission data.
 	 */
 
 	async submit(req) {
 		try {
-			if (req.decodedToken.isAMentor && !req.body.feedbackAs) {
+			const isAMentor = req.decodedToken.roles.some((role) => role.title == common.MENTOR_ROLE)
+			if (isAMentor && !req.body.feedback_as) {
 				return common.failureResponse({
 					message: 'FEEDBACK_AS_NOT_PASSED',
 					statusCode: httpStatusCode.unprocessable_entity,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const feedbackSubmitData = await feedbackHelper.submit(
+			const feedbackSubmitData = await feedbackService.submit(
 				req.params.id,
 				req.body,
-				req.decodedToken._id,
-				req.decodedToken.isAMentor
+				req.decodedToken.id,
+				isAMentor
 			)
 			return feedbackSubmitData
 		} catch (error) {

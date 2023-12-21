@@ -24,10 +24,10 @@ module.exports = async () => {
 	await consumer.connect()
 
 	producer.on('producer.connect', () => {
-		logger.info(`KafkaProvider: connected`)
+		logger.info('KafkaProvider: connected')
 	})
 	producer.on('producer.disconnect', () => {
-		logger.error(`KafkaProvider: could not connect`, {
+		logger.error('KafkaProvider: could not connect', {
 			triggerNotification: true,
 		})
 	})

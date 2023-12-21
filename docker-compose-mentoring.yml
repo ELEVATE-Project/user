@@ -46,12 +46,24 @@ services:
   redis:
     image: 'redis:7.0.0'
     restart: 'always'
-    expose:
-      - '6379'
+    ports:
+      - '6379:6379'
     networks:
       - elevate_net
     logging:
       driver: none
+  # redis_bullmq:
+  #   image: 'redis:7.0.0'
+  #   container_name: redis_bullmq
+  #   restart: 'always'
+  #   command: redis-server --appendonly yes --maxmemory-policy noeviction
+  #   ports:
+  #     - '6380:6379'
+  #   networks:
+  #     - elevate_net
+  #   volumes:
+  #     - redis_data:/data
+
   mentoring:
     build: './'
     image: elevate/mentoring:2.4
@@ -63,7 +75,11 @@ services:
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
-      - USER_SERIVCE_HOST=http://user:3001
+      - USER_SERVICE_HOST=http://user:3001
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/mentoring-local
+      - REDIS_HOST=redis://redis:6379
+      - SCHEDULER_SERVICE_HOST=http://scheduler:4000
+
     depends_on:
       - kafka
       - mongo
@@ -81,6 +97,7 @@ services:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
       - REDIS_HOST=redis://redis:6379
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/user-local
     depends_on:
       - kafka
       - mongo
@@ -97,11 +114,108 @@ services:
     command: ['nodemon', 'app.js']
     environment:
       - KAFKA_HOST=kafka:9092
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/notification-local
+
     depends_on:
       - kafka
       - mongo
     networks:
       - elevate_net
+  scheduler:
+    build: '../scheduler/'
+    image: elevate/scheduler:1.0
+    volumes:
+      - ../scheduler/src/:/var/src
+    ports:
+      - '4000:4000'
+    command: ['nodemon', 'app.js']
+    environment:
+      - KAFKA_URL=kafka:9092
+      - MONGODB_URL=mongodb://mongo:27017/elevate-scheduler
+    depends_on:
+      - kafka
+      - mongo
+      - redis
+    networks:
+      - elevate_net
+  interface:
+    build: '../interface-service/'
+    image: elevate/interface:1.0
+    volumes:
+      - ../interface-service/src/:/var/src
+    ports:
+      - '3569:3569'
+    command: ['node', 'app.js']
+    networks:
+      - elevate_net
+  # master:
+  #   container_name: 'citus_master'
+  #   image: 'citusdata/citus:11.2.0'
+  #   ports: ['${COORDINATOR_EXTERNAL_PORT:-5432}:5432']
+  #   labels: ['com.citusdata.role=Master']
+  #   environment: &AUTH
+  #     POSTGRES_USER: '${POSTGRES_USER:-postgres}'
+  #     POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+  #     PGUSER: '${POSTGRES_USER:-postgres}'
+  #     PGPASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+  #     POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
+  #   networks:
+  #     - elevate_net
+  # worker:
+  #   image: 'citusdata/citus:11.2.0'
+  #   labels: ['com.citusdata.role=Worker']
+  #   depends_on: [manager]
+  #   environment: *AUTH
+  #   command: '/wait-for-manager.sh'
+  #   volumes:
+  #     - healthcheck-volume:/healthcheck
+  #   networks:
+  #     - elevate_net
+  # manager:
+  #   container_name: '${COMPOSE_PROJECT_NAME:-citus}_manager'
+  #   image: 'citusdata/membership-manager:0.3.0'
+  #   volumes:
+  #     - '${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock'
+  #     - healthcheck-volume:/healthcheck
+  #   depends_on: [master]
+  #   environment: *AUTH
+  #   networks:
+  #     - elevate_net
+
+  citus:
+    image: citusdata/citus:11.2.0
+    container_name: 'citus_master'
+    ports:
+      - 5432:5432
+    # expose:
+    #   - 5432
+    # command: >
+    #   bash -c "while ! pg_isready -h localhost -U postgres -q; do sleep 1; done &&
+    #   psql -h localhost -U postgres -d <database_name> -c 'CREATE EXTENSION citus; SELECT create_distributed_table(\"notification_templates\", \"id\");'"
+    environment: &AUTH
+      POSTGRES_USER: '${POSTGRES_USER:-postgres}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+      PGUSER: '${POSTGRES_USER:-postgres}'
+      PGPASSWORD: '${POSTGRES_PASSWORD:-postgres}'
+      POSTGRES_DB: 'user-local'
+      POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
+      POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
+
+    networks:
+      - elevate_net
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: elevate-pgadmin
+    restart: always
+    ports:
+      - '5500:80'
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@shikshalokam.org
+      - PGADMIN_DEFAULT_PASSWORD=password
+    networks:
+      - elevate_net
+    logging:
+      driver: none
 networks:
   elevate_net:
     external: false
@@ -109,3 +223,5 @@ volumes:
   zookeeper-data:
   kafka-data:
   mongo-data:
+  redis_data:
+  healthcheck-volume:

@@ -1,4 +1,4 @@
-const issuesHelper = require('@services/helper/issues')
+const issuesService = require('@services/issues')
 
 module.exports = class Help {
 	/**
@@ -14,7 +14,7 @@ module.exports = class Help {
 	async create(req) {
 		const params = req.body
 		try {
-			const createdIssue = await issuesHelper.create(params, req.decodedToken)
+			const createdIssue = await issuesService.create(params, req.decodedToken)
 			return createdIssue
 		} catch (error) {
 			return error

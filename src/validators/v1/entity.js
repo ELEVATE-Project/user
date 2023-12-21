@@ -30,7 +30,7 @@ module.exports = {
 	},
 
 	update: (req) => {
-		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
 
 		req.checkBody('value')
 			.optional()
@@ -56,23 +56,24 @@ module.exports = {
 	},
 
 	read: (req) => {
-		req.checkQuery('type')
+		req.checkQuery('id')
 			.trim()
-			.notEmpty()
-			.withMessage('type field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
-
-		req.checkQuery('deleted').optional().isBoolean().withMessage('deleted is invalid')
-
-		req.checkQuery('status')
 			.optional()
+			.notEmpty()
+			.withMessage('id param is empty')
+			.isNumeric()
+			.withMessage('id param is invalid, must be an integer')
+
+		req.checkQuery('value')
 			.trim()
-			.matches(/^[A-Z]+$/)
-			.withMessage('status is invalid, must be in all caps')
+			.optional()
+			.notEmpty()
+			.withMessage('value field is empty')
+			.matches(/^[A-Za-z0-9 ]+$/)
+			.withMessage('value is invalid, must not contain spaces')
 	},
 
 	delete: (req) => {
-		req.checkParams('id').notEmpty().withMessage('id param is empty').isMongoId().withMessage('id is invalid')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 }
