@@ -2,7 +2,7 @@ describe('Email Controller test', () => {
 	let controller
 	let emailService
 	beforeAll(async () => {
-		emailService = require('@services/helper/email')
+		emailService = require('@services/email')
 		controller = require('@controllers/v1/email')
 		return
 	})
