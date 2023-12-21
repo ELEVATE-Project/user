@@ -8,8 +8,6 @@ module.exports = {
 		let eachRow = {
 			title: 'org_admin',
 			user_type: 1,
-			visibility: 'PUBLIC',
-			organization_id: defaultOrgId,
 			updated_at: new Date(),
 			created_at: new Date(),
 		}

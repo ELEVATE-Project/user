@@ -11,8 +11,6 @@ module.exports = {
 			let eachRow = {
 				title: role,
 				user_type: user_type,
-				visibility: 'PUBLIC',
-				organization_id: defaultOrgId,
 				updated_at: new Date(),
 				created_at: new Date(),
 			}

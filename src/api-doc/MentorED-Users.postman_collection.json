@@ -78,7 +78,8 @@
 								{
 									"key": "email",
 									"value": "nevil@tunerlabs.com",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
@@ -95,6 +96,17 @@
 								{
 									"key": "password",
 									"value": "testing",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "suman.v@pacewisdom.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
 									"type": "text"
 								}
 							]
@@ -1603,6 +1615,143 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "notification", "template", "14"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Role",
+			"item": [
+				{
+					"name": "List User Roles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"filters\" : { \n\"organization_id\": 1\n} \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/list?page=1&limit=10&search=system",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userRole", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "system"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Roles",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \n\"title\":\"system_admin\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\", \n\"organization_id\": 1\n} ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userRole", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Roles",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \n\"title\":\"system_adminn\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\", \n\"organization_id\": 3\n} ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/update/:id",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userRole", "update", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Roles",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/delete/:id",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "userRole", "delete", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
 						}
 					},
 					"response": []

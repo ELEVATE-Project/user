@@ -24,9 +24,8 @@ module.exports = class userRole {
 	 */
 
 	async create(req) {
-		const params = req.body
 		try {
-			const createRole = await roleService.create(params)
+			const createRole = await roleService.create(req.body)
 			return createRole
 		} catch (error) {
 			return error
@@ -48,10 +47,8 @@ module.exports = class userRole {
 	 */
 
 	async update(req) {
-		const params = req.body
-		const id = req.params.id
 		try {
-			const updateRole = await roleService.update(id, params)
+			const updateRole = await roleService.update(req.params.id, req.body)
 			return updateRole
 		} catch (error) {
 			return error
@@ -86,11 +83,7 @@ module.exports = class userRole {
 
 	async list(req) {
 		try {
-			const page = req.pageNo
-			const limit = req.pageSize
-			const search = req.searchText
-			const filters = req.body.filters
-			const roleList = await roleService.list(filters, page, limit, search)
+			const roleList = await roleService.list(req.body.filters, req.pageNo, req.pageSize, req.searchText)
 			return roleList
 		} catch (error) {
 			return error

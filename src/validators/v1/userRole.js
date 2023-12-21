@@ -1,3 +1,12 @@
+const validateList = (req, allowedVariables) => {
+	allowedVariables.forEach((variable) => {
+		req.checkQuery(variable)
+			.optional()
+			.matches(/^[A-Za-z0-9_]+$/)
+			.withMessage(`${variable} is invalid, must not contain spaces or special characters`)
+	})
+}
+
 module.exports = {
 	create: (req) => {
 		req.checkBody('title')
@@ -77,5 +86,10 @@ module.exports = {
 
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
+	},
+
+	list: (req) => {
+		const allowedVariables = ['title', 'user_type', 'visibility', 'organization_id', 'status']
+		validateList(req, allowedVariables)
 	},
 }

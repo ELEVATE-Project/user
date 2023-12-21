@@ -17,16 +17,12 @@ module.exports = (sequelize, DataTypes) => {
 				unique: true,
 			},
 			user_type: {
-				type: DataTypes.INTEGER, //0 - non system user , 1 - system user
+				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: common.ACTIVE_STATUS,
-			},
-			visiblity: {
-				type: DataTypes.STRING,
-				defaultValue: common.DEFAULT_ORG_VISIBILITY,
 			},
 			organization_id: {
 				type: DataTypes.INTEGER,

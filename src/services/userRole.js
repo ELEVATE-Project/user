@@ -149,17 +149,6 @@ module.exports = class userRoleHelper {
 				...filters,
 			}
 			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
-			let userroleModel = await roleQueries.getcolumn()
-			const invalidColumns = Object.keys(filters).filter((key) => !userroleModel.includes(key))
-
-			if (invalidColumns.length > 0) {
-				return common.failureResponse({
-					message: 'COLUMN_DOES_NOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const roles = await roleQueries.findAllRoles(filter, attributes, options)
 
 			if (roles.rows == 0 || roles.count == 0) {
