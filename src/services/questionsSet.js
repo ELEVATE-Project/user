@@ -74,9 +74,9 @@ module.exports = class questionsSetHelper {
 			const filter = {
 				id: questionSetId,
 				created_by: decodedToken.id,
+				code: bodyData.code,
 			}
 			const questionSetData = {
-				code: bodyData.code,
 				created_by: decodedToken.id,
 				questions: bodyData.questions,
 			}
