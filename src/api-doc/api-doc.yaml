@@ -2429,14 +2429,11 @@ paths:
                   type: string
                 visibility:
                   type: string
-                organization_id:
-                  type: number
               required:
                 - user_type
                 - status
                 - title
                 - visibility
-                - organization_id
             examples:
               example1:
                 value:
@@ -2444,7 +2441,6 @@ paths:
                   user_type: 1
                   status: ACTIVE
                   visibility: PUBLIC
-                  organization_id: 1
       responses:
         '201':
           description: OK
@@ -2521,14 +2517,11 @@ paths:
                   type: string
                 visibility:
                   type: string
-                organization_id:
-                  type: number
               required:
                 - title
                 - user_type
                 - status
                 - visibility
-                - organization_id
             examples:
               example1:
                 value:
@@ -2536,7 +2529,6 @@ paths:
                   user_type: 1
                   status: ACTIVE
                   visibility: PUBLIC
-                  organization_id: 3
       responses:
         '201':
           description: OK. Roles updated successfully

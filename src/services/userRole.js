@@ -14,20 +14,21 @@ const { Op } = require('sequelize')
 
 module.exports = class userRoleHelper {
 	/**
-	 * create role
+	 * Create roles.
 	 * @method
 	 * @name create
-	 * @param {Object} req -request data.
-	 * @param {Object} req.body -request body contains role creation deatils.
-	 * @param {String} req.body.title - title of the role.
-	 * @param {Integer} req.body.userType - userType role .
-	 * @param {String} req.body.status - role status.
-	 * @param {String} req.body.visibility - visibility of the role.
-	 * @param {Integer} req.body.organization_id - organization for role.
-	 * @returns {JSON} - response contains role creation details.
+	 * @param {Object} req - Request data.
+	 * @param {Object} req.body - Request body contains role creation details.
+	 * @param {String} req.body.title - Title of the role.
+	 * @param {Integer} req.body.userType - User type of the role.
+	 * @param {String} req.body.status - Role status.
+	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {Integer} req.body.organization_id - Organization ID for the role.
+	 * @returns {JSON} - Response contains role creation details.
 	 */
-	static async create(bodyData) {
+	static async create(bodyData, user_organization_id) {
 		try {
+			bodyData.organization_id = user_organization_id
 			const roles = await roleQueries.create(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -46,44 +47,50 @@ module.exports = class userRoleHelper {
 	}
 
 	/**
-	 * update role
+	 * Update roles.
 	 * @method
 	 * @name update
-	 * @param {Object} req -request data.
-	 * @param {Object} req.body -request body contains role updation details.
-	 * @param {String} req.body.title - title of the role.
-	 * @param {Integer} req.body.userType - userType role .
-	 * @param {String} req.body.status - role status.
-	 * @param {String} req.body.visibility - visibility of the role.
-	 * @param {Integer} req.body.organization_id - organization for role.
-	 * @returns {JSON} - response contains role updation details.
+	 * @param {Object} req - Request data.
+	 * @param {Object} req.body - Request body contains role update details.
+	 * @param {String} req.body.title - Title of the role.
+	 * @param {Integer} req.body.userType - User type of the role.
+	 * @param {String} req.body.status - Role status.
+	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {Integer} req.body.organization_id - Organization ID for the role.
+	 * @returns {JSON} - Response contains role update details.
 	 */
 
-	static async update(id, bodyData) {
+	static async update(id, bodyData, user_organization_id) {
 		try {
 			const roles = await roleQueries.findRoleById(id)
 			if (!roles) {
 				throw new Error('ROLE_NOT_FOUND')
 			}
-
-			const updateRole = await roleQueries.updateRoleById(id, bodyData)
-			if (!updateRole) {
-				return common.failureResponse({
-					message: 'ROLE_NOT_UPDATED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			if (roles.organization_id === user_organization_id) {
+				const updateRole = await roleQueries.updateRoleById(id, bodyData)
+				if (!updateRole) {
+					return common.failureResponse({
+						message: 'ROLE_NOT_UPDATED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				return common.successResponse({
+					statusCode: httpStatusCode.created,
+					message: 'ROLE_UPDATED_SUCCESSFULLY',
+					result: {
+						title: updateRole.title,
+						user_type: updateRole.user_type,
+						status: updateRole.status,
+						visibility: updateRole.visibility,
+						organization_id: updateRole.organization_id,
+					},
 				})
 			}
-			return common.successResponse({
-				statusCode: httpStatusCode.created,
-				message: 'ROLE_UPDATED_SUCCESSFULLY',
-				result: {
-					title: updateRole.title,
-					user_type: updateRole.user_type,
-					status: updateRole.status,
-					visibility: updateRole.visibility,
-					organization_id: updateRole.organization_id,
-				},
+			return common.failureResponse({
+				message: 'USER_ORG_ID_DOES_NOT_MATCH',
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
 			})
 		} catch (error) {
 			throw error
@@ -91,16 +98,16 @@ module.exports = class userRoleHelper {
 	}
 
 	/**
-	 * delete role
+	 * Delete role.
 	 * @method
 	 * @name delete
-	 * @param {Object} req - request data.
-	 * @returns {JSON} - role deletion response.
+	 * @param {Object} req - Request data.
+	 * @returns {JSON} - Role deletion response.
 	 */
-	static async delete(id) {
+	static async delete(id, user_organization_id) {
 		try {
 			const roles = await roleQueries.findRoleById(id)
-
+			console.log('roles=>', roles)
 			if (!roles) {
 				return common.failureResponse({
 					message: 'ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT',
@@ -108,19 +115,26 @@ module.exports = class userRoleHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else {
-				const deleteRole = await roleQueries.deleteRoleById(id)
+				if (roles.organization_id === user_organization_id) {
+					const deleteRole = await roleQueries.deleteRoleById(id)
 
-				if (!deleteRole) {
-					return common.failureResponse({
-						message: 'ROLE_NOT_DELETED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
+					if (!deleteRole) {
+						return common.failureResponse({
+							message: 'ROLE_NOT_DELETED',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+					return common.successResponse({
+						statusCode: httpStatusCode.accepted,
+						message: 'ROLE_DELETED_SUCCESSFULLY',
+						result: {},
 					})
 				}
-				return common.successResponse({
-					statusCode: httpStatusCode.accepted,
-					message: 'ROLE_DELETED_SUCCESSFULLY',
-					result: {},
+				return common.failureResponse({
+					message: 'USER_ORG_ID_DOES_NOT_MATCH',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
 				})
 			}
 		} catch (error) {
@@ -129,14 +143,16 @@ module.exports = class userRoleHelper {
 	}
 
 	/**
-	 * Get all available roles
+	 * Get all available roles.
 	 * @method
 	 * @name list
-	 * @param {String} req.pageNo - Page No.
+	 * @param {Array(String)} req.body.filters - Filters.
+	 * @param {String} req.pageNo - Page number.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
-	 * @returns {JSON} - role List.
+	 * @returns {JSON} - Role list.
 	 */
+
 	static async list(filters, page, limit, search) {
 		try {
 			const offset = common.getPaginationOffset(page, limit)

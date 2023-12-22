@@ -753,7 +753,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"nevil@tunerlabs.com\",\n    \"organization_id\": 1\n}",
+							"raw": "{\n    \"email\": \"suman@cc.com\",\n    \"organization_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1682,7 +1682,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \n\"title\":\"system_admin\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\", \n\"organization_id\": 1\n} ",
+							"raw": "{ \n\"title\":\"system_admins\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\"\n} ",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1710,7 +1710,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \n\"title\":\"system_adminn\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\", \n\"organization_id\": 3\n} ",
+							"raw": "{ \n\"title\":\"system_adminstrations\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\"\n} ",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1724,7 +1724,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "7"
+									"value": "9"
 								}
 							]
 						}
@@ -1749,7 +1749,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "7"
+									"value": "9"
 								}
 							]
 						}
