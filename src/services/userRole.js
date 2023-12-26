@@ -26,9 +26,9 @@ module.exports = class userRoleHelper {
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role creation details.
 	 */
-	static async create(bodyData, user_organization_id) {
+	static async create(bodyData, userOrganizationId) {
 		try {
-			bodyData.organization_id = user_organization_id
+			bodyData.organization_id = userOrganizationId
 			const roles = await roleQueries.create(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -60,11 +60,11 @@ module.exports = class userRoleHelper {
 	 * @returns {JSON} - Response contains role update details.
 	 */
 
-	static async update(id, bodyData, user_organization_id) {
+	static async update(id, bodyData, userOrganizationId) {
 		try {
-			const filter = { id: id, organization_id: user_organization_id }
+			const filter = { id: id, organization_id: userOrganizationId }
 			const [updateCount, updateRole] = await roleQueries.updateRole(filter, bodyData)
-			if (updateCount < 0) {
+			if (updateCount == 0) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
@@ -94,9 +94,9 @@ module.exports = class userRoleHelper {
 	 * @param {Object} req - Request data.
 	 * @returns {JSON} - Role deletion response.
 	 */
-	static async delete(id, user_organization_id) {
+	static async delete(id, userOrganizationId) {
 		try {
-			const filter = { id: id, organization_id: user_organization_id }
+			const filter = { id: id, organization_id: userOrganizationId }
 			const deleteRole = await roleQueries.deleteRole(filter)
 
 			if (deleteRole === '0') {
@@ -128,7 +128,7 @@ module.exports = class userRoleHelper {
 	 * @returns {JSON} - Role list.
 	 */
 
-	static async list(filters, page, limit, search, user_organization_id) {
+	static async list(filters, page, limit, search, userOrganizationId) {
 		try {
 			const offset = common.getPaginationOffset(page, limit)
 			const options = {
@@ -136,7 +136,7 @@ module.exports = class userRoleHelper {
 				limit,
 			}
 			const filter = {
-				organization_id: user_organization_id,
+				organization_id: userOrganizationId,
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
 			}
@@ -149,18 +149,17 @@ module.exports = class userRoleHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			} else {
-				const results = {
-					data: roles.rows,
-					count: roles.count,
-				}
-
-				return common.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'ROLES_FETCHED_SUCCESSFULLY',
-					result: results,
-				})
 			}
+			const results = {
+				data: roles.rows,
+				count: roles.count,
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ROLES_FETCHED_SUCCESSFULLY',
+				result: results,
+			})
 		} catch (error) {
 			throw error
 		}
