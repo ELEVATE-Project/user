@@ -136,7 +136,7 @@ module.exports = class userRoleHelper {
 				limit,
 			}
 			const filter = {
-				organization_id: userOrganizationId,
+				[Op.or]: [{ organization_id: userOrganizationId }, { organization_id: defaultOrganizationId }],
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
 			}
