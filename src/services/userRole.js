@@ -11,6 +11,7 @@ const httpStatusCode = require('@generics/http-status')
 const roleQueries = require('@database/queries/userRole')
 const common = require('@constants/common')
 const { Op } = require('sequelize')
+const organizationQueries = require('@database/queries/organization')
 
 module.exports = class userRoleHelper {
 	/**
@@ -135,8 +136,13 @@ module.exports = class userRoleHelper {
 				offset,
 				limit,
 			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
 			const filter = {
-				[Op.or]: [{ organization_id: userOrganizationId }, { organization_id: defaultOrganizationId }],
+				[Op.or]: [{ organization_id: userOrganizationId }, { organization_id: defaultOrgId }],
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
 			}
