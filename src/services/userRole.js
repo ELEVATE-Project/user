@@ -100,7 +100,7 @@ module.exports = class userRoleHelper {
 			const filter = { id: id, organization_id: userOrganizationId }
 			const deleteRole = await roleQueries.deleteRole(filter)
 
-			if (deleteRole === '0') {
+			if (deleteRole === 0) {
 				return common.failureResponse({
 					message: 'ROLE_NOT_DELETED',
 					statusCode: httpStatusCode.bad_request,
