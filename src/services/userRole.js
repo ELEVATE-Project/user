@@ -128,7 +128,7 @@ module.exports = class userRoleHelper {
 	 * @returns {JSON} - Role list.
 	 */
 
-	static async list(filters, page, limit, search) {
+	static async list(filters, page, limit, search, user_organization_id) {
 		try {
 			const offset = common.getPaginationOffset(page, limit)
 			const options = {
@@ -136,6 +136,7 @@ module.exports = class userRoleHelper {
 				limit,
 			}
 			const filter = {
+				organization_id: user_organization_id,
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
 			}

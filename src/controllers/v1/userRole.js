@@ -73,7 +73,13 @@ module.exports = class userRole {
 
 	async list(req) {
 		try {
-			const roleList = await roleService.list(req.body.filters, req.pageNo, req.pageSize, req.searchText)
+			const roleList = await roleService.list(
+				req.body.filters,
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.decodedToken.organization_id
+			)
 			return roleList
 		} catch (error) {
 			return error
