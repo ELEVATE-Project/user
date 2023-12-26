@@ -62,35 +62,25 @@ module.exports = class userRoleHelper {
 
 	static async update(id, bodyData, user_organization_id) {
 		try {
-			const roles = await roleQueries.findRoleById(id)
-			if (!roles) {
-				throw new Error('ROLE_NOT_FOUND')
-			}
-			if (roles.organization_id === user_organization_id) {
-				const updateRole = await roleQueries.updateRoleById(id, bodyData)
-				if (!updateRole) {
-					return common.failureResponse({
-						message: 'ROLE_NOT_UPDATED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-				return common.successResponse({
-					statusCode: httpStatusCode.created,
-					message: 'ROLE_UPDATED_SUCCESSFULLY',
-					result: {
-						title: updateRole.title,
-						user_type: updateRole.user_type,
-						status: updateRole.status,
-						visibility: updateRole.visibility,
-						organization_id: updateRole.organization_id,
-					},
+			const filter = { id: id, organization_id: user_organization_id }
+			const [updateCount, updateRole] = await roleQueries.updateRole(filter, bodyData)
+			if (updateCount < 0) {
+				return common.failureResponse({
+					message: 'ROLE_NOT_UPDATED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.failureResponse({
-				message: 'USER_ORG_ID_DOES_NOT_MATCH',
-				statusCode: httpStatusCode.bad_request,
-				responseCode: 'CLIENT_ERROR',
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'ROLE_UPDATED_SUCCESSFULLY',
+				result: {
+					title: updateRole.title,
+					user_type: updateRole.user_type,
+					status: updateRole.status,
+					visibility: updateRole.visibility,
+					organization_id: updateRole.organization_id,
+				},
 			})
 		} catch (error) {
 			throw error
@@ -106,37 +96,22 @@ module.exports = class userRoleHelper {
 	 */
 	static async delete(id, user_organization_id) {
 		try {
-			const roles = await roleQueries.findRoleById(id)
-			console.log('roles=>', roles)
-			if (!roles) {
-				return common.failureResponse({
-					message: 'ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			} else {
-				if (roles.organization_id === user_organization_id) {
-					const deleteRole = await roleQueries.deleteRoleById(id)
+			const filter = { id: id, organization_id: user_organization_id }
+			const deleteRole = await roleQueries.deleteRole(filter)
 
-					if (!deleteRole) {
-						return common.failureResponse({
-							message: 'ROLE_NOT_DELETED',
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					}
-					return common.successResponse({
-						statusCode: httpStatusCode.accepted,
-						message: 'ROLE_DELETED_SUCCESSFULLY',
-						result: {},
-					})
-				}
+			if (deleteRole === '0') {
 				return common.failureResponse({
-					message: 'USER_ORG_ID_DOES_NOT_MATCH',
+					message: 'ROLE_NOT_DELETED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ROLE_DELETED_SUCCESSFULLY',
+				result: {},
+			})
 		} catch (error) {
 			throw error
 		}

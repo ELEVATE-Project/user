@@ -53,36 +53,33 @@ exports.findRoleById = async (id) => {
 
 exports.findAllRoles = async (filter, attributes, options) => {
 	try {
-		const roles = await UserRole.findAndCountAll({
+		return await UserRole.findAndCountAll({
 			where: filter,
 			attributes,
 			...options,
 		})
-		return roles
 	} catch (error) {
 		throw error
 	}
 }
 
-exports.updateRoleById = async (id, updatedata) => {
+exports.updateRole = async (filter, updatedata) => {
 	try {
-		const [rowsUpdated, [updatedRoles]] = await UserRole.update(updatedata, {
-			where: { id },
+		return await UserRole.update(updatedata, {
+			where: filter,
 			returning: true,
 		})
-		return updatedRoles
 	} catch (error) {
 		throw error
 	}
 }
 
-exports.deleteRoleById = async (id) => {
+exports.deleteRole = async (filter) => {
 	try {
-		const deletedRows = await UserRole.destroy({
-			where: { id: id },
+		return await UserRole.destroy({
+			where: filter,
 			individualHooks: true,
 		})
-		return deletedRows
 	} catch (error) {
 		throw error
 	}
