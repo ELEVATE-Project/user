@@ -32,13 +32,6 @@ module.exports = class MentorsHelper {
 	 */
 	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor) {
 		try {
-			const query = utils.processQueryParametersWithExclusions(queryParams)
-			console.log(query)
-			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
-				status: 'ACTIVE',
-			})
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
-
 			const mentorsDetails = await mentorQueries.getMentorExtension(id)
 			if (!mentorsDetails) {
 				return common.failureResponse({
@@ -47,6 +40,14 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const query = utils.processQueryParametersWithExclusions(queryParams)
+
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: 'ACTIVE',
+				allow_filtering: true,
+			})
+			const filteredQuery = utils.validateFilters(query, validationData, await sessionQueries.getModelName())
 
 			// Filter upcoming sessions based on saas policy
 			const saasFilter = await menteesService.filterSessionsBasedOnSaasPolicy(menteeUserId, isAMentor)
@@ -686,9 +687,10 @@ module.exports = class MentorsHelper {
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
+				allow_filtering: true,
 			})
 
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'Session')
+			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
 			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
