@@ -295,6 +295,7 @@ module.exports = class OrganizationsHelper {
 				{
 					requester_id: tokenInformation.id,
 					role: bodyData.role,
+					organization_id: tokenInformation.organization_id,
 				},
 				{
 					order: [['created_at', 'DESC']],

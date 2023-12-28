@@ -63,7 +63,10 @@ module.exports = class UserInviteHelper {
 				}
 
 				// //update output path in file uploads
-				const rowsAffected = await fileUploadQueries.update({ id: data.fileDetails.id }, update)
+				const rowsAffected = await fileUploadQueries.update(
+					{ id: data.fileDetails.id, organization_id: data.user.organization_id },
+					update
+				)
 				if (rowsAffected === 0) {
 					throw new Error('FILE_UPLOAD_MODIFY_ERROR')
 				}
