@@ -56,3 +56,15 @@ exports.deleteOne = async (id, options = {}) => {
 		return error
 	}
 }
+
+exports.findAll = async (filter, options = {}) => {
+	try {
+		return await organizationUserInvite.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
+	} catch (error) {
+		return error
+	}
+}
