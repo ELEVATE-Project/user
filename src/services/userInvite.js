@@ -155,10 +155,7 @@ module.exports = class UserInviteHelper {
 	static async createUserInvites(csvData, user, fileUploadId) {
 		try {
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
-
-			// get the role data from db
 			const allRoles = _.uniq(_.map(csvData, 'roles').map((role) => role.toLowerCase()))
-
 			const roleList = await roleQueries.findAll({ title: allRoles })
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
@@ -167,7 +164,6 @@ module.exports = class UserInviteHelper {
 
 			//get all existing user
 			const emailArray = _.uniq(_.map(csvData, 'email'))
-
 			const userCredentials = await UserCredentialQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
 				{
@@ -175,19 +171,21 @@ module.exports = class UserInviteHelper {
 				}
 			)
 			const userIds = _.map(userCredentials, 'user_id')
-
 			const existingUsers = await userQueries.findAll(
 				{ id: userIds },
 				{
 					attributes: ['id', 'email', 'organization_id', 'roles'],
 				}
 			)
-
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser]))
 
 			//find default org id
 			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
 			const defaultOrgId = defaultOrg?.id || null
+
+			let input = []
+			let isErrorOccured = false
+			let isOrgUpdate = false
 
 			//fetch email template
 			const mentorTemplateCode = process.env.MENTOR_INVITATION_EMAIL_TEMPLATE_CODE || null
@@ -214,10 +212,6 @@ module.exports = class UserInviteHelper {
 			emailList.forEach((userInvitee) => {
 				existingInvitees[userInvitee.email] = [userInvitee.id]
 			})
-
-			let input = []
-			let isErrorOccured = false
-			let isOrgUpdate = false
 
 			// process csv data
 			for (const invitee of csvData) {
@@ -246,6 +240,7 @@ module.exports = class UserInviteHelper {
 
 				//update user details if the user exist and in default org
 				const existingUser = existingEmailsMap.get(invitee.email)
+
 				if (existingUser) {
 					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
 					isErrorOccured = true
@@ -255,6 +250,7 @@ module.exports = class UserInviteHelper {
 						existingUser.organization_id === user.organization_id
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
+
 						if (existingUser.organization_id != user.organization_id) {
 							await userQueries.changeOrganization(
 								existingUser.id,
@@ -281,20 +277,20 @@ module.exports = class UserInviteHelper {
 							})
 
 							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
-
 							await UserCredentialQueries.updateUser(
 								{
 									email: invitee.email,
 								},
 								{ organization_id: user.organization_id }
 							)
+
 							const userRoles = await roleQueries.findAll({ id: existingUser.roles })
 							//call event to update in mentoring
 							if (!userUpdateData?.roles) {
 								eventBroadcaster('updateOrganization', {
 									requestBody: {
 										user_id: existingUser.id,
-										organization_id: existingUser.organization_id,
+										organization_id: user.organization_id,
 										roles: _.map(userRoles, 'title'),
 									},
 								})
@@ -304,15 +300,13 @@ module.exports = class UserInviteHelper {
 									new_roles: [invitee.roles],
 									current_roles: _.map(userRoles, 'title'),
 								}
-								if (userUpdateData.organization_id) requestBody.organization_id = user.organization_id
+								if (isOrgUpdate) requestBody.organization_id = user.organization_id
 								eventBroadcaster('roleChange', {
 									requestBody,
 								})
-
-								//delete from cache
-								const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
-								await utils.redisDel(redisUserKey)
 							}
+							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
+							await utils.redisDel(redisUserKey)
 						}
 					}
 				} else {
