@@ -95,12 +95,12 @@ module.exports = class UserEntityData {
 		}
 	} */
 
-	static async updateOneEntityType(id, organizationId, update, options = {}) {
+	static async updateOneEntityType(id, orgId, update, options = {}) {
 		try {
 			return await EntityType.update(update, {
 				where: {
 					id: id,
-					organization_id: organizationId,
+					organization_id: orgId,
 				},
 				...options,
 			})

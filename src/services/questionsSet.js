@@ -109,7 +109,7 @@ module.exports = class questionsSetHelper {
 
 	static async read(questionsSetId, questionSetCode) {
 		try {
-			let filter = {
+			const filter = {
 				id: questionsSetId,
 			}
 			if (questionSetCode) {
