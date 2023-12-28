@@ -27,6 +27,7 @@ const utils = require('@generics/utils')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const emailEncryption = require('@utils/emailEncryption')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -95,7 +96,7 @@ module.exports = class AccountHelper {
 			if (invitedUserId) {
 				invitedUserMatch = await userInviteQueries.findOne({
 					id: invitedUserId.organization_user_invite_id,
-				}) //add org id here to optimize the query
+				})
 			}
 
 			let isOrgAdmin = false
@@ -682,10 +683,9 @@ module.exports = class AccountHelper {
 
 	static async registrationOtp(bodyData) {
 		try {
-			let otp
-			let isValidOtpExist = true
+			const encryptedEmailId = emailEncryption.encrypt(bodyData.email.toLowerCase())
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: bodyData.email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
@@ -697,35 +697,26 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const userData = await utilsHelper.redisGet(encryptedEmailId)
+			const otp =
+				userData && userData.action === 'signup' ? userData.otp : Math.floor(Math.random() * 900000 + 100000)
+			//Reuse the OTP if a valid one already exists, else generate new
 
-			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
-
-			if (userData && userData.action === 'signup') {
-				otp = userData.otp // If valid then get previuosly generated otp
-			} else {
-				isValidOtpExist = false
-			}
-
-			if (!isValidOtpExist) {
-				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
-				const redisData = {
-					verify: bodyData.email.toLowerCase(),
+			const res = await utilsHelper.redisSet(
+				encryptedEmailId,
+				{
+					verify: encryptedEmailId,
 					action: 'signup',
 					otp,
-				}
-				const res = await utilsHelper.redisSet(
-					bodyData.email.toLowerCase(),
-					redisData,
-					common.otpExpirationTime
-				)
-				if (res !== 'OK') {
-					return common.failureResponse({
-						message: 'UNABLE_TO_SEND_OTP',
-						statusCode: httpStatusCode.internal_server_error,
-						responseCode: 'SERVER_ERROR',
-					})
-				}
-			}
+				},
+				common.otpExpirationTime
+			)
+			if (res !== 'OK')
+				return common.failureResponse({
+					message: 'UNABLE_TO_SEND_OTP',
+					statusCode: httpStatusCode.internal_server_error,
+					responseCode: 'SERVER_ERROR',
+				})
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
@@ -744,14 +735,13 @@ module.exports = class AccountHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			if (process.env.APPLICATION_ENV === 'development') {
-				console.log(otp)
-			}
+			if (process.env.APPLICATION_ENV === 'development') console.log(otp)
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -879,11 +869,6 @@ module.exports = class AccountHelper {
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user.password
 			delete user.otpInfo
-
-			// Check if user and user.image exist, then fetch a downloadable URL for the image
-			if (user && user.image) {
-				user.image = await utils.getDownloadableUrl(user.image)
-			}
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
