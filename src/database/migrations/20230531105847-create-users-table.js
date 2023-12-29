@@ -16,7 +16,6 @@ module.exports = {
 			email: {
 				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			email_verified: {
 				type: Sequelize.STRING,
@@ -39,6 +38,7 @@ module.exports = {
 			organization_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			has_accepted_terms_and_conditions: {
 				type: Sequelize.BOOLEAN,
@@ -52,7 +52,7 @@ module.exports = {
 				type: Sequelize.STRING,
 			},
 			location: {
-				type: Sequelize.ARRAY(Sequelize.STRING),
+				type: Sequelize.STRING,
 			},
 			languages: {
 				type: Sequelize.ARRAY(Sequelize.STRING),
@@ -72,6 +72,13 @@ module.exports = {
 			},
 			image: {
 				type: Sequelize.STRING,
+			},
+			custom_entity_text: {
+				type: Sequelize.JSON,
+			},
+			meta: {
+				type: Sequelize.JSONB,
+				allowNull: true,
 			},
 			created_at: {
 				allowNull: false,

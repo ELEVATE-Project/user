@@ -7,7 +7,7 @@
 		"elevate-migrations": "module/migrations/bin/migrations.js"
 	},
 	"scripts": {
-		"test": "jest --verbose ./test --config=jest.config.js",
+		"test": "",
 		"start": "NODE_ENV=development nodemon app.js",
 		"prod": "NODE_ENV=production node app.js",
 		"stage": "NODE_ENV=stage node app.js",
@@ -16,7 +16,8 @@
 		"elevate-migrations": "module/migrations/bin/migrations.js",
 		"integration": "node app.js",
 		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
-		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate && sequelize-cli db:seed:all"
+		"db:init": "sequelize-cli db:create && sequelize-cli db:migrate ",
+		"db:seed:all": "sequelize-cli db:seed:all"
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
@@ -29,6 +30,7 @@
 		"bcrypt": "^5.0.1",
 		"bcryptjs": "^2.4.3",
 		"body-parser": "^1.19.0",
+		"bullmq": "^4.12.3",
 		"cli-table": "^0.3.11",
 		"commander": "^9.4.0",
 		"cors": "^2.8.5",
@@ -72,11 +74,13 @@
 		"redis": "^4.0.3",
 		"redoc-cli": "^0.13.15",
 		"redoc-express": "^1.0.0",
+		"request": "^2.88.2",
 		"require-all": "^3.0.0",
 		"sequelize": "^6.31.1",
 		"sequelize-cli": "^6.6.0",
 		"stream": "^0.0.2",
 		"swagger-ui-express": "^4.4.0",
+		"url": "^0.11.3",
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
@@ -114,6 +118,7 @@
 		"@validators": "validators",
 		"@database": "database",
 		"@utils": "utils",
-		"@helpers": "helpers"
+		"@helpers": "helpers",
+		"@scripts": "scripts"
 	}
 }

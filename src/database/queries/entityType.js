@@ -1,10 +1,10 @@
-'use strict'
-const EntityType = require('@database/models/index').EntityType
-const Entity = require('@database/models/index').Entity
+const EntityType = require('../models/index').EntityType
+const Entity = require('../models/index').Entity
 const { Op } = require('sequelize')
-const common = require('@constants/common')
+const Sequelize = require('../models/index').sequelize
+
 module.exports = class UserEntityData {
-	static async create(data) {
+	static async createEntityType(data) {
 		try {
 			return await EntityType.create(data, { returning: true })
 		} catch (error) {
@@ -12,7 +12,7 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findOne(filter, options = {}) {
+	static async findOneEntityType(filter, options = {}) {
 		try {
 			return await EntityType.findOne({
 				where: filter,
@@ -24,97 +24,137 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAll(filter, options = {}) {
+	static async findAllEntityTypes(orgId, attributes, filter = {}) {
 		try {
-			const entityTypeData = await EntityType.findAll({
-				where: filter,
-				...options,
+			const entityData = await EntityType.findAll({
+				where: {
+					organization_id: orgId,
+					...filter,
+				},
+				attributes,
 				raw: true,
 			})
-			return entityTypeData
+			return entityData
 		} catch (error) {
 			return error
 		}
 	}
-	static async findAllUserEntityTypes(filter, userId) {
+	static async findUserEntityTypesAndEntities(filter) {
 		try {
-			filter.status = common.activeStatus
-			return await EntityType.findAll({
+			const entityTypes = await EntityType.findAll({
 				where: filter,
-				include: [
-					{
-						model: Entity,
-						required: false,
-						where: {
-							[Op.or]: [
-								{
-									created_by: null,
-								},
-								{
-									created_by: userId,
-								},
-							],
-						},
-						as: 'entities',
-					},
-				],
+				raw: true,
 			})
+
+			const entityTypeIds = entityTypes.map((entityType) => entityType.id)
+
+			const entities = await Entity.findAll({
+				where: { entity_type_id: entityTypeIds, status: 'ACTIVE' },
+				raw: true,
+				//attributes: { exclude: ['entity_type_id'] },
+			})
+
+			const result = entityTypes.map((entityType) => {
+				const matchingEntities = entities.filter((entity) => entity.entity_type_id === entityType.id)
+				return {
+					...entityType,
+					entities: matchingEntities,
+				}
+			})
+
+			return result
 		} catch (error) {
-			return error
+			console.error('Error fetching data:', error)
+			throw error
 		}
 	}
 
-	static async updateOne(filter, update, options = {}) {
+	/* 	static async findUserEntityTypesAndEntitiesRaw(filter) {
 		try {
-			const [rowsAffected] = await EntityType.update(update, {
-				where: filter,
+			const [result, metadata] = await Sequelize.query(
+				`SELECT
+				et.*,
+				jsonb_agg(e.*) AS entities
+			FROM
+				entity_types et
+			LEFT JOIN
+				entities e ON et.id = e.entity_type_id
+			WHERE
+				et.status = 'ACTIVE'
+				AND et.value IN ('medium')
+				AND et.organization_id IN (1,1)
+			GROUP BY
+				et.id
+			ORDER BY
+				et.id;`
+			)
+			return result
+		} catch (error) {
+			console.error('Error fetching data:', error)
+			throw error
+		}
+	} */
+
+	static async updateOneEntityType(id, organizationId, update, options = {}) {
+		try {
+			return await EntityType.update(update, {
+				where: {
+					id: id,
+					organization_id: organizationId,
+				},
 				...options,
-				individualHooks: true,
 			})
-
-			return rowsAffected
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async delete(filter) {
+	static async deleteOneEntityType(id, orgId) {
 		try {
-			const rowsAffected = await EntityType.destroy({
-				where: filter,
+			return await EntityType.destroy({
+				where: {
+					id: id,
+					organization_id: orgId,
+				},
 				individualHooks: true,
 			})
-
-			return rowsAffected
 		} catch (error) {
 			throw error
 		}
 	}
 
-	static async findById(id) {
+	static async findEntityTypeById(filter) {
 		try {
-			return await EntityType.findByPk(id)
+			return await EntityType.findByPk(filter)
 		} catch (error) {
 			return error
 		}
 	}
 
-	static async findAllSystemEntityTypes(filter) {
+	static async findAllEntityTypesAndEntities(filter) {
 		try {
-			filter.status = common.activeStatus
-			return await EntityType.findAll({
+			const entityTypes = await EntityType.findAll({
 				where: filter,
-				include: [
-					{
-						model: Entity,
-						required: false,
-						where: {
-							created_by: null,
-						},
-						as: 'entities',
-					},
-				],
+				raw: true,
 			})
+
+			const entityTypeIds = entityTypes.map((entityType) => entityType.id)
+
+			// Fetch all matching entities using the IDs
+			const entities = await Entity.findAll({
+				where: { entity_type_id: entityTypeIds, status: 'ACTIVE' },
+				raw: true,
+				//attributes: { exclude: ['entity_type_id'] },
+			})
+
+			const result = entityTypes.map((entityType) => {
+				const matchingEntities = entities.filter((entity) => entity.entity_type_id === entityType.id)
+				return {
+					...entityType,
+					entities: matchingEntities,
+				}
+			})
+			return result
 		} catch (error) {
 			return error
 		}

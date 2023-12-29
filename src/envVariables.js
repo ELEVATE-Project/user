@@ -189,6 +189,56 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
+	MENTOR_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentor invitation email template code',
+		optional: false,
+	},
+	MENTEE_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentee invitation email template code',
+		optional: false,
+	},
+	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {
+		message: 'Required admin upload invitee email template code',
+		optional: false,
+	},
+	DEFAULT_QUEUE: {
+		message: 'Required default queue',
+		optional: false,
+	},
+	DEFAULT_ROLE: {
+		message: 'Required default role',
+		optional: false,
+	},
+	SAMPLE_CSV_FILE_PATH: {
+		message: 'Required sample csv file path',
+		optional: false,
+		default: 'sample/bulk_user_creation.csv',
+	},
+	ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required org admin invitation email template code',
+		optional: false,
+	},
+	DEFAULT_ORG_ID: {
+		message: 'Default organization ID, Run seeder `insertDefaultOrg` to obtain it.',
+		optional: false,
+	},
+	PORTAL_URL: {
+		message: 'Required portal url',
+		optional: false,
+	},
+	SCHEDULER_SERVICE_HOST: {
+		message: 'Required scheduler service host',
+		optional: false,
+	},
+	SCHEDULER_SERVICE_BASE_URL: {
+		message: 'Required scheduler service base url',
+		optional: false,
+	},
+	REFRESH_VIEW_INTERVAL: {
+		message: 'Interval to refresh views in milliseconds',
+		optional: false,
+		default: 540000,
+	},
 }
 
 let success = true

@@ -1,5 +1,5 @@
 /**
- * name : services/helper/userRole.js
+ * name : userRole.js
  * author : Priyanka Pradeep
  * created-date : 21-July-2023
  * Description : UserRole Service Helper.

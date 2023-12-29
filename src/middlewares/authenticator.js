@@ -22,6 +22,8 @@ module.exports = async function (req, res, next) {
 
 		common.internalAccessUrls.map(function (path) {
 			if (req.path.includes(path)) {
+				console.log('REQUEST PATH: ', req.path)
+				console.log('INTERNAL ACCESS PATH: ', path)
 				if (
 					req.headers.internal_access_token &&
 					process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token
@@ -74,10 +76,19 @@ module.exports = async function (req, res, next) {
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
-			err.statusCode = httpStatusCode.unauthorized
-			err.responseCode = 'UNAUTHORIZED'
-			err.message = 'ACCESS_TOKEN_EXPIRED'
-			throw err
+			if (err.name === 'TokenExpiredError') {
+				throw common.failureResponse({
+					message: 'ACCESS_TOKEN_EXPIRED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			} else {
+				throw common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 
 		if (!decodedToken) {
@@ -91,7 +102,7 @@ module.exports = async function (req, res, next) {
 		//check for admin user
 		let isAdmin = false
 		if (decodedToken.data.roles) {
-			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
 			if (isAdmin) {
 				req.decodedToken = decodedToken.data
 				return next()
@@ -100,8 +111,7 @@ module.exports = async function (req, res, next) {
 
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const user = await userQueries.findOne({ id: decodedToken.data.id })
-
+			const user = await userQueries.findByPk(decodedToken.data.id)
 			if (!user) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -111,18 +121,12 @@ module.exports = async function (req, res, next) {
 			}
 
 			const roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.activeStatus },
-				{ attributes: ['title'] }
+				{ id: user.roles, status: common.ACTIVE_STATUS },
+				{ attributes: ['id', 'title', 'user_type', 'status'] }
 			)
 
-			//for the time being user have one role
-			if (roles && roles[0].title !== decodedToken.data.roles[0].title) {
-				throw common.failureResponse({
-					message: 'USER_ROLE_UPDATED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+			//update the token role as same as current user role
+			decodedToken.data.roles = roles
 		}
 		req.decodedToken = decodedToken.data
 		next()

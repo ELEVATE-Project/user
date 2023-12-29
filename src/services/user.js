@@ -1,5 +1,5 @@
 /**
- * name : services/helper/users.js
+ * name : users.js
  * author : Priyanka Pradeep
  * created-date : 17-July-2023
  * Description : User Service Helper.
@@ -13,7 +13,10 @@ const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/userRole')
 const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
+const organizationQueries = require('@database/queries/organization')
+const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
+const { Op } = require('sequelize')
 
 module.exports = class UserHelper {
 	/**
@@ -25,7 +28,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, id) {
+	static async update(bodyData, id, orgId) {
 		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
@@ -36,59 +39,12 @@ module.exports = class UserHelper {
 				})
 			}
 
-			if (bodyData.hasOwnProperty(common.location) || bodyData.hasOwnProperty(common.languages)) {
-				let values = []
-				if (bodyData.hasOwnProperty(common.location)) values.push(common.location)
-				if (bodyData.hasOwnProperty(common.languages)) values.push(common.languages)
-				if (values.length > 0) {
-					const entityTypes = await entityTypeQueries.findAll(
-						{ value: values },
-						{ attributes: ['id', 'value'] }
-					)
+			const user = await userQueries.findOne({
+				id: id,
+				organization_id: orgId,
+			})
 
-					if (!entityTypes) {
-						return common.failureResponse({
-							message: bodyData.hasOwnProperty(common.location)
-								? 'LOCATION_UPDATE_FAILED'
-								: 'LANGUAGE_UPDATE_FAILED',
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					}
-
-					for (
-						let pointerToEntityTypes = 0;
-						pointerToEntityTypes < entityTypes.length;
-						pointerToEntityTypes++
-					) {
-						let entityType = entityTypes[pointerToEntityTypes]
-						let entities = await entitiesQueries.findAll(
-							{
-								value: bodyData[entityType.value],
-								entity_type_id: entityType.id,
-							},
-							{ attributes: ['value'] }
-						)
-
-						if (entities.length != bodyData[entityType.value].length) {
-							return common.failureResponse({
-								message:
-									entityType.value == common.location
-										? 'LOCATION_UPDATE_FAILED'
-										: 'LANGUAGE_UPDATE_FAILED',
-								statusCode: httpStatusCode.bad_request,
-								responseCode: 'CLIENT_ERROR',
-							})
-						}
-						bodyData[entityType.value] = _.map(entities, function (entity) {
-							return entity.value
-						})
-					}
-				}
-			}
-
-			let update = await userQueries.updateUser({ id: id }, bodyData)
-			if (!update) {
+			if (!user) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
@@ -96,15 +52,58 @@ module.exports = class UserHelper {
 				})
 			}
 
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+
+			const filter = {
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [orgId, defaultOrgId],
+				},
+			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
+			if (!res.success) {
+				return common.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+
+			let userModel = await userQueries.getColumns()
+			bodyData = utils.restructureBody(bodyData, validationData, userModel)
+
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: id, organization_id: orgId },
+				bodyData
+			)
+
 			const redisUserKey = common.redisUserPrefix + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
+			const processDbResponse = utils.processDbResponse(
+				JSON.parse(JSON.stringify(updatedData[0])),
+				validationData
+			)
+			delete processDbResponse.refresh_tokens
+			delete processDbResponse.password
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
+				result: processDbResponse,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -132,14 +131,13 @@ module.exports = class UserHelper {
 			if (!userDetails) {
 				let options = {
 					attributes: {
-						exclude: ['password', 'location', 'refresh_tokens'],
+						exclude: ['password', 'refresh_tokens'],
 					},
 				}
 				if (internal_access_token) {
 					options.paranoid = false
 				}
-				const user = await userQueries.findOne(filter, options)
-
+				const user = await userQueries.findUserWithOrganization(filter, options)
 				if (!user) {
 					return common.failureResponse({
 						message: 'USER_NOT_FOUND',
@@ -153,7 +151,7 @@ module.exports = class UserHelper {
 				}
 
 				let roles = await roleQueries.findAll(
-					{ id: user.roles, status: common.activeStatus },
+					{ id: user.roles, status: common.ACTIVE_STATUS },
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -171,19 +169,29 @@ module.exports = class UserHelper {
 
 				user.user_roles = roles
 
-				let isAMentor = false
-				if (roles && roles.length > 0) {
-					isAMentor = roles.some((role) => role.title === common.roleMentor)
-				}
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ attributes: ['id'] }
+				)
+				let defaultOrgId = defaultOrg.id
 
-				if (isAMentor) {
-					await utils.redisSet(redisUserKey, user)
+				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+					status: 'ACTIVE',
+					organization_id: {
+						[Op.in]: [user.organization_id, defaultOrgId],
+					},
+				})
+				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+				const processDbResponse = utils.processDbResponse(user, prunedEntities)
+
+				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
+					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
-					result: user ? user : {},
+					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
 				return common.successResponse({
@@ -193,6 +201,7 @@ module.exports = class UserHelper {
 				})
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -207,10 +216,7 @@ module.exports = class UserHelper {
 
 	static async share(userId) {
 		try {
-			let user = await userQueries.findOne(
-				{ id: userId, role: common.roleMentor },
-				{ attributes: ['share_link'] }
-			)
+			let user = await userQueries.findOne({ id: userId }, { attributes: ['share_link'] })
 
 			if (!user) {
 				return common.failureResponse({

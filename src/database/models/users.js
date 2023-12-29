@@ -12,7 +12,6 @@ module.exports = (sequelize, DataTypes) => {
 			email: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			email_verified: {
 				type: DataTypes.STRING,
@@ -28,8 +27,8 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			gender: DataTypes.STRING,
-			location: DataTypes.ARRAY(DataTypes.STRING),
-			about: DataTypes.STRING,
+			location: DataTypes.STRING,
+			about: DataTypes.TEXT,
 			share_link: DataTypes.STRING,
 			status: {
 				type: DataTypes.STRING,
@@ -47,10 +46,21 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'en',
 			},
-			organization_id: DataTypes.INTEGER,
+			organization_id: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				primaryKey: true,
+			},
 			roles: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
+			},
+			custom_entity_text: {
+				type: DataTypes.JSON,
+			},
+			meta: {
+				type: DataTypes.JSONB,
+				allowNull: true,
 			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }

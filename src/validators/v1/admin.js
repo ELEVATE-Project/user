@@ -41,4 +41,33 @@ module.exports = {
 
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
+
+	addOrgAdmin: (req) => {
+		req.checkBody('organization_id').notEmpty().withMessage('organization_id field is empty')
+
+		req.checkBody(['user_id', 'email']).custom(() => {
+			const user_id = req.body.user_id
+			const email = req.body.email
+
+			if (!user_id && !email) {
+				throw new Error('Either user_id or email is required')
+			}
+
+			if (user_id && email) {
+				throw new Error('Only one of user_id or email should be present')
+			}
+
+			return true
+		})
+		req.checkBody('user_id').optional().isNumeric().withMessage('user_id must be a number')
+
+		req.checkBody('email').optional().isEmail().withMessage('Invalid email address')
+	},
+
+	deactivateUser: (req) => {
+		const field = req.body.email ? 'email' : req.body.id ? 'id' : null
+		if (field) {
+			req.checkBody(field).isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
+		}
+	},
 }

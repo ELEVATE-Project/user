@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "49d7c04a-de94-4706-be1f-02b97ba62d98",
-		"name": "MentorED-Users DEV",
+		"_postman_id": "615444c7-583f-44b9-9b96-8b92f9cb0df1",
+		"name": "MentorED-Users DEV new",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "6350183",
-		"_collection_link": "https://cloudy-eclipse-8615.postman.co/workspace/MentorED~099846e5-b1d5-4043-84b9-1e9ac3fc1e4f/collection/6350183-49d7c04a-de94-4706-be1f-02b97ba62d98?action=share&creator=6350183&source=collection_link"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -17,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nikolas\",\n    \"email\":\"tacape1645@meogl.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -39,7 +38,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"password\",\n    \"role\":\"mentor\"\n}",
+							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -77,9 +76,8 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankitstar00786@yahoo.com",
-									"type": "text",
-									"disabled": true
+									"value": "nevil@tunerlabs.com",
+									"type": "text"
 								},
 								{
 									"key": "password",
@@ -90,11 +88,12 @@
 								{
 									"key": "email",
 									"value": "priyanka@tunerlabs.com",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
-									"value": "password",
+									"value": "testing",
 									"type": "text"
 								}
 							]
@@ -310,7 +309,8 @@
 							{
 								"key": "X-auth-token",
 								"value": "bearer {{token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -318,7 +318,7 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdom.com",
+									"value": "nevil@tunerlabs.com",
 									"type": "text"
 								},
 								{
@@ -328,7 +328,7 @@
 								},
 								{
 									"key": "name",
-									"value": "Ankit",
+									"value": "Nevil",
 									"type": "text"
 								}
 							]
@@ -386,6 +386,11 @@
 								"key": "X-auth-token",
 								"value": "bearer {{token}}",
 								"type": "text"
+							},
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -393,9 +398,9 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user/read/3",
+							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "user", "read", "3"]
+							"path": ["v1", "user", "read", "1"]
 						}
 					},
 					"response": []
@@ -413,7 +418,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Ankit\",\n    \"location\": [\"AP\", \"KL\"],\n    \"about\": \"This is test about of mentee\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"gender\": \"MALE\",\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\"english\"]\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -478,9 +483,9 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user//v1/userRole/list",
+							"raw": "{{UserDevBaseUrl}}user/v1/userRole/list",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["", "v1", "userRole", "list"]
+							"path": ["v1", "userRole", "list"]
 						}
 					},
 					"response": []
@@ -520,11 +525,8 @@
 				},
 				{
 					"name": "Read Form",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -612,6 +614,62 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Downloable Url",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getDownloadableUrl?filePath=users/2-1695710833829-user_creation.csv",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getDownloadableUrl"],
+							"query": [
+								{
+									"key": "filePath",
+									"value": "users/2-1695710833829-user_creation.csv"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getSampleCSV",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSampleCSV"]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -621,7 +679,7 @@
 				{
 					"name": "Delete User",
 					"request": {
-						"method": "GET",
+						"method": "DELETE",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -699,6 +757,69 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Assign Org Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"nevil@tunerlabs.com\",\n    \"organization_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/addOrgAdmin",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "addOrgAdmin"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate Org",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deactivateOrg/2",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "deactivateOrg", "2"],
+							"query": [
+								{
+									"key": "status",
+									"value": "completed",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -706,19 +827,65 @@
 			"name": "Organization",
 			"item": [
 				{
+					"name": "Read Organization",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/read?organisation_id=1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "read"],
+							"query": [
+								{
+									"key": "organisation_code",
+									"value": "ls",
+									"disabled": true
+								},
+								{
+									"key": "organisation_id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Organization",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "internal_access_token",
-								"value": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"MentorEd\",\n    \"code\":\"mentor112\",\n    \"description\":\"testing org\"\n}",
+							"raw": "{\n    \"name\": \"orgrr\",\n    \"code\": \"mentor112\",\n    \"description\": \"testing org\",\n    \"domains\": [\"cc.com\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -736,17 +903,17 @@
 				{
 					"name": "Update Organization",
 					"request": {
-						"method": "POST",
+						"method": "PATCH",
 						"header": [
 							{
-								"key": "internal_access_token",
-								"value": "internal_access_token",
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"MentorEd\",\n    \"description\":\"testing org\"\n}",
+							"raw": "{\n    \"name\": \"MentorEd\",\n    \"description\": \"testing org\",\n    \"related_orgs\": [\n        3,\n        4\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -754,9 +921,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/2",
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "organization", "update", "2"]
+							"path": ["v1", "organization", "update", "1"]
 						}
 					},
 					"response": []
@@ -789,14 +956,9 @@
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "EntityTypes",
-			"item": [
+				},
 				{
-					"name": "Create EntityType",
+					"name": "Request Org Role",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -808,7 +970,170 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"education\",\n    \"label\": \"Qualification\",\n    \"data_type\":\"string\"\n}",
+							"raw": "{\n  \"role\": 2,\n  \"form_data\": {\n    \"Why you want to be a mentor\": \"To share knowledge\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/requestOrgRole",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "requestOrgRole"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Entity",
+			"item": [
+				{
+					"name": "Create Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"ml\",\n    \"label\": \"Malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "create"]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"hm\",\n    \"label\": \"malayalam\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/read?read_user_entity=true",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "read"],
+							"query": [
+								{
+									"key": "id",
+									"value": "2",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
+									"key": "value",
+									"value": "ml",
+									"description": "User value or id",
+									"disabled": true
+								},
+								{
+									"key": "read_user_entity",
+									"value": "true",
+									"description": "use this param to get all entities, including user created entities."
+								}
+							]
+						},
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"english\",\n    \"label\": \"English\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"entity_type_id\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Entity Type",
+			"item": [
+				{
+					"name": "Create Entity Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"value\": \"ln\",\n    \"label\": \"Languages\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"STRING\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -819,40 +1144,33 @@
 							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "entity-type", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update EntityType",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\": \"education\",\n    \"label\": \"Qualification\",\n    \"data_type\":\"string\",\n    \"status\":\"INACTIVE\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/4",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "update", "4"]
-						}
+						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
 				},
 				{
-					"name": "Read System  EntityTypes",
+					"name": "Read All System Entity Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
+					},
+					"response": []
+				},
+				{
+					"name": "Read Entity Types with entities",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -864,7 +1182,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\n    \"value\": [\n        \"languages\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -874,13 +1192,31 @@
 						"url": {
 							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "read"]
-						}
+							"path": ["v1", "entity-type", "read"],
+							"query": [
+								{
+									"key": "value",
+									"value": "role_one",
+									"disabled": true
+								},
+								{
+									"key": "deleted",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
 					},
 					"response": []
 				},
 				{
-					"name": "Read User  EntityTypes",
+					"name": "Update Entity Types",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -892,7 +1228,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"read_user_entity\" : true,\n    \"value\" : \"languages\"\n}",
+							"raw": "{\n    \"value\": \"roles\",\n    \"label\": \"RolesV\",\n    \"status\": \"ACTIVE\",\n    \"type\": \"SYSTEM\",\n    \"allow_filtering\": true,\n    \"data_type\": \"string\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -900,15 +1236,350 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "read"]
+							"path": ["v1", "entity-type", "update", "1"]
+						},
+						"description": "NOET: All body req parameters are optional to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Entity Type",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "delete", "1"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orchestrated",
+			"item": [
+				{
+					"name": "Profile Create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "create"]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Delete EntityType",
+					"name": "Profile Update",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"location\": [\n        \"ap\"\n    ],\n    \"about\": \"This is teswt\",\n    \"has_accepted_terms_and_conditions\": true,\n    \"image\": \"https://cloudstorage.com/container/abc.png\",\n    \"languages\": [\n        \"en_in\",\n        \"en_in\"\n    ],\n    \"designation\": [\n        \"beo\",\n        \"deo\",\n        \"test\"\n    ],\n    \"area_of_expertise\": [\n        \"educational_leadership\",\n        \"sqaa\"\n    ],\n    \"education_qualification\": \"MBA\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "update"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Org Admin",
+			"item": [
+				{
+					"name": "Bulk User Create",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [""],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file_path",
+									"value": "org-admin/test.csv",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/bulkUserCreate",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "bulkUserCreate"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Bulk Invite Files List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getBulkInvitesFilesList?page=1&limit=10&status=REQUESTED",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getBulkInvitesFilesList"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "REQUESTED"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Request Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequestDetails/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getRequestDetails", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": [1,2]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/deactivateUser",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "deactivateUser"],
+							"query": [
+								{
+									"key": "status",
+									"value": "completed",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Of  Requests",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"filters\": {\n    \"role\": [\n      \"3\"\n    ],\n    \"status\": [\n      \"REQUESTED\"\n    ],\n    \"handled_by\": [\n      1\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequests",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getRequests"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Request Status",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"request_id\": 1,\n\t\"comments\": [\"All uploaded documents verified\", \"Profile information verified\"],\n\t\"status\": \"APPROVED\"\n}\n"
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "updateRequestStatus"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Inherit Entity Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notification Templates",
+			"item": [
+				{
+					"name": "Create Notification Templates",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\" : \"email\",\n    \"code\": \"tl-email-invite\",\n    \"subject\": \"Hi Welcome Backk\",\n    \"body\": \"<p>Dear User,</p> Welcome back to mentorEd\",\n    \"email_header\": \"email_header\",\n    \"email_footer\":\"email_footer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read Notification Templates",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -931,22 +1602,17 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/4",
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "delete", "4"]
+							"path": ["v1", "notification", "template", "14"]
 						}
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Entities",
-			"item": [
+				},
 				{
-					"name": "Create Entity",
+					"name": "Update Notification Templates",
 					"request": {
-						"method": "POST",
+						"method": "PATCH",
 						"header": [
 							{
 								"key": "X-auth-token",
@@ -956,7 +1622,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"entity_type_id\":4\n}",
+							"raw": "{\n    \"type\" : \"email\",\n    \"code\": \"tl-email-invite\",\n    \"subject\": \"Hi Welcome Back We missed You\" ,\n    \"body\": \"<p>Dear User,</p> Welcome back to mentorEd\",\n    \"email_header\": \"email_header\",\n    \"email_footer\":\"email_footer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -964,95 +1630,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Entity",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"value\": \"bed\",\n    \"label\": \"BEd\",\n    \"entity_type_id\":4\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/31",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "update", "31"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Entity",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/31",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "delete", "31"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Read Entity",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/read?id=1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "read"],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								},
-								{
-									"key": "read_user_entity",
-									"value": "true",
-									"disabled": true
-								}
-							]
+							"path": ["v1", "notification", "template", "14"]
 						}
 					},
 					"response": []

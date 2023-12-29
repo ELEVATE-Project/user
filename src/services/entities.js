@@ -1,19 +1,12 @@
-/**
- * name : services/helper/userentity.js
- * author : Aman
- * created-date : 02-Nov-2021
- * Description : user entity reltaed information.
- */
-
 // Dependencies
-
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const entitiesQueries = require('@database/queries/entities')
+
+const entityTypeQueries = require('@database/queries/entities')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
 
-module.exports = class UserEntityHelper {
+module.exports = class EntityHelper {
 	/**
 	 * Create entity.
 	 * @method
@@ -23,21 +16,11 @@ module.exports = class UserEntityHelper {
 	 * @returns {JSON} - Entity created response.
 	 */
 
-	static async create(bodyData, userId, roles = []) {
+	static async create(bodyData, id) {
+		bodyData.created_by = id
+		bodyData.updated_by = id
 		try {
-			let isAdmin = false
-			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
-			}
-
-			if (!isAdmin) {
-				bodyData.type = common.roleUser
-				bodyData.created_by = userId
-				bodyData.updated_by = userId
-			} else {
-				bodyData.type = common.typeSystem
-			}
-			const entity = await entitiesQueries.create(bodyData)
+			const entity = await entityTypeQueries.createEntity(bodyData)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -67,27 +50,20 @@ module.exports = class UserEntityHelper {
 	 * @method
 	 * @name update
 	 * @param {Object} bodyData - entity body data.
-	 * @param {String} id - entity id.
+	 * @param {String} _id - entity id.
 	 * @param {String} loggedInUserId - logged in user id.
-	 * @returns {JSON} - Entity updted response.
+	 * @returns {JSON} - Entity updated response.
 	 */
 
-	static async update(bodyData, id, loggedInUserId, roles = []) {
+	static async update(bodyData, id, loggedInUserId) {
+		bodyData.updated_by = loggedInUserId
 		try {
-			let isAdmin = false
-			if (roles && roles.length > 0) {
-				isAdmin = roles.some((role) => role.title === common.roleAdmin)
-			}
+			const [updateCount, updatedEntity] = await entityTypeQueries.updateOneEntity(id, bodyData, loggedInUserId, {
+				returning: true,
+				raw: true,
+			})
 
-			if (!isAdmin) {
-				bodyData.type = common.roleUser
-				bodyData.updated_by = loggedInUserId
-			} else {
-				bodyData.type = common.typeSystem
-			}
-			const rowsAffected = await entitiesQueries.updateOne({ id: id }, bodyData)
-
-			if (rowsAffected == 0) {
+			if (updateCount === 0) {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -97,6 +73,7 @@ module.exports = class UserEntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_UPDATED_SUCCESSFULLY',
+				result: updatedEntity,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
@@ -126,9 +103,10 @@ module.exports = class UserEntityHelper {
 					[Op.or]: [
 						{
 							id: query.id,
-							created_by: null,
+							created_by: '0',
+							status: 'ACTIVE',
 						},
-						{ id: query.id, created_by: userId },
+						{ id: query.id, created_by: userId, status: 'ACTIVE' },
 					],
 				}
 			} else {
@@ -136,13 +114,14 @@ module.exports = class UserEntityHelper {
 					[Op.or]: [
 						{
 							value: query.value,
-							created_by: null,
+							created_by: '0',
+							status: 'ACTIVE',
 						},
-						{ value: query.value, created_by: userId },
+						{ value: query.value, created_by: userId, status: 'ACTIVE' },
 					],
 				}
 			}
-			const entities = await entitiesQueries.findAll(filter)
+			const entities = await entityTypeQueries.findAllEntities(filter)
 
 			if (!entities.length) {
 				return common.failureResponse({
@@ -164,11 +143,11 @@ module.exports = class UserEntityHelper {
 	static async readAll(query, userId) {
 		try {
 			let filter
-			if (query.read_user_entity) {
+			if (query.read_user_entity == true) {
 				filter = {
 					[Op.or]: [
 						{
-							created_by: null,
+							created_by: '0',
 						},
 						{
 							created_by: userId,
@@ -177,10 +156,10 @@ module.exports = class UserEntityHelper {
 				}
 			} else {
 				filter = {
-					created_by: null,
+					created_by: '0',
 				}
 			}
-			const entities = await entitiesQueries.findAll(filter)
+			const entities = await entityTypeQueries.findAllEntities(filter)
 
 			if (!entities.length) {
 				return common.failureResponse({
@@ -207,10 +186,10 @@ module.exports = class UserEntityHelper {
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
-	static async delete(id, userId = null) {
+	static async delete(id, userId) {
 		try {
-			const rowsAffected = await entitiesQueries.delete(id, userId)
-			if (rowsAffected == 0) {
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, userId)
+			if (deleteCount === '0') {
 				return common.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -221,7 +200,6 @@ module.exports = class UserEntityHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_DELETED_SUCCESSFULLY',
-				result: {},
 			})
 		} catch (error) {
 			throw error

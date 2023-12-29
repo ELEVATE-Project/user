@@ -16,7 +16,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findByPk = async (id) => {
 	try {
-		return await UserRole.findByPk(id)
+		return await UserRole.findByPk(id, { raw: true })
 	} catch (error) {
 		return error
 	}

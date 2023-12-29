@@ -33,6 +33,11 @@ module.exports = {
 			email_footer: {
 				type: Sequelize.STRING,
 			},
+			organization_id: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
+			},
 			created_by: {
 				type: Sequelize.STRING,
 			},

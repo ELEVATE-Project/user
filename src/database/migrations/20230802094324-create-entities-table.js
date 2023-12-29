@@ -12,23 +12,20 @@ module.exports = {
 			entity_type_id: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			value: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			label: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			status: {
 				type: Sequelize.STRING,
-				allowNull: false,
 				defaultValue: 'ACTIVE',
 			},
 			type: {
 				type: Sequelize.STRING,
-				allowNull: false,
 			},
 			created_by: {
 				type: Sequelize.INTEGER,
@@ -48,7 +45,6 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 		})
-
 		await queryInterface.addIndex('entities', ['value', 'entity_type_id'], {
 			unique: true,
 			name: 'unique_entities_value',

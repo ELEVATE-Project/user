@@ -24,7 +24,7 @@ module.exports = {
 			req.checkBody('location')
 				.notEmpty()
 				.withMessage('location field is empty')
-				.isArray()
+				.isString()
 				.withMessage('location is invalid')
 
 			req.checkBody('about').trim().notEmpty().withMessage('about field is empty')
