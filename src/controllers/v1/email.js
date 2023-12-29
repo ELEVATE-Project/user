@@ -1,4 +1,4 @@
-const emailHelper = require('@services/helper/email')
+const emailService = require('@services/email')
 
 module.exports = class Email {
 	/**
@@ -19,7 +19,7 @@ module.exports = class Email {
 	async send(req) {
 		const params = req.body
 		try {
-			const sendEmail = await emailHelper.send(params)
+			const sendEmail = await emailService.send(params)
 			return sendEmail
 		} catch (error) {
 			return error

@@ -176,7 +176,7 @@ Elevate notification services can be setup in local using two methods:
 -   Node - 16.0.0
 -   Kafka - 3.1.0
 -   Jest - 28.1.1
--   MongoDB - 4.4.14
+-   MongoDB - 4.1.4
 
 # Run tests
 

@@ -8,6 +8,7 @@
 //Dependencies
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+const logQueries = require('../../database/queries/log')
 
 /**
  * Send Email
@@ -42,8 +43,20 @@ async function sendEmail(params) {
 			message['replyTo'] = params.replyTo
 		}
 		try {
-			await sgMail.send(message)
+			const res = await sgMail.send(message)
+			const errorResponse = {
+				email: to,
+				response_code: Number(res[0].statusCode),
+			}
+			await logQueries.createLog(errorResponse)
 		} catch (error) {
+			const errorResponse = {
+				email: to,
+				response_code: Number(error?.code),
+				error: error?.response,
+				status: 'FAILED',
+			}
+			await logQueries.createLog(errorResponse)
 			if (error.response) {
 				return error
 			}

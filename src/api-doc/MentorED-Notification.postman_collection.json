@@ -7,7 +7,7 @@
 	},
 	"item": [
 		{
-			"name": "SendEmail",
+			"name": "Send Email",
 			"request": {
 				"method": "POST",
 				"header": [
@@ -19,7 +19,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"type\":\"email\",\n    \"email\":{\n        \"to\": \"ankitstar00786@gmail.com\",\n\t\t\"subject\": \"temp\",\n\t    \"body\": \"data\"\n    }\n}",
+					"raw": "{\n    \"type\":\"email\",\n    \"email\":{\n        \"to\": \"ankitstar00786@gmail.com\",\n\t\t\"subject\": \"MentorED - Reset Otp\",\n\t    \"body\": \"<p>Dear Ankit,</p> Your OTP to reset your password is <strong>123456</strong>. Please enter the OTP to reset your password. For your security, please do not share this OTP with anyone.\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
