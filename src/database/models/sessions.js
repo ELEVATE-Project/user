@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			description: {
-				type: DataTypes.STRING,
+				type: DataTypes.TEXT,
 				allowNull: false,
 			},
 			recommended_for: {
@@ -106,11 +106,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
-			organization_ids: {
-				type: DataTypes.ARRAY(DataTypes.STRING),
+			visible_to_organizations: {
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: true,
 			},
-			mentor_org_id: {
+			mentor_organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
@@ -121,6 +121,9 @@ module.exports = (sequelize, DataTypes) => {
 			seats_limit: {
 				type: DataTypes.INTEGER,
 				defaultValue: process.env.SESSION_MENTEE_LIMIT,
+			},
+			custom_entity_text: {
+				type: DataTypes.JSON,
 			},
 		},
 		{ sequelize, modelName: 'Session', tableName: 'sessions', freezeTableName: true, paranoid: true }

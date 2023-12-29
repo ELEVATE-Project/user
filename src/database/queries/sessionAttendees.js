@@ -43,6 +43,7 @@ exports.unEnrollFromSession = async (sessionId, userId) => {
 				session_id: sessionId,
 				mentee_id: userId,
 			},
+			force: true, // Setting force to true for a hard delete
 		})
 
 		return result
@@ -118,7 +119,7 @@ exports.unenrollFromUpcomingSessions = async (userId, sessionIds) => {
 		throw error
 	}
 }
-exports.countEnrolledSessions = async (filters, mentee_id) => {
+exports.countEnrolledSessions = async (mentee_id) => {
 	try {
 		let sessionEnrollments = await SessionEnrollment.findAll({
 			where: {
@@ -131,7 +132,9 @@ exports.countEnrolledSessions = async (filters, mentee_id) => {
 		}
 		return await SessionAttendee.count({
 			where: {
-				...filters,
+				joined_at: {
+					[Op.not]: null,
+				},
 				session_id: sessionIds,
 			},
 		})
@@ -157,6 +160,7 @@ exports.getEnrolledSessionsCountInDateRange = async (startDate, endDate, mentee_
 					[Op.between]: [startDate, endDate],
 				},
 				session_id: sessionIds,
+				mentee_id: mentee_id,
 			},
 		})
 	} catch (error) {
@@ -181,6 +185,7 @@ exports.getAttendedSessionsCountInDateRange = async (startDate, endDate, mentee_
 					[Op.between]: [startDate, endDate],
 				},
 				session_id: sessionIds,
+				mentee_id: mentee_id,
 			},
 		})
 	} catch (error) {
@@ -213,6 +218,7 @@ exports.findPendingFeedbackSessions = async (menteeId, completedSessionIds) => {
 		const filteredSessionIds = sessionIds.filter((sessionId) => !completedSessionIds.includes(sessionId))
 		return await SessionAttendee.findAll({
 			where: {
+				mentee_id: menteeId,
 				joined_at: {
 					[Op.not]: null,
 				},

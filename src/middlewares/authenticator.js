@@ -17,6 +17,7 @@ module.exports = async function (req, res, next) {
 		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
+		let decodedToken
 
 		const authHeader = req.get('X-auth-token')
 
@@ -65,10 +66,19 @@ module.exports = async function (req, res, next) {
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
-			err.statusCode = httpStatusCode.unauthorized
-			err.responseCode = 'UNAUTHORIZED'
-			err.message = 'ACCESS_TOKEN_EXPIRED'
-			throw err
+			if (err.name === 'TokenExpiredError') {
+				throw common.failureResponse({
+					message: 'ACCESS_TOKEN_EXPIRED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			} else {
+				throw common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 
 		if (!decodedToken) {
@@ -89,29 +99,17 @@ module.exports = async function (req, res, next) {
 		}
 		if (roleValidation) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
-			const userBaseUrl = process.env.USER_SERIVCE_HOST + process.env.USER_SERIVCE_BASE_URL
+			const userBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
-
 			const user = await requests.get(profileUrl, null, true)
-			if (!user) {
+			if (!user || !user.success) {
 				throw common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			const isRoleSame =
-				user.data.result.user_roles.length === decodedToken.data.roles.length &&
-				user.data.result.user_roles.every((role1) =>
-					decodedToken.data.roles.some((role2) => role1.title === role2.title)
-				)
-			if (!isRoleSame) {
-				throw common.failureResponse({
-					message: 'USER_NOT_FOUND',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+
 			if (user.data.result.deleted_at !== null) {
 				throw common.failureResponse({
 					message: 'USER_ROLE_UPDATED',
@@ -119,11 +117,12 @@ module.exports = async function (req, res, next) {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+
+			decodedToken.data.roles = user.data.result.user_roles
 		}
 
 		req.decodedToken = {
 			id: decodedToken.data.id,
-			email: decodedToken.data.email,
 			roles: decodedToken.data.roles,
 			name: decodedToken.data.name,
 			token: authHeader,

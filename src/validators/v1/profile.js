@@ -4,29 +4,10 @@ module.exports = {
 
 		req.checkBody('area_of_expertise').optional().isArray().withMessage('Area of expertise must be an array')
 
-		req.checkBody('education_qualification')
-			.optional()
-			.isArray()
-			.withMessage('Education qualification must be an array')
-
 		req.checkBody('rating').not().exists().withMessage('Rating should not be in the body')
 		req.checkBody('stats').not().exists().withMessage('Stats should not be in the body')
 
 		req.checkBody('tags').optional().isArray().withMessage('Tags must be an array')
-
-		req.checkBody('visibility').optional().notEmpty().withMessage('Visibility is required')
-
-		req.checkBody('organisation_ids').optional().isArray().withMessage('Organisation IDs must be an array')
-
-		req.checkBody('external_session_visibility')
-			.optional()
-			.notEmpty()
-			.withMessage('External session visibility is required')
-
-		req.checkBody('external_mentor_visibility')
-			.optional()
-			.notEmpty()
-			.withMessage('External mentor visibility is required')
 	},
 
 	update: (req) => {
@@ -34,10 +15,10 @@ module.exports = {
 
 		req.checkBody('area_of_expertise').optional().isArray().withMessage('Area of expertise must be an array')
 
-		req.checkBody('education_qualification')
+		/* 		req.checkBody('education_qualification')
 			.optional()
 			.isArray()
-			.withMessage('Education qualification must be an array')
+			.withMessage('Education qualification must be an array') */
 
 		req.checkBody('rating').not().exists().withMessage('Rating should not be in the body')
 		req.checkBody('stats').not().exists().withMessage('Stats should not be in the body')
@@ -50,20 +31,6 @@ module.exports = {
 			.withMessage('Notification config must be a boolean')
 
 		req.checkBody('configs.visibility').optional().notEmpty().withMessage('Visibility config is required')
-
-		req.checkBody('visibility').optional().notEmpty().withMessage('Visibility is required')
-
-		req.checkBody('organisation_ids').optional().isArray().withMessage('Organisation IDs must be an array')
-
-		req.checkBody('external_session_visibility')
-			.optional()
-			.notEmpty()
-			.withMessage('External session visibility is required')
-
-		req.checkBody('external_mentor_visibility')
-			.optional()
-			.notEmpty()
-			.withMessage('External mentor visibility is required')
 	},
 	getMenteeExtension: (req) => {
 		req.checkQuery('id')

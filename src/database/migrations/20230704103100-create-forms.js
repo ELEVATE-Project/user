@@ -34,6 +34,11 @@ module.exports = {
 			deleted_at: {
 				type: Sequelize.DATE,
 			},
+			organization_id: {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
+			},
 		})
 	},
 

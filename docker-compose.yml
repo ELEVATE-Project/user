@@ -33,7 +33,7 @@ services:
         gelf-address: 'udp://0.0.0.0:12201'
         tag: 'kafka-logs'
   mongo:
-    image: 'mongo:5'
+    image: 'mongo:4.1.4'
     restart: 'always'
     command:
       - '--logpath'
@@ -52,15 +52,15 @@ services:
       - '6379'
     networks:
       - elevate_net
-    depends_on:
-      - graylog
+    # depends_on:
+    #   - graylog
     logging:
       driver: gelf
       options:
         gelf-address: 'udp://0.0.0.0:12201'
         tag: 'redis-logs'
   mentoring:
-    image: shikshalokamqa/elevate-mentoring:2.2
+    image: shikshalokamqa/elevate-mentoring:2.4
     ports:
       - '3000:3000'
     command: ['nodemon', 'app.js']
@@ -78,7 +78,7 @@ services:
     env_file:
       - ${mentoring_env}
   user:
-    image: shikshalokamqa/elevate-user:2.2
+    image: shikshalokamqa/elevate-user:2.4
     ports:
       - '3001:3001'
     command: ['nodemon', 'app.js']
@@ -95,7 +95,7 @@ services:
     env_file:
       - ${users_env}
   notification:
-    image: shikshalokamqa/elevate-notification:2.2
+    image: shikshalokamqa/elevate-notification:2.4
     ports:
       - '3002:3002'
     command: ['nodemon', 'app.js']
@@ -109,7 +109,7 @@ services:
       - ${notification_env}
 
   scheduler:
-    image: shikshalokamqa/elevate-scheduler:2.2
+    image: shikshalokamqa/elevate-scheduler:2.4
     ports:
       - '4000:4000'
     command: ['nodemon', 'app.js']
@@ -125,83 +125,83 @@ services:
       - elevate_net
 
   #The below services can be disable safely. Only enable if graylog service is needed.
-  elasticsearch:
-    image: 'docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2'
-    environment:
-      - http.host=0.0.0.0
-      - transport.host=localhost
-      - network.host=0.0.0.0
-      - ES_JAVA_OPTS=-Dlog4j2.formatMsgNoLookups=true -Xms512m -Xmx512m
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    deploy:
-      resources:
-        limits:
-          memory: 1g
-    networks:
-      - elevate_net
-  graylog:
-    image: 'graylog/graylog:5.0'
-    environment:
-      - GRAYLOG_PASSWORD_SECRET=somepasswordpepper
-      - >-
-        GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
-      - 'GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/'
-    entrypoint: '/usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh'
-    networks:
-      - elevate_net
-    restart: always
-    depends_on:
-      - mongo
-      - elasticsearch
-    ports:
-      # Graylog web interface and REST API
-      - 9000:9000
-      #filebeat
-      - 5044:5044
-      # GELF TCP
-      - 12201:12201
-      # GELF UDP
-      - 12201:12201/udp
-  filebeat:
-    container_name: filebeat
-    hostname: filebeat
-    user: root
-    image: docker.elastic.co/beats/filebeat:8.5.3
-    volumes:
-      #Mount the filebeat configuration so users can make edit
-      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
-      #Named volume fsdata. This is used to persist the registry file between restarts, so to avoid data duplication
-      - fbdata:/usr/share/filebeat/data/
-      - logs:/info/logs
+  # elasticsearch:
+  #   image: 'docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2'
+  #   environment:
+  #     - http.host=0.0.0.0
+  #     - transport.host=localhost
+  #     - network.host=0.0.0.0
+  #     - ES_JAVA_OPTS=-Dlog4j2.formatMsgNoLookups=true -Xms512m -Xmx512m
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 1g
+  #   networks:
+  #     - elevate_net
+  # graylog:
+  #   image: 'graylog/graylog:5.0'
+  #   environment:
+  #     - GRAYLOG_PASSWORD_SECRET=somepasswordpepper
+  #     - >-
+  #       GRAYLOG_ROOT_PASSWORD_SHA2=8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+  #     - 'GRAYLOG_HTTP_EXTERNAL_URI=http://127.0.0.1:9000/'
+  #   entrypoint: '/usr/bin/tini -- wait-for-it elasticsearch:9200 --  /docker-entrypoint.sh'
+  #   networks:
+  #     - elevate_net
+  #   restart: always
+  #   depends_on:
+  #     - mongo
+  #     - elasticsearch
+  #   ports:
+  #     # Graylog web interface and REST API
+  #     - 9000:9000
+  #     #filebeat
+  #     - 5044:5044
+  #     # GELF TCP
+  #     - 12201:12201
+  #     # GELF UDP
+  #     - 12201:12201/udp
+  # filebeat:
+  #   container_name: filebeat
+  #   hostname: filebeat
+  #   user: root
+  #   image: docker.elastic.co/beats/filebeat:8.5.3
+  #   volumes:
+  #     #Mount the filebeat configuration so users can make edit
+  #     - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+  #     #Named volume fsdata. This is used to persist the registry file between restarts, so to avoid data duplication
+  #     - fbdata:/usr/share/filebeat/data/
+  #     - logs:/info/logs
 
-      - type: bind
-        source: ../user/src/user.log
-        target: /usr/share/filebeat/user.log
-        read_only: true
-      - type: bind
-        source: ../notification/src/notification.log
-        target: /usr/share/filebeat/notification.log
-        read_only: true
-      - type: bind
-        source: ./src/mentoring.log
-        target: /usr/share/filebeat/mentoring.log
-        read_only: true
-      - type: bind
-        source: ../scheduler/src/scheduler.log
-        target: /usr/share/filebeat/scheduler.log
-        read_only: true
-    command: filebeat -strict.perms=false
-    restart: on-failure
-    networks:
-      - elevate_net
-    depends_on:
-      - mongo
-      - elasticsearch
-      - mentoring
-      - user
+  #    - type: bind
+  #      source: ../user/src/user.log
+  #      target: /usr/share/filebeat/user.log
+  #      read_only: true
+  #    - type: bind
+  #      source: ../notification/src/notification.log
+  #      target: /usr/share/filebeat/notification.log
+  #      read_only: true
+  #    - type: bind
+  #      source: ./src/mentoring.log
+  #      target: /usr/share/filebeat/mentoring.log
+  #      read_only: true
+  #    - type: bind
+  #      source: ../scheduler/src/scheduler.log
+  #      target: /usr/share/filebeat/scheduler.log
+  #      read_only: true
+  #  command: filebeat -strict.perms=false
+  #  restart: on-failure
+  #  networks:
+  #    - elevate_net
+  #  depends_on:
+  #    - mongo
+  #    - elasticsearch
+  #    - mentoring
+  #    - user
 networks:
   elevate_net:
     external: false

@@ -5,16 +5,17 @@ module.exports = (sequelize, DataTypes) => {
 			id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 				autoIncrement: true,
 			},
 			mentor_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 			session_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				primaryKey: true,
 			},
 		},
 		{

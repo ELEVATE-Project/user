@@ -33,7 +33,7 @@ services:
     logging:
       driver: none
   mongo:
-    image: 'mongo:4.4.14'
+    image: 'mongo:4.1.4'
     restart: 'always'
     ports:
       - '27017:27017'
@@ -66,7 +66,7 @@ services:
 
   mentoring:
     build: './'
-    image: elevate/mentoring:1.0
+    image: elevate/mentoring:2.4
     volumes:
       - ./src/:/var/src
     ports:
@@ -75,9 +75,10 @@ services:
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
-      - USER_SERIVCE_HOST=http://user:3001
+      - USER_SERVICE_HOST=http://user:3001
       - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/mentoring-local
       - REDIS_HOST=redis://redis:6379
+      - SCHEDULER_SERVICE_HOST=http://scheduler:4000
 
     depends_on:
       - kafka
@@ -86,7 +87,7 @@ services:
       - elevate_net
   user:
     build: '../user/'
-    image: elevate/user:1.0
+    image: elevate/user:2.4
     volumes:
       - ../user/src/:/var/src
     ports:
@@ -105,7 +106,7 @@ services:
       - elevate_net
   notification:
     build: '../notification/'
-    image: elevate/notification:1.0
+    image: elevate/notification:2.4
     volumes:
       - ../notification/src/:/var/src
     ports:
@@ -113,6 +114,8 @@ services:
     command: ['nodemon', 'app.js']
     environment:
       - KAFKA_HOST=kafka:9092
+      - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/notification-local
+
     depends_on:
       - kafka
       - mongo
@@ -120,7 +123,7 @@ services:
       - elevate_net
   scheduler:
     build: '../scheduler/'
-    image: elevate/notificatschedulerion:1.0
+    image: elevate/scheduler:1.0
     volumes:
       - ../scheduler/src/:/var/src
     ports:
@@ -135,7 +138,16 @@ services:
       - redis
     networks:
       - elevate_net
-
+  interface:
+    build: '../interface-service/'
+    image: elevate/interface:1.0
+    volumes:
+      - ../interface-service/src/:/var/src
+    ports:
+      - '3569:3569'
+    command: ['node', 'app.js']
+    networks:
+      - elevate_net
   # master:
   #   container_name: 'citus_master'
   #   image: 'citusdata/citus:11.2.0'
@@ -175,6 +187,8 @@ services:
     container_name: 'citus_master'
     ports:
       - 5432:5432
+    # expose:
+    #   - 5432
     # command: >
     #   bash -c "while ! pg_isready -h localhost -U postgres -q; do sleep 1; done &&
     #   psql -h localhost -U postgres -d <database_name> -c 'CREATE EXTENSION citus; SELECT create_distributed_table(\"notification_templates\", \"id\");'"
@@ -185,8 +199,23 @@ services:
       PGPASSWORD: '${POSTGRES_PASSWORD:-postgres}'
       POSTGRES_DB: 'user-local'
       POSTGRES_HOST_AUTH_METHOD: '${POSTGRES_HOST_AUTH_METHOD:-trust}'
+      POSTGRES_LOG_STATEMENT: 'all' # Enable query logging (set to 'all' for all queries)
+
     networks:
       - elevate_net
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: elevate-pgadmin
+    restart: always
+    ports:
+      - '5500:80'
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=user@shikshalokam.org
+      - PGADMIN_DEFAULT_PASSWORD=password
+    networks:
+      - elevate_net
+    logging:
+      driver: none
 networks:
   elevate_net:
     external: false

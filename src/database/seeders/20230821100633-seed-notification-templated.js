@@ -2,6 +2,10 @@
 
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+		if (!defaultOrgId) {
+			throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+		}
 		return queryInterface.bulkInsert('notification_templates', [
 			{
 				id: 1,
@@ -12,6 +16,7 @@ module.exports = {
 				status: 'active',
 				email_header: 'email_header',
 				email_footer: 'email_footer',
+				organization_id: defaultOrgId,
 				created_by: null,
 				updated_by: null,
 				created_at: new Date(),
@@ -23,6 +28,7 @@ module.exports = {
 				code: 'email_header',
 				body: "<div style='margin:auto;width:100%;max-width:650px;'><p style='text-align:center'><img class='img_path' style='width:35%' alt='MentorED' src='https://mentoring-dev-storage.s3.ap-south-1.amazonaws.com/email/image/emailLogo.png'></p><div style='text-align:center'>",
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -34,6 +40,7 @@ module.exports = {
 				code: 'email_footer',
 				body: "</div><div style='margin-top:20px;text-align:center;'><div>Regards,</div><div>Team MentorED</div><div style='margin-top:20px;color:#b13e33;text-align:center'><div>Note: Do not reply to this email. This email is sent from an unattended mailbox. Replies will not be read.</div><div>For any queries, please feel free to reach out to us at support@shikshalokam.org</div></div></div></div>",
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -46,6 +53,7 @@ module.exports = {
 				subject: 'MentorED - Your enrolled session starts in 15 minutes',
 				body: '<p>Dear {name},</p> The live session you have enrolled in {sessionTitle} begins in 15 minutes. Please ensure that you join at least 5 minutes before for the session to begin on time.',
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -60,6 +68,7 @@ module.exports = {
 				subject: 'MentorED - Your scheduled session starts in 24 hours',
 				body: "{{default}}<p>Dear {name},</p> The live session scheduled by you - {sessionTitle} is scheduled in 24 hours from now. Please ensure that you join at least ten minutes before the set time to allow Mentees to settle in.{{/default}}{{linkWarning}}<div><p>Please add a meeting link for your scheduled session that starts in less than 24 hours. To add a meeting link, click on the 'edit session' option on the session details page of MentorED.</div></p>{{/linkWarning}}",
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -74,6 +83,7 @@ module.exports = {
 				subject: 'MentorED - Changes updated in your session',
 				body: '<p>Dear {name},</p> Please note that the Mentor has cancelled the session - {sessionTitle}.',
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -88,6 +98,7 @@ module.exports = {
 				subject: 'MentorED - Changes in your enrolled session',
 				body: '<p>Dear {name},</p> Please note that the Mentor has rescheduled the session - {sessionTitle} from {oldStartDate} {oldStartTime} - {oldEndDate} {oldEndTime} to {newStartDate} {newStartTime} - {newStartDate} {newStartTime} Please make note of the changes.',
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -102,6 +113,7 @@ module.exports = {
 				subject: 'MentorED - Changes in your enrolled session',
 				body: "<div><p>Dear {name}, </p> You have cancelled your enrollment for the session - {sessionTitle} by {mentorName} Please explore 'All sessions' on your app to enroll for new sessions of your choice.</div>",
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -116,6 +128,7 @@ module.exports = {
 				subject: 'MentorED - Session Enrollment Details',
 				body: "<p>Dear {name},</p> Thank you for enrolling for the session - {sessionTitle} by {mentorName}, The session is scheduled on {startDate} at {startTime} You will be able to join from 'My sessions' on the app once the host starts the meeting.",
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
 				created_by: null,
@@ -130,10 +143,11 @@ module.exports = {
 				subject: 'Support request for MentorED',
 				body: '<div><p>Hi Team,</p><p>{role} {name}, is facing an issue in <b>{description}</b> -{userEmailId},User ID: <b>{userId}</b> .</p><p>Kindly look into it.</p><div style="background-color: #f5f5f5; padding: 10px; margin-top: 10px;"><p><b>Meta Information:</b></p><ul style="list-style-type: none; padding: 0;">{metaItems}</ul></div></div>',
 				status: 'active',
+				organization_id: defaultOrgId,
 				created_at: new Date(),
 				updated_at: new Date(),
-				created_by: 1,
-				updated_by: 1,
+				created_by: null,
+				updated_by: null,
 				email_footer: 'email_footer',
 				email_header: 'email_header',
 			},

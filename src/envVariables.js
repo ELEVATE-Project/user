@@ -83,11 +83,11 @@ let enviromentVariables = {
 		message: 'Required azure container name',
 		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
 	},
-	USER_SERIVCE_HOST: {
+	USER_SERVICE_HOST: {
 		message: 'Required user service host',
 		optional: false,
 	},
-	USER_SERIVCE_BASE_URL: {
+	USER_SERVICE_BASE_URL: {
 		message: 'Required user service base url',
 		optional: false,
 	},
@@ -201,6 +201,20 @@ let enviromentVariables = {
 	},
 	SCHEDULER_SERVICE_BASE_URL: {
 		message: 'Required scheduler service base url',
+		optional: false,
+	},
+	DEFAULT_ORGANISATION_CODE: {
+		message: 'Required default organisation code',
+		optional: false,
+		default: 'sl',
+	},
+	REFRESH_VIEW_INTERVAL: {
+		message: 'Interval to refresh views in milliseconds',
+		optional: false,
+		default: 540000,
+	},
+	DEFAULT_ORG_ID: {
+		message: 'Default organization ID',
 		optional: false,
 	},
 }

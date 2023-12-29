@@ -1,0 +1,587 @@
+'use strict'
+// Dependenices
+const common = require('@constants/common')
+const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
+const httpStatusCode = require('@generics/http-status')
+const sessionQueries = require('@database/queries/sessions')
+const adminService = require('./admin')
+const organisationExtensionQueries = require('@database/queries/organisationExtension')
+const entityTypeQueries = require('@database/queries/entityType')
+const userRequests = require('@requests/user')
+const utils = require('@generics/utils')
+const _ = require('lodash')
+const questionsSetQueries = require('../database/queries/questionSet')
+const { Op } = require('sequelize')
+const user = require('@health-checks/user')
+
+module.exports = class OrgAdminService {
+	/**
+	 * @description 					- Change user's role based on the current role.
+	 * @method
+	 * @name 							- roleChange
+	 * @param {Object} bodyData 		- The request body containing user data.
+	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 */
+
+	static async roleChange(bodyData) {
+		try {
+			if (
+				utils.validateRoleAccess(bodyData.current_roles, common.MENTOR_ROLE) &&
+				utils.validateRoleAccess(bodyData.new_roles, common.MENTEE_ROLE)
+			) {
+				return await this.changeRoleToMentee(bodyData)
+			} else if (
+				utils.validateRoleAccess(bodyData.current_roles, common.MENTEE_ROLE) &&
+				utils.validateRoleAccess(bodyData.new_roles, common.MENTOR_ROLE)
+			) {
+				return await this.changeRoleToMentor(bodyData)
+			}
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * @description 				- Change user's role to Mentee.
+	 * @method
+	 * @name 						- changeRoleToMentee
+	 * @param {Object} bodyData 	- The request body.
+	 * @returns {Object} 			- A Promise that resolves to a response object.
+	 */
+	static async changeRoleToMentee(bodyData) {
+		try {
+			// Check current role based on that swap data
+			// If current role is mentor validate data from mentor_extenion table
+			let mentorDetails = await mentorQueries.getMentorExtension(bodyData.user_id)
+			// If such mentor return error
+			if (!mentorDetails) {
+				return common.failureResponse({
+					message: 'MENTOR_EXTENSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (bodyData.organization_id) {
+				mentorDetails.organization_id = bodyData.organization_id
+				const organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
+				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+					return common.failureResponse({
+						message: 'ORGANIZATION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					bodyData.organization_id
+				)
+				if (!orgPolicies?.organization_id) {
+					return common.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				mentorDetails.organization_id = bodyData.organization_id
+				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
+				mentorDetails = _.merge({}, mentorDetails, newPolicy)
+				mentorDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
+			}
+
+			// Add fetched mentor details to user_extension table
+			const menteeCreationData = await menteeQueries.createMenteeExtension(mentorDetails)
+			if (!menteeCreationData) {
+				return common.failureResponse({
+					message: 'MENTEE_EXTENSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Delete upcoming sessions of user as mentor
+			const removedSessionsDetail = await sessionQueries.removeAndReturnMentorSessions(bodyData.user_id)
+			const isAttendeesNotified = await adminService.unenrollAndNotifySessionAttendees(
+				removedSessionsDetail,
+				mentorDetails.organization_id ? mentorDetails.organization_id : ''
+			)
+
+			// Delete mentor Extension
+			if (isAttendeesNotified) {
+				await mentorQueries.deleteMentorExtension(bodyData.user_id, true)
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_ROLE_UPDATED',
+				result: {
+					user_id: menteeCreationData.user_id,
+					roles: bodyData.new_roles,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * @description 				- Change user's role to Mentor.
+	 * @method
+	 * @name 						- changeRoleToMentor
+	 * @param {Object} bodyData 	- The request body containing user data.
+	 * @returns {Promise<Object>} 	- A Promise that resolves to a response object.
+	 */
+
+	static async changeRoleToMentor(bodyData) {
+		try {
+			// Get mentee_extension data
+			let menteeDetails = await menteeQueries.getMenteeExtension(bodyData.user_id)
+			// If no mentee present return error
+			if (!menteeDetails) {
+				return common.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'MENTEE_EXTENSION_NOT_FOUND',
+				})
+			}
+
+			if (bodyData.organization_id) {
+				let organizationDetails = await userRequests.fetchDefaultOrgDetails(bodyData.organization_id)
+				if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+					return common.failureResponse({
+						message: 'ORGANIZATION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(
+					bodyData.organization_id
+				)
+				if (!orgPolicies?.organization_id) {
+					return common.failureResponse({
+						message: 'ORG_EXTENSION_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				menteeDetails.organization_id = bodyData.organization_id
+				const newPolicy = await this.constructOrgPolicyObject(orgPolicies)
+				menteeDetails = _.merge({}, menteeDetails, newPolicy)
+				menteeDetails.visible_to_organizations = organizationDetails.data.result.related_orgs
+			}
+
+			// Add fetched mentee details to mentor_extension table
+			const mentorCreationData = await mentorQueries.createMentorExtension(menteeDetails)
+			if (!mentorCreationData) {
+				return common.failureResponse({
+					message: 'MENTOR_EXTENSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Delete mentee extension (user_extension table)
+			await menteeQueries.deleteMenteeExtension(bodyData.user_id, true)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_ROLE_UPDATED',
+				result: {
+					user_id: mentorCreationData.user_id,
+					roles: bodyData.new_roles,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	static async setOrgPolicies(decodedToken, policies) {
+		try {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const orgPolicies = await organisationExtensionQueries.upsert({
+				organization_id: decodedToken.organization_id,
+				...policies,
+				created_by: decodedToken.id,
+				updated_by: decodedToken.id,
+			})
+			const orgPolicyUpdated =
+				new Date(orgPolicies.dataValues.created_at).getTime() !==
+				new Date(orgPolicies.dataValues.updated_at).getTime()
+
+			// If org policies updated update mentor and mentee extensions under the org
+			if (orgPolicyUpdated) {
+				// if org policy is updated update mentor extension and user extension
+				let policyData = await this.constructOrgPolicyObject(orgPolicies.dataValues)
+
+				if (
+					policyData?.external_mentor_visibility == common.ASSOCIATED ||
+					policyData?.mentor_visibility_policy == common.ASSOCIATED
+				) {
+					const organizationDetails = await userRequests.fetchDefaultOrgDetails(decodedToken.organization_id)
+					policyData.visible_to_organizations = organizationDetails.data.result.related_orgs
+				}
+
+				await mentorQueries.updateMentorExtension(
+					'', //userId not required
+					policyData, // data to update
+					{}, //options
+					{ organization_id: decodedToken.organization_id } //custom filter for where clause
+				)
+
+				await menteeQueries.updateMenteeExtension(
+					'', //userId not required
+					policyData, // data to update
+					{}, //options
+					{ organization_id: decodedToken.organization_id } //custom filter for where clause
+				)
+				// commenting as part of first level SAAS changes. will need this in the code next level
+				// await sessionQueries.updateSession(
+				// 	{
+				// 		status: common.PUBLISHED_STATUS,
+				// 		mentor_org_ id: decodedToken.organization _id
+				// 	},
+				// 	{
+				// 		visibility: orgPolicies.dataValues.session_visibility_policy
+				// 	}
+				// )
+			}
+
+			delete orgPolicies.dataValues.deleted_at
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORG_POLICIES_SET_SUCCESSFULLY',
+				result: { ...orgPolicies.dataValues },
+			})
+		} catch (error) {
+			throw new Error(`Error setting organisation policies: ${error.message}`)
+		}
+	}
+
+	static async getOrgPolicies(decodedToken) {
+		try {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const orgPolicies = await organisationExtensionQueries.getById(decodedToken.organization_id)
+			if (orgPolicies) {
+				delete orgPolicies.deleted_at
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ORG_POLICIES_FETCHED_SUCCESSFULLY',
+					result: { ...orgPolicies },
+				})
+			} else {
+				throw new Error(`No organisation extension found for organization_id ${decodedToken.organization_id}`)
+			}
+		} catch (error) {
+			throw new Error(`Error reading organisation policies: ${error.message}`)
+		}
+	}
+
+	/**
+	 * @description 					- Inherit new entity type from an existing default org's entityType.
+	 * @method
+	 * @name 							- inheritEntityType
+	 * @param {String} entityValue 		- Entity type value
+	 * @param {String} entityLabel 		- Entity type label
+	 * @param {Integer} userOrgId 		- User org id
+	 * @param {Object} decodedToken 	- User token details
+	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 */
+
+	static async inheritEntityType(entityValue, entityLabel, userOrgId, decodedToken) {
+		try {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			// Get default organisation details
+			let defaultOrgDetails = await userRequests.fetchDefaultOrgDetails(process.env.DEFAULT_ORGANISATION_CODE)
+
+			let defaultOrgId
+			if (defaultOrgDetails.success && defaultOrgDetails.data && defaultOrgDetails.data.result) {
+				defaultOrgId = defaultOrgDetails.data.result.id
+			} else {
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (defaultOrgId === userOrgId) {
+				return common.failureResponse({
+					message: 'USER_IS_FROM_DEFAULT_ORG',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Fetch entity type data using defaultOrgId and entityValue
+			const filter = {
+				value: entityValue,
+				organization_id: defaultOrgId,
+				allow_filtering: true,
+			}
+			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
+
+			// If no matching data found return failure response
+			if (!entityTypeDetails) {
+				return common.failureResponse({
+					message: 'ENTITY_TYPE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Build data for inheriting entityType
+			entityTypeDetails.parent_id = entityTypeDetails.id
+			entityTypeDetails.label = entityLabel
+			entityTypeDetails.organization_id = userOrgId
+			entityTypeDetails.created_by = decodedToken.id
+			entityTypeDetails.updated_by = decodedToken.id
+			delete entityTypeDetails.id
+
+			// Create new inherited entity type
+			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
+				result: inheritedEntityType,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Update User Organization.
+	 * @method
+	 * @name updateOrganization
+	 * @param {Object} bodyData
+	 * @returns {JSON} - User data.
+	 */
+	static async updateOrganization(bodyData) {
+		try {
+			const orgId = bodyData.organization_id
+			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
+			// Get organization details
+			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
+			if (!(organizationDetails.success && organizationDetails.data && organizationDetails.data.result)) {
+				return common.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get organization policies
+			const orgPolicies = await organisationExtensionQueries.findOrInsertOrganizationExtension(orgId)
+			if (!orgPolicies?.organization_id) {
+				return common.failureResponse({
+					message: 'ORG_EXTENSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			//Update the policy
+			const updateData = {
+				organization_id: orgId,
+				external_session_visibility: orgPolicies.external_session_visibility_policy,
+				external_mentor_visibility: orgPolicies.external_mentor_visibility_policy,
+				visibility: orgPolicies.mentor_visibility_policy,
+				visible_to_organizations: organizationDetails.data.result.related_orgs,
+			}
+			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE))
+				await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
+			else await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'UPDATE_ORG_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Deactivate upcoming session.
+	 * @method
+	 * @name deactivateUpcomingSession
+	 * @param {Object} bodyData
+	 * @returns {JSON} - User data.
+	 */
+	static async deactivateUpcomingSession(userIds) {
+		try {
+			let deactivatedIdsList = []
+			let failedUserIds = []
+			for (let key in userIds) {
+				const userId = userIds[key]
+				const mentorDetails = await mentorQueries.getMentorExtension(userId)
+				if (mentorDetails?.user_id) {
+					// Deactivate upcoming sessions of user as mentor
+					const removedSessionsDetail = await sessionQueries.deactivateAndReturnMentorSessions(userId)
+					await adminService.unenrollAndNotifySessionAttendees(removedSessionsDetail)
+					deactivatedIdsList.push(userId)
+				}
+
+				//unenroll from upcoming session
+				const menteeDetails = await menteeQueries.getMenteeExtension(userId)
+				if (menteeDetails?.user_id) {
+					await adminService.unenrollFromUpcomingSessions(userId)
+					deactivatedIdsList.push(userId)
+				}
+
+				if (!mentorDetails?.user_id && !menteeDetails?.user_id) {
+					failedUserIds.push(userId)
+				}
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: failedUserIds.length > 0 ? 'SESSION_DEACTIVATION_FAILED' : 'SESSION_DEACTIVATED_SUCCESSFULLY',
+				result: {
+					deactivatedIdsList: deactivatedIdsList,
+					failedUserIds: failedUserIds,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+	/**
+	 * @description 							- constuct organisation policy object for mentor_extension/user_extension.
+	 * @method
+	 * @name 									- constructOrgPolicyObject
+	 * @param {Object} organisationPolicy 		- organisation policy data
+	 * @param {Boolean} addOrgId 				- Boolean that specifies if org_ id needs to be added or not
+	 * @returns {Object} 						- A object that reurn a response object.
+	 */
+	static async constructOrgPolicyObject(organisationPolicy, addOrgId = false) {
+		const {
+			mentor_visibility_policy,
+			external_session_visibility_policy,
+			external_mentor_visibility_policy,
+			organization_id,
+		} = organisationPolicy
+		// create policy object
+		let policyData = {
+			visibility: mentor_visibility_policy,
+			external_session_visibility: external_session_visibility_policy,
+			external_mentor_visibility: external_mentor_visibility_policy,
+		}
+		// add org_ id value if requested
+		if (addOrgId) {
+			policyData.organization_id = organization_id
+		}
+		return policyData
+	}
+
+	static async updateRelatedOrgs(relatedOrgs, orgId) {
+		try {
+			const orgPolicies = await organisationExtensionQueries.getById(orgId)
+			if (
+				orgPolicies.external_mentor_visibility_policy == common.ASSOCIATED ||
+				orgPolicies.mentor_visibility_policy == common.ASSOCIATED
+			) {
+				relatedOrgs.push(orgId) //Adding there own org id since its used for querying
+
+				const updateData = {
+					visible_to_organizations: relatedOrgs,
+				}
+
+				await Promise.all([
+					mentorQueries.updateMentorExtension(
+						null,
+						updateData,
+						{ raw: true, returning: true },
+						{ organization_id: orgId }
+					),
+					menteeQueries.updateMenteeExtension(
+						null,
+						updateData,
+						{ raw: true, returning: true },
+						{ organization_id: orgId }
+					),
+				])
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'RELATED_ORG_UPDATED',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async setDefaultQuestionSets(bodyData, decodedToken) {
+		try {
+			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const questionSets = await questionsSetQueries.findQuestionsSets(
+				{
+					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
+				},
+				['id', 'code']
+			)
+			console.log('QUESTIONSETS: ', questionSets)
+			if (
+				questionSets.length === 0 ||
+				(questionSets.length === 1 &&
+					bodyData.mentee_feedback_question_set !== bodyData.mentor_feedback_question_set)
+			) {
+				return common.failureResponse({
+					message: 'QUESTIONS_SET_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const extensionData = {
+				organization_id: decodedToken.id,
+				mentee_feedback_question_set: bodyData.mentee_feedback_question_set,
+				mentor_feedback_question_set: bodyData.mentor_feedback_question_set,
+				updated_by: decodedToken.id,
+			}
+			const orgExtension = await organisationExtensionQueries.upsert(extensionData)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY',
+				result: {
+					organization_id: orgExtension.organization_id,
+					mentee_feedback_question_set: orgExtension.mentee_feedback_question_set,
+					mentor_feedback_question_set: orgExtension.mentor_feedback_question_set,
+					updated_by: orgExtension.updated_by,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+		}
+	}
+}

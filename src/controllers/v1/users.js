@@ -6,9 +6,9 @@
  */
 
 // Dependencies
-const userHelper = require('@services/helper/user')
-const feedbackHelper = require('@services/helper/feedback')
 const { isAMentor } = require('@generics/utils')
+const feedbackService = require('@services/feedback')
+const userService = require('@services/users')
 
 module.exports = class Users {
 	/**
@@ -23,7 +23,7 @@ module.exports = class Users {
 
 	async pendingFeedbacks(req) {
 		try {
-			const pendingFeedBacks = await feedbackHelper.pending(
+			const pendingFeedBacks = await feedbackService.pending(
 				req.decodedToken.id,
 				isAMentor(req.decodedToken.roles)
 			)
@@ -37,17 +37,17 @@ module.exports = class Users {
 	 * list user based on type
 	 * @method
 	 * @name list
-	 * @param {Object} req - request data.
-	 * @param {Boolean} req.query.type - User Type mentor/mentee
-	 * @param {Number} req.pageNo - page no.
-	 * @param {Number} req.pageSize - page size limit.
-	 * @param {String} req.searchText - search text.
-	 * @returns {JSON} - List of user.
+	 * @param {Object} req 						- request data.
+	 * @param {Boolean} req.query.type 			- User Type mentor/mentee
+	 * @param {Number} req.pageNo 				- page no.
+	 * @param {Number} req.pageSize 			- page size limit.
+	 * @param {String} req.searchText 			- search text.
+	 * @returns {JSON} 							- List of user.
 	 */
 
 	async list(req) {
 		try {
-			const listUser = await userHelper.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
+			const listUser = await userService.list(req.query.type, req.pageNo, req.pageSize, req.searchText)
 			return listUser
 		} catch (error) {
 			return error

@@ -17,7 +17,9 @@
 			"@public*": ["./public*"],
 			"@routes*": ["./routes*"],
 			"@services*": ["./services*"],
-			"@validators*": ["./validators*"]
+			"@validators*": ["./validators*"],
+			"@requests*": ["./requests*"],
+			"@helpers*": ["./helpers*"]
 		}
 	},
 	"exclude": ["node_modules", "@shelf/jest-mongodb"]

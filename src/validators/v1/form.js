@@ -22,15 +22,6 @@ module.exports = {
 			.withMessage('subType is invalid')
 
 		req.checkBody('data').notEmpty().withMessage('data field is empty')
-
-		req.checkBody('data.template_name')
-			.trim()
-			.notEmpty()
-			.withMessage('template_name field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('template_name is invalid, must be string')
-
-		req.checkBody('data.fields').notEmpty().withMessage('fields field is empty')
 	},
 
 	update: (req) => {
@@ -45,33 +36,6 @@ module.exports = {
 			.withMessage('sub_type field is empty')
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('sub_type is invalid')
-
-		req.checkBody('action')
-			.notEmpty()
-			.withMessage('action field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('action is invalid')
-
-		req.checkBody('data.template_name')
-			.notEmpty()
-			.withMessage('data.template_name field is empty')
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('template_name is invalid')
-			.custom((value) => {
-				if (!req.body.data.fields) {
-					throw new Error('fields key is not passed while passing data.template_name')
-				}
-				return true
-			})
-
-		req.checkBody('data.fields')
-			.optional()
-			.custom((value) => {
-				if (!req.body.data.template_name) {
-					throw new Error('template_name key is not passed while updating data.fields')
-				}
-				return true
-			})
 	},
 
 	read: (req) => {

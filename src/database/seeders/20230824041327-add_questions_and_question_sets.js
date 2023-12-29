@@ -1,7 +1,10 @@
-const questionModel = require('../queries/questions')
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		try {
+			const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+			if (!defaultOrgId) {
+				throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+			}
 			let questionSetFinalArray = []
 
 			const questionsArray = {
@@ -62,6 +65,9 @@ module.exports = {
 						type: 'rating',
 						no_of_stars: 5,
 						status: 'PUBLISHED',
+						category: {
+							evaluating: 'mentor',
+						},
 						rendering_data: {
 							validators: {
 								required: false,
@@ -77,6 +83,9 @@ module.exports = {
 						type: 'rating',
 						no_of_stars: 5,
 						status: 'PUBLISHED',
+						category: {
+							evaluating: 'mentor',
+						},
 						rendering_data: {
 							validators: {
 								required: false,
@@ -107,6 +116,7 @@ module.exports = {
 				questionsArray[questionSet].forEach((question) => {
 					question.created_at = new Date()
 					question.updated_at = new Date()
+
 					question.rendering_data = JSON.stringify(question.rendering_data)
 					if (question.category) {
 						question.category = JSON.stringify(question.category)
@@ -119,7 +129,7 @@ module.exports = {
 				})
 			})
 
-			//INSERET MENTOR QUESTIONS
+			//INSERT MENTOR QUESTIONS
 			await queryInterface.bulkInsert('questions', mentorQuestions, {})
 
 			const mentor_questions = await queryInterface.sequelize.query(
@@ -137,7 +147,7 @@ module.exports = {
 				return eachSet
 			})
 
-			//INSERET MENTEE QUESTIONS
+			//INSERT MENTEE QUESTIONS
 			await queryInterface.bulkInsert('questions', menteeQuestions, {})
 
 			const mentee_questions = await queryInterface.sequelize.query(
@@ -158,7 +168,7 @@ module.exports = {
 				return eachSet
 			})
 
-			//INSERET QUESTION SETS
+			//INSERT QUESTION SETS
 			await queryInterface.bulkInsert('question_sets', questionSetFinalArray, {})
 		} catch (error) {
 			console.log(error)

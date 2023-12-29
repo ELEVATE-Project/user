@@ -4,7 +4,7 @@
  * created-date : 09-Nov-2021
  * Description : Cloud services controllers.
  */
-const filesHelpers = require('@services/helper/files')
+const filesService = require('@services/files')
 
 module.exports = class CloudServices {
 	/**
@@ -16,7 +16,7 @@ module.exports = class CloudServices {
 	 */
 	async getSignedUrl(req) {
 		try {
-			const signedUrlResponse = await filesHelpers.getSignedUrl(
+			const signedUrlResponse = await filesService.getSignedUrl(
 				req.query.fileName,
 				req.decodedToken._id,
 				req.query.dynamicPath ? req.query.dynamicPath : ''
@@ -36,7 +36,7 @@ module.exports = class CloudServices {
 	 */
 	async getDownloadableUrl(req) {
 		try {
-			const downlopadUrlResponse = await filesHelpers.getDownloadableUrl(req.query.filePath)
+			const downlopadUrlResponse = await filesService.getDownloadableUrl(req.query.filePath)
 			return downlopadUrlResponse
 		} catch (error) {
 			return error

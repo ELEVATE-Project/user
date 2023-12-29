@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const notificationsService = require('@services/helper/notifications')
+const notificationsService = require('@services/notifications')
 const httpStatusCode = require('@generics/http-status')
 
 module.exports = class Notifications {
@@ -19,9 +19,12 @@ module.exports = class Notifications {
 
 	async emailCronJob(req) {
 		try {
-
-			// Make a call to notification service 
-			notificationsService.sendNotification(req.body.jobId, req.body.emailTemplateCode)
+			// Make a call to notification service
+			notificationsService.sendNotification(
+				req.body.job_id,
+				req.body.email_template_code,
+				req.body.job_creator_org_id ? parseInt(req.body.job_creator_org_id, 10) : ''
+			)
 			return {
 				statusCode: httpStatusCode.ok,
 			}

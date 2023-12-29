@@ -4,7 +4,6 @@ module.exports = class QuestionsData {
 	static async createQuestionsSet(data) {
 		try {
 			const questionSet = await QuestionsSet.create(data)
-
 			return questionSet
 		} catch (error) {
 			throw error
@@ -31,6 +30,19 @@ module.exports = class QuestionsData {
 				...options,
 			})
 			return rowsAffected > 0 ? 'QUESTIONS_SET_UPDATED' : 'QUESTIONS_SET_NOT_FOUND'
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async findQuestionsSets(filter, projection) {
+		try {
+			const questionSets = await QuestionsSet.findAll({
+				where: filter,
+				attributes: projection,
+				raw: true,
+			})
+			return questionSets
 		} catch (error) {
 			return error
 		}

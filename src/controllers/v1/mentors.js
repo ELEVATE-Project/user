@@ -6,7 +6,8 @@
  */
 
 // Dependencies
-const mentorsHelper = require('@services/helper/mentors')
+const mentorsService = require('@services/mentors')
+const { isAMentor } = require('@generics/utils')
 
 module.exports = class Mentors {
 	/**
@@ -22,12 +23,14 @@ module.exports = class Mentors {
 	 */
 	async upcomingSessions(req) {
 		try {
-			return await mentorsHelper.upcomingSessions(
+			return await mentorsService.upcomingSessions(
 				req.params.id,
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id
+				req.params.menteeId ? req.params.menteeId : req?.decodedToken?.id,
+				req.query,
+				isAMentor(req.decodedToken.roles)
 			)
 		} catch (error) {
 			return error
@@ -38,15 +41,17 @@ module.exports = class Mentors {
 	 * mentors profile
 	 * @method
 	 * @name profile
-	 * @param {Object} req - request data.
-	 * @param {String} req.params.id - mentor Id.
-	 * @returns {JSON} - mentors profile details
+	 * @param {Object} req 							- request data.
+	 * @param {String} req.params.id 				- mentor Id.
+	 * @param {Number}  req.decodedToken.id			- userId.
+	 * @param {Boolean} isAMentor 					- user mentor or not.
+	 * @returns {JSON} 								- mentors profile details
 	 */
-	async profile(req) {
+	async details(req) {
 		try {
-			return await mentorsHelper.read(req.params.id)
+			return await mentorsService.read(req.params.id, '', req.decodedToken.id, isAMentor(req.decodedToken.roles))
 		} catch (error) {
-			return errors
+			return error
 		}
 	}
 	/**
@@ -64,7 +69,7 @@ module.exports = class Mentors {
 
 	async reports(req) {
 		try {
-			const reports = await mentorsHelper.reports(
+			const reports = await mentorsService.reports(
 				req.decodedToken.id,
 				req.query.filterType,
 				req.decodedToken.roles
@@ -86,8 +91,60 @@ module.exports = class Mentors {
 
 	async share(req) {
 		try {
-			const shareLink = await mentorsHelper.share(req.params.id)
+			const shareLink = await mentorsService.share(req.params.id)
 			return shareLink
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * List of available mentors.
+	 * @method
+	 * @name list
+	 * @param {Number} req.pageNo 				- page no.
+	 * @param {Number} req.pageSize 			- page size limit.
+	 * @param {String} req.searchText 			- search text.
+	 * @param {Number}  req.decodedToken.id		- userId.
+	 * @param {Boolean} isAMentor 				- user mentor or not.
+	 * @returns {JSON} 							- List of mentors.
+	 */
+
+	async list(req) {
+		try {
+			return await mentorsService.list(
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.query,
+				req.decodedToken.id,
+				isAMentor(req.decodedToken.roles)
+			)
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * List of sessions created by mentor.
+	 * @method
+	 * @name list
+	 * @param {Object} req - Request data.
+	 * @param {String} req.decodedToken.id - Mentors user id.
+	 * @returns {JSON} - Returns sharable link of the mentor.
+	 */
+
+	async createdSessions(req) {
+		try {
+			const sessionDetails = await mentorsService.createdSessions(
+				req.decodedToken.id,
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.query.status,
+				req.decodedToken.roles
+			)
+			return sessionDetails
 		} catch (error) {
 			return error
 		}

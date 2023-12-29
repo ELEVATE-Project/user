@@ -84,6 +84,13 @@ Elevate services can be setup in local using three methods:
 
     ```
 
+    example :
+
+    ```
+    ELEVATE/mentoring$ mentoring_env="/Users/mentoring/src/.env" users_env="/Users/user/src/.env" notification_env="/Users/notification/src/.env" scheduler="/Users/scheduler/src/.env"  docker-compose up
+
+    ```
+
 3.  To remove all containers & networks:
 
             ```
@@ -106,7 +113,7 @@ Elevate services can be setup in local using three methods:
 
 ### Local Dependencies Steps
 
-1. Update dependency (Mongo, Kafka etc) IP addresses in .env with "**host.docker.internal**".
+1. Update dependency (Mongo v4.1.4, Kafka etc) IP addresses in .env with "**host.docker.internal**".
 
     Eg:
 
@@ -152,7 +159,7 @@ Elevate services can be setup in local using three methods:
 
 ### Remote Dependencies Steps
 
-1.  Update dependency (Mongo, Kafka etc) Ip addresses in .env with respective remote server IPs.
+1.  Update dependency (Mongo v4.1.4, Kafka etc) Ip addresses in .env with respective remote server IPs.
 
     Eg:
 
@@ -337,8 +344,14 @@ Elevate services can be setup in local using three methods:
 -   Node - 16.0.0
 -   Kafka - 3.1.0
 -   Jest - 28.1.1
--   MongoDB - 4.4.14
+-   MongoDB - 4.1.4
 -   Redis - 7.0.0
+
+```
+Uses MongoDB v4.1.4, which has an OSI Compliant License (GNU Affero General Public License, version 3)
+MongoDB v4.1.4 repository: https://github.com/mongodb/mongo/tree/r4.1.4
+MongoDB v4.1.4 License: https://github.com/mongodb/mongo/blob/r4.1.4/LICENSE-Community.txt
+```
 
 # Scripts
 
@@ -474,4 +487,3 @@ Several open source dependencies that have aided Mentoring's development:
 
 <!-- ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 ![CircleCI](https://img.shields.io/badge/circle%20ci-%23161616.svg?style=for-the-badge&logo=circleci&logoColor=white) -->
-

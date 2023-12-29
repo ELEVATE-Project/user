@@ -23,6 +23,8 @@ module.exports = {
 			},
 			user_id: {
 				type: Sequelize.INTEGER,
+				allowNull: false,
+				primaryKey: true,
 			},
 			created_at: {
 				allowNull: false,

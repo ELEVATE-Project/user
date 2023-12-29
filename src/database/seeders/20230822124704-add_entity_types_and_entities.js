@@ -1,14 +1,18 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
+		if (!defaultOrgId) {
+			throw new Error('Default org ID is undefined. Please make sure it is set in sequelize options.')
+		}
 		const entitiesArray = {
 			medium: [
 				{
 					label: 'English',
-					value: '1',
+					value: 'en_in',
 				},
 				{
 					label: 'Hindi',
-					value: '2',
+					value: 'hi',
 				},
 			],
 			recommended_for: [
@@ -25,54 +29,111 @@ module.exports = {
 					label: 'Head master',
 				},
 				{
-					value: 'TE',
+					value: 'te',
 					label: 'Teacher',
 				},
 				{
-					value: 'CO',
+					value: 'co',
 					label: 'Cluster officials',
 				},
 			],
 			categories: [
 				{
-					value: 'Educational leadership',
+					value: 'educational_leadership',
 					label: 'Educational leadership',
 				},
 				{
-					value: 'School process',
+					value: 'school_process',
 					label: 'School process',
 				},
 				{
-					value: 'Communication',
+					value: 'communication',
 					label: 'Communication',
 				},
 				{
-					value: 'SQAA',
+					value: 'sqaa',
 					label: 'SQAA',
 				},
 				{
-					value: 'Professional development',
+					value: 'professional_development',
 					label: 'Professional development',
+				},
+			],
+			area_of_expertise: [
+				{
+					value: 'educational_leadership',
+					label: 'Educational leadership',
+				},
+				{
+					value: 'school_process',
+					label: 'School process',
+				},
+				{
+					value: 'communication',
+					label: 'Communication',
+				},
+				{
+					value: 'sqaa',
+					label: 'SQAA',
+				},
+				{
+					value: 'professional_development',
+					label: 'Professional development',
+				},
+			],
+			designation: [
+				{
+					value: 'deo',
+					label: 'District education officer',
+				},
+				{
+					value: 'beo',
+					label: 'Block education officer',
+				},
+				{
+					value: 'hm',
+					label: 'Head master',
+				},
+				{
+					value: 'te',
+					label: 'Teacher',
+				},
+				{
+					value: 'co',
+					label: 'Cluster officials',
 				},
 			],
 		}
 
-		let entitiesFinalArray = []
-		let entityTypeFinalArray = []
-		let entityTypeValues = []
-		entityTypeValues = [...Object.keys(entitiesArray)]
+		const sessionEntityTypes = ['recommended_for', 'categories', 'medium']
 
-		Object.keys(entitiesArray).forEach((key) => {
-			let eachentityTypeRow = {
+		const entityTypeFinalArray = Object.keys(entitiesArray).map((key) => {
+			const entityTypeRow = {
 				value: key,
-				label: toCamelCase(key),
-				data_type: 'STRING',
+				label: convertToWords(key),
+				data_type: 'ARRAY[STRING]',
 				status: 'ACTIVE',
 				updated_at: new Date(),
 				created_at: new Date(),
+				created_by: 0,
+				updated_by: 0,
+				allow_filtering: true,
+				organization_id: defaultOrgId,
+				has_entities: true,
 			}
 
-			entityTypeFinalArray.push(eachentityTypeRow)
+			// Check if the key is in sessionEntityTypes before adding model_names
+			if (sessionEntityTypes.includes(key)) {
+				entityTypeRow.model_names = ['Session']
+			} else {
+				entityTypeRow.model_names = ['MentorExtension', 'UserExtension']
+			}
+			if (key === 'location') {
+				entityTypeRow.allow_custom_entities = false
+			} else {
+				entityTypeRow.allow_custom_entities = true
+			}
+			return entityTypeRow
 		})
 
 		await queryInterface.bulkInsert('entity_types', entityTypeFinalArray, {})
@@ -81,12 +142,17 @@ module.exports = {
 			type: queryInterface.sequelize.QueryTypes.SELECT,
 		})
 
-		entityTypes.forEach((eachTypes) => {
-			if (eachTypes.value in entitiesArray) {
-				entitiesArray[eachTypes.value].forEach((eachEntity) => {
-					eachEntity.entity_type_id = eachTypes.id
-					;(eachEntity.type = 'SYSTEM'), (eachEntity.status = 'ACTIVE'), (eachEntity.created_at = new Date())
+		const entitiesFinalArray = []
+
+		entityTypes.forEach((eachType) => {
+			if (eachType.value in entitiesArray) {
+				entitiesArray[eachType.value].forEach((eachEntity) => {
+					eachEntity.entity_type_id = eachType.id
+					eachEntity.type = 'SYSTEM'
+					eachEntity.status = 'ACTIVE'
+					eachEntity.created_at = new Date()
 					eachEntity.updated_at = new Date()
+					eachEntity.created_by = 0
 
 					entitiesFinalArray.push(eachEntity)
 				})
@@ -102,17 +168,14 @@ module.exports = {
 	},
 }
 
-function toCamelCase(inputString) {
-	const parts = inputString.replace(/_/g, ' ').split(' ')
-	const camelWithSpace = parts
-		.map((part, index) => {
-			if (index === 0) {
-				return part.charAt(0).toUpperCase() + part.slice(1)
-			} else {
-				return ' ' + part.charAt(0).toUpperCase() + part.slice(1)
-			}
-		})
-		.join('')
+function convertToWords(inputString) {
+	const words = inputString.replace(/_/g, ' ').split(' ')
 
-	return camelWithSpace
+	const capitalizedWords = words.map((word) => {
+		return word.charAt(0).toUpperCase() + word.slice(1)
+	})
+
+	const result = capitalizedWords.join(' ')
+
+	return result
 }
