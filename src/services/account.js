@@ -48,7 +48,6 @@ module.exports = class AccountHelper {
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			console.log({ plaintextEmailId, encryptedEmailId })
 			let user = await UserCredentialQueries.findOne({
 				email: encryptedEmailId,
 				password: {
@@ -182,7 +181,7 @@ module.exports = class AccountHelper {
 			const insertedUser = await userQueries.create(bodyData)
 
 			const userCredentialsBody = {
-				email: bodyData.email,
+				email: encryptedEmailId,
 				password: bodyData.password,
 				organization_id: insertedUser.organization_id,
 				user_id: insertedUser.id,
@@ -191,7 +190,7 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				userCredentials = await UserCredentialQueries.updateUser(
 					{
-						email: bodyData.email,
+						email: encryptedEmailId,
 					},
 					{ user_id: insertedUser.id, password: bodyData.password },
 					{
@@ -321,8 +320,10 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData) {
 		try {
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: bodyData.email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
@@ -1028,7 +1029,6 @@ module.exports = class AccountHelper {
 					params.pageSize,
 					params.searchText
 				)
-				console.log('USERS:', users)
 				let foundKeys = {}
 				let result = []
 
