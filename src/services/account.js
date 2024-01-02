@@ -1210,7 +1210,9 @@ module.exports = class AccountHelper {
 				params.pageNo,
 				params.pageSize,
 				params.searchText,
-				params.body.user_ids ? params.body.user_ids : false
+				params.body.user_ids ? params.body.user_ids : false,
+				params.body.email ? params.body.email : false,
+				params.body.name ? params.body.name : false
 			)
 
 			/* Required to resolve all promises first before preparing response object else sometime 

@@ -165,7 +165,7 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 		return error
 	}
 }
-exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds) => {
+exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, email, name) => {
 	try {
 		const offset = (page - 1) * limit
 
@@ -184,6 +184,12 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 		}
 		if (userIds) {
 			filterConditions.push(`users.id IN (:userIds)`)
+		}
+		if (email) {
+			filterConditions.push(`users.email IN (:email)`)
+		}
+		if (name) {
+			filterConditions.push(`users.name ILIKE :name`)
 		}
 
 		const filterClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : ''
@@ -222,6 +228,8 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			userIds: userIds,
+			email: email,
+			name: '%' + name + '%',
 		}
 
 		const users = await Sequelize.query(filterQuery, {
