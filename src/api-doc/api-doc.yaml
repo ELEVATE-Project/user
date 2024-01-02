@@ -6708,8 +6708,7 @@ paths:
   /mentoring/v1/modules/create:
     post:
       summary: Creating new modules
-      tags:
-        - Modules
+      tags: []
       description: |-
         This API is associated with modules
          - Endpoint for creating modules  `/mentoring/v1/modules/create` 
@@ -6843,8 +6842,7 @@ paths:
   /mentoring/v1/modules/delete/{id}:
     delete:
       summary: Delete modules by id
-      tags:
-        - Modules
+      tags: []
       description: |-
         You can use this API to delete modules  
          - The API Endpoint for deleting modules is `/mentoring/v1/modules/delete` 
@@ -6943,6 +6941,124 @@ paths:
                       correlation: 4cbb42f7-ed92-41a1-b93d-d689121cda08
                       meetingPlatform: BBB
         '400': *ref_28
+  /mentoring/v1/rolePermissionMapping/create/{role_id}:
+    post:
+      summary: Creating new role permission mapping
+      tags:
+        - RolePermissionMapping
+      description: |-
+        This API is associated with Role Permissions
+         - Endpoint for creating Role Permissions  `/mentoring/v1/rolePermissionMapping/create` 
+         - It is mandatory to provide values for parameters marked with `required` 
+         - Mandatory parameter cannot be empty or null
+      parameters: *ref_29
+      responses:
+        '201':
+          description: ok
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      role_Id:
+                        type: number
+                      permission_Id:
+                        type: number
+                      module:
+                        type: string
+                      actions:
+                        type: array
+                        items:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permission added to the role
+                    result:
+                      role_Id: 5
+                      permission_Id: 1
+                      module: manage_session
+                      actions:
+                        - ALL
+                    meta:
+                      correlation: c9f94faf-7e9b-4d2e-bf84-92718c42831b
+                      meetingPlatform: BBB
+        '400': *ref_30
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                permission_id:
+                  type: number
+              required:
+                - permission_id
+            examples:
+              example1:
+                value:
+                  permission_id: 1
+    parameters: *ref_22
+  /mentoring/v1/rolePermissionMapping/delete/{role_id}:
+    post:
+      summary: Delete rolePermissionMapping by id
+      tags:
+        - RolePermissionMapping
+      description: |-
+        You can use this API to delete Role Permissions
+         - The API Endpoint for deleting Role Permissions is `/mentoring/v1/rolePermissionMapping/delete` 
+         - It is mandatory to provide values for parameters that are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters: *ref_6
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                permission_id:
+                  type: number
+              required:
+                - permission_id
+            examples:
+              example1:
+                value:
+                  permission_id: 1
+      responses:
+        '201':
+          description: Created
+          content:
+            application.json:
+              schema: *ref_32
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY
+                    result: {}
+                    meta:
+                      correlation: 4373a59a-ca10-4932-b7ce-8675009ef388
+                      meetingPlatform: BBB
+        '400': *ref_7
 components:
   schemas:
     form:
@@ -9466,6 +9582,11 @@ tags:
       description: ''
       url: ''
   - name: Modules
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: RolePermissionMapping
     description: ''
     externalDocs:
       description: ''

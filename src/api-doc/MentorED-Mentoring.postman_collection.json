@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "2f0649b3-7ba1-4d93-b371-443444cc407c",
+		"_postman_id": "31cbe319-208f-4ac9-8ef2-c034d364c180",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "24204448",
-		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-2f0649b3-7ba1-4d93-b371-443444cc407c?action=share&source=collection_link&creator=24204448"
+		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-31cbe319-208f-4ac9-8ef2-c034d364c180?action=share&source=collection_link&creator=24204448"
 	},
 	"item": [
 		{
@@ -2269,6 +2269,79 @@
 									"key": "id",
 									"value": "1",
 									"description": "Delete Id"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "AssignRolePermission",
+			"item": [
+				{
+					"name": "Create RolePermission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permission_id\" : 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/create/:role_id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "rolePermissionMapping", "create", ":role_id"],
+							"variable": [
+								{
+									"key": "role_id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete RolePermission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permission_id\" : 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/delete/:role_id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "rolePermissionMapping", "delete", ":role_id"],
+							"variable": [
+								{
+									"key": "role_id",
+									"value": "5"
 								}
 							]
 						}
