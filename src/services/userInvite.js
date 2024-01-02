@@ -28,6 +28,7 @@ const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 
 const UserCredentialQueries = require('@database/queries/userCredential')
 const { Op } = require('sequelize')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -81,7 +82,7 @@ module.exports = class UserInviteHelper {
 
 					if (templateData) {
 						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
-						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL)
+						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL) //Rename this to function to generic name since this function is used for both Invitee & Org-admin.
 					}
 				}
 
@@ -166,7 +167,7 @@ module.exports = class UserInviteHelper {
 			})
 
 			//get all existing user
-			const emailArray = _.uniq(_.map(csvData, 'email'))
+			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) => emailEncryption.encrypt(email))
 			const userCredentials = await UserCredentialQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
 				{
@@ -209,7 +210,9 @@ module.exports = class UserInviteHelper {
 			}
 
 			//get existing invitees
-			const allEmails = _.uniq(_.map(csvData, 'email').map((userEmail) => userEmail.toLowerCase()))
+			const allEmails = _.uniq(
+				_.map(csvData, 'email').map((userEmail) => emailEncryption.encrypt(userEmail.toLowerCase()))
+			)
 			const emailList = await userInviteQueries.findAll({ email: allEmails })
 			const existingInvitees = {}
 			emailList.forEach((userInvitee) => {

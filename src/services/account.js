@@ -177,6 +177,7 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
+			bodyData.email = encryptedEmailId
 			const insertedUser = await userQueries.create(bodyData)
 
 			const userCredentialsBody = {

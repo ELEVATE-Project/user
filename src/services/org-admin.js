@@ -73,7 +73,7 @@ module.exports = class OrgAdminHelper {
 					user: {
 						id,
 						name,
-						adminPlaintextEmailId,
+						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
 					},
