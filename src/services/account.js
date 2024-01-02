@@ -1111,6 +1111,8 @@ module.exports = class AccountHelper {
 	 */
 	static async changeRole(bodyData) {
 		try {
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			let role = await roleQueries.findOne({ title: bodyData.role.toLowerCase() })
 			if (!role) {
 				return common.failureResponse({
@@ -1120,7 +1122,7 @@ module.exports = class AccountHelper {
 				})
 			}
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: bodyData.email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
@@ -1150,6 +1152,7 @@ module.exports = class AccountHelper {
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
