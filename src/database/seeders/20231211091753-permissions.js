@@ -7,8 +7,8 @@ module.exports = {
 			const permissionsData = [
 				{
 					code: 'all_session',
-					module: 'all',
-					actions: ['ALL', 'READ'],
+					module: 'manage_session',
+					actions: ['ALL'],
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
