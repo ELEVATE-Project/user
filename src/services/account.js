@@ -46,9 +46,11 @@ module.exports = class AccountHelper {
 		const projection = ['password', 'refresh_tokens']
 
 		try {
-			const email = bodyData.email.toLowerCase()
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			console.log({ plaintextEmailId, encryptedEmailId })
 			let user = await UserCredentialQueries.findOne({
-				email: email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
@@ -62,7 +64,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(email)
+				const redisData = await utilsHelper.redisGet(encryptedEmailId)
 				if (!redisData || redisData.otp != bodyData.otp) {
 					return common.failureResponse({
 						message: 'OTP_INVALID',
@@ -82,7 +84,7 @@ module.exports = class AccountHelper {
 
 			const invitedUserId = await UserCredentialQueries.findOne(
 				{
-					email: email,
+					email: encryptedEmailId,
 					organization_user_invite_id: {
 						[Op.ne]: null,
 					},
@@ -138,7 +140,7 @@ module.exports = class AccountHelper {
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
-				let emailDomain = utilsHelper.extractDomainFromEmail(email)
+				let emailDomain = utilsHelper.extractDomainFromEmail(plaintextEmailId)
 				let domainDetails = await orgDomainQueries.findOne({
 					domain: emailDomain,
 				})
@@ -257,7 +259,7 @@ module.exports = class AccountHelper {
 			}
 
 			await userQueries.updateUser({ id: user.id, organization_id: userCredentials.organization_id }, update)
-			await utilsHelper.redisDel(email)
+			await utilsHelper.redisDel(encryptedEmailId)
 
 			//make the user as org admin
 			if (isOrgAdmin) {
@@ -284,7 +286,7 @@ module.exports = class AccountHelper {
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
-						to: email,
+						to: plaintextEmailId,
 						subject: templateData.subject,
 						body: utilsHelper.composeEmailBody(templateData.body, {
 							name: bodyData.name,
