@@ -7,7 +7,6 @@
 
 // Dependencies
 const accountService = require('@services/account')
-const csv = require('csvtojson')
 
 module.exports = class Account {
 	/**
