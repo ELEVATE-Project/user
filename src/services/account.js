@@ -744,8 +744,10 @@ module.exports = class AccountHelper {
 	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: bodyData.email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
@@ -780,10 +782,9 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			user.user_roles = roles
 
-			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+			const redisData = await utilsHelper.redisGet(encryptedEmailId)
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return common.failureResponse({
 					message: 'RESET_OTP_INVALID',
@@ -791,18 +792,15 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
-			if (isPasswordCorrect) {
+			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
+			if (isPasswordSame) {
 				return common.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const salt = bcryptJs.genSaltSync(10)
-			bodyData.password = bcryptJs.hashSync(bodyData.password, salt)
-
+			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 			const tokenDetail = {
 				data: {
 					id: user.id,
@@ -825,11 +823,9 @@ module.exports = class AccountHelper {
 			let noOfTokensToKeep = common.refreshTokenLimit - 1
 			let refreshTokens = []
 
-			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
+			if (userTokens && userTokens.length >= common.refreshTokenLimit)
 				refreshTokens = userTokens.splice(-noOfTokensToKeep)
-			} else {
-				refreshTokens = userTokens
-			}
+			else refreshTokens = userTokens
 
 			refreshTokens.push(currentToken)
 			const updateParams = {
@@ -844,29 +840,26 @@ module.exports = class AccountHelper {
 			)
 			await UserCredentialQueries.updateUser(
 				{
-					email: userCredentials.email,
+					email: encryptedEmailId,
 				},
 				{ password: bodyData.password }
 			)
-			await utilsHelper.redisDel(bodyData.email.toLowerCase())
+			await utilsHelper.redisDel(encryptedEmailId)
 
 			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user.password
 			delete user.otpInfo
 
 			// Check if user and user.image exist, then fetch a downloadable URL for the image
-			if (user && user.image) {
-				user.image = await utils.getDownloadableUrl(user.image)
-			}
-
+			if (user && user.image) user.image = await utils.getDownloadableUrl(user.image)
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PASSWORD_RESET_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
