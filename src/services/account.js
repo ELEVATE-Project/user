@@ -584,96 +584,82 @@ module.exports = class AccountHelper {
 
 	static async generateOtp(bodyData) {
 		try {
-			let otp
-			let isValidOtpExist = true
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: bodyData.email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
 			})
-			if (!userCredentials) {
+			if (!userCredentials)
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
+
 			const user = await userQueries.findOne({
 				id: userCredentials.user_id,
 				organization_id: userCredentials.organization_id,
 			})
-			if (!user) {
+			if (!user)
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
 
-			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
-
-			if (userData && userData.action === 'forgetpassword') {
-				otp = userData.otp // If valid then get previuosly generated otp
-				console.log(otp)
-			} else {
-				isValidOtpExist = false
-			}
-
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
-			if (isPasswordCorrect) {
+			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
+			if (isPasswordSame)
 				return common.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
 
-			if (!isValidOtpExist) {
-				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
+			const userData = await utilsHelper.redisGet(encryptedEmailId)
+			const [otp, isNew] =
+				userData && userData.action === 'forgetpassword'
+					? [userData.otp, false]
+					: [Math.floor(Math.random() * 900000 + 100000), true]
+			if (isNew) {
 				const redisData = {
-					verify: bodyData.email.toLowerCase(),
+					verify: encryptedEmailId,
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await utilsHelper.redisSet(
-					bodyData.email.toLowerCase(),
-					redisData,
-					common.otpExpirationTime
-				)
-				if (res !== 'OK') {
+				const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
+				if (res !== 'OK')
 					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
 						responseCode: 'SERVER_ERROR',
 					})
-				}
 			}
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.OTP_EMAIL_TEMPLATE_CODE,
 				user.organization_id
 			)
-
 			if (templateData) {
-				// Push otp to kafka
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
-						to: bodyData.email,
+						to: plaintextEmailId,
 						subject: templateData.subject,
 						body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
 					},
 				}
-
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
+			if (process.env.APPLICATION_ENV === 'development') console.log({ otp, isNew })
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
