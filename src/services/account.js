@@ -685,8 +685,6 @@ module.exports = class AccountHelper {
 	 */
 
 	static async registrationOtp(bodyData) {
-		let otp
-		let isValidOtpExist = true
 		const plaintextEmailId = bodyData.email.toLowerCase()
 		const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 		const userCredentials = await UserCredentialQueries.findOne({
@@ -695,23 +693,19 @@ module.exports = class AccountHelper {
 				[Op.ne]: null,
 			},
 		})
-		if (userCredentials) {
+		if (userCredentials)
 			return common.failureResponse({
 				message: 'USER_ALREADY_EXISTS',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
 			})
-		}
 
 		const userData = await utilsHelper.redisGet(encryptedEmailId)
-		if (userData && userData.action === 'signup') {
-			otp = userData.otp // If valid then get previuosly generated otp
-		} else {
-			isValidOtpExist = false
-		}
-
-		if (!isValidOtpExist) {
-			otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
+		const [otp, isNew] =
+			userData && userData.action === 'signup'
+				? [userData.otp, false]
+				: [Math.floor(Math.random() * 900000 + 100000), true]
+		if (isNew) {
 			const redisData = {
 				verify: encryptedEmailId,
 				action: 'signup',
@@ -726,13 +720,10 @@ module.exports = class AccountHelper {
 				})
 			}
 		}
-
 		const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 			process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
 		)
-
 		if (templateData) {
-			// Push otp to kafka
 			const payload = {
 				type: common.notificationEmailType,
 				email: {
@@ -741,12 +732,9 @@ module.exports = class AccountHelper {
 					body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
 				},
 			}
-
 			await kafkaCommunication.pushEmailToKafka(payload)
 		}
-		if (process.env.APPLICATION_ENV === 'development') {
-			console.log(otp)
-		}
+		if (process.env.APPLICATION_ENV === 'development') console.log(otp)
 		return common.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
