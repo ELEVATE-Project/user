@@ -127,8 +127,7 @@ module.exports = class Mentees {
 				req.searchText,
 				req.query,
 				req.decodedToken.id,
-				isAMentor(req.decodedToken.roles),
-				req.decodedToken.token
+				isAMentor(req.decodedToken.roles)
 			)
 		} catch (error) {
 			return error
