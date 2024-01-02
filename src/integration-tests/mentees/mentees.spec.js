@@ -7,10 +7,10 @@
 
 const commonHelper = require('@commonTests')
 const schema = require('./responseSchema')
-
+let loginInfo
 describe('mentoring/v1/mentees', function () {
 	beforeAll(async () => {
-		await commonHelper.logIn()
+		loginInfo = await commonHelper.logIn()
 		await request.post('/mentoring/v1/profile/create').send({
 			designation: ['beo', 'deo', 'testt'],
 			area_of_expertise: ['educational_leadership', 'sqaa'],
@@ -23,8 +23,14 @@ describe('mentoring/v1/mentees', function () {
 		})
 	}, 100000)
 
-	it('/list', async () => {
-		let res = await request.post('/mentoring/v1/mentees/list' + '?page=1&limit=100&search=')
+	it('/list - with email', async () => {
+		let res = await request.post('/mentoring/v1/mentees/list' + '?page=1&limit=100&email=' + loginInfo.email)
+		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(schema.menteeListSchema)
+	})
+
+	it('/list - with name', async () => {
+		let res = await request.post('/mentoring/v1/mentees/list' + '?page=1&limit=100&name=' + loginInfo.firstname)
 		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(schema.menteeListSchema)
 	})

@@ -16,10 +16,11 @@ const logIn = async () => {
 			timeout: 60000,
 		}
 		await waitOn(opts)
-		let email = 'nevil' + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
+		let firstname = 'adithya'
+		let email = firstname + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
 		let password = faker.internet.password()
 		let res = await request.post('/user/v1/account/create').send({
-			name: 'Nevil',
+			name: firstname,
 			email: email,
 			password: password,
 			role: 'mentee',
@@ -49,6 +50,7 @@ const logIn = async () => {
 				userId: res.body.result.user.id,
 				email: email,
 				password: password,
+				firstname: firstname,
 			}
 		} else {
 			console.error('Error while getting access token')
