@@ -137,23 +137,6 @@ module.exports = class Account {
 	}
 
 	/**
-	 * Bulk create mentors
-	 * @method
-	 * @name bulkCreateMentors
-	 * @param {Object} req -request data.
-	 * @returns {CSV} - created mentors.
-	 */
-	async bulkCreateMentors(req) {
-		try {
-			const mentors = await csv().fromString(req.files.mentors.data.toString())
-			const createdMentors = await accountService.bulkCreateMentors(mentors, req.decodedToken)
-			return createdMentors
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
 	 * Accept term and condition
 	 * @method
 	 * @name acceptTermsAndCondition

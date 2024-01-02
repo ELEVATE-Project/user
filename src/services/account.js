@@ -21,7 +21,6 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const roleQueries = require('@database/queries/userRole')
 const orgDomainQueries = require('@database/queries/orgDomain')
 const userInviteQueries = require('@database/queries/orgUserInvite')
-const FILESTREAM = require('@generics/file-stream')
 const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
 const { Op } = require('sequelize')
@@ -860,61 +859,6 @@ module.exports = class AccountHelper {
 			})
 		} catch (error) {
 			console.log(error)
-			throw error
-		}
-	}
-
-	//Is this api used ?
-	/**
-	 * Bulk create mentors
-	 * @method
-	 * @name bulkCreateMentors
-	 * @param {Array} mentors - mentor details.
-	 * @param {Object} tokenInformation - token details.
-	 * @returns {CSV} - created mentors.
-	 */
-	static async bulkCreateMentors(mentors, tokenInformation) {
-		try {
-			const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email)
-
-			if (!systemUser) {
-				return common.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			if (systemUser.role.toLowerCase() !== 'admin') {
-				return common.failureResponse({
-					message: 'NOT_AN_ADMIN',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const fileName = 'mentors-creation'
-			let fileStream = new FILESTREAM(fileName)
-			let input = fileStream.initStream()
-
-			;(async function () {
-				await fileStream.getProcessorPromise()
-				return {
-					isResponseAStream: true,
-					fileNameWithPath: fileStream.fileNameWithPath(),
-				}
-			})()
-
-			for (const mentor of mentors) {
-				mentor.isAMentor = true
-				const data = await this.create(mentor)
-				mentor.email = mentor.email.address
-				mentor.status = data.message
-				input.push(mentor)
-			}
-
-			input.push(null)
-		} catch (error) {
 			throw error
 		}
 	}
