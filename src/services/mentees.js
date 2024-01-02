@@ -758,6 +758,20 @@ module.exports = class MenteesHelper {
 			return error
 		}
 	}
+
+	/**
+	 * List mentees and search with name , email
+	 * @method
+	 * @name list
+	 * @param {String} userId - User ID of the mentee.
+	 * @param {Number} pageNo - Page No.
+	 * @param {Number} pageSize - Page Size.
+	 * @param {String} searchText
+	 * @param {String} queryParams
+	 * @param {String} userId
+	 * @param {Boolean} isAMentor - true/false.
+	 * @returns {Promise<Object>} - returns the list of mentees
+	 */
 	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
 		try {
 			let additionalProjectionString = ''
@@ -777,10 +791,11 @@ module.exports = class MenteesHelper {
 			const query = utils.processQueryParametersWithExclusions(queryParams)
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
-				status: 'ACTIVE',
+				status: common.ACTIVE_STATUS,
 			})
 
 			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+
 			const userType = common.MENTEE_ROLE
 
 			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)

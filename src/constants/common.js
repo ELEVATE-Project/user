@@ -148,4 +148,5 @@ module.exports = {
 	notificationEndPoint: '/mentoring/v1/notifications/emailCronJob',
 	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
+	ACTIVE_STATUS: 'ACTIVE',
 }

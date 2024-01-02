@@ -2,6 +2,7 @@ var supertest = require('supertest') //require supertest
 var defaults = require('superagent-defaults')
 const { faker } = require('@faker-js/faker')
 const crypto = require('crypto')
+const common = require('@constants/common')
 let baseURL = 'http://localhost:3000'
 //supertest hits the HTTP server (your app)
 let defaultHeaders
@@ -23,7 +24,7 @@ const logIn = async () => {
 			name: firstname,
 			email: email,
 			password: password,
-			role: 'mentee',
+			role: common.MENTEE_ROLE,
 		})
 		res = await request.post('/user/v1/account/login').send({
 			email: email,
