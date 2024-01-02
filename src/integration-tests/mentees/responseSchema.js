@@ -319,9 +319,6 @@ const menteeListSchema = {
 													},
 													required: ['id', 'code', 'name'],
 												},
-												rating: {
-													type: 'null',
-												},
 												designation: {
 													type: 'array',
 													items: [
@@ -390,7 +387,6 @@ const menteeListSchema = {
 												'about',
 												'image',
 												'organization',
-												'rating',
 												'designation',
 												'area_of_expertise',
 												'education_qualification',
@@ -426,9 +422,6 @@ const menteeListSchema = {
 													},
 													required: ['id', 'code', 'name'],
 												},
-												rating: {
-													type: 'null',
-												},
 												designation: {
 													type: 'array',
 													items: [
@@ -497,7 +490,6 @@ const menteeListSchema = {
 												'about',
 												'image',
 												'organization',
-												'rating',
 												'designation',
 												'area_of_expertise',
 												'education_qualification',

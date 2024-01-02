@@ -870,6 +870,7 @@ module.exports = class MenteesHelper {
 						delete value.visibility
 						delete value.organization_id
 						delete value.meta
+						delete value.rating
 						return value
 					}
 					return null
