@@ -23,6 +23,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -41,6 +42,7 @@ module.exports = class OrgAdminHelper {
 				{ id, organization_id },
 				{ attributes: ['name', 'email'] }
 			)
+			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
 			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
 
@@ -71,7 +73,7 @@ module.exports = class OrgAdminHelper {
 					user: {
 						id,
 						name,
-						email,
+						adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
 					},
@@ -92,6 +94,7 @@ module.exports = class OrgAdminHelper {
 				result: result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
