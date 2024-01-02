@@ -758,18 +758,23 @@ module.exports = class MenteesHelper {
 			return error
 		}
 	}
-	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor, token) {
+	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
 		try {
 			let additionalProjectionString = ''
 
 			// check for fields query
-			// if (queryParams.fields && queryParams.fields !== '') {
-			// 	additionalProjectionString = queryParams.fields
-			// 	delete queryParams.fields
-			// }
+			if (queryParams.fields && queryParams.fields !== '') {
+				additionalProjectionString = queryParams.fields
+				delete queryParams.fields
+			}
+			let userServiceQueries = {}
+			for (let key in queryParams) {
+				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'search') | (key === 'name'))) {
+					userServiceQueries[key] = queryParams[key]
+				}
+			}
 
-			// const query = utils.processQueryParametersWithExclusions(queryParams)
-			const query = {}
+			const query = utils.processQueryParametersWithExclusions(queryParams)
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
@@ -779,7 +784,6 @@ module.exports = class MenteesHelper {
 			const userType = common.MENTEE_ROLE
 
 			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
-
 			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
 				[],
 				null,
@@ -801,7 +805,11 @@ module.exports = class MenteesHelper {
 			}
 			const menteeIds = extensionDetails.data.map((item) => item.user_id)
 
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, menteeIds, token)
+			if (menteeIds) {
+				userServiceQueries['user_ids'] = menteeIds
+			}
+
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
 
 			if (userDetails.data.result.count == 0) {
 				return common.successResponse({
