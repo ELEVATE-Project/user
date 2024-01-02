@@ -47,8 +47,9 @@ module.exports = class AccountHelper {
 
 		try {
 			const email = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(bodyData.email.toLowerCase())
 			let user = await UserCredentialQueries.findOne({
-				email: email.toLowerCase(),
+				email: encryptedEmailId,
 				password: {
 					[Op.ne]: null,
 				},
@@ -62,7 +63,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(email)
+				const redisData = await utilsHelper.redisGet(encryptedEmailId)
 				if (!redisData || redisData.otp != bodyData.otp) {
 					return common.failureResponse({
 						message: 'OTP_INVALID',
@@ -82,7 +83,7 @@ module.exports = class AccountHelper {
 
 			const invitedUserId = await UserCredentialQueries.findOne(
 				{
-					email: email,
+					email: encryptedEmailId,
 					organization_user_invite_id: {
 						[Op.ne]: null,
 					},
@@ -179,7 +180,7 @@ module.exports = class AccountHelper {
 			const insertedUser = await userQueries.create(bodyData)
 
 			const userCredentialsBody = {
-				email: bodyData.email,
+				email: encryptedEmailId,
 				password: bodyData.password,
 				organization_id: insertedUser.organization_id,
 				user_id: insertedUser.id,
@@ -188,7 +189,7 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				userCredentials = await UserCredentialQueries.updateUser(
 					{
-						email: bodyData.email,
+						email: encryptedEmailId,
 					},
 					{ user_id: insertedUser.id, password: bodyData.password },
 					{
@@ -256,7 +257,7 @@ module.exports = class AccountHelper {
 			}
 
 			await userQueries.updateUser({ id: user.id, organization_id: userCredentials.organization_id }, update)
-			await utilsHelper.redisDel(email)
+			await utilsHelper.redisDel(encryptedEmailId)
 
 			//make the user as org admin
 			if (isOrgAdmin) {
