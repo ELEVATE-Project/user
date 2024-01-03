@@ -131,6 +131,7 @@ module.exports = class userRoleHelper {
 
 	static async list(filters, page, limit, search, userOrganizationId) {
 		try {
+			delete filters.search
 			const offset = common.getPaginationOffset(page, limit)
 			const options = {
 				offset,

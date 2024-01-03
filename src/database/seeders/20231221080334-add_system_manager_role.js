@@ -9,7 +9,7 @@ module.exports = {
 			'user_roles',
 			[
 				{
-					title: 'system_manager',
+					title: 'session_manager',
 					user_type: 1,
 					visibility: 'PUBLIC',
 					organization_id: defaultOrgId,
@@ -22,6 +22,6 @@ module.exports = {
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.bulkDelete('user_roles', { title: 'system_manager' })
+		await queryInterface.bulkDelete('user_roles', { title: 'session_manager' })
 	},
 }

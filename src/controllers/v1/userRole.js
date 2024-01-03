@@ -74,7 +74,7 @@ module.exports = class userRole {
 	async list(req) {
 		try {
 			const roleList = await roleService.list(
-				req.body.filters,
+				req.query,
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
