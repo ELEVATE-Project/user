@@ -167,8 +167,67 @@ function validateInput(input, validationData, modelName) {
 	const errors = []
 	for (const field of validationData) {
 		const fieldValue = input[field.value]
-		//console.log('fieldValue', field.allow_custom_entities)
-		if (!fieldValue || field.allow_custom_entities === true) {
+
+		if (modelName && !field.model_names.includes(modelName) && input[field.value]) {
+			errors.push({
+				param: field.value,
+				msg: `${field.value} is not allowed for the ${modelName} model.`,
+			})
+		}
+
+		function addError(field, value, dataType, message) {
+			errors.push({
+				param: field.value,
+				msg: `${value} is invalid for data type ${dataType}. ${message}`,
+			})
+		}
+
+		if (fieldValue !== undefined) {
+			const dataType = field.data_type
+
+			switch (dataType) {
+				case 'ARRAY[STRING]':
+					if (Array.isArray(fieldValue)) {
+						fieldValue.forEach((element) => {
+							if (typeof element !== 'string' || /[^A-Za-z0-9_]/.test(element)) {
+								addError(
+									field,
+									element,
+									dataType,
+									'It should not contain spaces or special characters except underscore.'
+								)
+							}
+						})
+					} else {
+						addError(field, field.value, dataType, '')
+					}
+					break
+
+				case 'STRING':
+					if (typeof fieldValue !== 'string' || /[^A-Za-z0-9_]/.test(fieldValue)) {
+						addError(
+							field,
+							fieldValue,
+							dataType,
+							'It should not contain spaces or special characters except underscore.'
+						)
+					}
+					break
+
+				case 'NUMBER':
+					console.log('Type of', typeof fieldValue)
+					if (typeof fieldValue !== 'number') {
+						addError(field, fieldValue, dataType, '')
+					}
+					break
+
+				default:
+					//isValid = false
+					break
+			}
+		}
+
+		if (!fieldValue || field.allow_custom_entities === true || field.has_entities === false) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -185,13 +244,6 @@ function validateInput(input, validationData, modelName) {
 			errors.push({
 				param: field.value,
 				msg: `${fieldValue} is not a valid entity.`,
-			})
-		}
-
-		if (modelName && !field.model_names.includes(modelName)) {
-			errors.push({
-				param: field.value,
-				msg: `${field.value} is not allowed for the ${modelName} model.`,
 			})
 		}
 	}
