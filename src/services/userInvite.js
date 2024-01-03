@@ -219,6 +219,7 @@ module.exports = class UserInviteHelper {
 				//convert the fields to lower case
 				invitee.roles = invitee.roles.toLowerCase()
 				invitee.email = invitee.email.toLowerCase()
+				invitee.encryptedEmail = emailEncryption.encrypt(invitee.email.toLowerCase())
 
 				//validate the fields
 				if (!utils.isValidName(invitee.name)) {
@@ -240,7 +241,7 @@ module.exports = class UserInviteHelper {
 				}
 
 				//update user details if the user exist and in default org
-				const existingUser = existingEmailsMap.get(emailEncryption.encrypt(invitee.email.toLowerCase()))
+				const existingUser = existingEmailsMap.get(invitee.encryptedEmail)
 
 				if (existingUser) {
 					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
@@ -274,13 +275,13 @@ module.exports = class UserInviteHelper {
 
 						if (isOrgUpdate || userUpdateData.roles) {
 							const userCredentials = await UserCredentialQueries.findOne({
-								email: emailEncryption.encrypt(invitee.email.toLowerCase()),
+								email: invitee.encryptedEmail,
 							})
 
 							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
 							await UserCredentialQueries.updateUser(
 								{
-									email: emailEncryption.encrypt(invitee.email.toLowerCase()),
+									email: invitee.encryptedEmail,
 								},
 								{ organization_id: user.organization_id }
 							)
@@ -318,9 +319,9 @@ module.exports = class UserInviteHelper {
 						file_id: fileUploadId,
 						roles: roleTitlesToIds[invitee.roles] || [],
 					}
-					inviteeData.email = emailEncryption.encrypt(inviteeData.email.toLowerCase())
+					inviteeData.email = inviteeData.encryptedEmail
 
-					if (existingInvitees.hasOwnProperty(emailEncryption.encrypt(invitee.email.toLowerCase()))) {
+					if (existingInvitees.hasOwnProperty(invitee.encryptedEmail)) {
 						invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
 						input.push(invitee)
 						continue
