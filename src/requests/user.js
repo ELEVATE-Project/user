@@ -225,6 +225,38 @@ const search = function (userType, pageNo, pageSize, searchText, userIds) {
 		}
 	})
 }
+
+const listOrganization = function (organisationIds = []) {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				organisationIds,
+			},
+		}
+
+		const orgListUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+		try {
+			request.get(orgListUrl, options, callback)
+			function callback(err, data) {
+				if (err) {
+					reject({
+						message: 'USER_SERVICE_DOWN',
+					})
+				} else {
+					data.body = JSON.parse(data.body)
+					return resolve(data.body)
+				}
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
 module.exports = {
 	fetchDefaultOrgDetails,
 	details,
@@ -233,4 +265,5 @@ module.exports = {
 	share,
 	listWithoutLimit,
 	search,
+	listOrganization,
 }

@@ -61,4 +61,17 @@ module.exports = class OrganizationExtensionQueries {
 			throw new Error(`Error finding/inserting organisation extension: ${error.message}`)
 		}
 	}
+
+	static async findAll(filter, options = {}) {
+		try {
+			const orgPolicies = await OrganizationExtension.findAll({
+				where: filter,
+				...options,
+				raw: true,
+			})
+			return orgPolicies
+		} catch (error) {
+			throw new Error(`Error fetching organisation extension: ${error.message}`)
+		}
+	}
 }

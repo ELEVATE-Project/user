@@ -80,7 +80,7 @@ module.exports = class MenteesHelper {
 		try {
 			/** Upcoming user's enrolled sessions {My sessions}*/
 			/* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
-                delays in starting session then status will remain published for that particular interval so fetch that also */
+				delays in starting session then status will remain published for that particular interval so fetch that also */
 
 			/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
 			const sessions = await this.getMySessions(page, limit, search, userId)
@@ -774,6 +774,83 @@ module.exports = class MenteesHelper {
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_DELETED',
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get entities and organization filter
+	 * @method
+	 * @name getFilterList
+	 * @param {String} tokenInformation - token information
+	 * @param {Boolean} bodyData - bodyData
+	 * @returns {JSON} - Filter list.
+	 */
+	static async getFilterList(bodyData, tokenInformation) {
+		try {
+			let result = {
+				organizations: [],
+			}
+
+			const menteeExtension = await menteeQueries.getMenteeExtension(tokenInformation.id, [
+				'external_mentor_visibility',
+				'organization_id',
+			])
+
+			let organization_ids = []
+
+			if (menteeExtension.external_mentor_visibility === common.CURRENT) {
+				organization_ids.push(menteeExtension.organization_id)
+			} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
+				let userOrgDetails = await userRequests.fetchDefaultOrgDetails(menteeExtension.organization_id)
+				if (
+					userOrgDetails.success &&
+					userOrgDetails.data &&
+					userOrgDetails.data.result &&
+					userOrgDetails.data.result.related_orgs &&
+					userOrgDetails.data.result.related_orgs.length > 0
+				) {
+					organization_ids.push(...userOrgDetails.data.result.related_orgs)
+				}
+			} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
+				const organizationExtension = await organisationExtensionQueries.findAll(
+					{
+						external_mentor_visibility_policy: common.ALL,
+						mentor_visibility_policy: {
+							[Op.ne]: common.CURRENT,
+						},
+					},
+					{
+						attributes: ['organization_id'],
+					}
+				)
+
+				if (organizationExtension) {
+					const organizationIds = organizationExtension.map((orgExt) => orgExt.organization_id)
+					if (organizationIds.length > 0) {
+						organization_ids.push(...organizationIds)
+					}
+				}
+			}
+
+			if (organization_ids.length > 0) {
+				const organizations = await userRequests.listOrganization(organization_ids)
+				if (
+					organizations &&
+					organizations.result &&
+					organizations.result.data &&
+					organizations.result.data.length > 0
+				) {
+					result.organizations = organizations.result.data
+				}
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'FILTER_FTECHED_SUCCESSFULLY',
+				result,
 			})
 		} catch (error) {
 			return error
