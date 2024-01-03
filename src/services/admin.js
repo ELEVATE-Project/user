@@ -18,6 +18,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class AdminHelper {
 	/**
@@ -70,8 +71,9 @@ module.exports = class AdminHelper {
 	 */
 	static async create(bodyData) {
 		try {
-			const email = bodyData.email.toLowerCase()
-			const user = await UserCredentialQueries.findOne({ email: email })
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const user = await UserCredentialQueries.findOne({ email: encryptedEmailId })
 
 			if (user) {
 				return common.failureResponse({
@@ -99,8 +101,8 @@ module.exports = class AdminHelper {
 				)
 				bodyData.organization_id = organization.id
 			}
-
 			bodyData.password = utils.hashPassword(bodyData.password)
+			bodyData.email = encryptedEmailId
 			const createdUser = await userQueries.create(bodyData)
 			const userCredentialsBody = {
 				email: bodyData.email,
@@ -121,6 +123,7 @@ module.exports = class AdminHelper {
 				message: 'USER_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -136,7 +139,9 @@ module.exports = class AdminHelper {
 	 */
 	static async login(bodyData) {
 		try {
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const userCredentials = await UserCredentialQueries.findOne({ email: encryptedEmailId })
 			if (!userCredentials) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -204,6 +209,7 @@ module.exports = class AdminHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
