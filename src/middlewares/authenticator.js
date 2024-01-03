@@ -18,7 +18,6 @@ module.exports = async function (req, res, next) {
 		let guestUrl = false
 		let roleValidation = false
 		let decodedToken
-		let permissionCheck = false
 
 		const authHeader = req.get('X-auth-token')
 
@@ -43,6 +42,7 @@ module.exports = async function (req, res, next) {
 				roleValidation = true
 			}
 		})
+
 		if ((internalAccess || guestUrl) && !authHeader) {
 			next()
 			return

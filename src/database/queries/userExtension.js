@@ -151,12 +151,8 @@ module.exports = class MenteeExtensionQueries {
 				projectionClause += `,${additionalProjectionclause}`
 			}
 
-			if (userFilterClause & filterClause) {
-				if (filterClause.startsWith('AND')) {
-					filterClause = filterClause
-				} else {
-					filterClause = 'AND' + filterClause
-				}
+			if (userFilterClause && filterClause.length > 0) {
+				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
 			}
 
 			let query = `
