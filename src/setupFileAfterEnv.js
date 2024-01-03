@@ -5,6 +5,11 @@ const { matchers } = require('jest-json-schema')
 expect.extend(matchers)
 
 //Connect to database
+/* 
+Uses MongoDB v4.1.4, which has an OSI Compliant License (GNU Affero General Public License, version 3)
+MongoDB v4.1.4 repository: https://github.com/mongodb/mongo/tree/r4.1.4
+MongoDB v4.1.4 License: https://github.com/mongodb/mongo/blob/r4.1.4/LICENSE-Community.txt
+*/
 
 const db = mongoose.createConnection('mongodb://127.0.0.1:27017/elevate-mentoring', {
 	useNewUrlParser: true,

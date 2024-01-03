@@ -296,11 +296,9 @@ module.exports = class UserInviteHelper {
 								eventBroadcaster('roleChange', {
 									requestBody,
 								})
-
-								//delete from cache
-								const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
-								await utils.redisDel(redisUserKey)
 							}
+							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
+							await utils.redisDel(redisUserKey)
 						}
 					}
 				} else {

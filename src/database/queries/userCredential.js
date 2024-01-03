@@ -37,6 +37,19 @@ exports.updateUser = async (filter, update, options = {}) => {
 	}
 }
 
+exports.forceDeleteUserWithEmail = async (email) => {
+	try {
+		return await UserCredential.destroy({
+			where: {
+				email,
+			},
+			force: true, // Setting force to true for a hard delete
+		})
+	} catch (error) {
+		throw error
+	}
+}
+
 exports.findAll = async (filter, options = {}) => {
 	try {
 		return await UserCredential.findAll({
