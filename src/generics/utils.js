@@ -18,6 +18,7 @@ const crypto = require('crypto')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
 const httpStatusCode = require('@generics/http-status')
+const userRequests = require('@requests/user')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -540,6 +541,13 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 
 		let filter = ''
 		if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
+			// fetch organisation details to get the related org
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(userPolicyDetails.organization_id)
+
+			// list of related org ids
+			let orgToList = userOrgDetails.data.result.related_orgs
+			orgToList.push(userPolicyDetails.organization_id)
+
 			// Filter user data based on policy
 			// generate filter based on condition
 			if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
@@ -559,7 +567,11 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 				 * We need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 				 * OR if mentor visibility is ALL that mentor is also accessible
 				 */
-				filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
+				if (userOrgDetails.data.result.related_orgs.length == 0) {
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
+				} else {
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${orgToList})`
+				}
 			}
 		}
 

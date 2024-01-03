@@ -135,7 +135,7 @@ module.exports = class MenteeExtensionQueries {
 			const excludeUserIds = ids.length === 0
 			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
 
-			const filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
+			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
 
 			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
 			if (excludeUserIds && Object.keys(filter).length === 0) {
@@ -143,12 +143,20 @@ module.exports = class MenteeExtensionQueries {
 			}
 
 			let projectionClause =
-				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
+				'user_id,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
 
 			if (returnOnlyUserId) {
 				projectionClause = 'user_id'
 			} else if (additionalProjectionclause !== '') {
 				projectionClause += `,${additionalProjectionclause}`
+			}
+
+			if (userFilterClause & filterClause) {
+				if (filterClause.startsWith('AND')) {
+					filterClause = filterClause
+				} else {
+					filterClause = 'AND' + filterClause
+				}
 			}
 
 			let query = `

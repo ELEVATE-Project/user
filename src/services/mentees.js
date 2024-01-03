@@ -782,9 +782,12 @@ module.exports = class MenteesHelper {
 				delete queryParams.fields
 			}
 			let userServiceQueries = {}
+			let organization_ids = []
 			for (let key in queryParams) {
 				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'search') | (key === 'name'))) {
 					userServiceQueries[key] = queryParams[key]
+				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+					organization_ids = queryParams[key].split(',')
 				}
 			}
 
@@ -845,7 +848,11 @@ module.exports = class MenteesHelper {
 				additionalProjectionString,
 				false
 			)
-
+			if (organization_ids.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((mentee) =>
+					organization_ids.includes(String(mentee.organization_id))
+				)
+			}
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
@@ -855,7 +862,6 @@ module.exports = class MenteesHelper {
 					'organization_id'
 				)
 			}
-
 			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
 
 			userDetails.data.result.data = userDetails.data.result.data
@@ -879,6 +885,8 @@ module.exports = class MenteesHelper {
 
 			let foundKeys = {}
 			let result = []
+			// update count after filters
+			userDetails.data.result.count = userDetails.data.result.data.length
 
 			for (let user of userDetails.data.result.data) {
 				let firstChar = user.name.charAt(0)
