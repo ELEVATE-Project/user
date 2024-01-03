@@ -1626,9 +1626,6 @@
 			"item": [
 				{
 					"name": "List User Roles",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1638,15 +1635,6 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"filters\" : { \n\"organization_id\": 1\n} \n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
 							"raw": "{{UserDevBaseUrl}}user/v1/userRole/list?page=1&limit=10&search=system",
 							"host": ["{{UserDevBaseUrl}}user"],
@@ -1663,6 +1651,25 @@
 								{
 									"key": "search",
 									"value": "system"
+								},
+								{
+									"key": "organization_id",
+									"value": "1"
+								},
+								{
+									"key": "user_type",
+									"value": "2",
+									"disabled": true
+								},
+								{
+									"key": "visibility",
+									"value": "PUBLIC",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"disabled": true
 								}
 							]
 						}

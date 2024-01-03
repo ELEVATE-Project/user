@@ -44,14 +44,7 @@ describe('/user/v1/userRole', function () {
 	})
 
 	it('/list', async () => {
-		let res = await request
-			.get('/user/v1/userRole/list')
-			.send({
-				filters: {
-					organization_id: 1,
-				},
-			})
-			.query({ page: 1, limit: 10, code: 'system' })
+		let res = await request.get('/user/v1/userRole/list').query({ page: 1, limit: 10, code: 'system' })
 
 		logError(res)
 		expect(res.statusCode).toBe(200)

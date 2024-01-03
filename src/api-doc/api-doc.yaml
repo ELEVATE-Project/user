@@ -1245,23 +1245,35 @@ paths:
           schema:
             type: string
         - in: query
-          name: ''
-          description: ''
-          schema: &ref_1
-            type: string
-        - in: path
           name: page
           description: Please add page number
           schema: &ref_0
-            type: number
-        - in: path
+            type: integer
+        - in: query
           name: limit
           description: Number of records to limit
           schema: *ref_0
-        - in: path
+        - in: query
           name: search
-          description: Please search for information such as 'code' names
+          description: Please search for information such as 'title' names
+          schema: &ref_1
+            type: string
+        - in: query
+          name: user_type
+          description: filtering based on the user_type
+          schema: *ref_0
+        - in: query
+          name: visibility
+          description: filtering based on the visibility
           schema: *ref_1
+        - in: query
+          name: status
+          description: filtering based on the status
+          schema: *ref_1
+        - in: query
+          name: organization_id
+          description: filtering based on the organization_id
+          schema: *ref_0
       responses:
         '200':
           description: OK
@@ -1331,24 +1343,7 @@ paths:
                 $ref: '#/components/schemas/profile/Unauthorized401Response'
       requestBody:
         description: ''
-        content:
-          application/json:
-            schema:
-              $schema: http://json-schema.org/draft-04/schema#
-              type: object
-              properties:
-                filters:
-                  type: object
-                  properties:
-                    organization_id:
-                      type: number
-              required:
-                - filters
-            examples:
-              example1:
-                value:
-                  filters:
-                    organization_id: 1
+        content: {}
   /user/v1/entity-type/create:
     post:
       summary: Create Entity Type
