@@ -37,15 +37,12 @@ module.exports = class UserInviteHelper {
 				const filePath = data.fileDetails.input_path
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
-				if (!response.success) {
-					throw new Error('FAILED_TO_DOWNLOAD')
-				}
+				if (!response.success) throw new Error('FAILED_TO_DOWNLOAD')
 
 				// extract data from csv
 				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
-				if (!parsedFileData.success) {
-					throw new Error('FAILED_TO_READ_CSV')
-				}
+				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
+
 				const invitees = parsedFileData.result.data
 
 				// create outPut file and create invites
@@ -167,21 +164,23 @@ module.exports = class UserInviteHelper {
 			})
 
 			//get all existing user
-			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) => emailEncryption.encrypt(email))
+			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) =>
+				emailEncryption.encrypt(email.toLowerCase())
+			)
 			const userCredentials = await UserCredentialQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
 				{
 					attributes: ['user_id'],
 				}
-			)
+			) //This is valid since UserCredentials Already Store The Encrypted Email ID
 			const userIds = _.map(userCredentials, 'user_id')
 			const existingUsers = await userQueries.findAll(
 				{ id: userIds },
 				{
 					attributes: ['id', 'email', 'organization_id', 'roles'],
 				}
-			)
-			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser]))
+			) //Get All The Users From Database based on UserIds From UserCredentials
+			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
 
 			//find default org id
 			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
@@ -209,11 +208,7 @@ module.exports = class UserInviteHelper {
 				[common.MENTEE_ROLE]: menteeTemplateData,
 			}
 
-			//get existing invitees
-			const allEmails = _.uniq(
-				_.map(csvData, 'email').map((userEmail) => emailEncryption.encrypt(userEmail.toLowerCase()))
-			)
-			const emailList = await userInviteQueries.findAll({ email: allEmails })
+			const emailList = await userInviteQueries.findAll({ email: emailArray })
 			const existingInvitees = {}
 			emailList.forEach((userInvitee) => {
 				existingInvitees[userInvitee.email] = [userInvitee.id]
@@ -245,7 +240,7 @@ module.exports = class UserInviteHelper {
 				}
 
 				//update user details if the user exist and in default org
-				const existingUser = existingEmailsMap.get(invitee.email)
+				const existingUser = existingEmailsMap.get(emailEncryption.encrypt(invitee.email.toLowerCase()))
 
 				if (existingUser) {
 					invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
@@ -279,13 +274,13 @@ module.exports = class UserInviteHelper {
 
 						if (isOrgUpdate || userUpdateData.roles) {
 							const userCredentials = await UserCredentialQueries.findOne({
-								email: invitee.email,
+								email: emailEncryption.encrypt(invitee.email.toLowerCase()),
 							})
 
 							await userQueries.updateUser({ id: userCredentials.user_id }, userUpdateData)
 							await UserCredentialQueries.updateUser(
 								{
-									email: invitee.email,
+									email: emailEncryption.encrypt(invitee.email.toLowerCase()),
 								},
 								{ organization_id: user.organization_id }
 							)
@@ -323,8 +318,9 @@ module.exports = class UserInviteHelper {
 						file_id: fileUploadId,
 						roles: roleTitlesToIds[invitee.roles] || [],
 					}
+					inviteeData.email = emailEncryption.encrypt(inviteeData.email.toLowerCase())
 
-					if (existingInvitees.hasOwnProperty(invitee.email)) {
+					if (existingInvitees.hasOwnProperty(emailEncryption.encrypt(invitee.email.toLowerCase()))) {
 						invitee.statusOrUserId = 'USER_ALREADY_EXISTS'
 						input.push(invitee)
 						continue
@@ -445,6 +441,7 @@ module.exports = class UserInviteHelper {
 				success: true,
 			}
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

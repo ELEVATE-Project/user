@@ -17,7 +17,7 @@ const encrypt = (plainTextEmail) => {
 
 const decrypt = (encryptedEmail) => {
 	try {
-		const decipher = crypto.createDecipheriv(algorithm, secretKey, 'hex', fixedIV)
+		const decipher = crypto.createDecipheriv(algorithm, secretKey, fixedIV)
 		return decipher.update(encryptedEmail, 'hex', 'utf-8') + decipher.final('utf-8')
 	} catch (err) {
 		console.log(err)
