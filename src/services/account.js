@@ -89,12 +89,13 @@ module.exports = class AccountHelper {
 						[Op.eq]: null,
 					},
 				},
-				{ attributes: ['organization_user_invite_id'], raw: true }
+				{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
 			)
 
 			if (invitedUserId) {
 				invitedUserMatch = await userInviteQueries.findOne({
 					id: invitedUserId.organization_user_invite_id,
+					organization_id: invitedUserId.organization_id,
 				}) //add org id here to optimize the query
 			}
 
@@ -457,14 +458,15 @@ module.exports = class AccountHelper {
 	 * @method
 	 * @name logout
 	 * @param {Object} req -request data.
-	 * @param {string} bodyData.loggedInId - user id.
+	 * @param {Integer} user_id - user id.
+	 * @param {Integer} organization_id - organization id.
 	 * @param {string} bodyData.refresh_token - refresh token.
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
-	static async logout(bodyData) {
+	static async logout(bodyData, user_id, organization_id) {
 		try {
-			const user = await userQueries.findByPk(bodyData.loggedInId)
+			const user = await userQueries.findOne({ id: user_id, organization_id })
 			if (!user) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -483,6 +485,7 @@ module.exports = class AccountHelper {
 				{ id: user.id, organization_id: user.organization_id },
 				{ refresh_tokens: refreshTokens }
 			)
+
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
 			if (affectedRows == 0) {
 				return common.failureResponse({
@@ -880,6 +883,11 @@ module.exports = class AccountHelper {
 			delete user.password
 			delete user.otpInfo
 
+			// Check if user and user.image exist, then fetch a downloadable URL for the image
+			if (user && user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({
@@ -1041,7 +1049,7 @@ module.exports = class AccountHelper {
 				let result = []
 
 				/* Required to resolve all promises first before preparing response object else sometime 
-                it will push unresolved promise object if you put this logic in below for loop */
+				it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
 					users.data.map(async (user) => {

@@ -78,11 +78,19 @@ module.exports = class OrganizationsHelper {
 				}
 
 				const createdInvite = await userInviteQueries.create(inviteeData)
-				await UserCredentialQueries.create({
+				const userCred = await UserCredentialQueries.create({
 					email: bodyData.admin_email,
 					organization_id: createdOrganization.id,
 					organization_user_invite_id: createdInvite.id,
 				})
+
+				if (!userCred?.id) {
+					return common.failureResponse({
+						message: userCred,
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				//send email invitation
 				const templateCode = process.env.ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE
 				if (templateCode) {
@@ -295,6 +303,7 @@ module.exports = class OrganizationsHelper {
 				{
 					requester_id: tokenInformation.id,
 					role: bodyData.role,
+					organization_id: tokenInformation.organization_id,
 				},
 				{
 					order: [['created_at', 'DESC']],
