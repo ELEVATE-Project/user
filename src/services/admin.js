@@ -226,8 +226,10 @@ module.exports = class AdminHelper {
 		try {
 			let userCredentials
 			if (emailId) {
+				const plaintextEmailId = emailId.toLowerCase()
+				const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 				userCredentials = await UserCredentialQueries.findOne({
-					email: emailId.toLowerCase(),
+					email: encryptedEmailId,
 				})
 			} else {
 				userCredentials = await UserCredentialQueries.findOne({
