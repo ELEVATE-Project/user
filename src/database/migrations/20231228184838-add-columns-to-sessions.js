@@ -7,19 +7,46 @@ module.exports = {
 			type: Sequelize.INTEGER,
 			allowNull: true,
 		})
+
 		await queryInterface.addColumn('sessions', 'updated_by', {
 			type: Sequelize.INTEGER,
 			allowNull: true,
 		})
+
 		await queryInterface.addColumn('sessions', 'type', {
 			type: Sequelize.STRING,
-			allowNull: true,
+			allowNull: false,
+			defaultValue: 'PUBLIC',
+		})
+
+		// Update existing null values
+		await queryInterface.bulkUpdate(
+			'sessions',
+			{
+				created_by: Sequelize.literal('mentor_id'),
+				updated_by: Sequelize.literal('mentor_id'),
+			},
+			{
+				created_by: null,
+				updated_by: null,
+			}
+		)
+
+		//Modify columns to disallow null
+
+		await queryInterface.changeColumn('sessions', 'created_by', {
+			type: Sequelize.INTEGER,
+			allowNull: false,
+		})
+		await queryInterface.changeColumn('sessions', 'updated_by', {
+			type: Sequelize.INTEGER,
+			allowNull: false,
 		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
 		await queryInterface.removeColumn('sessions', 'created_by')
-		await queryInterface.removeColumn('sessions', 'type')
 		await queryInterface.removeColumn('sessions', 'updated_by')
+		await queryInterface.removeColumn('sessions', 'type')
 	},
 }
