@@ -7,6 +7,9 @@ module.exports = class RolePermission {
 	 * @method
 	 * @name create
 	 * @param {Object} req - Request data.
+	 * @param {Integer} req.params.id - role_id
+	 * @param {Integer} req.body.permission_id - permission_id
+	 * @param {Integer} req.decodedToken.id - id
 	 * @returns {JSON} - RolePermission creation object.
 	 */
 
@@ -28,6 +31,8 @@ module.exports = class RolePermission {
 	 * @method
 	 * @name delete
 	 * @param {Object} req - Request data.
+	 * @param {Integer} req.params.id - role_id
+	 * @param {Integer} req.body.permission_id - permission_id
 	 * @returns {JSON} - RolePermission deletion object.
 	 */
 

@@ -2,7 +2,7 @@ const RolePermissionMapping = require('@database/models/index').RolePermission
 
 exports.create = async (data) => {
 	try {
-		return await RolePermissionMapping.create(data, { returning: true })
+		return RolePermissionMapping.create(data, { returning: true })
 	} catch (error) {
 		throw error
 	}

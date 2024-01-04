@@ -14,9 +14,9 @@ module.exports = class modulesHelper {
 	 * @returns {JSON} - RolePermission creation object.
 	 */
 
-	static async create(role_id, permission_id, id) {
+	static async create(roleId, permissionId, id) {
 		try {
-			const permission = await permissionsQueries.findPermissionId(permission_id)
+			const permission = await permissionsQueries.findPermissionId(permissionId)
 			if (!permission) {
 				return common.failureResponse({
 					message: 'PERMISSION_NOT_FOUND',
@@ -25,21 +25,21 @@ module.exports = class modulesHelper {
 				})
 			}
 			const data = {
-				role_id,
-				permission_id,
+				role_id: roleId,
+				permission_id: permissionId,
 				module: permission.module,
 				actions: permission.actions,
 				created_by: id,
 			}
-			const rolepermissionmapping = await rolePermissionMappingQueries.create(data)
+			const rolePermissionMapping = await rolePermissionMappingQueries.create(data)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_MAPPING_CREATED_SUCCESSFULLY',
 				result: {
-					role_Id: rolepermissionmapping.role_id,
-					permission_Id: rolepermissionmapping.permission_id,
-					module: rolepermissionmapping.module,
-					actions: rolepermissionmapping.actions,
+					roleId: rolePermissionMapping.role_id,
+					permissionId: rolePermissionMapping.permission_id,
+					module: rolePermissionMapping.module,
+					actions: rolePermissionMapping.actions,
 				},
 			})
 		} catch (error) {
@@ -59,26 +59,26 @@ module.exports = class modulesHelper {
 	 * @method
 	 * @name delete
 	 * @param {Object} req - Request data.
-	 * @returns {JSON} - RolePermission deletion object.
+	 * @returns {JSON} - rolePermission deletion object.
 	 */
 
-	static async delete(role_id, permission_id) {
+	static async delete(roleId, permissionId) {
 		try {
-			const filter = { role_id, permission_id }
-			const rolepermissionmapping = await rolePermissionMappingQueries.delete(filter)
-			return common.successResponse({
-				statusCode: httpStatusCode.created,
-				message: 'ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY',
-				result: {},
-			})
-		} catch (error) {
-			if (error instanceof UniqueConstraintError) {
+			const filter = { role_id: roleId, permission_id: permissionId }
+			const rolePermissionMapping = await rolePermissionMappingQueries.delete(filter)
+			if (rolePermissionMapping == 0) {
 				return common.failureResponse({
 					message: 'ROLE_PERMISSION_MAPPING_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY',
+				result: {},
+			})
+		} catch (error) {
 			throw error
 		}
 	}

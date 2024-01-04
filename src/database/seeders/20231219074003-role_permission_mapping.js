@@ -31,6 +31,6 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		await queryInterface.dropTable('role_permission_mapping')
+		await queryInterface.bulkDelete('role_permission_mapping', null, {})
 	},
 }

@@ -16,7 +16,6 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		// Remove the 'modules' table
-		await queryInterface.dropTable('modules')
+		await queryInterface.bulkDelete('modules', null, {})
 	},
 }
