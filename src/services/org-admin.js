@@ -305,8 +305,10 @@ module.exports = class OrgAdminHelper {
 			let userIds = []
 
 			if (bodyData.email) {
+				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
+				console.log('ENCRYPTEEEEEEEEEEEEEED EMAIL IDS: ', encryptedEmailIds)
 				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: bodyData.email } },
+					{ email: { [Op.in]: encryptedEmailIds } },
 					{
 						attributes: ['user_id'],
 					}
@@ -342,6 +344,7 @@ module.exports = class OrgAdminHelper {
 				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
