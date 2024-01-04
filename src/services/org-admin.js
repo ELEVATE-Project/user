@@ -306,7 +306,6 @@ module.exports = class OrgAdminHelper {
 
 			if (bodyData.email) {
 				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
-				console.log('ENCRYPTEEEEEEEEEEEEEED EMAIL IDS: ', encryptedEmailIds)
 				const userCredentials = await UserCredentialQueries.findAll(
 					{ email: { [Op.in]: encryptedEmailIds } },
 					{

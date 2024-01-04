@@ -452,6 +452,7 @@ module.exports = class AdminHelper {
 	 */
 	static async deactivateUser(bodyData, loggedInUserId) {
 		try {
+			let filterQuery = {}
 			for (let item in bodyData) {
 				filterQuery[item] = {
 					[Op.in]: bodyData[item],
@@ -461,8 +462,9 @@ module.exports = class AdminHelper {
 			let userIds = []
 
 			if (bodyData.email) {
+				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
 				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: bodyData.email } },
+					{ email: { [Op.in]: encryptedEmailIds } },
 					{
 						attributes: ['user_id'],
 					}
@@ -499,9 +501,11 @@ module.exports = class AdminHelper {
 				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
+
 	static async triggerViewRebuild(decodedToken) {
 		try {
 			const result = await adminService.triggerViewBuild()
