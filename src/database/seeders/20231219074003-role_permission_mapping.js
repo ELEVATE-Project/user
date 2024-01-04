@@ -12,6 +12,7 @@ module.exports = {
 					actions: ['ALL'],
 					created_at: new Date(),
 					updated_at: new Date(),
+					created_by: 0,
 				},
 				{
 					role_id: 4,
@@ -20,6 +21,7 @@ module.exports = {
 					actions: ['ALL'],
 					created_at: new Date(),
 					updated_at: new Date(),
+					created_by: 0,
 				},
 			]
 			await queryInterface.bulkInsert('role_permission_mapping', rolePermissionsData)

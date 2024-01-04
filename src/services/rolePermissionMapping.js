@@ -14,16 +14,24 @@ module.exports = class modulesHelper {
 	 * @returns {JSON} - RolePermission creation object.
 	 */
 
-	static async create(role_id, permission_id) {
+	static async create(role_id, permission_id, id) {
 		try {
 			const permission = await permissionsQueries.findPermissionId(permission_id)
-			const Data = {
+			if (!permission) {
+				return common.failureResponse({
+					message: 'PERMISSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const data = {
 				role_id,
 				permission_id,
 				module: permission.module,
 				actions: permission.actions,
+				created_by: id,
 			}
-			const rolepermissionmapping = await rolePermissionMappingQueries.create(Data)
+			const rolepermissionmapping = await rolePermissionMappingQueries.create(data)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_MAPPING_CREATED_SUCCESSFULLY',

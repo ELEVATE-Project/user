@@ -1,5 +1,5 @@
 const common = require('@constants/common')
-const RolePermissionService = require('@services/rolePermissionMapping')
+const rolePermissionService = require('@services/rolePermissionMapping')
 
 module.exports = class RolePermission {
 	/**
@@ -12,7 +12,11 @@ module.exports = class RolePermission {
 
 	async create(req) {
 		try {
-			const createRolePermission = await RolePermissionService.create(req.params.id, req.body.permission_id)
+			const createRolePermission = await rolePermissionService.create(
+				req.params.id,
+				req.body.permission_id,
+				req.decodedToken.id
+			)
 			return createRolePermission
 		} catch (error) {
 			return error
@@ -29,7 +33,7 @@ module.exports = class RolePermission {
 
 	async delete(req) {
 		try {
-			const deleteRolePermission = await RolePermissionService.delete(req.params.id, req.body.permission_id)
+			const deleteRolePermission = await rolePermissionService.delete(req.params.id, req.body.permission_id)
 			return deleteRolePermission
 		} catch (error) {
 			return error

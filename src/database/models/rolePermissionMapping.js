@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				type: DataTypes.ARRAY(DataTypes.STRING),
 			},
+			created_by: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
 		},
 		{
 			modelName: 'RolePermission',

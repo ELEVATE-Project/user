@@ -30,6 +30,10 @@ module.exports = {
 				allowNull: false,
 				type: Sequelize.DATE,
 			},
+			created_by: {
+				allowNull: false,
+				type: Sequelize.INTEGER,
+			},
 		})
 	},
 
