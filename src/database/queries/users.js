@@ -186,7 +186,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			filterConditions.push(`users.id IN (:userIds)`)
 		}
 		if (email) {
-			filterConditions.push(`users.email IN (:email)`)
+			filterConditions.push(`users.email ILIKE :email`)
 		}
 		if (name) {
 			filterConditions.push(`users.name ILIKE :name`)
@@ -228,7 +228,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			userIds: userIds,
-			email: email,
+			email: '%' + email + '%',
 			name: '%' + name + '%',
 		}
 
