@@ -18,8 +18,8 @@ describe('mentoring/v1/mentees', function () {
 			tags: ['Experienced', 'Technical'],
 			visibility: 'visible',
 			organisation_ids: [1],
-			external_session_visibility: 'limited',
-			external_mentor_visibility: 'hidden',
+			external_session_visibility: 'CURRENT',
+			external_mentor_visibility: 'ALL',
 		})
 	}, 100000)
 

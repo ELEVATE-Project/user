@@ -545,8 +545,8 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(userPolicyDetails.organization_id)
 
 			// list of related org ids
-			let orgToList = userOrgDetails.data.result.related_orgs
-			orgToList.push(userPolicyDetails.organization_id)
+			let relatedOrganizations = userOrgDetails.data.result.related_orgs
+			relatedOrganizations.push(userPolicyDetails.organization_id)
 
 			// Filter user data based on policy
 			// generate filter based on condition
@@ -570,7 +570,7 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 				if (userOrgDetails.data.result.related_orgs.length == 0) {
 					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
 				} else {
-					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${orgToList})`
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${relatedOrganizations})`
 				}
 			}
 		}

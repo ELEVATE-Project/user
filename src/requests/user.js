@@ -205,7 +205,7 @@ const listWithoutLimit = function (userType, searchText) {
 }
 const search = function (userType, pageNo, pageSize, searchText, userServiceQueries) {
 	let userSearchBody = {}
-
+	// queryParams to search in user service. Like user_ids , name , email etc...
 	if (userServiceQueries) {
 		for (const [key, value] of Object.entries(userServiceQueries)) {
 			userSearchBody[key] = value

@@ -704,6 +704,10 @@ module.exports = class MentorsHelper {
 			}
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
+			if (mentorIds) {
+				userServiceQueries['user_ids'] = mentorIds
+			}
+
 			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, mentorIds)
 			if (userDetails.data.result.count == 0) {
 				return common.successResponse({

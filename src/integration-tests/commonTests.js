@@ -17,11 +17,10 @@ const logIn = async () => {
 			timeout: 60000,
 		}
 		await waitOn(opts)
-		let firstname = 'adithya'
-		let email = firstname + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
+		let email = 'adithya' + crypto.randomBytes(5).toString('hex') + '@tunerlabs.com'
 		let password = faker.internet.password()
 		let res = await request.post('/user/v1/account/create').send({
-			name: firstname,
+			name: 'adithya',
 			email: email,
 			password: password,
 			role: common.MENTEE_ROLE,
