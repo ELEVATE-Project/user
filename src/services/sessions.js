@@ -105,6 +105,11 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
+			if (userDetails && userDetails.name) {
+				bodyData.mentor_name = userDetails.name
+			}
+
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
 				return common.failureResponse({
@@ -1433,7 +1438,12 @@ module.exports = class SessionsHelper {
 				created_by: userId,
 				...(queryParams.status && { status: queryParams.status.split(',') }),
 				...(queryParams.type && { type: queryParams.type.split(',') }),
-				...(searchText && { title: { [Op.iLike]: `%${searchText}%` } }),
+				...(searchText && {
+					[Op.or]: [
+						{ title: { [Op.iLike]: `%${searchText}%` } },
+						{ mentor_name: { [Op.iLike]: `%${searchText}%` } },
+					],
+				}),
 			}
 
 			let sessions = await sessionQueries.findAll(filter, { order: [['created_at', 'DESC']] })
