@@ -90,6 +90,7 @@ module.exports = {
 		'/admin/triggerViewRebuildInternal',
 		'/org-admin/updateRelatedOrgs',
 		'/sessions/completed',
+		'/sessions/bulkUpdateMentorNames',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',

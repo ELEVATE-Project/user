@@ -1664,4 +1664,32 @@ module.exports = class SessionsHelper {
 			throw error
 		}
 	}
+	/**
+	 * Bulk update mentor names for sessions.
+	 * @method
+	 * @name bulkUpdateMentorNames
+	 * @param {Array} mentorsId - Array of mentor IDs to update.
+	 * @param {STRING} mentorsName - Mentor name that needs to be updated.
+	 * @returns {Object} - Success response indicating the update was performed successfully.
+	 * @throws {Error} - Throws an error if there's an issue during the bulk update.
+	 */
+	static async bulkUpdateMentorNames(mentorsId, mentorsName) {
+		try {
+			await sessionQueries.updateSession(
+				{
+					mentor_id: mentorsId,
+				},
+				{
+					mentor_name: mentorsName,
+				}
+			)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }
