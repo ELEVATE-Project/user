@@ -31,6 +31,9 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	return error
 }
 
+function getPaginationOffset(page, limit) {
+	return (page - 1) * limit
+}
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -38,6 +41,7 @@ module.exports = {
 	},
 	successResponse,
 	failureResponse,
+	getPaginationOffset,
 	guestUrls: [
 		'/user/v1/account/login',
 		'/user/v1/account/create',
@@ -115,4 +119,5 @@ module.exports = {
 	NO_OF_ATTEMPTS: 3,
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
+	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
 }
