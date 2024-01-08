@@ -17,6 +17,7 @@ const organizationQueries = require('@database/queries/organization')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 
 module.exports = class UserHelper {
 	/**
@@ -87,6 +88,19 @@ module.exports = class UserHelper {
 				bodyData
 			)
 
+			const currentUser = updatedData[0]
+
+			const currentName = currentUser.dataValues.name // Assuming name is a direct property, adjust as needed
+			const previousName = currentUser._previousDataValues?.name || null
+
+			if (currentName !== previousName) {
+				eventBroadcaster('updateName', {
+					requestBody: {
+						mentor_name: currentName,
+						mentor_id: id,
+					},
+				})
+			}
 			const redisUserKey = common.redisUserPrefix + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
