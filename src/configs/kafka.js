@@ -9,7 +9,6 @@
 const { Kafka } = require('kafkajs')
 
 const utils = require('@generics/utils')
-const profileService = require('@services/helper/profile')
 
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
@@ -42,9 +41,7 @@ module.exports = async () => {
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
 					let streamingData = JSON.parse(message.value)
-					if (streamingData.type == 'MENTOR_RATING' && streamingData.value && streamingData.mentorId) {
-						profileService.ratingCalculation(streamingData)
-					} else if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
+					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
 						utils.internalDel(streamingData.value)
 					}
 				} catch (error) {

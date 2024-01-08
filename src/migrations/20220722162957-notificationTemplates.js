@@ -37,10 +37,9 @@ module.exports = {
 		let notificationTemplateData = []
 		emailTemplates.forEach(async function (emailTemplate) {
 			emailTemplate['status'] = 'active'
-			emailTemplate['deleted'] = false
 			emailTemplate['type'] = 'email'
-			emailTemplate['updatedAt'] = moment().format()
-			emailTemplate['createdAt'] = moment().format()
+			emailTemplate['updated_at'] = moment().format()
+			emailTemplate['created_at'] = moment().format()
 			emailTemplate['createdBy'] = 'SYSTEM'
 			emailTemplate['updatedBy'] = 'SYSTEM'
 			if (emailTemplate.code == 'email_footer') {
