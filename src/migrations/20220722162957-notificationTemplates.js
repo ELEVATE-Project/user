@@ -7,7 +7,7 @@ let emailTemplates = [
 	{
 		code: 'emailotp',
 		subject: 'MentorED - Reset Otp',
-		body: '<p>Dear {name},</p> Your OTP to reset your password is {otp}. Please enter the OTP to reset your password. For your security, please do not share this OTP with anyone.',
+		body: '<p>Dear {name},</p> Your OTP to reset your password is {otp}. Please enter the OTP to reset your password. For security, please do not share this OTP with anyone.',
 	},
 	{
 		code: 'registrationotp',

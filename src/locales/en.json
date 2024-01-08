@@ -104,5 +104,14 @@
 	"NAME_INVALID": "Name is invalid.",
 	"ROLE_CHANGE_APPROVED": "Your request for becoming a mentor has been approved. Check email or login again to start your journey.",
 	"MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY": "Materialized views generated successfully",
-	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully"
+	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully",
+	"ROLE_CREATED_SUCCESSFULLY": "Roles added successfully",
+	"ROLE_UPDATED_SUCCESSFULLY": "Roles updated successfully",
+	"ROLE_DELETED_SUCCESSFULLY": "Module deleted successfully",
+	"ROLES_FETCHED_SUCCESSFULLY": "Roles fetched successfully",
+	"ROLE_NOT_UPDATED": "Roles not updated",
+	"ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT": "Roles already exists OR Roles not present",
+	"ROLE_NOT_DELETED": "Roles not deleted",
+	"ROLES_HAS_EMPTY_LIST": "Empty roles list",
+	"COLUMN_DOES_NOT_EXISTS": "Role column does not exists"
 }

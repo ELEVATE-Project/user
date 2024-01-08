@@ -127,6 +127,7 @@ module.exports = async function (req, res, next) {
 
 			//update the token role as same as current user role
 			decodedToken.data.roles = roles
+			decodedToken.data.organization_id = user.organization_id
 		}
 		req.decodedToken = decodedToken.data
 		next()

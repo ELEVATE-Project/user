@@ -37,7 +37,10 @@ module.exports = class OrgAdminHelper {
 	static async bulkUserCreate(filePath, tokenInformation) {
 		try {
 			const { id, organization_id } = tokenInformation
-			const { name, email } = await userQueries.findOne({ id }, { attributes: ['name', 'email'] })
+			const { name, email } = await userQueries.findOne(
+				{ id, organization_id },
+				{ attributes: ['name', 'email'] }
+			)
 
 			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
 
@@ -242,7 +245,10 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			const requestDetails = await orgRoleReqQueries.requestDetails({ id: requestId })
+			const requestDetails = await orgRoleReqQueries.requestDetails({
+				id: requestId,
+				organization_id: tokenInformation.organization_id,
+			})
 
 			const isApproved = bodyData.status === common.ACCEPTED_STATUS
 			const isRejected = bodyData.status === common.REJECTED_STATUS
@@ -250,7 +256,10 @@ module.exports = class OrgAdminHelper {
 			const shouldSendEmail = isApproved || isRejected
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
-			const user = await userQueries.findByPk(requestDetails.requester_id)
+			const user = await userQueries.findOne({
+				id: requestDetails.requester_id,
+				organization_id: tokenInformation.organization_id,
+			})
 			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(requestDetails, user)
@@ -430,7 +439,10 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 			const roles = _.uniq(rolesToUpdate)
 
 			await userQueries.updateUser(
-				{ id: requestDetails.requester_id },
+				{
+					id: requestDetails.requester_id,
+					organization_id: user.organization_id,
+				},
 				{
 					roles,
 				}

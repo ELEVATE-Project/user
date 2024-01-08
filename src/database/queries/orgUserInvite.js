@@ -8,9 +8,7 @@ exports.create = async (data) => {
 		const result = createData.get({ plain: true })
 		return result
 	} catch (error) {
-		if (error instanceof UniqueConstraintError) {
-			return 'USER_ALREADY_EXISTS'
-		} else if (error instanceof ValidationError) {
+		if (error instanceof ValidationError) {
 			let message
 			error.errors.forEach((err) => {
 				message = `${err.path} cannot be null.`
@@ -54,6 +52,18 @@ exports.deleteOne = async (id, options = {}) => {
 			...options,
 		})
 		return result // Returns the number of rows deleted
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAll = async (filter, options = {}) => {
+	try {
+		return await organizationUserInvite.findAll({
+			where: filter,
+			...options,
+			raw: true,
+		})
 	} catch (error) {
 		return error
 	}

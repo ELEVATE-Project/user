@@ -60,17 +60,18 @@ module.exports = class Account {
 	 * @name logout
 	 * @param {Object} req -request data.
 	 * @param {Object} req.decodedToken - it contains user token informations.
-	 * @param {string} req.body.loggedInId - user id.
 	 * @param {string} req.body.refresh_token - refresh token.
 	 * @param {String} req.decodedToken.id - userId.
 	 * @returns {JSON} - accounts loggedout.
 	 */
 
 	async logout(req) {
-		const params = req.body
-		params.loggedInId = req.decodedToken.id
 		try {
-			const loggedOutAccount = await accountService.logout(params)
+			const loggedOutAccount = await accountService.logout(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.organization_id
+			)
 			return loggedOutAccount
 		} catch (error) {
 			return error
@@ -87,9 +88,8 @@ module.exports = class Account {
 	 */
 
 	async generateToken(req) {
-		const params = req.body
 		try {
-			const createdToken = await accountService.generateToken(params)
+			const createdToken = await accountService.generateToken(req.body)
 			return createdToken
 		} catch (error) {
 			return error

@@ -6,8 +6,17 @@ exports.create = async (data) => {
 		const res = await UserCredential.create(data)
 		return res.get({ plain: true })
 	} catch (error) {
-		console.log(error)
-		throw error
+		if (error instanceof UniqueConstraintError) {
+			return 'USER_ALREADY_EXISTS'
+		} else if (error instanceof ValidationError) {
+			let message
+			error.errors.forEach((err) => {
+				message = `${err.path} cannot be null.`
+			})
+			return message
+		} else {
+			return error.message
+		}
 	}
 }
 
@@ -20,7 +29,7 @@ exports.findOne = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.log(error)
-		throw error
+		return error
 	}
 }
 
@@ -33,7 +42,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 		})
 	} catch (error) {
 		console.log(error)
-		throw error
+		return error
 	}
 }
 
