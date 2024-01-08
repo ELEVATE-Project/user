@@ -32,6 +32,9 @@ const organisationExtensionQueries = require('@database/queries/organisationExte
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteeService = require('@services/mentees')
+const { Parser } = require('@json2csv/plainjs')
+const entityTypeService = require('@services/entity-type')
+
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
@@ -1402,6 +1405,246 @@ module.exports = class SessionsHelper {
 			return true
 		} catch (error) {
 			return error
+		}
+	}
+	/**
+	 * Downloads a list of sessions created by a user in CSV format based on query parameters.
+	 * @method
+	 * @name downloadList
+	 * @param {string} userId - User ID of the creator.
+	 * @param {Object} queryParams - Query parameters for filtering sessions.
+	 * @param {string} timezone - Time zone for date and time formatting.
+	 * @param {string} searchText - Text to search for in session titles.
+	 * @returns {Promise<Object>} - A promise that resolves to a response object containing
+	 *                             a CSV stream of the session list for download.
+	 * @throws {Error} - Throws an error if there's an issue during processing.
+	 */
+
+	static async downloadList(userId, queryParams, timezone, searchText) {
+		try {
+			const filter = {
+				created_by: userId,
+				...(queryParams.status && { status: queryParams.status.split(',') }),
+				...(queryParams.type && { type: queryParams.type.split(',') }),
+				...(searchText && { title: { [Op.iLike]: `%${searchText}%` } }),
+			}
+
+			let sessions = await sessionQueries.findAll(filter, { order: [['created_at', 'DESC']] })
+
+			const CSVFields = [
+				{ label: 'No.', value: 'index_number' },
+				{ label: 'Session Name', value: 'title' },
+				{ label: 'Type', value: 'type' },
+				{ label: 'Mentors', value: 'mentor_name' },
+				{ label: 'Date', value: 'start_date' },
+				{ label: 'Time', value: 'start_time' },
+				{ label: 'Duration (Min)', value: 'duration_in_minutes' },
+				{ label: 'Mentee Count', value: 'mentee_count' },
+				{ label: 'Status', value: 'status' },
+			]
+
+			//Return an empty CSV if sessions list is empty
+			if (sessions.length == 0) {
+				const parser = new Parser({
+					fields: CSVFields,
+					header: true,
+					includeEmptyRows: true,
+					defaultValue: null,
+				})
+				const csv = parser.parse()
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					isResponseAStream: true,
+					stream: csv,
+					fileName: 'session_list' + moment() + '.csv',
+				})
+			}
+
+			sessions = await this.populateSessionDetails({
+				sessions: sessions,
+				timezone: timezone,
+				transformEntities: true,
+			})
+
+			const parser = new Parser({ fields: CSVFields, header: true, includeEmptyRows: true, defaultValue: null })
+			const csv = parser.parse(sessions)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				isResponseAStream: true,
+				stream: csv,
+				fileName: 'session_list' + moment() + '.csv',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Transform session data from epoch format to date time format with duration.
+	 *
+	 * @static
+	 * @method
+	 * @name transformSessionDate
+	 * @param {Object} session - Sequelize response for a mentoring session.
+	 * @param {string} [timezone='Asia/Kolkata'] - Time zone for date and time formatting.
+	 * @returns {Object} - Transformed session data.
+	 * @throws {Error} - Throws an error if any issues occur during transformation.
+	 */
+	static async transformSessionDate(session, timezone = 'Asia/Kolkata') {
+		try {
+			const transformDate = (epochTimestamp) => {
+				const date = moment.unix(epochTimestamp) // Use moment.unix() to handle Unix timestamps
+				const formattedDate = date.clone().tz(timezone).format('DD-MMM-YYYY')
+				const formattedTime = date.clone().tz(timezone).format('hh:mm A')
+				return { formattedDate, formattedTime }
+			}
+
+			const transformDuration = (startEpoch, endEpoch) => {
+				const startDate = moment.unix(startEpoch)
+				const endDate = moment.unix(endEpoch)
+				const duration = moment.duration(endDate.diff(startDate))
+				return duration.asMinutes()
+			}
+
+			const startDate = session.start_date
+			const endDate = session.end_date
+
+			const { formattedDate: startDateFormatted, formattedTime: startTimeFormatted } = transformDate(startDate)
+
+			const durationInMinutes = transformDuration(startDate, endDate)
+
+			return {
+				start_date: startDateFormatted,
+				start_time: startTimeFormatted,
+				duration_in_minutes: durationInMinutes,
+			}
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Populates session details with additional information such as start_date,
+	 * start_time, duration_in_minutes, mentee_count, and index_number.
+	 * @method
+	 * @name populateSessionDetails
+	 * @param {Object[]} sessions - Array of session objects.
+	 * @param {string} timezone - Time zone for date and time formatting.
+	 * @param {number} [page] - Page number for pagination.
+	 * @param {number} [limit] - Limit of sessions per page for pagination.
+	 * @param {boolean} [transformEntities=false] - Flag to indicate whether to transform entity types.
+	 * @returns {Promise<Array>} - Array of session objects with populated details.
+	 * @throws {Error} - Throws an error if there's an issue during processing.
+	 */
+	static async populateSessionDetails({ sessions, timezone, page, limit, transformEntities = false }) {
+		try {
+			const uniqueOrgIds = [...new Set(sessions.map((obj) => obj.mentor_organization_id))]
+			sessions = await entityTypeService.processEntityTypesToAddValueLabels(
+				sessions,
+				uniqueOrgIds,
+				common.sessionModelName,
+				'mentor_organization_id'
+			)
+
+			await Promise.all(
+				sessions.map(async (session, index) => {
+					if (transformEntities) {
+						if (session.status) session.status = session.status.label
+						if (session.type) session.type = session.type.label
+					}
+					const res = await this.transformSessionDate(session, timezone)
+					const menteeCount = session.seats_limit - session.seats_remaining
+					let indexNumber
+
+					indexNumber = index + 1 + (page && limit ? limit * (page - 1) : 0)
+
+					Object.assign(session, {
+						start_date: res.start_date,
+						start_time: res.start_time,
+						duration_in_minutes: res.duration_in_minutes,
+						mentee_count: menteeCount,
+						index_number: indexNumber,
+					})
+				})
+			)
+			return sessions
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Retrieves and formats sessions created by a user based on query parameters.
+	 * @method
+	 * @name createdSessions
+	 * @param {string} userId - User ID of the creator.
+	 * @param {Object} queryParams - Query parameters for filtering and sorting sessions.
+	 * @param {string} timezone - Time zone for date and time formatting.
+	 * @param {number} page - Page number for pagination.
+	 * @param {number} limit - Limit of sessions per page for pagination.
+	 * @param {string} searchText - Text to search for in session titles or mentor names.
+	 * @returns {Promise<Object>} - A promise that resolves to a response object containing
+	 *                             the formatted list of created sessions and count.
+	 * @throws {Error} - Throws an error if there's an issue during processing.
+	 */
+
+	static async createdSessions(userId, queryParams, timezone, page, limit, searchText) {
+		try {
+			const filter = {
+				created_by: userId,
+				...(queryParams.status && { status: queryParams.status.split(',') }),
+				...(queryParams.type && { type: queryParams.type.split(',') }),
+				...(searchText && {
+					[Op.or]: [
+						{ title: { [Op.iLike]: `%${searchText}%` } },
+						{ mentor_name: { [Op.iLike]: `%${searchText}%` } },
+					],
+				}),
+			}
+			const sortBy = queryParams.sort_by || 'created_at'
+			const order = queryParams.order || 'DESC'
+
+			let sessions = await sessionQueries.findAndCountAll(filter, {
+				order: [[sortBy, order]],
+				offset: limit * (page - 1),
+				limit: limit,
+			})
+			if (sessions.rows.length == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'LIST_FETCHED',
+					result: { data: [], count: 0 },
+				})
+			}
+
+			sessions.rows = await this.populateSessionDetails({
+				sessions: sessions.rows,
+				timezone: timezone,
+				page: page,
+				limit: limit,
+			})
+			const formattedSessionList = sessions.rows.map((session, index) => ({
+				id: session.id,
+				index_number: index + 1 + limit * (page - 1), //To keep consistency with pagination
+				title: session.title,
+				type: session.type,
+				mentor_name: session.mentor_name,
+				start_date: session.start_date,
+				start_time: session.start_time,
+				duration_in_minutes: session.duration_in_minutes,
+				status: session.status,
+				mentee_count: session.mentee_count,
+				mentor_organization_id: session.mentor_organization_id,
+			}))
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_LIST_FETCHED',
+				result: { data: formattedSessionList, count: sessions.count },
+			})
+		} catch (error) {
+			throw error
 		}
 	}
 }

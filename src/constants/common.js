@@ -8,13 +8,23 @@
 const form = require('@generics/form')
 const { elevateLog, correlationId } = require('elevate-logger')
 const logger = elevateLog.init()
-const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
+const successResponse = async ({
+	statusCode = 500,
+	responseCode = 'OK',
+	message,
+	result = [],
+	meta = {},
+	isResponseAStream = false,
+	stream,
+	fileName = '',
+}) => {
 	const versions = await form.getAllFormsVersion()
 	let response = {
 		statusCode,
 		responseCode,
 		message,
 		result,
+		isResponseAStream,
 		meta: {
 			...meta,
 			formsVersion: versions,
@@ -22,6 +32,11 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 			meetingPlatform: process.env.DEFAULT_MEETING_SERVICE,
 		},
 	}
+	if (isResponseAStream) {
+		response.stream = stream
+		response.fileName = fileName
+	}
+
 	logger.info('Request Response', { response: response })
 
 	return response
