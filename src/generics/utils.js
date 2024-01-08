@@ -240,10 +240,13 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 		requestBody.custom_entity_text = {}
 		if (!requestBody.meta) requestBody.meta = {}
 		for (const currentFieldName in requestBody) {
-			const currentFieldValue = requestBody[currentFieldName]
+			const [currentFieldValue, isFieldValueAnArray] = Array.isArray(requestBody[currentFieldName])
+				? [[...requestBody[currentFieldName]], true] //If the requestBody[currentFieldName] is array, make a copy in currentFieldValue than a reference
+				: [requestBody[currentFieldName], false]
 			const entityType = entityTypeMap.get(currentFieldName)
 			if (entityType && entityType.get('allow_custom_entities')) {
-				if (Array.isArray(currentFieldValue)) {
+				if (isFieldValueAnArray) {
+					requestBody[currentFieldName] = []
 					const recognizedEntities = []
 					const customEntities = []
 					for (const value of currentFieldValue) {
@@ -303,19 +306,8 @@ function processDbResponse(responseBody, entityType) {
 					value: entity.value,
 					label: entity.label,
 				}))
-			if (matchingValues.length > 0) {
-				output[key] = Array.isArray(output[key])
-					? matchingValues
-					: matchingValues.find((entity) => entity.value === output[key])
-			} else if (Array.isArray(output[key])) {
-				output[key] = output[key].map((item) => {
-					if (item.value && item.label) return item
-					return {
-						value: item,
-						label: item,
-					}
-				})
-			}
+			if (matchingValues.length > 0) output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
+			else if (Array.isArray(output[key])) output[key] = output[key].filter((item) => item.value && item.label)
 		}
 
 		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
