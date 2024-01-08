@@ -50,7 +50,9 @@ module.exports = class SessionsHelper {
 			bodyData.created_by = loggedInUserId
 			bodyData.updated_by = loggedInUserId
 
-			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
+			const mentorIdToCheck = bodyData.mentor_id ? bodyData.mentor_id : loggedInUserId
+
+			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
@@ -58,11 +60,27 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
-			if (timeSlot.isTimeSlotAvailable === false) {
+			if (!bodyData.mentor_id) {
+				bodyData.mentor_id = loggedInUserId
+			} else if (
+				mentorDetails.visibility !== common.ASSOCIATED ||
+				!mentorDetails.visible_to_organizations.includes(orgId)
+			) {
 				return common.failureResponse({
-					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
+			if (!timeSlot.isTimeSlotAvailable) {
+				const errorMessage = bodyData.mentor_id
+					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
+					: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } }
+
+				return common.failureResponse({
+					message: errorMessage,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -85,17 +103,6 @@ module.exports = class SessionsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
-
-			if (!bodyData.mentor_id) {
-				if (bodyData.type == common.TYPE.PRIVATE) {
-					return common.failureResponse({
-						message: 'PRIVATE_TYPE_NOT_ALLOWED',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-				bodyData.mentor_id = loggedInUserId
 			}
 
 			const defaultOrgId = await getDefaultOrgId()
@@ -254,7 +261,7 @@ module.exports = class SessionsHelper {
 			}
 			if (!sessionDetail.created_by !== userId) {
 				return common.failureResponse({
-					message: 'CANNOT_EDIT_DELETE_SESSION_CREATED_BY_MANAGER',
+					message: 'CANNOT_EDIT_DELETE_SESSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

@@ -170,7 +170,7 @@ module.exports = {
 	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
 	ACTIVE_STATUS: 'ACTIVE',
-	TYPE: {
+	SESSION_TYPE: {
 		PUBLIC: 'PUBLIC',
 		PRIVATE: 'PRIVATE',
 	},
