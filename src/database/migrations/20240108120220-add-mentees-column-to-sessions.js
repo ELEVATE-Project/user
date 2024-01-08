@@ -4,7 +4,7 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.addColumn('sessions', 'mentees', {
-			type: Sequelize.INTEGER,
+			type: Sequelize.ARRAY(Sequelize.INTEGER),
 			allowNull: true,
 		})
 	},

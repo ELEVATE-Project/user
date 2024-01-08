@@ -777,3 +777,44 @@ exports.deactivateAndReturnMentorSessions = async (userId) => {
 		return error
 	}
 }
+
+exports.appendMentees = async (id, menteeIds, options = {}) => {
+	try {
+		const result = await Session.update(
+			{
+				// mentees: sequelize.fn('array_append', sequelize.col('mentees'), menteeIds),
+				// mentees: Sequelize.literal(`"mentees" || ARRAY[${menteeIds.join(', ')}]`),
+				mentees: Sequelize.literal(
+					`ARRAY(SELECT DISTINCT unnest("mentees" || ARRAY[${menteeIds.join(', ')}]))`
+				),
+			},
+			{
+				where: {
+					id: id,
+					[Op.or]: [
+						{
+							[Op.not]: {
+								mentees: {
+									[Op.contains]: menteeIds,
+								},
+							},
+						},
+						{
+							mentees: {
+								[Op.is]: null,
+							},
+						},
+					],
+				},
+				...options,
+				individualHooks: true,
+			}
+		)
+
+		const [rowsAffected, updatedRows] = result
+		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
+	} catch (error) {
+		console.log(error)
+		return error
+	}
+}

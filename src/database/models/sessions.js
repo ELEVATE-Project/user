@@ -125,21 +125,21 @@ module.exports = (sequelize, DataTypes) => {
 			custom_entity_text: {
 				type: DataTypes.JSON,
 			},
-			type: {
-				type: DataTypes.STRING,
-				allowNull: true,
-				defaultValue: 'PUBLIC',
-			},
-			created_by: {
-				type: DataTypes.INTEGER,
-				allowNull: true,
-			},
-			updated_by: {
-				type: DataTypes.INTEGER,
-				allowNull: true,
-			},
+			// type: {
+			// 	type: DataTypes.STRING,
+			// 	allowNull: true,
+			// 	defaultValue: 'PUBLIC',
+			// },
+			// created_by: {
+			// 	type: DataTypes.INTEGER,
+			// 	allowNull: true,
+			// },
+			// updated_by: {
+			// 	type: DataTypes.INTEGER,
+			// 	allowNull: true,
+			// },
 			mentees: {
-				type: DataTypes.ARRAY(DataTypes.STRING),
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: true,
 			},
 		},

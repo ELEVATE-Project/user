@@ -263,4 +263,26 @@ module.exports = class Sessions {
 			return error
 		}
 	}
+
+	/**
+	 * Add mentees to sessions
+	 * @method
+	 * @name addMentees
+	 * @param {Object} req -request data.
+	 * @param {String} req.params.id - Session id.
+	 * @param {String} req.decodedToken._id - User Id.
+	 * @returns {JSON} - Session Details.
+	 */
+
+	async addMentees(req) {
+		try {
+			const sessionDetails = await sessionService.addMentees(
+				req.params.id, // session id
+				req.body.mentees // Array of mentee ids
+			)
+			return sessionDetails
+		} catch (error) {
+			return error
+		}
+	}
 }

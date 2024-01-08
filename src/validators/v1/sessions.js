@@ -48,4 +48,13 @@ module.exports = {
 
 		req.checkBody('recordingUrl').notEmpty().withMessage('recordingUrl field is empty')
 	},
+
+	addMentees: (req) => {
+		// throw error if sessionId is not passed
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		// Check if req.body.menteeIds is an array and not empty
+		req.checkBody('mentees')
+			.custom((mentees) => Array.isArray(mentees) && mentees.length > 0)
+			.withMessage('mentees must be a non-empty array')
+	},
 }

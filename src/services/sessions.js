@@ -1378,4 +1378,113 @@ module.exports = class SessionsHelper {
 			return error
 		}
 	}
+
+	/**
+	 * Add mentees to session.
+	 * @method
+	 * @name addMentees
+	 * @param {String} sessionId 				- Session id.
+	 * @param {Number} mentees 					- Mentees id.
+	 * @returns {JSON} 							- Session details
+	 */
+
+	static async addMentees(sessionId, mentees) {
+		try {
+			console.log('Inside addMentee function')
+			// check if session exists or not
+			const sessionDetails = await sessionQueries.findOne({ id: sessionId })
+			console.log('sessionDetails : ', sessionDetails)
+			if (!sessionDetails || Object.keys(sessionDetails).length === 0) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Enrol mentees to the given session
+			console.log('Array of mentees : ', mentees)
+			// mentees = mentees.map(Number);
+			// Update session
+			// let updatedSession = await sessionQueries.updateOne(
+			// 	{id: sessionId},
+			// 	{mentees: mentees}
+			// )
+			let updatedSession = await sessionQueries.appendMentees(sessionId, mentees, {
+				returning: true,
+				raw: true,
+			})
+			console.log('updatedSession : ', updatedSession)
+			// sessionDetails.is_enrolled = false
+			// if (userId) {
+			// 	let sessionAttendee = await sessionAttendeesQueries.findOne({
+			// 		session_id: sessionDetails.id,
+			// 		mentee_id: userId,
+			// 	})
+			// 	if (sessionAttendee) {
+			// 		sessionDetails.is_enrolled = true
+			// 	}
+			// }
+
+			// // check for accessibility
+			// if (userId !== '' && isAMentor !== '') {
+			// 	let isAccessible = await this.checkIfSessionIsAccessible(sessionDetails, userId, isAMentor)
+
+			// 	// Throw access error
+			// 	if (!isAccessible) {
+			// 		return common.failureResponse({
+			// 			statusCode: httpStatusCode.not_found,
+			// 			message: 'SESSION_RESTRICTED',
+			// 		})
+			// 	}
+			// }
+
+			// if (userId != sessionDetails.mentor_id) {
+			// 	delete sessionDetails?.meeting_info?.link
+			// 	delete sessionDetails?.meeting_info?.meta
+			// }
+			// if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
+			// 	sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
+			// 		if (imgPath != '') {
+			// 			return await utils.getDownloadableUrl(imgPath)
+			// 		}
+			// 	})
+			// 	sessionDetails.image = await Promise.all(sessionDetails.image)
+			// }
+
+			// const mentorDetails = await userRequests.details('', sessionDetails.mentor_id)
+			// sessionDetails.mentor_name = mentorDetails.data.result.name
+			// sessionDetails.organization = mentorDetails.data.result.organization
+
+			// const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+
+			// const defaultOrgId = await getDefaultOrgId()
+			// if (!defaultOrgId)
+			// 	return common.failureResponse({
+			// 		message: 'DEFAULT_ORG_ID_NOT_SET',
+			// 		statusCode: httpStatusCode.bad_request,
+			// 		responseCode: 'CLIENT_ERROR',
+			// 	})
+
+			// let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
+			// 	status: 'ACTIVE',
+			// 	organization_id: {
+			// 		[Op.in]: [sessionDetails.mentor_organization_id, defaultOrgId],
+			// 	},
+			// })
+
+			// //validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			// const validationData = removeDefaultOrgEntityTypes(entityTypes, sessionDetails.mentor_organization_id)
+
+			// const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'SESSION_FETCHED_SUCCESSFULLY',
+				result: ['processDbResponse'],
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 }
