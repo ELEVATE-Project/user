@@ -703,12 +703,12 @@ module.exports = class MentorsHelper {
 				})
 			}
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
-
+			let userServiceQueries = {}
 			if (mentorIds) {
 				userServiceQueries['user_ids'] = mentorIds
 			}
 
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, mentorIds)
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
 			if (userDetails.data.result.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
