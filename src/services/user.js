@@ -90,7 +90,7 @@ module.exports = class UserHelper {
 
 			const currentUser = updatedData[0]
 
-			const currentName = currentUser.dataValues.name // Assuming name is a direct property, adjust as needed
+			const currentName = currentUser.dataValues.name
 			const previousName = currentUser._previousDataValues?.name || null
 
 			if (currentName !== previousName) {
