@@ -43,9 +43,13 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async create(bodyData, loggedInUserId, orgId) {
-		bodyData.mentor_id = loggedInUserId
 		try {
-			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
+			bodyData.created_by = loggedInUserId
+			bodyData.updated_by = loggedInUserId
+
+			const mentorIdToCheck = bodyData.mentor_id ? bodyData.mentor_id : loggedInUserId
+
+			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
@@ -53,11 +57,27 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
-			if (timeSlot.isTimeSlotAvailable === false) {
+			if (!bodyData.mentor_id) {
+				bodyData.mentor_id = loggedInUserId
+			} else if (
+				mentorDetails.visibility !== common.ASSOCIATED ||
+				!mentorDetails.visible_to_organizations.includes(orgId)
+			) {
 				return common.failureResponse({
-					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
+			if (!timeSlot.isTimeSlotAvailable) {
+				const errorMessage = bodyData.mentor_id
+					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
+					: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } }
+
+				return common.failureResponse({
+					message: errorMessage,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -217,6 +237,8 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method, orgId) {
 		let isSessionReschedule = false
 		try {
+			bodyData.updated_by = userId
+
 			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
 			if (!mentorExtension) {
 				return common.failureResponse({
@@ -234,7 +256,13 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			if (!sessionDetail.created_by !== userId) {
+				return common.failureResponse({
+					message: 'CANNOT_EDIT_DELETE_SESSION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 
 			const currentDate = moment.utc()
@@ -572,7 +600,12 @@ module.exports = class SessionsHelper {
 			if (userId != sessionDetails.mentor_id) {
 				delete sessionDetails?.meeting_info?.link
 				delete sessionDetails?.meeting_info?.meta
+			} else {
+				sessionDetails.is_assigned = sessionDetails.mentor_id !== sessionDetails.created_by
 			}
+			delete sessionDetails.created_by
+			delete sessionDetails.updated_by
+
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
 					if (imgPath != '') {

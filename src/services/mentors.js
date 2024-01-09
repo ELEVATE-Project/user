@@ -873,31 +873,8 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// update sessions which having status as published/live and  exceeds the current date and time
-			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
-			/* 			const filterQuery = {
-				[Op.or]: [
-					{
-						status: common.PUBLISHED_STATUS,
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-					{
-						status: common.LIVE_STATUS,
-						'meeting_info.value': {
-							[Op.ne]: common.BBB_VALUE,
-						},
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-				],
-			}
 
-			await sessionQueries.updateSession(filterQuery, {
-				status: common.COMPLETED_STATUS,
-			}) */
+			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
 
 			let arrayOfStatus = []
 			if (status && status != '') {
@@ -934,7 +911,7 @@ module.exports = class MentorsHelper {
 
 			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
 
-			//remove meeting_info details except value and platform
+			//remove meeting_info details except value and platform and add is_assigned flag
 			sessionDetails.rows.forEach((item) => {
 				if (item.meeting_info) {
 					item.meeting_info = {
@@ -942,6 +919,8 @@ module.exports = class MentorsHelper {
 						platform: item.meeting_info.platform,
 					}
 				}
+				item.is_assigned = item.mentor_id !== item.created_by
+				delete item.created_by
 			})
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
