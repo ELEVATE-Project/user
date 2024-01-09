@@ -23,6 +23,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -41,6 +42,7 @@ module.exports = class OrgAdminHelper {
 				{ id, organization_id },
 				{ attributes: ['name', 'email'] }
 			)
+			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
 			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
 
@@ -71,7 +73,7 @@ module.exports = class OrgAdminHelper {
 					user: {
 						id,
 						name,
-						email,
+						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
 					},
@@ -92,6 +94,7 @@ module.exports = class OrgAdminHelper {
 				result: result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -302,8 +305,9 @@ module.exports = class OrgAdminHelper {
 			let userIds = []
 
 			if (bodyData.email) {
+				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
 				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: bodyData.email } },
+					{ email: { [Op.in]: encryptedEmailIds } },
 					{
 						attributes: ['user_id'],
 					}
@@ -339,6 +343,7 @@ module.exports = class OrgAdminHelper {
 				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

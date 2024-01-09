@@ -7,7 +7,6 @@
 
 // Dependencies
 const accountService = require('@services/account')
-const csv = require('csvtojson')
 
 module.exports = class Account {
 	/**
@@ -131,23 +130,6 @@ module.exports = class Account {
 		try {
 			const result = await accountService.resetPassword(params)
 			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Bulk create mentors
-	 * @method
-	 * @name bulkCreateMentors
-	 * @param {Object} req -request data.
-	 * @returns {CSV} - created mentors.
-	 */
-	async bulkCreateMentors(req) {
-		try {
-			const mentors = await csv().fromString(req.files.mentors.data.toString())
-			const createdMentors = await accountService.bulkCreateMentors(mentors, req.decodedToken)
-			return createdMentors
 		} catch (error) {
 			return error
 		}
