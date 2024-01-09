@@ -55,7 +55,7 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			const fileUploadList = await orgAdminService.getBulkInvitesFilesList(req)
+			const fileUploadList = await orgAdminService.getBulkInvitesFilesList(req) // TODO: Request Object shouldn't be allowed to leave controller layer.
 			return fileUploadList
 		} catch (error) {
 			return error
