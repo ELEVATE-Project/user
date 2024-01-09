@@ -137,6 +137,8 @@
 	"MODULES_HAS_EMPTY_LIST": "Module are empty for searchlist",
 	"MODULES_FETCHED_SUCCESSFULLY": "Module fetched successfully",
 	"PRIVATE_TYPE_NOT_ALLOWED": "Sorry, the specified type is not accessible for this session. Please check the type permissions.",
+	"CANNOT_EDIT_DELETE_SESSION_CREATED_BY_MANAGER": "Sorry, you are not authorized to edit or delete sessions created by the session manager.",
+	"SESSION_LIST_FETCHED": "Session list fetched successfully",
 	"CANNOT_EDIT_DELETE_SESSION": "Sorry, you are not authorized to edit or delete this session.",
 	"INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR": "The selected mentor has a session scheduled at the specified time."
 }

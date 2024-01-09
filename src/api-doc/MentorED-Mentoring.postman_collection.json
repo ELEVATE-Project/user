@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "2f0649b3-7ba1-4d93-b371-443444cc407c",
+		"_postman_id": "9471f02c-72e9-463d-8569-a785c9cca88b",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "24204448",
-		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-2f0649b3-7ba1-4d93-b371-443444cc407c?action=share&source=collection_link&creator=24204448"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -32,8 +31,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity",
+								"create"
+							]
 						},
 						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
@@ -61,8 +66,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/read?value=deo",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity", "read"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity",
+								"read"
+							],
 							"query": [
 								{
 									"key": "id",
@@ -103,8 +114,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/update/1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity", "update", "1"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity",
+								"update",
+								"1"
+							]
 						},
 						"description": "NOET: All body req parameters are optional to update."
 					},
@@ -123,8 +141,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity/delete/1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity", "delete", "1"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity",
+								"delete",
+								"1"
+							]
 						}
 					},
 					"response": []
@@ -156,8 +181,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"form",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -184,8 +215,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/read/16",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "read", "16"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"form",
+								"read",
+								"16"
+							]
 						}
 					},
 					"response": []
@@ -212,8 +250,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/form/update/16",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "form", "update", "16"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"form",
+								"update",
+								"16"
+							]
 						},
 						"description": "NOTE: Id is required in params and that should be objectId"
 					},
@@ -246,8 +291,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity-type", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity-type",
+								"create"
+							]
 						},
 						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
@@ -266,8 +317,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity-type", "read"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity-type",
+								"read"
+							]
 						},
 						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
 					},
@@ -295,8 +352,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/read",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity-type", "read"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity-type",
+								"read"
+							],
 							"query": [
 								{
 									"key": "value",
@@ -341,8 +404,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/update/1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity-type", "update", "1"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity-type",
+								"update",
+								"1"
+							]
 						},
 						"description": "NOET: All body req parameters are optional to update."
 					},
@@ -361,8 +431,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/entity-type/delete/1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "entity-type", "delete", "1"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"entity-type",
+								"delete",
+								"1"
+							]
 						}
 					},
 					"response": []
@@ -427,8 +504,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "update"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"update"
+							]
 						}
 					},
 					"response": []
@@ -455,8 +538,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "update", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"update",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -485,8 +575,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "update", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"update",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -511,8 +608,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/details/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "details", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"details",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -550,8 +654,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/list?page=1&limit=2&search=aW50cm8=&recommended_for=hm,deo&categories=school_process,sqaa",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "list"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"list"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -597,8 +707,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/share/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "share", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"share",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -628,8 +745,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enroll/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "enroll", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"enroll",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -654,8 +778,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/unEnroll/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "unEnroll", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"unEnroll",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -680,8 +811,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/start/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "start", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"start",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -715,8 +853,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/feedback/1",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "feedback", "1"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"feedback",
+								"1"
+							]
 						}
 					},
 					"response": []
@@ -744,7 +889,9 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/updateRecordingUrl/2e9975b5251b6ba94ad96267268da55660cb619a-1683007926764",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
 							"path": [
 								"v1",
 								"sessions",
@@ -768,8 +915,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/completed/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "completed", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"completed",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -794,8 +948,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/getRecording/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "sessions", "getRecording", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"sessions",
+								"getRecording",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -825,8 +986,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/sessions?search=aW50cm8=&page=1&limit=20",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "sessions"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentees",
+								"sessions"
+							],
 							"query": [
 								{
 									"key": "search",
@@ -862,8 +1029,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/joinSession/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "joinSession", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentees",
+								"joinSession",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -888,8 +1062,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/homeFeed?search=my data&page=1&limit=4&recommended_for=hm,deo&categories=school_process,sqaa",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "homeFeed"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentees",
+								"homeFeed"
+							],
 							"query": [
 								{
 									"key": "search",
@@ -934,8 +1114,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/reports?filterType=QUARTERLY",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentees", "reports"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentees",
+								"reports"
+							],
 							"query": [
 								{
 									"key": "filterType",
@@ -965,8 +1151,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/reports?filterType=MONTHLY",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "reports"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentors",
+								"reports"
+							],
 							"query": [
 								{
 									"key": "filterType",
@@ -991,8 +1183,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/details/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "details", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentors",
+								"details",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1017,8 +1216,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/upcomingSessions/1?page=1&limit=5&search=aW50cm8=&recommended_for=hm,deo&categories=school_process,sqaa",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "upcomingSessions", "1"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentors",
+								"upcomingSessions",
+								"1"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1070,8 +1276,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/share/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "share", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentors",
+								"share",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1096,8 +1309,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/list?page=1&limit=2&search=aW50cm8=&area_of_expertise=school_process,sqaa&designation=deo,beo",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "list"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentors",
+								"list"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1142,8 +1361,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentors/createdSessions?status=PUBLISHED,COMPLETED",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "mentors", "createdSessions"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"mentors",
+								"createdSessions"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -1180,8 +1405,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/submit/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "feedback", "submit", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"feedback",
+								"submit",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1205,8 +1437,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/feedback/forms/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "feedback", "forms", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"feedback",
+								"forms",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1245,8 +1484,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"questions",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -1273,8 +1518,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions", "update", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"questions",
+								"update",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1299,8 +1551,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions/read/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions", "read", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"questions",
+								"read",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1344,8 +1603,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"questionsSet",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -1372,8 +1637,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "update", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"questionsSet",
+								"update",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1407,8 +1679,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/read/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "read", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"questionsSet",
+								"read",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1438,8 +1717,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/users/pendingFeedbacks",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "users", "pendingFeedbacks"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"users",
+								"pendingFeedbacks"
+							]
 						}
 					},
 					"response": []
@@ -1457,8 +1742,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/users/list?type=mentee&page=1&limit=3",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "users", "list"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"users",
+								"list"
+							],
 							"query": [
 								{
 									"key": "type",
@@ -1493,14 +1784,18 @@
 					"listen": "prerequest",
 					"script": {
 						"type": "text/javascript",
-						"exec": [""]
+						"exec": [
+							""
+						]
 					}
 				},
 				{
 					"listen": "test",
 					"script": {
 						"type": "text/javascript",
-						"exec": [""]
+						"exec": [
+							""
+						]
 					}
 				}
 			]
@@ -1530,8 +1825,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/issues/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "issues", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"issues",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -1548,8 +1849,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/platform/config",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "platform", "config"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"platform",
+								"config"
+							]
 						}
 					},
 					"response": []
@@ -1581,8 +1888,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/userDelete?userId=9",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "admin", "userDelete"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"admin",
+								"userDelete"
+							],
 							"query": [
 								{
 									"key": "userId",
@@ -1606,8 +1919,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerViewRebuild",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "admin", "triggerViewRebuild"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"admin",
+								"triggerViewRebuild"
+							]
 						}
 					},
 					"response": []
@@ -1632,8 +1951,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerViewRebuildInternal",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "admin", "triggerViewRebuildInternal"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"admin",
+								"triggerViewRebuildInternal"
+							]
 						}
 					},
 					"response": []
@@ -1657,8 +1982,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerPeriodicViewRefresh",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "admin", "triggerPeriodicViewRefresh"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"admin",
+								"triggerPeriodicViewRefresh"
+							]
 						}
 					},
 					"response": []
@@ -1676,8 +2007,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/admin/triggerPeriodicViewRefreshInternal?model_name=Session",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "admin", "triggerPeriodicViewRefreshInternal"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"admin",
+								"triggerPeriodicViewRefreshInternal"
+							],
 							"query": [
 								{
 									"key": "model_name",
@@ -1716,8 +2053,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "profile", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"profile",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -1735,8 +2078,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/read",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "profile", "read"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"profile",
+								"read"
+							]
 						}
 					},
 					"response": []
@@ -1763,8 +2112,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/profile/update",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "profile", "update"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"profile",
+								"update"
+							]
 						}
 					},
 					"response": []
@@ -1794,8 +2149,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/roleChange",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "org-admin", "roleChange"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"org-admin",
+								"roleChange"
+							]
 						}
 					},
 					"response": []
@@ -1820,8 +2181,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/inheritEntityType",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "org-admin", "inheritEntityType"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"org-admin",
+								"inheritEntityType"
+							]
 						}
 					},
 					"response": []
@@ -1847,8 +2214,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/setOrgPolicies",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "org-admin", "setOrgPolicies"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"org-admin",
+								"setOrgPolicies"
+							]
 						}
 					},
 					"response": []
@@ -1865,8 +2238,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/getOrgPolicies",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "org-admin", "getOrgPolicies"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"org-admin",
+								"getOrgPolicies"
+							]
 						}
 					},
 					"response": []
@@ -1892,8 +2271,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/org-admin/updateRelatedOrgs",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "org-admin", "updateRelatedOrgs"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"org-admin",
+								"updateRelatedOrgs"
+							]
 						}
 					},
 					"response": []
@@ -1923,8 +2308,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/notifications/emailCronJob",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "notifications", "emailCronJob"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"notifications",
+								"emailCronJob"
+							]
 						}
 					},
 					"response": []
@@ -1950,8 +2341,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}interface/v1/account/create",
-							"host": ["{{MentoringBaseUrl}}interface"],
-							"path": ["v1", "account", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}interface"
+							],
+							"path": [
+								"v1",
+								"account",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -1972,8 +2369,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}/interface/v1/entity-type/read",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["interface", "v1", "entity-type", "read"]
+							"host": [
+								"{{MentoringBaseUrl}}"
+							],
+							"path": [
+								"interface",
+								"v1",
+								"entity-type",
+								"read"
+							]
 						}
 					},
 					"response": []
@@ -2005,8 +2409,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}interface/v1/account/update",
-							"host": ["{{MentoringBaseUrl}}interface"],
-							"path": ["v1", "account", "update"]
+							"host": [
+								"{{MentoringBaseUrl}}interface"
+							],
+							"path": [
+								"v1",
+								"account",
+								"update"
+							]
 						}
 					},
 					"response": []
@@ -2041,8 +2451,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "permissions", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"permissions",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -2060,8 +2476,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10&search=c2Vzc2lvbg==",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "permissions", "list"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"permissions",
+								"list"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -2102,8 +2524,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "permissions", "update", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"permissions",
+								"update",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -2128,8 +2557,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/delete/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "permissions", "delete", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"permissions",
+								"delete",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -2168,8 +2604,14 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "modules", "create"]
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"modules",
+								"create"
+							]
 						}
 					},
 					"response": []
@@ -2196,8 +2638,15 @@
 						},
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "modules", "update", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"modules",
+								"update",
+								":id"
+							],
 							"query": [
 								{
 									"key": "",
@@ -2229,8 +2678,14 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/list?page=1&limit=10&search=cw==",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "modules", "list"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"modules",
+								"list"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -2262,8 +2717,15 @@
 						],
 						"url": {
 							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/delete/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "modules", "delete", ":id"],
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"modules",
+								"delete",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -2274,6 +2736,367 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Session Manager",
+			"item": [
+				{
+					"name": "List as CSV",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/downloadSessions",
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"manage-sessions",
+								"downloadSessions"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "PRIVATE",
+									"description": "Accepted values are PUBLIC and PRiVATE",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "PUBLISHED",
+									"description": "Accepted values are  PUBLISHED , ",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "title",
+									"description": "Field to be sorted by, accepted values are title, start_date etc",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "DESC",
+									"description": "ASC or DESC",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: All query parameters are optional."
+					},
+					"response": [
+						{
+							"name": "List as CSV",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/download?type=PRIVATE&status=PUBLISHED",
+									"host": [
+										"{{MentoringBaseUrl}}mentoring"
+									],
+									"path": [
+										"v1",
+										"manage-sessions",
+										"download"
+									],
+									"query": [
+										{
+											"key": "type",
+											"value": "PRIVATE",
+											"description": "Accepted values are PUBLIC and PRiVATE"
+										},
+										{
+											"key": "status",
+											"value": "PUBLISHED",
+											"description": "Accepted values are  PUBLISHED , "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "15eb7f71-50f3-4e7e-bec1-737adc077f2e"
+								},
+								{
+									"key": "Content-disposition",
+									"value": "attachment; filename=session_list1704298070470.csv"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "161"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"a1-eqCbz1CrK3sFhpMOKlGtc4w1MQk\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 03 Jan 2024 16:07:50 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "\"No.\",\"Session Name\",\"Type\",\"Mentors\",\"Date\",\"Time\",\"Duration (Min)\",\"Mentee Count\",\"Status\"\n1,\"Test 2\",\"Private\",\"nikhil\",\"06-Jan-2024\",\"09:51 PM\",60,0,\"Active\""
+						}
+					]
+				},
+				{
+					"name": "Created Sessions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/createdSessions?page=1&limit=100",
+							"host": [
+								"{{MentoringBaseUrl}}mentoring"
+							],
+							"path": [
+								"v1",
+								"manage-sessions",
+								"createdSessions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page Number"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Limit per page"
+								},
+								{
+									"key": "status",
+									"value": "PUBLISHED",
+									"description": "Accepted values are  PUBLISHED , ",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "title",
+									"description": "Field to be sorted by, accepted values are title, start_date,",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "DESC",
+									"description": "ASC or DESC",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "PRIVATE,PUBLIC",
+									"description": "Accepted values are PUBLIC and PRiVATE",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "TmV2aWw=",
+									"description": "Base64 encoded string",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: All query parameters are optional."
+					},
+					"response": [
+						{
+							"name": "Created Sessions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/sessionList?page=1&limit=100",
+									"host": [
+										"{{MentoringBaseUrl}}mentoring"
+									],
+									"path": [
+										"v1",
+										"manage-sessions",
+										"sessionList"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "status",
+											"value": "PUBLISHED",
+											"description": "Accepted values are  PUBLISHED , ",
+											"disabled": true
+										},
+										{
+											"key": "sort_by",
+											"value": "title",
+											"description": "Field to be sorted by, accepted values are title, start_date,",
+											"disabled": true
+										},
+										{
+											"key": "order",
+											"value": "DESC",
+											"description": "ASC or DESC",
+											"disabled": true
+										},
+										{
+											"key": "type",
+											"value": "PRIVATE",
+											"description": "Accepted values are PUBLIC and PRiVATE",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "257c4cc0-f3d8-4ac6-b8e7-04643ea28b9a"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1063"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"427-1Fmo7+aX6pd4OKOyej+3Zy6jMSo\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 03 Jan 2024 16:06:08 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"LIST_FETCHED\",\n    \"result\": {\n        \"data\": [\n            {\n                \"id\": 9,\n                \"index_number\": 1,\n                \"title\": \"Introduction to Python\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"Nevil\",\n                \"start_date\": \"05-Dec-2023\",\n                \"start_time\": \"04:30 PM\",\n                \"duration_in_minutes\": 60.2,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 7,\n                \"index_number\": 2,\n                \"title\": \"Test 3\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 8,\n                \"index_number\": 3,\n                \"title\": \"Test 2\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 6,\n                \"index_number\": 4,\n                \"title\": \"Test 1\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            }\n        ],\n        \"count\": 4\n    },\n    \"meta\": {\n        \"correlation\": \"257c4cc0-f3d8-4ac6-b8e7-04643ea28b9a\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
+						}
+					]
 				}
 			]
 		}

@@ -18,7 +18,10 @@ module.exports = {
 			allowNull: false,
 			defaultValue: 'PUBLIC',
 		})
-
+		await queryInterface.addColumn('sessions', 'mentor_name', {
+			type: Sequelize.STRING,
+			allowNull: true,
+		})
 		// Update existing null values
 		await queryInterface.bulkUpdate(
 			'sessions',
@@ -48,5 +51,6 @@ module.exports = {
 		await queryInterface.removeColumn('sessions', 'created_by')
 		await queryInterface.removeColumn('sessions', 'updated_by')
 		await queryInterface.removeColumn('sessions', 'type')
+		await queryInterface.removeColumn('sessions', 'mentor_name')
 	},
 }
