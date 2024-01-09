@@ -107,10 +107,13 @@ module.exports = class questionsSetHelper {
 	 * @returns {JSON} - Read question set.
 	 */
 
-	static async read(questionsSetId) {
+	static async read(questionsSetId, questionSetCode) {
 		try {
 			const filter = {
 				id: questionsSetId,
+			}
+			if (questionSetCode) {
+				filter.code = questionSetCode
 			}
 			const questionSet = await questionsSetQueries.findOneQuestionsSet(filter)
 			if (!questionSet) {

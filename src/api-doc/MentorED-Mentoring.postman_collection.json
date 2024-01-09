@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "46da8400-88fd-4974-b0b5-32461871d5d0",
+		"_postman_id": "9471f02c-72e9-463d-8569-a785c9cca88b",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21498549"
@@ -2009,6 +2009,607 @@
 						}
 					},
 					"response": []
+				}
+			]
+		},
+		{
+			"name": "Permissions",
+			"item": [
+				{
+					"name": "Create Permissions",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"code\": \"sessioncreation\", \n\"module\": \"sessions\", \n\"actions\": \"WRITE\",\n\"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Permissions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10&search=c2Vzc2lvbg==",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "c2Vzc2lvbg=="
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Permissions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"code\": \"sessioncreate\", \n\"module\": \"sessions\", \n\"actions\": \"READ\",\n\"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/update/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "update", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "update id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Permissions",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/delete/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "delete", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delete id"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Module",
+			"item": [
+				{
+					"name": "Create Module",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJlbWFpbCI6InN1bWFuLnZAcGFjZXdpc2RvbS5jb20iLCJuYW1lIjoiU3VtYW4gViIsIm9yZ2FuaXphdGlvbl9pZCI6MSwicm9sZXMiOlt7ImlkIjozLCJ0aXRsZSI6Im1lbnRlZSIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIn1dfSwiaWF0IjoxNzAyMjg3MDY3LCJleHAiOjE3MDIzNzM0Njd9.O9XNHKFbAsiA8VGiJ1ashPY2rE56ITOSsiJeMrOdU9E",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\" : \"SystemAdmin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/create",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Module",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"code\" : \"AllSessionss\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/update/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "update", ":id"],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "update Id"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Module",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/list?page=1&limit=10&search=cw==",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "search",
+									"value": "cw=="
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Module",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/delete/:id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "delete", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "Delete Id"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Session Manager",
+			"item": [
+				{
+					"name": "List as CSV",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/downloadSessions",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "manage-sessions", "downloadSessions"],
+							"query": [
+								{
+									"key": "type",
+									"value": "PRIVATE",
+									"description": "Accepted values are PUBLIC and PRiVATE",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "PUBLISHED",
+									"description": "Accepted values are  PUBLISHED , ",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "title",
+									"description": "Field to be sorted by, accepted values are title, start_date etc",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "DESC",
+									"description": "ASC or DESC",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: All query parameters are optional."
+					},
+					"response": [
+						{
+							"name": "List as CSV",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/download?type=PRIVATE&status=PUBLISHED",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "manage-sessions", "download"],
+									"query": [
+										{
+											"key": "type",
+											"value": "PRIVATE",
+											"description": "Accepted values are PUBLIC and PRiVATE"
+										},
+										{
+											"key": "status",
+											"value": "PUBLISHED",
+											"description": "Accepted values are  PUBLISHED , "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "15eb7f71-50f3-4e7e-bec1-737adc077f2e"
+								},
+								{
+									"key": "Content-disposition",
+									"value": "attachment; filename=session_list1704298070470.csv"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "161"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"a1-eqCbz1CrK3sFhpMOKlGtc4w1MQk\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 03 Jan 2024 16:07:50 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "\"No.\",\"Session Name\",\"Type\",\"Mentors\",\"Date\",\"Time\",\"Duration (Min)\",\"Mentee Count\",\"Status\"\n1,\"Test 2\",\"Private\",\"nikhil\",\"06-Jan-2024\",\"09:51 PM\",60,0,\"Active\""
+						}
+					]
+				},
+				{
+					"name": "Created Sessions",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/createdSessions?page=1&limit=100",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "manage-sessions", "createdSessions"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page Number"
+								},
+								{
+									"key": "limit",
+									"value": "100",
+									"description": "Limit per page"
+								},
+								{
+									"key": "status",
+									"value": "PUBLISHED",
+									"description": "Accepted values are  PUBLISHED , ",
+									"disabled": true
+								},
+								{
+									"key": "sort_by",
+									"value": "title",
+									"description": "Field to be sorted by, accepted values are title, start_date,",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "DESC",
+									"description": "ASC or DESC",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "PRIVATE,PUBLIC",
+									"description": "Accepted values are PUBLIC and PRiVATE",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "TmV2aWw=",
+									"description": "Base64 encoded string",
+									"disabled": true
+								}
+							]
+						},
+						"description": "NOTE: All query parameters are optional."
+					},
+					"response": [
+						{
+							"name": "Created Sessions",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/sessionList?page=1&limit=100",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "manage-sessions", "sessionList"],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "100"
+										},
+										{
+											"key": "status",
+											"value": "PUBLISHED",
+											"description": "Accepted values are  PUBLISHED , ",
+											"disabled": true
+										},
+										{
+											"key": "sort_by",
+											"value": "title",
+											"description": "Field to be sorted by, accepted values are title, start_date,",
+											"disabled": true
+										},
+										{
+											"key": "order",
+											"value": "DESC",
+											"description": "ASC or DESC",
+											"disabled": true
+										},
+										{
+											"key": "type",
+											"value": "PRIVATE",
+											"description": "Accepted values are PUBLIC and PRiVATE",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "257c4cc0-f3d8-4ac6-b8e7-04643ea28b9a"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "1063"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"427-1Fmo7+aX6pd4OKOyej+3Zy6jMSo\""
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 03 Jan 2024 16:06:08 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"LIST_FETCHED\",\n    \"result\": {\n        \"data\": [\n            {\n                \"id\": 9,\n                \"index_number\": 1,\n                \"title\": \"Introduction to Python\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"Nevil\",\n                \"start_date\": \"05-Dec-2023\",\n                \"start_time\": \"04:30 PM\",\n                \"duration_in_minutes\": 60.2,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 7,\n                \"index_number\": 2,\n                \"title\": \"Test 3\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 8,\n                \"index_number\": 3,\n                \"title\": \"Test 2\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 6,\n                \"index_number\": 4,\n                \"title\": \"Test 1\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            }\n        ],\n        \"count\": 4\n    },\n    \"meta\": {\n        \"correlation\": \"257c4cc0-f3d8-4ac6-b8e7-04643ea28b9a\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
+						}
+					]
 				}
 			]
 		}

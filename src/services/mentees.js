@@ -322,11 +322,12 @@ module.exports = class MenteesHelper {
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 			status: 'ACTIVE',
+			allow_filtering: true,
 		})
 
-		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
+		let filteredQuery = utils.validateFilters(query, validationData, sessionQueries.getModelName())
 
-		// Create saas fiter for view query
+		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
 
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
