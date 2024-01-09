@@ -1445,8 +1445,12 @@ module.exports = class SessionsHelper {
 					],
 				}),
 			}
+			const sortBy = queryParams.sort_by || 'created_at'
+			const order = queryParams.order || 'DESC'
 
-			let sessions = await sessionQueries.findAll(filter, { order: [['created_at', 'DESC']] })
+			let sessions = await sessionQueries.findAll(filter, {
+				order: [[sortBy, order]],
+			})
 
 			const CSVFields = [
 				{ label: 'No.', value: 'index_number' },
