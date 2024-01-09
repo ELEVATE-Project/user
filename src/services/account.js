@@ -1215,7 +1215,10 @@ module.exports = class AccountHelper {
 					attributes: ['id'],
 				}
 			)
-
+			let email = false
+			if (utils.isEmail(params.searchText)) {
+				email = params.searchText
+			}
 			let users = await userQueries.listUsersFromView(
 				role && role.id ? role.id : '',
 				params.query.organization_id ? params.query.organization_id : '',
@@ -1223,8 +1226,7 @@ module.exports = class AccountHelper {
 				params.pageSize,
 				params.searchText,
 				params.body.user_ids ? params.body.user_ids : false,
-				params.body.email ? params.body.email : false,
-				params.body.name ? params.body.name : false
+				email ? email : false
 			)
 
 			/* Required to resolve all promises first before preparing response object else sometime 

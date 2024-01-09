@@ -165,13 +165,15 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 		return error
 	}
 }
-exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, email, name) => {
+exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, email) => {
 	try {
 		const offset = (page - 1) * limit
 
 		const filterConditions = []
 
-		if (search) {
+		if (email) {
+			filterConditions.push(`users.email ILIKE :email`)
+		} else if (search) {
 			filterConditions.push(`users.name ILIKE :search`)
 		}
 
@@ -184,12 +186,6 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 		}
 		if (userIds) {
 			filterConditions.push(`users.id IN (:userIds)`)
-		}
-		if (email) {
-			filterConditions.push(`users.email ILIKE :email`)
-		}
-		if (name) {
-			filterConditions.push(`users.name ILIKE :name`)
 		}
 
 		const filterClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : ''
@@ -229,8 +225,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			userIds: userIds,
-			email: '%' + email + '%',
-			name: '%' + name + '%',
+			email: email,
 		}
 
 		const users = await Sequelize.query(filterQuery, {
