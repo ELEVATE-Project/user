@@ -1,7 +1,5 @@
 'use strict'
-require('dotenv').config({ path: '../../.env' })
 require('module-alias/register')
-const { Sequelize } = require('sequelize')
 const sessionQueries = require('@database/queries/sessions')
 const userRequests = require('@requests/user')
 
