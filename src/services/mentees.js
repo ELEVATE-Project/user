@@ -783,11 +783,14 @@ module.exports = class MenteesHelper {
 			}
 			let userServiceQueries = {}
 			let organization_ids = []
+			let designation = []
 			for (let key in queryParams) {
-				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'search') | (key === 'name'))) {
+				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'name'))) {
 					userServiceQueries[key] = queryParams[key]
 				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
 					organization_ids = queryParams[key].split(',')
+				} else if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+					designation = queryParams[key].split(',')
 				}
 			}
 
@@ -851,6 +854,11 @@ module.exports = class MenteesHelper {
 			if (organization_ids.length > 0) {
 				extensionDetails.data = extensionDetails.data.filter((mentee) =>
 					organization_ids.includes(String(mentee.organization_id))
+				)
+			}
+			if (designation.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((mentee) =>
+					designation.includes(String(mentee.designation))
 				)
 			}
 			if (extensionDetails.data.length > 0) {
