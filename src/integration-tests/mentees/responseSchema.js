@@ -298,6 +298,9 @@ const menteeListSchema = {
 												name: {
 													type: 'string',
 												},
+												email: {
+													type: 'string',
+												},
 												about: {
 													type: 'null',
 												},

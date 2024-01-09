@@ -784,9 +784,10 @@ module.exports = class MenteesHelper {
 			let userServiceQueries = {}
 			let organization_ids = []
 			let designation = []
+			let searchQuery = ''
 			for (let key in queryParams) {
-				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'name'))) {
-					userServiceQueries[key] = queryParams[key]
+				if (queryParams.hasOwnProperty(key) & (key === 'search')) {
+					searchQuery = queryParams[key]
 				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
 					organization_ids = queryParams[key].split(',')
 				} else if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
@@ -800,7 +801,11 @@ module.exports = class MenteesHelper {
 				status: common.ACTIVE_STATUS,
 			})
 
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+			let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+
+			if (designation) {
+				filteredQuery.designation = designation
+			}
 
 			const userType = common.MENTEE_ROLE
 
@@ -856,11 +861,7 @@ module.exports = class MenteesHelper {
 					organization_ids.includes(String(mentee.organization_id))
 				)
 			}
-			if (designation.length > 0) {
-				extensionDetails.data = extensionDetails.data.filter((mentee) =>
-					designation.includes(String(mentee.designation))
-				)
-			}
+
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
@@ -891,29 +892,8 @@ module.exports = class MenteesHelper {
 				})
 				.filter((value) => value !== null)
 
-			let foundKeys = {}
-			let result = []
 			// update count after filters
-			userDetails.data.result.count = userDetails.data.result.data.length
-
-			for (let user of userDetails.data.result.data) {
-				let firstChar = user.name.charAt(0)
-				firstChar = firstChar.toUpperCase()
-
-				if (!foundKeys[firstChar]) {
-					result.push({
-						key: firstChar,
-						values: [user],
-					})
-					foundKeys[firstChar] = result.length
-				} else {
-					let index = foundKeys[firstChar] - 1
-					result[index].values.push(user)
-				}
-			}
-
-			const sortedData = _.sortBy(result, 'key') || []
-			userDetails.data.result.data = sortedData
+			userDetails.data.result.count = userDetails.data.result.count
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

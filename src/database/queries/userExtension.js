@@ -181,14 +181,14 @@ module.exports = class MenteeExtensionQueries {
 				replacements.limit = limit
 			}
 
-			const mentors = await Sequelize.query(query, {
+			const mentees = await Sequelize.query(query, {
 				type: QueryTypes.SELECT,
 				replacements: replacements,
 			})
 
 			return {
-				data: mentors,
-				count: mentors.length,
+				data: mentees,
+				count: mentees.length,
 			}
 		} catch (error) {
 			return error
