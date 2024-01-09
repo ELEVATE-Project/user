@@ -840,7 +840,7 @@ module.exports = class MenteesHelper {
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'FILTER_FTECHED_SUCCESSFULLY',
+				message: 'FILTER_FETCHED_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
@@ -906,7 +906,7 @@ module.exports = class MenteesHelper {
 	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types) {
 		try {
 			let filter = {
-				status: 'ACTIVE',
+				status: common.ACTIVE_STATUS,
 				allow_filtering: true,
 				has_entities: true,
 				organization_id: {

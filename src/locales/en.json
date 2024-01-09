@@ -136,5 +136,5 @@
 	"MODULES_DELETED_SUCCESSFULLY": "Module deleted successfully",
 	"MODULES_HAS_EMPTY_LIST": "Module are empty for searchlist",
 	"MODULES_FETCHED_SUCCESSFULLY": "Module fetched successfully",
-	"FILTER_FTECHED_SUCCESSFULLY": "filters fetched successfully."
+	"FILTER_FETCHED_SUCCESSFULLY": "filters fetched successfully."
 }
