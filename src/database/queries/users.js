@@ -3,6 +3,7 @@ const database = require('@database/models/index')
 const Organization = require('@database/models/index').Organization
 const { Op, QueryTypes } = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
+const emailEncryption = require('@utils/emailEncryption')
 
 exports.getColumns = async () => {
 	try {
@@ -165,14 +166,14 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 		return error
 	}
 }
-exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, email) => {
+exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, emailIds) => {
 	try {
 		const offset = (page - 1) * limit
 
 		const filterConditions = []
 
-		if (email) {
-			filterConditions.push(`users.email ILIKE :email`)
+		if (emailIds) {
+			filterConditions.push(`users.email IN ('${emailIds.join("','")}')`)
 		} else if (search) {
 			filterConditions.push(`users.name ILIKE :search`)
 		}
@@ -225,12 +226,16 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			userIds: userIds,
-			email: email,
 		}
 
-		const users = await Sequelize.query(filterQuery, {
+		let users = await Sequelize.query(filterQuery, {
 			type: QueryTypes.SELECT,
 			replacements: replacements,
+		})
+
+		users = users.filter((user) => {
+			user.email = emailEncryption.decrypt(user.email)
+			return user
 		})
 
 		return { count: users.length, data: users }

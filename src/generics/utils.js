@@ -428,14 +428,6 @@ const generateWhereClause = (tableName) => {
 	return whereClause
 }
 
-function isEmail(input) {
-	// Regular expression for matching email addresses
-	const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/
-
-	// Test the input string against the email regex
-	return emailRegex.test(input)
-}
-
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -465,5 +457,4 @@ module.exports = {
 	isValidEmail,
 	isValidName,
 	generateWhereClause,
-	isEmail,
 }

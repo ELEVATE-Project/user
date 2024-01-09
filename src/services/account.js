@@ -1126,18 +1126,26 @@ module.exports = class AccountHelper {
 					attributes: ['id'],
 				}
 			)
-			let email = false
-			if (utils.isEmail(params.searchText)) {
-				email = params.searchText
+			let emailIds = []
+			let searchText = []
+
+			if (params.searchText) {
+				searchText = params.searchText.split(',')
 			}
+			searchText.forEach((element) => {
+				if (utils.isValidEmail(element)) {
+					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
+				}
+			})
+
 			let users = await userQueries.listUsersFromView(
 				role && role.id ? role.id : '',
 				params.query.organization_id ? params.query.organization_id : '',
 				params.pageNo,
 				params.pageSize,
-				params.searchText,
+				emailIds.length == 0 ? params.searchText : false,
 				params.body.user_ids ? params.body.user_ids : false,
-				email ? email : false
+				emailIds.length > 0 ? emailIds : false
 			)
 
 			/* Required to resolve all promises first before preparing response object else sometime 
