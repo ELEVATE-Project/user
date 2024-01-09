@@ -78,17 +78,6 @@ module.exports = {
 				updated_by: null,
 			}
 		)
-
-		// Modify columns to disallow null
-		await queryInterface.changeColumn('sessions', 'created_by', {
-			type: Sequelize.INTEGER,
-			allowNull: false,
-		})
-
-		await queryInterface.changeColumn('sessions', 'updated_by', {
-			type: Sequelize.INTEGER,
-			allowNull: false,
-		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
