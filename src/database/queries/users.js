@@ -198,6 +198,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
             SELECT
                 users.id,
                 users.name,
+				users.email,
                 users.about,
                 users.image,
                 jsonb_build_object(
