@@ -252,24 +252,27 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 		if (!requestBody.meta) requestBody.meta = {}
 		// Iterate through each key in request body
 		for (const currentFieldName in requestBody) {
-			// store corrent key's value
-			const currentFieldValue = requestBody[currentFieldName]
-			// Get entity type maped to corrent data
+			// store correct key's value
+			const [currentFieldValue, isFieldValueAnArray] = Array.isArray(requestBody[currentFieldName])
+				? [[...requestBody[currentFieldName]], true] //If the requestBody[currentFieldName] is array, make a copy in currentFieldValue than a reference
+				: [requestBody[currentFieldName], false]
+			// Get entity type mapped to current data
 			const entityType = entityTypeMap.get(currentFieldName)
 			// Check if the current data have any entity type associated with and if allow_custom_entities= true enter to if case
 			if (entityType && entityType.get('allow_custom_entities')) {
 				// If current field value is of type Array enter to this if condition
-				if (Array.isArray(currentFieldValue)) {
+				if (isFieldValueAnArray) {
+					requestBody[currentFieldName] = [] //Set the original field value as empty array so that it can be re-populated again
 					const recognizedEntities = []
 					const customEntities = []
-					// Iterate though corrent fileds value of type Array
+					// Iterate though correct fields value of type Array
 					for (const value of currentFieldValue) {
 						// If entity has entities which matches value push the data into recognizedEntities array
 						// Else push to customEntities as { value: 'other', label: value }
 						if (entityType.get('entities').has(value)) recognizedEntities.push(value)
 						else customEntities.push({ value: 'other', label: value })
 					}
-					// If wehave data in recognizedEntities
+					// If we have data in recognizedEntities
 					if (recognizedEntities.length > 0)
 						if (allowedKeys.includes(currentFieldName))
 							// If the current field have a concrete column in db assign recognizedEntities to requestBody[currentFieldName]
@@ -337,17 +340,8 @@ function processDbResponse(responseBody, entityType) {
 					label: entity.label,
 				}))
 			// Check if there are matching values
-			if (matchingValues.length > 0) {
-				output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
-			} else if (Array.isArray(output[key])) {
-				output[key] = output[key].map((item) => {
-					if (item.value && item.label) return item
-					return {
-						value: item,
-						label: item,
-					}
-				})
-			}
+			if (matchingValues.length > 0) output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
+			else if (Array.isArray(output[key])) output[key] = output[key].filter((item) => item.value && item.label)
 		}
 
 		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
