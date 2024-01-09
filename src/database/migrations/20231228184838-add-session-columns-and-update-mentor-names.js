@@ -8,12 +8,14 @@ module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.addColumn('sessions', 'created_by', {
 			type: Sequelize.INTEGER,
-			allowNull: true,
+			allowNull: false,
+			defaultValue: 0,
 		})
 
 		await queryInterface.addColumn('sessions', 'updated_by', {
 			type: Sequelize.INTEGER,
-			allowNull: true,
+			allowNull: false,
+			defaultValue: 0,
 		})
 
 		await queryInterface.addColumn('sessions', 'type', {
@@ -24,13 +26,14 @@ module.exports = {
 
 		await queryInterface.addColumn('sessions', 'mentor_name', {
 			type: Sequelize.STRING,
-			allowNull: true,
+			allowNull: false,
+			defaultValue: 'Mentor',
 		})
 
 		// Logic to update mentor names
 		const updateMentorNamesInSessions = async () => {
 			try {
-				const sessionsWithNullMentorName = await sessionQueries.findAll({ mentor_name: null })
+				const sessionsWithNullMentorName = await sessionQueries.findAll({ mentor_name: 'Mentor' })
 
 				if (sessionsWithNullMentorName.length === 0) {
 					console.log('No sessions found with mentor_name as null.')
@@ -74,8 +77,8 @@ module.exports = {
 				updated_by: Sequelize.literal('mentor_id'),
 			},
 			{
-				created_by: null,
-				updated_by: null,
+				created_by: 0,
+				updated_by: 0,
 			}
 		)
 	},
