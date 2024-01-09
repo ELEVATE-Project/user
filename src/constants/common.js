@@ -100,7 +100,6 @@ module.exports = {
 	location: 'location',
 	languages: 'languages',
 	typeSystem: 'system',
-	ORG_ADMIN_ROLE: 'org_admin',
 	UPLOADED_STATUS: 'UPLOADED',
 	FAILED_STATUS: 'FAILED',
 	PROCESSED_STATUS: 'PROCESSED',
