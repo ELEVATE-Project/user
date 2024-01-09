@@ -21,6 +21,7 @@ const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const entityTypeService = require('@services/entity-type')
+const entityType = require('@database/models/entityType')
 
 module.exports = class MenteesHelper {
 	/**
@@ -785,25 +786,80 @@ module.exports = class MenteesHelper {
 	 * @method
 	 * @name getFilterList
 	 * @param {String} tokenInformation - token information
-	 * @param {Boolean} bodyData - bodyData
+	 * @param {Boolean} queryParams - queryParams
 	 * @returns {JSON} - Filter list.
 	 */
-	static async getFilterList(bodyData, tokenInformation) {
+	static async getFilterList(queryParams, tokenInformation) {
 		try {
 			let result = {
 				organizations: [],
+				entity_types: {},
 			}
 
-			const menteeExtension = await menteeQueries.getMenteeExtension(tokenInformation.id, [
+			let organization_ids = []
+			const organizations = await this.getOrganizationIdBasedOnPolicy(tokenInformation.id)
+			if (organizations.success && organizations.result.length > 0) {
+				organization_ids = [...organizations.result]
+
+				const defaultOrgId = await getDefaultOrgId()
+				if (defaultOrgId && !organization_ids.includes(defaultOrgId)) {
+					organization_ids.push(defaultOrgId)
+				}
+
+				let findOrganizationAndEntities = false
+				if (organization_ids.length > 0) {
+					findOrganizationAndEntities = true
+				}
+
+				if (findOrganizationAndEntities) {
+					//get organization list
+					const organizations = await userRequests.listOrganization(organization_ids)
+					if (
+						organizations &&
+						organizations.result &&
+						organizations.result &&
+						organizations.result.length > 0
+					) {
+						result.organizations = organizations.result
+					}
+
+					//get entity type with entities list
+					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
+						organization_ids,
+						queryParams
+					)
+					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
+						let entityTypesWithEntities = getEntityTypesWithEntities.result
+						if (entityTypesWithEntities.length > 0) {
+							let convertedData = convertEntitiesForFilter(entityTypesWithEntities)
+							result.entity_types = filterEntitiesBasedOnParent(convertedData, defaultOrgId)
+						}
+					}
+				}
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'FILTER_FTECHED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async getOrganizationIdBasedOnPolicy(userId) {
+		try {
+			let organization_ids = []
+
+			const menteeExtension = await menteeQueries.getMenteeExtension(userId, [
 				'external_mentor_visibility',
 				'organization_id',
 			])
 
-			let organization_ids = []
-
 			if (menteeExtension.external_mentor_visibility === common.CURRENT) {
 				organization_ids.push(menteeExtension.organization_id)
-			} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
+			} else if (menteeExtension.external_mentor_visibility === common.ASSOCIATED) {
 				let userOrgDetails = await userRequests.fetchDefaultOrgDetails(menteeExtension.organization_id)
 				if (
 					userOrgDetails.success &&
@@ -814,7 +870,7 @@ module.exports = class MenteesHelper {
 				) {
 					organization_ids.push(...userOrgDetails.data.result.related_orgs)
 				}
-			} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
+			} else if (menteeExtension.external_mentor_visibility === common.ALL) {
 				const organizationExtension = await organisationExtensionQueries.findAll(
 					{
 						external_mentor_visibility_policy: common.ALL,
@@ -835,25 +891,96 @@ module.exports = class MenteesHelper {
 				}
 			}
 
-			if (organization_ids.length > 0) {
-				const organizations = await userRequests.listOrganization(organization_ids)
-				if (
-					organizations &&
-					organizations.result &&
-					organizations.result.data &&
-					organizations.result.data.length > 0
-				) {
-					result.organizations = organizations.result.data
+			return {
+				success: true,
+				result: organization_ids,
+			}
+		} catch (error) {
+			return {
+				success: false,
+				message: error.message,
+			}
+		}
+	}
+
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types) {
+		try {
+			let filter = {
+				status: 'ACTIVE',
+				allow_filtering: true,
+				has_entities: true,
+				organization_id: {
+					[Op.in]: organization_ids,
+				},
+			}
+
+			let entityTypes = []
+			if (entity_types) {
+				entityTypes = entity_types.split(',')
+				filter.value = {
+					[Op.in]: entityTypes,
 				}
 			}
 
-			return common.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'FILTER_FTECHED_SUCCESSFULLY',
-				result,
-			})
+			//fetch entity types and entities
+			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			entityTypesWithEntities = JSON.parse(JSON.stringify(entityTypesWithEntities))
+
+			return {
+				success: true,
+				result: entityTypesWithEntities,
+			}
 		} catch (error) {
-			return error
+			return {
+				success: false,
+				message: error.message,
+			}
 		}
 	}
+}
+
+function convertEntitiesForFilter(entityTypes) {
+	const result = {}
+
+	entityTypes.forEach((entityType) => {
+		const key = entityType.value
+
+		if (!result[key]) {
+			result[key] = []
+		}
+
+		const newObj = {
+			id: entityType.id,
+			label: entityType.label,
+			value: entityType.value,
+			parent_id: entityType.parent_id,
+			organization_id: entityType.organization_id,
+			entities: entityType.entities || [],
+		}
+
+		result[key].push(newObj)
+	})
+	return result
+}
+
+function filterEntitiesBasedOnParent(data, defaultOrgId) {
+	let result = {}
+
+	for (let key in data) {
+		let countWithParentId = 0
+		let countOfEachKey = data[key].length
+		data[key].forEach((obj) => {
+			if (obj.parent_id !== null && obj.organization_id != defaultOrgId) {
+				countWithParentId++
+			}
+		})
+
+		let outputArray = data[key]
+		if (countOfEachKey > 1 && countWithParentId == countOfEachKey - 1) {
+			outputArray = data[key].filter((obj) => !(obj.organization_id === defaultOrgId && obj.parent_id === null))
+		}
+
+		result[key] = outputArray
+	}
+	return result
 }

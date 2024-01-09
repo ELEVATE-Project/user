@@ -226,7 +226,7 @@ const search = function (userType, pageNo, pageSize, searchText, userIds) {
 	})
 }
 
-const listOrganization = function (organisationIds = []) {
+const listOrganization = function (organizationIds = []) {
 	return new Promise(async (resolve, reject) => {
 		const options = {
 			headers: {
@@ -234,7 +234,7 @@ const listOrganization = function (organisationIds = []) {
 				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
 			},
 			form: {
-				organisationIds,
+				organizationIds,
 			},
 		}
 
