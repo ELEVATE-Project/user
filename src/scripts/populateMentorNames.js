@@ -32,21 +32,26 @@ if (!databaseUrl) {
 				return
 			}
 
-			// Extract mentor_ids from sessions
-			const mentorIds = sessionsWithNullMentorName.map((session) => session.mentor_id)
+			// Extract unique mentor_ids from sessions
+			const uniqueMentorIds = [...new Set(sessionsWithNullMentorName.map((session) => session.mentor_id))]
 
-			// Fetch mentorDetails for the corresponding mentor_ids
-			const mentorDetails = (await userRequests.getListOfUserDetails(mentorIds)).result
+			// Fetch mentorDetails for the unique mentor_ids
+			const mentorDetails = (await userRequests.getListOfUserDetails(uniqueMentorIds)).result
 
 			// Create a map from mentorDetails for faster lookups
 			const mentorDetailsMap = Object.fromEntries(mentorDetails.map((mentor) => [mentor.id, mentor]))
 
-			// Update sessions with mentor_name from mentorDetails
+			// Loop through unique mentor_ids and update sessions with mentor_name
 			await Promise.all(
-				sessionsWithNullMentorName.map(async (session) => {
-					const matchingMentor = mentorDetailsMap[session.mentor_id]
-					if (matchingMentor) {
-						await sessionQueries.updateOne({ id: session.id }, { mentor_name: matchingMentor.name })
+				uniqueMentorIds.map(async (mentorId) => {
+					const sessionToUpdate = sessionsWithNullMentorName.find((session) => session.mentor_id === mentorId)
+					const matchingMentor = mentorDetailsMap[mentorId]
+
+					if (sessionToUpdate && matchingMentor) {
+						await sessionQueries.updateOne(
+							{ mentor_id: sessionToUpdate.mentor_id },
+							{ mentor_name: matchingMentor.name }
+						)
 					}
 				})
 			)
