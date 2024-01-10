@@ -10,7 +10,9 @@ module.exports = class modulesHelper {
 	 * Create rolePermission.
 	 * @method
 	 * @name create
-	 * @param {Object} req - Request data.
+	 * @param {Integer} roleId - user roleId
+	 * @param {Integer} permissionId - role permissionId
+	 * @param {Integer} id - user Id
 	 * @returns {JSON} - RolePermission creation object.
 	 */
 
@@ -34,7 +36,7 @@ module.exports = class modulesHelper {
 			const rolePermissionMapping = await rolePermissionMappingQueries.create(data)
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: 'ROLE_PERMISSION_MAPPING_CREATED_SUCCESSFULLY',
+				message: 'ROLE_PERMISSION_CREATED_SUCCESSFULLY',
 				result: {
 					roleId: rolePermissionMapping.role_id,
 					permissionId: rolePermissionMapping.permission_id,
@@ -45,7 +47,7 @@ module.exports = class modulesHelper {
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
 				return common.failureResponse({
-					message: 'ROLE_PERMISSION_MAPPING_ALREADY_EXISTS',
+					message: 'ROLE_PERMISSION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -58,7 +60,8 @@ module.exports = class modulesHelper {
 	 * Delete rolePermission.
 	 * @method
 	 * @name delete
-	 * @param {Object} req - Request data.
+	 * @param {Integer} roleId - user roleId
+	 * @param {Integer} permissionId - role permissionId
 	 * @returns {JSON} - rolePermission deletion object.
 	 */
 
@@ -68,14 +71,14 @@ module.exports = class modulesHelper {
 			const rolePermissionMapping = await rolePermissionMappingQueries.delete(filter)
 			if (rolePermissionMapping == 0) {
 				return common.failureResponse({
-					message: 'ROLE_PERMISSION_MAPPING_ALREADY_EXISTS',
+					message: 'ROLE_PERMISSION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: 'ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY',
+				message: 'ROLE_PERMISSION_DELETED_SUCCESSFULLY',
 				result: {},
 			})
 		} catch (error) {

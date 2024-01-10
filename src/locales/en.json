@@ -136,6 +136,7 @@
 	"MODULES_DELETED_SUCCESSFULLY": "Module deleted successfully",
 	"MODULES_HAS_EMPTY_LIST": "Module are empty for searchlist",
 	"MODULES_FETCHED_SUCCESSFULLY": "Module fetched successfully",
-	"ROLE_PERMISSION_MAPPING_CREATED_SUCCESSFULLY": "Permission added to the role",
-	"ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY": "Permission delete from the role"
+	"ROLE_PERMISSION_CREATED_SUCCESSFULLY": "Permission added to the role",
+	"ROLE_PERMISSION_DELETED_SUCCESSFULLY": "Permission delete from the role",
+	"ROLE_PERMISSION_ALREADY_EXISTS": "Permission for this role already exists"
 }
