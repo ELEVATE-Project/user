@@ -64,12 +64,12 @@ module.exports = class OrganizationExtensionQueries {
 
 	static async findAll(filter, options = {}) {
 		try {
-			const orgPolicies = await OrganizationExtension.findAll({
+			const orgExtensions = await OrganizationExtension.findAll({
 				where: filter,
 				...options,
 				raw: true,
 			})
-			return orgPolicies
+			return orgExtensions
 		} catch (error) {
 			throw new Error(`Error fetching organisation extension: ${error.message}`)
 		}

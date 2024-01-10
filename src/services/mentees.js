@@ -801,17 +801,7 @@ module.exports = class MenteesHelper {
 			if (organizations.success && organizations.result.length > 0) {
 				organization_ids = [...organizations.result]
 
-				const defaultOrgId = await getDefaultOrgId()
-				if (defaultOrgId && !organization_ids.includes(defaultOrgId)) {
-					organization_ids.push(defaultOrgId)
-				}
-
-				let findOrganizationAndEntities = false
 				if (organization_ids.length > 0) {
-					findOrganizationAndEntities = true
-				}
-
-				if (findOrganizationAndEntities) {
 					//get organization list
 					const organizations = await userRequests.listOrganization(organization_ids)
 					if (
@@ -821,6 +811,11 @@ module.exports = class MenteesHelper {
 						organizations.result.length > 0
 					) {
 						result.organizations = organizations.result
+					}
+
+					const defaultOrgId = await getDefaultOrgId()
+					if (defaultOrgId && !organization_ids.includes(defaultOrgId)) {
+						organization_ids.push(defaultOrgId)
 					}
 
 					//get entity type with entities list
@@ -924,7 +919,6 @@ module.exports = class MenteesHelper {
 
 			//fetch entity types and entities
 			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
-			entityTypesWithEntities = JSON.parse(JSON.stringify(entityTypesWithEntities))
 
 			return {
 				success: true,
