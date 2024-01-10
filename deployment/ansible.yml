@@ -58,13 +58,6 @@
       #  dest={{ current_path }}
        # state=link
     
-    - name: Run Migrations
-      command: "chdir={{current_path}}/src npx sequelize-cli db:migrate"
-
-    - name: Delete old pm2 process
-      command: pm2 delete elevate-user
-      ignore_errors: yes
-    
     - name: set permission
       shell: chmod 744 {{ current_path }}/src/scripts/json2env.sh  
       
@@ -80,6 +73,14 @@
       shell: cd {{current_path}}/src && redoc-cli build -o ./api-doc/index.html ./api-doc/api-doc.yaml
       register: apiDocResponse 
     - debug: msg=" Api-doc {{ apiDocResponse }} "
+
+
+    - name: Run Migrations
+      command: "chdir={{current_path}}/src npx sequelize-cli db:migrate"
+
+    - name: Delete old pm2 process
+      command: pm2 delete elevate-user
+      ignore_errors: yes
 
     - name: Delete release folder
       shell: rm -rf  {{ release_path }}
