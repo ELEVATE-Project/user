@@ -706,6 +706,10 @@ module.exports = class MentorsHelper {
 			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
+			if (designation) {
+				filteredQuery.designation = designation
+			}
+
 			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
