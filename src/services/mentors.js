@@ -793,6 +793,7 @@ module.exports = class MentorsHelper {
 				result: userDetails.data.result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
