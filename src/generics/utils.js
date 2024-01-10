@@ -419,6 +419,7 @@ const generateWhereClause = (tableName) => {
 
 	return whereClause
 }
+
 module.exports = {
 	generateToken,
 	hashPassword,
