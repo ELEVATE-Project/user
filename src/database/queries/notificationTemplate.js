@@ -1,6 +1,8 @@
 const NotificationTemplate = require('@database/models/index').NotificationTemplate
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
+const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
 
 module.exports = class NotificationTemplateData {
 	static async findOneEmailTemplate(code, orgId) {
@@ -31,9 +33,6 @@ module.exports = class NotificationTemplateData {
 
 			// If there are multiple results, find the one matching orgId
 			templateData = templateData.find((template) => template.organization_id === orgId) || templateData[0]
-
-			// If no data is found, set an empty object
-			templateData = templateData || {}
 
 			if (templateData && templateData.email_header) {
 				const header = await this.getEmailHeader(templateData.email_header)

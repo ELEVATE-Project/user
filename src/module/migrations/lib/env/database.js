@@ -1,6 +1,12 @@
 const { MongoClient } = require('mongodb')
 global.ObjectID = require('mongodb').ObjectID
 
+/* 
+Uses MongoDB v4.1.4, which has an OSI Compliant License (GNU Affero General Public License, version 3)
+MongoDB v4.1.4 repository: https://github.com/mongodb/mongo/tree/r4.1.4
+MongoDB v4.1.4 License: https://github.com/mongodb/mongo/blob/r4.1.4/LICENSE-Community.txt
+*/
+
 module.exports = {
 	async connect() {
 		const [Mongo, Host, PortDBName] = process.env.MONGODB_URL.split(':')

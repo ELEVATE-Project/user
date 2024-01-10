@@ -32,13 +32,6 @@ module.exports = class MentorsHelper {
 	 */
 	static async upcomingSessions(id, page, limit, search = '', menteeUserId, queryParams, isAMentor) {
 		try {
-			const query = utils.processQueryParametersWithExclusions(queryParams)
-			console.log(query)
-			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
-				status: 'ACTIVE',
-			})
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
-
 			const mentorsDetails = await mentorQueries.getMentorExtension(id)
 			if (!mentorsDetails) {
 				return common.failureResponse({
@@ -47,6 +40,14 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			const query = utils.processQueryParametersWithExclusions(queryParams)
+
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: 'ACTIVE',
+				allow_filtering: true,
+			})
+			const filteredQuery = utils.validateFilters(query, validationData, await sessionQueries.getModelName())
 
 			// Filter upcoming sessions based on saas policy
 			const saasFilter = await menteesService.filterSessionsBasedOnSaasPolicy(menteeUserId, isAMentor)
@@ -409,10 +410,20 @@ module.exports = class MentorsHelper {
 				raw: true,
 			})
 
-			if (updateCount === '0') {
-				return common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: 'MENTOR_EXTENSION_NOT_FOUND',
+			if (updateCount === 0) {
+				const fallbackUpdatedUser = await mentorQueries.getMentorExtension(userId)
+				if (!fallbackUpdatedUser) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'MENTOR_EXTENSION_NOT_FOUND',
+					})
+				}
+
+				const processDbResponse = utils.processDbResponse(fallbackUpdatedUser, validationData)
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTOR_EXTENSION_UPDATED',
+					result: processDbResponse,
 				})
 			}
 
@@ -557,11 +568,11 @@ module.exports = class MentorsHelper {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			})
-			console.log('mentorExtension', mentorExtension)
+
 			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			const processDbResponse = utils.processDbResponse(mentorExtension, validationData)
-			console.log(processDbResponse)
+
 			const totalSessionHosted = await sessionQueries.countHostedSessions(id)
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
@@ -689,9 +700,10 @@ module.exports = class MentorsHelper {
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
+				allow_filtering: true,
 			})
 
-			const filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'Session')
+			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
 			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
@@ -894,31 +906,8 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// update sessions which having status as published/live and  exceeds the current date and time
-			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
-			/* 			const filterQuery = {
-				[Op.or]: [
-					{
-						status: common.PUBLISHED_STATUS,
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-					{
-						status: common.LIVE_STATUS,
-						'meeting_info.value': {
-							[Op.ne]: common.BBB_VALUE,
-						},
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-				],
-			}
 
-			await sessionQueries.updateSession(filterQuery, {
-				status: common.COMPLETED_STATUS,
-			}) */
+			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
 
 			let arrayOfStatus = []
 			if (status && status != '') {
@@ -955,7 +944,7 @@ module.exports = class MentorsHelper {
 
 			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
 
-			//remove meeting_info details except value and platform
+			//remove meeting_info details except value and platform and add is_assigned flag
 			sessionDetails.rows.forEach((item) => {
 				if (item.meeting_info) {
 					item.meeting_info = {
@@ -963,6 +952,8 @@ module.exports = class MentorsHelper {
 						platform: item.meeting_info.platform,
 					}
 				}
+				item.is_assigned = item.mentor_id !== item.created_by
+				delete item.created_by
 			})
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

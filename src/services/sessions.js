@@ -32,6 +32,9 @@ const organisationExtensionQueries = require('@database/queries/organisationExte
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteeService = require('@services/mentees')
+const { Parser } = require('@json2csv/plainjs')
+const entityTypeService = require('@services/entity-type')
+
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
@@ -43,9 +46,13 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async create(bodyData, loggedInUserId, orgId) {
-		bodyData.mentor_id = loggedInUserId
 		try {
-			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
+			bodyData.created_by = loggedInUserId
+			bodyData.updated_by = loggedInUserId
+
+			const mentorIdToCheck = bodyData.mentor_id ? bodyData.mentor_id : loggedInUserId
+
+			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
@@ -53,11 +60,27 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
-			if (timeSlot.isTimeSlotAvailable === false) {
+			if (!bodyData.mentor_id) {
+				bodyData.mentor_id = loggedInUserId
+			} else if (
+				mentorDetails.visibility !== common.ASSOCIATED ||
+				!mentorDetails.visible_to_organizations.includes(orgId)
+			) {
 				return common.failureResponse({
-					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
+			if (!timeSlot.isTimeSlotAvailable) {
+				const errorMessage = bodyData.mentor_id
+					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
+					: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } }
+
+				return common.failureResponse({
+					message: errorMessage,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -80,6 +103,11 @@ module.exports = class SessionsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
+
+			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
+			if (userDetails && userDetails.name) {
+				bodyData.mentor_name = userDetails.name
 			}
 
 			const defaultOrgId = await getDefaultOrgId()
@@ -166,10 +194,7 @@ module.exports = class SessionsHelper {
 			jobsToCreate[0].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 1, 'hour')
 			jobsToCreate[1].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 24, 'hour')
 			jobsToCreate[2].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.start_date, 15, 'minutes')
-
-			if (data.toJSON().meeting_info.value !== common.BBB_VALUE) {
-				jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes')
-			} else jobsToCreate.pop()
+			jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes')
 
 			// Iterate through the jobs and create scheduler jobs
 			for (let jobIndex = 0; jobIndex < jobsToCreate.length; jobIndex++) {
@@ -220,6 +245,8 @@ module.exports = class SessionsHelper {
 	static async update(sessionId, bodyData, userId, method, orgId) {
 		let isSessionReschedule = false
 		try {
+			bodyData.updated_by = userId
+
 			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
 			if (!mentorExtension) {
 				return common.failureResponse({
@@ -237,7 +264,13 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			if (!sessionDetail.created_by !== userId) {
+				return common.failureResponse({
+					message: 'CANNOT_EDIT_DELETE_SESSION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 
 			const currentDate = moment.utc()
@@ -381,11 +414,7 @@ module.exports = class SessionsHelper {
 						await schedulerRequest.updateDelayOfScheduledJob(updateDelayData[jobIndex])
 					}
 				}
-				if (
-					bodyData.end_date &&
-					bodyData.end_date !== Number(sessionDetail.end_date) &&
-					bodyData?.meeting_info?.value !== common.BBB_VALUE
-				) {
+				if (bodyData.end_date && bodyData.end_date !== Number(sessionDetail.end_date)) {
 					isSessionReschedule = true
 
 					const jobId = common.jobPrefixToMarkSessionAsCompleted + sessionDetail.id
@@ -394,38 +423,7 @@ module.exports = class SessionsHelper {
 						delay: await utils.getTimeDifferenceInMilliseconds(bodyData.end_date, 0, 'minutes'),
 					})
 				}
-				if (
-					bodyData.meeting_info &&
-					bodyData?.meeting_info?.value !== common.BBB_VALUE &&
-					sessionDetail.meeting_info?.value !== bodyData?.meeting_info?.value
-				) {
-					let jobsToCreate = _.cloneDeep(common.jobsToCreate)
-					jobsToCreate[3].delay = await utils.getTimeDifferenceInMilliseconds(
-						sessionDetail.end_date,
-						0,
-						'minutes'
-					)
-					// Iterate through the jobs and create scheduler jobs
-					// Append the session ID to the job ID
-					jobsToCreate[3].jobId = jobsToCreate[3].jobId + sessionDetail.id
-
-					const reqBody = {
-						job_id: jobsToCreate[3].jobId,
-						email_template_code: jobsToCreate[3].emailTemplate,
-						job_creator_org_id: orgId,
-					}
-					// Create the scheduler job with the calculated delay and other parameters
-					await schedulerRequest.createSchedulerJob(
-						jobsToCreate[3].jobId,
-						jobsToCreate[3].delay,
-						jobsToCreate[3].jobName,
-						reqBody,
-						common.sessionCompleteEndpoint + sessionDetail.id,
-						common.PATCH_METHOD
-					)
-				}
 			}
-
 			if (method == common.DELETE_METHOD || isSessionReschedule) {
 				const sessionAttendees = await sessionAttendeesQueries.findAll({
 					session_id: sessionId,
@@ -490,52 +488,46 @@ module.exports = class SessionsHelper {
 									name: attendee.attendeeName,
 									sessionTitle: sessionDetail.title,
 									oldStartDate: utils.getTimeZone(
-										sessionDetail.startDateUtc
-											? sessionDetail.startDateUtc
-											: sessionDetail.startDate,
+										sessionDetail.start_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldStartTime: utils.getTimeZone(
 										sessionDetail.startDateUtc
 											? sessionDetail.startDateUtc
-											: sessionDetail.startDate,
+											: sessionDetail.start_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldEndDate: utils.getTimeZone(
-										sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate,
+										sessionDetail.end_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									oldEndTime: utils.getTimeZone(
-										sessionDetail.endDateUtc ? sessionDetail.endDateUtc : sessionDetail.endDate,
+										sessionDetail.end_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newStartDate: utils.getTimeZone(
-										bodyData['startDateUtc']
-											? bodyData['startDateUtc']
-											: sessionDetail.startDateUtc,
+										bodyData['start_date'] ? bodyData['start_date'] : sessionDetail.start_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newStartTime: utils.getTimeZone(
-										bodyData['startDateUtc']
-											? bodyData['startDateUtc']
-											: sessionDetail.startDateUtc,
+										bodyData['start_date'] ? bodyData['start_date'] : sessionDetail.start_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newEndDate: utils.getTimeZone(
-										bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc,
+										bodyData['end_date'] ? bodyData['end_date'] : sessionDetail.end_date,
 										common.dateFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 									newEndTime: utils.getTimeZone(
-										bodyData['endDateUtc'] ? bodyData['endDateUtc'] : sessionDetail.endDateUtc,
+										bodyData['end_date'] ? bodyData['end_date'] : sessionDetail.end_date,
 										common.timeFormat,
-										sessionDetail.timeZone
+										sessionDetail.time_zone
 									),
 								}),
 							},
@@ -602,7 +594,7 @@ module.exports = class SessionsHelper {
 
 			// check for accessibility
 			if (userId !== '' && isAMentor !== '') {
-				let isAccessible = await this.checkIfSessionIsAccessible([sessionDetails], userId, isAMentor)
+				let isAccessible = await this.checkIfSessionIsAccessible(sessionDetails, userId, isAMentor)
 
 				// Throw access error
 				if (!isAccessible) {
@@ -616,7 +608,12 @@ module.exports = class SessionsHelper {
 			if (userId != sessionDetails.mentor_id) {
 				delete sessionDetails?.meeting_info?.link
 				delete sessionDetails?.meeting_info?.meta
+			} else {
+				sessionDetails.is_assigned = sessionDetails.mentor_id !== sessionDetails.created_by
 			}
+			delete sessionDetails.created_by
+			delete sessionDetails.updated_by
+
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
 					if (imgPath != '') {
@@ -672,8 +669,9 @@ module.exports = class SessionsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- List of filtered sessions
 	 */
-	static async checkIfSessionIsAccessible(sessions, userId, isAMentor) {
+	static async checkIfSessionIsAccessible(session, userId, isAMentor) {
 		try {
+			if (isAMentor && session.mentor_id === userId) return true
 			const userPolicyDetails = isAMentor
 				? await mentorExtensionQueries.getMentorExtension(userId, [
 						'external_session_visibility',
@@ -697,7 +695,6 @@ module.exports = class SessionsHelper {
 			let isAccessible = false
 			if (userPolicyDetails.external_session_visibility && userPolicyDetails.organization_id) {
 				const { external_session_visibility, organization_id } = userPolicyDetails
-				const session = sessions[0]
 				const isEnrolled = session.is_enrolled || false
 
 				switch (external_session_visibility) {
@@ -843,6 +840,8 @@ module.exports = class SessionsHelper {
 			await sessionAttendeesQueries.create(attendee)
 			await sessionEnrollmentQueries.create(_.omit(attendee, 'time_zone'))
 
+			await sessionQueries.updateEnrollmentCount(sessionId, false)
+
 			const templateData = await notificationQueries.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE,
 				session.mentor_organization_id
@@ -867,7 +866,6 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			await sessionQueries.updateEnrollmentCount(sessionId, false)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -918,13 +916,15 @@ module.exports = class SessionsHelper {
 
 			await sessionEnrollmentQueries.unEnrollFromSession(sessionId, userId)
 
+			await sessionQueries.updateEnrollmentCount(sessionId)
+
 			const templateData = await notificationQueries.findOneEmailTemplate(
 				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE,
 				session.mentor_organization_id
 			)
 
 			if (templateData) {
-				// Push successfull unenrollment to session in kafka
+				// Push successful unenrollment to session in kafka
 				const payload = {
 					type: 'email',
 					email: {
@@ -940,8 +940,6 @@ module.exports = class SessionsHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
-			await sessionQueries.updateEnrollmentCount(sessionId)
 
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -1247,9 +1245,27 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - updated session data.
 	 */
 
-	static async completed(sessionId) {
+	static async completed(sessionId, isBBB) {
 		try {
-			const { updatedRows } = await sessionQueries.updateOne(
+			const sessionDetails = await sessionQueries.findOne({
+				id: sessionId,
+			})
+			if (!sessionDetails) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (sessionDetails.meeting_info.value == common.BBB_VALUE && sessionDetails.started_at != null && !isBBB) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					result: [],
+				})
+			}
+
+			await sessionQueries.updateOne(
 				{
 					id: sessionId,
 				},
@@ -1257,18 +1273,10 @@ module.exports = class SessionsHelper {
 					status: common.COMPLETED_STATUS,
 					completed_at: utils.utcFormat(),
 				},
-				{ returning: true, raw: true }
+				{ returning: false, raw: true }
 			)
-			if (!updatedRows)
-				return common.failureResponse({
-					message: 'SESSION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
 
-			const { value } = updatedRows[0].meeting_info
-
-			if (value === common.BBB_VALUE) {
+			if (sessionDetails.meeting_info.value == common.BBB_VALUE && isBBB) {
 				const recordingInfo = await bigBlueButtonRequests.getRecordings(sessionId)
 
 				if (recordingInfo?.data?.response) {
@@ -1288,7 +1296,7 @@ module.exports = class SessionsHelper {
 				result: [],
 			})
 		} catch (error) {
-			return error
+			throw error
 		}
 	}
 
@@ -1409,6 +1417,283 @@ module.exports = class SessionsHelper {
 			return true
 		} catch (error) {
 			return error
+		}
+	}
+	/**
+	 * Downloads a list of sessions created by a user in CSV format based on query parameters.
+	 * @method
+	 * @name downloadList
+	 * @param {string} userId - User ID of the creator.
+	 * @param {Object} queryParams - Query parameters for filtering sessions.
+	 * @param {string} timezone - Time zone for date and time formatting.
+	 * @param {string} searchText - Text to search for in session titles.
+	 * @returns {Promise<Object>} - A promise that resolves to a response object containing
+	 *                             a CSV stream of the session list for download.
+	 * @throws {Error} - Throws an error if there's an issue during processing.
+	 */
+
+	static async downloadList(userId, queryParams, timezone, searchText) {
+		try {
+			const filter = {
+				created_by: userId,
+				...(queryParams.status && { status: queryParams.status.split(',') }),
+				...(queryParams.type && { type: queryParams.type.split(',') }),
+				...(searchText && {
+					[Op.or]: [
+						{ title: { [Op.iLike]: `%${searchText}%` } },
+						{ mentor_name: { [Op.iLike]: `%${searchText}%` } },
+					],
+				}),
+			}
+			const sortBy = queryParams.sort_by || 'created_at'
+			const order = queryParams.order || 'DESC'
+
+			let sessions = await sessionQueries.findAll(filter, {
+				order: [[sortBy, order]],
+			})
+
+			const CSVFields = [
+				{ label: 'No.', value: 'index_number' },
+				{ label: 'Session Name', value: 'title' },
+				{ label: 'Type', value: 'type' },
+				{ label: 'Mentors', value: 'mentor_name' },
+				{ label: 'Date', value: 'start_date' },
+				{ label: 'Time', value: 'start_time' },
+				{ label: 'Duration (Min)', value: 'duration_in_minutes' },
+				{ label: 'Mentee Count', value: 'mentee_count' },
+				{ label: 'Status', value: 'status' },
+			]
+
+			//Return an empty CSV if sessions list is empty
+			if (sessions.length == 0) {
+				const parser = new Parser({
+					fields: CSVFields,
+					header: true,
+					includeEmptyRows: true,
+					defaultValue: null,
+				})
+				const csv = parser.parse()
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					isResponseAStream: true,
+					stream: csv,
+					fileName: 'session_list' + moment() + '.csv',
+				})
+			}
+
+			sessions = await this.populateSessionDetails({
+				sessions: sessions,
+				timezone: timezone,
+				transformEntities: true,
+			})
+
+			const parser = new Parser({ fields: CSVFields, header: true, includeEmptyRows: true, defaultValue: null })
+			const csv = parser.parse(sessions)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				isResponseAStream: true,
+				stream: csv,
+				fileName: 'session_list' + moment() + '.csv',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Transform session data from epoch format to date time format with duration.
+	 *
+	 * @static
+	 * @method
+	 * @name transformSessionDate
+	 * @param {Object} session - Sequelize response for a mentoring session.
+	 * @param {string} [timezone='Asia/Kolkata'] - Time zone for date and time formatting.
+	 * @returns {Object} - Transformed session data.
+	 * @throws {Error} - Throws an error if any issues occur during transformation.
+	 */
+	static async transformSessionDate(session, timezone = 'Asia/Kolkata') {
+		try {
+			const transformDate = (epochTimestamp) => {
+				const date = moment.unix(epochTimestamp) // Use moment.unix() to handle Unix timestamps
+				const formattedDate = date.clone().tz(timezone).format('DD-MMM-YYYY')
+				const formattedTime = date.clone().tz(timezone).format('hh:mm A')
+				return { formattedDate, formattedTime }
+			}
+
+			const transformDuration = (startEpoch, endEpoch) => {
+				const startDate = moment.unix(startEpoch)
+				const endDate = moment.unix(endEpoch)
+				const duration = moment.duration(endDate.diff(startDate))
+				return duration.asMinutes()
+			}
+
+			const startDate = session.start_date
+			const endDate = session.end_date
+
+			const { formattedDate: startDateFormatted, formattedTime: startTimeFormatted } = transformDate(startDate)
+
+			const durationInMinutes = transformDuration(startDate, endDate)
+
+			return {
+				start_date: startDateFormatted,
+				start_time: startTimeFormatted,
+				duration_in_minutes: durationInMinutes,
+			}
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Populates session details with additional information such as start_date,
+	 * start_time, duration_in_minutes, mentee_count, and index_number.
+	 * @method
+	 * @name populateSessionDetails
+	 * @param {Object[]} sessions - Array of session objects.
+	 * @param {string} timezone - Time zone for date and time formatting.
+	 * @param {number} [page] - Page number for pagination.
+	 * @param {number} [limit] - Limit of sessions per page for pagination.
+	 * @param {boolean} [transformEntities=false] - Flag to indicate whether to transform entity types.
+	 * @returns {Promise<Array>} - Array of session objects with populated details.
+	 * @throws {Error} - Throws an error if there's an issue during processing.
+	 */
+	static async populateSessionDetails({ sessions, timezone, page, limit, transformEntities = false }) {
+		try {
+			const uniqueOrgIds = [...new Set(sessions.map((obj) => obj.mentor_organization_id))]
+			sessions = await entityTypeService.processEntityTypesToAddValueLabels(
+				sessions,
+				uniqueOrgIds,
+				common.sessionModelName,
+				'mentor_organization_id'
+			)
+
+			await Promise.all(
+				sessions.map(async (session, index) => {
+					if (transformEntities) {
+						if (session.status) session.status = session.status.label
+						if (session.type) session.type = session.type.label
+					}
+					const res = await this.transformSessionDate(session, timezone)
+					const menteeCount = session.seats_limit - session.seats_remaining
+					let indexNumber
+
+					indexNumber = index + 1 + (page && limit ? limit * (page - 1) : 0)
+
+					Object.assign(session, {
+						start_date: res.start_date,
+						start_time: res.start_time,
+						duration_in_minutes: res.duration_in_minutes,
+						mentee_count: menteeCount,
+						index_number: indexNumber,
+					})
+				})
+			)
+			return sessions
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Retrieves and formats sessions created by a user based on query parameters.
+	 * @method
+	 * @name createdSessions
+	 * @param {string} userId - User ID of the creator.
+	 * @param {Object} queryParams - Query parameters for filtering and sorting sessions.
+	 * @param {string} timezone - Time zone for date and time formatting.
+	 * @param {number} page - Page number for pagination.
+	 * @param {number} limit - Limit of sessions per page for pagination.
+	 * @param {string} searchText - Text to search for in session titles or mentor names.
+	 * @returns {Promise<Object>} - A promise that resolves to a response object containing
+	 *                             the formatted list of created sessions and count.
+	 * @throws {Error} - Throws an error if there's an issue during processing.
+	 */
+
+	static async createdSessions(userId, queryParams, timezone, page, limit, searchText) {
+		try {
+			const filter = {
+				created_by: userId,
+				...(queryParams.status && { status: queryParams.status.split(',') }),
+				...(queryParams.type && { type: queryParams.type.split(',') }),
+				...(searchText && {
+					[Op.or]: [
+						{ title: { [Op.iLike]: `%${searchText}%` } },
+						{ mentor_name: { [Op.iLike]: `%${searchText}%` } },
+					],
+				}),
+			}
+			const sortBy = queryParams.sort_by || 'created_at'
+			const order = queryParams.order || 'DESC'
+
+			let sessions = await sessionQueries.findAndCountAll(filter, {
+				order: [[sortBy, order]],
+				offset: limit * (page - 1),
+				limit: limit,
+			})
+			if (sessions.rows.length == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'LIST_FETCHED',
+					result: { data: [], count: 0 },
+				})
+			}
+
+			sessions.rows = await this.populateSessionDetails({
+				sessions: sessions.rows,
+				timezone: timezone,
+				page: page,
+				limit: limit,
+			})
+			const formattedSessionList = sessions.rows.map((session, index) => ({
+				id: session.id,
+				index_number: index + 1 + limit * (page - 1), //To keep consistency with pagination
+				title: session.title,
+				type: session.type,
+				mentor_name: session.mentor_name,
+				start_date: session.start_date,
+				start_time: session.start_time,
+				duration_in_minutes: session.duration_in_minutes,
+				status: session.status,
+				mentee_count: session.mentee_count,
+				mentor_organization_id: session.mentor_organization_id,
+			}))
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_LIST_FETCHED',
+				result: { data: formattedSessionList, count: sessions.count },
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Bulk update mentor names for sessions.
+	 * @method
+	 * @name bulkUpdateMentorNames
+	 * @param {Array} mentorsId - Array of mentor IDs to update.
+	 * @param {STRING} mentorsName - Mentor name that needs to be updated.
+	 * @returns {Object} - Success response indicating the update was performed successfully.
+	 * @throws {Error} - Throws an error if there's an issue during the bulk update.
+	 */
+	static async bulkUpdateMentorNames(mentorsId, mentorsName) {
+		try {
+			await sessionQueries.updateSession(
+				{
+					mentor_id: mentorsId,
+				},
+				{
+					mentor_name: mentorsName,
+				}
+			)
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
 		}
 	}
 }
