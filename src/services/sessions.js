@@ -44,6 +44,7 @@ module.exports = class SessionsHelper {
 
 	static async create(bodyData, loggedInUserId, orgId) {
 		bodyData.mentor_id = loggedInUserId
+		bodyData.created_by = bodyData.updated_by = bodyData.mentor_id
 		try {
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
 			if (!mentorDetails) {
@@ -147,6 +148,11 @@ module.exports = class SessionsHelper {
 			if (organisationPolicy.mentor_feedback_question_set)
 				bodyData.mentor_feedback_question_set = organisationPolicy.mentor_feedback_question_set
 			const data = await sessionQueries.create(bodyData)
+
+			// If menteeIds are provided in the req body enroll them
+			if (bodyData.mentees && bodyData.mentees.length > 0) {
+				await this.addMentees(data.id, bodyData.mentees, bodyData.time_zone)
+			}
 
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
@@ -750,13 +756,29 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone) {
-		const userDetails = (await userRequests.details('', userTokenData.id)).data.result
-
-		const userId = userTokenData.id
-		const email = userDetails.email
-		const name = userDetails.name
+	static async enroll(sessionId, userTokenData, timeZone, isSelfEnrolled = true) {
 		try {
+			let email
+			let name
+			let userId
+			let enrollmentType
+			let emailTemplateCode = process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
+			// If entrolled by the mentee get email and name from user service via api call.
+			// Else it will be avalable in userTokenData
+			if (isSelfEnrolled) {
+				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				console.log('timeZone : ', timeZone)
+				userId = userDetails.id
+				email = userDetails.email
+				name = userDetails.name
+				enrollmentType = common.ENROLLED
+			} else {
+				userId = userTokenData.id
+				email = userTokenData.email
+				name = userTokenData.name
+				emailTemplateCode = process.env.MENTEE_SESSION_ENROLLMENT_BY_MANAGER_EMAIL_TEMPLATE // update with new template
+				enrollmentType = common.INVITED
+			}
 			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
@@ -765,7 +787,7 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			console.log('+++++++++++++++++++++++++++session', session)
 			const mentorName = await userRequests.details('', session.mentor_id)
 			session.mentor_name = mentorName.data.result.name
 
@@ -794,18 +816,22 @@ module.exports = class SessionsHelper {
 				session_id: sessionId,
 				mentee_id: userId,
 				time_zone: timeZone,
+				// type: enrollmentType
 			}
-
+			console.log('+++++++++++++++++++++++++++enrollmentType', enrollmentType, emailTemplateCode)
 			await sessionAttendeesQueries.create(attendee)
 			await sessionEnrollmentQueries.create(_.omit(attendee, 'time_zone'))
 
 			await sessionQueries.updateEnrollmentCount(sessionId, false)
 
 			const templateData = await notificationQueries.findOneEmailTemplate(
-				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE,
+				emailTemplateCode,
 				session.mentor_organization_id
 			)
-
+			let duration = moment.duration(moment.unix(session.end_date).diff(moment.unix(session.start_date)))
+			let elapsedMinutes = duration.asMinutes()
+			console.log('elapsedMinutes : ', elapsedMinutes)
+			console.log('++++++++++++++++++++++++++++++++++++++++++++templateDatatemplateData : ', templateData)
 			if (templateData) {
 				// Push successfull enrollment to session in kafka
 				const payload = {
@@ -819,10 +845,13 @@ module.exports = class SessionsHelper {
 							mentorName: session.mentor_name,
 							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
 							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
+							sessionDuration: elapsedMinutes,
+							sessionPlatform: session.meeting_info.platform,
+							unitOfTime: 'Min',
 						}),
 					},
 				}
-
+				console.log('++++++++++++++++++++email ::: email payload :', payload.email)
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
@@ -845,13 +874,25 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} - UnEnroll session.
 	 */
 
-	static async unEnroll(sessionId, userTokenData) {
-		const userDetails = (await userRequests.details('', userTokenData.id)).data.result
-
-		const userId = userTokenData.id
-		const name = userDetails.name
-		const email = userDetails.email
+	static async unEnroll(sessionId, userTokenData, isSelfUnenrollment = true) {
 		try {
+			let email
+			let name
+			let userId
+			let emailTemplateCode = process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE
+			// If mentee request unenroll get email and name from user service via api call.
+			// Else it will be avalable in userTokenData
+			if (isSelfUnenrollment) {
+				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				userId = userDetails.id
+				email = userDetails.email
+				name = userDetails.name
+			} else {
+				userId = userTokenData.id
+				email = userTokenData.email
+				name = userTokenData.name
+				emailTemplateCode = process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE // update with new template
+			}
 			const session = await sessionQueries.findById(sessionId)
 			if (!session) {
 				return common.failureResponse({
@@ -878,7 +919,7 @@ module.exports = class SessionsHelper {
 			await sessionQueries.updateEnrollmentCount(sessionId)
 
 			const templateData = await notificationQueries.findOneEmailTemplate(
-				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE,
+				emailTemplateCode,
 				session.mentor_organization_id
 			)
 
@@ -1384,11 +1425,11 @@ module.exports = class SessionsHelper {
 	 * @method
 	 * @name addMentees
 	 * @param {String} sessionId 				- Session id.
-	 * @param {Number} mentees 					- Mentees id.
+	 * @param {Number} menteeIds				- Mentees id.
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async addMentees(sessionId, mentees) {
+	static async addMentees(sessionId, menteeIds, timeZone) {
 		try {
 			console.log('Inside addMentee function')
 			// check if session exists or not
@@ -1401,86 +1442,164 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// Enrol mentees to the given session
-			console.log('Array of mentees : ', mentees)
-			// mentees = mentees.map(Number);
-			// Update session
-			// let updatedSession = await sessionQueries.updateOne(
-			// 	{id: sessionId},
-			// 	{mentees: mentees}
-			// )
-			let updatedSession = await sessionQueries.appendMentees(sessionId, mentees, {
-				returning: true,
-				raw: true,
+			console.log('menteeIds : ', menteeIds)
+			// Get mentee name and email from user service
+			const menteeAccounts = await userRequests.getListOfUserDetails(menteeIds)
+			console.log('menteeAccounts : ', menteeAccounts)
+			if (!menteeAccounts.result || !menteeAccounts.result.length > 0) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const menteeDetails = menteeAccounts.result.map((element) => ({
+				id: element.id,
+				email: element.email,
+				name: element.name,
+			}))
+
+			// Enroll mentees to the given session
+			const failedIds = []
+			const successIds = []
+
+			const enrollPromises = menteeDetails.map((menteeData) => {
+				return this.enroll(sessionId, menteeData, timeZone, false)
+					.then((response) => {
+						console.log('Response ::::::::::::::::::::', response)
+						console.log('response.statusCode', response.statusCode, httpStatusCode.created)
+						if (response.statusCode == httpStatusCode.created) {
+							// Enrolled successfully
+							successIds.push(menteeData.id)
+						} else {
+							// Enrollment failed
+							failedIds.push(menteeData.id)
+						}
+					})
+					.catch((error) => {
+						// mentee enroll error
+						failedIds.push(menteeData.id)
+					})
 			})
-			console.log('updatedSession : ', updatedSession)
-			// sessionDetails.is_enrolled = false
-			// if (userId) {
-			// 	let sessionAttendee = await sessionAttendeesQueries.findOne({
-			// 		session_id: sessionDetails.id,
-			// 		mentee_id: userId,
-			// 	})
-			// 	if (sessionAttendee) {
-			// 		sessionDetails.is_enrolled = true
-			// 	}
-			// }
 
-			// // check for accessibility
-			// if (userId !== '' && isAMentor !== '') {
-			// 	let isAccessible = await this.checkIfSessionIsAccessible(sessionDetails, userId, isAMentor)
+			// const enrollPromises = menteeDetails.map(menteeData => {
+			// return this.enroll(sessionId, menteeData, timeZone, false)
+			// 	.then(response => console.log(`Enrollment successful for menteeId: ${menteeData.id}`,response))
+			// 	.catch(error => console.error(`Enrollment failed for menteeId++++++++++++++++++++++++++++++++++++++++: ${menteeData.id}`, error));
+			// });
 
-			// 	// Throw access error
-			// 	if (!isAccessible) {
-			// 		return common.failureResponse({
-			// 			statusCode: httpStatusCode.not_found,
-			// 			message: 'SESSION_RESTRICTED',
-			// 		})
-			// 	}
-			// }
+			// Wait for all promises to settle
+			await Promise.all(enrollPromises)
+			console.log('failedIdsfailedIds : ', failedIds)
 
-			// if (userId != sessionDetails.mentor_id) {
-			// 	delete sessionDetails?.meeting_info?.link
-			// 	delete sessionDetails?.meeting_info?.meta
-			// }
-			// if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
-			// 	sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
-			// 		if (imgPath != '') {
-			// 			return await utils.getDownloadableUrl(imgPath)
+			if (failedIds.length > 0) {
+				return common.failureResponse({
+					message: 'FAILED_TO_ADD_MENTEES',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// let menteeDetails = []
+			// menteeIds.forEach((attendee) => {
+			// 	for (const element of menteeAccounts.result) {
+			// 		if (element.id == attendee) {
+			// 			let menteeData = {}
+			// 			menteeData.email = element.email
+			// 			menteeData.name = element.name
+			// 			menteeData.id = element.id
+			// 			menteeDetails.push(menteeData)
+			// 			break
 			// 		}
-			// 	})
-			// 	sessionDetails.image = await Promise.all(sessionDetails.image)
-			// }
-
-			// const mentorDetails = await userRequests.details('', sessionDetails.mentor_id)
-			// sessionDetails.mentor_name = mentorDetails.data.result.name
-			// sessionDetails.organization = mentorDetails.data.result.organization
-
-			// const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
-
-			// const defaultOrgId = await getDefaultOrgId()
-			// if (!defaultOrgId)
-			// 	return common.failureResponse({
-			// 		message: 'DEFAULT_ORG_ID_NOT_SET',
-			// 		statusCode: httpStatusCode.bad_request,
-			// 		responseCode: 'CLIENT_ERROR',
-			// 	})
-
-			// let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
-			// 	status: 'ACTIVE',
-			// 	organization_id: {
-			// 		[Op.in]: [sessionDetails.mentor_organization_id, defaultOrgId],
-			// 	},
+			// 	}
 			// })
+			console.log('menteeIds  After : ', menteeDetails)
 
-			// //validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
-			// const validationData = removeDefaultOrgEntityTypes(entityTypes, sessionDetails.mentor_organization_id)
-
-			// const processDbResponse = utils.processDbResponse(sessionDetails, validationData)
+			// Enrol mentees to the given session
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
-				message: 'SESSION_FETCHED_SUCCESSFULLY',
-				result: ['processDbResponse'],
+				message: 'MENTEES_ARE_ADDED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * Remove mentees from session.
+	 * @method
+	 * @name removeMentees
+	 * @param {String} sessionId 				- Session id.
+	 * @param {Number} menteeIds				- Mentees id.
+	 * @returns {JSON} 							- unenroll status
+	 */
+
+	static async removeMentees(sessionId, menteeIds) {
+		try {
+			// check if session exists or not
+			const sessionDetails = await sessionQueries.findOne({ id: sessionId })
+
+			if (!sessionDetails || Object.keys(sessionDetails).length === 0) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get mentee name and email from user service
+			const menteeAccounts = await userRequests.getListOfUserDetails(menteeIds)
+
+			if (!menteeAccounts.result || !menteeAccounts.result.length > 0) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const menteeDetails = menteeAccounts.result.map((element) => ({
+				id: element.id,
+				email: element.email,
+				name: element.name,
+			}))
+
+			// Uneroll mentees from the given session
+			const failedIds = []
+			const successIds = []
+
+			const enrollPromises = menteeDetails.map((menteeData) => {
+				return this.unEnroll(sessionId, menteeData, false)
+					.then((response) => {
+						if (response.statusCode == httpStatusCode.accepted) {
+							// Unerolled successfully
+							successIds.push(menteeData.id)
+						} else {
+							// Unenrollment failed
+							failedIds.push(menteeData.id)
+						}
+					})
+					.catch((error) => {
+						// mentee Unenroll error
+						failedIds.push(menteeData.id)
+					})
+			})
+
+			// Wait for all promises to settle
+			await Promise.all(enrollPromises)
+
+			if (failedIds.length > 0) {
+				return common.failureResponse({
+					message: 'FAILED_TO_UNENROLL_MENTEES',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'USER_UNENROLLED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			console.log(error)

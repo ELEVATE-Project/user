@@ -265,18 +265,39 @@ module.exports = class Sessions {
 	}
 
 	/**
-	 * Add mentees to sessions
+	 * Add mentees to session
 	 * @method
 	 * @name addMentees
-	 * @param {Object} req -request data.
-	 * @param {String} req.params.id - Session id.
-	 * @param {String} req.decodedToken._id - User Id.
-	 * @returns {JSON} - Session Details.
+	 * @param {Object} req 				- request data.
+	 * @param {String} req.params.id 	- Session id.
+	 * @returns {JSON} 					- enrollment status.
 	 */
 
 	async addMentees(req) {
 		try {
 			const sessionDetails = await sessionService.addMentees(
+				req.params.id, // session id
+				req.body.mentees, // Array of mentee ids
+				req.headers['timezone']
+			)
+			return sessionDetails
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Remove mentees from a session
+	 * @method
+	 * @name removeMentees
+	 * @param {Object} req 				-request data.
+	 * @param {String} req.params.id 	- Session id.
+	 * @returns {JSON} 					- Unenroll Details.
+	 */
+
+	async removeMentees(req) {
+		try {
+			const sessionDetails = await sessionService.removeMentees(
 				req.params.id, // session id
 				req.body.mentees // Array of mentee ids
 			)
