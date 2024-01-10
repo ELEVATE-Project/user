@@ -593,7 +593,9 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 
 			// list of related org ids
 			relatedOrganizations = userOrgDetails.data.result.related_orgs
-			relatedOrganizations.push(userPolicyDetails.organization_id)
+			if (relatedOrganizations) {
+				relatedOrganizations.push(userPolicyDetails.organization_id)
+			}
 
 			// Filter user data based on policy
 			// generate filter based on condition
