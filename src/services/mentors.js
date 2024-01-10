@@ -676,11 +676,24 @@ module.exports = class MentorsHelper {
 	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
 		try {
 			let additionalProjectionString = ''
+			let userServiceQueries = {}
 
 			// check for fields query
 			if (queryParams.fields && queryParams.fields !== '') {
 				additionalProjectionString = queryParams.fields
 				delete queryParams.fields
+			}
+
+			let organization_ids = []
+			let designation = []
+			for (let key in queryParams) {
+				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'name'))) {
+					userServiceQueries[key] = queryParams[key]
+				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+					organization_ids = queryParams[key].split(',')
+				} else if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+					designation = queryParams[key].split(',')
+				}
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
@@ -693,7 +706,7 @@ module.exports = class MentorsHelper {
 			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
-			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
+			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
@@ -716,7 +729,11 @@ module.exports = class MentorsHelper {
 			}
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, mentorIds)
+			if (mentorIds) {
+				userServiceQueries['user_ids'] = mentorIds
+			}
+
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
 			if (userDetails.data.result.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -737,6 +754,20 @@ module.exports = class MentorsHelper {
 				false
 			)
 
+			if (organization_ids.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((mentee) =>
+					organization_ids.includes(String(mentee.organization_id))
+				)
+			}
+
+			if (designation.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((item) => {
+					// Check if any designation in the item matches with values in designations array passed in params
+					const hasMatchingDesignation = item.designation.some((d) => designation.includes(d))
+
+					return hasMatchingDesignation
+				})
+			}
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
@@ -769,6 +800,8 @@ module.exports = class MentorsHelper {
 
 			let foundKeys = {}
 			let result = []
+			// update count after filters
+			userDetails.data.result.count = userDetails.data.result.data.length
 
 			for (let user of userDetails.data.result.data) {
 				let firstChar = user.name.charAt(0)

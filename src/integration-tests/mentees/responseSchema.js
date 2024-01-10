@@ -265,6 +265,267 @@ const joinSessionSchema = {
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
 }
+const menteeListSchema = {
+	type: 'object',
+	properties: {
+		responseCode: {
+			type: 'string',
+		},
+		message: {
+			type: 'string',
+		},
+		result: {
+			type: 'object',
+			properties: {
+				data: {
+					type: 'array',
+					items: [
+						{
+							type: 'object',
+							properties: {
+								key: {
+									type: 'string',
+								},
+								values: {
+									type: 'array',
+									items: [
+										{
+											type: 'object',
+											properties: {
+												id: {
+													type: 'integer',
+												},
+												name: {
+													type: 'string',
+												},
+												email: {
+													type: 'string',
+												},
+												about: {
+													type: 'null',
+												},
+												image: {
+													type: 'null',
+												},
+												organization: {
+													type: 'object',
+													properties: {
+														id: {
+															type: 'integer',
+														},
+														code: {
+															type: 'string',
+														},
+														name: {
+															type: 'string',
+														},
+													},
+													required: ['id', 'code', 'name'],
+												},
+												designation: {
+													type: 'array',
+													items: [
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+													],
+												},
+												area_of_expertise: {
+													type: 'array',
+													items: [
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+													],
+												},
+												education_qualification: {
+													type: 'string',
+												},
+											},
+											required: [
+												'id',
+												'name',
+												'about',
+												'image',
+												'organization',
+												'designation',
+												'area_of_expertise',
+												'education_qualification',
+											],
+										},
+										{
+											type: 'object',
+											properties: {
+												id: {
+													type: 'integer',
+												},
+												name: {
+													type: 'string',
+												},
+												about: {
+													type: 'null',
+												},
+												image: {
+													type: 'null',
+												},
+												organization: {
+													type: 'object',
+													properties: {
+														id: {
+															type: 'integer',
+														},
+														code: {
+															type: 'string',
+														},
+														name: {
+															type: 'string',
+														},
+													},
+													required: ['id', 'code', 'name'],
+												},
+												designation: {
+													type: 'array',
+													items: [
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+													],
+												},
+												area_of_expertise: {
+													type: 'array',
+													items: [
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+														{
+															type: 'object',
+															properties: {
+																value: {
+																	type: 'string',
+																},
+																label: {
+																	type: 'string',
+																},
+															},
+															required: ['value', 'label'],
+														},
+													],
+												},
+												education_qualification: {
+													type: 'string',
+												},
+											},
+											required: [
+												'id',
+												'name',
+												'about',
+												'image',
+												'organization',
+												'designation',
+												'area_of_expertise',
+												'education_qualification',
+											],
+										},
+									],
+								},
+							},
+							required: ['key', 'values'],
+						},
+					],
+				},
+				count: {
+					type: 'integer',
+				},
+			},
+			required: ['data', 'count'],
+		},
+		meta: {
+			type: 'object',
+			properties: {
+				correlation: {
+					type: 'string',
+				},
+				meetingPlatform: {
+					type: 'string',
+				},
+			},
+			required: ['correlation', 'meetingPlatform'],
+		},
+	},
+	required: ['responseCode', 'message', 'result', 'meta'],
+}
 
 module.exports = {
 	sessionsSchema,
@@ -272,4 +533,5 @@ module.exports = {
 	reportsSchema,
 	homeFeedSchema,
 	joinSessionSchema,
+	menteeListSchema,
 }

@@ -117,6 +117,7 @@
 	"ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY": "Default Questionsets Set Successfully",
 	"SESSION_DEACTIVATION_FAILED": "Failed to deactivate session.",
 	"MENTOR_LIST": "Mentor list fetched successfully.",
+	"MENTEE_LIST": "Mentee list fetched successfully.",
 	"PERMISSION_CREATED_SUCCESSFULLY": "Permission created successfully",
 	"PERMISSION_ALREADY_EXISTS": "Permissions already exists",
 	"PERMISSION_NOT_FOUND": "Permissions does not exists",
