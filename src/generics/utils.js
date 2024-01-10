@@ -540,12 +540,13 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 		}
 
 		let filter = ''
+		let relatedOrganizations = []
 		if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
 			// fetch organisation details to get the related org
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(userPolicyDetails.organization_id)
 
 			// list of related org ids
-			let relatedOrganizations = userOrgDetails.data.result.related_orgs
+			relatedOrganizations = userOrgDetails.data.result.related_orgs
 			relatedOrganizations.push(userPolicyDetails.organization_id)
 
 			// Filter user data based on policy
