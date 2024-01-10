@@ -57,10 +57,6 @@
      #   src={{ release_path }}
       #  dest={{ current_path }}
        # state=link
-
-    - name: Delete old pm2 process
-      command: pm2 delete elevate-user
-      ignore_errors: yes
     
     - name: set permission
       shell: chmod 744 {{ current_path }}/src/scripts/json2env.sh  
@@ -78,11 +74,16 @@
       register: apiDocResponse 
     - debug: msg=" Api-doc {{ apiDocResponse }} "
 
-    - name: Delete release folder
-      shell: rm -rf  {{ release_path }}
-    
+
     - name: Run Migrations
       command: "chdir={{current_path}}/src npx sequelize-cli db:migrate"
+
+    - name: Delete old pm2 process
+      command: pm2 delete elevate-user
+      ignore_errors: yes
+
+    - name: Delete release folder
+      shell: rm -rf  {{ release_path }}
 
     - name: Start pm2
       command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-user"
