@@ -322,11 +322,12 @@ module.exports = class MenteesHelper {
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 			status: 'ACTIVE',
+			allow_filtering: true,
 		})
 
-		let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'MentorExtension')
+		let filteredQuery = utils.validateFilters(query, validationData, sessionQueries.getModelName())
 
-		// Create saas fiter for view query
+		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
 
 		const sessions = await sessionQueries.getUpcomingSessionsFromView(
@@ -374,6 +375,14 @@ module.exports = class MenteesHelper {
 				'external_session_visibility',
 				'organization_id',
 			])
+
+			if (!mentorExtension && !menteeExtension) {
+				throw common.failureResponse({
+					statusCode: httpStatusCode.unauthorized,
+					message: 'USER_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const organizationName = mentorExtension
 				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
 				: ''
@@ -668,12 +677,24 @@ module.exports = class MenteesHelper {
 				raw: true,
 			})
 
-			if (updateCount === '0') {
-				return common.failureResponse({
-					statusCode: httpStatusCode.not_found,
-					message: 'MENTEE_EXTENSION_NOT_FOUND',
+			if (updateCount === 0) {
+				const fallbackUpdatedUser = await menteeQueries.getMenteeExtension(userId)
+				console.log(fallbackUpdatedUser)
+				if (!fallbackUpdatedUser) {
+					return common.failureResponse({
+						statusCode: httpStatusCode.not_found,
+						message: 'MENTEE_EXTENSION_NOT_FOUND',
+					})
+				}
+				const processDbResponse = utils.processDbResponse(fallbackUpdatedUser, validationData)
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_EXTENSION_UPDATED',
+					result: processDbResponse,
 				})
 			}
+
 			const processDbResponse = utils.processDbResponse(updatedUser[0], validationData)
 
 			return common.successResponse({
@@ -756,6 +777,152 @@ module.exports = class MenteesHelper {
 			})
 		} catch (error) {
 			return error
+		}
+	}
+
+	/**
+	 * List mentees and search with name , email
+	 * @method
+	 * @name list
+	 * @param {String} userId - User ID of the mentee.
+	 * @param {Number} pageNo - Page No.
+	 * @param {Number} pageSize - Page Size.
+	 * @param {String} searchText
+	 * @param {String} queryParams
+	 * @param {String} userId
+	 * @param {Boolean} isAMentor - true/false.
+	 * @returns {Promise<Object>} - returns the list of mentees
+	 */
+	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
+		try {
+			let additionalProjectionString = ''
+
+			// check for fields query
+			if (queryParams.fields && queryParams.fields !== '') {
+				additionalProjectionString = queryParams.fields
+				delete queryParams.fields
+			}
+			let userServiceQueries = {}
+			let organization_ids = []
+			let designation = []
+			let searchQuery = ''
+			for (let key in queryParams) {
+				if (queryParams.hasOwnProperty(key) & (key === 'search')) {
+					searchQuery = queryParams[key]
+				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+					organization_ids = queryParams[key].split(',')
+				} else if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+					designation = queryParams[key].split(',')
+				}
+			}
+
+			const query = utils.processQueryParametersWithExclusions(queryParams)
+
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: common.ACTIVE_STATUS,
+			})
+
+			let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+
+			if (designation) {
+				filteredQuery.designation = designation
+			}
+
+			const userType = common.MENTEE_ROLE
+
+			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
+			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+				[],
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+			if (extensionDetails.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			const menteeIds = extensionDetails.data.map((item) => item.user_id)
+
+			if (menteeIds) {
+				userServiceQueries['user_ids'] = menteeIds
+			}
+
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
+
+			if (userDetails.data.result.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+				userDetails.data.result.data.map((item) => item.id),
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				false
+			)
+			if (organization_ids.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((mentee) =>
+					organization_ids.includes(String(mentee.organization_id))
+				)
+			}
+
+			if (extensionDetails.data.length > 0) {
+				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
+				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
+					extensionDetails.data,
+					uniqueOrgIds,
+					common.mentorExtensionModelName,
+					'organization_id'
+				)
+			}
+			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
+
+			userDetails.data.result.data = userDetails.data.result.data
+				.map((value) => {
+					// Map over each value in the values array of the current group
+					const user_id = value.id
+					// Check if extensionDataMap has an entry with the key equal to the user_id
+					if (extensionDataMap.has(user_id)) {
+						const newItem = extensionDataMap.get(user_id)
+						value = { ...value, ...newItem }
+						delete value.user_id
+						delete value.visibility
+						delete value.organization_id
+						delete value.meta
+						delete value.rating
+						return value
+					}
+					return null
+				})
+				.filter((value) => value !== null)
+
+			// update count after filters
+			userDetails.data.result.count = userDetails.data.result.count
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: userDetails.data.message,
+				result: userDetails.data.result,
+			})
+		} catch (error) {
+			throw error
 		}
 	}
 }

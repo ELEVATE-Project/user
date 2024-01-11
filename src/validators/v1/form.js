@@ -22,7 +22,6 @@ module.exports = {
 			.withMessage('subType is invalid')
 
 		req.checkBody('data').notEmpty().withMessage('data field is empty')
-
 	},
 
 	update: (req) => {
@@ -37,7 +36,6 @@ module.exports = {
 			.withMessage('sub_type field is empty')
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('sub_type is invalid')
-
 	},
 
 	read: (req) => {

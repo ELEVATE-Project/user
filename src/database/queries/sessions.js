@@ -259,6 +259,7 @@ exports.findAllSessions = async (page, limit, search, filters) => {
 				'image',
 				'created_at',
 				'meeting_info',
+				'created_by',
 			],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),

@@ -55,12 +55,12 @@ module.exports = class EntityHelper {
 		bodyData.updated_by = loggedInUserId
 		bodyData.organization_id = orgId
 		try {
-			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, bodyData, {
+			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, orgId, bodyData, {
 				returning: true,
 				raw: true,
 			})
 
-			if (updateCount === '0') {
+			if (updateCount === 0) {
 				return common.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -76,7 +76,7 @@ module.exports = class EntityHelper {
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
 				return common.failureResponse({
-					message: 'ENTITY_TYPE_ALREADY_DELETED',
+					message: 'ENTITY_TYPE_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -85,11 +85,19 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readAllSystemEntityTypes(organization_id) {
+	static async readAllSystemEntityTypes(orgId) {
 		try {
 			const attributes = ['value', 'label', 'id']
 
-			const entities = await entityTypeQueries.findAllEntityTypes(organization_id, attributes)
+			const defaultOrgId = await getDefaultOrgId()
+			if (!defaultOrgId)
+				return common.failureResponse({
+					message: 'DEFAULT_ORG_ID_NOT_SET',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			const entities = await entityTypeQueries.findAllEntityTypes([orgId, defaultOrgId], attributes)
 
 			if (!entities.length) {
 				return common.failureResponse({
@@ -146,10 +154,10 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
-	static async delete(id) {
+	static async delete(id, organizationId) {
 		try {
-			const deleteCount = await entityTypeQueries.deleteOneEntityType(id)
-			if (deleteCount === '0') {
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, organizationId)
+			if (deleteCount === 0) {
 				return common.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,

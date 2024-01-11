@@ -62,7 +62,13 @@ module.exports = (app) => {
 			/* If error obtained then global error handler gets executed */
 			return next(controllerResponse)
 		}
-		if (controllerResponse) {
+
+		if (controllerResponse.isResponseAStream == true) {
+			// Check if file specified by the filePath exists
+			res.setHeader('Content-disposition', 'attachment; filename=' + controllerResponse.fileName)
+			res.set('Content-Type', 'application/octet-stream')
+			res.status(controllerResponse.statusCode).send(controllerResponse.stream)
+		} else if (controllerResponse) {
 			res.status(controllerResponse.statusCode).json({
 				responseCode: controllerResponse.responseCode,
 				message: req.t(controllerResponse.message),

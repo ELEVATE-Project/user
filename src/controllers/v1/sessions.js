@@ -8,6 +8,7 @@
 // Dependencies
 const sessionService = require('@services/sessions')
 const { isAMentor } = require('@generics/utils')
+const common = require('@constants/common')
 
 module.exports = class Sessions {
 	/**
@@ -197,7 +198,8 @@ module.exports = class Sessions {
 
 	async completed(req) {
 		try {
-			const sessionsCompleted = await sessionService.completed(req.params.id)
+			const isBBB = req.query.source == common.BBB_VALUE ? true : false
+			const sessionsCompleted = await sessionService.completed(req.params.id, isBBB)
 			return sessionsCompleted
 		} catch (error) {
 			return error
@@ -256,6 +258,25 @@ module.exports = class Sessions {
 		const recordingUrl = req.body.recordingUrl
 		try {
 			const sessionUpdated = await sessionService.updateRecordingUrl(internalMeetingId, recordingUrl)
+			return sessionUpdated
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Updates mentor names in bulk for sessions.
+	 * @method
+	 * @name bulkUpdateMentorNames
+	 * @param {Object} req - Request data.
+	 * @param {Array} req.body.mentor_id - Array of mentor IDs.
+	 * @param {STRING} req.body.mentor_name - Array of corresponding mentor names.
+	 * @returns {Object} - Information about the bulk update process.
+	 * @throws {Error} - Throws an error if there's an issue during the bulk update.
+	 */
+	async bulkUpdateMentorNames(req) {
+		try {
+			const sessionUpdated = await sessionService.bulkUpdateMentorNames(req.body.mentor_id, req.body.mentor_name)
 			return sessionUpdated
 		} catch (error) {
 			return error
