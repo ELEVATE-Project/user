@@ -76,6 +76,7 @@ const processTable = async (queryInterface, tableName, operation) => {
 							await queryInterface.bulkInsert(tableName, [modifiedRow], { transaction: t })
 							await t.commit()
 						} catch (error) {
+							console.log('ENCRYPTION ERROR: ', error)
 							await t.rollback()
 						}
 					} else
