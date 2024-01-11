@@ -35,9 +35,20 @@ const processTable = async (queryInterface, tableName, operation) => {
 		if (operation === 'encrypt') {
 			if (isEmailValid) {
 				const encryptedEmail = emailEncryption.encrypt(record.email)
-				await queryInterface.sequelize.query(
-					`UPDATE ${tableName} SET email = '${encryptedEmail}' WHERE id = ${record.id};`
-				)
+				if (tableName === 'users_credentials') {
+					const existingRow = await queryInterface.sequelize.query(
+						`SELECT * FROM ${tableName} WHERE id = ${record.id};`,
+						{
+							type: Sequelize.QueryTypes.SELECT,
+						}
+					)
+					await queryInterface.sequelize.query(`DELETE FROM ${tableName} WHERE id = ${record.id};`)
+					const modifiedRow = { ...existingRow[0], email: encryptedEmail }
+					await queryInterface.bulkInsert(tableName, [modifiedRow])
+				} else
+					await queryInterface.sequelize.query(
+						`UPDATE ${tableName} SET email = '${encryptedEmail}' WHERE id = ${record.id};`
+					)
 			} else {
 				console.warn(
 					`${redColor}Skipping encryption of invalid email in ${yellowColor}${tableName}${resetColor} table with id ${yellowColor}${record.id}${resetColor}: ${yellowColor}${record.email}${resetColor}`
@@ -48,9 +59,20 @@ const processTable = async (queryInterface, tableName, operation) => {
 				const decryptedEmail = emailEncryption.decrypt(record.email)
 				const isDecryptedEmailValid = validateEmail(decryptedEmail)
 				if (isDecryptedEmailValid) {
-					await queryInterface.sequelize.query(
-						`UPDATE ${tableName} SET email = '${decryptedEmail}' WHERE id = ${record.id};`
-					)
+					if (tableName === 'users_credentials') {
+						const existingRow = await queryInterface.sequelize.query(
+							`SELECT * FROM ${tableName} WHERE id = ${record.id};`,
+							{
+								type: Sequelize.QueryTypes.SELECT,
+							}
+						)
+						await queryInterface.sequelize.query(`DELETE FROM ${tableName} WHERE id = ${record.id};`)
+						const modifiedRow = { ...existingRow[0], email: decryptedEmail }
+						await queryInterface.bulkInsert(tableName, [modifiedRow])
+					} else
+						await queryInterface.sequelize.query(
+							`UPDATE ${tableName} SET email = '${decryptedEmail}' WHERE id = ${record.id};`
+						)
 				} else {
 					console.warn(
 						`${redColor}Skipping decryption of email in ${yellowColor}${tableName}${resetColor} table with id ${yellowColor}${record.id}${resetColor} because decrypted emailId wasn't a valid emailId.${resetColor}`
