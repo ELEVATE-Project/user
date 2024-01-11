@@ -396,7 +396,10 @@ function processDbResponse(responseBody, entityType) {
 					label: entity.label,
 				}))
 			// Check if there are matching values
-			if (matchingValues.length > 0) output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
+			if (matchingValues.length > 0)
+				output[key] = Array.isArray(output[key])
+					? matchingValues
+					: matchingValues.find((entity) => entity.value === output[key])
 			else if (Array.isArray(output[key])) output[key] = output[key].filter((item) => item.value && item.label)
 		}
 
