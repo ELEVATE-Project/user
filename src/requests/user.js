@@ -235,29 +235,11 @@ const search = function (userType, pageNo, pageSize, searchText, userServiceQuer
 
 const listOrganization = function (organizationIds = []) {
 	return new Promise(async (resolve, reject) => {
-		const options = {
-			headers: {
-				'Content-Type': 'application/json',
-				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
-			},
-			form: {
-				organizationIds,
-			},
-		}
-
-		const orgListUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
 		try {
-			request.get(orgListUrl, options, callback)
-			function callback(err, data) {
-				if (err) {
-					reject({
-						message: 'USER_SERVICE_DOWN',
-					})
-				} else {
-					data.body = JSON.parse(data.body)
-					return resolve(data.body)
-				}
-			}
+			const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+			const organizations = await requests.post(apiUrl, { organizationIds }, '', true)
+
+			return resolve(organizations)
 		} catch (error) {
 			return reject(error)
 		}

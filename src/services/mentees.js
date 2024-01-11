@@ -797,32 +797,42 @@ module.exports = class MenteesHelper {
 			}
 
 			let organization_ids = []
-			const organizations = await this.getOrganizationIdBasedOnPolicy(tokenInformation.id)
+			const organizations = await this.getOrganizationIdBasedOnPolicy(
+				tokenInformation.id,
+				tokenInformation.organization_id
+			)
 			if (organizations.success && organizations.result.length > 0) {
 				organization_ids = [...organizations.result]
 
 				if (organization_ids.length > 0) {
 					//get organization list
-					const organizations = await userRequests.listOrganization(organization_ids)
-					if (organizations && organizations.result?.length > 0) {
-						result.organizations = organizations.result
+					const organizationList = await userRequests.listOrganization(organization_ids)
+					if (organizationList.success && organizationList.data?.result?.length > 0) {
+						result.organizations = organizationList.data.result
 					}
 
 					const defaultOrgId = await getDefaultOrgId()
-					if (defaultOrgId && !organization_ids.includes(defaultOrgId)) {
-						organization_ids.push(defaultOrgId)
-					}
 
-					//get entity type with entities list
+					// get entity type with entities list
 					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
 						organization_ids,
-						queryParams
+						queryParams,
+						defaultOrgId ? defaultOrgId : ''
 					)
+
 					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
 						let entityTypesWithEntities = getEntityTypesWithEntities.result
 						if (entityTypesWithEntities.length > 0) {
 							let convertedData = convertEntitiesForFilter(entityTypesWithEntities)
-							result.entity_types = filterEntitiesBasedOnParent(convertedData, defaultOrgId)
+							let doNotRemoveDefaultOrg = false
+							if (organization_ids.includes(defaultOrgId)) {
+								doNotRemoveDefaultOrg = true
+							}
+							result.entity_types = filterEntitiesBasedOnParent(
+								convertedData,
+								defaultOrgId,
+								doNotRemoveDefaultOrg
+							)
 						}
 					}
 				}
@@ -838,39 +848,52 @@ module.exports = class MenteesHelper {
 		}
 	}
 
-	static async getOrganizationIdBasedOnPolicy(userId) {
+	static async getOrganizationIdBasedOnPolicy(userId, organization_id) {
 		try {
 			let organization_ids = []
 
-			const menteeExtension = await menteeQueries.getMenteeExtension(userId, [
-				'external_mentor_visibility',
-				'organization_id',
-			])
-
-			if (menteeExtension.external_mentor_visibility === common.CURRENT) {
-				organization_ids.push(menteeExtension.organization_id)
-			} else if (menteeExtension.external_mentor_visibility === common.ASSOCIATED) {
-				let userOrgDetails = await userRequests.fetchDefaultOrgDetails(menteeExtension.organization_id)
-				if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
-					organization_ids.push(...userOrgDetails.data.result.related_orgs, menteeExtension.organization_id)
+			const orgPolicies = await organisationExtensionQueries.findOne(
+				{ organization_id },
+				{
+					attributes: ['organization_id', 'external_mentor_visibility_policy'],
 				}
-			} else if (menteeExtension.external_mentor_visibility === common.ALL) {
-				const organizationExtension = await organisationExtensionQueries.findAll(
-					{
-						external_mentor_visibility_policy: common.ALL,
-						mentor_visibility_policy: {
-							[Op.ne]: common.CURRENT,
-						},
-					},
-					{
-						attributes: ['organization_id'],
-					}
-				)
+			)
 
-				if (organizationExtension) {
-					const organizationIds = organizationExtension.map((orgExt) => orgExt.organization_id)
-					if (organizationIds.length > 0) {
-						organization_ids.push(...organizationIds)
+			if (orgPolicies?.organization_id) {
+				if (orgPolicies.external_mentor_visibility_policy === common.CURRENT) {
+					organization_ids.push(orgPolicies.organization_id)
+				} else if (
+					orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED ||
+					orgPolicies.external_mentor_visibility_policy === common.ALL
+				) {
+					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgPolicies.organization_id)
+					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
+						const relatedOrgs = userOrgDetails.data.result.related_orgs
+						if (orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED) {
+							organization_ids.push(...relatedOrgs, orgPolicies.organization_id)
+						} else {
+							const organizationExtension = await organisationExtensionQueries.findAll(
+								{
+									[Op.or]: [
+										{
+											mentor_visibility_policy: common.ALL,
+										},
+										{
+											organization_id: {
+												[Op.in]: [...relatedOrgs, orgPolicies.organization_id],
+											},
+										},
+									],
+								},
+								{
+									attributes: ['organization_id'],
+								}
+							)
+							if (organizationExtension) {
+								const organizationIds = organizationExtension.map((orgExt) => orgExt.organization_id)
+								organization_ids.push(...organizationIds)
+							}
+						}
 					}
 				}
 			}
@@ -887,14 +910,14 @@ module.exports = class MenteesHelper {
 		}
 	}
 
-	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types) {
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '') {
 		try {
 			let filter = {
 				status: common.ACTIVE_STATUS,
 				allow_filtering: true,
 				has_entities: true,
 				organization_id: {
-					[Op.in]: organization_ids,
+					[Op.in]: defaultOrgId ? [...organization_ids, defaultOrgId] : organization_ids,
 				},
 			}
 
@@ -1091,7 +1114,7 @@ function convertEntitiesForFilter(entityTypes) {
 	return result
 }
 
-function filterEntitiesBasedOnParent(data, defaultOrgId) {
+function filterEntitiesBasedOnParent(data, defaultOrgId, doNotRemoveDefaultOrg) {
 	let result = {}
 
 	for (let key in data) {
@@ -1104,7 +1127,7 @@ function filterEntitiesBasedOnParent(data, defaultOrgId) {
 		})
 
 		let outputArray = data[key]
-		if (countOfEachKey > 1 && countWithParentId == countOfEachKey - 1) {
+		if (countOfEachKey > 1 && countWithParentId == countOfEachKey - 1 && !doNotRemoveDefaultOrg) {
 			outputArray = data[key].filter((obj) => !(obj.organization_id === defaultOrgId && obj.parent_id === null))
 		}
 
