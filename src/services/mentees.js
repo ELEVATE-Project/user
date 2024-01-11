@@ -856,15 +856,8 @@ module.exports = class MenteesHelper {
 				organization_ids.push(menteeExtension.organization_id)
 			} else if (menteeExtension.external_mentor_visibility === common.ASSOCIATED) {
 				let userOrgDetails = await userRequests.fetchDefaultOrgDetails(menteeExtension.organization_id)
-				if (
-					userOrgDetails.success &&
-					userOrgDetails.data &&
-					userOrgDetails.data.result &&
-					userOrgDetails.data.result.related_orgs &&
-					userOrgDetails.data.result.related_orgs.length > 0
-				) {
-					organization_ids.push(...userOrgDetails.data.result.related_orgs)
-					organization_ids.push(menteeExtension.organization_id)
+				if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
+					organization_ids.push(...userOrgDetails.data.result.related_orgs, menteeExtension.organization_id)
 				}
 			} else if (menteeExtension.external_mentor_visibility === common.ALL) {
 				const organizationExtension = await organisationExtensionQueries.findAll(
