@@ -60,15 +60,24 @@ const processTable = async (queryInterface, tableName, operation) => {
 				const isDecryptedEmailValid = validateEmail(decryptedEmail)
 				if (isDecryptedEmailValid) {
 					if (tableName === 'users_credentials') {
-						const existingRow = await queryInterface.sequelize.query(
-							`SELECT * FROM ${tableName} WHERE id = ${record.id};`,
-							{
-								type: Sequelize.QueryTypes.SELECT,
-							}
-						)
-						await queryInterface.sequelize.query(`DELETE FROM ${tableName} WHERE id = ${record.id};`)
-						const modifiedRow = { ...existingRow[0], email: decryptedEmail }
-						await queryInterface.bulkInsert(tableName, [modifiedRow])
+						const t = await queryInterface.sequelize.transaction()
+						try {
+							const existingRow = await queryInterface.sequelize.query(
+								`SELECT * FROM ${tableName} WHERE id = ${record.id};`,
+								{
+									type: Sequelize.QueryTypes.SELECT,
+									transaction: t,
+								}
+							)
+							await queryInterface.sequelize.query(`DELETE FROM ${tableName} WHERE id = ${record.id};`, {
+								transaction: t,
+							})
+							const modifiedRow = { ...existingRow[0], email: decryptedEmail }
+							await queryInterface.bulkInsert(tableName, [modifiedRow], { transaction: t })
+							await t.commit()
+						} catch (error) {
+							await t.rollback()
+						}
 					} else
 						await queryInterface.sequelize.query(
 							`UPDATE ${tableName} SET email = '${decryptedEmail}' WHERE id = ${record.id};`
