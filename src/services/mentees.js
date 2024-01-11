@@ -864,6 +864,7 @@ module.exports = class MenteesHelper {
 					userOrgDetails.data.result.related_orgs.length > 0
 				) {
 					organization_ids.push(...userOrgDetails.data.result.related_orgs)
+					organization_ids.push(menteeExtension.organization_id)
 				}
 			} else if (menteeExtension.external_mentor_visibility === common.ALL) {
 				const organizationExtension = await organisationExtensionQueries.findAll(

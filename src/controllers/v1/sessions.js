@@ -282,4 +282,24 @@ module.exports = class Sessions {
 			return error
 		}
 	}
+
+	/**
+	 * Get all mentees enrolled to the sessions
+	 * @method
+	 * @name enrolledMentees
+	 * @param {Object} req -request data.
+	 * @param {String} req.decodedToken.id - User Id.
+	 * @param {String} req.pageNo - Page No.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @returns {JSON} - Session List.
+	 */
+
+	async enrolledMentees(req) {
+		try {
+			const sessionDetails = await sessionService.enrolledMentees(req.params.id, req.pageNo, req.pageSize)
+			return sessionDetails
+		} catch (error) {
+			return error
+		}
+	}
 }
