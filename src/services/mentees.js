@@ -804,12 +804,7 @@ module.exports = class MenteesHelper {
 				if (organization_ids.length > 0) {
 					//get organization list
 					const organizations = await userRequests.listOrganization(organization_ids)
-					if (
-						organizations &&
-						organizations.result &&
-						organizations.result &&
-						organizations.result.length > 0
-					) {
+					if (organizations && organizations.result?.length > 0) {
 						result.organizations = organizations.result
 					}
 
