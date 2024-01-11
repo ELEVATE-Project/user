@@ -232,6 +232,20 @@ const search = function (userType, pageNo, pageSize, searchText, userServiceQuer
 		}
 	})
 }
+
+const listOrganization = function (organizationIds = []) {
+	return new Promise(async (resolve, reject) => {
+		try {
+			const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+			const organizations = await requests.post(apiUrl, { organizationIds }, '', true)
+
+			return resolve(organizations)
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
 module.exports = {
 	fetchDefaultOrgDetails,
 	details,
@@ -240,4 +254,5 @@ module.exports = {
 	share,
 	listWithoutLimit,
 	search,
+	listOrganization,
 }

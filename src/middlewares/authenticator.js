@@ -119,6 +119,7 @@ module.exports = async function (req, res, next) {
 			}
 
 			decodedToken.data.roles = user.data.result.user_roles
+			decodedToken.data.organization_id = user.data.result.organization_id
 		}
 
 		req.decodedToken = {
