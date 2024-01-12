@@ -867,33 +867,34 @@ module.exports = class MenteesHelper {
 					orgPolicies.external_mentor_visibility_policy === common.ALL
 				) {
 					organization_ids.push(orgPolicies.organization_id)
+					let relatedOrgs = []
 					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgPolicies.organization_id)
 					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
-						const relatedOrgs = userOrgDetails.data.result.related_orgs
-						if (orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED) {
-							organization_ids.push(...relatedOrgs)
-						} else {
-							const organizationExtension = await organisationExtensionQueries.findAll(
-								{
-									[Op.or]: [
-										{
-											mentor_visibility_policy: common.ALL,
+						relatedOrgs = userOrgDetails.data.result.related_orgs
+					}
+					if (orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED) {
+						organization_ids.push(...relatedOrgs)
+					} else {
+						const organizationExtension = await organisationExtensionQueries.findAll(
+							{
+								[Op.or]: [
+									{
+										mentor_visibility_policy: common.ALL,
+									},
+									{
+										organization_id: {
+											[Op.in]: [...relatedOrgs, orgPolicies.organization_id],
 										},
-										{
-											organization_id: {
-												[Op.in]: [...relatedOrgs, orgPolicies.organization_id],
-											},
-										},
-									],
-								},
-								{
-									attributes: ['organization_id'],
-								}
-							)
-							if (organizationExtension) {
-								const organizationIds = organizationExtension.map((orgExt) => orgExt.organization_id)
-								organization_ids.push(...organizationIds)
+									},
+								],
+							},
+							{
+								attributes: ['organization_id'],
 							}
+						)
+						if (organizationExtension) {
+							const organizationIds = organizationExtension.map((orgExt) => orgExt.organization_id)
+							organization_ids.push(...organizationIds)
 						}
 					}
 				}
