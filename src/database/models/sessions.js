@@ -130,6 +130,10 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 				defaultValue: 'PUBLIC',
 			},
+			mentor_name: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 			created_by: {
 				type: DataTypes.INTEGER,
 				allowNull: true,

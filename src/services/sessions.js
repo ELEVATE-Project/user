@@ -43,10 +43,33 @@ module.exports = class SessionsHelper {
 	 */
 
 	static async create(bodyData, loggedInUserId, orgId) {
-		bodyData.mentor_id = loggedInUserId
-		bodyData.created_by = bodyData.updated_by = bodyData.mentor_id
 		try {
-			const mentorDetails = await mentorExtensionQueries.getMentorExtension(loggedInUserId)
+			// If type is passed store it in upper case
+			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
+			console.log('<<<<<<<<<<<<<<bodyData.type :', bodyData.type, common.PRIVATE)
+			// If session type is private and mentorId is not passed in request body return an error
+			if (
+				bodyData.type &&
+				bodyData.type == common.PRIVATE &&
+				(!bodyData.mentor_id || bodyData.meeting_id == '')
+			) {
+				return common.failureResponse({
+					message: 'MENTORS_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// session created_by and updated_by added to session creation data
+			bodyData.created_by = loggedInUserId
+			bodyData.updated_by = loggedInUserId
+			let menteeIdsToEnroll = bodyData.mentees ? bodyData.mentees : []
+			// If body data has mentor id use that id to further checks else use logged user_id
+			const mentorIdToCheck = bodyData.mentor_id || loggedInUserId
+			const isSessionCreatedByManager = !!bodyData.mentor_id
+
+			// Confirm passed id is of a mentor
+			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
@@ -54,19 +77,52 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			console.log(
+				'mentorDetails : : : :: : :: : : : :',
+				mentorDetails,
+				'++++++++',
+				orgId,
+				'{{{{{{{',
+				mentorDetails.visible_to_organizations.includes(orgId),
+				'((((((((',
+				mentorDetails.visibility !== common.ASSOCIATED
+			)
+			// update mentor Id in session creation data
+			if (!bodyData.mentor_id) {
+				bodyData.mentor_id = loggedInUserId
+			}
+			// else if (
+			// 	mentorDetails.visibility !== common.ASSOCIATED ||
+			// 	!mentorDetails.visible_to_organizations.includes(orgId)
+			// ) {
+			// 	return common.failureResponse({
+			// 		message: 'USER_NOT_FOUND',
+			// 		statusCode: httpStatusCode.bad_request,
+			// 		responseCode: 'CLIENT_ERROR',
+			// 	})
+			// }
 
-			const timeSlot = await this.isTimeSlotAvailable(loggedInUserId, bodyData.start_date, bodyData.end_date)
+			// Check if mentor is available for this session's time slot
+			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
+
+			// If time slot not available return corresponding error
 			if (timeSlot.isTimeSlotAvailable === false) {
+				const errorMessage = isSessionCreatedByManager
+					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
+					: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } }
+
 				return common.failureResponse({
-					message: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } },
+					message: errorMessage,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
+			// Calculate duration of the session
 			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
 			let elapsedMinutes = duration.asMinutes()
 
+			// Based on session duration check recommended conditions
 			if (elapsedMinutes < 30) {
 				return common.failureResponse({
 					message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -83,6 +139,13 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			// Fetch mentor name from user service to store it in sessions data {for listing purpose}
+			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
+			if (userDetails && userDetails.name) {
+				bodyData.mentor_name = userDetails.name
+			}
+
+			// Get default org id and entities
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
 				return common.failureResponse({
@@ -147,13 +210,16 @@ module.exports = class SessionsHelper {
 				bodyData.mentee_feedback_question_set = organisationPolicy.mentee_feedback_question_set
 			if (organisationPolicy.mentor_feedback_question_set)
 				bodyData.mentor_feedback_question_set = organisationPolicy.mentor_feedback_question_set
+
+			// Create session
 			const data = await sessionQueries.create(bodyData)
 
 			// If menteeIds are provided in the req body enroll them
-			if (bodyData.mentees && bodyData.mentees.length > 0) {
-				await this.addMentees(data.id, bodyData.mentees, bodyData.time_zone)
+			if (menteeIdsToEnroll.length > 0) {
+				await this.addMentees(data.id, menteeIdsToEnroll, bodyData.time_zone)
 			}
 
+			// create session ownership for the session creator
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
@@ -197,6 +263,49 @@ module.exports = class SessionsHelper {
 					reqBody.email_template_code ? common.POST_METHOD : common.PATCH_METHOD
 				)
 			}
+			///////////////////////////////////////////////////////
+			let emailTemplateCode
+			if (isSessionCreatedByManager && userDetails.email) {
+				if (data.type == common.PRIVATE) {
+					//assign template data
+					emailTemplateCode = process.env.MENTOR_PRIVATE_SESSION_INVITE_BY_MANAGER_EMAIL_TEMPLATE
+				} else {
+					// public session email template
+					emailTemplateCode = process.env.MENTOR_PUBLIC_SESSION_INVITE_BY_MANAGER_EMAIL_TEMPLATE
+				}
+				// send mail to mentors on session creation if session created by manager
+				const templateData = await notificationQueries.findOneEmailTemplate(emailTemplateCode, orgId)
+				console.log(
+					'++++++++++++++++++++++++++++++++++++++++++++templateDatatemplateData : ',
+					templateData,
+					userDetails
+				)
+				if (templateData) {
+					let name = userDetails.name
+					// Push successfull enrollment to session in kafka
+					const payload = {
+						type: 'email',
+						email: {
+							to: userDetails.email,
+							subject: templateData.subject,
+							body: utils.composeEmailBody(templateData.body, {
+								name,
+								sessionTitle: data.title,
+								mentorName: data.mentor_name,
+								startDate: utils.getTimeZone(data.start_date, common.dateFormat, data.time_zone),
+								startTime: utils.getTimeZone(data.start_date, common.timeFormat, data.time_zone),
+								sessionDuration: elapsedMinutes,
+								sessionPlatform: data.meeting_info.platform,
+								unitOfTime: 'Min',
+								sessionType: data.type,
+								noOfMentees: menteeIdsToEnroll.length,
+							}),
+						},
+					}
+					console.log('++++++++++++++++++++email ::: email payload :', payload.email)
+					await kafkaCommunication.pushEmailToKafka(payload)
+				}
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -222,17 +331,32 @@ module.exports = class SessionsHelper {
 
 	static async update(sessionId, bodyData, userId, method, orgId) {
 		let isSessionReschedule = false
+		let isSessionCreatedByManager = false
 		try {
-			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
-			if (!mentorExtension) {
-				return common.failureResponse({
-					message: 'INVALID_PERMISSION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+			// To determine the session is created by manager or mentor we need to fetc the session details first
+			// Then compare mentor_id and created_by information
+			// If manager is the session creator then no need to check Mentor extension data
+			const sessionDetail = await sessionQueries.findById(sessionId)
+			if (
+				sessionDetail.metor_id &&
+				sessionDetail.created_by &&
+				sessionDetail.metor_id !== sessionDetail.created_by
+			) {
+				isSessionCreatedByManager = true
 			}
 
-			const sessionDetail = await sessionQueries.findById(sessionId)
+			if (!isSessionCreatedByManager) {
+				let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
+				if (!mentorExtension) {
+					return common.failureResponse({
+						message: 'INVALID_PERMISSION',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+
+			// const sessionDetail = await sessionQueries.findById(sessionId)
 			if (!sessionDetail) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -403,6 +527,8 @@ module.exports = class SessionsHelper {
 					sessionAttendeesIds.push(attendee.mentee_id)
 				})
 
+				// if session created by manager add mentor_id to attendees list. So that mail can be also send to mentor
+
 				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
 				sessionAttendees.map((attendee) => {
@@ -446,7 +572,7 @@ module.exports = class SessionsHelper {
 								}),
 							},
 						}
-
+						console.log('++++++++++++++++Delete email : ', payload)
 						await kafkaCommunication.pushEmailToKafka(payload)
 					} else if (isSessionReschedule) {
 						const payload = {
@@ -788,8 +914,8 @@ module.exports = class SessionsHelper {
 				})
 			}
 			console.log('+++++++++++++++++++++++++++session', session)
-			const mentorName = await userRequests.details('', session.mentor_id)
-			session.mentor_name = mentorName.data.result.name
+			// const mentorName = await userRequests.details('', session.mentor_id)
+			// session.mentor_name = mentorName.data.result.name
 
 			const sessionAttendeeExist = await sessionAttendeesQueries.findOne({
 				session_id: sessionId,
@@ -816,7 +942,7 @@ module.exports = class SessionsHelper {
 				session_id: sessionId,
 				mentee_id: userId,
 				time_zone: timeZone,
-				// type: enrollmentType
+				type: enrollmentType,
 			}
 			console.log('+++++++++++++++++++++++++++enrollmentType', enrollmentType, emailTemplateCode)
 			await sessionAttendeesQueries.create(attendee)
