@@ -15,6 +15,10 @@ const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
 const common = require('@constants/common')
 const crypto = require('crypto')
+const mentorQueries = require('@database/queries/mentorExtension')
+const menteeQueries = require('@database/queries/userExtension')
+const httpStatusCode = require('@generics/http-status')
+const userRequests = require('@requests/user')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
@@ -183,6 +187,58 @@ function validateInput(input, validationData, modelName) {
 			})
 		}
 
+		function addError(field, value, dataType, message) {
+			errors.push({
+				param: field.value,
+				msg: `${value} is invalid for data type ${dataType}. ${message}`,
+			})
+		}
+
+		if (fieldValue !== undefined) {
+			const dataType = field.data_type
+
+			switch (dataType) {
+				case 'ARRAY[STRING]':
+					if (Array.isArray(fieldValue)) {
+						fieldValue.forEach((element) => {
+							if (typeof element !== 'string' || /[^A-Za-z0-9_]/.test(element)) {
+								addError(
+									field,
+									element,
+									dataType,
+									'It should not contain spaces or special characters except underscore.'
+								)
+							}
+						})
+					} else {
+						addError(field, field.value, dataType, '')
+					}
+					break
+
+				case 'STRING':
+					if (typeof fieldValue !== 'string' || /[^A-Za-z0-9_]/.test(fieldValue)) {
+						addError(
+							field,
+							fieldValue,
+							dataType,
+							'It should not contain spaces or special characters except underscore.'
+						)
+					}
+					break
+
+				case 'NUMBER':
+					console.log('Type of', typeof fieldValue)
+					if (typeof fieldValue !== 'number') {
+						addError(field, fieldValue, dataType, '')
+					}
+					break
+
+				default:
+					//isValid = false
+					break
+			}
+		}
+
 		if (!fieldValue || field.allow_custom_entities === true || field.has_entities === false) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
@@ -252,24 +308,27 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 		if (!requestBody.meta) requestBody.meta = {}
 		// Iterate through each key in request body
 		for (const currentFieldName in requestBody) {
-			// store corrent key's value
-			const currentFieldValue = requestBody[currentFieldName]
-			// Get entity type maped to corrent data
+			// store correct key's value
+			const [currentFieldValue, isFieldValueAnArray] = Array.isArray(requestBody[currentFieldName])
+				? [[...requestBody[currentFieldName]], true] //If the requestBody[currentFieldName] is array, make a copy in currentFieldValue than a reference
+				: [requestBody[currentFieldName], false]
+			// Get entity type mapped to current data
 			const entityType = entityTypeMap.get(currentFieldName)
 			// Check if the current data have any entity type associated with and if allow_custom_entities= true enter to if case
 			if (entityType && entityType.get('allow_custom_entities')) {
 				// If current field value is of type Array enter to this if condition
-				if (Array.isArray(currentFieldValue)) {
+				if (isFieldValueAnArray) {
+					requestBody[currentFieldName] = [] //Set the original field value as empty array so that it can be re-populated again
 					const recognizedEntities = []
 					const customEntities = []
-					// Iterate though corrent fileds value of type Array
+					// Iterate though correct fields value of type Array
 					for (const value of currentFieldValue) {
 						// If entity has entities which matches value push the data into recognizedEntities array
 						// Else push to customEntities as { value: 'other', label: value }
 						if (entityType.get('entities').has(value)) recognizedEntities.push(value)
 						else customEntities.push({ value: 'other', label: value })
 					}
-					// If wehave data in recognizedEntities
+					// If we have data in recognizedEntities
 					if (recognizedEntities.length > 0)
 						if (allowedKeys.includes(currentFieldName))
 							// If the current field have a concrete column in db assign recognizedEntities to requestBody[currentFieldName]
@@ -337,17 +396,11 @@ function processDbResponse(responseBody, entityType) {
 					label: entity.label,
 				}))
 			// Check if there are matching values
-			if (matchingValues.length > 0) {
-				output[key] = Array.isArray(output[key]) ? matchingValues : matchingValues[0]
-			} else if (Array.isArray(output[key])) {
-				output[key] = output[key].map((item) => {
-					if (item.value && item.label) return item
-					return {
-						value: item,
-						label: item,
-					}
-				})
-			}
+			if (matchingValues.length > 0)
+				output[key] = Array.isArray(output[key])
+					? matchingValues
+					: matchingValues.find((entity) => entity.value === output[key])
+			else if (Array.isArray(output[key])) output[key] = output[key].filter((item) => item.value && item.label)
 		}
 
 		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
@@ -520,7 +573,65 @@ function validateFilters(input, validationData, modelName) {
 	}
 	return input
 }
+async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
+	try {
+		const userPolicyDetails = isAMentor
+			? await mentorQueries.getMentorExtension(userId, ['external_mentor_visibility', 'organization_id'])
+			: await menteeQueries.getMenteeExtension(userId, ['external_mentor_visibility', 'organization_id'])
 
+		// Throw error if mentor/mentee extension not found
+		if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
+			return common.failureResponse({
+				statusCode: httpStatusCode.not_found,
+				message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		let filter = ''
+		let relatedOrganizations = []
+		if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
+			// fetch organisation details to get the related org
+			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(userPolicyDetails.organization_id)
+
+			// list of related org ids
+			relatedOrganizations = userOrgDetails.data.result.related_orgs
+			if (relatedOrganizations) {
+				relatedOrganizations.push(userPolicyDetails.organization_id)
+			}
+
+			// Filter user data based on policy
+			// generate filter based on condition
+			if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
+				/**
+				 * if user external_mentor_visibility is current. He can only see his/her organizations mentors
+				 * so we will check mentor's organization_id and user organization_id are matching
+				 */
+				filter = `AND "organization_id" = ${userPolicyDetails.organization_id}`
+			} else if (userPolicyDetails.external_mentor_visibility === common.ASSOCIATED) {
+				/**
+				 * If user external_mentor_visibility is associated
+				 * <<point**>> first we need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+				 */
+				filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "organization_id" = ${userPolicyDetails.organization_id}`
+			} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
+				/**
+				 * We need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
+				 * OR if mentor visibility is ALL that mentor is also accessible
+				 */
+				if (userOrgDetails.data.result.related_orgs.length == 0) {
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
+				} else {
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${relatedOrganizations})`
+				}
+			}
+		}
+
+		return filter
+	} catch (err) {
+		return err
+	}
+}
 module.exports = {
 	hash: hash,
 	getCurrentMonthRange,
@@ -556,4 +667,5 @@ module.exports = {
 	generateWhereClause,
 	validateFilters,
 	processQueryParametersWithExclusions,
+	filterUserListBasedOnSaasPolicy,
 }

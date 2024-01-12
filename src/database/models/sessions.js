@@ -125,6 +125,23 @@ module.exports = (sequelize, DataTypes) => {
 			custom_entity_text: {
 				type: DataTypes.JSON,
 			},
+			type: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				defaultValue: 'PUBLIC',
+			},
+			mentor_name: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			created_by: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			},
+			updated_by: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			},
 		},
 		{ sequelize, modelName: 'Session', tableName: 'sessions', freezeTableName: true, paranoid: true }
 	)

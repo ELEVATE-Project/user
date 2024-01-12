@@ -119,6 +119,20 @@ module.exports = class Mentees {
 		}
 	}
 
+	async list(req) {
+		try {
+			return await menteesService.list(
+				req.pageNo,
+				req.pageSize,
+				req.searchText,
+				req.query,
+				req.decodedToken.id,
+				isAMentor(req.decodedToken.roles)
+			)
+		} catch (error) {
+			return error
+		}
+	}
 	// To be removed later
 	// /**
 	//  * Create a new mentee extension.

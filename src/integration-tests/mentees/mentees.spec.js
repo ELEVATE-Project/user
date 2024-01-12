@@ -6,38 +6,32 @@
  */
 
 const commonHelper = require('@commonTests')
-const sessionsData = require('../sessions/sessionsData')
 const schema = require('./responseSchema')
-
+let loginInfo
 describe('mentoring/v1/mentees', function () {
 	beforeAll(async () => {
-		await commonHelper.logIn()
-	})
-	it('/joinSession', async () => {
-		let sessionId = await sessionsData.insertSession((now = true), (sessionStatus = 'live'), (meetingInfo = true))
-		await sessionsData.insertSessionAttendee(sessionId)
-		let res = await request.post('/mentoring/v1/mentees/joinSession/' + sessionId)
+		loginInfo = await commonHelper.logIn()
+		await request.post('/mentoring/v1/profile/create').send({
+			designation: ['beo', 'deo', 'testt'],
+			area_of_expertise: ['educational_leadership', 'sqaa'],
+			education_qualification: 'MBA',
+			tags: ['Experienced', 'Technical'],
+			visibility: 'visible',
+			organisation_ids: [1],
+			external_session_visibility: 'CURRENT',
+			external_mentor_visibility: 'ALL',
+		})
+	}, 100000)
+
+	it('/list - with email', async () => {
+		let res = await request.post('/mentoring/v1/mentees/list' + '?page=1&limit=100&email=' + loginInfo.email)
 		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(schema.joinSessionSchema)
+		expect(res.body).toMatchSchema(schema.menteeListSchema)
 	})
-	it('/homeFeed', async () => {
-		let res = await request.get('/mentoring/v1/mentees/homeFeed')
+
+	it('/list - with name', async () => {
+		let res = await request.post('/mentoring/v1/mentees/list' + '?page=1&limit=100&name=' + loginInfo.firstname)
 		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(schema.homeFeedSchema)
-	})
-	it('/reports', async () => {
-		let res = await request.get('/mentoring/v1/mentees/reports').query({ filterType: 'QUARTERLY' })
-		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(schema.reportsSchema)
-	})
-	it('/profile', async () => {
-		let res = await request.get('/mentoring/v1/mentees/profile')
-		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(schema.profileSchema)
-	})
-	it('/sessions', async () => {
-		let res = await request.get('/mentoring/v1/mentees/sessions').query({ enrolled: 'false' })
-		expect(res.statusCode).toBe(200)
-		expect(res.body).toMatchSchema(schema.sessionsSchema)
+		expect(res.body).toMatchSchema(schema.menteeListSchema)
 	})
 })

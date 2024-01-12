@@ -150,7 +150,7 @@ module.exports = class MentorExtensionQueries {
 			const excludeUserIds = ids.length === 0
 			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
 
-			const filterClause = filterConditions.length > 0 ? `${filterConditions.join(' AND ')}` : ''
+			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
 
 			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
 			if (excludeUserIds && Object.keys(filter).length === 0) {
@@ -158,7 +158,7 @@ module.exports = class MentorExtensionQueries {
 			}
 
 			let projectionClause =
-				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
+				'user_id,rating,meta,visibility,organization_id,designation,area_of_expertise,education_qualification,custom_entity_text'
 
 			if (returnOnlyUserId) {
 				projectionClause = 'user_id'
@@ -166,10 +166,14 @@ module.exports = class MentorExtensionQueries {
 				projectionClause += `,${additionalProjectionclause}`
 			}
 
+			if (userFilterClause && filterClause.length > 0) {
+				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
+			}
+
 			let query = `
 				SELECT ${projectionClause}
 				FROM
-					${common.materializedViewsPrefix + MentorExtension.tableName}
+				${common.materializedViewsPrefix + MentorExtension.tableName}
 				WHERE
 					${userFilterClause}
 					${filterClause}
