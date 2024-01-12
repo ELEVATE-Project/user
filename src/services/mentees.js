@@ -866,11 +866,12 @@ module.exports = class MenteesHelper {
 					orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED ||
 					orgPolicies.external_mentor_visibility_policy === common.ALL
 				) {
+					organization_ids.push(orgPolicies.organization_id)
 					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgPolicies.organization_id)
 					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
 						const relatedOrgs = userOrgDetails.data.result.related_orgs
 						if (orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED) {
-							organization_ids.push(...relatedOrgs, orgPolicies.organization_id)
+							organization_ids.push(...relatedOrgs)
 						} else {
 							const organizationExtension = await organisationExtensionQueries.findAll(
 								{
