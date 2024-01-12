@@ -50,7 +50,8 @@ module.exports = class SessionsHelper {
 			bodyData.created_by = loggedInUserId
 			bodyData.updated_by = loggedInUserId
 
-			const mentorIdToCheck = bodyData.mentor_id ? bodyData.mentor_id : loggedInUserId
+			const mentorIdToCheck = bodyData.mentor_id || loggedInUserId
+			const isSessionCreatedByManager = !!bodyData.mentor_id
 
 			const mentorDetails = await mentorExtensionQueries.getMentorExtension(mentorIdToCheck)
 			if (!mentorDetails) {
@@ -74,8 +75,9 @@ module.exports = class SessionsHelper {
 			}
 
 			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
-			if (!timeSlot.isTimeSlotAvailable) {
-				const errorMessage = bodyData.mentor_id
+
+			if (timeSlot.isTimeSlotAvailable === false) {
+				const errorMessage = isSessionCreatedByManager
 					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
 					: { key: 'INVALID_TIME_SELECTION', interpolation: { sessionName: timeSlot.sessionName } }
 
@@ -1645,6 +1647,7 @@ module.exports = class SessionsHelper {
 				page: page,
 				limit: limit,
 			})
+
 			const formattedSessionList = sessions.rows.map((session, index) => ({
 				id: session.id,
 				index_number: index + 1 + limit * (page - 1), //To keep consistency with pagination
@@ -1657,6 +1660,7 @@ module.exports = class SessionsHelper {
 				status: session.status,
 				mentee_count: session.mentee_count,
 				mentor_organization_id: session.mentor_organization_id,
+				mentor_id: session.mentor_id,
 			}))
 
 			return common.successResponse({
