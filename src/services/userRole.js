@@ -171,4 +171,47 @@ module.exports = class userRoleHelper {
 			throw error
 		}
 	}
+
+	static async defaultList(filters, page, limit, search) {
+		try {
+			delete filters.search
+			const offset = common.getPaginationOffset(page, limit)
+			const options = {
+				offset,
+				limit,
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			const filter = {
+				organization_id: defaultOrgId,
+				title: { [Op.iLike]: `%${search}%` },
+				...filters,
+			}
+			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
+			const roles = await roleQueries.findAllRoles(filter, attributes, options)
+
+			if (roles.rows == 0 || roles.count == 0) {
+				return common.failureResponse({
+					message: 'ROLES_HAS_EMPTY_LIST',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const results = {
+				data: roles.rows,
+				count: roles.count,
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ROLES_FETCHED_SUCCESSFULLY',
+				result: results,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

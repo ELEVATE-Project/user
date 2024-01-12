@@ -50,7 +50,7 @@ module.exports = {
 		'/user/v1/account/registrationOtp',
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
-		'/user/v1/userRole/list',
+		,
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',
@@ -63,6 +63,8 @@ module.exports = {
 		'/user/v1/admin/triggerPeriodicViewRefreshInternal',
 		'/user/v1/account/search',
 		'/user/v1/organization/list',
+		'/user/v1/userRole/default',
+		'/user/v1/userRole/list',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,

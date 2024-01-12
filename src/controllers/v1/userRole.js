@@ -85,4 +85,13 @@ module.exports = class userRole {
 			return error
 		}
 	}
+
+	async default(req) {
+		try {
+			const defaultRoleList = await roleService.defaultList(req.query, req.pageNo, req.pageSize, req.searchText)
+			return defaultRoleList
+		} catch (error) {
+			return error
+		}
+	}
 }
