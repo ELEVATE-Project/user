@@ -2629,6 +2629,23 @@ paths:
                     meta:
                       formsVersion: []
                       correlation: 645c901e-a7db-49a3-8d4c-dfc4f0b6dadb
+  /user/v1/userRole/default:
+    get:
+      summary: Get User Default Roles
+      tags:
+      description: >
+        Retrieve the list of user roles.
+
+
+        - Endpoint: `/user/v1/userRole/default`
+
+        - It is mandatory to provide values for parameters marked as `required`.
+
+        - The X-auth-token obtained from the login API is required in the
+        header.
+      parameters:
+      responses:
+      requestBody:
 components:
   schemas:
     user:

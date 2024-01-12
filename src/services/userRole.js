@@ -126,6 +126,7 @@ module.exports = class userRoleHelper {
 	 * @param {String} req.pageNo - Page number.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
+	 * @param {Integer} req.decodedToken.organization_id - user organization_id.
 	 * @returns {JSON} - Role list.
 	 */
 
@@ -172,6 +173,16 @@ module.exports = class userRoleHelper {
 		}
 	}
 
+	/**
+	 * Get all available roles.
+	 * @method
+	 * @name defaultlist
+	 * @param {Array(String)} req.body.filters - Filters.
+	 * @param {String} req.pageNo - Page number.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - Role list.
+	 */
 	static async defaultList(filters, page, limit, search) {
 		try {
 			delete filters.search

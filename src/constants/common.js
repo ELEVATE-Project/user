@@ -50,7 +50,6 @@ module.exports = {
 		'/user/v1/account/registrationOtp',
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
-		,
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',

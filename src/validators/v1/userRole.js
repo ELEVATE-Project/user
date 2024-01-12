@@ -80,4 +80,9 @@ module.exports = {
 		const allowedVariables = ['title', 'user_type', 'visibility', 'organization_id', 'status']
 		validateList(req, allowedVariables)
 	},
+
+	default: (req) => {
+		const allowedVariables = ['title', 'user_type', 'visibility', 'organization_id', 'status']
+		validateList(req, allowedVariables)
+	},
 }
