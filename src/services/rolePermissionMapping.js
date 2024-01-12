@@ -71,7 +71,7 @@ module.exports = class modulesHelper {
 			const rolePermissionMapping = await rolePermissionMappingQueries.delete(filter)
 			if (rolePermissionMapping == 0) {
 				return common.failureResponse({
-					message: 'ROLE_PERMISSION_ALREADY_EXISTS',
+					message: 'ROLE_PERMISSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

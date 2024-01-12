@@ -6,7 +6,6 @@
  */
 
 // Dependencies
-require('dotenv').config()
 const userBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')

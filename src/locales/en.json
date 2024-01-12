@@ -144,5 +144,6 @@
 	"INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR": "The selected mentor has a session scheduled at the specified time.",
 	"ROLE_PERMISSION_CREATED_SUCCESSFULLY": "Permission added to the role",
 	"ROLE_PERMISSION_DELETED_SUCCESSFULLY": "Permission delete from the role",
-	"ROLE_PERMISSION_ALREADY_EXISTS": "Permission for this role already exists"
+	"ROLE_PERMISSION_ALREADY_EXISTS": "Permission for this role already exists",
+	"ROLE_PERMISSION_NOT_FOUND": "Permission for this role is empty"
 }

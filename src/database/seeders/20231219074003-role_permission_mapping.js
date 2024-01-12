@@ -46,7 +46,6 @@ const updateMentorNamesBasedOnRole = async () => {
 
 const getPermissionId = async (code, actions) => {
 	try {
-		// Customize this query based on your requirements
 		const permission = await Permissions.findOne({
 			where: {
 				code,
