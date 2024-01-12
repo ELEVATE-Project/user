@@ -116,6 +116,8 @@ module.exports = {
 	],
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
+	SESSION_MANAGER_ROLE: 'session_manager',
+
 	MEDIUM: 'medium',
 	RECOMMENDED_FOR: 'recommended_for',
 	CATEGORIES: 'categories',
@@ -171,6 +173,7 @@ module.exports = {
 	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
 	ACTIVE_STATUS: 'ACTIVE',
+	SEARCH: 'a',
 	SESSION_TYPE: {
 		PUBLIC: 'PUBLIC',
 		PRIVATE: 'PRIVATE',
