@@ -15,4 +15,5 @@ module.exports = {
 	CREATE_SCHEDULER_JOB: 'jobs/create', // Create scheduler job endpoint
 	UPDATE_DELAY: 'jobs/updateDelay', // Update delay of scheduled job endpoint
 	REMOVE_SCHEDULED_JOB: 'jobs/remove', // Remove scheduled job endpoint
+	ORGANIZATION_LIST: 'v1/organization/list',
 }

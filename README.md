@@ -84,7 +84,7 @@ Elevate services can be setup in local using three methods:
 
     ```
 
-    example :
+    example:
 
     ```
     ELEVATE/mentoring$ mentoring_env="/Users/mentoring/src/.env" users_env="/Users/user/src/.env" notification_env="/Users/notification/src/.env" scheduler="/Users/scheduler/src/.env"  docker-compose up

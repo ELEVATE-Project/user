@@ -281,6 +281,61 @@ const search = function (userType, pageNo, pageSize, searchText, userServiceQuer
 		}
 	})
 }
+
+// const listOrganization = function (organizationIds = []) {
+// 	return new Promise(async (resolve, reject) => {
+// 		try {
+// 			const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+// 			const organizations = await requests.post(apiUrl, { organizationIds }, '', true)
+
+// 			return resolve(organizations)
+// 		} catch (error) {
+// 			return reject(error)
+// 		}
+// 	})
+// }
+
+/**
+ * Get Organization list.
+ * @method
+ * @name listOrganization
+ * @param {Array} organizationIds
+ * @returns
+ */
+
+const listOrganization = function (organizationIds = []) {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				organizationIds,
+			},
+		}
+
+		const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+		try {
+			request.get(apiUrl, options, callback)
+			let result = {
+				success: true,
+			}
+			function callback(err, data) {
+				if (err) {
+					result.success = false
+				} else {
+					response = JSON.parse(data.body)
+					result.data = response
+				}
+				return resolve(result)
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
 module.exports = {
 	fetchDefaultOrgDetails,
 	details,
@@ -290,4 +345,5 @@ module.exports = {
 	listWithoutLimit,
 	search,
 	getListOfUserRoles,
+	listOrganization,
 }

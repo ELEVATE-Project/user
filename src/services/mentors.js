@@ -706,6 +706,10 @@ module.exports = class MentorsHelper {
 			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
+			if (designation) {
+				filteredQuery.designation = designation
+			}
+
 			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
@@ -760,14 +764,6 @@ module.exports = class MentorsHelper {
 				)
 			}
 
-			if (designation.length > 0) {
-				extensionDetails.data = extensionDetails.data.filter((item) => {
-					// Check if any designation in the item matches with values in designations array passed in params
-					const hasMatchingDesignation = item.designation.some((d) => designation.includes(d))
-
-					return hasMatchingDesignation
-				})
-			}
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
 				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
@@ -828,6 +824,7 @@ module.exports = class MentorsHelper {
 				result: userDetails.data.result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

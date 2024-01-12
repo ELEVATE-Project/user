@@ -7,7 +7,7 @@
 const common = require('@constants/common')
 const httpStatus = require('@generics/http-status')
 function containsSpecialChars(str) {
-	const specialChars = /[`!#$%^&*()+\-=\[\]{};':"\\|<>\/?~]/
+	const specialChars = /[`!#$%^&*()+\=\[\]{};':"\\|<>\/?~]/
 	return specialChars.test(str)
 }
 
@@ -20,6 +20,7 @@ module.exports = (req, res, next) => {
 	// 	let buff = new Buffer.from(req.searchText, 'base64')
 	// 	req.searchText = buff.toString('ascii')
 	// }
+	let x = containsSpecialChars(req.searchText)
 	if (containsSpecialChars(req.searchText)) {
 		throw common.failureResponse({
 			message: 'Invalid search text 😥',

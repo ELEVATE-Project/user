@@ -97,6 +97,27 @@ module.exports = class Mentees {
 		}
 	}
 
+	/**
+	 * Filter list
+	 * @method
+	 * @name filterList
+	 * @param {Object} req - request data.
+	 * @param {String} req.decodedToken.token - user token.
+	 * @returns {JSON} - filter list.
+	 */
+
+	async filterList(req) {
+		try {
+			const filterList = await menteesService.getFilterList(
+				req.query.entity_types ? req.query.entity_types : '',
+				req.decodedToken
+			)
+			return filterList
+		} catch (error) {
+			return error
+		}
+	}
+
 	//To be enabled when delete flow is needed.
 	// /**
 	//  * Delete a mentee extension by user ID.

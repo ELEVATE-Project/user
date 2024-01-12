@@ -17,28 +17,28 @@ module.exports = {
 			],
 			status: [
 				{
-					value: 'Completed',
-					label: 'COMPLETED',
+					value: 'COMPLETED',
+					label: 'Completed',
 				},
 				{
-					value: 'Unfulfilled',
-					label: 'UNFULFILLED',
+					value: 'UNFULFILLED',
+					label: 'Unfulfilled',
 				},
 				{
-					value: 'Published',
-					label: 'PUBLISHED',
+					value: 'PUBLISHED',
+					label: 'Published',
 				},
 				{
-					value: 'Live',
-					label: 'LIVE',
+					value: 'LIVE',
+					label: 'Live',
 				},
 				{
-					value: 'Active',
-					label: 'ACTIVE',
+					value: 'ACTIVE',
+					label: 'Active',
 				},
 				{
-					value: 'Inactive',
-					label: 'INACTIVE',
+					value: 'INACTIVE',
+					label: 'Inactive',
 				},
 			],
 		}
