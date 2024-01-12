@@ -338,9 +338,9 @@ module.exports = class SessionsHelper {
 			// If manager is the session creator then no need to check Mentor extension data
 			const sessionDetail = await sessionQueries.findById(sessionId)
 			if (
-				sessionDetail.metor_id &&
+				sessionDetail.mentor_id &&
 				sessionDetail.created_by &&
-				sessionDetail.metor_id !== sessionDetail.created_by
+				sessionDetail.mentor_id !== sessionDetail.created_by
 			) {
 				isSessionCreatedByManager = true
 			}
@@ -522,12 +522,16 @@ module.exports = class SessionsHelper {
 				const sessionAttendees = await sessionAttendeesQueries.findAll({
 					session_id: sessionId,
 				})
-				const sessionAttendeesIds = []
+				let sessionAttendeesIds = []
 				sessionAttendees.forEach((attendee) => {
 					sessionAttendeesIds.push(attendee.mentee_id)
 				})
 
-				// if session created by manager add mentor_id to attendees list. So that mail can be also send to mentor
+				// if session created by manager add mentor_id to attendees list.
+				// So that mail can be also send to mentor
+				if (isSessionCreatedByManager) {
+					sessionAttendeesIds.push(sessionDetail.mentor_id)
+				}
 
 				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
@@ -541,14 +545,27 @@ module.exports = class SessionsHelper {
 						}
 					}
 				})
+				let mentorNotificationDetails = {}
+				if (isSessionCreatedByManager) {
+					// From attendeesAccounts Array find the mentor_data
+					let mentorDetails = attendeesAccounts.result.find(
+						(element) => element.id === sessionDetail.mentor_id
+					)
+					// If session is deleted by manager email needs to send to mentor also
+					;(mentorNotificationDetails.id = mentorDetails.id),
+						(mentorNotificationDetails.attendeeEmail = mentorDetails.email)
+					mentorNotificationDetails.attendeeName = mentorDetails.name
+					sessionAttendees.push(mentorNotificationDetails)
+				}
 
 				/* Find email template according to request type */
 				let templateData
 				if (method == common.DELETE_METHOD) {
-					templateData = await notificationQueries.findOneEmailTemplate(
-						process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE,
-						orgId
-					)
+					let sessionDeleteEmailTemplate
+					isSessionCreatedByManager
+						? (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE)
+						: (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE)
+					templateData = await notificationQueries.findOneEmailTemplate(sessionDeleteEmailTemplate, orgId)
 				} else if (isSessionReschedule) {
 					templateData = await notificationQueries.findOneEmailTemplate(
 						process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE,
@@ -561,6 +578,10 @@ module.exports = class SessionsHelper {
 
 				sessionAttendees.forEach(async (attendee) => {
 					if (method == common.DELETE_METHOD) {
+						let duration = moment.duration(
+							moment.unix(sessionDetail.end_date).diff(moment.unix(sessionDetail.start_date))
+						)
+						let sessionDuration = duration.asMinutes()
 						const payload = {
 							type: 'email',
 							email: {
@@ -569,6 +590,18 @@ module.exports = class SessionsHelper {
 								body: utils.composeEmailBody(templateData.body, {
 									name: attendee.attendeeName,
 									sessionTitle: sessionDetail.title,
+									sessionDuration: sessionDuration,
+									unitOfTime: 'Min',
+									startDate: utils.getTimeZone(
+										sessionDetail.start_date,
+										common.dateFormat,
+										sessionDetail.time_zone
+									),
+									startTime: utils.getTimeZone(
+										sessionDetail.start_date,
+										common.timeFormat,
+										sessionDetail.time_zone
+									),
 								}),
 							},
 						}
