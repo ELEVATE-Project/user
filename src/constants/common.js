@@ -117,7 +117,7 @@ module.exports = {
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
 	SESSION_MANAGER_ROLE: 'session_manager',
-
+	MANAGE_SESSION_CODE: 'manage_session',
 	MEDIUM: 'medium',
 	RECOMMENDED_FOR: 'recommended_for',
 	CATEGORIES: 'categories',

@@ -44,12 +44,12 @@ const updateMentorNamesBasedOnRole = async () => {
 	}
 }
 
-const getPermissionId = async (module, actions) => {
+const getPermissionId = async (code, actions) => {
 	try {
 		// Customize this query based on your requirements
 		const permission = await Permissions.findOne({
 			where: {
-				module,
+				code,
 				actions,
 			},
 		})
@@ -70,18 +70,18 @@ module.exports = {
 
 			const rolePermissionsData = [
 				{
-					role_id: matchingResults['session_manager'].id,
-					permission_id: await getPermissionId('manage_session', ['ALL']),
-					module: 'manage_session',
+					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					permission_id: await getPermissionId(common.MANAGE_SESSION_CODE, ['ALL']),
+					module: common.MANAGE_SESSION_CODE,
 					actions: ['ALL'],
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults['admin'].id,
-					permission_id: await getPermissionId('manage_session', ['ALL']),
-					module: 'manage_session',
+					role_id: matchingResults[common.ADMIN_ROLE].id,
+					permission_id: await getPermissionId(common.MANAGE_SESSION_CODE, ['ALL']),
+					module: common.MANAGE_SESSION_CODE,
 					actions: ['ALL'],
 					created_at: new Date(),
 					updated_at: new Date(),
