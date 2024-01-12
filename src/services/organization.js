@@ -12,6 +12,7 @@ const { Op } = require('sequelize')
 const _ = require('lodash')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -54,6 +55,8 @@ module.exports = class OrganizationsHelper {
 
 			// Send an invitation to the admin if an email is provided.
 			if (bodyData.admin_email) {
+				const plaintextEmailId = bodyData.admin_email.toLowerCase()
+				const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 				const role = await roleQueries.findOne(
 					{ title: common.ORG_ADMIN_ROLE },
 					{
@@ -70,7 +73,7 @@ module.exports = class OrganizationsHelper {
 				}
 
 				const inviteeData = {
-					email: bodyData.admin_email,
+					email: encryptedEmailId,
 					name: common.USER_ROLE,
 					organization_id: createdOrganization.id,
 					roles: [role.id],
@@ -79,7 +82,7 @@ module.exports = class OrganizationsHelper {
 
 				const createdInvite = await userInviteQueries.create(inviteeData)
 				const userCred = await UserCredentialQueries.create({
-					email: bodyData.admin_email,
+					email: encryptedEmailId,
 					organization_id: createdOrganization.id,
 					organization_user_invite_id: createdInvite.id,
 				})
@@ -100,7 +103,7 @@ module.exports = class OrganizationsHelper {
 						const payload = {
 							type: common.notificationEmailType,
 							email: {
-								to: bodyData.admin_email,
+								to: plaintextEmailId,
 								subject: templateData.subject,
 								body: utils.composeEmailBody(templateData.body, {
 									name: inviteeData.name,
@@ -126,6 +129,7 @@ module.exports = class OrganizationsHelper {
 				result: createdOrganization,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}

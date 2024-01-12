@@ -167,8 +167,67 @@ function validateInput(input, validationData, modelName) {
 	const errors = []
 	for (const field of validationData) {
 		const fieldValue = input[field.value]
-		//console.log('fieldValue', field.allow_custom_entities)
-		if (!fieldValue || field.allow_custom_entities === true) {
+
+		if (modelName && !field.model_names.includes(modelName) && input[field.value]) {
+			errors.push({
+				param: field.value,
+				msg: `${field.value} is not allowed for the ${modelName} model.`,
+			})
+		}
+
+		function addError(field, value, dataType, message) {
+			errors.push({
+				param: field.value,
+				msg: `${value} is invalid for data type ${dataType}. ${message}`,
+			})
+		}
+
+		if (fieldValue !== undefined) {
+			const dataType = field.data_type
+
+			switch (dataType) {
+				case 'ARRAY[STRING]':
+					if (Array.isArray(fieldValue)) {
+						fieldValue.forEach((element) => {
+							if (typeof element !== 'string' || /[^A-Za-z0-9_]/.test(element)) {
+								addError(
+									field,
+									element,
+									dataType,
+									'It should not contain spaces or special characters except underscore.'
+								)
+							}
+						})
+					} else {
+						addError(field, field.value, dataType, '')
+					}
+					break
+
+				case 'STRING':
+					if (typeof fieldValue !== 'string' || /[^A-Za-z0-9_]/.test(fieldValue)) {
+						addError(
+							field,
+							fieldValue,
+							dataType,
+							'It should not contain spaces or special characters except underscore.'
+						)
+					}
+					break
+
+				case 'NUMBER':
+					console.log('Type of', typeof fieldValue)
+					if (typeof fieldValue !== 'number') {
+						addError(field, fieldValue, dataType, '')
+					}
+					break
+
+				default:
+					//isValid = false
+					break
+			}
+		}
+
+		if (!fieldValue || field.allow_custom_entities === true || field.has_entities === false) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -185,13 +244,6 @@ function validateInput(input, validationData, modelName) {
 			errors.push({
 				param: field.value,
 				msg: `${fieldValue} is not a valid entity.`,
-			})
-		}
-
-		if (modelName && !field.model_names.includes(modelName)) {
-			errors.push({
-				param: field.value,
-				msg: `${field.value} is not allowed for the ${modelName} model.`,
 			})
 		}
 	}
@@ -240,10 +292,13 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 		requestBody.custom_entity_text = {}
 		if (!requestBody.meta) requestBody.meta = {}
 		for (const currentFieldName in requestBody) {
-			const currentFieldValue = requestBody[currentFieldName]
+			const [currentFieldValue, isFieldValueAnArray] = Array.isArray(requestBody[currentFieldName])
+				? [[...requestBody[currentFieldName]], true] //If the requestBody[currentFieldName] is array, make a copy in currentFieldValue than a reference
+				: [requestBody[currentFieldName], false]
 			const entityType = entityTypeMap.get(currentFieldName)
 			if (entityType && entityType.get('allow_custom_entities')) {
-				if (Array.isArray(currentFieldValue)) {
+				if (isFieldValueAnArray) {
+					requestBody[currentFieldName] = []
 					const recognizedEntities = []
 					const customEntities = []
 					for (const value of currentFieldValue) {
@@ -303,19 +358,11 @@ function processDbResponse(responseBody, entityType) {
 					value: entity.value,
 					label: entity.label,
 				}))
-			if (matchingValues.length > 0) {
+			if (matchingValues.length > 0)
 				output[key] = Array.isArray(output[key])
 					? matchingValues
 					: matchingValues.find((entity) => entity.value === output[key])
-			} else if (Array.isArray(output[key])) {
-				output[key] = output[key].map((item) => {
-					if (item.value && item.label) return item
-					return {
-						value: item,
-						label: item,
-					}
-				})
-			}
+			else if (Array.isArray(output[key])) output[key] = output[key].filter((item) => item.value && item.label)
 		}
 
 		if (output.meta && output.meta[key] && entityType.some((entity) => entity.value === output.meta[key].value)) {
@@ -375,6 +422,7 @@ const generateWhereClause = (tableName) => {
 
 	return whereClause
 }
+
 module.exports = {
 	generateToken,
 	hashPassword,

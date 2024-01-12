@@ -31,6 +31,9 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	return error
 }
 
+function getPaginationOffset(page, limit) {
+	return (page - 1) * limit
+}
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -38,6 +41,7 @@ module.exports = {
 	},
 	successResponse,
 	failureResponse,
+	getPaginationOffset,
 	guestUrls: [
 		'/user/v1/account/login',
 		'/user/v1/account/create',
@@ -58,6 +62,7 @@ module.exports = {
 		'/user/v1/admin/triggerViewRebuildInternal',
 		'/user/v1/admin/triggerPeriodicViewRefreshInternal',
 		'/user/v1/account/search',
+		'/user/v1/organization/list',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
@@ -95,7 +100,6 @@ module.exports = {
 	location: 'location',
 	languages: 'languages',
 	typeSystem: 'system',
-	ORG_ADMIN_ROLE: 'org_admin',
 	UPLOADED_STATUS: 'UPLOADED',
 	FAILED_STATUS: 'FAILED',
 	PROCESSED_STATUS: 'PROCESSED',
