@@ -6,7 +6,7 @@ const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 
 const { successResponse } = require('@constants/common')
-
+const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const { UniqueConstraintError } = require('sequelize')
 const menteeQueries = require('@database/queries/userExtension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -31,7 +31,7 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(id, orgId) {
+	static async read(roleId, id, orgId) {
 		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
@@ -58,10 +58,33 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
+		const [firstRole] = roleId
+		const userRoles = firstRole?.id
+
+		const permissionAndModules = await rolePermissionMappingQueries.find(userRoles)
+
+		const uniqueModules = new Set()
+		const uniqueActions = new Set()
+
+		permissionAndModules.forEach((rolePermission) => {
+			uniqueModules.add(rolePermission.dataValues.module)
+			rolePermission.dataValues.actions.forEach((action) => uniqueActions.add(action))
+		})
+
+		const actionAndModules = {
+			module: Array.from(uniqueModules),
+			actions: Array.from(uniqueActions),
+		}
+
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
-			result: { sessions_attended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
+			result: {
+				sessions_attended: totalSession,
+				...menteeDetails.data.result,
+				...actionAndModules,
+				...processDbResponse,
+			},
 		})
 	}
 

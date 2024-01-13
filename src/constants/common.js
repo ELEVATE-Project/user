@@ -74,6 +74,9 @@ module.exports = {
 		'/mentors/upcomingSessions/',
 		'/platform/config',
 	],
+	apiPermissionsUrls: [
+		{ path: '/mentoring/v1/sessions/update', actions: ['WRITE', 'UPDATE', 'READ'], module: 'manage_session' },
+	],
 	DELETE_METHOD: 'DELETE',
 	dateFormat: 'dddd, Do MMMM YYYY',
 	timeFormat: 'hh:mm A',

@@ -5,6 +5,7 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
+const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -501,7 +502,7 @@ module.exports = class MentorsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- profile details
 	 */
-	static async read(id, orgId, userId = '', isAMentor = '') {
+	static async read(roleId, id, orgId, userId = '', isAMentor = '') {
 		try {
 			if (userId !== '' && isAMentor !== '') {
 				// Get mentor visibility and org id
@@ -577,6 +578,24 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
+			const [firstRole] = roleId
+			const userRoles = firstRole?.id
+
+			const permissionAndModules = await rolePermissionMappingQueries.find(userRoles)
+
+			const uniqueModules = new Set()
+			const uniqueActions = new Set()
+
+			permissionAndModules.forEach((rolePermission) => {
+				uniqueModules.add(rolePermission.dataValues.module)
+				rolePermission.dataValues.actions.forEach((action) => uniqueActions.add(action))
+			})
+
+			const actionAndModules = {
+				module: Array.from(uniqueModules),
+				actions: Array.from(uniqueActions),
+			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PROFILE_FTECHED_SUCCESSFULLY',
@@ -584,6 +603,7 @@ module.exports = class MentorsHelper {
 					sessions_attended: totalSession,
 					sessions_hosted: totalSessionHosted,
 					...mentorProfile,
+					...actionAndModules,
 					...processDbResponse,
 				},
 			})

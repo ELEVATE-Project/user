@@ -146,5 +146,6 @@
 	"ROLE_PERMISSION_CREATED_SUCCESSFULLY": "Permission added to the role",
 	"ROLE_PERMISSION_DELETED_SUCCESSFULLY": "Permission delete from the role",
 	"ROLE_PERMISSION_ALREADY_EXISTS": "Permission for this role already exists",
-	"ROLE_PERMISSION_NOT_FOUND": "Permission for this role is empty"
+	"ROLE_PERMISSION_NOT_FOUND": "Permission for this role is empty",
+	"PERMISSION_DENIED": "You do not have the required permissions to access this resource. Please contact your administrator for assistance."
 }

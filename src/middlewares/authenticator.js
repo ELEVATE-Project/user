@@ -11,12 +11,30 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
+const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+
+async function fetchApiPermissions(path) {
+	try {
+		return new Promise((resolve, reject) => {
+			const apiEntry = common.apiPermissionsUrls.find((entry) => entry.path === path)
+
+			if (apiEntry) {
+				resolve({ actions: apiEntry.actions, module: apiEntry.module })
+			} else {
+				resolve({ actions: null, module: null })
+			}
+		})
+	} catch (error) {
+		throw error
+	}
+}
 
 module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
+		let apiPermissions = false
 		let decodedToken
 
 		const authHeader = req.get('X-auth-token')
@@ -43,7 +61,13 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if ((internalAccess || guestUrl) && !authHeader) {
+		common.apiPermissionsUrls.forEach((entry) => {
+			if (req.path.includes(entry.path)) {
+				apiPermissions = true
+			}
+		})
+
+		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) {
 			next()
 			return
 		}
@@ -122,6 +146,27 @@ module.exports = async function (req, res, next) {
 			decodedToken.data.organization_id = user.data.result.organization_id
 		}
 
+		if (apiPermissions) {
+			const roleIds = decodedToken.data.roles.map((role) => role.id)
+			const requiredpermission = await fetchApiPermissions(req.path)
+			const fetchpermission = await rolePermissionMappingQueries.find(roleIds)
+			const actionsAndModules = fetchpermission.map((instance) => ({
+				actions: instance.dataValues.actions,
+				module: instance.dataValues.module,
+			}))
+			const matchingEntry = actionsAndModules.find(
+				(entry) =>
+					entry.actions[0] === requiredpermission.actions[0] && entry.module === requiredpermission.module
+			)
+
+			if (!matchingEntry) {
+				throw common.failureResponse({
+					message: 'PERMISSION_DENIED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+		}
 		req.decodedToken = {
 			id: decodedToken.data.id,
 			roles: decodedToken.data.roles,

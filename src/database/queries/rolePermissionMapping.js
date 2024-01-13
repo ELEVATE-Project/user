@@ -18,3 +18,13 @@ exports.delete = async (filter) => {
 		throw error
 	}
 }
+
+exports.find = async (filter) => {
+	try {
+		return RolePermissionMapping.findAll({
+			where: { role_id: filter },
+		})
+	} catch (error) {
+		throw error
+	}
+}
