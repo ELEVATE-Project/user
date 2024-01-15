@@ -502,7 +502,7 @@ module.exports = class MentorsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- profile details
 	 */
-	static async read(roleId, id, orgId, userId = '', isAMentor = '') {
+	static async read(roles, id, orgId, userId = '', isAMentor = '') {
 		try {
 			if (userId !== '' && isAMentor !== '') {
 				// Get mentor visibility and org id
@@ -578,23 +578,25 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-			const [firstRole] = roleId
-			const userRoles = firstRole?.id
-
+			const userRoles = roles.map((role) => role.id)
 			const permissionAndModules = await rolePermissionMappingQueries.find(userRoles)
-
-			const uniqueModules = new Set()
-			const uniqueActions = new Set()
+			const permissionsByModule = {}
 
 			permissionAndModules.forEach((rolePermission) => {
-				uniqueModules.add(rolePermission.dataValues.module)
-				rolePermission.dataValues.actions.forEach((action) => uniqueActions.add(action))
+				const module = rolePermission.dataValues.module
+				const actions = rolePermission.dataValues.actions
+
+				if (permissionsByModule[module]) {
+					permissionsByModule[module].actions.push(...actions)
+				} else {
+					permissionsByModule[module] = { module, actions: [...actions] }
+				}
 			})
 
-			const actionAndModules = {
-				module: Array.from(uniqueModules),
-				actions: Array.from(uniqueActions),
-			}
+			const resultArray = Object.entries(permissionsByModule).map(([key, value]) => ({
+				module: value.module,
+				actions: value.actions,
+			}))
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -603,7 +605,7 @@ module.exports = class MentorsHelper {
 					sessions_attended: totalSession,
 					sessions_hosted: totalSessionHosted,
 					...mentorProfile,
-					...actionAndModules,
+					permissions: resultArray,
 					...processDbResponse,
 				},
 			})

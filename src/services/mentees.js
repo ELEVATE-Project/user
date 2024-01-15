@@ -31,7 +31,7 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(roleId, id, orgId) {
+	static async read(roles, id, orgId) {
 		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
@@ -58,23 +58,25 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const [firstRole] = roleId
-		const userRoles = firstRole?.id
-
+		const userRoles = roles.map((role) => role.id)
 		const permissionAndModules = await rolePermissionMappingQueries.find(userRoles)
-
-		const uniqueModules = new Set()
-		const uniqueActions = new Set()
+		const permissionsByModule = {}
 
 		permissionAndModules.forEach((rolePermission) => {
-			uniqueModules.add(rolePermission.dataValues.module)
-			rolePermission.dataValues.actions.forEach((action) => uniqueActions.add(action))
+			const module = rolePermission.dataValues.module
+			const actions = rolePermission.dataValues.actions
+
+			if (permissionsByModule[module]) {
+				permissionsByModule[module].actions.push(...actions)
+			} else {
+				permissionsByModule[module] = { module, actions: [...actions] }
+			}
 		})
 
-		const actionAndModules = {
-			module: Array.from(uniqueModules),
-			actions: Array.from(uniqueActions),
-		}
+		const resultArray = Object.entries(permissionsByModule).map(([key, value]) => ({
+			module: value.module,
+			actions: value.actions,
+		}))
 
 		return successResponse({
 			statusCode: httpStatusCode.ok,
@@ -82,7 +84,7 @@ module.exports = class MenteesHelper {
 			result: {
 				sessions_attended: totalSession,
 				...menteeDetails.data.result,
-				...actionAndModules,
+				permissions: resultArray,
 				...processDbResponse,
 			},
 		})
