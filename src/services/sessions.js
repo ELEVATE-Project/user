@@ -47,7 +47,7 @@ module.exports = class SessionsHelper {
 		try {
 			// If type is passed store it in upper case
 			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
-			console.log('<<<<<<<<<<<<<<bodyData.type :', bodyData.type, common.PRIVATE)
+
 			// If session type is private and mentorId is not passed in request body return an error
 			if (
 				bodyData.type &&
@@ -78,30 +78,21 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			console.log(
-				'mentorDetails : : : :: : :: : : : :',
-				mentorDetails,
-				'++++++++',
-				orgId,
-				'{{{{{{{',
-				mentorDetails.visible_to_organizations.includes(orgId),
-				'((((((((',
-				mentorDetails.visibility !== common.ASSOCIATED
-			)
+
 			// update mentor Id in session creation data
+			// Bug : found in else if case, which nevil will be updating
 			if (!bodyData.mentor_id) {
 				bodyData.mentor_id = loggedInUserId
+			} else if (
+				mentorDetails.visibility !== common.ASSOCIATED ||
+				!mentorDetails.visible_to_organizations.includes(orgId)
+			) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-			// else if (
-			// 	mentorDetails.visibility !== common.ASSOCIATED ||
-			// 	!mentorDetails.visible_to_organizations.includes(orgId)
-			// ) {
-			// 	return common.failureResponse({
-			// 		message: 'USER_NOT_FOUND',
-			// 		statusCode: httpStatusCode.bad_request,
-			// 		responseCode: 'CLIENT_ERROR',
-			// 	})
-			// }
 
 			// Check if mentor is available for this session's time slot
 			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
@@ -264,7 +255,7 @@ module.exports = class SessionsHelper {
 					reqBody.email_template_code ? common.POST_METHOD : common.PATCH_METHOD
 				)
 			}
-			///////////////////////////////////////////////////////
+
 			let emailTemplateCode
 			if (isSessionCreatedByManager && userDetails.email) {
 				if (data.type == common.PRIVATE) {
@@ -276,11 +267,7 @@ module.exports = class SessionsHelper {
 				}
 				// send mail to mentors on session creation if session created by manager
 				const templateData = await notificationQueries.findOneEmailTemplate(emailTemplateCode, orgId)
-				console.log(
-					'++++++++++++++++++++++++++++++++++++++++++++templateDatatemplateData : ',
-					templateData,
-					userDetails
-				)
+
 				if (templateData) {
 					let name = userDetails.name
 					// Push successfull enrollment to session in kafka
@@ -303,7 +290,6 @@ module.exports = class SessionsHelper {
 							}),
 						},
 					}
-					console.log('++++++++++++++++++++email ::: email payload :', payload.email)
 					await kafkaCommunication.pushEmailToKafka(payload)
 				}
 			}
@@ -338,7 +324,7 @@ module.exports = class SessionsHelper {
 			// Then compare mentor_id and created_by information
 			// If manager is the session creator then no need to check Mentor extension data
 			const sessionDetail = await sessionQueries.findById(sessionId)
-			console.log('session to update : ', sessionDetail)
+
 			if (
 				(sessionDetail.mentor_id &&
 					sessionDetail.created_by &&
@@ -511,7 +497,24 @@ module.exports = class SessionsHelper {
 				}
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
 				console.log('Updated session details :<<<<<<>>>>>', updatedRows, rowsAffected)
-				console.log('updated keys are : ', updatedDiff(sessionDetail.dataValues, updatedRows[0].dataValues))
+				let isSessionDataChanged = false
+				let onlySessionTitleIsChanged = false
+				// check what are the values changed only if session is updated/deleted by manager
+				// This is to decide on which email to trigger
+				if (isSessionCreatedByManager) {
+					// Confirm if session is edited or not.
+					const updatedSessionDetails = updatedDiff(sessionDetail.dataValues, updatedRows[0].dataValues)
+					delete updatedSessionDetails.updated_at
+					const keys = Object.keys(updatedSessionDetails)
+
+					if (keys.length > 0) {
+						isSessionDataChanged = true
+						if (keys.length === 1 && keys.includes('title')) {
+							onlySessionTitleIsChanged = true // Set flag true
+						}
+					}
+					console.log('updated keys are : ', updatedDiff(sessionDetail.dataValues, updatedRows[0].dataValues))
+				}
 				// If new start date is passed update session notification jobs
 
 				if (bodyData.start_date && bodyData.start_date !== Number(sessionDetail.start_date)) {
@@ -551,7 +554,7 @@ module.exports = class SessionsHelper {
 					})
 				}
 			}
-			if (method == common.DELETE_METHOD || isSessionReschedule) {
+			if (method == common.DELETE_METHOD || isSessionReschedule || isSessionDataChanged) {
 				const sessionAttendees = await sessionAttendeesQueries.findAll({
 					session_id: sessionId,
 				})
@@ -562,9 +565,9 @@ module.exports = class SessionsHelper {
 
 				// if session created by manager add mentor_id to attendees list.
 				// So that mail can be also send to mentor
-				if (isSessionCreatedByManager) {
-					sessionAttendeesIds.push(sessionDetail.mentor_id)
-				}
+				// if ((isSessionCreatedByManager && method == common.DELETE_METHOD) || onlySessionTitleIsChanged) {
+				// 	sessionAttendeesIds.push(sessionDetail.mentor_id)
+				// }
 
 				const attendeesAccounts = await userRequests.getListOfUserDetails(sessionAttendeesIds)
 
@@ -578,28 +581,30 @@ module.exports = class SessionsHelper {
 						}
 					}
 				})
-				let mentorNotificationDetails = {}
-				if (isSessionCreatedByManager) {
-					// From attendeesAccounts Array find the mentor_data
-					let mentorDetails = attendeesAccounts.result.find(
-						(element) => element.id === sessionDetail.mentor_id
-					)
-					// If session is deleted by manager email needs to send to mentor also
-					;(mentorNotificationDetails.id = mentorDetails.id),
-						(mentorNotificationDetails.attendeeEmail = mentorDetails.email)
-					mentorNotificationDetails.attendeeName = mentorDetails.name
-					sessionAttendees.push(mentorNotificationDetails)
-				}
+				// let mentorNotificationDetails = {}
+				// if ((isSessionCreatedByManager && method == common.DELETE_METHOD)  || onlySessionTitleIsChanged) {
+				// 	// From attendeesAccounts Array find the mentor_data
+				// 	let mentorDetails = attendeesAccounts.result.find(
+				// 		(element) => element.id === sessionDetail.mentor_id
+				// 	)
+				// 	// If session is deleted by manager email needs to send to mentor also
+				// 	;(mentorNotificationDetails.id = mentorDetails.id),
+				// 		(mentorNotificationDetails.attendeeEmail = mentorDetails.email)
+				// 	mentorNotificationDetails.attendeeName = mentorDetails.name
+				// 	sessionAttendees.push(mentorNotificationDetails)
+				// }
 
 				/* Find email template according to request type */
 				let templateData
+				let mentorEmailTemplate
 				if (method == common.DELETE_METHOD) {
 					let sessionDeleteEmailTemplate
 					isSessionCreatedByManager
 						? (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE)
 						: (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE)
 					templateData = await notificationQueries.findOneEmailTemplate(sessionDeleteEmailTemplate, orgId)
-				} else if (isSessionReschedule) {
+					mentorEmailTemplate = sessionDeleteEmailTemplate
+				} else if (isSessionReschedule && !isSessionCreatedByManager) {
 					templateData = await notificationQueries.findOneEmailTemplate(
 						process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE,
 						orgId
@@ -607,8 +612,17 @@ module.exports = class SessionsHelper {
 					console.log('Session rescheduled email code:', process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE)
 
 					console.log('Session rescheduled Template Data:', templateData)
+				} else if (isSessionDataChanged) {
+					// session is edited by the manager
+					// if only title is changed. then a different email has to send to mentor and mentees
+					let sessionUpdateByMangerTemplate
+					onlySessionTitleIsChanged
+						? (sessionUpdateByMangerTemplate = process.env.SESSION_TITLE_EDITED_BY_MANAGER_EMAIL_TEMPLATE)
+						: (sessionUpdateByMangerTemplate = process.env.MENTEE_SESSION_EDITED_BY_MANAGER_EMAIL_TEMPLATE)
+					templateData = await notificationQueries.findOneEmailTemplate(sessionUpdateByMangerTemplate, orgId)
+					mentorEmailTemplate = process.env.MENTOR_SESSION_EDITED_BY_MANAGER_EMAIL_TEMPLATE
 				}
-
+				// send mail associated with action to session mentees
 				sessionAttendees.forEach(async (attendee) => {
 					if (method == common.DELETE_METHOD) {
 						let duration = moment.duration(
@@ -699,6 +713,17 @@ module.exports = class SessionsHelper {
 						console.log('Session attendee mapped, isSessionReschedule true and kafka res: ', kafkaRes)
 					}
 				})
+				// send mail to mentor if session is created and handled by a manager
+				if (isSessionCreatedByManager) {
+					console.log('entering to mentors mail section++')
+					let response = await this.pushSessionRelatedMentorEmailToKafka(
+						mentorEmailTemplate,
+						orgId,
+						sessionDetail.dataValues,
+						method == common.DELETE_METHOD ? {} : updatedRows[0].dataValues
+					)
+					console.log('Response ', response)
+				}
 			}
 
 			return common.successResponse({
@@ -1010,7 +1035,7 @@ module.exports = class SessionsHelper {
 				time_zone: timeZone,
 				type: enrollmentType,
 			}
-			console.log('+++++++++++++++++++++++++++enrollmentType', enrollmentType, emailTemplateCode)
+
 			await sessionAttendeesQueries.create(attendee)
 			await sessionEnrollmentQueries.create(_.omit(attendee, 'time_zone'))
 
@@ -1623,10 +1648,8 @@ module.exports = class SessionsHelper {
 
 	static async addMentees(sessionId, menteeIds, timeZone) {
 		try {
-			console.log('Inside addMentee function')
 			// check if session exists or not
 			const sessionDetails = await sessionQueries.findOne({ id: sessionId })
-			console.log('sessionDetails : ', sessionDetails)
 			if (!sessionDetails || Object.keys(sessionDetails).length === 0) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -1634,10 +1657,9 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			console.log('menteeIds : ', menteeIds)
+
 			// Get mentee name and email from user service
 			const menteeAccounts = await userRequests.getListOfUserDetails(menteeIds)
-			console.log('menteeAccounts : ', menteeAccounts)
 			if (!menteeAccounts.result || !menteeAccounts.result.length > 0) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -1658,8 +1680,6 @@ module.exports = class SessionsHelper {
 			const enrollPromises = menteeDetails.map((menteeData) => {
 				return this.enroll(sessionId, menteeData, timeZone, false)
 					.then((response) => {
-						console.log('Response ::::::::::::::::::::', response)
-						console.log('response.statusCode', response.statusCode, httpStatusCode.created)
 						if (response.statusCode == httpStatusCode.created) {
 							// Enrolled successfully
 							successIds.push(menteeData.id)
@@ -1674,12 +1694,6 @@ module.exports = class SessionsHelper {
 					})
 			})
 
-			// const enrollPromises = menteeDetails.map(menteeData => {
-			// return this.enroll(sessionId, menteeData, timeZone, false)
-			// 	.then(response => console.log(`Enrollment successful for menteeId: ${menteeData.id}`,response))
-			// 	.catch(error => console.error(`Enrollment failed for menteeId++++++++++++++++++++++++++++++++++++++++: ${menteeData.id}`, error));
-			// });
-
 			// Wait for all promises to settle
 			await Promise.all(enrollPromises)
 			console.log('failedIdsfailedIds : ', failedIds)
@@ -1691,23 +1705,6 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			// let menteeDetails = []
-			// menteeIds.forEach((attendee) => {
-			// 	for (const element of menteeAccounts.result) {
-			// 		if (element.id == attendee) {
-			// 			let menteeData = {}
-			// 			menteeData.email = element.email
-			// 			menteeData.name = element.name
-			// 			menteeData.id = element.id
-			// 			menteeDetails.push(menteeData)
-			// 			break
-			// 		}
-			// 	}
-			// })
-			console.log('menteeIds  After : ', menteeDetails)
-
-			// Enrol mentees to the given session
 
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
@@ -1793,6 +1790,71 @@ module.exports = class SessionsHelper {
 				statusCode: httpStatusCode.created,
 				message: 'USER_UNENROLLED_SUCCESSFULLY',
 			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	static async pushSessionRelatedMentorEmailToKafka(templateCode, orgId, sessionDetail, updatedSessionDetails = {}) {
+		try {
+			const userDetails = (await userRequests.details('', sessionDetail.mentor_id)).data.result
+			console.log('Line 1793 : ', userDetails)
+			// Fetch email template
+			const templateData = await notificationQueries.findOneEmailTemplate(templateCode, orgId)
+			let duration = moment.duration(
+				moment.unix(sessionDetail.end_date).diff(moment.unix(sessionDetail.start_date))
+			)
+			// Construct data
+			const payload = {
+				type: 'email',
+				email: {
+					to: userDetails.email,
+					subject: templateData.subject,
+					body: utils.composeEmailBody(templateData.body, {
+						name: userDetails.name,
+						sessionTitle: updatedSessionDetails.title,
+						sessionDuration: duration,
+						oldStartDate: utils.getTimeZone(
+							sessionDetail.start_date,
+							common.dateFormat,
+							sessionDetail.time_zone
+						),
+						oldStartTime: utils.getTimeZone(
+							sessionDetail.start_date,
+							common.timeFormat,
+							sessionDetail.time_zone
+						),
+						// oldEndDate: utils.getTimeZone(sessionDetail.end_date, common.dateFormat, sessionDetail.time_zone),
+						// oldEndTime: utils.getTimeZone(sessionDetail.end_date, common.timeFormat, sessionDetail.time_zone),
+						startDate: utils.getTimeZone(
+							updatedSessionDetails['start_date']
+								? updatedSessionDetails['start_date']
+								: sessionDetail.start_date,
+							common.dateFormat,
+							sessionDetail.time_zone
+						),
+						endTime: utils.getTimeZone(
+							updatedSessionDetails['start_date']
+								? updatedSessionDetails['start_date']
+								: sessionDetail.start_date,
+							common.timeFormat,
+							sessionDetail.time_zone
+						),
+						// newEndDate: utils.getTimeZone(updatedSessionDetails['end_date'] ? updatedSessionDetails['end_date'] : sessionDetail.end_date, common.dateFormat, sessionDetail.time_zone),
+						// newEndTime: utils.getTimeZone(updatedSessionDetails['end_date'] ? updatedSessionDetails['end_date'] : sessionDetail.end_date, common.timeFormat, sessionDetail.time_zone),
+					}),
+				},
+			}
+
+			// Push to Kafka
+			const kafkaRes = await kafkaCommunication.pushEmailToKafka(payload)
+
+			// Log details
+			console.log('Kafka payload:', payload)
+			console.log('Session attendee mapped, isSessionReschedule true, and kafka res: ', kafkaRes)
+
+			// Add any additional logic if needed
 		} catch (error) {
 			console.log(error)
 			throw error
