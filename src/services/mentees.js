@@ -1047,8 +1047,9 @@ module.exports = class MenteesHelper {
 					},
 				})
 			}
+			const userIds = userDetails.data.result.data.map((item) => item.id)
 			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
-				userDetails.data.result.data.map((item) => item.id),
+				userIds,
 				null,
 				null,
 				filteredQuery,
@@ -1057,7 +1058,7 @@ module.exports = class MenteesHelper {
 				false
 			)
 			mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
-				[],
+				userIds,
 				null,
 				null,
 				filteredQuery,

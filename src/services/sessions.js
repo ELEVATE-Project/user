@@ -1739,7 +1739,7 @@ module.exports = class SessionsHelper {
 
 				return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
 			})
-			if (queryParams.csv) {
+			if (queryParams?.csv) {
 				const CSVFields = [
 					{ label: 'Name', value: 'name' },
 					{ label: 'Designation', value: 'designation' },
