@@ -282,4 +282,22 @@ module.exports = class Sessions {
 			return error
 		}
 	}
+	/**
+	 * Retrieves details of mentees enrolled in a session.
+	 * @method
+	 * @name enrolledMentees
+	 * @param {Object} req - Request data.
+	 * @param {string} req.params.id - ID of the session.
+	 * @param {Object} req.query - Query params.
+	 * @returns {Object} - Success response with details of enrolled mentees.
+	 * @throws {Error} - Throws an error if there's an issue during data retrieval.
+	 */
+
+	async enrolledMentees(req) {
+		try {
+			return await sessionService.enrolledMentees(req.params.id, req.query)
+		} catch (error) {
+			throw error
+		}
+	}
 }

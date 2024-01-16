@@ -805,6 +805,121 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Enrolled Mentees",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enrolledMentees/:id?csv=true",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "enrolledMentees", ":id"],
+							"query": [
+								{
+									"key": "csv",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "6",
+									"description": "Session ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Enrolled Mentees",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enrolledMentees/:id?csv=true",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "sessions", "enrolledMentees", ":id"],
+									"query": [
+										{
+											"key": "csv",
+											"value": "true"
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "6",
+											"description": "Session ID"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "d7a2a60d-2018-45cb-8817-1ba304808c13"
+								},
+								{
+									"key": "Content-disposition",
+									"value": "attachment; filename=session_list_6_1705405428558.csv"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "284"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"11c-iS4MjnTqdBA2EHU7ogpgtKJht1c\""
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 16 Jan 2024 11:43:48 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "\"Name\",\"Designation\",\"Organization\",\"E-mail ID\",\"Enrollment Type\"\n\"priyanka\",\"Block education officer, District education officer\",\"Default Organization\",\"f9359474815816b30fcb515a2e935322c7e6a376367bb9792d1f1a11c78181be\",\n\"Nevil M\",\"test\",\"Default Organization\",\"nevil@tunerlabs.com\","
+						}
+					]
 				}
 			]
 		},
@@ -940,6 +1055,61 @@
 									"key": "filterType",
 									"value": "QUARTERLY",
 									"description": "Accepted values : MONTHLY,WEEKLY and QUARTERLY"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mentee List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/list?page=1&session_id=6",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "list"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "2",
+									"description": "Limit",
+									"disabled": true
+								},
+								{
+									"key": "search",
+									"value": "aW50cm8=",
+									"description": "Base64 encoded search text",
+									"disabled": true
+								},
+								{
+									"key": "area_of_expertise",
+									"value": "school_process,sqaa",
+									"description": "Filters to be applied should be passed like this",
+									"disabled": true
+								},
+								{
+									"key": "designation",
+									"value": "deo,beo",
+									"description": "Filters to be applied should be passed like this",
+									"disabled": true
+								},
+								{
+									"key": "session_id",
+									"value": "6",
+									"description": "To get is_enrolled flag"
 								}
 							]
 						}
@@ -1619,8 +1789,7 @@
 							{
 								"key": "internal_access_token",
 								"value": "{{internal_access_token}}",
-								"type": "text",
-								"disabled": true
+								"type": "text"
 							},
 							{
 								"key": "X-auth-token",
