@@ -149,20 +149,22 @@ module.exports = async function (req, res, next) {
 		if (apiPermissions) {
 			const roleIds = decodedToken.data.roles.map((role) => role.id)
 			const filter = { role_id: roleIds }
+			const attributes = ['actions', 'module']
 			const [requiredPermission, rolePermission] = await Promise.all([
 				fetchApiPermissions(req.path),
-				rolePermissionMappingQueries.find(filter),
+				rolePermissionMappingQueries.find(filter, attributes),
 			])
 
-			const actionsAndModules = rolePermission.map((instance) => ({
-				actions: instance.dataValues.actions,
-				module: instance.dataValues.module,
-			}))
-			const matchingEntry = actionsAndModules.find(
-				(entry) => entry.actions === requiredPermission.actions && entry.module === requiredPermission.module
-			)
+			const isMatchingEntry = rolePermission.some((entry) => {
+				const actionsMatch =
+					entry.actions.length === requiredPermission.actions.length &&
+					entry.actions.every((action, index) => action === requiredPermission.actions[index])
+				return actionsMatch && entry.module === requiredPermission.module
+			})
 
-			if (!matchingEntry) {
+			//console.log()
+
+			if (!isMatchingEntry) {
 				throw common.failureResponse({
 					message: 'PERMISSION_DENIED',
 					statusCode: httpStatusCode.unauthorized,
@@ -170,6 +172,7 @@ module.exports = async function (req, res, next) {
 				})
 			}
 		}
+
 		req.decodedToken = {
 			id: decodedToken.data.id,
 			roles: decodedToken.data.roles,

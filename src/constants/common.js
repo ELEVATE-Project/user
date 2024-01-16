@@ -76,6 +76,7 @@ module.exports = {
 	],
 	apiPermissionsUrls: [
 		{ path: '/mentoring/v1/sessions/update', actions: ['WRITE', 'UPDATE', 'READ'], module: 'manage_session' },
+		{ path: '/mentoring/v1/mentees/list', actions: ['READ'], module: 'manage_session' },
 	],
 	DELETE_METHOD: 'DELETE',
 	dateFormat: 'dddd, Do MMMM YYYY',
