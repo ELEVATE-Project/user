@@ -593,14 +593,8 @@ exports.getUpcomingSessionsFromView = async (
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
 
-		let publicSessionFilter = " OR visibility = '" + common.SESSION_TYPE.PUBLIC + "'"
+		let publicSessionFilter = " AND type = '" + common.SESSION_TYPE.PUBLIC + "'"
 
-		if (filterClause) {
-			publicSessionFilter = publicSessionFilter + filterClause
-		}
-		if (search) {
-			publicSessionFilter = publicSessionFilter + ' AND title ILIKE :search'
-		}
 		// Create selection clause
 		let projectionClause = `
 			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
