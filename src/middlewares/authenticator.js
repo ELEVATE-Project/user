@@ -159,8 +159,7 @@ module.exports = async function (req, res, next) {
 				module: instance.dataValues.module,
 			}))
 			const matchingEntry = actionsAndModules.find(
-				(entry) =>
-					entry.actions[0] === requiredPermission.actions[0] && entry.module === requiredPermission.module
+				(entry) => entry.actions === requiredPermission.actions && entry.module === requiredPermission.module
 			)
 
 			if (!matchingEntry) {
