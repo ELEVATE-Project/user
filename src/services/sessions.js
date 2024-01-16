@@ -32,6 +32,7 @@ const organisationExtensionQueries = require('@database/queries/organisationExte
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteeService = require('@services/mentees')
+const { diff, addedDiff, deletedDiff, updatedDiff, detailedDiff } = require('deep-object-diff')
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
@@ -333,14 +334,16 @@ module.exports = class SessionsHelper {
 		let isSessionReschedule = false
 		let isSessionCreatedByManager = false
 		try {
-			// To determine the session is created by manager or mentor we need to fetc the session details first
+			// To determine the session is created by manager or mentor we need to fetch the session details first
 			// Then compare mentor_id and created_by information
 			// If manager is the session creator then no need to check Mentor extension data
 			const sessionDetail = await sessionQueries.findById(sessionId)
+			console.log('session to update : ', sessionDetail)
 			if (
-				sessionDetail.mentor_id &&
-				sessionDetail.created_by &&
-				sessionDetail.mentor_id !== sessionDetail.created_by
+				(sessionDetail.mentor_id &&
+					sessionDetail.created_by &&
+					sessionDetail.mentor_id !== sessionDetail.created_by) ||
+				bodyData.mentee
 			) {
 				isSessionCreatedByManager = true
 			}
@@ -469,7 +472,36 @@ module.exports = class SessionsHelper {
 					})
 				}
 			} else {
-				const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, bodyData)
+				// If the api is called for updating the session details execution flow enters to this  else block
+				// If request body contains mentees field enroll/unenroll mentees from the session
+				if (bodyData.mentees) {
+					// Fetch mentees currently enrolled to the session
+					const sessionAttendees = await sessionAttendeesQueries.findAll({
+						session_id: sessionId,
+					})
+					let sessionAttendeesIds = []
+					sessionAttendees.forEach((attendee) => {
+						sessionAttendeesIds.push(attendee.mentee_id)
+					})
+					console.log('session current mentees ids : ', sessionAttendeesIds)
+					// Filter mentees to enroll/unEnroll
+					const { menteesToRemove, menteesToAdd } = await this.filterMenteesToAddAndRemove(
+						sessionAttendees,
+						updatedMentees
+					)
+
+					console.log('Mentees to Remove:', menteesToRemove)
+					console.log('Mentees to Add:', menteesToAdd)
+
+					// Enroll newly added mentees by manager t the session
+					await this.addMentees(sessionId, menteesToAdd, bodyData.time_zone)
+
+					// unenroll mentees
+					await this.removeMentees(sessionId, menteesToRemove, bodyData.time_zone)
+				}
+				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
+					returning: true,
+				})
 				if (rowsAffected == 0) {
 					return common.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
@@ -478,7 +510,8 @@ module.exports = class SessionsHelper {
 					})
 				}
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
-
+				console.log('Updated session details :<<<<<<>>>>>', updatedRows, rowsAffected)
+				console.log('updated keys are : ', updatedDiff(sessionDetail.dataValues, updatedRows[0].dataValues))
 				// If new start date is passed update session notification jobs
 
 				if (bodyData.start_date && bodyData.start_date !== Number(sessionDetail.start_date)) {
@@ -1764,5 +1797,30 @@ module.exports = class SessionsHelper {
 			console.log(error)
 			throw error
 		}
+	}
+}
+
+/**
+ * This function used to find menteeIds to enroll and unEnroll based on the arrays passed
+ * @method
+ * @name filterMenteesToAddAndRemove
+ * @param {Array} existingMentees 				- mentee_ids enrolled to a session.
+ * @param {Array} updatedMentees				- latest mentee ids to update
+ * @returns {Object} 							- mentees to enroll and unenroll
+ */
+
+function filterMenteesToAddAndRemove(existingMentees, updatedMentees) {
+	// Find the intersection
+	const intersection = _.intersection(existingMentees, updatedMentees)
+
+	// Find mentees to remove (unenroll)
+	const menteesToRemove = _.difference(existingMentees, intersection)
+
+	// Find mentees to add (enroll)
+	const menteesToAdd = _.difference(updatedMentees, intersection)
+
+	return {
+		menteesToRemove,
+		menteesToAdd,
 	}
 }
