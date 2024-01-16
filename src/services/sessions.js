@@ -1761,7 +1761,7 @@ module.exports = class SessionsHelper {
 						statusCode: httpStatusCode.ok,
 						isResponseAStream: true,
 						stream: csv,
-						fileName: 'session_list_' + sessionId + '_' + moment() + '.csv',
+						fileName: 'mentee_list_' + sessionId + '_' + moment() + '.csv',
 					})
 				}
 
