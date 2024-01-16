@@ -148,8 +148,12 @@ module.exports = async function (req, res, next) {
 
 		if (apiPermissions) {
 			const roleIds = decodedToken.data.roles.map((role) => role.id)
-			const requiredpermission = await fetchApiPermissions(req.path)
-			const fetchpermission = await rolePermissionMappingQueries.find(roleIds)
+			const filter = { role_id: roleIds }
+			const [requiredpermission, fetchpermission] = await Promise.all([
+				fetchApiPermissions(req.path),
+				rolePermissionMappingQueries.find(filter),
+			])
+
 			const actionsAndModules = fetchpermission.map((instance) => ({
 				actions: instance.dataValues.actions,
 				module: instance.dataValues.module,
