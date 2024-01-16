@@ -58,8 +58,8 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const userRoles = roles.map((role) => role.id)
-		const permissionAndModules = await rolePermissionMappingQueries.find(userRoles)
+		const userRoleIds = roles.map((role) => role.id)
+		const permissionAndModules = await rolePermissionMappingQueries.find(userRoleIds)
 		const permissionsByModule = {}
 
 		permissionAndModules.forEach((rolePermission) => {
@@ -73,7 +73,7 @@ module.exports = class MenteesHelper {
 			}
 		})
 
-		const resultArray = Object.entries(permissionsByModule).map(([key, value]) => ({
+		const permissions = Object.entries(permissionsByModule).map(([key, value]) => ({
 			module: value.module,
 			actions: value.actions,
 		}))
@@ -84,7 +84,7 @@ module.exports = class MenteesHelper {
 			result: {
 				sessions_attended: totalSession,
 				...menteeDetails.data.result,
-				permissions: resultArray,
+				permissions: permissions,
 				...processDbResponse,
 			},
 		})
