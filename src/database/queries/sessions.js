@@ -592,6 +592,15 @@ exports.getUpcomingSessionsFromView = async (
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
+
+		let publicSessionFilter = " OR visibility = '" + common.SESSION_TYPE.PUBLIC + "'"
+
+		if (filterClause) {
+			publicSessionFilter = publicSessionFilter + filterClause
+		}
+		if (search) {
+			publicSessionFilter = publicSessionFilter + ' AND title ILIKE :search'
+		}
 		// Create selection clause
 		let projectionClause = `
 			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
@@ -612,6 +621,7 @@ exports.getUpcomingSessionsFromView = async (
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
 			${saasFilterClause}
+			${publicSessionFilter}
 		OFFSET
 			:offset
 		LIMIT
