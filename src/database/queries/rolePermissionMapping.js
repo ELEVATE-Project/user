@@ -22,7 +22,7 @@ exports.delete = async (filter) => {
 exports.find = async (filter) => {
 	try {
 		return RolePermissionMapping.findAll({
-			where: { role_id: filter },
+			where: filter,
 		})
 	} catch (error) {
 		throw error
