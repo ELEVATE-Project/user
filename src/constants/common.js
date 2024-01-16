@@ -158,4 +158,5 @@ module.exports = {
 	INVITED: 'INVITED',
 	ENROLLED: 'ENROLLED',
 	PRIVATE: 'PRIVATE',
+	UNIT_OF_TIME: 'minutes',
 }
