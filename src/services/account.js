@@ -1129,7 +1129,7 @@ module.exports = class AccountHelper {
 			)
 
 			const roleIds = roles.map((role) => role.id)
-
+			let emailIds = []
 			let searchText = []
 
 			if (params.searchText) {
