@@ -1648,7 +1648,6 @@ module.exports = class SessionsHelper {
 				limit: limit,
 			})
 
-			
 			const formattedSessionList = sessions.rows.map((session, index) => ({
 				id: session.id,
 				index_number: index + 1 + limit * (page - 1), //To keep consistency with pagination

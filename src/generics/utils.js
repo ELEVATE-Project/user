@@ -598,6 +598,8 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 			relatedOrganizations = userOrgDetails.data.result.related_orgs
 			if (relatedOrganizations) {
 				relatedOrganizations.push(userPolicyDetails.organization_id)
+			} else {
+				relatedOrganizations = []
 			}
 
 			// Filter user data based on policy
@@ -619,7 +621,7 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 				 * We need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 				 * OR if mentor visibility is ALL that mentor is also accessible
 				 */
-				if (userOrgDetails.data.result.related_orgs.length == 0) {
+				if (relatedOrganizations.length == 0) {
 					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
 				} else {
 					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${relatedOrganizations})`
