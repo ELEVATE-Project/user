@@ -945,6 +945,42 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Mentees list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/list?search=searchText&page=1&limit=20",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "list"],
+							"query": [
+								{
+									"key": "search",
+									"value": "searchText",
+									"description": "search with full/partial name or full email"
+								},
+								{
+									"key": "designation",
+									"value": "deo",
+									"description": "designation code. comma separated, if multiple"
+								},
+								{
+									"key": "organization_ids",
+									"value": "1,2",
+									"description": "organization ids. comma separated, if multiple"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

@@ -974,9 +974,11 @@ module.exports = class MenteesHelper {
 			for (let key in queryParams) {
 				if (queryParams.hasOwnProperty(key) & (key === 'search')) {
 					searchQuery = queryParams[key]
-				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
 					organization_ids = queryParams[key].split(',')
-				} else if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
 					designation = queryParams[key].split(',')
 				}
 			}
@@ -1081,6 +1083,11 @@ module.exports = class MenteesHelper {
 			// update count after filters
 			userDetails.data.result.count = userDetails.data.result.count
 
+			// add index number to the response
+			userDetails.data.result.data = userDetails.data.result.data.map((data, index) => ({
+				...data,
+				index_number: index + 1 + pageSize * (pageNo - 1), //To keep consistency with pagination
+			}))
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,
