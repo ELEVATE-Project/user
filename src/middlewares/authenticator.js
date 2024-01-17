@@ -162,8 +162,6 @@ module.exports = async function (req, res, next) {
 				return actionsMatch && entry.module === requiredPermission.module
 			})
 
-			//console.log()
-
 			if (!isMatchingEntry) {
 				throw common.failureResponse({
 					message: 'PERMISSION_DENIED',

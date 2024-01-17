@@ -8,7 +8,7 @@ const Permissions = require('@database/models/index').Permission
 
 let matchingResults
 
-const updateMentorNamesBasedOnRole = async () => {
+const getRoleIds = async () => {
 	try {
 		const response = await userRequests.getListOfUserRoles(
 			common.pagination.DEFAULT_PAGE_NO,
@@ -65,7 +65,7 @@ const getPermissionId = async (code, actions) => {
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		try {
-			await updateMentorNamesBasedOnRole()
+			await getRoleIds()
 
 			const rolePermissionsData = [
 				{
