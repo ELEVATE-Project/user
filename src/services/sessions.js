@@ -34,18 +34,25 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteeService = require('@services/mentees')
 const { Parser } = require('@json2csv/plainjs')
 const entityTypeService = require('@services/entity-type')
+const mentorsService = require('@services/mentors')
 
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
+	 *
+	 * @static
+	 * @async
 	 * @method
 	 * @name create
 	 * @param {Object} bodyData - Session creation data.
-	 * @param {String} loggedInUserId - logged in user id.
-	 * @returns {JSON} - Create session data.
+	 * @param {String} loggedInUserId - ID of the logged-in user.
+	 * @param {String} orgId - ID of the organization.
+	 * @param {Boolean} isAMentor - Flag indicating whether the user is a mentor.
+	 * @returns {Promise<Object>} - A promise that resolves with the JSON data of the created session.
+	 * @throws {Error} - Throws an error if there's an issue during session creation.
 	 */
 
-	static async create(bodyData, loggedInUserId, orgId) {
+	static async create(bodyData, loggedInUserId, orgId, isAMentor) {
 		try {
 			bodyData.created_by = loggedInUserId
 			bodyData.updated_by = loggedInUserId
@@ -61,12 +68,15 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const isAccessible = await mentorsService.checkIfMentorIsAccessible(
+				[mentorDetails],
+				loggedInUserId,
+				isAMentor
+			)
+
 			if (!bodyData.mentor_id) {
 				bodyData.mentor_id = loggedInUserId
-			} else if (
-				mentorDetails.visibility !== common.ASSOCIATED ||
-				!mentorDetails.visible_to_organizations.includes(orgId)
-			) {
+			} else if (!isAccessible) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -266,7 +276,8 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (!sessionDetail.created_by !== userId) {
+
+			if (sessionDetail.created_by !== userId) {
 				return common.failureResponse({
 					message: 'CANNOT_EDIT_DELETE_SESSION',
 					statusCode: httpStatusCode.bad_request,
