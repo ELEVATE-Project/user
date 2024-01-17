@@ -1,0 +1,64 @@
+version: 2.1 # CircleCI version
+orbs:
+  sonarcloud: sonarsource/sonarcloud@1.1.1
+jobs:
+  build:
+    machine: #Linux machine instead of docker environment
+      image: ubuntu-2004:202111-01
+      docker_layer_caching: true
+    working_directory: ~/mentoring # Default working directory
+    steps:
+      - checkout:
+          path: ~/mentoring/
+      - restore_cache:
+          key: mentoring-dependency-cache-{{ checksum "src/package.json" }}
+      - run:
+          name: Install dependencies
+          command: cd src/ && npm install #cd ../src/ && pwd &&
+      - save_cache:
+          key: mentoring-dependency-cache-{{checksum "src/package.json"}}
+          paths:
+            - ./src/node_modules
+      - run:
+          name: Executing unit test cases
+          command: cd src/ && npm run test -- --coverage --collectCoverageFrom="./services/**"
+      - store_artifacts:
+          path: src/coverage/
+          destination: /coverage/
+      - sonarcloud/scan
+      - run:
+          name: Checking prerequisites
+          command: |-
+            docker-compose --version
+      - run:
+          name: Cloning user service
+          command: cd ../ && git clone https://github.com/ELEVATE-Project/user.git --branch dev --single-branch
+      - restore_cache:
+          key: user-dependency-cache-{{ checksum "../user/src/package.json" }}
+      - run:
+          name: Install User service dependencies
+          command: cd ../user/src/ && npm install #cd ../src/ && pwd &&
+      - save_cache:
+          key: user-dependency-cache-{{checksum "../user/src/package.json"}}
+          paths:
+            - ../user/src/node_modules
+      - run:
+          name: Starting the docker containers
+          command: |-
+            cd dev-ops/ && docker-compose up -d
+      - run:
+          name: Running test cases
+          command: |-
+            cd src/ &&  npm run test:integration
+      - store_test_results:
+          path: ./dev-ops/report
+workflows:
+  build-and-test: # This is the name of the workflow,
+    # Inside the workflow, you define the jobs you want to run.
+    jobs:
+      - build:
+          context:
+            - SonarCloud
+          filters:
+            tags:
+              only: \b(dev|develop|main)\b
