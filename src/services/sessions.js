@@ -585,10 +585,12 @@ module.exports = class SessionsHelper {
 				let templateData
 				let mentorEmailTemplate
 				if (method == common.DELETE_METHOD) {
-					let sessionDeleteEmailTemplate
-					isSessionCreatedByManager
-						? (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE)
-						: (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE)
+					let sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE
+					// commenting this part for 2.6 release products confirmed to use the new delete email template for all.
+					// Keeping this logic because if new template for mentor deleting a session is added we can use it.
+					// isSessionCreatedByManager
+					// 	? (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE)
+					// 	: (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE)
 					templateData = await notificationQueries.findOneEmailTemplate(sessionDeleteEmailTemplate, orgId)
 					mentorEmailTemplate = sessionDeleteEmailTemplate
 				} else if (isSessionReschedule && !isSessionCreatedByManager) {
