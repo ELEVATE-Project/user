@@ -46,7 +46,8 @@ module.exports = class Sessions {
 				const sessionCreated = await sessionService.create(
 					req.body,
 					req.decodedToken.id,
-					req.decodedToken.organization_id
+					req.decodedToken.organization_id,
+					isAMentor(req.decodedToken.roles)
 				)
 
 				return sessionCreated
