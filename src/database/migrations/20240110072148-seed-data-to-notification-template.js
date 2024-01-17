@@ -228,7 +228,7 @@ module.exports = {
 		notificationTemplatesData = notificationTemplatesData.map((template) => {
 			return {
 				...template,
-				organization_id: defaultOrgId, // Modify this line to add the desired key-value pair
+				organization_id: defaultOrgId,
 			}
 		})
 
