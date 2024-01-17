@@ -48,4 +48,13 @@ module.exports = {
 
 		req.checkBody('recordingUrl').notEmpty().withMessage('recordingUrl field is empty')
 	},
+	enrolledMentees: (req) => {
+		req.checkParams('id')
+			.notEmpty()
+			.withMessage('id param is empty')
+			.isNumeric()
+			.withMessage('id param is invalid, must be an integer')
+
+		req.checkQuery('csv').optional().isBoolean().withMessage('csv is invalid, must be a boolean value')
+	},
 }

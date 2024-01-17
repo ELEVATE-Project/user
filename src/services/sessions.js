@@ -1709,11 +1709,15 @@ module.exports = class SessionsHelper {
 
 	/**
 	 * Get details of mentees enrolled in a session, including their extension details.
+	 *
+	 * @static
+	 * @async
 	 * @method
 	 * @name enrolledMentees
 	 * @param {string} sessionId - ID of the session.
-	 * @param {Object} req.query - Query params.
-	 * @returns {Object} - Success response with details of enrolled mentees.
+	 * @param {Object} queryParams - Query parameters.
+	 * @param {string} userID - ID of the user making the request.
+	 * @returns {Promise<Object>} - A promise that resolves with the success response containing details of enrolled mentees.
 	 * @throws {Error} - Throws an error if there's an issue during data retrieval.
 	 */
 	static async enrolledMentees(sessionId, queryParams, userID) {
@@ -1731,16 +1735,29 @@ module.exports = class SessionsHelper {
 			}
 			const mentees = await sessionAttendeesQueries.findAll({ session_id: sessionId })
 			const menteeIds = mentees.map((mentee) => mentee.mentee_id)
-
+			const options = {
+				attributes: {
+					exclude: [
+						'rating',
+						'stats',
+						'tags',
+						'configs',
+						'visibility',
+						'visible_to_organizations',
+						'external_session_visibility',
+						'external_mentor_visibility',
+						'experience',
+					],
+				},
+			}
 			const [menteeDetails, mentorDetails, attendeesAccounts] = await Promise.all([
-				menteeExtensionQueries.getUsersByUserIds(menteeIds),
-				mentorExtensionQueries.getMentorsByUserIds(menteeIds),
+				menteeExtensionQueries.getUsersByUserIds(menteeIds, options),
+				mentorExtensionQueries.getMentorsByUserIds(menteeIds, options),
 				userRequests.getListOfUserDetails(menteeIds).then((result) => result.result),
 			])
 
 			// Combine details of mentees and mentors
 			let enrolledUsers = [...menteeDetails, ...mentorDetails]
-
 			// Process entity types to add value labels
 			const uniqueOrgIds = [...new Set(enrolledUsers.map((user) => user.organization_id))]
 			enrolledUsers = await entityTypeService.processEntityTypesToAddValueLabels(
@@ -1809,17 +1826,8 @@ module.exports = class SessionsHelper {
 			}
 			const propertiesToDelete = [
 				'user_id',
-				'visibility',
 				'organization_id',
 				'meta',
-				'rating',
-				'stats',
-				'tags',
-				'configs',
-				'visible_to_organizations',
-				'external_session_visibility',
-				'external_mentor_visibility',
-				'experience',
 				'email_verified',
 				'gender',
 				'location',
