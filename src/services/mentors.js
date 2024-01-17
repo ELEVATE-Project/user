@@ -706,7 +706,7 @@ module.exports = class MentorsHelper {
 			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
-			if (designation) {
+			if (designation.length > 0) {
 				filteredQuery.designation = designation
 			}
 
