@@ -1708,8 +1708,19 @@ module.exports = class SessionsHelper {
 	 * @returns {Object} - Success response with details of enrolled mentees.
 	 * @throws {Error} - Throws an error if there's an issue during data retrieval.
 	 */
-	static async enrolledMentees(sessionId, queryParams) {
+	static async enrolledMentees(sessionId, queryParams, userID) {
 		try {
+			const session = await sessionQueries.findOne({
+				id: sessionId,
+				[Op.or]: [{ mentor_id: userID }, { created_by: userID }],
+			})
+			if (!session) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const mentees = await sessionAttendeesQueries.findAll({ session_id: sessionId })
 			const menteeIds = mentees.map((mentee) => mentee.mentee_id)
 

@@ -1109,7 +1109,7 @@ module.exports = class MenteesHelper {
 			userDetails.data.result.count = userDetails.data.result.count
 
 			if (queryParams.session_id) {
-				const enrolledMentees = await sessionService.enrolledMentees(queryParams.session_id)
+				const enrolledMentees = await sessionService.enrolledMentees(queryParams.session_id, '', userId)
 				const enrolledMenteeIds = enrolledMentees.result.map((enrolledMentee) => enrolledMentee.id)
 
 				userDetails.data.result.data.forEach((user) => {

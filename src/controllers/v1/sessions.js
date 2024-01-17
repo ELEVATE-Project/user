@@ -295,7 +295,7 @@ module.exports = class Sessions {
 
 	async enrolledMentees(req) {
 		try {
-			return await sessionService.enrolledMentees(req.params.id, req.query)
+			return await sessionService.enrolledMentees(req.params.id, req.query, req.decodedToken.id)
 		} catch (error) {
 			throw error
 		}
