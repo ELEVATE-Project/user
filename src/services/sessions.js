@@ -26,24 +26,26 @@ const schedulerRequest = require('@requests/scheduler')
 const bigBlueButtonRequests = require('@requests/bigBlueButton')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
-const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteeService = require('@services/mentees')
 const { updatedDiff } = require('deep-object-diff')
+const mentorsService = require('@services/mentors')
+
 module.exports = class SessionsHelper {
 	/**
 	 * Create session.
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData - Session creation data.
-	 * @param {String} loggedInUserId - logged in user id.
-	 * @returns {JSON} - Create session data.
+	 * @param {Object} bodyData 			- Session creation data.
+	 * @param {String} loggedInUserId 		- logged in user id.
+	 * @param {Boolean} isAMentor 			- indicates if user is mentor or not
+	 * @returns {JSON} 						- Create session data.
 	 */
 
-	static async create(bodyData, loggedInUserId, orgId) {
+	static async create(bodyData, loggedInUserId, orgId, isAMentor) {
 		try {
 			// If type is passed store it in upper case
 			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
@@ -74,15 +76,15 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			const isAccessible = await mentorsService.checkIfMentorIsAccessible(
+				[mentorDetails],
+				loggedInUserId,
+				isAMentor
+			)
 			// update mentor Id in session creation data
-			// Bug : found in else if case, which nevil will be updating
 			if (!bodyData.mentor_id) {
 				bodyData.mentor_id = loggedInUserId
-			} else if (
-				mentorDetails.visibility !== common.ASSOCIATED ||
-				!mentorDetails.visible_to_organizations.includes(orgId)
-			) {
+			} else if (!isAccessible) {
 				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
