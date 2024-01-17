@@ -1706,4 +1706,156 @@ module.exports = class SessionsHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Get details of mentees enrolled in a session, including their extension details.
+	 *
+	 * @static
+	 * @async
+	 * @method
+	 * @name enrolledMentees
+	 * @param {string} sessionId - ID of the session.
+	 * @param {Object} queryParams - Query parameters.
+	 * @param {string} userID - ID of the user making the request.
+	 * @returns {Promise<Object>} - A promise that resolves with the success response containing details of enrolled mentees.
+	 * @throws {Error} - Throws an error if there's an issue during data retrieval.
+	 */
+	static async enrolledMentees(sessionId, queryParams, userID) {
+		try {
+			const session = await sessionQueries.findOne({
+				id: sessionId,
+				[Op.or]: [{ mentor_id: userID }, { created_by: userID }],
+			})
+			if (!session) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const mentees = await sessionAttendeesQueries.findAll({ session_id: sessionId })
+			const menteeIds = mentees.map((mentee) => mentee.mentee_id)
+			const options = {
+				attributes: {
+					exclude: [
+						'rating',
+						'stats',
+						'tags',
+						'configs',
+						'visibility',
+						'visible_to_organizations',
+						'external_session_visibility',
+						'external_mentor_visibility',
+						'experience',
+					],
+				},
+			}
+			const [menteeDetails, mentorDetails, attendeesAccounts] = await Promise.all([
+				menteeExtensionQueries.getUsersByUserIds(menteeIds, options),
+				mentorExtensionQueries.getMentorsByUserIds(menteeIds, options),
+				userRequests.getListOfUserDetails(menteeIds).then((result) => result.result),
+			])
+
+			// Combine details of mentees and mentors
+			let enrolledUsers = [...menteeDetails, ...mentorDetails]
+			// Process entity types to add value labels
+			const uniqueOrgIds = [...new Set(enrolledUsers.map((user) => user.organization_id))]
+			enrolledUsers = await entityTypeService.processEntityTypesToAddValueLabels(
+				enrolledUsers,
+				uniqueOrgIds,
+				[await menteeExtensionQueries.getModelName(), await mentorExtensionQueries.getModelName()],
+				'organization_id'
+			)
+
+			// Merge arrays based on user_id and id
+			const mergedUserArray = enrolledUsers.map((user) => {
+				const matchingUserDetails = attendeesAccounts.find((details) => details.id === user.user_id)
+
+				// Merge properties from user and matchingUserDetails
+
+				return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
+			})
+			if (queryParams?.csv) {
+				const CSVFields = [
+					{ label: 'Name', value: 'name' },
+					{ label: 'Designation', value: 'designation' },
+					{ label: 'Organization', value: 'organization' },
+					{ label: 'E-mail ID', value: 'email' },
+					{ label: 'Enrollment Type', value: 'type' },
+				]
+
+				//Return an empty CSV if list is empty
+				if (mergedUserArray.length == 0) {
+					const parser = new Parser({
+						fields: CSVFields,
+						header: true,
+						includeEmptyRows: true,
+						defaultValue: null,
+					})
+					const csv = parser.parse()
+					return common.successResponse({
+						statusCode: httpStatusCode.ok,
+						isResponseAStream: true,
+						stream: csv,
+						fileName: 'mentee_list_' + sessionId + '_' + moment() + '.csv',
+					})
+				}
+
+				const parser = new Parser({
+					fields: CSVFields,
+					header: true,
+					includeEmptyRows: true,
+					defaultValue: null,
+				})
+				const csv = parser.parse(
+					mergedUserArray.map((user) => ({
+						name: user.name,
+						designation: user.designation.map((designation) => designation.label).join(', '), // Assuming designation is an array
+						email: user.email,
+						type: user.type,
+						organization: user.organization.name,
+					}))
+				)
+
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					isResponseAStream: true,
+					stream: csv,
+					fileName: 'mentee_list_' + sessionId + '_' + moment() + '.csv',
+				})
+			}
+			const propertiesToDelete = [
+				'user_id',
+				'organization_id',
+				'meta',
+				'email_verified',
+				'gender',
+				'location',
+				'about',
+				'share_link',
+				'status',
+				'last_logged_in_at',
+				'has_accepted_terms_and_conditions',
+				'languages',
+				'preferred_language',
+				'custom_entity_text',
+			]
+
+			const cleanedAttendeesAccounts = mergedUserArray.map((user) => {
+				propertiesToDelete.forEach((property) => {
+					delete user[property]
+				})
+
+				return user
+			})
+			// Return success response with merged user details
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'SESSION_ATTENDEES',
+				result: cleanedAttendeesAccounts,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

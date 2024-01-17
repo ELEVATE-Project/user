@@ -22,6 +22,7 @@ const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const entityTypeService = require('@services/entity-type')
 const entityType = require('@database/models/entityType')
+const sessionService = require('@services/sessions')
 
 module.exports = class MenteesHelper {
 	/**
@@ -995,7 +996,7 @@ module.exports = class MenteesHelper {
 				filteredQuery.designation = designation
 			}
 
-			const userType = common.MENTEE_ROLE
+			const userType = [common.MENTEE_ROLE, common.MENTOR_ROLE]
 
 			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
 			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
@@ -1007,6 +1008,19 @@ module.exports = class MenteesHelper {
 				additionalProjectionString,
 				true
 			)
+			let mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				[],
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+
+			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
+			extensionDetails.count += mentorExtensionDetails.count
+
 			if (extensionDetails.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -1035,8 +1049,9 @@ module.exports = class MenteesHelper {
 					},
 				})
 			}
+			const userIds = userDetails.data.result.data.map((item) => item.id)
 			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
-				userDetails.data.result.data.map((item) => item.id),
+				userIds,
 				null,
 				null,
 				filteredQuery,
@@ -1044,6 +1059,18 @@ module.exports = class MenteesHelper {
 				additionalProjectionString,
 				false
 			)
+			mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				userIds,
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
+			extensionDetails.count += mentorExtensionDetails.count
+
 			if (organization_ids.length > 0) {
 				extensionDetails.data = extensionDetails.data.filter((mentee) =>
 					organization_ids.includes(String(mentee.organization_id))
@@ -1082,6 +1109,16 @@ module.exports = class MenteesHelper {
 
 			// update count after filters
 			userDetails.data.result.count = userDetails.data.result.count
+
+			if (queryParams.session_id) {
+				const enrolledMentees = await sessionService.enrolledMentees(queryParams.session_id, '', userId)
+				const enrolledMenteeIds = enrolledMentees.result.map((enrolledMentee) => enrolledMentee.id)
+
+				userDetails.data.result.data.forEach((user) => {
+					const isEnrolled = enrolledMenteeIds.some((id) => id === user.id)
+					user.is_enrolled = isEnrolled
+				})
+			}
 
 			// add index number to the response
 			userDetails.data.result.data = userDetails.data.result.data.map((data, index) => ({
