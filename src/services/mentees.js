@@ -992,7 +992,7 @@ module.exports = class MenteesHelper {
 
 			let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
 
-			if (designation) {
+			if (designation.length > 0) {
 				filteredQuery.designation = designation
 			}
 
