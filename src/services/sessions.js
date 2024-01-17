@@ -766,6 +766,12 @@ module.exports = class SessionsHelper {
 				isAMentor
 			)
 
+			// add index number to the response
+			allSessions.rows = allSessions.rows.map((data, index) => ({
+				...data,
+				index_number: index + 1 + limit * (page - 1), //To keep consistency with pagination
+			}))
+
 			const result = {
 				data: allSessions.rows,
 				count: allSessions.count,
@@ -1647,6 +1653,7 @@ module.exports = class SessionsHelper {
 				page: page,
 				limit: limit,
 			})
+
 			const formattedSessionList = sessions.rows.map((session, index) => ({
 				id: session.id,
 				index_number: index + 1 + limit * (page - 1), //To keep consistency with pagination
@@ -1659,6 +1666,7 @@ module.exports = class SessionsHelper {
 				status: session.status,
 				mentee_count: session.mentee_count,
 				mentor_organization_id: session.mentor_organization_id,
+				mentor_id: session.mentor_id,
 			}))
 
 			return common.successResponse({
