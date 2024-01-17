@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9471f02c-72e9-463d-8569-a785c9cca88b",
+		"_postman_id": "c7d034de-eb4b-472a-855c-d5348c2d1284",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21498549"
@@ -838,7 +838,7 @@
 					},
 					"response": [
 						{
-							"name": "Enrolled Mentees",
+							"name": "Enrolled Mentees CSV response",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -1062,7 +1062,7 @@
 					"response": []
 				},
 				{
-					"name": "Mentee List",
+					"name": "Mentees list",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1073,43 +1073,29 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/list?page=1&session_id=6",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/list?search=searchText&designation=deo&organization_ids=1,2&session_id=4",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "mentees", "list"],
 							"query": [
 								{
-									"key": "page",
-									"value": "1",
-									"description": "Page number"
-								},
-								{
-									"key": "limit",
-									"value": "2",
-									"description": "Limit",
-									"disabled": true
-								},
-								{
 									"key": "search",
-									"value": "aW50cm8=",
-									"description": "Base64 encoded search text",
-									"disabled": true
-								},
-								{
-									"key": "area_of_expertise",
-									"value": "school_process,sqaa",
-									"description": "Filters to be applied should be passed like this",
-									"disabled": true
+									"value": "searchText",
+									"description": "search with full/partial name or full email"
 								},
 								{
 									"key": "designation",
-									"value": "deo,beo",
-									"description": "Filters to be applied should be passed like this",
-									"disabled": true
+									"value": "deo",
+									"description": "designation code. comma separated, if multiple"
+								},
+								{
+									"key": "organization_ids",
+									"value": "1,2",
+									"description": "organization ids. comma separated, if multiple"
 								},
 								{
 									"key": "session_id",
-									"value": "6",
-									"description": "To get is_enrolled flag"
+									"value": "4",
+									"description": "To get is_enrolled flag."
 								}
 							]
 						}
@@ -1789,7 +1775,8 @@
 							{
 								"key": "internal_access_token",
 								"value": "{{internal_access_token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							},
 							{
 								"key": "X-auth-token",
@@ -2516,15 +2503,6 @@
 										"type": "text"
 									}
 								],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
 								"url": {
 									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/download?type=PRIVATE&status=PUBLISHED",
 									"host": ["{{MentoringBaseUrl}}mentoring"],
@@ -2681,15 +2659,6 @@
 										"type": "text"
 									}
 								],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
 								"url": {
 									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/sessionList?page=1&limit=100",
 									"host": ["{{MentoringBaseUrl}}mentoring"],
