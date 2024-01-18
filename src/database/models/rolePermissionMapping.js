@@ -16,9 +16,13 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			actions: {
+			request_type: {
 				allowNull: false,
 				type: DataTypes.ARRAY(DataTypes.STRING),
+			},
+			api_path: {
+				allowNull: false,
+				type: DataTypes.STRING,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,

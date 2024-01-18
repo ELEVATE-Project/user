@@ -10,7 +10,8 @@ describe('mentoring/v1/permissions ', function () {
 		let res = await request.post('/mentoring/v1/permissions/create').send({
 			code: 'edit_session',
 			module: 'session_edit',
-			actions: ['WRITE'],
+			request_type: ['WRITE'],
+			api_path: 'mentoring/session/edit',
 			status: 'ACTIVE',
 		})
 		//console.log(res.body)
@@ -19,10 +20,11 @@ describe('mentoring/v1/permissions ', function () {
 	})
 
 	it('/update', async () => {
-		let res = await request.post('/mentoring/v1/permissions/update/2').send({
-			code: 'sessicre',
-			module: 'sessions',
-			actions: ['READ'],
+		let res = await request.post('/mentoring/v1/permissions/update/19').send({
+			code: 'edit_session',
+			module: 'session_edit',
+			request_type: ['READ'],
+			api_path: 'mentoring/session/edit',
 			status: 'ACTIVE',
 		})
 		//console.log(res.body)
@@ -30,19 +32,19 @@ describe('mentoring/v1/permissions ', function () {
 		expect(res.body).toMatchSchema(schema.updateSchema)
 	})
 
-	it('/delete', async () => {
-		let res = await request.post('/mentoring/v1/permissions/delete/3')
-		//console.log(res.body)
-		expect(res.statusCode).toBe(202)
-		expect(res.body).toMatchSchema(schema.deleteSchema)
-	})
-
 	it('/list', async () => {
 		let res = await request
 			.get('/mentoring/v1/permissions/list')
-			.query({ page: 1, limit: 10, code: 'c2Vzc2lvbg==' })
-		//console.log(res.body)
+			.query({ page: 1, limit: 10, search: 'permissions' })
+		//console.log(res.body) c2Vzc2lvbg==
 		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(schema.listSchema)
+	})
+
+	it('/delete', async () => {
+		let res = await request.post('/mentoring/v1/permissions/delete/19')
+		//console.log(res.body)
+		expect(res.statusCode).toBe(202)
+		expect(res.body).toMatchSchema(schema.deleteSchema)
 	})
 })

@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "d1a5fd58-301e-45bc-8aec-dec6d5452abc",
+		"_postman_id": "539f204e-d613-45ae-ae42-172f39457a35",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "24204448",
-		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-d1a5fd58-301e-45bc-8aec-dec6d5452abc?action=share&source=collection_link&creator=24204448"
+		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-539f204e-d613-45ae-ae42-172f39457a35?action=share&source=collection_link&creator=24204448"
 	},
 	"item": [
 		{
@@ -2032,7 +2032,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\"code\": \"sessioncreation\", \n\"module\": \"sessions\", \n\"actions\": \"WRITE\",\n\"status\": \"ACTIVE\"\n}",
+							"raw": "{\n\"code\": \"ssss\", \n\"module\": \"ssss\", \n\"request_type\": [\"POST\"],\n\"api_path\" : \"/mentoring/v1/sessions/sections\",\n\"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2059,7 +2059,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10&search=c2Vzc2lvbg==",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "permissions", "list"],
 							"query": [
@@ -2073,7 +2073,13 @@
 								},
 								{
 									"key": "search",
-									"value": "c2Vzc2lvbg=="
+									"value": "s",
+									"disabled": true
+								},
+								{
+									"key": "actions",
+									"value": "",
+									"disabled": true
 								}
 							]
 						}
@@ -2093,7 +2099,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\"code\": \"sessioncreate\", \n\"module\": \"sessions\", \n\"actions\": \"READ\",\n\"status\": \"ACTIVE\"\n}",
+							"raw": "{\n\"code\": \"ssss\", \n\"module\": \"read_permissions_listttt\", \n\"request_type\": [\"POST\"],\n\"api_path\": \"/mentoring/v1/sessions/sections\",\n\"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2107,7 +2113,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1",
+									"value": "28",
 									"description": "update id"
 								}
 							]
@@ -2133,7 +2139,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1",
+									"value": "28",
 									"description": "Delete id"
 								}
 							]

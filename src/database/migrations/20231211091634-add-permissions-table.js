@@ -13,14 +13,20 @@ module.exports = {
 			code: {
 				allowNull: false,
 				type: Sequelize.STRING,
+				unique: true,
 			},
 			module: {
 				allowNull: false,
 				type: Sequelize.STRING,
 			},
-			actions: {
+			request_type: {
 				allowNull: false,
 				type: Sequelize.ARRAY(Sequelize.STRING),
+			},
+			api_path: {
+				allowNull: false,
+				type: Sequelize.STRING,
+				unique: true,
 			},
 			status: {
 				type: Sequelize.STRING,
@@ -38,9 +44,10 @@ module.exports = {
 				type: Sequelize.DATE,
 			},
 		})
-		await queryInterface.addIndex('permissions', ['code'], {
-			unique: true,
-			name: 'unique_code',
+		await queryInterface.addIndex('permissions', {
+			type: 'unique',
+			fields: ['code', 'api_path'],
+			name: 'unique_code_api_path',
 			where: {
 				deleted_at: null,
 			},

@@ -65,10 +65,11 @@ module.exports = class permissionData {
 		}
 	}
 
-	static async findByAction(filter, attributes) {
+	static async find(filter, attributes) {
 		const permissions = await Permissions.findAndCountAll({
 			where: filter,
 			attributes,
+			raw: true,
 		})
 		return permissions
 	}

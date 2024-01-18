@@ -30,7 +30,8 @@ module.exports = class modulesHelper {
 				role_id: roleId,
 				permission_id: permissionId,
 				module: permission.module,
-				actions: permission.actions,
+				request_type: permission.request_type,
+				api_path: permission.api_path,
 				created_by: id,
 			}
 			const rolePermissionMapping = await rolePermissionMappingQueries.create(data)
@@ -41,7 +42,7 @@ module.exports = class modulesHelper {
 					roleId: rolePermissionMapping.role_id,
 					permissionId: rolePermissionMapping.permission_id,
 					module: rolePermissionMapping.module,
-					actions: rolePermissionMapping.actions,
+					request_type: rolePermissionMapping.request_type,
 				},
 			})
 		} catch (error) {

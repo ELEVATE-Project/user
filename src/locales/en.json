@@ -119,7 +119,7 @@
 	"MENTOR_LIST": "Mentor list fetched successfully.",
 	"MENTEE_LIST": "Mentee list fetched successfully.",
 	"PERMISSION_CREATED_SUCCESSFULLY": "Permission created successfully",
-	"PERMISSION_ALREADY_EXISTS": "Permissions already exists",
+	"PERMISSION_ALREADY_EXISTS": "code and api_path should be unique",
 	"PERMISSION_NOT_FOUND": "Permissions does not exists",
 	"PERMISSION_NOT_UPDATED": "Permissions is not updated",
 	"PERMISSION_UPDATED_SUCCESSFULLY": "Permission updated successfully",

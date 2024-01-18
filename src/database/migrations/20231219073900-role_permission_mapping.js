@@ -18,9 +18,13 @@ module.exports = {
 				allowNull: false,
 				type: Sequelize.STRING,
 			},
-			actions: {
+			request_type: {
 				allowNull: false,
 				type: Sequelize.ARRAY(Sequelize.STRING),
+			},
+			api_path: {
+				allowNull: false,
+				type: Sequelize.STRING,
 			},
 			created_at: {
 				allowNull: false,
