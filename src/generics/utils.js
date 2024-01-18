@@ -189,7 +189,9 @@ function validateInput(input, validationData, modelName) {
 				case 'ARRAY[STRING]':
 					if (Array.isArray(fieldValue)) {
 						fieldValue.forEach((element) => {
-							if (typeof element !== 'string' || /[^A-Za-z0-9_]/.test(element)) {
+							if (typeof element !== 'string') {
+								addError(field, element, dataType, 'It should be a string')
+							} else if (!field.allow_custom_entities && /[^A-Za-z0-9_]/.test(element)) {
 								addError(
 									field,
 									element,
@@ -205,12 +207,16 @@ function validateInput(input, validationData, modelName) {
 
 				case 'STRING':
 					if (typeof fieldValue !== 'string' || /[^A-Za-z0-9_]/.test(fieldValue)) {
-						addError(
-							field,
-							fieldValue,
-							dataType,
-							'It should not contain spaces or special characters except underscore.'
-						)
+						if (typeof element !== 'string') {
+							addError(field, element, dataType, 'It should be a string')
+						} else if (!field.allow_custom_entities && /[^A-Za-z0-9_]/.test(element)) {
+							addError(
+								field,
+								fieldValue,
+								dataType,
+								'It should not contain spaces or special characters except underscore.'
+							)
+						}
 					}
 					break
 
