@@ -330,7 +330,8 @@ module.exports = class SessionsHelper {
 				})
 			}
 			sessionDetail = sessionDetail.dataValues
-
+			// If type is passed store it in upper case
+			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
 			// session can be edited by only the creator
 			if (sessionDetail.created_by != userId) {
 				return common.failureResponse({
