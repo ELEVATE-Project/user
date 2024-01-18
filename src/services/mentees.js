@@ -21,6 +21,8 @@ const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const entityTypeService = require('@services/entity-type')
+const entityType = require('@database/models/entityType')
+const sessionService = require('@services/sessions')
 
 module.exports = class MenteesHelper {
 	/**
@@ -80,7 +82,7 @@ module.exports = class MenteesHelper {
 		try {
 			/** Upcoming user's enrolled sessions {My sessions}*/
 			/* Fetch sessions if it is not expired or if expired then either status is live or if mentor 
-                delays in starting session then status will remain published for that particular interval so fetch that also */
+				delays in starting session then status will remain published for that particular interval so fetch that also */
 
 			/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
 			const sessions = await this.getMySessions(page, limit, search, userId)
@@ -779,4 +781,403 @@ module.exports = class MenteesHelper {
 			return error
 		}
 	}
+
+	/**
+	 * Get entities and organization filter
+	 * @method
+	 * @name getFilterList
+	 * @param {String} tokenInformation - token information
+	 * @param {Boolean} queryParams - queryParams
+	 * @returns {JSON} - Filter list.
+	 */
+	static async getFilterList(queryParams, tokenInformation) {
+		try {
+			let result = {
+				organizations: [],
+				entity_types: {},
+			}
+
+			let organization_ids = []
+			const organizations = await this.getOrganizationIdBasedOnPolicy(
+				tokenInformation.id,
+				tokenInformation.organization_id
+			)
+			if (organizations.success && organizations.result.length > 0) {
+				organization_ids = [...organizations.result]
+
+				if (organization_ids.length > 0) {
+					//get organization list
+					const organizationList = await userRequests.listOrganization(organization_ids)
+					if (organizationList.success && organizationList.data?.result?.length > 0) {
+						result.organizations = organizationList.data.result
+					}
+
+					const defaultOrgId = await getDefaultOrgId()
+
+					// get entity type with entities list
+					const getEntityTypesWithEntities = await this.getEntityTypeWithEntitiesBasedOnOrg(
+						organization_ids,
+						queryParams,
+						defaultOrgId ? defaultOrgId : ''
+					)
+
+					if (getEntityTypesWithEntities.success && getEntityTypesWithEntities.result) {
+						let entityTypesWithEntities = getEntityTypesWithEntities.result
+						if (entityTypesWithEntities.length > 0) {
+							let convertedData = convertEntitiesForFilter(entityTypesWithEntities)
+							let doNotRemoveDefaultOrg = false
+							if (organization_ids.includes(defaultOrgId)) {
+								doNotRemoveDefaultOrg = true
+							}
+							result.entity_types = filterEntitiesBasedOnParent(
+								convertedData,
+								defaultOrgId,
+								doNotRemoveDefaultOrg
+							)
+						}
+					}
+				}
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'FILTER_FETCHED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async getOrganizationIdBasedOnPolicy(userId, organization_id) {
+		try {
+			let organization_ids = []
+
+			const orgPolicies = await organisationExtensionQueries.findOne(
+				{ organization_id },
+				{
+					attributes: ['organization_id', 'external_mentor_visibility_policy'],
+				}
+			)
+
+			if (orgPolicies?.organization_id) {
+				if (orgPolicies.external_mentor_visibility_policy === common.CURRENT) {
+					organization_ids.push(orgPolicies.organization_id)
+				} else if (
+					orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED ||
+					orgPolicies.external_mentor_visibility_policy === common.ALL
+				) {
+					organization_ids.push(orgPolicies.organization_id)
+					let relatedOrgs = []
+					let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgPolicies.organization_id)
+					if (userOrgDetails.success && userOrgDetails.data?.result?.related_orgs?.length > 0) {
+						relatedOrgs = userOrgDetails.data.result.related_orgs
+					}
+					if (orgPolicies.external_mentor_visibility_policy === common.ASSOCIATED) {
+						organization_ids.push(...relatedOrgs)
+					} else {
+						const organizationExtension = await organisationExtensionQueries.findAll(
+							{
+								[Op.or]: [
+									{
+										mentor_visibility_policy: common.ALL,
+									},
+									{
+										organization_id: {
+											[Op.in]: [...relatedOrgs, orgPolicies.organization_id],
+										},
+									},
+								],
+							},
+							{
+								attributes: ['organization_id'],
+							}
+						)
+						if (organizationExtension) {
+							const organizationIds = organizationExtension.map((orgExt) => orgExt.organization_id)
+							organization_ids.push(...organizationIds)
+						}
+					}
+				}
+			}
+
+			return {
+				success: true,
+				result: organization_ids,
+			}
+		} catch (error) {
+			return {
+				success: false,
+				message: error.message,
+			}
+		}
+	}
+
+	static async getEntityTypeWithEntitiesBasedOnOrg(organization_ids, entity_types, defaultOrgId = '') {
+		try {
+			let filter = {
+				status: common.ACTIVE_STATUS,
+				allow_filtering: true,
+				has_entities: true,
+				organization_id: {
+					[Op.in]: defaultOrgId ? [...organization_ids, defaultOrgId] : organization_ids,
+				},
+			}
+
+			let entityTypes = []
+			if (entity_types) {
+				entityTypes = entity_types.split(',')
+				filter.value = {
+					[Op.in]: entityTypes,
+				}
+			}
+
+			//fetch entity types and entities
+			let entityTypesWithEntities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+
+			return {
+				success: true,
+				result: entityTypesWithEntities,
+			}
+		} catch (error) {
+			return {
+				success: false,
+				message: error.message,
+			}
+		}
+	}
+
+	/* List mentees and search with name , email
+	 * @method
+	 * @name list
+	 * @param {String} userId - User ID of the mentee.
+	 * @param {Number} pageNo - Page No.
+	 * @param {Number} pageSize - Page Size.
+	 * @param {String} searchText
+	 * @param {String} queryParams
+	 * @param {String} userId
+	 * @param {Boolean} isAMentor - true/false.
+	 * @returns {Promise<Object>} - returns the list of mentees
+	 */
+	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
+		try {
+			let additionalProjectionString = ''
+
+			// check for fields query
+			if (queryParams.fields && queryParams.fields !== '') {
+				additionalProjectionString = queryParams.fields
+				delete queryParams.fields
+			}
+			let userServiceQueries = {}
+			let organization_ids = []
+			let designation = []
+			let searchQuery = ''
+			for (let key in queryParams) {
+				if (queryParams.hasOwnProperty(key) & (key === 'search')) {
+					searchQuery = queryParams[key]
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+					organization_ids = queryParams[key].split(',')
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+					designation = queryParams[key].split(',')
+				}
+			}
+
+			const query = utils.processQueryParametersWithExclusions(queryParams)
+
+			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
+				status: common.ACTIVE_STATUS,
+			})
+
+			let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+
+			if (designation.length > 0) {
+				filteredQuery.designation = designation
+			}
+
+			const userType = [common.MENTEE_ROLE, common.MENTOR_ROLE]
+
+			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
+			let extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+				[],
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+			let mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				[],
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+
+			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
+			extensionDetails.count += mentorExtensionDetails.count
+
+			if (extensionDetails.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			const menteeIds = extensionDetails.data.map((item) => item.user_id)
+
+			if (menteeIds) {
+				userServiceQueries['user_ids'] = menteeIds
+			}
+
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
+
+			if (userDetails.data.result.count == 0) {
+				return common.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'MENTEE_LIST',
+					result: {
+						data: [],
+						count: 0,
+					},
+				})
+			}
+			const userIds = userDetails.data.result.data.map((item) => item.id)
+			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
+				userIds,
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				false
+			)
+			mentorExtensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
+				userIds,
+				null,
+				null,
+				filteredQuery,
+				saasFilter,
+				additionalProjectionString,
+				true
+			)
+			extensionDetails.data = [...extensionDetails.data, ...mentorExtensionDetails.data]
+			extensionDetails.count += mentorExtensionDetails.count
+
+			if (organization_ids.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((mentee) =>
+					organization_ids.includes(String(mentee.organization_id))
+				)
+			}
+
+			if (extensionDetails.data.length > 0) {
+				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
+				extensionDetails.data = await entityTypeService.processEntityTypesToAddValueLabels(
+					extensionDetails.data,
+					uniqueOrgIds,
+					common.mentorExtensionModelName,
+					'organization_id'
+				)
+			}
+			const extensionDataMap = new Map(extensionDetails.data.map((newItem) => [newItem.user_id, newItem]))
+
+			userDetails.data.result.data = userDetails.data.result.data
+				.map((value) => {
+					// Map over each value in the values array of the current group
+					const user_id = value.id
+					// Check if extensionDataMap has an entry with the key equal to the user_id
+					if (extensionDataMap.has(user_id)) {
+						const newItem = extensionDataMap.get(user_id)
+						value = { ...value, ...newItem }
+						delete value.user_id
+						delete value.visibility
+						delete value.organization_id
+						delete value.meta
+						delete value.rating
+						return value
+					}
+					return null
+				})
+				.filter((value) => value !== null)
+
+			// update count after filters
+			userDetails.data.result.count = userDetails.data.result.count
+
+			if (queryParams.session_id) {
+				const enrolledMentees = await sessionService.enrolledMentees(queryParams.session_id, '', userId)
+				const enrolledMenteeIds = enrolledMentees.result.map((enrolledMentee) => enrolledMentee.id)
+
+				userDetails.data.result.data.forEach((user) => {
+					const isEnrolled = enrolledMenteeIds.some((id) => id === user.id)
+					user.is_enrolled = isEnrolled
+				})
+			}
+
+			// add index number to the response
+			userDetails.data.result.data = userDetails.data.result.data.map((data, index) => ({
+				...data,
+				index_number: index + 1 + pageSize * (pageNo - 1), //To keep consistency with pagination
+			}))
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: userDetails.data.message,
+				result: userDetails.data.result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+}
+
+function convertEntitiesForFilter(entityTypes) {
+	const result = {}
+
+	entityTypes.forEach((entityType) => {
+		const key = entityType.value
+
+		if (!result[key]) {
+			result[key] = []
+		}
+
+		const newObj = {
+			id: entityType.id,
+			label: entityType.label,
+			value: entityType.value,
+			parent_id: entityType.parent_id,
+			organization_id: entityType.organization_id,
+			entities: entityType.entities || [],
+		}
+
+		result[key].push(newObj)
+	})
+	return result
+}
+
+function filterEntitiesBasedOnParent(data, defaultOrgId, doNotRemoveDefaultOrg) {
+	let result = {}
+
+	for (let key in data) {
+		let countWithParentId = 0
+		let countOfEachKey = data[key].length
+		data[key].forEach((obj) => {
+			if (obj.parent_id !== null && obj.organization_id != defaultOrgId) {
+				countWithParentId++
+			}
+		})
+
+		let outputArray = data[key]
+		if (countOfEachKey > 1 && countWithParentId == countOfEachKey - 1 && !doNotRemoveDefaultOrg) {
+			outputArray = data[key].filter((obj) => !(obj.organization_id === defaultOrgId && obj.parent_id === null))
+		}
+
+		result[key] = outputArray
+	}
+	return result
 }

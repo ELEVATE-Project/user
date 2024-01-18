@@ -21,6 +21,7 @@
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
 	"dependencies": {
+		"@json2csv/plainjs": "^7.0.4",
 		"@shelf/jest-mongodb": "^3.0.1",
 		"aws-sdk": "^2.1250.0",
 		"axios": "^0.21.4",

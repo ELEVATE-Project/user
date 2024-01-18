@@ -1,10 +1,22 @@
 const MenteeExtension = require('../models/index').UserExtension
+const { QueryTypes } = require('sequelize')
+const sequelize = require('sequelize')
+const Sequelize = require('@database/models/index').sequelize
+const common = require('@constants/common')
 const _ = require('lodash')
 
 module.exports = class MenteeExtensionQueries {
 	static async getColumns() {
 		try {
 			return await Object.keys(MenteeExtension.rawAttributes)
+		} catch (error) {
+			return error
+		}
+	}
+
+	static async getModelName() {
+		try {
+			return await MenteeExtension.name
 		} catch (error) {
 			return error
 		}
@@ -105,6 +117,89 @@ module.exports = class MenteeExtensionQueries {
 			return result
 		} catch (error) {
 			throw error
+		}
+	}
+
+	static async getUsersByUserIdsFromView(
+		ids,
+		page,
+		limit,
+		filter,
+		saasFilter = '',
+		additionalProjectionclause = '',
+		returnOnlyUserId
+	) {
+		try {
+			const filterConditions = []
+
+			if (filter && typeof filter === 'object') {
+				for (const key in filter) {
+					if (Array.isArray(filter[key])) {
+						filterConditions.push(`"${key}" @> ARRAY[:${key}]::character varying[]`)
+					}
+				}
+			}
+
+			const excludeUserIds = ids.length === 0
+			const userFilterClause = excludeUserIds ? '' : `user_id IN (${ids.join(',')})`
+
+			let filterClause = filterConditions.length > 0 ? ` ${filterConditions.join(' AND ')}` : ''
+
+			let saasFilterClause = saasFilter !== '' ? saasFilter : ''
+			if (excludeUserIds && Object.keys(filter).length === 0) {
+				saasFilterClause = saasFilterClause.replace('AND ', '') // Remove "AND" if excludeUserIds is true and filter is empty
+			}
+
+			let projectionClause =
+				'user_id,meta,visibility,organization_id,designation,area_of_expertise,education_qualification'
+
+			if (returnOnlyUserId) {
+				projectionClause = 'user_id'
+			} else if (additionalProjectionclause !== '') {
+				projectionClause += `,${additionalProjectionclause}`
+			}
+
+			if (userFilterClause && filterClause.length > 0) {
+				filterClause = filterClause.startsWith('AND') ? filterClause : 'AND' + filterClause
+			}
+
+			let query = `
+				SELECT ${projectionClause}
+				FROM
+					${common.materializedViewsPrefix + MenteeExtension.tableName}
+				WHERE
+					${userFilterClause}
+					${filterClause}
+					${saasFilterClause}
+			`
+
+			const replacements = {
+				...filter, // Add filter parameters to replacements
+			}
+
+			if (page !== null && limit !== null) {
+				query += `
+					OFFSET
+						:offset
+					LIMIT
+						:limit;
+				`
+
+				replacements.offset = limit * (page - 1)
+				replacements.limit = limit
+			}
+
+			const mentees = await Sequelize.query(query, {
+				type: QueryTypes.SELECT,
+				replacements: replacements,
+			})
+
+			return {
+				data: mentees,
+				count: mentees.length,
+			}
+		} catch (error) {
+			return error
 		}
 	}
 }

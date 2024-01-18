@@ -203,7 +203,14 @@ const listWithoutLimit = function (userType, searchText) {
 		}
 	})
 }
-const search = function (userType, pageNo, pageSize, searchText, userIds) {
+const search = function (userType, pageNo, pageSize, searchText, userServiceQueries) {
+	let userSearchBody = {}
+	// queryParams to search in user service. Like user_ids , name , email etc...
+	if (userServiceQueries) {
+		for (const [key, value] of Object.entries(userServiceQueries)) {
+			userSearchBody[key] = value
+		}
+	}
 	return new Promise(async (resolve, reject) => {
 		try {
 			const apiUrl =
@@ -217,7 +224,7 @@ const search = function (userType, pageNo, pageSize, searchText, userIds) {
 				pageSize +
 				'&search=' +
 				searchText
-			const userDetails = await requests.post(apiUrl, { user_ids: userIds }, false, true)
+			const userDetails = await requests.post(apiUrl, { ...userSearchBody }, '', true)
 
 			return resolve(userDetails)
 		} catch (error) {
@@ -225,6 +232,61 @@ const search = function (userType, pageNo, pageSize, searchText, userIds) {
 		}
 	})
 }
+
+// const listOrganization = function (organizationIds = []) {
+// 	return new Promise(async (resolve, reject) => {
+// 		try {
+// 			const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+// 			const organizations = await requests.post(apiUrl, { organizationIds }, '', true)
+
+// 			return resolve(organizations)
+// 		} catch (error) {
+// 			return reject(error)
+// 		}
+// 	})
+// }
+
+/**
+ * Get Organization list.
+ * @method
+ * @name listOrganization
+ * @param {Array} organizationIds
+ * @returns
+ */
+
+const listOrganization = function (organizationIds = []) {
+	return new Promise(async (resolve, reject) => {
+		const options = {
+			headers: {
+				'Content-Type': 'application/json',
+				internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+			},
+			form: {
+				organizationIds,
+			},
+		}
+
+		const apiUrl = userBaseUrl + endpoints.ORGANIZATION_LIST
+		try {
+			request.get(apiUrl, options, callback)
+			let result = {
+				success: true,
+			}
+			function callback(err, data) {
+				if (err) {
+					result.success = false
+				} else {
+					response = JSON.parse(data.body)
+					result.data = response
+				}
+				return resolve(result)
+			}
+		} catch (error) {
+			return reject(error)
+		}
+	})
+}
+
 module.exports = {
 	fetchDefaultOrgDetails,
 	details,
@@ -233,4 +295,5 @@ module.exports = {
 	share,
 	listWithoutLimit,
 	search,
+	listOrganization,
 }

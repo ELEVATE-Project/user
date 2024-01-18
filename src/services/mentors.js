@@ -676,11 +676,36 @@ module.exports = class MentorsHelper {
 	static async list(pageNo, pageSize, searchText, queryParams, userId, isAMentor) {
 		try {
 			let additionalProjectionString = ''
+			let userServiceQueries = {}
 
 			// check for fields query
 			if (queryParams.fields && queryParams.fields !== '') {
 				additionalProjectionString = queryParams.fields
 				delete queryParams.fields
+			}
+
+			let organization_ids = []
+			let designation = []
+			let directory = false
+
+			for (let key in queryParams) {
+				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'name'))) {
+					userServiceQueries[key] = queryParams[key]
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+					organization_ids = queryParams[key].split(',')
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+					designation = queryParams[key].split(',')
+				}
+
+				if (
+					queryParams.hasOwnProperty(key) &
+					(key === 'directory') &
+					((queryParams[key] == 'true') | (queryParams[key] == true))
+				) {
+					directory = true
+				}
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
@@ -693,7 +718,11 @@ module.exports = class MentorsHelper {
 			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
 			const userType = common.MENTOR_ROLE
 
-			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
+			if (designation.length > 0) {
+				filteredQuery.designation = designation
+			}
+
+			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
@@ -716,7 +745,11 @@ module.exports = class MentorsHelper {
 			}
 			const mentorIds = extensionDetails.data.map((item) => item.user_id)
 
-			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, mentorIds)
+			if (mentorIds) {
+				userServiceQueries['user_ids'] = mentorIds
+			}
+
+			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
 			if (userDetails.data.result.count == 0) {
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -736,6 +769,12 @@ module.exports = class MentorsHelper {
 				additionalProjectionString,
 				false
 			)
+
+			if (organization_ids.length > 0) {
+				extensionDetails.data = extensionDetails.data.filter((mentee) =>
+					organization_ids.includes(String(mentee.organization_id))
+				)
+			}
 
 			if (extensionDetails.data.length > 0) {
 				const uniqueOrgIds = [...new Set(extensionDetails.data.map((obj) => obj.organization_id))]
@@ -767,27 +806,38 @@ module.exports = class MentorsHelper {
 				})
 				.filter((value) => value !== null)
 
-			let foundKeys = {}
-			let result = []
+			// update count after filters
+			userDetails.data.result.count = userDetails.data.result.data.length
 
-			for (let user of userDetails.data.result.data) {
-				let firstChar = user.name.charAt(0)
-				firstChar = firstChar.toUpperCase()
+			// add index number to the response
+			userDetails.data.result.data = userDetails.data.result.data.map((data, index) => ({
+				...data,
+				index_number: index + 1 + pageSize * (pageNo - 1), //To keep consistency with pagination
+			}))
 
-				if (!foundKeys[firstChar]) {
-					result.push({
-						key: firstChar,
-						values: [user],
-					})
-					foundKeys[firstChar] = result.length
-				} else {
-					let index = foundKeys[firstChar] - 1
-					result[index].values.push(user)
+			if (directory) {
+				let foundKeys = {}
+				let result = []
+
+				for (let user of userDetails.data.result.data) {
+					let firstChar = user.name.charAt(0)
+					firstChar = firstChar.toUpperCase()
+
+					if (!foundKeys[firstChar]) {
+						result.push({
+							key: firstChar,
+							values: [user],
+						})
+						foundKeys[firstChar] = result.length
+					} else {
+						let index = foundKeys[firstChar] - 1
+						result[index].values.push(user)
+					}
 				}
-			}
 
-			const sortedData = _.sortBy(result, 'key') || []
-			userDetails.data.result.data = sortedData
+				const sortedData = _.sortBy(result, 'key') || []
+				userDetails.data.result.data = sortedData
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -795,6 +845,7 @@ module.exports = class MentorsHelper {
 				result: userDetails.data.result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -873,31 +924,8 @@ module.exports = class MentorsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// update sessions which having status as published/live and  exceeds the current date and time
-			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
-			/* 			const filterQuery = {
-				[Op.or]: [
-					{
-						status: common.PUBLISHED_STATUS,
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-					{
-						status: common.LIVE_STATUS,
-						'meeting_info.value': {
-							[Op.ne]: common.BBB_VALUE,
-						},
-						end_date: {
-							[Op.lt]: currentDate,
-						},
-					},
-				],
-			}
 
-			await sessionQueries.updateSession(filterQuery, {
-				status: common.COMPLETED_STATUS,
-			}) */
+			const currentDate = Math.floor(moment.utc().valueOf() / 1000)
 
 			let arrayOfStatus = []
 			if (status && status != '') {
@@ -934,7 +962,7 @@ module.exports = class MentorsHelper {
 
 			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
 
-			//remove meeting_info details except value and platform
+			//remove meeting_info details except value and platform and add is_assigned flag
 			sessionDetails.rows.forEach((item) => {
 				if (item.meeting_info) {
 					item.meeting_info = {
@@ -942,6 +970,8 @@ module.exports = class MentorsHelper {
 						platform: item.meeting_info.platform,
 					}
 				}
+				item.is_assigned = item.mentor_id !== item.created_by
+				delete item.created_by
 			})
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

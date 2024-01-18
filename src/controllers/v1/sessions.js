@@ -266,6 +266,45 @@ module.exports = class Sessions {
 	}
 
 	/**
+	 * Updates mentor names in bulk for sessions.
+	 * @method
+	 * @name bulkUpdateMentorNames
+	 * @param {Object} req - Request data.
+	 * @param {Array} req.body.mentor_id - Array of mentor IDs.
+	 * @param {STRING} req.body.mentor_name - Array of corresponding mentor names.
+	 * @returns {Object} - Information about the bulk update process.
+	 * @throws {Error} - Throws an error if there's an issue during the bulk update.
+	 */
+	async bulkUpdateMentorNames(req) {
+		try {
+			const sessionUpdated = await sessionService.bulkUpdateMentorNames(req.body.mentor_id, req.body.mentor_name)
+			return sessionUpdated
+		} catch (error) {
+			return error
+		}
+	}
+	/**
+	 * Retrieves details of mentees enrolled in a session.
+	 *
+	 * @method
+	 * @name enrolledMentees
+	 * @param {Object} req - Request data.
+	 * @param {string} req.params.id - ID of the session.
+	 * @param {Object} req.query - Query parameters.
+	 * @param {string} req.decodedToken.id - ID of the authenticated user.
+	 * @returns {Promise<Object>} - A promise that resolves with the success response containing details of enrolled mentees.
+	 * @throws {Error} - Throws an error if there's an issue during data retrieval.
+	 */
+
+	async enrolledMentees(req) {
+		try {
+			return await sessionService.enrolledMentees(req.params.id, req.query, req.decodedToken.id)
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
 	 * Add mentees to session
 	 * @method
 	 * @name addMentees

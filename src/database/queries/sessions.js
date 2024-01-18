@@ -259,6 +259,7 @@ exports.findAllSessions = async (page, limit, search, filters) => {
 				'image',
 				'created_at',
 				'meeting_info',
+				'created_by',
 			],
 			offset: parseInt((page - 1) * limit, 10),
 			limit: parseInt(limit, 10),
@@ -591,6 +592,9 @@ exports.getUpcomingSessionsFromView = async (
 		const filterClause = filterConditions.length > 0 ? `AND ${filterConditions.join(' AND ')}` : ''
 
 		const saasFilterClause = saasFilter != '' ? saasFilter : ''
+
+		let publicSessionFilter = " AND type = '" + common.SESSION_TYPE.PUBLIC + "'"
+
 		// Create selection clause
 		let projectionClause = `
 			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
@@ -611,6 +615,7 @@ exports.getUpcomingSessionsFromView = async (
 			AND status IN ('PUBLISHED', 'LIVE')
 			${filterClause}
 			${saasFilterClause}
+			${publicSessionFilter}
 		OFFSET
 			:offset
 		LIMIT
