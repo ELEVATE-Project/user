@@ -394,14 +394,26 @@ module.exports = class UserInviteHelper {
 			const filePath = `${folderPath}/${fileName}`
 			const fileData = fs.readFileSync(filePath, 'utf-8')
 
-			await request({
-				url: fileUploadUrl,
-				method: 'put',
-				headers: {
-					'x-ms-blob-type': common.azureBlobType,
-					'Content-Type': 'multipart/form-data',
-				},
-				body: fileData,
+			const result = await new Promise((resolve, reject) => {
+				try {
+					request(
+						{
+							url: fileUploadUrl,
+							method: 'put',
+							headers: {
+								'x-ms-blob-type': common.azureBlobType,
+								'Content-Type': 'multipart/form-data',
+							},
+							body: fileData,
+						},
+						(error, response, body) => {
+							if (error) reject(error)
+							else resolve(response.statusCode)
+						}
+					)
+				} catch (error) {
+					reject(error)
+				}
 			})
 
 			return {
