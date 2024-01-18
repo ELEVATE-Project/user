@@ -26,7 +26,6 @@ module.exports = {
 			api_path: {
 				allowNull: false,
 				type: Sequelize.STRING,
-				unique: true,
 			},
 			status: {
 				type: Sequelize.STRING,
@@ -46,8 +45,8 @@ module.exports = {
 		})
 		await queryInterface.addIndex('permissions', {
 			type: 'unique',
-			fields: ['code', 'api_path'],
-			name: 'unique_code_api_path',
+			fields: ['code'],
+			name: 'unique_code',
 			where: {
 				deleted_at: null,
 			},

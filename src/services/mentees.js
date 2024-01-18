@@ -64,19 +64,19 @@ module.exports = class MenteesHelper {
 		const permissionsByModule = {}
 
 		permissionAndModules.forEach((rolePermission) => {
-			const module = rolePermission.dataValues.module
-			const actions = rolePermission.dataValues.actions
+			const module = rolePermission.module
+			const request_type = rolePermission.request_type
 
 			if (permissionsByModule[module]) {
-				permissionsByModule[module].actions.push(...actions)
+				permissionsByModule[module].request_type.push(...request_type)
 			} else {
-				permissionsByModule[module] = { module, actions: [...actions] }
+				permissionsByModule[module] = { module, request_type: [...request_type] }
 			}
 		})
 
 		const permissions = Object.entries(permissionsByModule).map(([key, value]) => ({
 			module: value.module,
-			actions: value.actions,
+			request_type: value.request_type,
 		}))
 
 		return successResponse({

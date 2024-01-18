@@ -295,29 +295,3 @@ module.exports = {
 		await queryInterface.bulkDelete('role_permission_mapping', null, {})
 	},
 }
-
-// const getApiPath = async (module, requestType) => {
-// 	try {
-// 	  console.log(`Searching for permission with code '${module}' and request type '${requestType}'...`)
-
-// 	  const permission = await Permissions.findOne({
-// 		where: {
-// 			module:module,
-// 		  request_type: [requestType],
-// 		},
-// 	  })
-
-// 	  if (permission) {
-// 		console.log(`Found permission with code '${module}' and request type '${requestType}': ${JSON.stringify(permission)}`)
-// 		return permission.api_path
-// 	  } else {
-// 		console.error(`No matching permission found for code '${module}' and request type '${requestType}'.`)
-// 		return null // Returning null or any other indicator to handle this case
-// 	  }
-// 	} catch (error) {
-// 	  console.error(`Error in getApiPath: ${error}`)
-// 	  throw error
-// 	}
-//   }
-
-// ... (previous code)

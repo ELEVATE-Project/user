@@ -24,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
 			api_path: {
 				allowNull: false,
 				type: DataTypes.STRING,
-				unique: true,
 			},
 			status: {
 				type: DataTypes.STRING,
@@ -40,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
 			indexes: [
 				{
 					unique: true,
-					fields: ['code', 'api_path'],
+					fields: ['code'],
 					where: {
 						deleted_at: null,
 					},
