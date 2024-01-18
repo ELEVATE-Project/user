@@ -46,7 +46,8 @@ module.exports = class Sessions {
 				const sessionCreated = await sessionService.create(
 					req.body,
 					req.decodedToken.id,
-					req.decodedToken.organization_id
+					req.decodedToken.organization_id,
+					isAMentor(req.decodedToken.roles)
 				)
 
 				return sessionCreated
@@ -278,6 +279,69 @@ module.exports = class Sessions {
 		try {
 			const sessionUpdated = await sessionService.bulkUpdateMentorNames(req.body.mentor_id, req.body.mentor_name)
 			return sessionUpdated
+		} catch (error) {
+			return error
+		}
+	}
+	/**
+	 * Retrieves details of mentees enrolled in a session.
+	 *
+	 * @method
+	 * @name enrolledMentees
+	 * @param {Object} req - Request data.
+	 * @param {string} req.params.id - ID of the session.
+	 * @param {Object} req.query - Query parameters.
+	 * @param {string} req.decodedToken.id - ID of the authenticated user.
+	 * @returns {Promise<Object>} - A promise that resolves with the success response containing details of enrolled mentees.
+	 * @throws {Error} - Throws an error if there's an issue during data retrieval.
+	 */
+
+	async enrolledMentees(req) {
+		try {
+			return await sessionService.enrolledMentees(req.params.id, req.query, req.decodedToken.id)
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Add mentees to session
+	 * @method
+	 * @name addMentees
+	 * @param {Object} req 				- request data.
+	 * @param {String} req.params.id 	- Session id.
+	 * @returns {JSON} 					- enrollment status.
+	 */
+
+	async addMentees(req) {
+		try {
+			const sessionDetails = await sessionService.addMentees(
+				req.params.id, // session id
+				req.body.mentees, // Array of mentee ids
+				req.headers['timezone']
+			)
+			return sessionDetails
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Remove mentees from a session
+	 * @method
+	 * @name removeMentees
+	 * @param {Object} req 				-request data.
+	 * @param {String} req.params.id 	- Session id.
+	 * @returns {JSON} 					- Unenroll Details.
+	 */
+
+	async removeMentees(req) {
+		try {
+			const sessionDetails = await sessionService.removeMentees(
+				req.params.id, // session id
+				req.body.mentees // Array of mentee ids
+			)
+			return sessionDetails
 		} catch (error) {
 			return error
 		}

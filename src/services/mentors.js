@@ -686,13 +686,25 @@ module.exports = class MentorsHelper {
 
 			let organization_ids = []
 			let designation = []
+			let directory = false
+
 			for (let key in queryParams) {
 				if (queryParams.hasOwnProperty(key) & ((key === 'email') | (key === 'name'))) {
 					userServiceQueries[key] = queryParams[key]
-				} else if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'organization_ids')) {
 					organization_ids = queryParams[key].split(',')
-				} else if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
+				}
+				if (queryParams.hasOwnProperty(key) & (key === 'designation')) {
 					designation = queryParams[key].split(',')
+				}
+
+				if (
+					queryParams.hasOwnProperty(key) &
+					(key === 'directory') &
+					((queryParams[key] == 'true') | (queryParams[key] == true))
+				) {
+					directory = true
 				}
 			}
 
@@ -794,29 +806,38 @@ module.exports = class MentorsHelper {
 				})
 				.filter((value) => value !== null)
 
-			let foundKeys = {}
-			let result = []
 			// update count after filters
 			userDetails.data.result.count = userDetails.data.result.data.length
 
-			for (let user of userDetails.data.result.data) {
-				let firstChar = user.name.charAt(0)
-				firstChar = firstChar.toUpperCase()
+			// add index number to the response
+			userDetails.data.result.data = userDetails.data.result.data.map((data, index) => ({
+				...data,
+				index_number: index + 1 + pageSize * (pageNo - 1), //To keep consistency with pagination
+			}))
 
-				if (!foundKeys[firstChar]) {
-					result.push({
-						key: firstChar,
-						values: [user],
-					})
-					foundKeys[firstChar] = result.length
-				} else {
-					let index = foundKeys[firstChar] - 1
-					result[index].values.push(user)
+			if (directory) {
+				let foundKeys = {}
+				let result = []
+
+				for (let user of userDetails.data.result.data) {
+					let firstChar = user.name.charAt(0)
+					firstChar = firstChar.toUpperCase()
+
+					if (!foundKeys[firstChar]) {
+						result.push({
+							key: firstChar,
+							values: [user],
+						})
+						foundKeys[firstChar] = result.length
+					} else {
+						let index = foundKeys[firstChar] - 1
+						result[index].values.push(user)
+					}
 				}
-			}
 
-			const sortedData = _.sortBy(result, 'key') || []
-			userDetails.data.result.data = sortedData
+				const sortedData = _.sortBy(result, 'key') || []
+				userDetails.data.result.data = sortedData
+			}
 
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,

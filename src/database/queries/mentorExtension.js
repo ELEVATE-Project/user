@@ -13,6 +13,15 @@ module.exports = class MentorExtensionQueries {
 			return error
 		}
 	}
+
+	static async getModelName() {
+		try {
+			return await MentorExtension.name
+		} catch (error) {
+			return error
+		}
+	}
+
 	static async createMentorExtension(data) {
 		try {
 			return await MentorExtension.create(data, { returning: true })
