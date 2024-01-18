@@ -34,7 +34,7 @@ const menteeService = require('@services/mentees')
 const { updatedDiff } = require('deep-object-diff')
 const { Parser } = require('@json2csv/plainjs')
 const entityTypeService = require('@services/entity-type')
-const mentorsService = require('@services/mentors')
+const mentorsService = require('./mentors')
 
 module.exports = class SessionsHelper {
 	/**
@@ -52,9 +52,19 @@ module.exports = class SessionsHelper {
 
 	static async create(bodyData, loggedInUserId, orgId, isAMentor) {
 		try {
+			// If type is passed store it in upper case
+			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
+			// If session type is private and mentorId is not passed in request body return an error
+			if (bodyData.type && (!bodyData.mentor_id || bodyData.mentor_id == '')) {
+				return common.failureResponse({
+					message: 'MENTORS_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			bodyData.created_by = loggedInUserId
 			bodyData.updated_by = loggedInUserId
-
+			let menteeIdsToEnroll = bodyData.mentees ? bodyData.mentees : []
 			const mentorIdToCheck = bodyData.mentor_id || loggedInUserId
 			const isSessionCreatedByManager = !!bodyData.mentor_id
 
@@ -320,6 +330,13 @@ module.exports = class SessionsHelper {
 				})
 			}
 			sessionDetail = sessionDetail.dataValues
+			if (sessionDetail.created_by !== userId) {
+				return common.failureResponse({
+					message: 'CANNOT_EDIT_DELETE_SESSION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			// If type is passed store it in upper case
 			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
 			// session can be edited by only the creator
@@ -350,13 +367,6 @@ module.exports = class SessionsHelper {
 				})
 			}
 
-			if (sessionDetail.created_by !== userId) {
-				return common.failureResponse({
-					message: 'CANNOT_EDIT_DELETE_SESSION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			let isEditingAllowedAtAnyTime = process.env.SESSION_EDIT_WINDOW_MINUTES == 0
 
 			const currentDate = moment.utc()
