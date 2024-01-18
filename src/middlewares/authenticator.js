@@ -135,23 +135,20 @@ module.exports = async function (req, res, next) {
 			const filter = { role_id: roleIds, api_path: req.path }
 			const attributes = ['request_type', 'api_path', 'module']
 			const requiredPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-		  
-			console.log(requiredPermissions)
-			console.log(req.method)
-		  
+
 			const isPermissionValid = requiredPermissions.some(
-			  permission => permission.api_path === req.path && permission.request_type.includes(req.method)
+				(permission) => permission.api_path === req.path && permission.request_type.includes(req.method)
 			)
-		  
+
 			if (!isPermissionValid) {
-			  throw common.failureResponse({
-				message: 'PERMISSION_DENIED',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			  })
+				throw common.failureResponse({
+					message: 'PERMISSION_DENIED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
 			}
-		  }
-		  
+		}
+
 		req.decodedToken = {
 			id: decodedToken.data.id,
 			roles: decodedToken.data.roles,
@@ -165,4 +162,3 @@ module.exports = async function (req, res, next) {
 		next(err)
 	}
 }
-
