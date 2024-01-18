@@ -171,6 +171,9 @@ module.exports = {
 	sessionCompleteEndpoint: '/mentoring/v1/sessions/completed/',
 	INACTIVE_STATUS: 'INACTIVE',
 	ACTIVE_STATUS: 'ACTIVE',
+	INVITED: 'INVITED',
+	ENROLLED: 'ENROLLED',
+	UNIT_OF_TIME: 'minutes',
 	SESSION_TYPE: {
 		PUBLIC: 'PUBLIC',
 		PRIVATE: 'PRIVATE',

@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9471f02c-72e9-463d-8569-a785c9cca88b",
+		"_postman_id": "c7d034de-eb4b-472a-855c-d5348c2d1284",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "21498549"
@@ -805,6 +805,121 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Enrolled Mentees",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enrolledMentees/:id?csv=true",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "sessions", "enrolledMentees", ":id"],
+							"query": [
+								{
+									"key": "csv",
+									"value": "true"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "6",
+									"description": "Session ID"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Enrolled Mentees CSV response",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "X-auth-token",
+										"value": "bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/enrolledMentees/:id?csv=true",
+									"host": ["{{MentoringBaseUrl}}mentoring"],
+									"path": ["v1", "sessions", "enrolledMentees", ":id"],
+									"query": [
+										{
+											"key": "csv",
+											"value": "true"
+										}
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "6",
+											"description": "Session ID"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "raw",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								},
+								{
+									"key": "Content-Language",
+									"value": "en"
+								},
+								{
+									"key": "X-Request-Ids",
+									"value": "d7a2a60d-2018-45cb-8817-1ba304808c13"
+								},
+								{
+									"key": "Content-disposition",
+									"value": "attachment; filename=session_list_6_1705405428558.csv"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/octet-stream; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "284"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"11c-iS4MjnTqdBA2EHU7ogpgtKJht1c\""
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 16 Jan 2024 11:43:48 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								}
+							],
+							"cookie": [],
+							"body": "\"Name\",\"Designation\",\"Organization\",\"E-mail ID\",\"Enrollment Type\"\n\"priyanka\",\"Block education officer, District education officer\",\"Default Organization\",\"f9359474815816b30fcb515a2e935322c7e6a376367bb9792d1f1a11c78181be\",\n\"Nevil M\",\"test\",\"Default Organization\",\"nevil@tunerlabs.com\","
+						}
+					]
 				}
 			]
 		},
@@ -940,6 +1055,47 @@
 									"key": "filterType",
 									"value": "QUARTERLY",
 									"description": "Accepted values : MONTHLY,WEEKLY and QUARTERLY"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mentees list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/mentees/list?search=searchText&designation=deo&organization_ids=1,2&session_id=4",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "mentees", "list"],
+							"query": [
+								{
+									"key": "search",
+									"value": "searchText",
+									"description": "search with full/partial name or full email"
+								},
+								{
+									"key": "designation",
+									"value": "deo",
+									"description": "designation code. comma separated, if multiple"
+								},
+								{
+									"key": "organization_ids",
+									"value": "1,2",
+									"description": "organization ids. comma separated, if multiple"
+								},
+								{
+									"key": "session_id",
+									"value": "4",
+									"description": "To get is_enrolled flag."
 								}
 							]
 						}
@@ -2347,15 +2503,6 @@
 										"type": "text"
 									}
 								],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
 								"url": {
 									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/download?type=PRIVATE&status=PUBLISHED",
 									"host": ["{{MentoringBaseUrl}}mentoring"],
@@ -2512,15 +2659,6 @@
 										"type": "text"
 									}
 								],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
 								"url": {
 									"raw": "{{MentoringBaseUrl}}mentoring/v1/manage-sessions/sessionList?page=1&limit=100",
 									"host": ["{{MentoringBaseUrl}}mentoring"],
