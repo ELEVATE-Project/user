@@ -132,45 +132,26 @@ module.exports = async function (req, res, next) {
 
 		if (apiPermissions) {
 			const roleIds = decodedToken.data.roles.map((role) => role.id)
-			const filter = { role_id: roleIds }
+			const filter = { role_id: roleIds, api_path: req.path }
 			const attributes = ['request_type', 'api_path', 'module']
-			const filters = { api_path: req.path }
-			const [requiredPermission, rolePermission] = await Promise.all([
-				permissionsQueries.find(filters, attributes),
-				rolePermissionMappingQueries.find(filter, attributes),
-			])
-
-			const extractedRequiredPermission = requiredPermission.rows[0]
-				? {
-						api_path: requiredPermission.rows[0].api_path,
-						request_type: requiredPermission.rows[0].request_type,
-						module: requiredPermission.rows[0].module,
-				  }
-				: null
-
-			const extractedRolePermission = rolePermission.map((item) => ({
-				api_path: item.api_path,
-				request_type: item.request_type,
-				module: item.module,
-			}))
-
-			const doesObjectExist = extractedRequiredPermission
-				? extractedRolePermission.some(
-						(item) => JSON.stringify(item) === JSON.stringify(extractedRequiredPermission)
-				  )
-				: false
-
-			const isMatchingEntry = doesObjectExist
-
-			if (!isMatchingEntry) {
-				throw common.failureResponse({
-					message: 'PERMISSION_DENIED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
+			const requiredPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+		  
+			console.log(requiredPermissions)
+			console.log(req.method)
+		  
+			const isPermissionValid = requiredPermissions.some(
+			  permission => permission.api_path === req.path && permission.request_type.includes(req.method)
+			)
+		  
+			if (!isPermissionValid) {
+			  throw common.failureResponse({
+				message: 'PERMISSION_DENIED',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'UNAUTHORIZED',
+			  })
 			}
-		}
-
+		  }
+		  
 		req.decodedToken = {
 			id: decodedToken.data.id,
 			roles: decodedToken.data.roles,
@@ -185,52 +166,3 @@ module.exports = async function (req, res, next) {
 	}
 }
 
-// async function fetchApiPermissions(path) {
-// 	try {
-// 		return new Promise((resolve, reject) => {
-// 			const apiEntry = common.apiPermissionsUrls.find((entry) => entry.path === path)
-
-// 			if (apiEntry) {
-// 				resolve({ actions: apiEntry.actions, module: apiEntry.module })
-// 			} else {
-// 				resolve({ actions: null, module: null })
-// 			}
-// 		})
-// 	} catch (error) {
-// 		throw error
-// 	}
-// }
-
-// common.apiPermissionsUrls.forEach((entry) => {
-// 	if (req.path.includes(entry.path)) {
-// 		apiPermissions = true
-// 	}
-// })
-
-// console.log("requiredPermission",requiredPermission)
-// console.log("rolePermission",rolePermission)
-
-// const extractedRequiredPermission = requiredPermission.rows.map((item) => ({
-// 	api_path: item.api_path,
-// 	request_type: item.request_type,
-// 	module: item.module,
-//   }))
-
-//   const extractedRolePermission = rolePermission.map((item) => ({
-// 	api_path: item.api_path,
-// 	request_type: item.request_type,
-// 	module: item.module,
-//   }))
-//   const doArraysMatch = JSON.stringify(extractedRequiredPermission) === JSON.stringify(extractedRolePermission)
-
-//   console.log(doesObjectExist);
-
-//   console.log("extractedRequiredPermission",extractedRequiredPermission)
-//   console.log("extractedRolePermission",extractedRolePermission)
-
-// const isMatchingEntry = rolePermission.some((entry) => {
-// 	const actionsMatch =
-// 		entry.actions.length === requiredPermission.actions.length &&
-// 		entry.actions.every((action, index) => action === requiredPermission.actions[index])
-// 	return actionsMatch && entry.module === requiredPermission.module
-// })

@@ -8,14 +8,6 @@ async function isUniqueCode(value) {
 	return true
 }
 
-async function isUniqueApiPath(value) {
-	const existingRecord = await Permission.findOne({ where: { api_path: value } })
-	if (existingRecord) {
-		throw new Error('API Path must be unique')
-	}
-	return true
-}
-
 module.exports = {
 	create: (req) => {
 		req.checkBody('code')
@@ -45,7 +37,6 @@ module.exports = {
 			.trim()
 			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+$/)
 			.withMessage('API Path is invalid')
-			.custom(isUniqueApiPath)
 
 		req.checkBody('status')
 			.trim()
