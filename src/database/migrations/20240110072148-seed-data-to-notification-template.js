@@ -231,7 +231,9 @@ module.exports = {
 				organization_id: defaultOrgId,
 			}
 		})
-
+		// clean existing templates from table
+		await queryInterface.bulkDelete('notification_templates', null, {})
+		// add templates to db
 		return queryInterface.bulkInsert('notification_templates', notificationTemplatesData)
 	},
 
