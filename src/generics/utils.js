@@ -167,7 +167,6 @@ function validateInput(input, validationData, modelName) {
 	const errors = []
 	for (const field of validationData) {
 		const fieldValue = input[field.value]
-
 		if (modelName && !field.model_names.includes(modelName) && input[field.value]) {
 			errors.push({
 				param: field.value,
@@ -206,9 +205,9 @@ function validateInput(input, validationData, modelName) {
 					break
 
 				case 'STRING':
-					if (typeof element !== 'string') {
-						addError(field, element, dataType, 'It should be a string')
-					} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(element)) {
+					if (typeof fieldValue !== 'string') {
+						addError(field, fieldValue, dataType, 'It should be a string')
+					} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(fieldValue)) {
 						addError(
 							field,
 							fieldValue,
