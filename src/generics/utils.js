@@ -218,9 +218,9 @@ function validateInput(input, validationData, modelName) {
 					break
 
 				case 'STRING':
-					if (typeof element !== 'string') {
-						addError(field, element, dataType, 'It should be a string')
-					} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(element)) {
+					if (typeof fieldValue !== 'string') {
+						addError(field, fieldValue, dataType, 'It should be a string')
+					} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(fieldValue)) {
 						addError(
 							field,
 							fieldValue,
