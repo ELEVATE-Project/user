@@ -1,6 +1,7 @@
 // Dependencies
 const request = require('request')
 require('dotenv').config({ path: '../.env' })
+require('module-alias/register')
 const entityTypeQueries = require('../database/queries/entityType')
 
 // Data
