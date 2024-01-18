@@ -178,8 +178,11 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			filterConditions.push(`users.name ILIKE :search`)
 		}
 
-		if (roleId) {
+		if (!Array.isArray(roleId)) {
 			filterConditions.push(`users.roles @> ARRAY[:roleId]::integer[]`)
+		} else {
+			// If roleId is an array, use the '&&' operator to check if there is an overlap between roleId and users.roles arrays
+			filterConditions.push(`ARRAY[:roleId] && users.roles`)
 		}
 
 		if (organization_id) {

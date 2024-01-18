@@ -1120,12 +1120,15 @@ module.exports = class AccountHelper {
 	 */
 	static async search(params) {
 		try {
-			let role = await roleQueries.findOne(
-				{ title: params.query.type.toLowerCase() },
+			const types = params.query.type.toLowerCase().split(',')
+			const roles = await roleQueries.findAll(
+				{ title: types },
 				{
 					attributes: ['id'],
 				}
 			)
+
+			const roleIds = roles.map((role) => role.id)
 			let emailIds = []
 			let searchText = []
 
@@ -1139,7 +1142,7 @@ module.exports = class AccountHelper {
 			})
 
 			let users = await userQueries.listUsersFromView(
-				role && role.id ? role.id : '',
+				roleIds ? roleIds : [],
 				params.query.organization_id ? params.query.organization_id : '',
 				params.pageNo,
 				params.pageSize,
