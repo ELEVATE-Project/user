@@ -26,12 +26,12 @@ const schedulerRequest = require('@requests/scheduler')
 const bigBlueButtonRequests = require('@requests/bigBlueButton')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
-const sessionMentor = require('./mentors')
 const bigBlueButtonService = require('./bigBlueButton')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const menteeService = require('@services/mentees')
+const { updatedDiff } = require('deep-object-diff')
 const { Parser } = require('@json2csv/plainjs')
 const entityTypeService = require('@services/entity-type')
 const mentorsService = require('@services/mentors')
@@ -44,12 +44,10 @@ module.exports = class SessionsHelper {
 	 * @async
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData - Session creation data.
-	 * @param {String} loggedInUserId - ID of the logged-in user.
-	 * @param {String} orgId - ID of the organization.
-	 * @param {Boolean} isAMentor - Flag indicating whether the user is a mentor.
-	 * @returns {Promise<Object>} - A promise that resolves with the JSON data of the created session.
-	 * @throws {Error} - Throws an error if there's an issue during session creation.
+	 * @param {Object} bodyData 			- Session creation data.
+	 * @param {String} loggedInUserId 		- logged in user id.
+	 * @param {Boolean} isAMentor 			- indicates if user is mentor or not
+	 * @returns {JSON} 						- Create session data.
 	 */
 
 	static async create(bodyData, loggedInUserId, orgId, isAMentor) {
@@ -73,7 +71,7 @@ module.exports = class SessionsHelper {
 				loggedInUserId,
 				isAMentor
 			)
-
+			// update mentor Id in session creation data
 			if (!bodyData.mentor_id) {
 				bodyData.mentor_id = loggedInUserId
 			} else if (!isAccessible) {
@@ -84,8 +82,10 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			// Check if mentor is available for this session's time slot
 			const timeSlot = await this.isTimeSlotAvailable(mentorIdToCheck, bodyData.start_date, bodyData.end_date)
 
+			// If time slot not available return corresponding error
 			if (timeSlot.isTimeSlotAvailable === false) {
 				const errorMessage = isSessionCreatedByManager
 					? 'INVALID_TIME_SELECTION_FOR_GIVEN_MENTOR'
@@ -98,9 +98,11 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			// Calculate duration of the session
 			let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
 			let elapsedMinutes = duration.asMinutes()
 
+			// Based on session duration check recommended conditions
 			if (elapsedMinutes < 30) {
 				return common.failureResponse({
 					message: 'SESSION__MINIMUM_DURATION_TIME',
@@ -117,11 +119,13 @@ module.exports = class SessionsHelper {
 				})
 			}
 
+			// Fetch mentor name from user service to store it in sessions data {for listing purpose}
 			const userDetails = (await userRequests.details('', mentorIdToCheck)).data.result
 			if (userDetails && userDetails.name) {
 				bodyData.mentor_name = userDetails.name
 			}
 
+			// Get default org id and entities
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
 				return common.failureResponse({
@@ -186,8 +190,16 @@ module.exports = class SessionsHelper {
 				bodyData.mentee_feedback_question_set = organisationPolicy.mentee_feedback_question_set
 			if (organisationPolicy.mentor_feedback_question_set)
 				bodyData.mentor_feedback_question_set = organisationPolicy.mentor_feedback_question_set
+
+			// Create session
 			const data = await sessionQueries.create(bodyData)
 
+			// If menteeIds are provided in the req body enroll them
+			if (menteeIdsToEnroll.length > 0) {
+				await this.addMentees(data.id, menteeIdsToEnroll, bodyData.time_zone)
+			}
+
+			// create session ownership for the session creator
 			await sessionOwnershipQueries.create({
 				mentor_id: loggedInUserId,
 				session_id: data.id,
@@ -232,6 +244,44 @@ module.exports = class SessionsHelper {
 				)
 			}
 
+			let emailTemplateCode
+			if (isSessionCreatedByManager && userDetails.email) {
+				if (data.type == common.SESSION_TYPE.PRIVATE) {
+					//assign template data
+					emailTemplateCode = process.env.MENTOR_PRIVATE_SESSION_INVITE_BY_MANAGER_EMAIL_TEMPLATE
+				} else {
+					// public session email template
+					emailTemplateCode = process.env.MENTOR_PUBLIC_SESSION_INVITE_BY_MANAGER_EMAIL_TEMPLATE
+				}
+				// send mail to mentors on session creation if session created by manager
+				const templateData = await notificationQueries.findOneEmailTemplate(emailTemplateCode, orgId)
+
+				if (templateData) {
+					let name = userDetails.name
+					// Push successfull enrollment to session in kafka
+					const payload = {
+						type: 'email',
+						email: {
+							to: userDetails.email,
+							subject: templateData.subject,
+							body: utils.composeEmailBody(templateData.body, {
+								name,
+								sessionTitle: data.title,
+								mentorName: data.mentor_name,
+								startDate: utils.getTimeZone(data.start_date, common.dateFormat, data.time_zone),
+								startTime: utils.getTimeZone(data.start_date, common.timeFormat, data.time_zone),
+								sessionDuration: elapsedMinutes,
+								sessionPlatform: data.meeting_info.platform,
+								unitOfTime: common.UNIT_OF_TIME,
+								sessionType: data.type,
+								noOfMentees: menteeIdsToEnroll.length,
+							}),
+						},
+					}
+					await kafkaCommunication.pushEmailToKafka(payload)
+				}
+			}
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'SESSION_CREATED_SUCCESSFULLY',
@@ -256,22 +306,45 @@ module.exports = class SessionsHelper {
 
 	static async update(sessionId, bodyData, userId, method, orgId) {
 		let isSessionReschedule = false
+		let isSessionCreatedByManager = false
 		try {
-			bodyData.updated_by = userId
-
-			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
-			if (!mentorExtension) {
+			// To determine the session is created by manager or mentor we need to fetch the session details first
+			// Then compare mentor_id and created_by information
+			// If manager is the session creator then no need to check Mentor extension data
+			let sessionDetail = await sessionQueries.findById(sessionId)
+			if (!sessionDetail) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			sessionDetail = sessionDetail.dataValues
+			// If type is passed store it in upper case
+			bodyData.type && (bodyData.type = bodyData.type.toUpperCase())
+			// session can be edited by only the creator
+			if (sessionDetail.created_by != userId) {
 				return common.failureResponse({
 					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			if (
+				(sessionDetail.mentor_id &&
+					sessionDetail.created_by &&
+					sessionDetail.mentor_id !== sessionDetail.created_by) ||
+				bodyData.mentee
+			) {
+				isSessionCreatedByManager = true
+				// If session is created by manager update userId with mentor_id
+				userId = sessionDetail.mentor_id
+			}
 
-			const sessionDetail = await sessionQueries.findById(sessionId)
-			if (!sessionDetail) {
+			let mentorExtension = await mentorExtensionQueries.getMentorExtension(userId)
+			if (!mentorExtension) {
 				return common.failureResponse({
-					message: 'SESSION_NOT_FOUND',
+					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -341,6 +414,9 @@ module.exports = class SessionsHelper {
 			}
 			let sessionModel = await sessionQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, sessionModel)
+			let isSessionDataChanged = false
+			let onlySessionTitleIsChanged = false
+			let updatedSessionData = {}
 
 			if (method != common.DELETE_METHOD && (bodyData.end_date || bodyData.start_date)) {
 				let duration = moment.duration(moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date)))
@@ -388,7 +464,37 @@ module.exports = class SessionsHelper {
 					})
 				}
 			} else {
-				const rowsAffected = await sessionQueries.updateOne({ id: sessionId }, bodyData)
+				// If the api is called for updating the session details execution flow enters to this  else block
+				// If request body contains mentees field enroll/unenroll mentees from the session
+				if (bodyData.mentees) {
+					// Fetch mentees currently enrolled to the session
+					const sessionAttendees = await sessionAttendeesQueries.findAll({
+						session_id: sessionId,
+					})
+					let sessionAttendeesIds = []
+					sessionAttendees.forEach((attendee) => {
+						sessionAttendeesIds.push(attendee.mentee_id)
+					})
+
+					// Filter mentees to enroll/unEnroll
+					const { menteesToRemove, menteesToAdd } = await this.filterMenteesToAddAndRemove(
+						sessionAttendeesIds,
+						bodyData.mentees
+					)
+
+					// Enroll newly added mentees by manager t the session
+					if (menteesToAdd.length > 0) {
+						await this.addMentees(sessionId, menteesToAdd, bodyData.time_zone)
+					}
+
+					// unenroll mentees
+					if (menteesToRemove.length > 0) {
+						await this.removeMentees(sessionId, menteesToRemove, bodyData.time_zone)
+					}
+				}
+				const { rowsAffected, updatedRows } = await sessionQueries.updateOne({ id: sessionId }, bodyData, {
+					returning: true,
+				})
 				if (rowsAffected == 0) {
 					return common.failureResponse({
 						message: 'SESSION_ALREADY_UPDATED',
@@ -397,7 +503,23 @@ module.exports = class SessionsHelper {
 					})
 				}
 				message = 'SESSION_UPDATED_SUCCESSFULLY'
+				updatedSessionData = updatedRows[0].dataValues
 
+				// check what are the values changed only if session is updated/deleted by manager
+				// This is to decide on which email to trigger
+				if (isSessionCreatedByManager) {
+					// Confirm if session is edited or not.
+					const updatedSessionDetails = updatedDiff(sessionDetail.dataValues, updatedSessionData)
+					delete updatedSessionDetails.updated_at
+					const keys = Object.keys(updatedSessionDetails)
+
+					if (keys.length > 0) {
+						isSessionDataChanged = true
+						if (keys.length === 1 && keys.includes('title')) {
+							onlySessionTitleIsChanged = true // Set flag true
+						}
+					}
+				}
 				// If new start date is passed update session notification jobs
 
 				if (bodyData.start_date && bodyData.start_date !== Number(sessionDetail.start_date)) {
@@ -437,11 +559,11 @@ module.exports = class SessionsHelper {
 					})
 				}
 			}
-			if (method == common.DELETE_METHOD || isSessionReschedule) {
+			if (method == common.DELETE_METHOD || isSessionReschedule || isSessionDataChanged) {
 				const sessionAttendees = await sessionAttendeesQueries.findAll({
 					session_id: sessionId,
 				})
-				const sessionAttendeesIds = []
+				let sessionAttendeesIds = []
 				sessionAttendees.forEach((attendee) => {
 					sessionAttendeesIds.push(attendee.mentee_id)
 				})
@@ -461,23 +583,39 @@ module.exports = class SessionsHelper {
 
 				/* Find email template according to request type */
 				let templateData
+				let mentorEmailTemplate
 				if (method == common.DELETE_METHOD) {
-					templateData = await notificationQueries.findOneEmailTemplate(
-						process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE,
-						orgId
-					)
-				} else if (isSessionReschedule) {
+					let sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE
+					// commenting this part for 2.6 release products confirmed to use the new delete email template for all.
+					// Keeping this logic because if new template for mentor deleting a session is added we can use it.
+					// isSessionCreatedByManager
+					// 	? (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE)
+					// 	: (sessionDeleteEmailTemplate = process.env.MENTOR_SESSION_DELETE_EMAIL_TEMPLATE)
+					templateData = await notificationQueries.findOneEmailTemplate(sessionDeleteEmailTemplate, orgId)
+					mentorEmailTemplate = sessionDeleteEmailTemplate
+				} else if (isSessionReschedule && !isSessionCreatedByManager) {
 					templateData = await notificationQueries.findOneEmailTemplate(
 						process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE,
 						orgId
 					)
-					console.log('Session rescheduled email code:', process.env.MENTOR_SESSION_RESCHEDULE_EMAIL_TEMPLATE)
-
-					console.log('Session rescheduled Template Data:', templateData)
+				} else if (isSessionDataChanged) {
+					// session is edited by the manager
+					// if only title is changed. then a different email has to send to mentor and mentees
+					let sessionUpdateByMangerTemplate
+					onlySessionTitleIsChanged
+						? (sessionUpdateByMangerTemplate = process.env.SESSION_TITLE_EDITED_BY_MANAGER_EMAIL_TEMPLATE)
+						: (sessionUpdateByMangerTemplate = process.env.MENTEE_SESSION_EDITED_BY_MANAGER_EMAIL_TEMPLATE)
+					templateData = await notificationQueries.findOneEmailTemplate(sessionUpdateByMangerTemplate, orgId)
+					mentorEmailTemplate = process.env.MENTOR_SESSION_EDITED_BY_MANAGER_EMAIL_TEMPLATE
 				}
 
+				// send mail associated with action to session mentees
 				sessionAttendees.forEach(async (attendee) => {
 					if (method == common.DELETE_METHOD) {
+						let duration = moment.duration(
+							moment.unix(sessionDetail.end_date).diff(moment.unix(sessionDetail.start_date))
+						)
+						let sessionDuration = duration.asMinutes()
 						const payload = {
 							type: 'email',
 							email: {
@@ -486,12 +624,36 @@ module.exports = class SessionsHelper {
 								body: utils.composeEmailBody(templateData.body, {
 									name: attendee.attendeeName,
 									sessionTitle: sessionDetail.title,
+									sessionDuration: sessionDuration,
+									unitOfTime: common.UNIT_OF_TIME,
+									startDate: utils.getTimeZone(
+										sessionDetail.start_date,
+										common.dateFormat,
+										sessionDetail.time_zone
+									),
+									startTime: utils.getTimeZone(
+										sessionDetail.start_date,
+										common.timeFormat,
+										sessionDetail.time_zone
+									),
 								}),
 							},
 						}
-
 						await kafkaCommunication.pushEmailToKafka(payload)
-					} else if (isSessionReschedule) {
+					} else if (isSessionReschedule || isSessionDataChanged) {
+						// Find old duration of session
+						let oldDuration = moment.duration(
+							moment.unix(sessionDetail.end_date).diff(moment.unix(sessionDetail.start_date))
+						)
+						let oldSessionDuration = oldDuration.asMinutes()
+						// if session is rescheduled find new duration
+						let revisedDuration
+						if (isSessionReschedule) {
+							let duration = moment.duration(
+								moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date))
+							)
+							revisedDuration = duration.asMinutes()
+						}
 						const payload = {
 							type: 'email',
 							email: {
@@ -505,7 +667,19 @@ module.exports = class SessionsHelper {
 										common.dateFormat,
 										sessionDetail.time_zone
 									),
+									startDate: utils.getTimeZone(
+										sessionDetail.start_date,
+										common.dateFormat,
+										sessionDetail.time_zone
+									),
 									oldStartTime: utils.getTimeZone(
+										sessionDetail.startDateUtc
+											? sessionDetail.startDateUtc
+											: sessionDetail.start_date,
+										common.timeFormat,
+										sessionDetail.time_zone
+									),
+									startTime: utils.getTimeZone(
 										sessionDetail.startDateUtc
 											? sessionDetail.startDateUtc
 											: sessionDetail.start_date,
@@ -542,6 +716,25 @@ module.exports = class SessionsHelper {
 										common.timeFormat,
 										sessionDetail.time_zone
 									),
+									originalSessionTitle: sessionDetail.title,
+									unitOfTime: common.UNIT_OF_TIME,
+									newSessionDuration: revisedDuration,
+									sessionDuration: oldSessionDuration,
+									sessionType: sessionDetail.title,
+									sessionPlatform:
+										sessionDetail.meeting_info && sessionDetail.meeting_info.platform
+											? sessionDetail.meeting_info.platform
+											: '',
+									newSessionPlatform:
+										updatedSessionData.meeting_info && updatedSessionData.meeting_info.platform
+											? updatedSessionData.meeting_info.platform
+											: sessionDetail.meeting_info.platform,
+									newSessionType: updatedSessionData.type
+										? updatedSessionData.type
+										: sessionDetail.type,
+									revisedSessionTitle: updatedSessionData.title
+										? updatedSessionData.title
+										: sessionDetail.title,
 								}),
 							},
 						}
@@ -550,6 +743,16 @@ module.exports = class SessionsHelper {
 						console.log('Session attendee mapped, isSessionReschedule true and kafka res: ', kafkaRes)
 					}
 				})
+				// send mail to mentor if session is created and handled by a manager
+				if (isSessionCreatedByManager) {
+					let response = await this.pushSessionRelatedMentorEmailToKafka(
+						mentorEmailTemplate,
+						orgId,
+						sessionDetail,
+						updatedSessionData,
+						method
+					)
+				}
 			}
 
 			return common.successResponse({
@@ -803,21 +1006,41 @@ module.exports = class SessionsHelper {
 	 * Enroll Session.
 	 * @method
 	 * @name enroll
-	 * @param {String} sessionId - Session id.
+	 * @param {String} sessionId 			- Session id.
 	 * @param {Object} userTokenData
-	 * @param {String} userTokenData.id - user id.
-	 * @param {String} timeZone - timezone.
-	 * @returns {JSON} - Enroll session.
+	 * @param {String} userTokenData.id 	- user id.
+	 * @param {String} timeZone 			- timezone.
+	 * @param {Boolean} isSelfEnrolled 		- true/false.
+	 * @param {Boolean} session 			- session details.
+	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone) {
-		const userDetails = (await userRequests.details('', userTokenData.id)).data.result
-
-		const userId = userTokenData.id
-		const email = userDetails.email
-		const name = userDetails.name
+	static async enroll(sessionId, userTokenData, timeZone, isSelfEnrolled = true, session = {}) {
 		try {
-			const session = await sessionQueries.findById(sessionId)
+			let email
+			let name
+			let userId
+			let enrollmentType
+			let emailTemplateCode = process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
+			// If entrolled by the mentee get email and name from user service via api call.
+			// Else it will be avalable in userTokenData
+			if (isSelfEnrolled) {
+				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				userId = userDetails.id
+				email = userDetails.email
+				name = userDetails.name
+				enrollmentType = common.ENROLLED
+			} else {
+				userId = userTokenData.id
+				email = userTokenData.email
+				name = userTokenData.name
+				emailTemplateCode = process.env.MENTEE_SESSION_ENROLLMENT_BY_MANAGER_EMAIL_TEMPLATE // update with new template
+				enrollmentType = common.INVITED
+			}
+			// search for session only if session data not passed
+			if (!session || Object.keys(session).length === 0) {
+				session = await sessionQueries.findById(sessionId)
+			}
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -825,9 +1048,6 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const mentorName = await userRequests.details('', session.mentor_id)
-			session.mentor_name = mentorName.data.result.name
 
 			const sessionAttendeeExist = await sessionAttendeesQueries.findOne({
 				session_id: sessionId,
@@ -854,6 +1074,7 @@ module.exports = class SessionsHelper {
 				session_id: sessionId,
 				mentee_id: userId,
 				time_zone: timeZone,
+				type: enrollmentType,
 			}
 
 			await sessionAttendeesQueries.create(attendee)
@@ -862,9 +1083,11 @@ module.exports = class SessionsHelper {
 			await sessionQueries.updateEnrollmentCount(sessionId, false)
 
 			const templateData = await notificationQueries.findOneEmailTemplate(
-				process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE,
+				emailTemplateCode,
 				session.mentor_organization_id
 			)
+			let duration = moment.duration(moment.unix(session.end_date).diff(moment.unix(session.start_date)))
+			let elapsedMinutes = duration.asMinutes()
 
 			if (templateData) {
 				// Push successfull enrollment to session in kafka
@@ -879,10 +1102,12 @@ module.exports = class SessionsHelper {
 							mentorName: session.mentor_name,
 							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
 							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
+							sessionDuration: elapsedMinutes,
+							sessionPlatform: session.meeting_info.platform,
+							unitOfTime: common.UNIT_OF_TIME,
 						}),
 					},
 				}
-
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
@@ -899,20 +1124,37 @@ module.exports = class SessionsHelper {
 	 * UnEnroll Session.
 	 * @method
 	 * @name enroll
-	 * @param {String} sessionId - Session id.
+	 * @param {String} sessionId 				- Session id.
 	 * @param {Object} userTokenData
-	 * @param {String} userTokenData._id - user id.
-	 * @returns {JSON} - UnEnroll session.
+	 * @param {String} userTokenData._id 		- user id.
+	 * @param {Boolean} isSelfEnrolled 			- true/false.
+	 * @param {Boolean} session 				- session details.
+	 * @returns {JSON} 							- UnEnroll session.
 	 */
 
-	static async unEnroll(sessionId, userTokenData) {
-		const userDetails = (await userRequests.details('', userTokenData.id)).data.result
-
-		const userId = userTokenData.id
-		const name = userDetails.name
-		const email = userDetails.email
+	static async unEnroll(sessionId, userTokenData, isSelfUnenrollment = true, session = {}) {
 		try {
-			const session = await sessionQueries.findById(sessionId)
+			let email
+			let name
+			let userId
+			let emailTemplateCode = process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE
+			// If mentee request unenroll get email and name from user service via api call.
+			// Else it will be avalable in userTokenData
+			if (isSelfUnenrollment) {
+				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
+				userId = userDetails.id
+				email = userDetails.email
+				name = userDetails.name
+			} else {
+				userId = userTokenData.id
+				email = userTokenData.email
+				name = userTokenData.name
+				emailTemplateCode = process.env.MENTOR_SESSION_DELETE_BY_MANAGER_EMAIL_TEMPLATE // update with new template
+			}
+			if (!session || Object.keys(session).length === 0) {
+				session = await sessionQueries.findById(sessionId)
+			}
+
 			if (!session) {
 				return common.failureResponse({
 					message: 'SESSION_NOT_FOUND',
@@ -938,11 +1180,13 @@ module.exports = class SessionsHelper {
 			await sessionQueries.updateEnrollmentCount(sessionId)
 
 			const templateData = await notificationQueries.findOneEmailTemplate(
-				process.env.MENTEE_SESSION_CANCELLATION_EMAIL_TEMPLATE,
+				emailTemplateCode,
 				session.mentor_organization_id
 			)
 
 			if (templateData) {
+				let duration = moment.duration(moment.unix(session.end_date).diff(moment.unix(session.start_date)))
+				let sessionDuration = duration.asMinutes()
 				// Push successful unenrollment to session in kafka
 				const payload = {
 					type: 'email',
@@ -953,10 +1197,13 @@ module.exports = class SessionsHelper {
 							name,
 							sessionTitle: session.title,
 							mentorName: session.mentor_name,
+							unitOfTime: common.UNIT_OF_TIME,
+							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
+							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
+							sessionDuration: sessionDuration,
 						}),
 					},
 				}
-
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
@@ -1438,6 +1685,7 @@ module.exports = class SessionsHelper {
 			return error
 		}
 	}
+
 	/**
 	 * Downloads a list of sessions created by a user in CSV format based on query parameters.
 	 * @method
@@ -1867,6 +2115,280 @@ module.exports = class SessionsHelper {
 			})
 		} catch (error) {
 			throw error
+		}
+	}
+
+	/**
+	 * Add mentees to session.
+	 * @method
+	 * @name addMentees
+	 * @param {String} sessionId 				- Session id.
+	 * @param {Number} menteeIds				- Mentees id.
+	 * @returns {JSON} 							- Session details
+	 */
+
+	static async addMentees(sessionId, menteeIds, timeZone) {
+		try {
+			// check if session exists or not
+			const sessionDetails = await sessionQueries.findOne({ id: sessionId })
+			if (!sessionDetails || Object.keys(sessionDetails).length === 0) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get mentee name and email from user service
+			const menteeAccounts = await userRequests.getListOfUserDetails(menteeIds)
+			if (!menteeAccounts.result || !menteeAccounts.result.length > 0) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const menteeDetails = menteeAccounts.result.map((element) => ({
+				id: element.id,
+				email: element.email,
+				name: element.name,
+			}))
+
+			// Enroll mentees to the given session
+			const failedIds = []
+			const successIds = []
+
+			const enrollPromises = menteeDetails.map((menteeData) => {
+				return this.enroll(sessionId, menteeData, timeZone, false, sessionDetails)
+					.then((response) => {
+						if (response.statusCode == httpStatusCode.created) {
+							// Enrolled successfully
+							successIds.push(menteeData.id)
+						} else {
+							// Enrollment failed
+							failedIds.push(menteeData.id)
+						}
+					})
+					.catch((error) => {
+						// mentee enroll error
+						failedIds.push(menteeData.id)
+					})
+			})
+
+			// Wait for all promises to settle
+			await Promise.all(enrollPromises)
+
+			if (failedIds.length > 0) {
+				return common.failureResponse({
+					message: 'FAILED_TO_ADD_MENTEES',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'MENTEES_ARE_ADDED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * pushSessionRelatedMentorEmailToKafka.
+	 * @method
+	 * @name addMentees
+	 * @param {String} templateCode 				- email template code.
+	 * @param {String} orgId 						- orgIde.
+	 * @param {Object} sessionDetail 				- session details.
+	 * @param {Object} updatedSessionDetails 		- updated session details.
+	 * @returns {JSON} 								- Kafka push response
+	 */
+	static async pushSessionRelatedMentorEmailToKafka(templateCode, orgId, sessionDetail, updatedSessionDetails) {
+		try {
+			const userDetails = (await userRequests.details('', sessionDetail.mentor_id)).data.result
+
+			// Fetch email template
+			let durationStartDate = updatedSessionDetails.start_date
+				? updatedSessionDetails.start_date
+				: sessionDetail.start_date
+			let durationEndDate = updatedSessionDetails.end_date
+				? updatedSessionDetails.end_date
+				: sessionDetail.end_date
+			let duration = moment.duration(moment.unix(durationEndDate).diff(moment.unix(durationStartDate)))
+			let sessionDuration = duration.asMinutes()
+			let oldSessionDuration
+			if (!updatedSessionDetails.start_date) {
+				let duration = moment.duration(
+					moment.unix(sessionDetail.end_date).diff(moment.unix(sessionDetail.start_date))
+				)
+				oldSessionDuration = duration.asMinutes()
+			}
+			const templateData = await notificationQueries.findOneEmailTemplate(templateCode, orgId)
+
+			// Construct data
+			const payload = {
+				type: 'email',
+				email: {
+					to: userDetails.email,
+					subject: templateData.subject,
+					body: utils.composeEmailBody(templateData.body, {
+						name: userDetails.name,
+						sessionTitle: updatedSessionDetails.title ? updatedSessionDetails.title : sessionDetail.title,
+						sessionDuration: oldSessionDuration ? oldSessionDuration : sessionDuration,
+						unitOfTime: common.UNIT_OF_TIME,
+						startDate: utils.getTimeZone(
+							sessionDetail.start_date,
+							common.dateFormat,
+							sessionDetail.time_zone
+						),
+						startTime: utils.getTimeZone(
+							sessionDetail.start_date,
+							common.timeFormat,
+							sessionDetail.time_zone
+						),
+						newStartDate: utils.getTimeZone(
+							updatedSessionDetails['start_date']
+								? updatedSessionDetails['start_date']
+								: sessionDetail.start_date,
+							common.dateFormat,
+							sessionDetail.time_zone
+						),
+						newStartTime: utils.getTimeZone(
+							updatedSessionDetails['start_date']
+								? updatedSessionDetails['start_date']
+								: sessionDetail.start_date,
+							common.timeFormat,
+							sessionDetail.time_zone
+						),
+						newSessionDuration: sessionDuration,
+						sessionPlatform: sessionDetail.meeting_info.platform,
+						originalSessionTitle: sessionDetail.title,
+						revisedSessionTitle: updatedSessionDetails.title
+							? updatedSessionDetails.title
+							: sessionDetail.title,
+						sessionType: sessionDetail.type,
+						newSessionPlatform:
+							updatedSessionDetails.meeting_info && updatedSessionDetails.meeting_info.platform
+								? updatedSessionDetails.meeting_info.platform
+								: sessionDetail.meeting_info.platform,
+						newSessionType: updatedSessionDetails.type ? updatedSessionDetails.type : sessionDetail.type,
+					}),
+				},
+			}
+
+			// Push to Kafka
+			const kafkaResponse = await kafkaCommunication.pushEmailToKafka(payload)
+			return kafkaResponse
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+	/**
+	 * Remove mentees from session.
+	 * @method
+	 * @name removeMentees
+	 * @param {String} sessionId 				- Session id.
+	 * @param {Number} menteeIds				- Mentees id.
+	 * @returns {JSON} 							- unenroll status
+	 */
+
+	static async removeMentees(sessionId, menteeIds) {
+		try {
+			// check if session exists or not
+			const sessionDetails = await sessionQueries.findOne({ id: sessionId })
+
+			if (!sessionDetails || Object.keys(sessionDetails).length === 0) {
+				return common.failureResponse({
+					message: 'SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get mentee name and email from user service
+			const menteeAccounts = await userRequests.getListOfUserDetails(menteeIds)
+
+			if (!menteeAccounts.result || !menteeAccounts.result.length > 0) {
+				return common.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const menteeDetails = menteeAccounts.result.map((element) => ({
+				id: element.id,
+				email: element.email,
+				name: element.name,
+			}))
+
+			// Uneroll mentees from the given session
+			const failedIds = []
+			const successIds = []
+
+			const enrollPromises = menteeDetails.map((menteeData) => {
+				return this.unEnroll(sessionId, menteeData, false, sessionDetails)
+					.then((response) => {
+						if (response.statusCode == httpStatusCode.accepted) {
+							// Unerolled successfully
+							successIds.push(menteeData.id)
+						} else {
+							// Unenrollment failed
+							failedIds.push(menteeData.id)
+						}
+					})
+					.catch((error) => {
+						// mentee Unenroll error
+						failedIds.push(menteeData.id)
+					})
+			})
+
+			// Wait for all promises to settle
+			await Promise.all(enrollPromises)
+
+			if (failedIds.length > 0) {
+				return common.failureResponse({
+					message: 'FAILED_TO_UNENROLL_MENTEES',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'USER_UNENROLLED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+
+	/**
+	 * This function used to find menteeIds to enroll and unEnroll based on the arrays passed
+	 * @method
+	 * @name filterMenteesToAddAndRemove
+	 * @param {Array} existingMentees 				- mentee_ids enrolled to a session.
+	 * @param {Array} updatedMentees				- latest mentee ids to update
+	 * @returns {Object} 							- mentees to enroll and unenroll
+	 */
+
+	static async filterMenteesToAddAndRemove(existingMentees, updatedMentees) {
+		// Find the intersection
+		const intersection = _.intersection(existingMentees, updatedMentees)
+
+		// Find mentees to remove (unenroll)
+		const menteesToRemove = _.difference(existingMentees, intersection)
+
+		// Find mentees to add (enroll)
+		const menteesToAdd = _.difference(updatedMentees, intersection)
+
+		return {
+			menteesToRemove,
+			menteesToAdd,
 		}
 	}
 }
