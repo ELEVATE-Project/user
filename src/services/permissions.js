@@ -35,16 +35,10 @@ module.exports = class PermissionsHelper {
 					return constraintError.path
 				})
 				const isCodeUnique = uniqueFields.includes('code')
-				const isApiPathUnique = uniqueFields.includes('api_path')
-
 				let errorMessage = ''
 				if (!isCodeUnique) {
 					errorMessage += 'code '
 				}
-				if (!isApiPathUnique) {
-					errorMessage += 'api_path '
-				}
-
 				return common.failureResponse({
 					message: `${errorMessage.trim()} should be unique.`,
 					statusCode: httpStatusCode.bad_request,
