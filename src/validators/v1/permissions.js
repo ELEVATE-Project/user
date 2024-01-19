@@ -1,34 +1,50 @@
+const Permission = require('@database/models/index').Permission
+
+async function isUniqueCode(value) {
+	const existingRecord = await Permission.findOne({ where: { code: value } })
+	if (existingRecord) {
+		throw new Error('Code must be unique')
+	}
+	return true
+}
+
 module.exports = {
 	create: (req) => {
 		req.checkBody('code')
 			.trim()
 			.notEmpty()
-			.withMessage('code field is empty')
+			.withMessage('Code field is empty')
 			.matches(/^[a-z_]+$/)
-			.withMessage('code is invalid, must not contain spaces')
+			.withMessage('Code is invalid, must not contain spaces')
+			.custom(isUniqueCode)
 
 		req.checkBody('module')
 			.trim()
 			.notEmpty()
-			.withMessage('module field is empty')
+			.withMessage('Module field is empty')
 			.matches(/^[a-z_]+$/)
-			.withMessage('module is invalid, must not contain spaces')
+			.withMessage('Module is invalid, must not contain spaces')
 
-		const allowedActions = ['ALL', 'READ', 'WRITE', 'UPDATE', 'DELETE']
-		req.checkBody('actions')
+		const allowedRequestType = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+		req.checkBody('request_type')
 			.trim()
 			.notEmpty()
-			.withMessage('actions field is empty')
-			.isIn(allowedActions)
-			.withMessage(`actions is invalid, must be one of: ${allowedActions.join(',')}`)
+			.withMessage('request_type field is empty')
+			.isIn(allowedRequestType)
+			.withMessage(`request_type is invalid, must be one of: ${allowedRequestType.join(',')}`)
+
+		req.checkBody('api_path')
+			.trim()
+			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+$/)
+			.withMessage('API Path is invalid')
 
 		req.checkBody('status')
 			.trim()
 			.matches(/^[A-Za-z]*$/)
-			.withMessage('status is invalid, must not contain spaces')
+			.withMessage('Status is invalid, must not contain spaces')
 			.optional({ checkFalsy: true })
 			.notEmpty()
-			.withMessage('status field must be a non-empty string when provided')
+			.withMessage('Status field must be a non-empty string when provided')
 	},
 
 	update: (req) => {
@@ -37,32 +53,37 @@ module.exports = {
 		req.checkBody('code')
 			.trim()
 			.notEmpty()
-			.withMessage('code field is empty')
+			.withMessage('Code field is empty')
 			.matches(/^[a-z_]+$/)
-			.withMessage('code is invalid, must not contain spaces')
+			.withMessage('Code is invalid, must not contain spaces')
 
 		req.checkBody('module')
 			.trim()
 			.notEmpty()
-			.withMessage('module field is empty')
+			.withMessage('Module field is empty')
 			.matches(/^[a-z_]+$/)
-			.withMessage('module is invalid, must not contain spaces')
+			.withMessage('Module is invalid, must not contain spaces')
 
-		const allowedActions = ['ALL', 'READ', 'WRITE', 'UPDATE', 'DELETE']
-		req.checkBody('actions')
+		const allowedRequestType = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
+		req.checkBody('request_type')
 			.trim()
 			.notEmpty()
-			.withMessage('actions field is empty')
-			.isIn(allowedActions)
-			.withMessage(`actions is invalid, must be one of: ${allowedActions.join(',')}`)
+			.withMessage('request_type field is empty')
+			.isIn(allowedRequestType)
+			.withMessage(`request_type is invalid, must be one of: ${allowedRequestType.join(',')}`)
+
+		req.checkBody('api_path')
+			.trim()
+			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+$/)
+			.withMessage('API Path is invalid')
 
 		req.checkBody('status')
 			.trim()
 			.matches(/^[A-Za-z]*$/)
-			.withMessage('status is invalid, must not contain spaces')
+			.withMessage('Status is invalid, must not contain spaces')
 			.optional({ checkFalsy: true })
 			.notEmpty()
-			.withMessage('status field must be a non-empty string when provided')
+			.withMessage('Status field must be a non-empty string when provided')
 	},
 
 	delete: (req) => {

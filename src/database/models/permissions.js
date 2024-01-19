@@ -11,14 +11,19 @@ module.exports = (sequelize, DataTypes) => {
 			code: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				unique: true,
 			},
 			module: {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			actions: {
+			request_type: {
 				allowNull: false,
 				type: DataTypes.ARRAY(DataTypes.STRING),
+			},
+			api_path: {
+				allowNull: false,
+				type: DataTypes.STRING,
 			},
 			status: {
 				type: DataTypes.STRING,
@@ -31,7 +36,15 @@ module.exports = (sequelize, DataTypes) => {
 			modelName: 'Permission',
 			tableName: 'permissions',
 			freezeTableName: true,
-			indexes: [{ unique: true, fields: ['code'] }],
+			indexes: [
+				{
+					unique: true,
+					fields: ['code'],
+					where: {
+						deleted_at: null,
+					},
+				},
+			],
 			paranoid: true,
 		}
 	)

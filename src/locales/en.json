@@ -118,7 +118,7 @@
 	"SESSION_DEACTIVATION_FAILED": "Failed to deactivate session.",
 	"MENTOR_LIST": "Mentor list fetched successfully.",
 	"PERMISSION_CREATED_SUCCESSFULLY": "Permission created successfully",
-	"PERMISSION_ALREADY_EXISTS": "Permissions already exists",
+	"PERMISSION_ALREADY_EXISTS": "code and api_path should be unique",
 	"PERMISSION_NOT_FOUND": "Permissions does not exists",
 	"PERMISSION_NOT_UPDATED": "Permissions is not updated",
 	"PERMISSION_UPDATED_SUCCESSFULLY": "Permission updated successfully",
@@ -145,5 +145,10 @@
 	"CANNOT_EDIT_DELETE_SESSION_CREATED_BY_MANAGER": "Sorry, you are not authorized to edit or delete sessions created by the session manager.",
 	"SESSION_LIST_FETCHED": "Session list fetched successfully",
 	"CANNOT_EDIT_DELETE_SESSION": "Sorry, you are not authorized to edit or delete this session.",
+	"ROLE_PERMISSION_CREATED_SUCCESSFULLY": "Permission added to the role",
+	"ROLE_PERMISSION_DELETED_SUCCESSFULLY": "Permission delete from the role",
+	"ROLE_PERMISSION_ALREADY_EXISTS": "Permission for this role already exists",
+	"ROLE_PERMISSION_NOT_FOUND": "Permission for this role is empty",
+	"PERMISSION_DENIED": "You do not have the required permissions to access this resource. Please contact your administrator for assistance.",
 	"SESSION_ATTENDEES": "Mentee list fetched successfully"
 }

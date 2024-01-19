@@ -6,7 +6,7 @@ const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 
 const { successResponse } = require('@constants/common')
-
+const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const { UniqueConstraintError } = require('sequelize')
 const menteeQueries = require('@database/queries/userExtension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -59,10 +59,36 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
+		const fetchrole = menteeDetails.data.result.roles
+		const filter = { role_id: fetchrole }
+		const permissionAndModules = await rolePermissionMappingQueries.find(filter)
+		const permissionsByModule = {}
+
+		permissionAndModules.forEach((rolePermission) => {
+			const module = rolePermission.module
+			const request_type = rolePermission.request_type
+
+			if (permissionsByModule[module]) {
+				permissionsByModule[module].request_type.push(...request_type)
+			} else {
+				permissionsByModule[module] = { module, request_type: [...request_type] }
+			}
+		})
+
+		const permissions = Object.entries(permissionsByModule).map(([key, value]) => ({
+			module: value.module,
+			request_type: value.request_type,
+		}))
+
 		return successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
-			result: { sessions_attended: totalSession, ...menteeDetails.data.result, ...processDbResponse },
+			result: {
+				sessions_attended: totalSession,
+				...menteeDetails.data.result,
+				permissions: permissions,
+				...processDbResponse,
+			},
 		})
 	}
 

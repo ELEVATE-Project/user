@@ -5,6 +5,7 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
+const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -577,6 +578,27 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
+			const fetchrole = mentorProfile.roles
+			const filter = { role_id: fetchrole }
+			const permissionAndModules = await rolePermissionMappingQueries.find(filter)
+			const permissionsByModule = {}
+
+			permissionAndModules.forEach((rolePermission) => {
+				const module = rolePermission.module
+				const request_type = rolePermission.request_type
+
+				if (permissionsByModule[module]) {
+					permissionsByModule[module].request_type.push(...request_type)
+				} else {
+					permissionsByModule[module] = { module, request_type: [...request_type] }
+				}
+			})
+
+			const permissions = Object.entries(permissionsByModule).map(([key, value]) => ({
+				module: value.module,
+				request_type: value.request_type,
+			}))
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PROFILE_FTECHED_SUCCESSFULLY',
@@ -584,6 +606,7 @@ module.exports = class MentorsHelper {
 					sessions_attended: totalSession,
 					sessions_hosted: totalSessionHosted,
 					...mentorProfile,
+					permissions: permissions,
 					...processDbResponse,
 				},
 			})
