@@ -32,7 +32,7 @@ module.exports = class MenteesHelper {
 	 * @param {String} userId - user id.
 	 * @returns {JSON} - profile details
 	 */
-	static async read(roles, id, orgId) {
+	static async read(id, orgId) {
 		const menteeDetails = await userRequests.details('', id)
 		const mentee = await menteeQueries.getMenteeExtension(id)
 		delete mentee.user_id
@@ -59,8 +59,8 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const userRoleIds = roles.map((role) => role.id)
-		const filter = { role_id: userRoleIds }
+		const fetchrole = menteeDetails.data.result.roles
+		const filter = { role_id: fetchrole }
 		const permissionAndModules = await rolePermissionMappingQueries.find(filter)
 		const permissionsByModule = {}
 

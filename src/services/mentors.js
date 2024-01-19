@@ -502,7 +502,7 @@ module.exports = class MentorsHelper {
 	 * @param {Boolean} isAMentor 				- user mentor or not.
 	 * @returns {JSON} 							- profile details
 	 */
-	static async read(roles, id, orgId, userId = '', isAMentor = '') {
+	static async read(id, orgId, userId = '', isAMentor = '') {
 		try {
 			if (userId !== '' && isAMentor !== '') {
 				// Get mentor visibility and org id
@@ -578,8 +578,8 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-			const userRoleIds = roles.map((role) => role.id)
-			const filter = { role_id: userRoleIds }
+			const fetchrole = mentorProfile.roles
+			const filter = { role_id: fetchrole }
 			const permissionAndModules = await rolePermissionMappingQueries.find(filter)
 			const permissionsByModule = {}
 
