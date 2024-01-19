@@ -20,10 +20,9 @@ module.exports = (req, res, next) => {
 		let buff = new Buffer.from(req.searchText, 'base64')
 		req.searchText = buff.toString('ascii')
 	}
-	let x = containsSpecialChars(req.searchText)
 	if (containsSpecialChars(req.searchText)) {
 		throw common.failureResponse({
-			message: 'Invalid search text 😥',
+			message: 'Invalid search text',
 			statusCode: httpStatus.bad_request,
 			responseCode: 'CLIENT_ERROR',
 		})
