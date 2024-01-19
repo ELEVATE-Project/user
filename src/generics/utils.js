@@ -15,10 +15,6 @@ const { RedisCache, InternalCache } = require('elevate-node-cache')
 const startCase = require('lodash/startCase')
 const common = require('@constants/common')
 const crypto = require('crypto')
-const mentorQueries = require('@database/queries/mentorExtension')
-const menteeQueries = require('@database/queries/userExtension')
-const httpStatusCode = require('@generics/http-status')
-const userRequests = require('@requests/user')
 
 const hash = (str) => {
 	const salt = bcryptJs.genSaltSync(10)
