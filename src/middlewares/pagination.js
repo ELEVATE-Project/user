@@ -16,14 +16,13 @@ module.exports = (req, res, next) => {
 	req.pageSize =
 		req.query.limit && Number(req.query.limit) > 0 && Number(req.query.limit) <= 100 ? Number(req.query.limit) : 100
 	req.searchText = req.query.search && req.query.search != '' ? decodeURI(req.query.search) : ''
-	// if (req.searchText != '') {
-	// 	let buff = new Buffer.from(req.searchText, 'base64')
-	// 	req.searchText = buff.toString('ascii')
-	// }
-	let x = containsSpecialChars(req.searchText)
+	if (req.searchText != '') {
+		let buff = new Buffer.from(req.searchText, 'base64')
+		req.searchText = buff.toString('ascii')
+	}
 	if (containsSpecialChars(req.searchText)) {
 		throw common.failureResponse({
-			message: 'Invalid search text 😥',
+			message: 'Invalid search text',
 			statusCode: httpStatus.bad_request,
 			responseCode: 'CLIENT_ERROR',
 		})

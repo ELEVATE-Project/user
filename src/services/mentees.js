@@ -1049,6 +1049,7 @@ module.exports = class MenteesHelper {
 					},
 				})
 			}
+
 			const userIds = userDetails.data.result.data.map((item) => item.id)
 			extensionDetails = await menteeQueries.getUsersByUserIdsFromView(
 				userIds,
@@ -1106,9 +1107,6 @@ module.exports = class MenteesHelper {
 					return null
 				})
 				.filter((value) => value !== null)
-
-			// update count after filters
-			userDetails.data.result.count = userDetails.data.result.count
 
 			if (queryParams.session_id) {
 				const enrolledMentees = await sessionService.enrolledMentees(queryParams.session_id, '', userId)
