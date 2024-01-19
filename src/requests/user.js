@@ -12,7 +12,6 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const utilsHelper = require('@generics/utils')
 
 /**
  * Fetches the default organization details for a given organization code/id.
