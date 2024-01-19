@@ -558,17 +558,17 @@ const generateWhereClause = (tableName) => {
 }
 
 function validateFilters(input, validationData, modelName) {
-	const allValues = []
-	validationData.forEach((item) => {
+	const entityTypes = []
+	validationData.forEach((entityType) => {
 		// Extract the 'value' property from the main object
-		allValues.push(item.value)
+		entityTypes.push(entityType.value)
 
 		// Extract the 'value' property from the 'entities' array
 	})
 
 	for (const key in input) {
 		if (input.hasOwnProperty(key)) {
-			if (allValues.includes(key)) {
+			if (entityTypes.includes(key)) {
 				continue
 			} else {
 				delete input[key]
