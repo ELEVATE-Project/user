@@ -13,6 +13,13 @@ module.exports = class MenteeExtensionQueries {
 			return error
 		}
 	}
+	static async getModelName() {
+		try {
+			return await MenteeExtension.name
+		} catch (error) {
+			return error
+		}
+	}
 	static async createMenteeExtension(data) {
 		try {
 			return await MenteeExtension.create(data, { returning: true })
