@@ -196,6 +196,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 
 		const filterQuery = `
             SELECT
+				COUNT(*) OVER () as total_count,
                 users.id,
                 users.name,
 				users.email,
@@ -216,7 +217,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
             ${filterClause}
             ORDER BY
                 users.name ASC
-            OFFSET
+			OFFSET
                 :offset
             LIMIT
                 :limit;
@@ -241,7 +242,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			return user
 		})
 
-		return { count: users.length, data: users }
+		return { count: users.length > 0 ? Number(users[0].total_count) : 0, data: users }
 	} catch (error) {
 		throw error
 	}
