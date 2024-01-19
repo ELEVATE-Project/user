@@ -2,7 +2,7 @@
 
 require('module-alias/register')
 const userRequests = require('@requests/user')
-require('dotenv').config()
+require('dotenv').config({ path: '../../.env' })
 const common = require('@constants/common')
 const Permissions = require('@database/models/index').Permission
 
