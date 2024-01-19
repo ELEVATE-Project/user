@@ -22,7 +22,7 @@ const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const entityTypeService = require('@services/entity-type')
 const entityType = require('@database/models/entityType')
-const sessionService = require('@services/sessions')
+const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 
 module.exports = class MenteesHelper {
 	/**
@@ -1135,8 +1135,9 @@ module.exports = class MenteesHelper {
 				.filter((value) => value !== null)
 
 			if (queryParams.session_id) {
-				const enrolledMentees = await sessionService.enrolledMentees(queryParams.session_id, '', userId)
-				const enrolledMenteeIds = enrolledMentees.result.map((enrolledMentee) => enrolledMentee.id)
+				const enrolledMentees = await getEnrolledMentees(queryParams.session_id, '', userId)
+
+				const enrolledMenteeIds = enrolledMentees.map((enrolledMentee) => enrolledMentee.id)
 
 				userDetails.data.result.data.forEach((user) => {
 					const isEnrolled = enrolledMenteeIds.some((id) => id === user.id)
