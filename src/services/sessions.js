@@ -150,7 +150,7 @@ module.exports = class SessionsHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.overlap]: [sessionModelName] },
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -411,7 +411,7 @@ module.exports = class SessionsHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.overlap]: [sessionModelName] },
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -873,7 +873,7 @@ module.exports = class SessionsHelper {
 				organization_id: {
 					[Op.in]: [sessionDetails.mentor_organization_id, defaultOrgId],
 				},
-				model_names: { [Op.overlap]: [sessionModelName] },
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
