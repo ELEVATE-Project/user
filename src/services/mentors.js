@@ -745,7 +745,7 @@ module.exports = class MentorsHelper {
 				filteredQuery.designation = designation
 			}
 
-			const saasFilter = await utils.filterUserListBasedOnSaasPolicy(userId, isAMentor)
+			const saasFilter = await this.filterMentorListBasedOnSaasPolicy(userId, isAMentor)
 
 			let extensionDetails = await mentorQueries.getMentorsByUserIdsFromView(
 				[],
@@ -893,7 +893,19 @@ module.exports = class MentorsHelper {
 			}
 
 			let filter = ''
+			let relatedOrganizations = []
 			if (userPolicyDetails.external_mentor_visibility && userPolicyDetails.organization_id) {
+				// fetch organisation details to get the related org
+				let userOrgDetails = await userRequests.fetchDefaultOrgDetails(userPolicyDetails.organization_id)
+
+				// list of related org ids
+				relatedOrganizations = userOrgDetails.data.result.related_orgs
+				if (relatedOrganizations) {
+					relatedOrganizations.push(userPolicyDetails.organization_id)
+				} else {
+					relatedOrganizations = []
+				}
+
 				// Filter user data based on policy
 				// generate filter based on condition
 				if (userPolicyDetails.external_mentor_visibility === common.CURRENT) {
@@ -907,13 +919,17 @@ module.exports = class MentorsHelper {
 					 * If user external_mentor_visibility is associated
 					 * <<point**>> first we need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 					 */
-					filter = `AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "organization_id" = ${userPolicyDetails.organization_id})`
+					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT') OR "organization_id" = ${userPolicyDetails.organization_id}`
 				} else if (userPolicyDetails.external_mentor_visibility === common.ALL) {
 					/**
 					 * We need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 					 * OR if mentor visibility is ALL that mentor is also accessible
 					 */
-					filter = `AND ((${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id})`
+					if (relatedOrganizations.length == 0) {
+						filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
+					} else {
+						filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${relatedOrganizations})`
+					}
 				}
 			}
 
