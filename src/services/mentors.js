@@ -829,9 +829,6 @@ module.exports = class MentorsHelper {
 				})
 				.filter((value) => value !== null)
 
-			// update count after filters
-			userDetails.data.result.count = userDetails.data.result.data.length
-
 			// add index number to the response
 			userDetails.data.result.data = userDetails.data.result.data.map((data, index) => ({
 				...data,
