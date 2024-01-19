@@ -7,7 +7,7 @@
 
 const path = require('path')
 
-const { AwsFileHelper, AzureFileHelper, GcpFileHelper,OciFileHelper } = require('elevate-cloud-storage')
+const { AwsFileHelper, AzureFileHelper, GcpFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 
 module.exports = class FilesHelper {
 	static async getGcpSignedUrl(destFilePath, actionType = 'write') {
