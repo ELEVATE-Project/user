@@ -71,6 +71,17 @@ module.exports = class userRole {
 		}
 	}
 
+	/**
+	 * Get all available roles.
+	 * @method
+	 * @name defaultlist
+	 * @param {Array(String)} req.body.filters - Filters.
+	 * @param {String} req.pageNo - Page number.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @param {Integer} req.decodedToken.organization_id - user organization_id.
+	 * @returns {JSON} - Role list.
+	 */
 	async list(req) {
 		try {
 			const roleList = await roleService.list(
@@ -81,6 +92,25 @@ module.exports = class userRole {
 				req.decodedToken.organization_id
 			)
 			return roleList
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Get all available roles.
+	 * @method
+	 * @name default
+	 * @param {Array(String)} req.body.filters - Filters.
+	 * @param {String} req.pageNo - Page number.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - Role list.
+	 */
+	async default(req) {
+		try {
+			const defaultRoleList = await roleService.defaultList(req.query, req.pageNo, req.pageSize, req.searchText)
+			return defaultRoleList
 		} catch (error) {
 			return error
 		}

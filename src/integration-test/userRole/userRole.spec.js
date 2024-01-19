@@ -52,4 +52,14 @@ describe('/user/v1/userRole', function () {
 		expect(res.statusCode).toBe(200)
 		expect(res.body).toMatchSchema(responseSchema.listSchema)
 	})
+
+	it('/default', async () => {
+		let res = await request
+			.get('/user/v1/userRole/default')
+			.query({ page: 1, limit: 10, code: 'system', organization_id: 1 })
+
+		logError(res)
+		expect(res.statusCode).toBe(200)
+		expect(res.body).toMatchSchema(responseSchema.listSchema)
+	})
 })
