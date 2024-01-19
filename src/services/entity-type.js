@@ -205,7 +205,7 @@ module.exports = class EntityHelper {
 					[Op.in]: orgIds,
 				},
 				model_names: {
-					[Op.contains]: [modelName],
+					[Op.contains]: Array.isArray(modelName) ? modelName : [modelName],
 				},
 			}
 

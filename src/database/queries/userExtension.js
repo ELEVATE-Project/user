@@ -13,6 +13,7 @@ module.exports = class MenteeExtensionQueries {
 			return error
 		}
 	}
+
 	static async getModelName() {
 		try {
 			return await MenteeExtension.name

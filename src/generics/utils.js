@@ -201,12 +201,14 @@ function validateInput(input, validationData, modelName) {
 				case 'ARRAY[STRING]':
 					if (Array.isArray(fieldValue)) {
 						fieldValue.forEach((element) => {
-							if (typeof element !== 'string' || /[^A-Za-z0-9_]/.test(element)) {
+							if (typeof element !== 'string') {
+								addError(field, element, dataType, 'It should be a string')
+							} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(element)) {
 								addError(
 									field,
 									element,
 									dataType,
-									'It should not contain spaces or special characters except underscore.'
+									'It should not contain special characters except underscore.'
 								)
 							}
 						})
@@ -216,12 +218,14 @@ function validateInput(input, validationData, modelName) {
 					break
 
 				case 'STRING':
-					if (typeof fieldValue !== 'string' || /[^A-Za-z0-9_]/.test(fieldValue)) {
+					if (typeof fieldValue !== 'string') {
+						addError(field, fieldValue, dataType, 'It should be a string')
+					} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(fieldValue)) {
 						addError(
 							field,
 							fieldValue,
 							dataType,
-							'It should not contain spaces or special characters except underscore.'
+							'It should not contain special characters except underscore.'
 						)
 					}
 					break
@@ -598,6 +602,8 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 			relatedOrganizations = userOrgDetails.data.result.related_orgs
 			if (relatedOrganizations) {
 				relatedOrganizations.push(userPolicyDetails.organization_id)
+			} else {
+				relatedOrganizations = []
 			}
 
 			// Filter user data based on policy
@@ -619,7 +625,7 @@ async function filterUserListBasedOnSaasPolicy(userId, isAMentor) {
 				 * We need to check if mentor's visible_to_organizations contain the user organization_id and verify mentor's visibility is not current (if it is ALL and ASSOCIATED it is accessible)
 				 * OR if mentor visibility is ALL that mentor is also accessible
 				 */
-				if (userOrgDetails.data.result.related_orgs.length == 0) {
+				if (relatedOrganizations.length == 0) {
 					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR "organization_id" = ${userPolicyDetails.organization_id}`
 				} else {
 					filter = `AND (${userPolicyDetails.organization_id} = ANY("visible_to_organizations") AND "visibility" != 'CURRENT' ) OR "visibility" = 'ALL' OR  "organization_id" in ( ${relatedOrganizations})`

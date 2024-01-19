@@ -11,12 +11,15 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
+const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const permissionsQueries = require('@database/queries/permissions')
 
 module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
+		let apiPermissions = false
 		let decodedToken
 
 		const authHeader = req.get('X-auth-token')
@@ -42,8 +45,13 @@ module.exports = async function (req, res, next) {
 				roleValidation = true
 			}
 		})
+		common.apiPermissionsUrls.map(function (path) {
+			if (req.path.includes(path)) {
+				apiPermissions = true
+			}
+		})
 
-		if ((internalAccess || guestUrl) && !authHeader) {
+		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) {
 			next()
 			return
 		}
@@ -120,6 +128,25 @@ module.exports = async function (req, res, next) {
 
 			decodedToken.data.roles = user.data.result.user_roles
 			decodedToken.data.organization_id = user.data.result.organization_id
+		}
+
+		if (apiPermissions) {
+			const roleIds = decodedToken.data.roles.map((role) => role.id)
+			const filter = { role_id: roleIds, api_path: req.path }
+			const attributes = ['request_type', 'api_path', 'module']
+			const requiredPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+
+			const isPermissionValid = requiredPermissions.some(
+				(permission) => permission.api_path === req.path && permission.request_type.includes(req.method)
+			)
+
+			if (!isPermissionValid) {
+				throw common.failureResponse({
+					message: 'PERMISSION_DENIED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
 
 		req.decodedToken = {

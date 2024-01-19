@@ -48,4 +48,31 @@ module.exports = {
 
 		req.checkBody('recordingUrl').notEmpty().withMessage('recordingUrl field is empty')
 	},
+	enrolledMentees: (req) => {
+		req.checkParams('id')
+			.notEmpty()
+			.withMessage('id param is empty')
+			.isNumeric()
+			.withMessage('id param is invalid, must be an integer')
+
+		req.checkQuery('csv').optional().isBoolean().withMessage('csv is invalid, must be a boolean value')
+	},
+
+	addMentees: (req) => {
+		// throw error if sessionId is not passed
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		// Check if req.body.menteeIds is an array and not empty
+		req.checkBody('mentees')
+			.custom((mentees) => Array.isArray(mentees) && mentees.length > 0)
+			.withMessage('mentees must be a non-empty array')
+	},
+
+	removeMentees: (req) => {
+		// throw error if sessionId is not passed
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		// Check if req.body.menteeIds is an array and not empty
+		req.checkBody('mentees')
+			.custom((mentees) => Array.isArray(mentees) && mentees.length > 0)
+			.withMessage('mentees must be a non-empty array')
+	},
 }
