@@ -252,6 +252,10 @@ let enviromentVariables = {
 		optional: false,
 		default: 'aes-256-cbc',
 	},
+	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required generic invitation email template code',
+		optional: false,
+	},
 }
 
 let success = true

@@ -104,7 +104,7 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
-				role = await roleQueries.findOne(
+				role = await roleQueries.findAll(
 					{ id: invitedUserMatch.roles },
 					{
 						attributes: {
@@ -113,7 +113,7 @@ module.exports = class AccountHelper {
 					}
 				)
 
-				if (!role) {
+				if (!role.length > 0) {
 					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
@@ -121,20 +121,21 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				if (role.title === common.ORG_ADMIN_ROLE) {
-					isOrgAdmin = true
+				role.forEach(async (eachRole) => {
+					if (eachRole.title === common.ORG_ADMIN_ROLE) {
+						const defaultRole = await roleQueries.findOne(
+							{ title: process.env.DEFAULT_ROLE },
+							{
+								attributes: {
+									exclude: ['created_at', 'updated_at', 'deleted_at'],
+								},
+							}
+						)
 
-					const defaultRole = await roleQueries.findOne(
-						{ title: process.env.DEFAULT_ROLE },
-						{
-							attributes: {
-								exclude: ['created_at', 'updated_at', 'deleted_at'],
-							},
-						}
-					)
-
-					roles.push(defaultRole.id)
-				}
+						roles.push(defaultRole.id)
+						isOrgAdmin = true
+					}
+				})
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain

@@ -423,6 +423,13 @@ const generateWhereClause = (tableName) => {
 	return whereClause
 }
 
+const getRoleTitlesFromId = (roleIds = [], roleList = []) => {
+	return roleIds.map((roleId) => {
+		const role = roleList.find((r) => r.id === roleId)
+		return role ? role.title : null
+	})
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -452,4 +459,5 @@ module.exports = {
 	isValidEmail,
 	isValidName,
 	generateWhereClause,
+	getRoleTitlesFromId,
 }

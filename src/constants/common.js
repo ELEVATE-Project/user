@@ -95,6 +95,7 @@ module.exports = {
 	INACTIVE_STATUS: 'INACTIVE',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
+	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
@@ -120,4 +121,5 @@ module.exports = {
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
+	ROLE_TYPE_NON_SYSTEM: 0,
 }

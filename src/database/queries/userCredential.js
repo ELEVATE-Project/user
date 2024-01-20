@@ -1,5 +1,6 @@
 'use strict'
 const UserCredential = require('@database/models/index').UserCredential
+const { UniqueConstraintError, ValidationError } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
@@ -7,7 +8,7 @@ exports.create = async (data) => {
 		return res.get({ plain: true })
 	} catch (error) {
 		if (error instanceof UniqueConstraintError) {
-			return 'USER_ALREADY_EXISTS'
+			return 'User already exist'
 		} else if (error instanceof ValidationError) {
 			let message
 			error.errors.forEach((err) => {
