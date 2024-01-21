@@ -51,6 +51,30 @@ module.exports = class OrganizationService {
 			})
 		} catch (error) {
 			console.log(error)
+			throw error
+		}
+	}
+
+	static async create(organizationId, creatorId) {
+		try {
+			const extensionData = {
+				organization_id: organizationId,
+				...common.DEFAULT_ORGANISATION_POLICY,
+				created_by: creatorId,
+				updated_by: creatorId,
+			}
+			const orgExtension = await organisationExtensionQueries.upsert(extensionData)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORG_EXTENSION_CREATED_SUCCESSFULLY',
+				result: {
+					organization_id: orgExtension.organization_id,
+				},
+			})
+		} catch (error) {
+			if (error.name === 'SequelizeUniqueConstraintError')
+				throw new Error(`Extension Already Exist For Organization With Id: ${organizationId}`)
+			else throw error
 		}
 	}
 }

@@ -8,4 +8,12 @@ module.exports = class Organization {
 			return error
 		}
 	}
+
+	async create(req) {
+		try {
+			return await organizationService.create(req.query.organizationId, req.query.creatorId)
+		} catch (error) {
+			throw error
+		}
+	}
 }

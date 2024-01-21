@@ -111,6 +111,7 @@ module.exports = {
 		'/org-admin/updateRelatedOrgs',
 		'/sessions/completed',
 		'/sessions/bulkUpdateMentorNames',
+		'/organization/create',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',
