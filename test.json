@@ -1,0 +1,7 @@
+{
+	"entries": ["src/validators/v1/userRole.js"],
+	"tree": {
+		"src/validators/v1/userRole.js": []
+	},
+	"circulars": []
+}
