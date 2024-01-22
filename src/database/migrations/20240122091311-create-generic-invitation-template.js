@@ -1,5 +1,7 @@
+'use strict'
 const moment = require('moment')
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
@@ -25,6 +27,6 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		await queryInterface.bulkDelete('notification_templates', null, {})
+		await queryInterface.bulkDelete('notification_templates', { code: 'generic_invite' })
 	},
 }
