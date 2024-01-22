@@ -105,11 +105,11 @@ module.exports = {
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
 					permission_id: await getPermissionId(
 						'manage_session',
-						['POST'],
+						['GET'],
 						'/mentoring/v1/manage-sessions/downloadSessions'
 					),
 					module: 'manage_session',
-					request_type: ['POST'],
+					request_type: ['GET'],
 					api_path: '/mentoring/v1/manage-sessions/downloadSessions',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -119,11 +119,11 @@ module.exports = {
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
 					permission_id: await getPermissionId(
 						'manage_session',
-						['POST'],
+						['GET'],
 						'/mentoring/v1/manage-sessions/createdSessions'
 					),
 					module: 'manage_session',
-					request_type: ['POST'],
+					request_type: ['GET'],
 					api_path: '/mentoring/v1/manage-sessions/createdSessions',
 					created_at: new Date(),
 					updated_at: new Date(),
