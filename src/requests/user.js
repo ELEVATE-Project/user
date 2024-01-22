@@ -12,7 +12,6 @@ const endpoints = require('@constants/endpoints')
 const request = require('request')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const utilsHelper = require('@generics/utils')
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -181,6 +180,54 @@ const list = function (userType, pageNo, pageSize, searchText) {
 }
 
 /**
+ * User Role list.
+ * @method
+ * @name defaultList
+ * @param {Number} page - page No.
+ * @param {Number} limit - page limit.
+ * @param {String} search - search field.
+ * @returns {JSON} - List of roles
+ */
+
+const getListOfUserRoles = async (page, limit, search) => {
+	const options = {
+		headers: {
+			'Content-Type': 'application/json',
+			internal_access_token: process.env.INTERNAL_ACCESS_TOKEN,
+		},
+		json: true,
+	}
+
+	const apiUrl = userBaseUrl + endpoints.USERS_ROLE_LIST + `?page=${page}&limit=${limit}&search=${search}`
+
+	try {
+		const data = await new Promise((resolve, reject) => {
+			request.get(apiUrl, options, (err, response) => {
+				if (err) {
+					reject({
+						message: 'USER_SERVICE_DOWN',
+						error: err,
+					})
+				} else {
+					try {
+						resolve(response.body)
+					} catch (parseError) {
+						reject({
+							message: 'Failed to parse JSON response',
+							error: parseError,
+						})
+					}
+				}
+			})
+		})
+
+		return data
+	} catch (error) {
+		throw error
+	}
+}
+
+/**
  * User list.
  * @method
  * @name list
@@ -295,5 +342,6 @@ module.exports = {
 	share,
 	listWithoutLimit,
 	search,
+	getListOfUserRoles,
 	listOrganization,
 }

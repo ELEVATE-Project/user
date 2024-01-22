@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "c7d034de-eb4b-472a-855c-d5348c2d1284",
+		"_postman_id": "539f204e-d613-45ae-ae42-172f39457a35",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "24204448",
+		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-539f204e-d613-45ae-ae42-172f39457a35?action=share&source=collection_link&creator=24204448"
 	},
 	"item": [
 		{
@@ -2187,7 +2188,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\"code\": \"sessioncreation\", \n\"module\": \"sessions\", \n\"actions\": \"WRITE\",\n\"status\": \"ACTIVE\"\n}",
+							"raw": "{\n\"code\": \"ssss\", \n\"module\": \"ssss\", \n\"request_type\": [\"POST\"],\n\"api_path\" : \"/mentoring/v1/sessions/sections\",\n\"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2214,7 +2215,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10&search=c2Vzc2lvbg==",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "permissions", "list"],
 							"query": [
@@ -2228,7 +2229,13 @@
 								},
 								{
 									"key": "search",
-									"value": "c2Vzc2lvbg=="
+									"value": "s",
+									"disabled": true
+								},
+								{
+									"key": "actions",
+									"value": "",
+									"disabled": true
 								}
 							]
 						}
@@ -2248,7 +2255,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\"code\": \"sessioncreate\", \n\"module\": \"sessions\", \n\"actions\": \"READ\",\n\"status\": \"ACTIVE\"\n}",
+							"raw": "{\n\"code\": \"ssss\", \n\"module\": \"read_permissions_listttt\", \n\"request_type\": [\"POST\"],\n\"api_path\": \"/mentoring/v1/sessions/sections\",\n\"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2262,7 +2269,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1",
+									"value": "28",
 									"description": "update id"
 								}
 							]
@@ -2288,7 +2295,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1",
+									"value": "28",
 									"description": "Delete id"
 								}
 							]
@@ -2748,6 +2755,79 @@
 							"body": "{\n    \"responseCode\": \"OK\",\n    \"message\": \"LIST_FETCHED\",\n    \"result\": {\n        \"data\": [\n            {\n                \"id\": 9,\n                \"index_number\": 1,\n                \"title\": \"Introduction to Python\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"Nevil\",\n                \"start_date\": \"05-Dec-2023\",\n                \"start_time\": \"04:30 PM\",\n                \"duration_in_minutes\": 60.2,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 7,\n                \"index_number\": 2,\n                \"title\": \"Test 3\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 8,\n                \"index_number\": 3,\n                \"title\": \"Test 2\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            },\n            {\n                \"id\": 6,\n                \"index_number\": 4,\n                \"title\": \"Test 1\",\n                \"type\": \"Private\",\n                \"mentor_name\": \"nikhil\",\n                \"start_date\": \"06-Jan-2024\",\n                \"start_time\": \"09:51 PM\",\n                \"duration_in_minutes\": 60,\n                \"status\": \"Active\",\n                \"mentee_count\": 0,\n                \"mentor_organization_id\": 1\n            }\n        ],\n        \"count\": 4\n    },\n    \"meta\": {\n        \"correlation\": \"257c4cc0-f3d8-4ac6-b8e7-04643ea28b9a\",\n        \"meetingPlatform\": \"BBB\"\n    }\n}"
 						}
 					]
+				}
+			]
+		},
+		{
+			"name": "AssignRolePermission",
+			"item": [
+				{
+					"name": "Create RolePermission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permission_id\" : 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/create/:role_id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "rolePermissionMapping", "create", ":role_id"],
+							"variable": [
+								{
+									"key": "role_id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete RolePermission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"permission_id\" : 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/delete/:role_id",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "rolePermissionMapping", "delete", ":role_id"],
+							"variable": [
+								{
+									"key": "role_id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

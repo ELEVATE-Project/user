@@ -35,6 +35,7 @@ const { updatedDiff } = require('deep-object-diff')
 const { Parser } = require('@json2csv/plainjs')
 const entityTypeService = require('@services/entity-type')
 const mentorsService = require('./mentors')
+const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
 
 module.exports = class SessionsHelper {
 	/**
@@ -268,7 +269,7 @@ module.exports = class SessionsHelper {
 
 				if (templateData) {
 					let name = userDetails.name
-					// Push successfull enrollment to session in kafka
+					// Push successful enrollment to session in kafka
 					const payload = {
 						type: 'email',
 						email: {
@@ -2002,126 +2003,23 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const mentees = await sessionAttendeesQueries.findAll({ session_id: sessionId })
-			const menteeIds = mentees.map((mentee) => mentee.mentee_id)
-			const options = {
-				attributes: {
-					exclude: [
-						'rating',
-						'stats',
-						'tags',
-						'configs',
-						'visibility',
-						'visible_to_organizations',
-						'external_session_visibility',
-						'external_mentor_visibility',
-						'experience',
-					],
-				},
-			}
-			const [menteeDetails, mentorDetails, attendeesAccounts] = await Promise.all([
-				menteeExtensionQueries.getUsersByUserIds(menteeIds, options),
-				mentorExtensionQueries.getMentorsByUserIds(menteeIds, options),
-				userRequests.getListOfUserDetails(menteeIds).then((result) => result.result),
-			])
+			const enrolledMentees = await getEnrolledMentees(sessionId, queryParams, userID)
 
-			// Combine details of mentees and mentors
-			let enrolledUsers = [...menteeDetails, ...mentorDetails]
-			// Process entity types to add value labels
-			const uniqueOrgIds = [...new Set(enrolledUsers.map((user) => user.organization_id))]
-			enrolledUsers = await entityTypeService.processEntityTypesToAddValueLabels(
-				enrolledUsers,
-				uniqueOrgIds,
-				[await menteeExtensionQueries.getModelName(), await mentorExtensionQueries.getModelName()],
-				'organization_id'
-			)
-
-			// Merge arrays based on user_id and id
-			const mergedUserArray = enrolledUsers.map((user) => {
-				const matchingUserDetails = attendeesAccounts.find((details) => details.id === user.user_id)
-
-				// Merge properties from user and matchingUserDetails
-
-				return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
-			})
 			if (queryParams?.csv) {
-				const CSVFields = [
-					{ label: 'Name', value: 'name' },
-					{ label: 'Designation', value: 'designation' },
-					{ label: 'Organization', value: 'organization' },
-					{ label: 'E-mail ID', value: 'email' },
-					{ label: 'Enrollment Type', value: 'type' },
-				]
-
-				//Return an empty CSV if list is empty
-				if (mergedUserArray.length == 0) {
-					const parser = new Parser({
-						fields: CSVFields,
-						header: true,
-						includeEmptyRows: true,
-						defaultValue: null,
-					})
-					const csv = parser.parse()
-					return common.successResponse({
-						statusCode: httpStatusCode.ok,
-						isResponseAStream: true,
-						stream: csv,
-						fileName: 'mentee_list_' + sessionId + '_' + moment() + '.csv',
-					})
-				}
-
-				const parser = new Parser({
-					fields: CSVFields,
-					header: true,
-					includeEmptyRows: true,
-					defaultValue: null,
-				})
-				const csv = parser.parse(
-					mergedUserArray.map((user) => ({
-						name: user.name,
-						designation: user.designation.map((designation) => designation.label).join(', '), // Assuming designation is an array
-						email: user.email,
-						type: user.type,
-						organization: user.organization.name,
-					}))
-				)
-
+				const timestamp = moment().format('YYYY-MM-DD_HH-mm-ss')
+				const fileName = `mentee_list_${sessionId}_${timestamp}.csv`
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					isResponseAStream: true,
-					stream: csv,
-					fileName: 'mentee_list_' + sessionId + '_' + moment() + '.csv',
+					stream: enrolledMentees,
+					fileName: fileName,
 				})
 			}
-			const propertiesToDelete = [
-				'user_id',
-				'organization_id',
-				'meta',
-				'email_verified',
-				'gender',
-				'location',
-				'about',
-				'share_link',
-				'status',
-				'last_logged_in_at',
-				'has_accepted_terms_and_conditions',
-				'languages',
-				'preferred_language',
-				'custom_entity_text',
-			]
 
-			const cleanedAttendeesAccounts = mergedUserArray.map((user) => {
-				propertiesToDelete.forEach((property) => {
-					delete user[property]
-				})
-
-				return user
-			})
-			// Return success response with merged user details
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_ATTENDEES',
-				result: cleanedAttendeesAccounts,
+				result: enrolledMentees,
 			})
 		} catch (error) {
 			throw error

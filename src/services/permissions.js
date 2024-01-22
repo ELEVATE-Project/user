@@ -25,13 +25,22 @@ module.exports = class PermissionsHelper {
 					Id: permissions.id,
 					status: permissions.status,
 					module: permissions.module,
-					actions: permissions.actions,
+					request_type: permissions.request_type,
 				},
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
+				const uniqueConstraintErrors = error.errors
+				const uniqueFields = uniqueConstraintErrors.map((constraintError) => {
+					return constraintError.path
+				})
+				const isCodeUnique = uniqueFields.includes('code')
+				let errorMessage = ''
+				if (!isCodeUnique) {
+					errorMessage += 'code '
+				}
 				return common.failureResponse({
-					message: 'PERMISSION_ALREADY_EXISTS',
+					message: `${errorMessage.trim()} should be unique.`,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -72,7 +81,7 @@ module.exports = class PermissionsHelper {
 						Id: updatedPermission.id,
 						status: updatedPermission.status,
 						module: updatedPermission.module,
-						actions: updatedPermission.actions,
+						request_type: permissions.request_type,
 					},
 				})
 			}
@@ -133,7 +142,7 @@ module.exports = class PermissionsHelper {
 				offset,
 				limit,
 			}
-			const attributes = ['id', 'code', 'module', 'actions', 'status']
+			const attributes = ['id', 'code', 'module', 'request_type', 'api_path', 'status']
 			const permissions = await permissionsQueries.findAllPermissions(filter, attributes, options)
 
 			if (permissions.rows == 0 || permissions.count == 0) {

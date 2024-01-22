@@ -1,19 +1,18 @@
 'use strict'
-/** @type {import('sequelize-cli').Migration} */
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		await queryInterface.createTable('permissions', {
-			id: {
+		await queryInterface.createTable('role_permission_mapping', {
+			role_id: {
 				allowNull: false,
-				autoIncrement: true,
-				primaryKey: true,
 				type: Sequelize.INTEGER,
+				primaryKey: true,
 			},
-			code: {
+			permission_id: {
 				allowNull: false,
-				type: Sequelize.STRING,
-				unique: true,
+				type: Sequelize.INTEGER,
+				primaryKey: true,
 			},
 			module: {
 				allowNull: false,
@@ -27,13 +26,6 @@ module.exports = {
 				allowNull: false,
 				type: Sequelize.STRING,
 			},
-			status: {
-				type: Sequelize.STRING,
-				allowNull: false,
-			},
-			deleted_at: {
-				type: Sequelize.DATE,
-			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
@@ -42,18 +34,14 @@ module.exports = {
 				allowNull: false,
 				type: Sequelize.DATE,
 			},
-		})
-		await queryInterface.addIndex('permissions', {
-			type: 'unique',
-			fields: ['code'],
-			name: 'unique_code',
-			where: {
-				deleted_at: null,
+			created_by: {
+				allowNull: false,
+				type: Sequelize.INTEGER,
 			},
 		})
 	},
 
 	async down(queryInterface, Sequelize) {
-		await queryInterface.dropTable('permissions')
+		await queryInterface.dropTable('role_permission_mapping')
 	},
 }
