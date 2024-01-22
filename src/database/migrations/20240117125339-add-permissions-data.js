@@ -158,7 +158,7 @@ module.exports = {
 				{
 					code: 'download_session',
 					module: 'manage_session',
-					request_type: ['POST'],
+					request_type: ['GET'],
 					api_path: '/mentoring/v1/manage-sessions/downloadSessions',
 					status: 'ACTIVE',
 					created_at: new Date(),
@@ -168,7 +168,7 @@ module.exports = {
 				{
 					code: 'created_session',
 					module: 'manage_session',
-					request_type: ['POST'],
+					request_type: ['GET'],
 					api_path: '/mentoring/v1/manage-sessions/createdSessions',
 					status: 'ACTIVE',
 					created_at: new Date(),
