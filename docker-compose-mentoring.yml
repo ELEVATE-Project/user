@@ -71,7 +71,7 @@ services:
       - ./src/:/var/src
     ports:
       - '3000:3000'
-    command: ['nodemon', 'app.js']
+    command: ['nodemon', '--trace-warnings', 'app.js']
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
@@ -92,7 +92,7 @@ services:
       - ../user/src/:/var/src
     ports:
       - '3001:3001'
-    command: ['nodemon', 'app.js']
+    command: ['nodemon', '--trace-warnings', 'app.js']
     environment:
       - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
       - KAFKA_URL=kafka:9092
@@ -111,7 +111,7 @@ services:
       - ../notification/src/:/var/src
     ports:
       - '3002:3002'
-    command: ['nodemon', 'app.js']
+    command: ['nodemon', '--trace-warnings', 'app.js']
     environment:
       - KAFKA_HOST=kafka:9092
       - DEV_DATABASE_URL=postgres://postgres:postgres@citus_master:5432/notification-local
@@ -128,7 +128,7 @@ services:
       - ../scheduler/src/:/var/src
     ports:
       - '4000:4000'
-    command: ['nodemon', 'app.js']
+    command: ['nodemon', '--trace-warnings', 'app.js']
     environment:
       - KAFKA_URL=kafka:9092
       - MONGODB_URL=mongodb://mongo:27017/elevate-scheduler
@@ -144,8 +144,8 @@ services:
     volumes:
       - ../interface-service/src/:/var/src
     ports:
-      - '3569:3569'
-    command: ['node', 'app.js']
+      - '3567:3567'
+    command: ['node', '--trace-warnings', 'app.js']
     networks:
       - elevate_net
   # master:
@@ -186,7 +186,7 @@ services:
     image: citusdata/citus:11.2.0
     container_name: 'citus_master'
     ports:
-      - 5432:5432
+      - 5433:5432
     # expose:
     #   - 5432
     # command: >
