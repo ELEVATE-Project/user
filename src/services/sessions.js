@@ -269,7 +269,7 @@ module.exports = class SessionsHelper {
 
 				if (templateData) {
 					let name = userDetails.name
-					// Push successfull enrollment to session in kafka
+					// Push successful enrollment to session in kafka
 					const payload = {
 						type: 'email',
 						email: {

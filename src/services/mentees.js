@@ -480,7 +480,15 @@ module.exports = class MenteesHelper {
 				{ id: usersUpcomingSessionIds },
 				{ order: [['start_date', 'ASC']] }
 			)
-
+			if (sessionDetails.rows.length > 0) {
+				const uniqueOrgIds = [...new Set(sessionDetails.rows.map((obj) => obj.mentor_organization_id))]
+				sessionDetails.rows = await entityTypeService.processEntityTypesToAddValueLabels(
+					sessionDetails.rows,
+					uniqueOrgIds,
+					common.sessionModelName,
+					'mentor_organization_id'
+				)
+			}
 			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
 
 			return sessionDetails
