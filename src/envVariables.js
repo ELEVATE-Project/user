@@ -252,6 +252,35 @@ let enviromentVariables = {
 		optional: false,
 		default: 'aes-256-cbc',
 	},
+	EVENT_GROUP_ORGANIZATION: {
+		message: 'Required Organization Event Group Name',
+		optional: false,
+		default: 'organizationEvents',
+	},
+	EVENTS_ALLOWED_ARGS: {
+		message: 'Required EVENT ALLOWED ARGUMENTS',
+		optional: false,
+	},
+	EVENT_TYPE_CREATE: {
+		message: 'Required Create EventType Label',
+		optional: false,
+		default: 'create',
+	},
+	EVENT_TYPE_UPDATE: {
+		message: 'Required Update EventType Label',
+		optional: false,
+		default: 'update',
+	},
+	EVENT_TYPE_DELETE: {
+		message: 'Required Delete EventType Label',
+		optional: false,
+		default: 'delete',
+	},
+	EVENT_ENTITY_ORGANIZATION: {
+		message: 'Required Organization Entity Name',
+		optional: false,
+		default: 'organization',
+	},
 }
 
 let success = true
