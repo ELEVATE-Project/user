@@ -144,7 +144,7 @@ services:
     volumes:
       - ../interface-service/src/:/var/src
     ports:
-      - '3567:3567'
+      - '3569:3569'
     command: ['node', '--trace-warnings', 'app.js']
     networks:
       - elevate_net
@@ -186,7 +186,7 @@ services:
     image: citusdata/citus:11.2.0
     container_name: 'citus_master'
     ports:
-      - 5433:5432
+      - 5432:5432
     # expose:
     #   - 5432
     # command: >
