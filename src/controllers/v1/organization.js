@@ -9,9 +9,9 @@ module.exports = class Organization {
 		}
 	}
 
-	async create(req) {
+	async eventListener(req) {
 		try {
-			return await organizationService.create(req.query.organizationId, req.query.creatorId)
+			return await organizationService.eventListener(req.body)
 		} catch (error) {
 			throw error
 		}

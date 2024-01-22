@@ -144,7 +144,7 @@ services:
     volumes:
       - ../interface-service/src/:/var/src
     ports:
-      - '3569:3569'
+      - '3567:3567'
     command: ['node', '--trace-warnings', 'app.js']
     networks:
       - elevate_net
