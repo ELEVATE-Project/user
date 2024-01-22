@@ -11,8 +11,10 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { Op } = require('sequelize')
 const _ = require('lodash')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
+const { eventBodyDTO } = require('@dtos/eventBody')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -123,12 +125,15 @@ module.exports = class OrganizationsHelper {
 			const cacheKey = common.redisOrgPrefix + createdOrganization.id.toString()
 			await utils.internalDel(cacheKey)
 
-			eventBroadcaster('createOrganizationExtension', {
-				queryParams: {
-					creatorId: loggedInUserId,
-					organizationId: createdOrganization.id,
+			const eventBody = eventBodyDTO({
+				entity: process.env.EVENT_ENTITY_ORGANIZATION,
+				eventType: process.env.EVENT_TYPE_CREATE,
+				entityId: createdOrganization.id,
+				args: {
+					created_by: loggedInUserId,
 				},
 			})
+			eventBroadcasterMain(process.env.EVENT_GROUP_ORGANIZATION, { requestBody: eventBody, isInternal: true })
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
