@@ -235,6 +235,23 @@ module.exports = class AccountHelper {
 
 			user.user_roles = roleData
 
+			// format the roles for email template
+			let roleArray = []
+			if (roleData.length > 0) {
+				const mentorRoleExists = roleData.some((role) => role.title === common.MENTOR_ROLE)
+				if (mentorRoleExists) {
+					const updatedRoleList = roleData.filter((role) => role.title !== common.MENTEE_ROLE)
+					roleArray = _.map(updatedRoleList, 'title')
+				}
+			}
+
+			let roleToString =
+				roleArray.length > 0
+					? roleArray
+							.map((role) => role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))
+							.join(' and ')
+					: ''
+
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
@@ -291,6 +308,7 @@ module.exports = class AccountHelper {
 						body: utilsHelper.composeEmailBody(templateData.body, {
 							name: bodyData.name,
 							appName: process.env.APP_NAME,
+							roles: roleToString || '',
 						}),
 					},
 				}
