@@ -5,11 +5,13 @@ exports.eventBodyDTO = ({ entity, eventType, entityId, changedValues = [], args 
 			throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
 		const allowedArgs = process.env.EVENTS_ALLOWED_ARGS.split(',')
 		const disallowedArgs = Object.keys(args).filter((arg) => !allowedArgs.includes(arg))
-		if (disallowedArgs.length > 0) throw new Error(`Args contain disallowed keys: ${disallowedKeys.join(', ')}`)
+		if (disallowedArgs.length > 0)
+			throw new Error(`Event Args contain disallowed keys: ${disallowedArgs.join(', ')}`)
 		const changes = changedValues.reduce((result, obj) => {
 			const { fieldName, oldValue, newValue } = obj
-			if (oldValue) result[fieldName][oldValue] = oldValue
-			if (newValue) result[fieldName][newValue] = newValue
+			if (!result[fieldName]) result[fieldName] = {}
+			if (oldValue) result[fieldName].oldValue = oldValue
+			if (newValue) result[fieldName].newValue = newValue
 			return result
 		}, {})
 		return {
