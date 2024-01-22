@@ -218,15 +218,15 @@ let enviromentVariables = {
 		optional: false,
 	},
 	EVENT_TYPE_CREATE: {
-		message: 'Create EventType Label',
+		message: 'Required Create EventType Label',
 		optional: false,
 	},
 	EVENT_TYPE_UPDATE: {
-		message: 'update EventType Label',
+		message: 'Required Update EventType Label',
 		optional: false,
 	},
 	EVENT_TYPE_DELETE: {
-		message: 'delete EventType Label',
+		message: 'Required Delete EventType Label',
 		optional: false,
 	},
 }
