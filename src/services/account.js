@@ -309,6 +309,7 @@ module.exports = class AccountHelper {
 							name: bodyData.name,
 							appName: process.env.APP_NAME,
 							roles: roleToString || '',
+							portalURL: process.env.PORTAL_URL,
 						}),
 					},
 				}
