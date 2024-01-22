@@ -48,7 +48,7 @@ module.exports = class MentorsHelper {
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
 				allow_filtering: true,
-				model_names: { [Op.contains]: [sessionModelName] },
+				model_names: { [Op.contains]: sessionModelName },
 			})
 
 			const filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
@@ -314,7 +314,7 @@ module.exports = class MentorsHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [mentorExtensionsModelName] },
+				model_names: { [Op.contains]: mentorExtensionsModelName },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -406,7 +406,7 @@ module.exports = class MentorsHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [mentorExtensionsModelName] },
+				model_names: { [Op.contains]: mentorExtensionsModelName },
 			})
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
@@ -576,7 +576,7 @@ module.exports = class MentorsHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [mentorExtensionsModelName] },
+				model_names: { [Op.contains]: mentorExtensionsModelName },
 			})
 
 			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -746,7 +746,7 @@ module.exports = class MentorsHelper {
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
 				allow_filtering: true,
-				model_names: { [Op.contains]: [mentorExtensionsModelName] },
+				model_names: { [Op.contains]: mentorExtensionsModelName },
 			})
 
 			const filteredQuery = utils.validateFilters(query, validationData, mentorExtensionsModelName)

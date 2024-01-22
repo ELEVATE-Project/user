@@ -52,7 +52,7 @@ module.exports = class MenteesHelper {
 			organization_id: {
 				[Op.in]: [orgId, defaultOrgId],
 			},
-			model_names: { [Op.contains]: [userExtensionsModelName] },
+			model_names: { [Op.contains]: userExtensionsModelName },
 		})
 		const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 		//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -354,7 +354,7 @@ module.exports = class MenteesHelper {
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 			status: 'ACTIVE',
 			allow_filtering: true,
-			model_names: { [Op.contains]: [sessionModelName] },
+			model_names: { [Op.contains]: sessionModelName },
 		})
 
 		let filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
@@ -597,7 +597,7 @@ module.exports = class MenteesHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [userExtensionsModelName] },
+				model_names: { [Op.contains]: userExtensionsModelName },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -687,7 +687,7 @@ module.exports = class MenteesHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [userExtensionsModelName] },
+				model_names: { [Op.contains]: userExtensionsModelName },
 			}
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
@@ -772,7 +772,7 @@ module.exports = class MenteesHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [userExtensionsModelName] },
+				model_names: { [Op.contains]: userExtensionsModelName },
 			}
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
