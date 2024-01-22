@@ -126,6 +126,7 @@ module.exports = class userRoleHelper {
 	 * @param {String} req.pageNo - Page number.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
+	 * @param {Integer} req.decodedToken.organization_id - user organization_id.
 	 * @returns {JSON} - Role list.
 	 */
 
@@ -144,6 +145,59 @@ module.exports = class userRoleHelper {
 			let defaultOrgId = defaultOrg.id
 			const filter = {
 				[Op.or]: [{ organization_id: userOrganizationId }, { organization_id: defaultOrgId }],
+				title: { [Op.iLike]: `%${search}%` },
+				...filters,
+			}
+			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
+			const roles = await roleQueries.findAllRoles(filter, attributes, options)
+
+			if (roles.rows == 0 || roles.count == 0) {
+				return common.failureResponse({
+					message: 'ROLES_HAS_EMPTY_LIST',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const results = {
+				data: roles.rows,
+				count: roles.count,
+			}
+
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ROLES_FETCHED_SUCCESSFULLY',
+				result: results,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Get all available roles.
+	 * @method
+	 * @name defaultlist
+	 * @param {Array(String)} req.body.filters - Filters.
+	 * @param {String} req.pageNo - Page number.
+	 * @param {String} req.pageSize - Page size limit.
+	 * @param {String} req.searchText - Search text.
+	 * @returns {JSON} - Role list.
+	 */
+	static async defaultList(filters, page, limit, search) {
+		try {
+			delete filters.search
+			const offset = common.getPaginationOffset(page, limit)
+			const options = {
+				offset,
+				limit,
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			const filter = {
+				organization_id: defaultOrgId,
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
 			}

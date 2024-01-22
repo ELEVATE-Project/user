@@ -55,6 +55,7 @@ module.exports = class OrgAdminHelper {
 			}
 
 			const result = await fileUploadQueries.create(creationData)
+
 			if (!result?.id) {
 				return common.successResponse({
 					responseCode: 'CLIENT_ERROR',
@@ -421,12 +422,6 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
-			const systemRoleIds = userRoles
-				.filter((role) => role.user_type === common.ROLE_TYPE_SYSTEM)
-				.map((role) => role.id)
-
-			let rolesToUpdate = [...systemRoleIds]
-
 			const newRole = await roleQueries.findOne(
 				{ id: requestDetails.role, status: common.ACTIVE_STATUS },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
@@ -440,7 +435,16 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 				},
 			})
 
-			rolesToUpdate.push(requestDetails.role)
+			let rolesToUpdate = [...requestDetails.role]
+			let currentUserRoleIds = _.map(userRoles, 'id')
+
+			//remove mentee role from roles array
+			const menteeRoleId = userRoles.find((role) => role.title === common.MENTEE_ROLE)?.id
+			if (menteeRoleId && currentUserRoleIds.includes(menteeRoleId)) {
+				_.pull(currentUserRoleIds, menteeRoleId)
+			}
+			rolesToUpdate.push(...currentUserRoleIds)
+
 			const roles = _.uniq(rolesToUpdate)
 
 			await userQueries.updateUser(

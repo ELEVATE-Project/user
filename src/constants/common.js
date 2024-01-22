@@ -50,7 +50,6 @@ module.exports = {
 		'/user/v1/account/registrationOtp',
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
-		'/user/v1/userRole/list',
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',
@@ -63,6 +62,8 @@ module.exports = {
 		'/user/v1/admin/triggerPeriodicViewRefreshInternal',
 		'/user/v1/account/search',
 		'/user/v1/organization/list',
+		'/user/v1/userRole/default',
+		'/user/v1/userRole/list',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
@@ -95,6 +96,7 @@ module.exports = {
 	INACTIVE_STATUS: 'INACTIVE',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
+	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
@@ -120,4 +122,5 @@ module.exports = {
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
+	ROLE_TYPE_NON_SYSTEM: 0,
 }
