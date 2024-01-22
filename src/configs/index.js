@@ -5,8 +5,6 @@
  * Description : Contains connections of all configs
  */
 
-require('./mongodb')()
-
 require('./kafka')()
 
 require('./cache')()
