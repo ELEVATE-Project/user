@@ -588,7 +588,9 @@ module.exports = class MentorsHelper {
 				const request_type = rolePermission.request_type
 
 				if (permissionsByModule[module]) {
-					permissionsByModule[module].request_type.push(...request_type)
+					const existingRequestTypes = permissionsByModule[module].request_type
+					const uniqueRequestTypes = new Set([...existingRequestTypes, ...request_type])
+					permissionsByModule[module].request_type = Array.from(uniqueRequestTypes)
 				} else {
 					permissionsByModule[module] = { module, request_type: [...request_type] }
 				}
