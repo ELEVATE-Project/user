@@ -43,12 +43,15 @@ module.exports = class MentorsHelper {
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
+			const sessionModelName = await sessionQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
 				allow_filtering: true,
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
-			const filteredQuery = utils.validateFilters(query, validationData, await sessionQueries.getModelName())
+
+			const filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
 
 			// Filter upcoming sessions based on saas policy
 			const saasFilter = await menteesService.filterSessionsBasedOnSaasPolicy(menteeUserId, isAMentor)
@@ -304,18 +307,20 @@ module.exports = class MentorsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			const mentorExtensionsModelName = await mentorQueries.getModelName()
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [mentorExtensionsModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'MentorExtension')
+			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -394,12 +399,14 @@ module.exports = class MentorsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			const mentorExtensionsModelName = await mentorQueries.getModelName()
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [mentorExtensionsModelName] },
 			})
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			let mentorExtensionsModel = await mentorQueries.getColumns()
@@ -562,12 +569,14 @@ module.exports = class MentorsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			const mentorExtensionsModelName = await mentorQueries.getModelName()
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [mentorExtensionsModelName] },
 			})
 
 			// validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -588,7 +597,9 @@ module.exports = class MentorsHelper {
 				const request_type = rolePermission.request_type
 
 				if (permissionsByModule[module]) {
-					permissionsByModule[module].request_type.push(...request_type)
+					const existingRequestTypes = permissionsByModule[module].request_type
+					const uniqueRequestTypes = new Set([...existingRequestTypes, ...request_type])
+					permissionsByModule[module].request_type = Array.from(uniqueRequestTypes)
 				} else {
 					permissionsByModule[module] = { module, request_type: [...request_type] }
 				}
@@ -732,13 +743,15 @@ module.exports = class MentorsHelper {
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
+			const mentorExtensionsModelName = await mentorQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: 'ACTIVE',
 				allow_filtering: true,
+				model_names: { [Op.contains]: [mentorExtensionsModelName] },
 			})
 
-			const filteredQuery = utils.validateFilters(query, validationData, 'MentorExtension')
+			const filteredQuery = utils.validateFilters(query, validationData, mentorExtensionsModelName)
 			const userType = common.MENTOR_ROLE
 
 			if (designation.length > 0) {
