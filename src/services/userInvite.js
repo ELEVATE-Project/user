@@ -421,7 +421,7 @@ module.exports = class UserInviteHelper {
 							const userData = {
 								name,
 								email,
-								role: roleToString,
+								roles: roleToString,
 								org_name: user.org_name,
 							}
 
