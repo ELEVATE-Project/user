@@ -264,7 +264,8 @@ module.exports = class OrgAdminHelper {
 				id: requestDetails.requester_id,
 				organization_id: tokenInformation.organization_id,
 			})
-			console.log(shouldSendEmail, 'shouldSendEmail')
+
+			console.log(isApproved, 'isApproved')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(requestDetails, user)
 			}
@@ -280,6 +281,7 @@ module.exports = class OrgAdminHelper {
 				result: requestDetails,
 			})
 		} catch (error) {
+			console.log(error, 'errorrrr')
 			throw error
 		}
 	}
@@ -494,7 +496,7 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 			const payload = {
 				type: common.notificationEmailType,
 				email: {
-					to: userDetails.email,
+					to: emailEncryption.decrypt(userDetails.email),
 					subject: templateData.subject,
 					body: utils.composeEmailBody(templateData.body, {
 						name: userDetails.name,
