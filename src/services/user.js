@@ -18,6 +18,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class UserHelper {
 	/**
@@ -112,6 +113,7 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
+			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -203,7 +205,7 @@ module.exports = class UserHelper {
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
-
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
