@@ -1,5 +1,5 @@
 /**
- * name : validators/v1/entity-types.js
+ * name : validators/v1/entity.js
  * author : Aman Gupta
  * Date : 04-Nov-2021
  * Description : Validations of user entities controller
@@ -11,7 +11,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('value field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[A-Za-z_]+$/)
 			.withMessage('value is invalid, must not contain spaces')
 
 		req.checkBody('label')
@@ -27,6 +27,15 @@ module.exports = {
 			.withMessage('data_type field is empty')
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
+
+		req.checkBody('model_names')
+			.isArray()
+			.notEmpty()
+			.withMessage('model_names must be an array with at least one element')
+
+		req.checkBody('model_names.*')
+			.isIn(['Session', 'MentorExtension', 'UserExtension'])
+			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
 
 		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 	},
@@ -49,23 +58,36 @@ module.exports = {
 			.matches(/^[A-Z]+$/)
 			.withMessage('status is invalid, must be in all caps')
 
+		req.checkBody('deleted').optional().isBoolean().withMessage('deleted is invalid')
+		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
+
 		req.checkBody('data_type')
-			.optional()
+			.trim()
+			.notEmpty()
+			.withMessage('data_type field is empty')
 			.matches(/^[A-Za-z]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
 
-		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
+		req.checkBody('model_names')
+			.isArray()
+			.notEmpty()
+			.withMessage('model_names must be an array with at least one element')
+
+		req.checkBody('model_names.*')
+			.isIn(['Session', 'MentorExtension', 'UserExtension'])
+			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
 	},
 
 	read: (req) => {
-		console.log()
-		if (req.query.data_type) {
-			req.checkQuery('data_type')
+		if (req.query.type) {
+			req.checkQuery('type')
 				.trim()
 				.notEmpty()
-				.withMessage('data_type field is empty')
+				.withMessage('type field is empty')
 				.matches(/^[A-Za-z]+$/)
 				.withMessage('type is invalid, must not contain spaces')
+
+			req.checkQuery('deleted').optional().isBoolean().withMessage('deleted is invalid')
 
 			req.checkQuery('status')
 				.optional()
