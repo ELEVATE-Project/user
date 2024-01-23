@@ -13,24 +13,22 @@ const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 
 module.exports = async function (req, res, next) {
+	const unAuthorizedResponse = common.failureResponse({
+		message: 'UNAUTHORIZED_REQUEST',
+		statusCode: httpStatusCode.unauthorized,
+		responseCode: 'UNAUTHORIZED',
+	})
 	try {
-		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
 
 		const authHeader = req.get('X-auth-token')
-
-		common.internalAccessUrls.map(function (path) {
+		const internalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
-				console.log('REQUEST PATH: ', req.path)
-				console.log('INTERNAL ACCESS PATH: ', path)
-				if (
-					req.headers.internal_access_token &&
-					process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token
-				) {
-					internalAccess = true
-				}
+				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
+				else throw unAuthorizedResponse
 			}
+			return false
 		})
 
 		common.guestUrls.map(function (path) {
@@ -38,7 +36,6 @@ module.exports = async function (req, res, next) {
 				guestUrl = true
 			}
 		})
-
 		common.roleValidationPaths.map(function (path) {
 			if (req.path.includes(path)) {
 				roleValidation = true
@@ -50,13 +47,7 @@ module.exports = async function (req, res, next) {
 			return
 		}
 
-		if (!authHeader) {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (!authHeader) throw unAuthorizedResponse
 
 		// let splittedUrl = req.url.split('/');
 		// if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
@@ -65,13 +56,7 @@ module.exports = async function (req, res, next) {
 		//     }
 		// }
 		const authHeaderArray = authHeader.split(' ')
-		if (authHeaderArray[0] !== 'bearer') {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
 
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
@@ -82,22 +67,10 @@ module.exports = async function (req, res, next) {
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
-			} else {
-				throw common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+			} else throw unAuthorizedResponse
 		}
 
-		if (!decodedToken) {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (!decodedToken) throw unAuthorizedResponse
 
 		//check for admin user
 		let isAdmin = false
