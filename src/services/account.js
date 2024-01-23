@@ -317,6 +317,7 @@ module.exports = class AccountHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
+			result.user.email = plaintextEmailId
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
@@ -463,7 +464,7 @@ module.exports = class AccountHelper {
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-
+			user.email = plaintextEmailId
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return common.successResponse({
