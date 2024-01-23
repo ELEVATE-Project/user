@@ -45,12 +45,14 @@ module.exports = class MenteesHelper {
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
 			})
+		const userExtensionsModelName = await menteeQueries.getModelName()
 
 		let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 			status: 'ACTIVE',
 			organization_id: {
 				[Op.in]: [orgId, defaultOrgId],
 			},
+			model_names: { [Op.contains]: [userExtensionsModelName] },
 		})
 		const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 		//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -349,13 +351,15 @@ module.exports = class MenteesHelper {
 			delete queryParams.fields
 		}
 		let query = utils.processQueryParametersWithExclusions(queryParams)
+		const sessionModelName = await sessionQueries.getModelName()
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 			status: 'ACTIVE',
 			allow_filtering: true,
+			model_names: { [Op.contains]: [sessionModelName] },
 		})
 
-		let filteredQuery = utils.validateFilters(query, validationData, sessionQueries.getModelName())
+		let filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
 
 		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
@@ -596,18 +600,20 @@ module.exports = class MenteesHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			const userExtensionsModelName = await menteeQueries.getModelName()
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [userExtensionsModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'UserExtension')
+			let res = utils.validateInput(data, validationData, userExtensionsModelName)
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'MENTEE_EXTENSION_CREATION_FAILED',
@@ -685,18 +691,19 @@ module.exports = class MenteesHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-
+			const userExtensionsModelName = await menteeQueries.getModelName()
 			const filter = {
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [userExtensionsModelName] },
 			}
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(data, validationData, 'UserExtension')
+			let res = utils.validateInput(data, validationData, userExtensionsModelName)
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -769,14 +776,15 @@ module.exports = class MenteesHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-
+			const userExtensionsModelName = await menteeQueries.getModelName()
 			const filter = {
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [userExtensionsModelName] },
 			}
-			console.log(mentee)
+
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -1021,12 +1029,19 @@ module.exports = class MenteesHelper {
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
+			const userExtensionModelName = await menteeQueries.getModelName()
+			const mentorExtensionModelName = await menteeQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: common.ACTIVE_STATUS,
+				model_names: { [Op.overlap]: [userExtensionModelName, mentorExtensionModelName] },
 			})
 
-			let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+			let filteredQuery = utils.validateFilters(
+				query,
+				JSON.parse(JSON.stringify(validationData)),
+				userExtensionModelName
+			)
 
 			if (designation.length > 0) {
 				filteredQuery.designation = designation
