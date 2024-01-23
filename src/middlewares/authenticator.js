@@ -52,10 +52,7 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) {
-			next()
-			return
-		}
+		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) return next()
 
 		if (!authHeader) throw unAuthorizedResponse
 
@@ -135,7 +132,7 @@ module.exports = async function (req, res, next) {
 			token: authHeader,
 			organization_id: decodedToken.data.organization_id,
 		}
-		next()
+		return next()
 	} catch (err) {
 		console.log(err)
 		next(err)
