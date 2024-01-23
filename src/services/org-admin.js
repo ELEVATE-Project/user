@@ -241,6 +241,7 @@ module.exports = class OrgAdminHelper {
 				{ id: requestId, organization_id: tokenInformation.organization_id },
 				bodyData
 			)
+
 			if (rowsAffected === 0) {
 				return common.failureResponse({
 					message: 'ORG_ROLE_REQ_FAILED',
@@ -281,7 +282,7 @@ module.exports = class OrgAdminHelper {
 				result: requestDetails,
 			})
 		} catch (error) {
-			console.log(error, 'errorrrr')
+			console.log(error, 'error')
 			throw error
 		}
 	}
@@ -437,7 +438,8 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 				},
 			})
 
-			let rolesToUpdate = [...requestDetails.role]
+			let rolesToUpdate = [requestDetails.role]
+
 			let currentUserRoleIds = _.map(userRoles, 'id')
 
 			//remove mentee role from roles array
@@ -467,6 +469,7 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 				success: true,
 			})
 		} catch (error) {
+			console.log(error, 'error')
 			return error
 		}
 	})
