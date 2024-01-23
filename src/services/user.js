@@ -64,6 +64,7 @@ module.exports = class UserHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
@@ -194,6 +195,7 @@ module.exports = class UserHelper {
 					organization_id: {
 						[Op.in]: [user.organization_id, defaultOrgId],
 					},
+					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)

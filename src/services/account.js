@@ -450,13 +450,16 @@ module.exports = class AccountHelper {
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
+			const modelName = await userQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [modelName] },
 			})
+
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			user = utils.processDbResponse(user, prunedEntities)
 
