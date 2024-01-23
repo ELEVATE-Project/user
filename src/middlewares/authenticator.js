@@ -42,10 +42,7 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if ((internalAccess || guestUrl) && !authHeader) {
-			next()
-			return
-		}
+		if ((internalAccess || guestUrl) && !authHeader) return next()
 
 		if (!authHeader) throw unAuthorizedResponse
 
@@ -103,7 +100,7 @@ module.exports = async function (req, res, next) {
 			decodedToken.data.organization_id = user.organization_id
 		}
 		req.decodedToken = decodedToken.data
-		next()
+		return next()
 	} catch (err) {
 		next(err)
 	}
