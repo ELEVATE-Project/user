@@ -12,7 +12,7 @@ module.exports = async function (req, res, next) {
 	try {
 		const internalAccess =
 			req.headers.internal_access_token && process.env.INTERNAL_ACCESS_TOKEN === req.headers.internal_access_token
-		if (internalAccess) next()
+		if (internalAccess) return next()
 		else
 			throw common.failureResponse({
 				message: apiResponses.UNAUTHORIZED_REQUEST,
