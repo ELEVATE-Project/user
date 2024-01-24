@@ -212,6 +212,7 @@ module.exports = class UserHelper {
 					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
+				userDetails.email = emailEncryption.decrypt(userDetails.email)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
