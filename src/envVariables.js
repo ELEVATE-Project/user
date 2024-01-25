@@ -115,10 +115,6 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
-	RATING_KAFKA_TOPIC: {
-		message: 'Required kafka topic',
-		optional: false,
-	},
 	INTERNAL_CACHE_EXP_TIME: {
 		message: 'Internal Cache Expiry Time',
 		optional: false,
@@ -189,10 +185,6 @@ let enviromentVariables = {
 	},
 	SESSION_MENTEE_LIMIT: {
 		message: 'Required session mentee limit',
-		optional: false,
-	},
-	MENTOR_SECRET_CODE: {
-		message: 'Required mentor secret code',
 		optional: false,
 	},
 	SCHEDULER_SERVICE_HOST: {
