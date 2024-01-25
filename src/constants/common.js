@@ -42,15 +42,6 @@ module.exports = {
 	successResponse,
 	failureResponse,
 	getPaginationOffset,
-	guestUrls: [
-		'/user/v1/account/login',
-		'/user/v1/account/create',
-		'/user/v1/account/generateToken',
-		'/user/v1/account/generateOtp',
-		'/user/v1/account/registrationOtp',
-		'/user/v1/account/resetPassword',
-		'/user/v1/admin/login',
-	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',
 		'/user/v1/account/list',
@@ -74,6 +65,8 @@ module.exports = {
 	ADMIN_ROLE: 'admin',
 	ORG_ADMIN_ROLE: 'org_admin',
 	USER_ROLE: 'user',
+	SESSION_MANAGER_ROLE: 'session_manager',
+	PUBLIC_ROLE: 'public',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
 		'/user/v1/accounts/verifyUser',
@@ -118,6 +111,7 @@ module.exports = {
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
 	NO_OF_ATTEMPTS: 3,
+	SEARCH: '',
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
