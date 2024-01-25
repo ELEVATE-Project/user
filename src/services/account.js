@@ -954,6 +954,7 @@ module.exports = class AccountHelper {
 						user['user_roles'] = roleData
 						// await utilsHelper.redisSet(element._id.toString(), element)
 					}
+					user.email = emailEncryption.decrypt(user.email)
 				})
 
 				return common.successResponse({
