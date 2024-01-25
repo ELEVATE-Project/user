@@ -842,9 +842,11 @@ module.exports = class SessionsHelper {
 				delete sessionDetails?.meeting_info?.meta
 			} else {
 				sessionDetails.is_assigned = sessionDetails.mentor_id !== sessionDetails.created_by
+				if (sessionDetails.is_assigned) {
+					const managerDetails = await userRequests.details('', sessionDetails.created_by)
+					sessionDetails.manager_name = managerDetails.data.result.name
+				}
 			}
-			delete sessionDetails.created_by
-			delete sessionDetails.updated_by
 
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
