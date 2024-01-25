@@ -11,10 +11,6 @@ let enviromentVariables = {
 		message: 'Required node environment',
 		optional: false,
 	},
-	MONGODB_URL: {
-		message: 'Required mongodb url',
-		optional: false,
-	},
 	SALT_ROUNDS: {
 		message: 'Required salt rounds for encryption',
 		optional: false,
@@ -159,14 +155,6 @@ let enviromentVariables = {
 	DEFAULT_OCI_BUCKET_NAME: {
 		message: 'Required oci bucket name',
 		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	REPLICA_SET_NAME: {
-		message: 'Required replica set name',
-		optional: true,
-	},
-	REPLICA_SET_READ_PREFERENCE: {
-		message: 'Required replica read preferance',
-		optional: process.env.REPLICA_SET_NAME ? false : true,
 	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
