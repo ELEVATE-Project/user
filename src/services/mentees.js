@@ -1140,8 +1140,13 @@ module.exports = class MenteesHelper {
 				const enrolledMenteeIds = enrolledMentees.map((enrolledMentee) => enrolledMentee.id)
 
 				userDetails.data.result.data.forEach((user) => {
-					const isEnrolled = enrolledMenteeIds.some((id) => id === user.id)
-					user.is_enrolled = isEnrolled
+					user.is_enrolled = false
+
+					const enrolledUser = _.find(enrolledMentees, { id: user.id })
+					if (enrolledUser) {
+						user.is_enrolled = true
+						user.enrolled_type = enrolledUser.type
+					}
 				})
 			}
 
