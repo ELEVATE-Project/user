@@ -53,4 +53,51 @@ module.exports = class OrganizationService {
 			console.log(error)
 		}
 	}
+	static async createExtension(bodyData, headers) {
+		try {
+			if (!headers.internal_access_token & (headers.internal_access_token == process.env.INTERNAL_ACCESS_TOKEN)) {
+				return common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const questionSets = await questionsSetQueries.findQuestionsSets(
+				{
+					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
+				},
+				['id', 'code']
+			)
+			if (
+				questionSets.length === 0 ||
+				(questionSets.length === 1 &&
+					bodyData.mentee_feedback_question_set !== bodyData.mentor_feedback_question_set)
+			) {
+				return common.failureResponse({
+					message: 'QUESTIONS_SET_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const extensionData = {
+				organization_id: bodyData.organization_id,
+				mentee_feedback_question_set: bodyData.mentee_feedback_question_set,
+				mentor_feedback_question_set: bodyData.mentor_feedback_question_set,
+				updated_by: bodyData.user_id,
+			}
+			const orgExtension = await organisationExtensionQueries.upsert(extensionData)
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY',
+				result: {
+					organization_id: orgExtension.organization_id,
+					mentee_feedback_question_set: orgExtension.mentee_feedback_question_set,
+					mentor_feedback_question_set: orgExtension.mentor_feedback_question_set,
+					updated_by: orgExtension.updated_by,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+		}
+	}
 }

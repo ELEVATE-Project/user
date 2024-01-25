@@ -8,4 +8,11 @@ module.exports = class Organization {
 			return error
 		}
 	}
+	async create(req) {
+		try {
+			return await organizationService.createExtension(req.body, req.headers)
+		} catch (error) {
+			return error
+		}
+	}
 }
