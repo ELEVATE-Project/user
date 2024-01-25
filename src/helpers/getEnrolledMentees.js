@@ -36,6 +36,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 		// Combine details of mentees and mentors
 		let enrolledUsers = [...menteeDetails, ...mentorDetails]
+		enrolledUsers.forEach((user) => {
+			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
+				user.type = menteeTypeMap[user.user_id]
+			}
+		})
 
 		enrolledUsers.forEach((user) => {
 			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
