@@ -2011,7 +2011,7 @@ module.exports = class SessionsHelper {
 			}
 			const enrolledMentees = await getEnrolledMentees(sessionId, queryParams, userID)
 
-			if (queryParams?.csv) {
+			if (queryParams?.csv === 'true') {
 				const timestamp = moment().format('YYYY-MM-DD_HH-mm-ss')
 				const fileName = `mentee_list_${sessionId}_${timestamp}.csv`
 				return common.successResponse({
