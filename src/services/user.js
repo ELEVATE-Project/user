@@ -202,17 +202,18 @@ module.exports = class UserHelper {
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)
 
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
-				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
 					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
-				userDetails.email = emailEncryption.decrypt(userDetails.email)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
