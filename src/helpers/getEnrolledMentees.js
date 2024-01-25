@@ -34,6 +34,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		let enrolledUsers = [...menteeDetails, ...mentorDetails]
 
 		const CSVFields = [
+			{ label: 'No.', value: 'index_number' },
 			{ label: 'Name', value: 'name' },
 			{ label: 'Designation', value: 'designation' },
 			{ label: 'Organization', value: 'organization' },
@@ -72,7 +73,8 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		})
 		if (queryParams?.csv) {
 			const csv = parser.parse(
-				mergedUserArray.map((user) => ({
+				mergedUserArray.map((user, index) => ({
+					index_number: index + 1,
 					name: user.name,
 					designation: user.designation.map((designation) => designation.label).join(', '), // Assuming designation is an array
 					email: user.email,
@@ -101,11 +103,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 			'custom_entity_text',
 		]
 
-		const cleanedAttendeesAccounts = mergedUserArray.map((user) => {
+		const cleanedAttendeesAccounts = mergedUserArray.map((user, index) => {
 			propertiesToDelete.forEach((property) => {
 				delete user[property]
 			})
-
+			user.index_number = index + 1
 			return user
 		})
 		// Return success response with merged user details
