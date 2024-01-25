@@ -42,12 +42,6 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 			}
 		})
 
-		enrolledUsers.forEach((user) => {
-			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
-				user.type = menteeTypeMap[user.user_id]
-			}
-		})
-
 		const CSVFields = [
 			{ label: 'Name', value: 'name' },
 			{ label: 'Designation', value: 'designation' },
