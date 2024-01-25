@@ -123,6 +123,15 @@ module.exports = class OrganizationsHelper {
 			const cacheKey = common.redisOrgPrefix + createdOrganization.id.toString()
 			await utils.internalDel(cacheKey)
 
+			await eventBroadcaster('orgExtension', {
+				requestBody: {
+					mentee_feedback_question_set: common.MENTEE_QUESTIONSET,
+					mentor_feedback_question_set: common.MENTOR_QUESTIONSET,
+					organization_id: createdOrganization.id,
+					user_id: loggedInUserId,
+				},
+			})
+
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
