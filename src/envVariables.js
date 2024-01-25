@@ -15,10 +15,6 @@ let enviromentVariables = {
 		message: 'Required application base url',
 		optional: false,
 	},
-	MONGODB_URL: {
-		message: 'Required mongodb url',
-		optional: false,
-	},
 	ACCESS_TOKEN_SECRET: {
 		message: 'Required access token secret',
 		optional: false,
@@ -158,14 +154,6 @@ let enviromentVariables = {
 	DEFAULT_OCI_BUCKET_NAME: {
 		message: 'Required oci bucket name',
 		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	REPLICA_SET_NAME: {
-		message: 'Required replica set name',
-		optional: true,
-	},
-	REPLICA_SET_READ_PREFERENCE: {
-		message: 'Required replica read preferance',
-		optional: process.env.REPLICA_SET_NAME ? false : true,
 	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
