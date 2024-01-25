@@ -31,7 +31,6 @@ let health_check = async function (req, res) {
 	let userServiceStatus = await userHealthCheck.health_check()
 	let kafkaServiceStatus = await kafkaHealthCheck.health_check()
 
-	checks.push(checkResult('MONGO_DB', mongodbConnection))
 	checks.push(checkResult('KAFKA', kafkaServiceStatus))
 	checks.push(checkResult('USER_SERVICE', userServiceStatus))
 
