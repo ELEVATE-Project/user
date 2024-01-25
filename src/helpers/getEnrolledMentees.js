@@ -49,7 +49,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		})
 		//Return an empty CSV/response if list is empty
 		if (enrolledUsers.length === 0) {
-			return queryParams?.csv
+			return queryParams?.csv === 'true'
 				? new Parser({ fields: CSVFields, header: true, includeEmptyRows: true, defaultValue: null }).parse()
 				: []
 		}
@@ -71,7 +71,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 			return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
 		})
-		if (queryParams?.csv) {
+		if (queryParams?.csv === 'true') {
 			const csv = parser.parse(
 				mergedUserArray.map((user, index) => ({
 					index_number: index + 1,
