@@ -202,5 +202,4 @@ module.exports = {
 		PUBLIC: 'PUBLIC',
 		PRIVATE: 'PRIVATE',
 	},
-	USER_ROLE: 'user',
 }
