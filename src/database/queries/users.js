@@ -3,6 +3,7 @@ const database = require('@database/models/index')
 const Organization = require('@database/models/index').Organization
 const { Op, QueryTypes } = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
+const emailEncryption = require('@utils/emailEncryption')
 
 exports.getColumns = async () => {
 	try {
@@ -165,18 +166,23 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 		return error
 	}
 }
-exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds) => {
+exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, emailIds) => {
 	try {
 		const offset = (page - 1) * limit
 
 		const filterConditions = []
 
-		if (search) {
+		if (emailIds) {
+			filterConditions.push(`users.email IN ('${emailIds.join("','")}')`)
+		} else if (search) {
 			filterConditions.push(`users.name ILIKE :search`)
 		}
 
-		if (roleId) {
+		if (!Array.isArray(roleId)) {
 			filterConditions.push(`users.roles @> ARRAY[:roleId]::integer[]`)
+		} else {
+			// If roleId is an array, use the '&&' operator to check if there is an overlap between roleId and users.roles arrays
+			filterConditions.push(`ARRAY[:roleId] && users.roles`)
 		}
 
 		if (organization_id) {
@@ -190,8 +196,10 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 
 		const filterQuery = `
             SELECT
+				COUNT(*) OVER () as total_count,
                 users.id,
                 users.name,
+				users.email,
                 users.about,
                 users.image,
                 jsonb_build_object(
@@ -209,7 +217,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
             ${filterClause}
             ORDER BY
                 users.name ASC
-            OFFSET
+			OFFSET
                 :offset
             LIMIT
                 :limit;
@@ -224,12 +232,17 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			userIds: userIds,
 		}
 
-		const users = await Sequelize.query(filterQuery, {
+		let users = await Sequelize.query(filterQuery, {
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
 
-		return { count: users.length, data: users }
+		users = users.filter((user) => {
+			user.email = emailEncryption.decrypt(user.email)
+			return user
+		})
+
+		return { count: users.length > 0 ? Number(users[0].total_count) : 0, data: users }
 	} catch (error) {
 		throw error
 	}

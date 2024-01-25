@@ -69,12 +69,14 @@ exports.requestDetails = async (filter, options = {}) => {
 		const requester = await User.findOne({
 			where: { id: reqDetails.requester_id },
 			attributes: ['id', 'name'],
+			raw: true,
 		})
 
 		const handler = reqDetails.handled_by
 			? await User.findOne({
 					where: { id: reqDetails.handled_by },
 					attributes: ['id', 'name'],
+					raw: true,
 			  })
 			: null
 

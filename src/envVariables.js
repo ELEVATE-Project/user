@@ -15,10 +15,6 @@ let enviromentVariables = {
 		message: 'Required mongodb url',
 		optional: false,
 	},
-	SALT_ROUNDS: {
-		message: 'Required salt rounds for encryption',
-		optional: false,
-	},
 	ACCESS_TOKEN_SECRET: {
 		message: 'Required access token secret',
 		optional: false,
@@ -103,10 +99,6 @@ let enviromentVariables = {
 		message: 'Required azure container name',
 		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
 	},
-	MENTOR_SECRET_CODE: {
-		message: 'Required mentor secret code',
-		optional: false,
-	},
 	ACCESS_TOKEN_EXPIRY: {
 		message: 'Required access token expiry in days',
 		optional: false,
@@ -121,11 +113,6 @@ let enviromentVariables = {
 	},
 	INTERNAL_CACHE_EXP_TIME: {
 		message: 'Internal Cache Expiry Time',
-		optional: false,
-	},
-
-	RATING_KAFKA_TOPIC: {
-		message: 'Kafka Rating Topic',
 		optional: false,
 	},
 	REDIS_HOST: {
@@ -189,14 +176,6 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
-	MENTOR_INVITATION_EMAIL_TEMPLATE_CODE: {
-		message: 'Required mentor invitation email template code',
-		optional: false,
-	},
-	MENTEE_INVITATION_EMAIL_TEMPLATE_CODE: {
-		message: 'Required mentee invitation email template code',
-		optional: false,
-	},
 	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {
 		message: 'Required admin upload invitee email template code',
 		optional: false,
@@ -238,6 +217,23 @@ let enviromentVariables = {
 		message: 'Interval to refresh views in milliseconds',
 		optional: false,
 		default: 540000,
+	},
+	EMAIL_ID_ENCRYPTION_KEY: {
+		message: 'Required Email ID Encryption Key',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_IV: {
+		message: 'Required Email ID Encryption IV',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_ALGORITHM: {
+		message: 'Required Email ID Encryption Algorithm',
+		optional: false,
+		default: 'aes-256-cbc',
+	},
+	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required generic invitation email template code',
+		optional: false,
 	},
 }
 
