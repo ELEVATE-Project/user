@@ -13,6 +13,20 @@ const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 
+async function checkPermissions(roleId, requestPath, requestMethod) {
+	const filter = { role_id: roleId }
+	const attributes = ['request_type', 'api_path', 'module']
+	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+
+	const matchingPermissions = allPermissions.filter((permission) =>
+		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
+	)
+
+	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
+
+	return isPermissionValid
+}
+
 module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
@@ -49,19 +63,7 @@ module.exports = async function (req, res, next) {
 				const filters = { title: common.PUBLIC_ROLE }
 				const attribute = ['id']
 				const roleId = await roleQueries.findAllRoles(filters, attribute)
-				const id = roleId.rows[0].id
-
-				const filter = { role_id: id }
-				const attributes = ['request_type', 'api_path', 'module']
-				const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-
-				const matchingPermissions = allPermissions.filter((permission) =>
-					req.path.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
-				)
-
-				const isPermissionValid = matchingPermissions.some((permission) =>
-					permission.request_type.includes(req.method)
-				)
+				const isPermissionValid = await checkPermissions(roleId.rows[0].id, req.path, req.method)
 
 				if (!isPermissionValid) {
 					throw failureResponse({
@@ -153,16 +155,11 @@ module.exports = async function (req, res, next) {
 			decodedToken.data.organization_id = user.organization_id
 		}
 
-		const roleIds = decodedToken.data.roles.map((role) => role.id)
-		const filter = { role_id: roleIds }
-		const attributes = ['request_type', 'api_path', 'module']
-		const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-		const matchingPermissions = allPermissions.filter((permission) =>
-			req.path.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
+		const isPermissionValid = await checkPermissions(
+			decodedToken.data.roles.map((role) => role.id),
+			req.path,
+			req.method
 		)
-
-		const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(req.method))
-
 		if (!isPermissionValid) {
 			throw common.failureResponse({
 				message: 'PERMISSION_DENIED',
