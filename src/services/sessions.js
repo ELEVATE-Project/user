@@ -144,18 +144,20 @@ module.exports = class SessionsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			const sessionModelName = await sessionQueries.getModelName()
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(bodyData, validationData, await sessionQueries.getModelName())
+			let res = utils.validateInput(bodyData, validationData, sessionModelName)
 			if (!res.success) {
 				return common.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -269,7 +271,7 @@ module.exports = class SessionsHelper {
 
 				if (templateData) {
 					let name = userDetails.name
-					// Push successfull enrollment to session in kafka
+					// Push successful enrollment to session in kafka
 					const payload = {
 						type: 'email',
 						email: {
@@ -403,17 +405,20 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
+			const sessionModelName = await sessionQueries.getModelName()
+
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(bodyData, validationData, await sessionQueries.getModelName())
+			let res = utils.validateInput(bodyData, validationData, sessionModelName)
 
 			if (!res.success) {
 				return common.failureResponse({
@@ -837,9 +842,11 @@ module.exports = class SessionsHelper {
 				delete sessionDetails?.meeting_info?.meta
 			} else {
 				sessionDetails.is_assigned = sessionDetails.mentor_id !== sessionDetails.created_by
+				if (sessionDetails.is_assigned) {
+					const managerDetails = await userRequests.details('', sessionDetails.created_by)
+					sessionDetails.manager_name = managerDetails.data.result.name
+				}
 			}
-			delete sessionDetails.created_by
-			delete sessionDetails.updated_by
 
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {
@@ -863,12 +870,13 @@ module.exports = class SessionsHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-
+			const sessionModelName = await sessionQueries.getModelName()
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [sessionDetails.mentor_organization_id, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [sessionModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))

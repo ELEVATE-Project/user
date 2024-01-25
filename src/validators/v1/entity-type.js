@@ -1,5 +1,5 @@
 /**
- * name : validators/v1/entity.js
+ * name : validators/v1/entity-type.js
  * author : Aman Gupta
  * Date : 04-Nov-2021
  * Description : Validations of user entities controller
@@ -21,12 +21,21 @@ module.exports = {
 			.matches(/^[A-Za-z0-9 ]+$/)
 			.withMessage('label is invalid')
 
-		req.checkBody('type')
+		req.checkBody('data_type')
 			.trim()
 			.notEmpty()
-			.withMessage('type field is empty')
+			.withMessage('data_type field is empty')
 			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
+			.withMessage('data_type is invalid, must not contain spaces')
+
+		req.checkBody('model_names')
+			.isArray()
+			.notEmpty()
+			.withMessage('model_names must be an array with at least one element')
+
+		req.checkBody('model_names.*')
+			.isIn(['Session', 'MentorExtension', 'UserExtension'])
+			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
 
 		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 	},
@@ -52,10 +61,21 @@ module.exports = {
 		req.checkBody('deleted').optional().isBoolean().withMessage('deleted is invalid')
 		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 
-		req.checkBody('type')
-			.optional()
+		req.checkBody('data_type')
+			.trim()
+			.notEmpty()
+			.withMessage('data_type field is empty')
 			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
+			.withMessage('data_type is invalid, must not contain spaces')
+
+		req.checkBody('model_names')
+			.isArray()
+			.notEmpty()
+			.withMessage('model_names must be an array with at least one element')
+
+		req.checkBody('model_names.*')
+			.isIn(['Session', 'MentorExtension', 'UserExtension'])
+			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
 	},
 
 	read: (req) => {
