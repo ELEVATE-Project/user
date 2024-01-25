@@ -1162,11 +1162,13 @@ module.exports = class MenteesHelper {
 			if (queryParams.session_id) {
 				const enrolledMentees = await getEnrolledMentees(queryParams.session_id, '', userId)
 
-				const enrolledMenteeIds = enrolledMentees.map((enrolledMentee) => enrolledMentee.id)
-
 				userDetails.data.result.data.forEach((user) => {
-					const isEnrolled = enrolledMenteeIds.some((id) => id === user.id)
-					user.is_enrolled = isEnrolled
+					user.is_enrolled = false
+					const enrolledUser = _.find(enrolledMentees, { id: user.id })
+					if (enrolledUser) {
+						user.is_enrolled = true
+						user.enrolled_type = enrolledUser.type
+					}
 				})
 			}
 
@@ -1175,6 +1177,7 @@ module.exports = class MenteesHelper {
 				...data,
 				index_number: index + 1 + pageSize * (pageNo - 1), //To keep consistency with pagination
 			}))
+
 			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,
