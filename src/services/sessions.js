@@ -4,8 +4,6 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-//const sessionData = require('@db/sessions/queries')
-const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -842,9 +840,11 @@ module.exports = class SessionsHelper {
 				delete sessionDetails?.meeting_info?.meta
 			} else {
 				sessionDetails.is_assigned = sessionDetails.mentor_id !== sessionDetails.created_by
+				if (sessionDetails.is_assigned) {
+					const managerDetails = await userRequests.details('', sessionDetails.created_by)
+					sessionDetails.manager_name = managerDetails.data.result.name
+				}
 			}
-			delete sessionDetails.created_by
-			delete sessionDetails.updated_by
 
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
 				sessionDetails.image = sessionDetails.image.map(async (imgPath) => {

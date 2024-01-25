@@ -15,10 +15,6 @@ let enviromentVariables = {
 		message: 'Required application base url',
 		optional: false,
 	},
-	MONGODB_URL: {
-		message: 'Required mongodb url',
-		optional: false,
-	},
 	ACCESS_TOKEN_SECRET: {
 		message: 'Required access token secret',
 		optional: false,
@@ -115,10 +111,6 @@ let enviromentVariables = {
 		message: 'Required api doc url',
 		optional: false,
 	},
-	RATING_KAFKA_TOPIC: {
-		message: 'Required kafka topic',
-		optional: false,
-	},
 	INTERNAL_CACHE_EXP_TIME: {
 		message: 'Internal Cache Expiry Time',
 		optional: false,
@@ -163,14 +155,6 @@ let enviromentVariables = {
 		message: 'Required oci bucket name',
 		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
 	},
-	REPLICA_SET_NAME: {
-		message: 'Required replica set name',
-		optional: true,
-	},
-	REPLICA_SET_READ_PREFERENCE: {
-		message: 'Required replica read preferance',
-		optional: process.env.REPLICA_SET_NAME ? false : true,
-	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
 		optional: false,
@@ -189,10 +173,6 @@ let enviromentVariables = {
 	},
 	SESSION_MENTEE_LIMIT: {
 		message: 'Required session mentee limit',
-		optional: false,
-	},
-	MENTOR_SECRET_CODE: {
-		message: 'Required mentor secret code',
 		optional: false,
 	},
 	SCHEDULER_SERVICE_HOST: {
