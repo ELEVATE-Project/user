@@ -36,7 +36,7 @@ module.exports = async () => {
 	})
 
 	const subscribeToConsumer = async () => {
-		await consumer.subscribe({ topics: [process.env.RATING_KAFKA_TOPIC, process.env.CLEAR_INTERNAL_CACHE] })
+		await consumer.subscribe({ topics: [process.env.CLEAR_INTERNAL_CACHE] })
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {

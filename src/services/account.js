@@ -870,7 +870,6 @@ module.exports = class AccountHelper {
 			)
 			await utilsHelper.redisDel(encryptedEmailId)
 
-			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user.password
 			delete user.otpInfo
 
