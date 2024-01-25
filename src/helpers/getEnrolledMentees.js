@@ -9,6 +9,10 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 	try {
 		const mentees = await sessionAttendeesQueries.findAll({ session_id: sessionId })
 		const menteeIds = mentees.map((mentee) => mentee.mentee_id)
+		let menteeTypeMap = {}
+		mentees.forEach((mentee) => {
+			menteeTypeMap[mentee.mentee_id] = mentee.type
+		})
 		const options = {
 			attributes: {
 				exclude: [
@@ -32,6 +36,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 		// Combine details of mentees and mentors
 		let enrolledUsers = [...menteeDetails, ...mentorDetails]
+		enrolledUsers.forEach((user) => {
+			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
+				user.type = menteeTypeMap[user.user_id]
+			}
+		})
 
 		const CSVFields = [
 			{ label: 'Name', value: 'name' },
