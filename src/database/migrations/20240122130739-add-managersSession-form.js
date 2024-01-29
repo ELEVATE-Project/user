@@ -23,8 +23,13 @@ module.exports = {
 									type: 'text',
 									placeHolder: 'Ex. Name of your session',
 									position: 'floating',
-									errorMessage: { required: 'Enter session title' },
-									validators: { required: true, maxLength: 255 },
+									errorMessage: {
+										required: 'Enter session title',
+									},
+									validators: {
+										required: true,
+										maxLength: 255,
+									},
 								},
 								{
 									name: 'description',
@@ -34,16 +39,21 @@ module.exports = {
 									type: 'textarea',
 									placeHolder: 'Tell the community something about your session',
 									position: 'floating',
-									errorMessage: { required: 'Enter description' },
-									validators: { required: true, maxLength: 255 },
+									errorMessage: {
+										required: 'Enter description',
+									},
+									validators: {
+										required: true,
+										maxLength: 255,
+									},
 								},
 								{
 									name: 'type',
 									label: 'Session type',
-									value: '',
 									class: 'ion-no-margin',
 									type: 'select',
 									dependedChild: 'mentees',
+									value: '',
 									position: 'floating',
 									info: [
 										{
@@ -55,13 +65,25 @@ module.exports = {
 											message: 'Non-discoverable. Invited mentee can attend',
 										},
 									],
-									errorMessage: { required: 'Please select your session type' },
-									validators: { required: true },
-									meta: { errorLabel: 'Location' },
+									errorMessage: {
+										required: 'Please select your session type',
+									},
+									validators: {
+										required: true,
+									},
+									meta: {
+										errorLabel: 'Location',
+									},
 									multiple: false,
 									options: [
-										{ label: 'Private', value: 'private' },
-										{ label: 'Public', value: 'public' },
+										{
+											label: 'Private',
+											value: 'PRIVATE',
+										},
+										{
+											label: 'Public',
+											value: 'PUBLIC',
+										},
 									],
 								},
 								{
@@ -75,19 +97,37 @@ module.exports = {
 									meta: {
 										multiSelect: false,
 										searchLabel: 'Search for mentor',
+										searchData: [],
 										url: 'MENTORS_LIST',
+										labelArrayForSingleSelect: ['mentor_name', 'organization.name'],
 										filters: {
 											entity_types: [
-												{ key: 'designation', label: 'Designation', type: 'checkbox' },
+												{
+													key: 'designation',
+													label: 'Designation',
+													type: 'checkbox',
+												},
 											],
 											organizations: [
-												{ isEnabled: true, key: 'organizations', type: 'checkbox' },
+												{
+													isEnabled: true,
+													key: 'organizations',
+													type: 'checkbox',
+												},
 											],
 										},
 									},
-									info: [{ message: 'Click to select Mentor for this session' }],
-									errorMessage: { required: 'Please add a mentor for the session' },
-									validators: { required: true },
+									info: [
+										{
+											message: 'Click to select Mentor for this session',
+										},
+									],
+									errorMessage: {
+										required: 'Please add a mentor for the session',
+									},
+									validators: {
+										required: true,
+									},
 								},
 								{
 									name: 'mentees',
@@ -100,20 +140,38 @@ module.exports = {
 										multiSelect: true,
 										url: 'MENTEES_LIST',
 										searchLabel: 'Search for mentee',
-										labelWhenSelected: 'Mentee Count',
+										searchData: [],
+										labelForListButton: 'Mentee List',
+										labelForAddButton: 'Mentee List',
 										filters: {
 											entity_types: [
-												{ key: 'designation', label: 'Designation', type: 'checkbox' },
+												{
+													key: 'designation',
+													label: 'Designation',
+													type: 'checkbox',
+												},
 											],
 											organizations: [
-												{ isEnabled: true, key: 'organizations', type: 'checkbox' },
+												{
+													isEnabled: true,
+													key: 'organizations',
+													type: 'checkbox',
+												},
 											],
 										},
 									},
 									position: 'floating',
-									info: [{ message: 'Click to select Mentee(s) for this session' }],
-									errorMessage: { required: 'Please add mentee for the session' },
-									validators: { required: true },
+									info: [
+										{
+											message: 'Click to select Mentee(s) for this session',
+										},
+									],
+									errorMessage: {
+										required: 'Please add mentee for the session',
+									},
+									validators: {
+										required: true,
+									},
 								},
 								{
 									name: 'start_date',
@@ -124,9 +182,13 @@ module.exports = {
 									dependedChild: 'end_date',
 									type: 'date',
 									placeHolder: 'YYYY-MM-DD hh:mm',
-									errorMessage: { required: 'Enter start date' },
+									errorMessage: {
+										required: 'Enter start date',
+									},
 									position: 'floating',
-									validators: { required: true },
+									validators: {
+										required: true,
+									},
 								},
 								{
 									name: 'end_date',
@@ -138,8 +200,12 @@ module.exports = {
 									dependedParent: 'start_date',
 									type: 'date',
 									placeHolder: 'YYYY-MM-DD hh:mm',
-									errorMessage: { required: 'Enter end date' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter end date',
+									},
+									validators: {
+										required: true,
+									},
 								},
 								{
 									name: 'recommended_for',
@@ -149,14 +215,33 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									errorMessage: { required: 'Enter recommended for' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter recommended for',
+									},
+									validators: {
+										required: true,
+									},
 									options: [
-										{ label: 'Block education officer', value: 'beo' },
-										{ label: 'Cluster officials', value: 'co' },
-										{ label: 'District education officer', value: 'deo' },
-										{ label: 'Head master', value: 'hm' },
-										{ label: 'Teacher', value: 'te' },
+										{
+											label: 'Block education officer',
+											value: 'beo',
+										},
+										{
+											label: 'Cluster officials',
+											value: 'co',
+										},
+										{
+											label: 'District education officer',
+											value: 'deo',
+										},
+										{
+											label: 'Head master',
+											value: 'hm',
+										},
+										{
+											label: 'Teacher',
+											value: 'te',
+										},
 									],
 									meta: {
 										entityType: 'recommended_for',
@@ -175,14 +260,33 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									errorMessage: { required: 'Enter categories' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter categories',
+									},
+									validators: {
+										required: true,
+									},
 									options: [
-										{ label: 'Communication', value: 'communication' },
-										{ label: 'Educational leadership', value: 'educational_leadership' },
-										{ label: 'Professional development', value: 'professional_development' },
-										{ label: 'School process', value: 'school_process' },
-										{ label: 'SQAA', value: 'sqaa' },
+										{
+											label: 'Communication',
+											value: 'communication',
+										},
+										{
+											label: 'Educational leadership',
+											value: 'educational_leadership',
+										},
+										{
+											label: 'Professional development',
+											value: 'professional_development',
+										},
+										{
+											label: 'School process',
+											value: 'school_process',
+										},
+										{
+											label: 'SQAA',
+											value: 'sqaa',
+										},
 									],
 									meta: {
 										entityType: 'categories',
@@ -201,11 +305,21 @@ module.exports = {
 									type: 'chip',
 									position: '',
 									disabled: false,
-									errorMessage: { required: 'Enter select medium' },
-									validators: { required: true },
+									errorMessage: {
+										required: 'Enter select medium',
+									},
+									validators: {
+										required: true,
+									},
 									options: [
-										{ label: 'English', value: 'en_in' },
-										{ label: 'Hindi', value: 'hi' },
+										{
+											label: 'English',
+											value: 'en_in',
+										},
+										{
+											label: 'Hindi',
+											value: 'hi',
+										},
 									],
 									meta: {
 										entityType: 'medium',

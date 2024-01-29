@@ -80,12 +80,15 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 			return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
 		})
+
 		if (queryParams?.csv === 'true') {
 			const csv = parser.parse(
 				mergedUserArray.map((user, index) => ({
 					index_number: index + 1,
 					name: user.name,
-					designation: user.designation.map((designation) => designation.label).join(', '), // Assuming designation is an array
+					designation: user.designation
+						? user.designation.map((designation) => designation.label).join(', ')
+						: '',
 					email: user.email,
 					type: user.type,
 					organization: user.organization.name,
