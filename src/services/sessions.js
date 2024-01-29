@@ -661,7 +661,7 @@ module.exports = class SessionsHelper {
 						)
 						let oldSessionDuration = oldDuration.asMinutes()
 						// if session is rescheduled find new duration
-						let revisedDuration
+						let revisedDuration = oldSessionDuration
 						if (isSessionReschedule) {
 							let duration = moment.duration(
 								moment.unix(bodyData.end_date).diff(moment.unix(bodyData.start_date))
