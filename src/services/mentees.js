@@ -478,6 +478,11 @@ module.exports = class MenteesHelper {
 				upcomingSessionIds
 			)
 
+			let sessionAndMenteeMap = {}
+			usersUpcomingSessions.forEach((session) => {
+				sessionAndMenteeMap[session.session_id] = session.type
+			})
+
 			const usersUpcomingSessionIds = usersUpcomingSessions.map(
 				(usersUpcomingSession) => usersUpcomingSession.session_id
 			)
@@ -487,6 +492,12 @@ module.exports = class MenteesHelper {
 				{ order: [['start_date', 'ASC']] }
 			)
 			if (sessionDetails.rows.length > 0) {
+				sessionDetails.rows.forEach((session) => {
+					if (sessionAndMenteeMap.hasOwnProperty(session.id)) {
+						session.enrolled_type = sessionAndMenteeMap[session.id]
+					}
+				})
+
 				const uniqueOrgIds = [...new Set(sessionDetails.rows.map((obj) => obj.mentor_organization_id))]
 				sessionDetails.rows = await entityTypeService.processEntityTypesToAddValueLabels(
 					sessionDetails.rows,
@@ -516,6 +527,7 @@ module.exports = class MenteesHelper {
 				await Promise.all(
 					sessions.map(async (session) => {
 						const attendee = attendees.find((attendee) => attendee.session_id === session.id)
+						if (attendee) session.enrolled_type = attendee.type
 						session.is_enrolled = !!attendee
 					})
 				)
