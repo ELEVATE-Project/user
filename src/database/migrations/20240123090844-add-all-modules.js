@@ -3,6 +3,8 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		await queryInterface.bulkDelete('modules', null, {})
+
 		const modulesData = [
 			{ code: 'all', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'manage_session', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
