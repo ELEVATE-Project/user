@@ -4,8 +4,6 @@ const moment = require('moment-timezone')
 const httpStatusCode = require('@generics/http-status')
 const apiEndpoints = require('@constants/endpoints')
 const common = require('@constants/common')
-//const sessionData = require('@db/sessions/queries')
-const notificationTemplateData = require('@db/notification-template/query')
 const kafkaCommunication = require('@generics/kafka-communication')
 const apiBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BASE_URL
 const request = require('request')
@@ -2013,7 +2011,7 @@ module.exports = class SessionsHelper {
 			}
 			const enrolledMentees = await getEnrolledMentees(sessionId, queryParams, userID)
 
-			if (queryParams?.csv) {
+			if (queryParams?.csv === 'true') {
 				const timestamp = moment().format('YYYY-MM-DD_HH-mm-ss')
 				const fileName = `mentee_list_${sessionId}_${timestamp}.csv`
 				return common.successResponse({
