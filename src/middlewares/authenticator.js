@@ -12,14 +12,26 @@ const common = require('@constants/common')
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
 const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
-const permissionsQueries = require('@database/queries/permissions')
+const userRequests = require('@requests/user')
+
+async function checkPermissions(roleId, requestPath, requestMethod) {
+	const filter = { role_id: roleId }
+	const attributes = ['request_type', 'api_path', 'module']
+	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+
+	const matchingPermissions = allPermissions.filter((permission) =>
+		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
+	)
+
+	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
+
+	return isPermissionValid
+}
 
 module.exports = async function (req, res, next) {
 	try {
 		let internalAccess = false
-		let guestUrl = false
 		let roleValidation = false
-		let apiPermissions = false
 		let decodedToken
 
 		const authHeader = req.get('X-auth-token')
@@ -35,34 +47,47 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		common.guestUrls.map(function (path) {
-			if (req.path.includes(path)) {
-				guestUrl = true
-			}
-		})
 		common.roleValidationPaths.map(function (path) {
 			if (req.path.includes(path)) {
 				roleValidation = true
 			}
 		})
-		common.apiPermissionsUrls.map(function (path) {
-			if (req.path.includes(path)) {
-				apiPermissions = true
-			}
-		})
 
-		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) {
+		if (internalAccess && !authHeader) {
 			next()
 			return
 		}
 
 		if (!authHeader) {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
+			try {
+				const response = await userRequests.getListOfUserRoles(
+					common.pagination.DEFAULT_PAGE_NO,
+					common.pagination.DEFAULT_PAGE_SIZE,
+					common.PUBLIC_ROLE
+				)
+				const isPermissionValid = await checkPermissions(
+					response.result.data.map((role) => role.id),
+					req.path,
+					req.method
+				)
+				if (!isPermissionValid) {
+					throw common.failureResponse({
+						message: 'PERMISSION_DENIED',
+						statusCode: httpStatusCode.unauthorized,
+						responseCode: 'UNAUTHORIZED',
+					})
+				}
+
+				return next()
+			} catch (error) {
+				throw common.failureResponse({
+					message: 'UNAUTHORIZED_REQUEST',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
 		}
+
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') {
 			throw common.failureResponse({
@@ -99,7 +124,7 @@ module.exports = async function (req, res, next) {
 
 		let isAdmin = false
 		if (decodedToken.data.roles) {
-			isAdmin = decodedToken.data.roles.some((role) => role.title == common.roleAdmin)
+			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
 			if (isAdmin) {
 				req.decodedToken = decodedToken.data
 				return next()
@@ -130,23 +155,17 @@ module.exports = async function (req, res, next) {
 			decodedToken.data.organization_id = user.data.result.organization_id
 		}
 
-		if (apiPermissions) {
-			const roleIds = decodedToken.data.roles.map((role) => role.id)
-			const filter = { role_id: roleIds, api_path: req.path }
-			const attributes = ['request_type', 'api_path', 'module']
-			const requiredPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-
-			const isPermissionValid = requiredPermissions.some(
-				(permission) => permission.api_path === req.path && permission.request_type.includes(req.method)
-			)
-
-			if (!isPermissionValid) {
-				throw common.failureResponse({
-					message: 'PERMISSION_DENIED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+		const isPermissionValid = await checkPermissions(
+			decodedToken.data.roles.map((role) => role.id),
+			req.path,
+			req.method
+		)
+		if (!isPermissionValid) {
+			throw common.failureResponse({
+				message: 'PERMISSION_DENIED',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'UNAUTHORIZED',
+			})
 		}
 
 		req.decodedToken = {

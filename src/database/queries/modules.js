@@ -36,6 +36,7 @@ module.exports = class UserRoleModulesData {
 			const [rowsUpdated, [updatedModules]] = await Modules.update(updatedata, {
 				where: filter,
 				returning: true,
+				raw: true,
 			})
 			return updatedModules
 		} catch (error) {
