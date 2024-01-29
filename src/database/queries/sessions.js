@@ -523,6 +523,7 @@ exports.getUpcomingSessions = async (page, limit, search, userId) => {
 				'meeting_info',
 				'visibility',
 				'mentor_organization_id',
+				'type',
 				/* ['meetingInfo.platform', 'meetingInfo.platform'],
 				['meetingInfo.value', 'meetingInfo.value'], */
 			],
@@ -597,7 +598,7 @@ exports.getUpcomingSessionsFromView = async (
 
 		// Create selection clause
 		let projectionClause = `
-			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, created_at,
+			id, title, description, start_date, end_date, meta, recommended_for, medium, categories, status, image, mentor_id, visibility, mentor_organization_id, type, created_at,
 			(meeting_info - 'link' ) AS meeting_info
 		`
 		if (additionalProjectionclause !== '') {
