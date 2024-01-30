@@ -5,32 +5,6 @@
  * Description : All commonly used constants through out the service
  */
 
-const form = require('@generics/form')
-const { elevateLog, correlationId } = require('elevate-logger')
-const logger = elevateLog.init()
-const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
-	const versions = await form.getAllFormsVersion()
-	let response = {
-		statusCode,
-		responseCode,
-		message,
-		result,
-		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
-	}
-	logger.info('Request Response', { response: response })
-
-	return response
-}
-
-const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode, result }) => {
-	const error = new Error(message)
-	error.statusCode = statusCode
-	error.responseCode = responseCode
-	error.data = result || []
-
-	return error
-}
-
 function getPaginationOffset(page, limit) {
 	return (page - 1) * limit
 }
@@ -39,8 +13,6 @@ module.exports = {
 		DEFAULT_PAGE_NO: 1,
 		DEFAULT_PAGE_SIZE: 100,
 	},
-	successResponse,
-	failureResponse,
 	getPaginationOffset,
 	guestUrls: [
 		'/user/v1/account/login',
