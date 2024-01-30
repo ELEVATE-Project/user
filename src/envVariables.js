@@ -217,18 +217,6 @@ let enviromentVariables = {
 		message: 'Default organization ID',
 		optional: false,
 	},
-	EVENT_TYPE_CREATE: {
-		message: 'Required Create EventType Label',
-		optional: false,
-	},
-	EVENT_TYPE_UPDATE: {
-		message: 'Required Update EventType Label',
-		optional: false,
-	},
-	EVENT_TYPE_DELETE: {
-		message: 'Required Delete EventType Label',
-		optional: false,
-	},
 }
 
 let success = true
