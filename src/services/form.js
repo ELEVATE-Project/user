@@ -59,7 +59,7 @@ module.exports = class FormsHelper {
 					organization_id: orgId,
 				}
 			}
-			bodyData['organization_id'] = orgId
+
 			const result = await formQueries.updateOneForm(filter, bodyData)
 			if (result == 0) {
 				return common.failureResponse({
