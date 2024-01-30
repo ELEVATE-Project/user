@@ -853,14 +853,7 @@ module.exports = class SessionsHelper {
 			const canRetrieveMenteeList = userId === sessionDetails.created_by || userId === sessionDetails.mentor_id
 
 			if (isMenteesListRequested && canRetrieveMenteeList) {
-				const sessionQuery = {
-					id,
-					[Op.or]: [{ mentor_id: userId }, { created_by: userId }],
-				}
-
-				const session = await sessionQueries.findOne(sessionQuery)
-
-				sessionDetails.mentees = session ? await getEnrolledMentees(id, {}, userId) : []
+				sessionDetails.mentees = await getEnrolledMentees(id, {}, userId)
 			}
 
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
