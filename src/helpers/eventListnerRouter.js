@@ -3,14 +3,14 @@
 exports.eventListenerRouter = async (eventBody, { createFn = null, updateFn = null, deleteFn = null }) => {
 	try {
 		switch (eventBody.eventType) {
-			case process.env.EVENT_TYPE_CREATE:
-				validateFunction(createFn, process.env.EVENT_TYPE_CREATE)
+			case 'create':
+				validateFunction(createFn, 'create')
 				return await createFn(eventBody)
-			case process.env.EVENT_TYPE_UPDATE:
-				validateFunction(updateFn, process.env.EVENT_TYPE_UPDATE)
+			case 'update':
+				validateFunction(updateFn, 'update')
 				return await updateFn(eventBody)
-			case process.env.EVENT_TYPE_DELETE:
-				validateFunction(deleteFn, process.env.EVENT_TYPE_DELETE)
+			case 'delete':
+				validateFunction(deleteFn, 'delete')
 				return await deleteFn(eventBody)
 			default:
 				throw new Error(`Invalid EventType: ${eventBody.eventType}`)
