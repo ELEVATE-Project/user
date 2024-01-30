@@ -15,8 +15,12 @@ const rolePermissionMappingQueries = require('@database/queries/rolePermissionMa
 const permissionsQueries = require('@database/queries/permissions')
 
 module.exports = async function (req, res, next) {
+	const unAuthorizedResponse = common.failureResponse({
+		message: 'UNAUTHORIZED_REQUEST',
+		statusCode: httpStatusCode.unauthorized,
+		responseCode: 'UNAUTHORIZED',
+	})
 	try {
-		let internalAccess = false
 		let guestUrl = false
 		let roleValidation = false
 		let apiPermissions = false
@@ -24,15 +28,12 @@ module.exports = async function (req, res, next) {
 
 		const authHeader = req.get('X-auth-token')
 
-		common.internalAccessUrs.map(function (path) {
+		const internalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
-				if (
-					req.headers.internal_access_token &&
-					process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token
-				) {
-					internalAccess = true
-				}
+				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
+				else throw unAuthorizedResponse
 			}
+			return false
 		})
 
 		common.guestUrls.map(function (path) {
@@ -51,26 +52,13 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) {
-			next()
-			return
-		}
+		if ((internalAccess || guestUrl || apiPermissions) && !authHeader) return next()
 
-		if (!authHeader) {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (!authHeader) throw unAuthorizedResponse
+
 		const authHeaderArray = authHeader.split(' ')
-		if (authHeaderArray[0] !== 'bearer') {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
@@ -80,22 +68,10 @@ module.exports = async function (req, res, next) {
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
-			} else {
-				throw common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+			} else throw unAuthorizedResponse
 		}
 
-		if (!decodedToken) {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (!decodedToken) throw unAuthorizedResponse
 
 		let isAdmin = false
 		if (decodedToken.data.roles) {
@@ -156,7 +132,7 @@ module.exports = async function (req, res, next) {
 			token: authHeader,
 			organization_id: decodedToken.data.organization_id,
 		}
-		next()
+		return next()
 	} catch (err) {
 		console.log(err)
 		next(err)
