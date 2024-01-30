@@ -142,7 +142,8 @@ module.exports = class Sessions {
 			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
-				req.headers['timezone']
+				req.headers['timezone'],
+				isAMentor(req.decodedToken.roles)
 			)
 			return enrolledSession
 		} catch (error) {
