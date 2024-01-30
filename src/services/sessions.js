@@ -789,7 +789,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '', isAMentor = '') {
+	static async details(id, userId = '', isAMentor = '', queryParams) {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -847,6 +847,20 @@ module.exports = class SessionsHelper {
 			if (isInvited || sessionDetails.is_assigned) {
 				const managerDetails = await userRequests.details('', sessionDetails.created_by)
 				sessionDetails.manager_name = managerDetails.data.result.name
+			}
+
+			const isMenteesListRequested = queryParams?.get_mentees === 'true'
+			const canRetrieveMenteeList = userId === sessionDetails.created_by || userId === sessionDetails.mentor_id
+
+			if (isMenteesListRequested && canRetrieveMenteeList) {
+				const sessionQuery = {
+					id,
+					[Op.or]: [{ mentor_id: userId }, { created_by: userId }],
+				}
+
+				const session = await sessionQueries.findOne(sessionQuery)
+
+				sessionDetails.mentees = session ? await getEnrolledMentees(id, {}, userId) : []
 			}
 
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {

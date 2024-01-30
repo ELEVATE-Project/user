@@ -72,7 +72,8 @@ module.exports = class Sessions {
 			const sessionDetails = await sessionService.details(
 				req.params.id,
 				req.decodedToken ? req.decodedToken.id : '',
-				req.decodedToken ? isAMentor(req.decodedToken.roles) : ''
+				req.decodedToken ? isAMentor(req.decodedToken.roles) : '',
+				req.query
 			)
 			return sessionDetails
 		} catch (error) {
