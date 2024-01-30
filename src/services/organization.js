@@ -126,14 +126,14 @@ module.exports = class OrganizationsHelper {
 			await utils.internalDel(cacheKey)
 
 			const eventBody = eventBodyDTO({
-				entity: process.env.EVENT_ENTITY_ORGANIZATION,
-				eventType: process.env.EVENT_TYPE_CREATE,
+				entity: 'organization',
+				eventType: 'create',
 				entityId: createdOrganization.id,
 				args: {
 					created_by: loggedInUserId,
 				},
 			})
-			eventBroadcasterMain(process.env.EVENT_GROUP_ORGANIZATION, { requestBody: eventBody, isInternal: true })
+			eventBroadcasterMain('organizationEvents', { requestBody: eventBody, isInternal: true })
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',

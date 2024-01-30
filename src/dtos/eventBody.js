@@ -3,7 +3,7 @@ exports.eventBodyDTO = ({ entity, eventType, entityId, changedValues = [], args 
 	try {
 		if (!entity || !eventType || !entityId)
 			throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
-		const allowedArgs = process.env.EVENTS_ALLOWED_ARGS.split(',')
+		const allowedArgs = ['created_at', 'created_by', 'updated_at', 'updated_by']
 		const disallowedArgs = Object.keys(args).filter((arg) => !allowedArgs.includes(arg))
 		if (disallowedArgs.length > 0)
 			throw new Error(`Event Args contain disallowed keys: ${disallowedArgs.join(', ')}`)
@@ -22,7 +22,7 @@ exports.eventBodyDTO = ({ entity, eventType, entityId, changedValues = [], args 
 			...args,
 		}
 	} catch (error) {
-		console.log
-		throw error
+		console.error(error)
+		return false
 	}
 }

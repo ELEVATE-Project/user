@@ -35,10 +35,5 @@ module.exports = {
 				route: '/mentoring/v1/sessions/bulkUpdateMentorNames',
 			},
 		],
-		organizationEvents: [
-			{
-				url: `http://interface:3567/mentoring/v1/organization/eventListener`,
-			},
-		],
 	},
 }
