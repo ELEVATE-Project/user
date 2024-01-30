@@ -9,6 +9,7 @@
 const feedbackService = require('@services/feedback')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 
 module.exports = class Feedback {
 	/**
@@ -46,7 +47,7 @@ module.exports = class Feedback {
 		try {
 			const isAMentor = req.decodedToken.roles.some((role) => role.title == common.MENTOR_ROLE)
 			if (isAMentor && !req.body.feedback_as) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FEEDBACK_AS_NOT_PASSED',
 					statusCode: httpStatusCode.unprocessable_entity,
 					responseCode: 'CLIENT_ERROR',

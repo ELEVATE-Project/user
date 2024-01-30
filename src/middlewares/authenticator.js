@@ -13,6 +13,7 @@ const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
 const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const permissionsQueries = require('@database/queries/permissions')
+const responses = require('@helpers/responses')
 
 module.exports = async function (req, res, next) {
 	try {
@@ -57,7 +58,7 @@ module.exports = async function (req, res, next) {
 		}
 
 		if (!authHeader) {
-			throw common.failureResponse({
+			throw responses.failureResponse({
 				message: 'UNAUTHORIZED_REQUEST',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
@@ -65,7 +66,7 @@ module.exports = async function (req, res, next) {
 		}
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') {
-			throw common.failureResponse({
+			throw responses.failureResponse({
 				message: 'UNAUTHORIZED_REQUEST',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
@@ -75,13 +76,13 @@ module.exports = async function (req, res, next) {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
 			if (err.name === 'TokenExpiredError') {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'ACCESS_TOKEN_EXPIRED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			} else {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -90,7 +91,7 @@ module.exports = async function (req, res, next) {
 		}
 
 		if (!decodedToken) {
-			throw common.failureResponse({
+			throw responses.failureResponse({
 				message: 'UNAUTHORIZED_REQUEST',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
@@ -111,7 +112,7 @@ module.exports = async function (req, res, next) {
 			const profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS + '/' + decodedToken.data.id
 			const user = await requests.get(profileUrl, null, true)
 			if (!user || !user.success) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -119,7 +120,7 @@ module.exports = async function (req, res, next) {
 			}
 
 			if (user.data.result.deleted_at !== null) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_ROLE_UPDATED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -141,7 +142,7 @@ module.exports = async function (req, res, next) {
 			)
 
 			if (!isPermissionValid) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'PERMISSION_DENIED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',

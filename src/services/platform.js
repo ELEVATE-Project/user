@@ -1,5 +1,6 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 
 module.exports = class platformHelper {
 	/**
@@ -18,7 +19,7 @@ module.exports = class platformHelper {
 				},
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'APP_CONFIG_FETCHED_SUCCESSFULLY',
 				result: config,

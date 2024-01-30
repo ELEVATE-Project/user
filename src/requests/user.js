@@ -10,8 +10,8 @@ const userBaseUrl = process.env.USER_SERVICE_HOST + process.env.USER_SERVICE_BAS
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
 const request = require('request')
-const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 
 /**
  * Fetches the default organization details for a given organization code/id.
@@ -125,7 +125,7 @@ const share = function (profileId) {
 			let shareLink = await requests.get(apiUrl, false, true)
 			if (shareLink.data.responseCode === 'CLIENT_ERROR') {
 				return resolve(
-					common.failureResponse({
+					responses.failureResponse({
 						message: shareLink.data.message,
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
@@ -133,7 +133,7 @@ const share = function (profileId) {
 				)
 			}
 			return resolve(
-				common.successResponse({
+				responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: shareLink.data.message,
 					result: shareLink.data.result,
