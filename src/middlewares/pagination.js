@@ -22,7 +22,7 @@ module.exports = (req, res, next) => {
 	req.searchText = buff.toString('ascii') */
 	if (containsSpecialChars(req.searchText)) {
 		throw responses.failureResponse({
-			message: 'Invalid search text 😥',
+			message: 'Invalid search text',
 			statusCode: httpStatus.bad_request,
 			responseCode: 'CLIENT_ERROR',
 		})
