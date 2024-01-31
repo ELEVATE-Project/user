@@ -5,6 +5,7 @@ const modulesQueries = require('@database/queries/modules')
 const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
+const responses = require('@helpers/responses')
 
 module.exports = class modulesHelper {
 	/**
@@ -19,7 +20,7 @@ module.exports = class modulesHelper {
 	static async create(bodyData) {
 		try {
 			const modules = await modulesQueries.createModules(bodyData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'MODULES_CREATED_SUCCESSFULLY',
 				result: {
@@ -30,7 +31,7 @@ module.exports = class modulesHelper {
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MODULES_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -64,13 +65,13 @@ module.exports = class modulesHelper {
 			)
 
 			if (!updatedModules && !updatePermissions) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MODULES_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.created,
 					message: 'MODULES_UPDATED_SUCCESSFULLY',
 					result: {
@@ -98,7 +99,7 @@ module.exports = class modulesHelper {
 			const modules = await modulesQueries.findModulesById(id)
 
 			if (!modules) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MODULES_ALREADY_DELETED_OR_MODULE_NOT_PRESENT',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -107,13 +108,13 @@ module.exports = class modulesHelper {
 				const deletemodules = await modulesQueries.deleteModulesById(id)
 
 				if (!deletemodules) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'MODULES_NOT_DELETED',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.accepted,
 					message: 'MODULES_DELETED_SUCCESSFULLY',
 					result: {},
@@ -147,7 +148,7 @@ module.exports = class modulesHelper {
 			const modules = await modulesQueries.findAllModules(filter, attributes, options)
 
 			if (modules.rows == 0 || modules.count == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MODULES_HAS_EMPTY_LIST',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -158,7 +159,7 @@ module.exports = class modulesHelper {
 					count: modules.count,
 				}
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MODULES_FETCHED_SUCCESSFULLY',
 					result: results,

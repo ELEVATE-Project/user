@@ -9,6 +9,7 @@
 const adminService = require('@services/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 
 module.exports = class admin {
 	/**
@@ -32,7 +33,7 @@ module.exports = class admin {
 	async triggerViewRebuild(req) {
 		try {
 			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -47,7 +48,7 @@ module.exports = class admin {
 	async triggerPeriodicViewRefresh(req) {
 		try {
 			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
