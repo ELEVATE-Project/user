@@ -61,10 +61,6 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-    #MongoDb Connectivity Url
-    DATABASE_URL=postgres://postgres:postgres@citus_master:5432 elevate-user
-
-
      #Kafka Host Server URL
      KAFKA_URL = host.docker.external:9092
     ```
