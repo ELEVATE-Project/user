@@ -57,11 +57,10 @@ const details = function (token = '', userId = '') {
 	return new Promise(async (resolve, reject) => {
 		try {
 			let profileUrl = userBaseUrl + endpoints.USER_PROFILE_DETAILS
-			let internalToken = false
+			let internalToken = true // All internal api calls require internal access token
 
 			if (userId != '') {
 				profileUrl = profileUrl + '/' + userId
-				internalToken = true
 			}
 			const profileDetails = await requests.get(profileUrl, token, internalToken)
 			return resolve(profileDetails)
