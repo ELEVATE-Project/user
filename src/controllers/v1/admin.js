@@ -10,6 +10,7 @@ const adminService = require('@services/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utilsHelper = require('@generics/utils')
+const responses = require('@helpers/responses')
 
 module.exports = class Admin {
 	/**
@@ -23,7 +24,7 @@ module.exports = class Admin {
 	async deleteUser(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -52,7 +53,7 @@ module.exports = class Admin {
 	async create(req) {
 		try {
 			if (req.body.secret_code != process.env.ADMIN_SECRET_CODE) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'INVALID_SECRET_CODE',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -97,7 +98,7 @@ module.exports = class Admin {
 	async addOrgAdmin(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -126,7 +127,7 @@ module.exports = class Admin {
 	async deactivateOrg(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -150,7 +151,7 @@ module.exports = class Admin {
 	async deactivateUser(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -158,7 +159,7 @@ module.exports = class Admin {
 			}
 
 			if (!req.body.id && !req.body.email) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'EMAIL_OR_ID_REQUIRED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -176,7 +177,7 @@ module.exports = class Admin {
 	async triggerViewRebuild(req) {
 		try {
 			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -191,7 +192,7 @@ module.exports = class Admin {
 	async triggerPeriodicViewRefresh(req) {
 		try {
 			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',

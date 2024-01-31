@@ -5,6 +5,7 @@ const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const form = require('@generics/form')
 const organizationQueries = require('@database/queries/organization')
+const responses = require('@helpers/responses')
 
 module.exports = class FormsHelper {
 	/**
@@ -19,7 +20,7 @@ module.exports = class FormsHelper {
 		try {
 			const form = await formQueries.findOne({ type: bodyData.type, organization_id: orgId })
 			if (form) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -29,7 +30,7 @@ module.exports = class FormsHelper {
 			await formQueries.create(bodyData)
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
 			})
@@ -62,7 +63,7 @@ module.exports = class FormsHelper {
 
 			const result = await formQueries.updateOneForm(filter, bodyData)
 			if (result == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -71,7 +72,7 @@ module.exports = class FormsHelper {
 
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'FORM_UPDATED_SUCCESSFULLY',
 			})
@@ -103,13 +104,13 @@ module.exports = class FormsHelper {
 				defaultOrgForm = await formQueries.findOne(filter)
 			}
 			if (!form && !defaultOrgForm) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_FETCHED_SUCCESSFULLY',
 				result: form ? form : defaultOrgForm,
@@ -121,7 +122,7 @@ module.exports = class FormsHelper {
 	}
 	static async readAllFormsVersion() {
 		try {
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_VERSION_FETCHED_SUCCESSFULLY',
 				result: (await form.getAllFormsVersion()) || {},
