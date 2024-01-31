@@ -1081,7 +1081,7 @@ module.exports = class SessionsHelper {
 			let isAccessible = await this.checkIfSessionIsAccessible(session, userId, isAMentor)
 
 			if (!isAccessible) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'INVALID_PERMISSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
