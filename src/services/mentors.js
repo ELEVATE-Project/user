@@ -19,6 +19,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const moment = require('moment')
 const menteesService = require('@services/mentees')
 const entityTypeService = require('@services/entity-type')
+const responses = require('@helpers/responses')
 
 module.exports = class MentorsHelper {
 	/**
@@ -35,7 +36,7 @@ module.exports = class MentorsHelper {
 		try {
 			const mentorsDetails = await mentorQueries.getMentorExtension(id)
 			if (!mentorsDetails) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.bad_request,
 					message: 'MENTORS_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -66,7 +67,7 @@ module.exports = class MentorsHelper {
 			)
 
 			if (!upcomingSessions.data.length) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'UPCOMING_SESSION_FETCHED',
 					result: {
@@ -81,7 +82,7 @@ module.exports = class MentorsHelper {
 				upcomingSessions.data = await this.menteeSessionDetails(upcomingSessions.data, menteeUserId)
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'UPCOMING_SESSION_FETCHED',
 				result: upcomingSessions,
@@ -107,7 +108,7 @@ module.exports = class MentorsHelper {
 				const totalSessionsAttended = await sessionAttendees.countAllSessionAttendees(filterSessionAttended)
 				const filterSessionHosted = { userId: _id, status: 'completed', isStarted: true, delete: false }
 				const totalSessionHosted = await sessionsData.findSessionHosted(filterSessionHosted)
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FTECHED_SUCCESSFULLY',
 					result: {
@@ -117,7 +118,7 @@ module.exports = class MentorsHelper {
 					},
 				})
 			} else {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.bad_request,
 					message: 'MENTORS_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -140,7 +141,7 @@ module.exports = class MentorsHelper {
 	static async reports(userId, filterType, roles) {
 		try {
 			if (!utils.isAMentor(roles)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.bad_request,
 					message: 'MENTORS_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -176,7 +177,7 @@ module.exports = class MentorsHelper {
 			)
 
 			const result = { total_session_created: totalSessionsCreated, total_session_hosted: totalSessionsHosted }
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTORS_REPORT_FETCHED_SUCCESSFULLY',
 				result,
@@ -198,7 +199,7 @@ module.exports = class MentorsHelper {
 		try {
 			const mentorsDetails = await mentorQueries.getMentorExtension(id)
 			if (!mentorsDetails) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.bad_request,
 					message: 'MENTORS_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -290,7 +291,7 @@ module.exports = class MentorsHelper {
 
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ORGANISATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -302,7 +303,7 @@ module.exports = class MentorsHelper {
 			data.user_id = userId
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'DEFAULT_ORG_ID_NOT_SET',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -322,7 +323,7 @@ module.exports = class MentorsHelper {
 
 			let res = utils.validateInput(data, validationData, mentorExtensionsModelName)
 			if (!res.success) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -350,14 +351,14 @@ module.exports = class MentorsHelper {
 
 			const processDbResponse = utils.processDbResponse(response.toJSON(), validationData)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_CREATED',
 				result: processDbResponse,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MENTOR_EXTENSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -394,7 +395,7 @@ module.exports = class MentorsHelper {
 
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'DEFAULT_ORG_ID_NOT_SET',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -421,14 +422,14 @@ module.exports = class MentorsHelper {
 			if (updateCount === 0) {
 				const fallbackUpdatedUser = await mentorQueries.getMentorExtension(userId)
 				if (!fallbackUpdatedUser) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTOR_EXTENSION_NOT_FOUND',
 					})
 				}
 
 				const processDbResponse = utils.processDbResponse(fallbackUpdatedUser, validationData)
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTOR_EXTENSION_UPDATED',
 					result: processDbResponse,
@@ -438,7 +439,7 @@ module.exports = class MentorsHelper {
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
 			const processDbResponse = utils.processDbResponse(updatedMentor[0], validationData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_UPDATED',
 				result: processDbResponse,
@@ -459,12 +460,12 @@ module.exports = class MentorsHelper {
 		try {
 			const mentor = await mentorQueries.getMentorExtension(userId)
 			if (!mentor) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_FETCHED',
 				result: mentor,
@@ -485,12 +486,12 @@ module.exports = class MentorsHelper {
 		try {
 			const deleteCount = await mentorQueries.deleteMentorExtension(userId)
 			if (deleteCount === '0') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTOR_EXTENSION_NOT_FOUND',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTOR_EXTENSION_DELETED',
 			})
@@ -521,7 +522,7 @@ module.exports = class MentorsHelper {
 
 				// Throw error if extension not found
 				if (!requstedMentorExtension || Object.keys(requstedMentorExtension).length === 0) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTORS_NOT_FOUND',
 					})
@@ -532,7 +533,7 @@ module.exports = class MentorsHelper {
 
 				// Throw access error
 				if (!isAccessible) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'PROFILE_RESTRICTED',
 					})
@@ -541,7 +542,7 @@ module.exports = class MentorsHelper {
 
 			let mentorProfile = await userRequests.details('', id)
 			if (!mentorProfile.data.result) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTORS_NOT_FOUND',
 				})
@@ -553,7 +554,7 @@ module.exports = class MentorsHelper {
 			let mentorExtension = await mentorQueries.getMentorExtension(id)
 
 			if (!mentorProfile.data.result || !mentorExtension) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTORS_NOT_FOUND',
 				})
@@ -564,7 +565,7 @@ module.exports = class MentorsHelper {
 
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'DEFAULT_ORG_ID_NOT_SET',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -610,7 +611,7 @@ module.exports = class MentorsHelper {
 				request_type: value.request_type,
 			}))
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PROFILE_FTECHED_SUCCESSFULLY',
 				result: {
@@ -645,7 +646,7 @@ module.exports = class MentorsHelper {
 
 			// Throw error if mentor/mentee extension not found
 			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -770,7 +771,7 @@ module.exports = class MentorsHelper {
 				true
 			)
 			if (extensionDetails.count == 0) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTOR_LIST',
 					result: {
@@ -787,7 +788,7 @@ module.exports = class MentorsHelper {
 
 			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
 			if (userDetails.data.result.count == 0) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTOR_LIST',
 					result: {
@@ -872,7 +873,7 @@ module.exports = class MentorsHelper {
 				userDetails.data.result.data = sortedData
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,
 				result: userDetails.data.result,
@@ -898,7 +899,7 @@ module.exports = class MentorsHelper {
 
 			// Throw error if mentor/mentee extension not found
 			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -967,7 +968,7 @@ module.exports = class MentorsHelper {
 	static async createdSessions(loggedInUserId, page, limit, search, status, roles) {
 		try {
 			if (!utils.isAMentor(roles)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.bad_request,
 					message: 'NOT_A_MENTOR',
 					responseCode: 'CLIENT_ERROR',
@@ -1002,7 +1003,7 @@ module.exports = class MentorsHelper {
 			const sessionDetails = await sessionQueries.findAllSessions(page, limit, search, filters)
 
 			if (sessionDetails.count == 0 || sessionDetails.rows.length == 0) {
-				return common.successResponse({
+				return responses.successResponse({
 					message: 'SESSION_FETCHED_SUCCESSFULLY',
 					statusCode: httpStatusCode.ok,
 					result: [],
@@ -1030,7 +1031,7 @@ module.exports = class MentorsHelper {
 				'mentor_organization_id'
 			)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: { count: sessionDetails.count, data: sessionDetails.rows },
