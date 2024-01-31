@@ -85,7 +85,7 @@ module.exports = class MenteesHelper {
 			request_type: value.request_type,
 		}))
 
-		return successResponse({
+		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'PROFILE_FTECHED_SUCCESSFULLY',
 			result: {
