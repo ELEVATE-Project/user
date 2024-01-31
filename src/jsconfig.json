@@ -6,16 +6,17 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"paths": {
-			"@configs*": ["./configs*"],
-			"@constants*": ["./constants*"],
-			"@controllers*": ["./controllers*"],
-			"@generics*": ["./generics*"],
-			"@health-checks*": ["./health-checks*"],
-			"@middlewares*": ["./middlewares*"],
-			"@public*": ["./public*"],
-			"@routes*": ["./routes*"],
-			"@services*": ["./services*"],
-			"@database*": ["./database*"]
+			"@configs/*": ["configs/*"],
+			"@constants/*": ["constants/*"],
+			"@controllers/*": ["controllers/*"],
+			"@database/*": ["database/*"],
+			"@generics/*": ["generics/*"],
+			"@health-checks/*": ["health-checks/*"],
+			"@helpers/*": ["helpers/*"],
+			"@middlewares/*": ["middlewares/*"],
+			"@public/*": ["public/*"],
+			"@routes/*": ["routes/*"],
+			"@services/*": ["services/*"]
 		}
 	},
 	"exclude": ["node_modules"]
