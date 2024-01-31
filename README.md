@@ -61,8 +61,9 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-     #MongoDb Connectivity Url
-     MONGODB_URL = mongodb://host.docker.internal:27017/elevate-mentoring
+    #MongoDb Connectivity Url
+    DATABASE_URL=postgres://postgres:postgres@citus_master:5432 elevate-user
+
 
      #Kafka Host Server URL
      KAFKA_URL = host.docker.external:9092
@@ -107,8 +108,8 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-     #MongoDb Connectivity Url
-     MONGODB_URL = mongodb://10.1.2.34:27017/elevate-mentoring
+     #DB Connectivity Url
+     DATABASE_URL=postgres://postgres:postgres@localhost:5432/elevate-user
 
      #Kafka Host Server URL
      KAFKA_URL = 11.2.3.45:9092
@@ -168,10 +169,7 @@ Elevate user services can be setup in local using two methods:
     APPLICATION_ENV = development
 
     # Database connectivity url
-    MONGODB_URL = mongodb://localhost:27017/db-name
-
-    # Number of rounds for encryption
-    SALT_ROUNDS = 10
+    DATABASE_URL=postgres://postgres:postgres@localhost:5432/elevate-user
 
     # Token secret to generate access token
     ACCESS_TOKEN_SECRET = 'access-token-secret'
@@ -229,9 +227,6 @@ Elevate user services can be setup in local using two methods:
 
     # Internal access token for communicationcation between services via network call
     INTERNAL_ACCESS_TOKEN = 'internal-access-token'
-
-    # Mentor screct code for registering
-    MENTOR_SECRET_CODE = 'secret-code'
 
     #Enable logging of network request
     ENABLE_LOG = true
