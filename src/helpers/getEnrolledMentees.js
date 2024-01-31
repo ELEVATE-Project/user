@@ -9,6 +9,10 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 	try {
 		const mentees = await sessionAttendeesQueries.findAll({ session_id: sessionId })
 		const menteeIds = mentees.map((mentee) => mentee.mentee_id)
+		let menteeTypeMap = {}
+		mentees.forEach((mentee) => {
+			menteeTypeMap[mentee.mentee_id] = mentee.type
+		})
 		const options = {
 			attributes: {
 				exclude: [
@@ -32,8 +36,14 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 		// Combine details of mentees and mentors
 		let enrolledUsers = [...menteeDetails, ...mentorDetails]
+		enrolledUsers.forEach((user) => {
+			if (menteeTypeMap.hasOwnProperty(user.user_id)) {
+				user.type = menteeTypeMap[user.user_id]
+			}
+		})
 
 		const CSVFields = [
+			{ label: 'No.', value: 'index_number' },
 			{ label: 'Name', value: 'name' },
 			{ label: 'Designation', value: 'designation' },
 			{ label: 'Organization', value: 'organization' },
@@ -48,7 +58,7 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 		})
 		//Return an empty CSV/response if list is empty
 		if (enrolledUsers.length === 0) {
-			return queryParams?.csv
+			return queryParams?.csv === 'true'
 				? new Parser({ fields: CSVFields, header: true, includeEmptyRows: true, defaultValue: null }).parse()
 				: []
 		}
@@ -70,11 +80,15 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 
 			return matchingUserDetails ? { ...user, ...matchingUserDetails } : user
 		})
-		if (queryParams?.csv) {
+
+		if (queryParams?.csv === 'true') {
 			const csv = parser.parse(
-				mergedUserArray.map((user) => ({
+				mergedUserArray.map((user, index) => ({
+					index_number: index + 1,
 					name: user.name,
-					designation: user.designation.map((designation) => designation.label).join(', '), // Assuming designation is an array
+					designation: user.designation
+						? user.designation.map((designation) => designation.label).join(', ')
+						: '',
 					email: user.email,
 					type: user.type,
 					organization: user.organization.name,
@@ -101,11 +115,11 @@ exports.getEnrolledMentees = async (sessionId, queryParams, userID) => {
 			'custom_entity_text',
 		]
 
-		const cleanedAttendeesAccounts = mergedUserArray.map((user) => {
+		const cleanedAttendeesAccounts = mergedUserArray.map((user, index) => {
 			propertiesToDelete.forEach((property) => {
 				delete user[property]
 			})
-
+			user.index_number = index + 1
 			return user
 		})
 		// Return success response with merged user details

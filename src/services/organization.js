@@ -5,12 +5,13 @@ const organisationExtensionQueries = require('@database/queries/organisationExte
 const questionsSetQueries = require('../database/queries/questionSet')
 const { Op } = require('sequelize')
 const { eventListenerRouter } = require('@helpers/eventListnerRouter')
+const responses = require('@helpers/responses')
 
 module.exports = class OrganizationService {
 	static async update(bodyData, decodedToken) {
 		try {
 			if (!decodedToken.roles.some((role) => role.title === common.ORG_ADMIN_ROLE)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -27,7 +28,7 @@ module.exports = class OrganizationService {
 				(questionSets.length === 1 &&
 					bodyData.mentee_feedback_question_set !== bodyData.mentor_feedback_question_set)
 			) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'QUESTIONS_SET_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -40,7 +41,7 @@ module.exports = class OrganizationService {
 				updated_by: decodedToken.id,
 			}
 			const orgExtension = await organisationExtensionQueries.upsert(extensionData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_DEFAULT_QUESTION_SETS_SET_SUCCESSFULLY',
 				result: {
@@ -65,7 +66,7 @@ module.exports = class OrganizationService {
 				updated_by: eventBody.created_by,
 			}
 			const orgExtension = await organisationExtensionQueries.upsert(extensionData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_EXTENSION_CREATED_SUCCESSFULLY',
 				result: {

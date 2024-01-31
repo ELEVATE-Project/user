@@ -23,6 +23,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const entityTypeService = require('@services/entity-type')
 const entityType = require('@database/models/entityType')
 const { getEnrolledMentees } = require('@helpers/getEnrolledMentees')
+const responses = require('@helpers/responses')
 
 module.exports = class MenteesHelper {
 	/**
@@ -40,17 +41,19 @@ module.exports = class MenteesHelper {
 
 		const defaultOrgId = await getDefaultOrgId()
 		if (!defaultOrgId)
-			return common.failureResponse({
+			return responses.failureResponse({
 				message: 'DEFAULT_ORG_ID_NOT_SET',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
 			})
+		const userExtensionsModelName = await menteeQueries.getModelName()
 
 		let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 			status: 'ACTIVE',
 			organization_id: {
 				[Op.in]: [orgId, defaultOrgId],
 			},
+			model_names: { [Op.contains]: [userExtensionsModelName] },
 		})
 		const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 		//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
@@ -69,7 +72,9 @@ module.exports = class MenteesHelper {
 			const request_type = rolePermission.request_type
 
 			if (permissionsByModule[module]) {
-				permissionsByModule[module].request_type.push(...request_type)
+				const existingRequestTypes = permissionsByModule[module].request_type
+				const uniqueRequestTypes = new Set([...existingRequestTypes, ...request_type])
+				permissionsByModule[module].request_type = Array.from(uniqueRequestTypes)
 			} else {
 				permissionsByModule[module] = { module, request_type: [...request_type] }
 			}
@@ -113,7 +118,7 @@ module.exports = class MenteesHelper {
 			/* TODO: Need to write cron job that will change the status of expired sessions from published to cancelled if not hosted by mentor */
 			const sessions = await this.getMySessions(page, limit, search, userId)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: { data: sessions.rows, count: sessions.count },
@@ -167,7 +172,7 @@ module.exports = class MenteesHelper {
 				total_session_attended: totalSessionsAttended,
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEES_REPORT_FETCHED_SUCCESSFULLY',
 				result,
@@ -202,7 +207,7 @@ module.exports = class MenteesHelper {
 			}
 			const feedbackData = await feedbackHelper.pending(userId, isAMentor)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_FETCHED_SUCCESSFULLY',
 				result: result,
@@ -230,7 +235,7 @@ module.exports = class MenteesHelper {
 			const mentee = await userRequests.details(token)
 
 			if (mentee.data.responseCode !== 'OK') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -240,14 +245,14 @@ module.exports = class MenteesHelper {
 			const session = await sessionQueries.findById(sessionId)
 
 			if (!session) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			if (session.status == 'COMPLETED') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'SESSION_ENDED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -255,7 +260,7 @@ module.exports = class MenteesHelper {
 			}
 
 			if (session.status !== 'LIVE') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'JOIN_ONLY_LIVE_SESSION',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -268,7 +273,7 @@ module.exports = class MenteesHelper {
 				sessionId
 			)
 			if (!sessionAttendee) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_NOT_ENROLLED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -287,7 +292,7 @@ module.exports = class MenteesHelper {
 						joined_at: utils.utcFormat(),
 					}
 				)
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'SESSION_START_LINK',
 					result: meetingInfo,
@@ -317,7 +322,7 @@ module.exports = class MenteesHelper {
 				)
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'SESSION_START_LINK',
 				result: meetingInfo,
@@ -347,13 +352,15 @@ module.exports = class MenteesHelper {
 			delete queryParams.fields
 		}
 		let query = utils.processQueryParametersWithExclusions(queryParams)
+		const sessionModelName = await sessionQueries.getModelName()
 
 		let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 			status: 'ACTIVE',
 			allow_filtering: true,
+			model_names: { [Op.contains]: [sessionModelName] },
 		})
 
-		let filteredQuery = utils.validateFilters(query, validationData, sessionQueries.getModelName())
+		let filteredQuery = utils.validateFilters(query, validationData, sessionModelName)
 
 		// Create saas filter for view query
 		const saasFilter = await this.filterSessionsBasedOnSaasPolicy(userId, isAMentor)
@@ -405,7 +412,7 @@ module.exports = class MenteesHelper {
 			])
 
 			if (!mentorExtension && !menteeExtension) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
 					message: 'USER_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
@@ -415,7 +422,7 @@ module.exports = class MenteesHelper {
 				? (await userRequests.fetchDefaultOrgDetails(mentorExtension.organization_id))?.data?.result?.name
 				: ''
 			if ((isAMentor && menteeExtension) || (!isAMentor && mentorExtension))
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					statusCode: httpStatusCode.unauthorized,
 					message: `Congratulations! You are now a mentor to the organisation ${organizationName}. Please re-login to start your journey as a mentor.`,
 					responseCode: 'CLIENT_ERROR',
@@ -472,6 +479,11 @@ module.exports = class MenteesHelper {
 				upcomingSessionIds
 			)
 
+			let sessionAndMenteeMap = {}
+			usersUpcomingSessions.forEach((session) => {
+				sessionAndMenteeMap[session.session_id] = session.type
+			})
+
 			const usersUpcomingSessionIds = usersUpcomingSessions.map(
 				(usersUpcomingSession) => usersUpcomingSession.session_id
 			)
@@ -480,7 +492,21 @@ module.exports = class MenteesHelper {
 				{ id: usersUpcomingSessionIds },
 				{ order: [['start_date', 'ASC']] }
 			)
+			if (sessionDetails.rows.length > 0) {
+				sessionDetails.rows.forEach((session) => {
+					if (sessionAndMenteeMap.hasOwnProperty(session.id)) {
+						session.enrolled_type = sessionAndMenteeMap[session.id]
+					}
+				})
 
+				const uniqueOrgIds = [...new Set(sessionDetails.rows.map((obj) => obj.mentor_organization_id))]
+				sessionDetails.rows = await entityTypeService.processEntityTypesToAddValueLabels(
+					sessionDetails.rows,
+					uniqueOrgIds,
+					common.sessionModelName,
+					'mentor_organization_id'
+				)
+			}
 			sessionDetails.rows = await this.sessionMentorDetails(sessionDetails.rows)
 
 			return sessionDetails
@@ -502,6 +528,7 @@ module.exports = class MenteesHelper {
 				await Promise.all(
 					sessions.map(async (session) => {
 						const attendee = attendees.find((attendee) => attendee.session_id === session.id)
+						if (attendee) session.enrolled_type = attendee.type
 						session.is_enrolled = !!attendee
 					})
 				)
@@ -568,7 +595,7 @@ module.exports = class MenteesHelper {
 			let userOrgDetails = await userRequests.fetchDefaultOrgDetails(orgId)
 			// Return error if user org does not exists
 			if (!userOrgDetails.success || !userOrgDetails.data || !userOrgDetails.data.result) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ORGANISATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -581,25 +608,27 @@ module.exports = class MenteesHelper {
 
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'DEFAULT_ORG_ID_NOT_SET',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			const userExtensionsModelName = await menteeQueries.getModelName()
 
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [userExtensionsModelName] },
 			})
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 
-			let res = utils.validateInput(data, validationData, 'UserExtension')
+			let res = utils.validateInput(data, validationData, userExtensionsModelName)
 			if (!res.success) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MENTEE_EXTENSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -626,14 +655,14 @@ module.exports = class MenteesHelper {
 			const response = await menteeQueries.createMenteeExtension(data)
 			const processDbResponse = utils.processDbResponse(response.toJSON(), validationData)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_CREATED',
 				result: processDbResponse,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'MENTEE_EXTENSION_EXITS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -670,25 +699,26 @@ module.exports = class MenteesHelper {
 
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'DEFAULT_ORG_ID_NOT_SET',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-
+			const userExtensionsModelName = await menteeQueries.getModelName()
 			const filter = {
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [userExtensionsModelName] },
 			}
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
-			let res = utils.validateInput(data, validationData, 'UserExtension')
+			let res = utils.validateInput(data, validationData, userExtensionsModelName)
 			if (!res.success) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -709,14 +739,14 @@ module.exports = class MenteesHelper {
 				const fallbackUpdatedUser = await menteeQueries.getMenteeExtension(userId)
 				console.log(fallbackUpdatedUser)
 				if (!fallbackUpdatedUser) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						statusCode: httpStatusCode.not_found,
 						message: 'MENTEE_EXTENSION_NOT_FOUND',
 					})
 				}
 				const processDbResponse = utils.processDbResponse(fallbackUpdatedUser, validationData)
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTEE_EXTENSION_UPDATED',
 					result: processDbResponse,
@@ -725,7 +755,7 @@ module.exports = class MenteesHelper {
 
 			const processDbResponse = utils.processDbResponse(updatedUser[0], validationData)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_UPDATED',
 				result: processDbResponse,
@@ -746,7 +776,7 @@ module.exports = class MenteesHelper {
 		try {
 			const mentee = await menteeQueries.getMenteeExtension(userId)
 			if (!mentee) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
 				})
@@ -754,26 +784,27 @@ module.exports = class MenteesHelper {
 
 			const defaultOrgId = await getDefaultOrgId()
 			if (!defaultOrgId)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'DEFAULT_ORG_ID_NOT_SET',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-
+			const userExtensionsModelName = await menteeQueries.getModelName()
 			const filter = {
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [userExtensionsModelName] },
 			}
-			console.log(mentee)
+
 			let entityTypes = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 			const validationData = removeDefaultOrgEntityTypes(entityTypes, orgId)
 			const processDbResponse = utils.processDbResponse(mentee, validationData)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_FETCHED',
 				result: processDbResponse,
@@ -794,12 +825,12 @@ module.exports = class MenteesHelper {
 		try {
 			const deleteCount = await menteeQueries.deleteMenteeExtension(userId)
 			if (deleteCount === '0') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'MENTEE_EXTENSION_NOT_FOUND',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MENTEE_EXTENSION_DELETED',
 			})
@@ -865,7 +896,7 @@ module.exports = class MenteesHelper {
 				}
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FILTER_FETCHED_SUCCESSFULLY',
 				result,
@@ -1011,12 +1042,19 @@ module.exports = class MenteesHelper {
 			}
 
 			const query = utils.processQueryParametersWithExclusions(queryParams)
+			const userExtensionModelName = await menteeQueries.getModelName()
+			const mentorExtensionModelName = await menteeQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findAllEntityTypesAndEntities({
 				status: common.ACTIVE_STATUS,
+				model_names: { [Op.overlap]: [userExtensionModelName, mentorExtensionModelName] },
 			})
 
-			let filteredQuery = utils.validateFilters(query, JSON.parse(JSON.stringify(validationData)), 'sessions')
+			let filteredQuery = utils.validateFilters(
+				query,
+				JSON.parse(JSON.stringify(validationData)),
+				userExtensionModelName
+			)
 
 			if (designation.length > 0) {
 				filteredQuery.designation = designation
@@ -1048,7 +1086,7 @@ module.exports = class MenteesHelper {
 			extensionDetails.count += mentorExtensionDetails.count
 
 			if (extensionDetails.count == 0) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTEE_LIST',
 					result: {
@@ -1066,7 +1104,7 @@ module.exports = class MenteesHelper {
 			const userDetails = await userRequests.search(userType, pageNo, pageSize, searchText, userServiceQueries)
 
 			if (userDetails.data.result.count == 0) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'MENTEE_LIST',
 					result: {
@@ -1137,11 +1175,13 @@ module.exports = class MenteesHelper {
 			if (queryParams.session_id) {
 				const enrolledMentees = await getEnrolledMentees(queryParams.session_id, '', userId)
 
-				const enrolledMenteeIds = enrolledMentees.map((enrolledMentee) => enrolledMentee.id)
-
 				userDetails.data.result.data.forEach((user) => {
-					const isEnrolled = enrolledMenteeIds.some((id) => id === user.id)
-					user.is_enrolled = isEnrolled
+					user.is_enrolled = false
+					const enrolledUser = _.find(enrolledMentees, { id: user.id })
+					if (enrolledUser) {
+						user.is_enrolled = true
+						user.enrolled_type = enrolledUser.type
+					}
 				})
 			}
 
@@ -1150,7 +1190,8 @@ module.exports = class MenteesHelper {
 				...data,
 				index_number: index + 1 + pageSize * (pageNo - 1), //To keep consistency with pagination
 			}))
-			return common.successResponse({
+
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,
 				result: userDetails.data.result,
@@ -1167,7 +1208,7 @@ module.exports = class MenteesHelper {
 
 			// Throw error if mentor/mentee extension not found
 			if (!userPolicyDetails || Object.keys(userPolicyDetails).length === 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: isAMentor ? 'MENTORS_NOT_FOUND' : 'MENTEE_EXTENSION_NOT_FOUND',
 					responseCode: 'CLIENT_ERROR',
