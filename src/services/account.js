@@ -876,7 +876,6 @@ module.exports = class AccountHelper {
 			)
 			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
-			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user.password
 			delete user.otpInfo
 
@@ -1046,7 +1045,7 @@ module.exports = class AccountHelper {
 				let result = []
 
 				/* Required to resolve all promises first before preparing response object else sometime 
-                it will push unresolved promise object if you put this logic in below for loop */
+				it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
 					users.data.map(async (user) => {

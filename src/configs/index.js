@@ -6,7 +6,6 @@
  */
 
 //Dependencies
-require('./mongodb')()
 require('./kafka')()
 require('./cache')()
 require('./aes256cbc')()

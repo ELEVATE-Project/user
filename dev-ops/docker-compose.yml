@@ -52,7 +52,7 @@ services:
       - '3001:3001'
     command: [ 'nodemon', 'app.js' ]
     environment:
-      - MONGODB_URL=mongodb://mongo:27017/elevate-mentoring
+      - DATABASE_URL=postgres://postgres:postgres@localhost:5432/elevate-user
       - KAFKA_URL=kafka:9092
       - REDIS_HOST=redis://redis:6379
     env_file:
