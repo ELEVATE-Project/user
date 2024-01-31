@@ -65,6 +65,7 @@
 		"@middlewares": "middlewares",
 		"@public": "public",
 		"@routes": "routes",
-		"@services": "services"
+		"@services": "services",
+		"@helpers": "helpers"
 	}
 }
