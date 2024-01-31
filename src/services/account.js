@@ -27,6 +27,7 @@ const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
+const responses = require('@helpers/responses')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -54,7 +55,7 @@ module.exports = class AccountHelper {
 				},
 			})
 			if (user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -64,7 +65,7 @@ module.exports = class AccountHelper {
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
 				const redisData = await utilsHelper.redisGet(encryptedEmailId)
 				if (!redisData || redisData.otp != bodyData.otp) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'OTP_INVALID',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
@@ -104,7 +105,7 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
-				role = await roleQueries.findOne(
+				role = await roleQueries.findAll(
 					{ id: invitedUserMatch.roles },
 					{
 						attributes: {
@@ -113,28 +114,29 @@ module.exports = class AccountHelper {
 					}
 				)
 
-				if (!role) {
-					return common.failureResponse({
+				if (!role.length > 0) {
+					return responses.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
 
-				if (role.title === common.ORG_ADMIN_ROLE) {
-					isOrgAdmin = true
+				role.forEach(async (eachRole) => {
+					if (eachRole.title === common.ORG_ADMIN_ROLE) {
+						const defaultRole = await roleQueries.findOne(
+							{ title: process.env.DEFAULT_ROLE },
+							{
+								attributes: {
+									exclude: ['created_at', 'updated_at', 'deleted_at'],
+								},
+							}
+						)
 
-					const defaultRole = await roleQueries.findOne(
-						{ title: process.env.DEFAULT_ROLE },
-						{
-							attributes: {
-								exclude: ['created_at', 'updated_at', 'deleted_at'],
-							},
-						}
-					)
-
-					roles.push(defaultRole.id)
-				}
+						roles.push(defaultRole.id)
+						isOrgAdmin = true
+					}
+				})
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
@@ -165,7 +167,7 @@ module.exports = class AccountHelper {
 				)
 
 				if (!role) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
@@ -234,6 +236,23 @@ module.exports = class AccountHelper {
 
 			user.user_roles = roleData
 
+			// format the roles for email template
+			let roleArray = []
+			if (roleData.length > 0) {
+				const mentorRoleExists = roleData.some((role) => role.title === common.MENTOR_ROLE)
+				if (mentorRoleExists) {
+					const updatedRoleList = roleData.filter((role) => role.title !== common.MENTEE_ROLE)
+					roleArray = _.map(updatedRoleList, 'title')
+				}
+			}
+
+			let roleToString =
+				roleArray.length > 0
+					? roleArray
+							.map((role) => role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))
+							.join(' and ')
+					: ''
+
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
@@ -290,6 +309,8 @@ module.exports = class AccountHelper {
 						body: utilsHelper.composeEmailBody(templateData.body, {
 							name: bodyData.name,
 							appName: process.env.APP_NAME,
+							roles: roleToString || '',
+							portalURL: process.env.PORTAL_URL,
 						}),
 					},
 				}
@@ -297,7 +318,8 @@ module.exports = class AccountHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
-			return common.successResponse({
+			result.user.email = plaintextEmailId
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
 				result,
@@ -330,7 +352,7 @@ module.exports = class AccountHelper {
 			})
 
 			if (!userCredentials) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -342,7 +364,7 @@ module.exports = class AccountHelper {
 				status: common.ACTIVE_STATUS,
 			})
 			if (!user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -358,7 +380,7 @@ module.exports = class AccountHelper {
 				}
 			)
 			if (!roles) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -369,7 +391,7 @@ module.exports = class AccountHelper {
 
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (!isPasswordCorrect) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USERNAME_OR_PASSWORD_IS_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -430,23 +452,26 @@ module.exports = class AccountHelper {
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
+			const modelName = await userQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [modelName] },
 			})
+
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			user = utils.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-
+			user.email = plaintextEmailId
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_IN_SUCCESSFULLY',
 				result,
@@ -472,7 +497,7 @@ module.exports = class AccountHelper {
 		try {
 			const user = await userQueries.findOne({ id: user_id, organization_id })
 			if (!user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -492,14 +517,14 @@ module.exports = class AccountHelper {
 
 			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
 			if (affectedRows == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'INVALID_REFRESH_TOKEN',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_OUT_SUCCESSFULLY',
 			})
@@ -533,7 +558,7 @@ module.exports = class AccountHelper {
 
 		/* Check valid user */
 		if (!user) {
-			return common.failureResponse({
+			return responses.failureResponse({
 				message: 'USER_NOT_FOUND',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
@@ -542,7 +567,7 @@ module.exports = class AccountHelper {
 
 		/* Check valid refresh token stored in db */
 		if (!user.refresh_tokens.length) {
-			return common.failureResponse({
+			return responses.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
@@ -551,7 +576,7 @@ module.exports = class AccountHelper {
 
 		const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
 		if (!token) {
-			return common.failureResponse({
+			return responses.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
@@ -565,7 +590,7 @@ module.exports = class AccountHelper {
 			common.accessTokenExpiry
 		)
 
-		return common.successResponse({
+		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
 			result: { access_token: accessToken },
@@ -593,7 +618,7 @@ module.exports = class AccountHelper {
 				},
 			})
 			if (!userCredentials)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -604,7 +629,7 @@ module.exports = class AccountHelper {
 				organization_id: userCredentials.organization_id,
 			})
 			if (!user)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -612,7 +637,7 @@ module.exports = class AccountHelper {
 
 			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (isPasswordSame)
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -631,7 +656,7 @@ module.exports = class AccountHelper {
 				}
 				const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
 				if (res !== 'OK')
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
 						responseCode: 'SERVER_ERROR',
@@ -654,7 +679,7 @@ module.exports = class AccountHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 			if (process.env.APPLICATION_ENV === 'development') console.log({ otp, isNew })
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'OTP_SENT_SUCCESSFULLY',
 			})
@@ -683,7 +708,7 @@ module.exports = class AccountHelper {
 			},
 		})
 		if (userCredentials)
-			return common.failureResponse({
+			return responses.failureResponse({
 				message: 'USER_ALREADY_EXISTS',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
@@ -702,7 +727,7 @@ module.exports = class AccountHelper {
 			}
 			const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
 			if (res !== 'OK') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNABLE_TO_SEND_OTP',
 					statusCode: httpStatusCode.internal_server_error,
 					responseCode: 'SERVER_ERROR',
@@ -724,7 +749,7 @@ module.exports = class AccountHelper {
 			await kafkaCommunication.pushEmailToKafka(payload)
 		}
 		if (process.env.APPLICATION_ENV === 'development') console.log(otp)
-		return common.successResponse({
+		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
 		})
@@ -753,7 +778,7 @@ module.exports = class AccountHelper {
 				},
 			})
 			if (!userCredentials) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -768,7 +793,7 @@ module.exports = class AccountHelper {
 				}
 			)
 			if (!user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -776,7 +801,7 @@ module.exports = class AccountHelper {
 			}
 			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
 			if (!roles) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -786,7 +811,7 @@ module.exports = class AccountHelper {
 
 			const redisData = await utilsHelper.redisGet(encryptedEmailId)
 			if (!redisData || redisData.otp != bodyData.otp) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'RESET_OTP_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -794,7 +819,7 @@ module.exports = class AccountHelper {
 			}
 			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (isPasswordSame) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -846,14 +871,13 @@ module.exports = class AccountHelper {
 			)
 			await utilsHelper.redisDel(encryptedEmailId)
 
-			/* Mongoose schema is in strict mode, so can not delete otpInfo directly */
 			delete user.password
 			delete user.otpInfo
 
 			// Check if user and user.image exist, then fetch a downloadable URL for the image
 			if (user && user.image) user.image = await utils.getDownloadableUrl(user.image)
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PASSWORD_RESET_SUCCESSFULLY',
 				result,
@@ -931,9 +955,10 @@ module.exports = class AccountHelper {
 						user['user_roles'] = roleData
 						// await utilsHelper.redisSet(element._id.toString(), element)
 					}
+					user.email = emailEncryption.decrypt(user.email)
 				})
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USERS_FETCHED_SUCCESSFULLY',
 					result: [...users, ...userDetailsFoundInRedis],
@@ -969,7 +994,7 @@ module.exports = class AccountHelper {
 					})
 				)
 				if (users.count == 0) {
-					return common.successResponse({
+					return responses.successResponse({
 						statusCode: httpStatusCode.ok,
 						message: 'USER_LIST',
 						result: {
@@ -997,7 +1022,7 @@ module.exports = class AccountHelper {
 
 				const sortedData = _.sortBy(result, 'key') || []
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_LIST',
 					result: {
@@ -1024,7 +1049,7 @@ module.exports = class AccountHelper {
 			const user = await userQueries.findByPk(userId)
 
 			if (!user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -1037,7 +1062,7 @@ module.exports = class AccountHelper {
 			)
 			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_UPDATED_SUCCESSFULLY',
 			})
@@ -1060,7 +1085,7 @@ module.exports = class AccountHelper {
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			let role = await roleQueries.findOne({ title: bodyData.role.toLowerCase() })
 			if (!role) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -1073,7 +1098,7 @@ module.exports = class AccountHelper {
 				},
 			})
 			if (!userCredentials) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -1085,14 +1110,14 @@ module.exports = class AccountHelper {
 			)
 			/* If user doc not updated  */
 			if (affectedRows == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
 			})
@@ -1164,7 +1189,7 @@ module.exports = class AccountHelper {
 				})
 			)
 			if (users.count == 0) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_LIST',
 					result: {
@@ -1174,7 +1199,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_LIST',
 				result: {

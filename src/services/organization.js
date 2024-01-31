@@ -15,6 +15,7 @@ const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBodyDTO } = require('@dtos/eventBody')
+const responses = require('@helpers/responses')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -30,7 +31,7 @@ module.exports = class OrganizationsHelper {
 			const existingOrganization = await organizationQueries.findOne({ code: bodyData.code })
 
 			if (existingOrganization) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ORGANIZATION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -67,7 +68,7 @@ module.exports = class OrganizationsHelper {
 				)
 
 				if (!role?.id) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
@@ -90,7 +91,7 @@ module.exports = class OrganizationsHelper {
 				})
 
 				if (!userCred?.id) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: userCred,
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
@@ -134,7 +135,7 @@ module.exports = class OrganizationsHelper {
 				},
 			})
 			eventBroadcasterMain('organizationEvents', { requestBody: eventBody, isInternal: true })
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
 				result: createdOrganization,
@@ -158,7 +159,7 @@ module.exports = class OrganizationsHelper {
 			bodyData.updated_by = loggedInUserId
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
 			if (!orgDetailsBeforeUpdate) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 					message: 'ORGANIZATION_NOT_FOUND',
@@ -225,7 +226,7 @@ module.exports = class OrganizationsHelper {
 			const cacheKey = common.redisOrgPrefix + id.toString()
 			await utils.internalDel(cacheKey)
 			// await KafkaProducer.clearInternalCache(cacheKey)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
@@ -271,7 +272,7 @@ module.exports = class OrganizationsHelper {
 					options
 				)
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 					result: [...organizations, ...orgDetailsFoundInRedis],
@@ -283,7 +284,7 @@ module.exports = class OrganizationsHelper {
 					params.searchText
 				)
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 					result: organizations,
@@ -307,7 +308,7 @@ module.exports = class OrganizationsHelper {
 		try {
 			const role = await roleQueries.findByPk(bodyData.role)
 			if (!role) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -339,7 +340,7 @@ module.exports = class OrganizationsHelper {
 				result = checkForRoleRequest
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: isAccepted ? 'ROLE_CHANGE_APPROVED' : 'ROLE_CHANGE_REQUESTED',
 				result,
@@ -369,14 +370,14 @@ module.exports = class OrganizationsHelper {
 
 			const organisationDetails = await organizationQueries.findOne(filter)
 			if (!organisationDetails) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				result: organisationDetails,

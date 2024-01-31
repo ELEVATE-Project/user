@@ -18,6 +18,8 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const emailEncryption = require('@utils/emailEncryption')
+const responses = require('@helpers/responses')
 
 module.exports = class UserHelper {
 	/**
@@ -33,7 +35,7 @@ module.exports = class UserHelper {
 		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'EMAIL_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -46,7 +48,7 @@ module.exports = class UserHelper {
 			})
 
 			if (!user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -64,6 +66,7 @@ module.exports = class UserHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
@@ -72,7 +75,7 @@ module.exports = class UserHelper {
 
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -111,7 +114,8 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			return common.successResponse({
+			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
 				result: processDbResponse,
@@ -153,7 +157,7 @@ module.exports = class UserHelper {
 				}
 				const user = await userQueries.findUserWithOrganization(filter, options)
 				if (!user) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'USER_NOT_FOUND',
 						statusCode: httpStatusCode.unauthorized,
 						responseCode: 'UNAUTHORIZED',
@@ -174,7 +178,7 @@ module.exports = class UserHelper {
 				)
 
 				if (!roles) {
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
@@ -194,21 +198,24 @@ module.exports = class UserHelper {
 					organization_id: {
 						[Op.in]: [user.organization_id, defaultOrgId],
 					},
+					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)
+
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
 					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
 					result: userDetails ? userDetails : {},
@@ -233,7 +240,7 @@ module.exports = class UserHelper {
 			let user = await userQueries.findOne({ id: userId }, { attributes: ['share_link'] })
 
 			if (!user) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -245,7 +252,7 @@ module.exports = class UserHelper {
 				shareLink = utils.md5Hash(userId)
 				await userQueries.updateUser({ id: userId }, { share_link: shareLink })
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				message: 'PROFILE_SHARE_LINK_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				result: { shareLink },

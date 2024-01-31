@@ -170,9 +170,6 @@ Elevate user services can be setup in local using two methods:
     # Database connectivity url
     MONGODB_URL = mongodb://localhost:27017/db-name
 
-    # Number of rounds for encryption
-    SALT_ROUNDS = 10
-
     # Token secret to generate access token
     ACCESS_TOKEN_SECRET = 'access-token-secret'
 
@@ -229,12 +226,6 @@ Elevate user services can be setup in local using two methods:
 
     # Internal access token for communicationcation between services via network call
     INTERNAL_ACCESS_TOKEN = 'internal-access-token'
-
-    # Mentor screct code for registering
-    MENTOR_SECRET_CODE = 'secret-code'
-
-    #Enable logging of network request
-    ENABLE_LOG = true
 
     # JWT Access Token expiry In Days
     ACCESS_TOKEN_EXPIRY = '1'

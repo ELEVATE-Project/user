@@ -1,6 +1,6 @@
 'use strict'
 const organizationUserInvite = require('../models/index').OrganizationUserInvite
-const { UniqueConstraintError, ValidationError } = require('sequelize')
+const { ValidationError } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
