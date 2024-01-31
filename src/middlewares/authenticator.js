@@ -14,7 +14,7 @@ module.exports = async function (req, res, next) {
 			req.headers.internal_access_token && process.env.INTERNAL_ACCESS_TOKEN === req.headers.internal_access_token
 		if (internalAccess) return next()
 		else
-			throw common.failureResponse({
+			throw responses.failureResponse({
 				message: apiResponses.UNAUTHORIZED_REQUEST,
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
