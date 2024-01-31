@@ -6,7 +6,7 @@
  */
 const httpStatusCode = require('@generics/http-status')
 const apiResponses = require('@constants/api-responses')
-const common = require('@constants/common')
+const responses = require('@helpers/responses')
 
 module.exports = async function (req, res, next) {
 	try {

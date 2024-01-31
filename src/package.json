@@ -62,6 +62,7 @@
 		"@controllers": "controllers",
 		"@generics": "generics",
 		"@health-checks": "health-checks",
+		"@helpers": "helpers",
 		"@middlewares": "middlewares",
 		"@public": "public",
 		"@routes": "routes",
