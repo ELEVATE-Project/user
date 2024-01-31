@@ -1,7 +1,7 @@
 const emailNotifications = require('@generics/helpers/email-notifications')
-const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const apiResponses = require('@constants/api-responses')
+const responses = require('@helpers/responses')
 
 module.exports = class EmailHelper {
 	/**
@@ -20,13 +20,13 @@ module.exports = class EmailHelper {
 		if (bodyData.type == 'email' && bodyData.email) {
 			let result = await emailNotifications.sendEmail(bodyData.email)
 			if (result && result.status == 'success') {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: apiResponses.EMAIL_SENT_SUCCESSFULLY,
 					result,
 				})
 			} else {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: apiResponses.MAIL_SENT_FAILED,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
