@@ -1039,11 +1039,12 @@ module.exports = class SessionsHelper {
 	 * @param {String} userTokenData.id 	- user id.
 	 * @param {String} timeZone 			- timezone.
 	 * @param {Boolean} isSelfEnrolled 		- true/false.
-	 * @param {Boolean} session 			- session details.
+	 * @param {Object} session 				- session details.
+	 * @param {Boolean} isAMentor 			- user is mentor or not.
 	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone, isSelfEnrolled = true, session = {}) {
+	static async enroll(sessionId, userTokenData, timeZone, isSelfEnrolled = true, session = {}, isAMentor) {
 		try {
 			let email
 			let name
@@ -1076,7 +1077,16 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			// check if the session is accessible to the user
+			let isAccessible = await this.checkIfSessionIsAccessible(session, userId, isAMentor)
 
+			if (!isAccessible) {
+				return responses.failureResponse({
+					message: 'INVALID_PERMISSION',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const sessionAttendeeExist = await sessionAttendeesQueries.findOne({
 				session_id: sessionId,
 				mentee_id: userId,
@@ -2073,10 +2083,12 @@ module.exports = class SessionsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			const menteeDetails = menteeAccounts.result.map((element) => ({
 				id: element.id,
 				email: element.email,
 				name: element.name,
+				roles: element.roles,
 			}))
 
 			// Enroll mentees to the given session
@@ -2084,7 +2096,8 @@ module.exports = class SessionsHelper {
 			const successIds = []
 
 			const enrollPromises = menteeDetails.map((menteeData) => {
-				return this.enroll(sessionId, menteeData, timeZone, false, sessionDetails)
+				let isAMentor = utils.isAMentor(menteeData.roles)
+				return this.enroll(sessionId, menteeData, timeZone, false, sessionDetails, isAMentor)
 					.then((response) => {
 						if (response.statusCode == httpStatusCode.created) {
 							// Enrolled successfully
