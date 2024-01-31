@@ -790,7 +790,7 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 							- Session details
 	 */
 
-	static async details(id, userId = '', isAMentor = '') {
+	static async details(id, userId = '', isAMentor = '', queryParams) {
 		try {
 			let filter = {}
 			if (utils.isNumeric(id)) {
@@ -813,6 +813,7 @@ module.exports = class SessionsHelper {
 				})
 			}
 			sessionDetails.is_enrolled = false
+			let isInvited = false
 			if (userId) {
 				let sessionAttendee = await sessionAttendeesQueries.findOne({
 					session_id: sessionDetails.id,
@@ -820,6 +821,7 @@ module.exports = class SessionsHelper {
 				})
 				if (sessionAttendee) {
 					sessionDetails.is_enrolled = true
+					isInvited = sessionAttendee.type === common.INVITED
 				}
 			}
 
@@ -841,10 +843,18 @@ module.exports = class SessionsHelper {
 				delete sessionDetails?.meeting_info?.meta
 			} else {
 				sessionDetails.is_assigned = sessionDetails.mentor_id !== sessionDetails.created_by
-				if (sessionDetails.is_assigned) {
-					const managerDetails = await userRequests.details('', sessionDetails.created_by)
-					sessionDetails.manager_name = managerDetails.data.result.name
-				}
+			}
+
+			if (isInvited || sessionDetails.is_assigned) {
+				const managerDetails = await userRequests.details('', sessionDetails.created_by)
+				sessionDetails.manager_name = managerDetails.data.result.name
+			}
+
+			const isMenteesListRequested = queryParams?.get_mentees === 'true'
+			const canRetrieveMenteeList = userId === sessionDetails.created_by || userId === sessionDetails.mentor_id
+
+			if (isMenteesListRequested && canRetrieveMenteeList) {
+				sessionDetails.mentees = await getEnrolledMentees(id, {}, userId)
 			}
 
 			if (sessionDetails.image && sessionDetails.image.some(Boolean)) {
