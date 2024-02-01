@@ -4,6 +4,7 @@ const common = require('@constants/common')
 const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
+const responses = require('@helpers/responses')
 
 module.exports = class PermissionsHelper {
 	/**
@@ -18,7 +19,7 @@ module.exports = class PermissionsHelper {
 	static async create(bodyData) {
 		try {
 			const permissions = await permissionsQueries.createPermission(bodyData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'PERMISSION_CREATED_SUCCESSFULLY',
 				result: {
@@ -39,7 +40,7 @@ module.exports = class PermissionsHelper {
 				if (!isCodeUnique) {
 					errorMessage += 'code '
 				}
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: `${errorMessage.trim()} should be unique.`,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -68,13 +69,13 @@ module.exports = class PermissionsHelper {
 			}
 			const updatedPermission = await permissionsQueries.updatePermissions(filter, bodyData)
 			if (!updatedPermission) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'PERMISSION_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.created,
 					message: 'PERMISSION_UPDATED_SUCCESSFULLY',
 					result: {
@@ -107,13 +108,13 @@ module.exports = class PermissionsHelper {
 			}
 			const deletePermission = await permissionsQueries.deletePermissionById(id)
 			if (!deletePermission) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'PERMISSION_NOT_DELETED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PERMISSION_DELETED_SUCCESSFULLY',
 				result: {},
@@ -146,7 +147,7 @@ module.exports = class PermissionsHelper {
 			const permissions = await permissionsQueries.findAllPermissions(filter, attributes, options)
 
 			if (permissions.rows == 0 || permissions.count == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'PERMISSION_HAS_EMPTY_LIST',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -157,7 +158,7 @@ module.exports = class PermissionsHelper {
 					count: permissions.count,
 				}
 
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PERMISSION_FETCHED_SUCCESSFULLY',
 					result: { results },

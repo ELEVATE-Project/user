@@ -1,9 +1,9 @@
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
 const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
+const responses = require('@helpers/responses')
 
 module.exports = class modulesHelper {
 	/**
@@ -20,7 +20,7 @@ module.exports = class modulesHelper {
 		try {
 			const permission = await permissionsQueries.findPermissionId(permissionId)
 			if (!permission) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'PERMISSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -35,7 +35,7 @@ module.exports = class modulesHelper {
 				created_by: id,
 			}
 			const rolePermissionMapping = await rolePermissionMappingQueries.create(data)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_CREATED_SUCCESSFULLY',
 				result: {
@@ -47,7 +47,7 @@ module.exports = class modulesHelper {
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_PERMISSION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -71,13 +71,13 @@ module.exports = class modulesHelper {
 			const filter = { role_id: roleId, permission_id: permissionId }
 			const rolePermissionMapping = await rolePermissionMappingQueries.delete(filter)
 			if (rolePermissionMapping == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_PERMISSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_DELETED_SUCCESSFULLY',
 				result: {},
