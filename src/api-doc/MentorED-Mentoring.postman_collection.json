@@ -2328,7 +2328,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJlbWFpbCI6InN1bWFuLnZAcGFjZXdpc2RvbS5jb20iLCJuYW1lIjoiU3VtYW4gViIsIm9yZ2FuaXphdGlvbl9pZCI6MSwicm9sZXMiOlt7ImlkIjozLCJ0aXRsZSI6Im1lbnRlZSIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIn1dfSwiaWF0IjoxNzAyMjg3MDY3LCJleHAiOjE3MDIzNzM0Njd9.O9XNHKFbAsiA8VGiJ1ashPY2rE56ITOSsiJeMrOdU9E",
+								"value": "bearer {{token}}",
 								"type": "text"
 							}
 						],
@@ -2838,6 +2838,25 @@
 									"value": "5"
 								}
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List RolePermission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/list",
+							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"path": ["v1", "rolePermissionMapping", "list"]
 						}
 					},
 					"response": []
