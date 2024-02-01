@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "539f204e-d613-45ae-ae42-172f39457a35",
+		"_postman_id": "18bf69ef-6fba-456b-9cf4-6cc0fb2dbaff",
 		"name": "MentorED-Mentoring",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "24204448",
-		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-539f204e-d613-45ae-ae42-172f39457a35?action=share&source=collection_link&creator=24204448"
+		"_exporter_id": "21498549"
 	},
 	"item": [
 		{
@@ -379,28 +378,17 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"// Function to generate a random timestamp in the future",
-									"function getRandomFutureTimestamp() {",
-									"    const now = Math.floor(Date.now() / 1000); // Current timestamp in seconds",
-									"    const oneHourInSeconds = 3600; // 1 hour in seconds",
+									"// Calculate the current timestamp in seconds",
+									"const currentTimestamp = Math.floor(Date.now() / 1000);",
 									"",
-									"    // Generate a random number of hours between 1 and 24",
-									"    const randomHours = Math.floor(Math.random() * 24) + 1;",
+									"// Generate a random number of seconds (up to 7 days) to add to the current timestamp",
+									"const randomSeconds = Math.floor(Math.random() * 604800); // 7 days in seconds",
 									"",
-									"    // Calculate the future timestamp by adding the random number of hours",
-									"    const futureTimestamp = now + randomHours * oneHourInSeconds;",
+									"// Set the start date to be a random time in the future (up to 7 days)",
+									"pm.variables.set(\"startDate\", currentTimestamp + randomSeconds);",
 									"",
-									"    return futureTimestamp;",
-									"}",
-									"",
-									"// Get the start and end timestamps",
-									"const startTimestamp = getRandomFutureTimestamp();",
-									"const endTimestamp = startTimestamp + 3600; // 1 hour apart",
-									"",
-									"",
-									"// Set the timestamps in the request body",
-									"pm.variables.set('startTimestamp', startTimestamp);",
-									"pm.variables.set('endTimestamp', endTimestamp);",
+									"// Set the end date to be 30 minutes after the start date",
+									"pm.variables.set(\"endDate\", pm.variables.get(\"startDate\") + 1800);",
 									""
 								],
 								"type": "text/javascript"
@@ -418,7 +406,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"title\": \"Introduction to Python\",\n    \"description\": \"Python is a widely used general-purpose, high level programming language. It was created by Guido van Rossum in 1991 and further developed by the Python Software Foundation. It was designed with an emphasis on code readability, and its syntax allows programmers to express their concepts in fewer lines of code.\",\n    \"start_date\": \"1701774006\",\n    \"end_date\": \"1701777618\",\n    \"recommended_for\": [\n        \"beo\",\n        \"co\"\n    ],\n    \"categories\": [\n        \"communication\",\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"image\": [\n        \"session/undefined-1701770609877-3720230404141603_webp\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"meeting_info\": {\n        \"platform\": \"Google meet\",\n        \"link\": \"https://meet.google.com/xxx-yyyy-zzz\",\n        \"value\": \"Gmeet\",\n        \"meta\": {}\n    }\n}",
+							"raw": "{\n    \"title\": \"Introduction to Python\",\n    \"description\": \"Python is a widely used general-purpose, high level programming language. It was created by Guido van Rossum in 1991 and further developed by the Python Software Foundation. It was designed with an emphasis on code readability, and its syntax allows programmers to express their concepts in fewer lines of code.\",\n    \"start_date\": {{startDate}},\n    \"end_date\": {{endDate}},\n    \"recommended_for\": [\n        \"beo\",\n        \"co\"\n    ],\n    \"categories\": [\n        \"communication\",\n        \"educational_leadership\"\n    ],\n    \"medium\": [\n        \"en_in\"\n    ],\n    \"image\": [\n        \"session/undefined-1701770609877-3720230404141603_webp\"\n    ],\n    \"time_zone\": \"Asia/Calcutta\",\n    \"meeting_info\": {\n        \"platform\": \"Google meet\",\n        \"link\": \"https://meet.google.com/xxx-yyyy-zzz\",\n        \"value\": \"Gmeet\",\n        \"meta\": {}\n    },\n    \"mentor_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -435,6 +423,25 @@
 				},
 				{
 					"name": "Update Session",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Calculate the current timestamp in seconds",
+									"const currentTimestamp = Math.floor(Date.now() / 1000);",
+									"",
+									"// Set the start date to be 30 minutes from now",
+									"pm.variables.set(\"startDate\", currentTimestamp + 1800);",
+									"",
+									"// Set the end date to be 30 minutes after the start date",
+									"pm.variables.set(\"endDate\", pm.variables.get(\"startDate\") + 1800);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -510,9 +517,15 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/details/:id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/sessions/details/:id?get_mentees=true",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
 							"path": ["v1", "sessions", "details", ":id"],
+							"query": [
+								{
+									"key": "get_mentees",
+									"value": "true"
+								}
+							],
 							"variable": [
 								{
 									"key": "id",
