@@ -268,6 +268,7 @@ module.exports = class SessionsHelper {
 				// send mail to mentors on session creation if session created by manager
 				const templateData = await notificationQueries.findOneEmailTemplate(emailTemplateCode, orgId)
 
+				// If template data is available. create mail data and push to kafka
 				if (templateData) {
 					let name = userDetails.name
 					// Push successful enrollment to session in kafka
@@ -282,7 +283,7 @@ module.exports = class SessionsHelper {
 								mentorName: data.mentor_name,
 								startDate: utils.getTimeZone(data.start_date, common.dateFormat, data.time_zone),
 								startTime: utils.getTimeZone(data.start_date, common.timeFormat, data.time_zone),
-								sessionDuration: elapsedMinutes,
+								sessionDuration: Math.round(elapsedMinutes),
 								sessionPlatform: data.meeting_info.platform,
 								unitOfTime: common.UNIT_OF_TIME,
 								sessionType: data.type,
@@ -639,7 +640,7 @@ module.exports = class SessionsHelper {
 								body: utils.composeEmailBody(templateData.body, {
 									name: attendee.attendeeName,
 									sessionTitle: sessionDetail.title,
-									sessionDuration: sessionDuration,
+									sessionDuration: Math.round(sessionDuration),
 									unitOfTime: common.UNIT_OF_TIME,
 									startDate: utils.getTimeZone(
 										sessionDetail.start_date,
@@ -733,8 +734,8 @@ module.exports = class SessionsHelper {
 									),
 									originalSessionTitle: sessionDetail.title,
 									unitOfTime: common.UNIT_OF_TIME,
-									newSessionDuration: revisedDuration,
-									sessionDuration: oldSessionDuration,
+									newSessionDuration: Math.round(revisedDuration),
+									sessionDuration: Math.round(oldSessionDuration),
 									sessionType: sessionDetail.title,
 									sessionPlatform:
 										sessionDetail.meeting_info && sessionDetail.meeting_info.platform
@@ -1140,7 +1141,7 @@ module.exports = class SessionsHelper {
 							mentorName: session.mentor_name,
 							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
 							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
-							sessionDuration: elapsedMinutes,
+							sessionDuration: Math.round(elapsedMinutes),
 							sessionPlatform: session.meeting_info.platform,
 							unitOfTime: common.UNIT_OF_TIME,
 						}),
@@ -1238,7 +1239,7 @@ module.exports = class SessionsHelper {
 							unitOfTime: common.UNIT_OF_TIME,
 							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
 							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
-							sessionDuration: sessionDuration,
+							sessionDuration: Math.duration(sessionDuration),
 						}),
 					},
 				}
@@ -2175,7 +2176,9 @@ module.exports = class SessionsHelper {
 					body: utils.composeEmailBody(templateData.body, {
 						name: userDetails.name,
 						sessionTitle: updatedSessionDetails.title ? updatedSessionDetails.title : sessionDetail.title,
-						sessionDuration: oldSessionDuration ? oldSessionDuration : sessionDuration,
+						sessionDuration: oldSessionDuration
+							? Math.round(oldSessionDuration)
+							: Math.round(sessionDuration),
 						unitOfTime: common.UNIT_OF_TIME,
 						startDate: utils.getTimeZone(
 							sessionDetail.start_date,
@@ -2201,7 +2204,7 @@ module.exports = class SessionsHelper {
 							common.timeFormat,
 							sessionDetail.time_zone
 						),
-						newSessionDuration: sessionDuration,
+						newSessionDuration: Math.round(sessionDuration),
 						sessionPlatform: sessionDetail.meeting_info.platform,
 						originalSessionTitle: sessionDetail.title,
 						revisedSessionTitle: updatedSessionDetails.title
