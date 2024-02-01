@@ -55,7 +55,7 @@ module.exports = class RolePermission {
 
 	async list(req) {
 		try {
-			const roleIds = Array.isArray(req.decodedToken.roles) ? req.decodedToken.roles.map(({ id }) => id) : []
+			const roleIds = req.decodedToken.roles.map(({ id }) => id)
 			return await rolePermissionService.list(roleIds)
 		} catch (error) {
 			return error

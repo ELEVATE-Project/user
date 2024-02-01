@@ -91,15 +91,15 @@ module.exports = class modulesHelper {
 	 * list rolePermission.
 	 * @method
 	 * @name list
-	 * @param {Integer} roleId - role_id
+	 * @param {Integer} roleIds - role_id
 	 * @returns {JSON} - RolePermission list object.
 	 */
 
-	static async list(roleId) {
+	static async list(roleIds) {
 		try {
-			const filter = { role_id: roleId }
+			const filter = { role_id: roleIds }
 			const attributes = ['module', 'request_type']
-			const permissionAndModules = await rolePermissionMappingQueries.find(filter, attributes)
+			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter, attributes)
 			const permissionsByModule = {}
 			permissionAndModules.forEach(({ module, request_type }) => {
 				if (permissionsByModule[module]) {

@@ -589,7 +589,7 @@ module.exports = class MentorsHelper {
 
 			const fetchrole = mentorProfile.roles
 			const filter = { role_id: fetchrole }
-			const permissionAndModules = await rolePermissionMappingQueries.find(filter)
+			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter)
 			const permissionsByModule = {}
 
 			permissionAndModules.forEach((rolePermission) => {
