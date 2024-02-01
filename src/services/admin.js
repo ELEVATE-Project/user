@@ -15,6 +15,7 @@ const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const organizationQueries = require('@database/queries/organization')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
@@ -356,6 +357,24 @@ module.exports = class AdminHelper {
 					roles: _.map(roleData, 'title'),
 				},
 			})
+
+			eventBroadcasterMain('updateOrganization'),
+				{
+					entity: 'organization',
+					eventType: 'update',
+					entityId: userId,
+					changes: {
+						organization_id: {
+							oldValue: '',
+							newValue: currentName,
+						},
+						roles: {
+							oldValue: [],
+							newValue: _.map(roleData, 'title'),
+						},
+					},
+					updatedAt: currentDate.toISOString(),
+				}
 
 			const result = {
 				user_id: userId,
