@@ -112,6 +112,7 @@
 		"@database": "database",
 		"@utils": "utils",
 		"@helpers": "helpers",
-		"@scripts": "scripts"
+		"@scripts": "scripts",
+		"@dtos": "dtos"
 	}
 }
