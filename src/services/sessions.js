@@ -1239,7 +1239,7 @@ module.exports = class SessionsHelper {
 							unitOfTime: common.UNIT_OF_TIME,
 							startDate: utils.getTimeZone(session.start_date, common.dateFormat, session.time_zone),
 							startTime: utils.getTimeZone(session.start_date, common.timeFormat, session.time_zone),
-							sessionDuration: Math.duration(sessionDuration),
+							sessionDuration: Math.round(sessionDuration),
 						}),
 					},
 				}
