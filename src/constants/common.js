@@ -5,55 +5,6 @@
  * Description : All commonly used constants through out the service
  */
 
-const form = require('@generics/form')
-const { elevateLog, correlationId } = require('elevate-logger')
-const logger = elevateLog.init()
-const successResponse = async ({
-	statusCode = 500,
-	responseCode = 'OK',
-	message,
-	result = [],
-	meta = {},
-	isResponseAStream = false,
-	stream,
-	fileName = '',
-}) => {
-	const versions = await form.getAllFormsVersion()
-	let response = {
-		statusCode,
-		responseCode,
-		message,
-		result,
-		isResponseAStream,
-		meta: {
-			...meta,
-			formsVersion: versions,
-			correlation: correlationId.getId(),
-			meetingPlatform: process.env.DEFAULT_MEETING_SERVICE,
-		},
-	}
-	if (isResponseAStream) {
-		response.stream = stream
-		response.fileName = fileName
-	}
-
-	logger.info('Request Response', { response: response })
-
-	return response
-}
-
-const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode, result }) => {
-	const errorMessage = message.key || message
-
-	const error = new Error(errorMessage)
-	error.statusCode = statusCode
-	error.responseCode = responseCode
-	error.interpolation = message?.interpolation || false
-	error.data = result || []
-
-	return error
-}
-
 function getPaginationOffset(page, limit) {
 	return (page - 1) * limit
 }
@@ -63,8 +14,6 @@ module.exports = {
 		DEFAULT_PAGE_NO: 1,
 		DEFAULT_PAGE_SIZE: 100,
 	},
-	successResponse,
-	failureResponse,
 	getPaginationOffset,
 	guestUrls: [
 		'/sessions/completed',
@@ -109,8 +58,8 @@ module.exports = {
 		'/admin/triggerPeriodicViewRefreshInternal',
 		'/admin/triggerViewRebuildInternal',
 		'/org-admin/updateRelatedOrgs',
-		'/sessions/completed',
 		'/sessions/bulkUpdateMentorNames',
+		'/organization/eventListener',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',
