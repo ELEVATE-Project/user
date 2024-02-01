@@ -86,4 +86,50 @@ module.exports = class modulesHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * list rolePermission.
+	 * @method
+	 * @name list
+	 * @param {Integer} roleIds - role_id
+	 * @returns {JSON} - RolePermission list object.
+	 */
+
+	static async list(roleIds) {
+		try {
+			const filter = { role_id: roleIds }
+			const attributes = ['module', 'request_type']
+			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter, attributes)
+			const permissionsByModule = {}
+			permissionAndModules.forEach(({ module, request_type }) => {
+				if (permissionsByModule[module]) {
+					permissionsByModule[module].request_type = [
+						...new Set([...permissionsByModule[module].request_type, ...request_type]),
+					]
+				} else {
+					permissionsByModule[module] = { module, request_type: [...request_type] }
+				}
+			})
+
+			const permissions = Object.values(permissionsByModule).map(({ module, request_type }) => ({
+				module,
+				request_type,
+			}))
+
+			if (!permissions.length) {
+				return common.failureResponse({
+					message: 'ROLE_PERMISSION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'FETCHED_ROLE_PERMISSION_SUCCESSFULLY',
+				result: { permissions },
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

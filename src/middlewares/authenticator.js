@@ -111,7 +111,7 @@ module.exports = async function (req, res, next) {
 			const roleIds = decodedToken.data.roles.map((role) => role.id)
 			const filter = { role_id: roleIds, api_path: req.path }
 			const attributes = ['request_type', 'api_path', 'module']
-			const requiredPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+			const requiredPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
 
 			const isPermissionValid = requiredPermissions.some(
 				(permission) => permission.api_path === req.path && permission.request_type.includes(req.method)
