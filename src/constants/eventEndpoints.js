@@ -35,12 +35,5 @@ module.exports = {
 				route: '/mentoring/v1/sessions/bulkUpdateMentorNames',
 			},
 		],
-		orgExtension: [
-			{
-				method: 'POST',
-				baseUrl: `${process.env.MENTORING_SERVICE_URL}`,
-				route: '/mentoring/v1/organization/create',
-			},
-		],
 	},
 }
