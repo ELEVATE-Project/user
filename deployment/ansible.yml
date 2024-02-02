@@ -55,9 +55,7 @@
         chdir: "{{ release_path }}"
 
     - name: Create Git Tag
-      shell: >
-        git tag -a "{{ git_tag_prefix }}{{ next_tag_number }}" -m "Your tag message" &&
-        git push origin "{{ git_tag_prefix }}{{ next_tag_number }}"
+      shell: "git tag -a '{{ git_tag_prefix }}{{ next_tag_number }}' -m 'Your tag message' && git push origin '{{ git_tag_prefix }}{{ next_tag_number }}'"
       args:
         chdir: "{{ release_path }}"
 
