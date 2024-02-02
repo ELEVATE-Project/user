@@ -1,5 +1,5 @@
 const common = require('@constants/common')
-const rolePermissionService = require('@services/rolePermissionMapping')
+const rolePermissionService = require('@services/role-permission-mapping')
 
 module.exports = class RolePermission {
 	/**

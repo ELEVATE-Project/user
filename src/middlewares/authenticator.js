@@ -10,23 +10,34 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/userRole')
-const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const roleQueries = require('@database/queries/user-role')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
+const { Op } = require('sequelize')
+const responses = require('@helpers/responses')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {
-	const filter = { role_id: roleId }
+	const serviceName = requestPath.match(/\/([^\/]+)\/v1\//)?.[1] ?? 'not found'
+	const moduleName = requestPath.match(/\/v1\/([^\/]+)/)?.[1] || 'module not found'
+	const afterModule = requestPath.match(/\/v1\/[^\/]+\/(.+)/)?.[1] ?? 'after module not found'
+	const filter = {
+		role_id: roleId,
+		module: moduleName,
+		api_path: {
+			[Op.in]: [
+				`/${serviceName}/v1/${moduleName}/*`,
+				`/${serviceName}/v1/${moduleName}/${afterModule}`,
+				`${serviceName}/v1/${moduleName}/${afterModule}*`,
+			],
+		},
+	}
 	const attributes = ['request_type', 'api_path', 'module']
 	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-
-	const matchingPermissions = allPermissions.filter((permission) =>
-		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
-	)
-
-	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
-
+	const isPermissionValid = allPermissions.some((permission) => {
+		const pathRegex = new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$')
+		return requestPath.match(pathRegex) && permission.request_type.includes(requestMethod)
+	})
 	return isPermissionValid
 }
-const responses = require('@helpers/responses')
 
 module.exports = async function (req, res, next) {
 	const unAuthorizedResponse = responses.failureResponse({
@@ -66,7 +77,7 @@ module.exports = async function (req, res, next) {
 				const isPermissionValid = await checkPermissions(roleId.rows[0].id, req.path, req.method)
 
 				if (!isPermissionValid) {
-					throw failureResponse({
+					throw responses.failureResponse({
 						message: 'PERMISSION_DENIED',
 						statusCode: httpStatusCode.unauthorized,
 						responseCode: 'UNAUTHORIZED',
@@ -75,7 +86,7 @@ module.exports = async function (req, res, next) {
 
 				return next()
 			} catch (error) {
-				throw failureResponse({
+				throw responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -143,7 +154,7 @@ module.exports = async function (req, res, next) {
 			req.method
 		)
 		if (!isPermissionValid) {
-			throw common.failureResponse({
+			throw responses.failureResponse({
 				message: 'PERMISSION_DENIED',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
@@ -156,3 +167,18 @@ module.exports = async function (req, res, next) {
 		next(err)
 	}
 }
+
+// async function checkPermissions(roleId, requestPath, requestMethod) {
+//     const modulename = (requestPath.match(/\/v1\/([^\/]+)/)?.[1]) || "module not found"
+// 	const filter = { role_id: roleId , module: modulename}
+// 	const attributes = ['request_type', 'api_path', 'module']
+// 	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+
+// 	const matchingPermissions = allPermissions.filter((permission) =>
+// 		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
+// 	)
+
+// 	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
+
+// 	return isPermissionValid
+// }
