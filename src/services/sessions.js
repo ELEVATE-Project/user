@@ -822,6 +822,7 @@ module.exports = class SessionsHelper {
 				})
 				if (sessionAttendee) {
 					sessionDetails.is_enrolled = true
+					sessionDetails.enrolment_type = sessionAttendee.type
 					isInvited = sessionAttendee.type === common.INVITED
 				}
 			}
