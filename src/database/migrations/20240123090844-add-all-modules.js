@@ -7,26 +7,26 @@ module.exports = {
 
 		const modulesData = [
 			{ code: 'all', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'manage_session', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'mentee', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'manage-session', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'mentees', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'modules', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'permissions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'cloud_services', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'entity_type', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'cloud-services', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'entity-type', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'entity', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'feedback', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'form', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'issues', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'mentors', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'notification', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'org_admin', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'org-admin', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'organization', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'platform', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'profile', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'questions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'sessions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'users', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			{ code: 'role_permission_mapping', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'role-permission-mapping', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 		]
 
 		// Insert the data into the 'modules' table

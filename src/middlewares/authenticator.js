@@ -11,7 +11,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const requests = require('@generics/requests')
 const endpoints = require('@constants/endpoints')
-const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const userRequests = require('@requests/user')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {

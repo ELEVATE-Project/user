@@ -83,11 +83,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'GET'],
 						'/mentoring/v1/cloud-services/getSignedUrl'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/cloud-services/getSignedUrl',
 					created_at: new Date(),
@@ -97,11 +97,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.MENTEE_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'GET'],
 						'/mentoring/v1/cloud-services/getSignedUrl'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/cloud-services/getSignedUrl',
 					created_at: new Date(),
@@ -111,11 +111,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'GET'],
 						'/mentoring/v1/cloud-services/getSignedUrl'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/cloud-services/getSignedUrl',
 					created_at: new Date(),
@@ -125,11 +125,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.USER_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'GET'],
 						'/mentoring/v1/cloud-services/getSignedUrl'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/cloud-services/getSignedUrl',
 					created_at: new Date(),
@@ -139,11 +139,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'GET'],
 						'/mentoring/v1/cloud-services/getSignedUrl'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/cloud-services/getSignedUrl',
 					created_at: new Date(),
@@ -153,11 +153,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'GET'],
 						'/mentoring/v1/cloud-services/getSignedUrl'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'GET'],
 					api_path: '/mentoring/v1/cloud-services/getSignedUrl',
 					created_at: new Date(),
@@ -168,11 +168,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'entity_type',
+						'entity-type',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/mentoring/v1/entity-type/*'
 					),
-					module: 'entity_type',
+					module: 'entity-type',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/mentoring/v1/entity-type/*',
 					created_at: new Date(),
@@ -183,11 +183,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'entity_type',
+						'entity-type',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/mentoring/v1/entity-type/*'
 					),
-					module: 'entity_type',
+					module: 'entity-type',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/mentoring/v1/entity-type/*',
 					created_at: new Date(),
@@ -196,8 +196,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['POST'], '/mentoring/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['POST'],
 					api_path: '/mentoring/v1/entity-type/read',
 					created_at: new Date(),
@@ -206,8 +206,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.MENTEE_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['POST'], '/mentoring/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['POST'],
 					api_path: '/mentoring/v1/entity-type/read',
 					created_at: new Date(),
@@ -216,8 +216,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['POST'], '/mentoring/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['POST'],
 					api_path: '/mentoring/v1/entity-type/read',
 					created_at: new Date(),
@@ -226,8 +226,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.USER_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['POST'], '/mentoring/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['POST'],
 					api_path: '/mentoring/v1/entity-type/read',
 					created_at: new Date(),
@@ -236,8 +236,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['POST'], '/mentoring/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['POST'],
 					api_path: '/mentoring/v1/entity-type/read',
 					created_at: new Date(),
@@ -246,8 +246,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['POST'], '/mentoring/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['POST'],
 					api_path: '/mentoring/v1/entity-type/read',
 					created_at: new Date(),
@@ -842,11 +842,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'org_admin',
+						'org-admin',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/mentoring/v1/org-admin/*'
 					),
-					module: 'org_admin',
+					module: 'org-admin',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/mentoring/v1/org-admin/*',
 					created_at: new Date(),
@@ -857,11 +857,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'org_admin',
+						'org-admin',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/mentoring/v1/org-admin/*'
 					),
-					module: 'org_admin',
+					module: 'org-admin',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/mentoring/v1/org-admin/*',
 					created_at: new Date(),
@@ -979,13 +979,13 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'questions',
+						'questions-set',
 						['POST', 'PUT', 'PATCH'],
-						'/mentoring/v1/questionsSet/*'
+						'/mentoring/v1/questions-set/*'
 					),
-					module: 'questions',
+					module: 'questions-set',
 					request_type: ['POST', 'PUT', 'PATCH'],
-					api_path: '/mentoring/v1/questionsSet/*',
+					api_path: '/mentoring/v1/questions-set/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -1023,13 +1023,13 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'questions',
+						'questions-set',
 						['POST', 'PUT', 'PATCH'],
-						'/mentoring/v1/questionsSet/*'
+						'/mentoring/v1/questions-set/*'
 					),
-					module: 'questions',
+					module: 'questions-set',
 					request_type: ['POST', 'PUT', 'PATCH'],
-					api_path: '/mentoring/v1/questionsSet/*',
+					api_path: '/mentoring/v1/questions-set/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -1096,60 +1096,84 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
-					permission_id: await getPermissionId('questions', ['POST'], '/mentoring/v1/questionsSet/read*'),
-					module: 'questions',
+					permission_id: await getPermissionId(
+						'questions-set',
+						['POST'],
+						'/mentoring/v1/questions-set/read*'
+					),
+					module: 'questions-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questionsSet/read*',
+					api_path: '/mentoring/v1/questions-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.MENTEE_ROLE].id,
-					permission_id: await getPermissionId('questions', ['POST'], '/mentoring/v1/questionsSet/read*'),
-					module: 'questions',
+					permission_id: await getPermissionId(
+						'questions-set',
+						['POST'],
+						'/mentoring/v1/questions-set/read*'
+					),
+					module: 'questions-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questionsSet/read*',
+					api_path: '/mentoring/v1/questions-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
-					permission_id: await getPermissionId('questions', ['POST'], '/mentoring/v1/questionsSet/read*'),
-					module: 'questions',
+					permission_id: await getPermissionId(
+						'questions-set',
+						['POST'],
+						'/mentoring/v1/questions-set/read*'
+					),
+					module: 'questions-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questionsSet/read*',
+					api_path: '/mentoring/v1/questions-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.USER_ROLE].id,
-					permission_id: await getPermissionId('questions', ['POST'], '/mentoring/v1/questionsSet/read*'),
-					module: 'questions',
+					permission_id: await getPermissionId(
+						'questions-set',
+						['POST'],
+						'/mentoring/v1/questions-set/read*'
+					),
+					module: 'questions-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questionsSet/read*',
+					api_path: '/mentoring/v1/questions-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
-					permission_id: await getPermissionId('questions', ['POST'], '/mentoring/v1/questionsSet/read*'),
-					module: 'questions',
+					permission_id: await getPermissionId(
+						'questions-set',
+						['POST'],
+						'/mentoring/v1/questions-set/read*'
+					),
+					module: 'questions-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questionsSet/read*',
+					api_path: '/mentoring/v1/questions-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
-					permission_id: await getPermissionId('questions', ['POST'], '/mentoring/v1/questionsSet/read*'),
-					module: 'questions',
+					permission_id: await getPermissionId(
+						'questions-set',
+						['POST'],
+						'/mentoring/v1/questions-set/read*'
+					),
+					module: 'questions-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questionsSet/read*',
+					api_path: '/mentoring/v1/questions-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -1421,13 +1445,13 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'role_permission_mapping',
+						'role-permission-mapping',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
-						'/mentoring/v1/rolePermissionMapping/*'
+						'/mentoring/v1/role-permission-mapping/*'
 					),
-					module: 'role_permission_mapping',
+					module: 'role-permission-mapping',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
-					api_path: '/mentoring/v1/rolePermissionMapping/*',
+					api_path: '/mentoring/v1/role-permission-mapping/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,

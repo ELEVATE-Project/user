@@ -2,7 +2,7 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
-const questionsSetQueries = require('../database/queries/questionSet')
+const questionsSetQueries = require('../database/queries/questions-set')
 const { Op } = require('sequelize')
 
 module.exports = class OrganizationService {

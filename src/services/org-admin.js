@@ -11,7 +11,7 @@ const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
 const _ = require('lodash')
-const questionsSetQueries = require('../database/queries/questionSet')
+const questionsSetQueries = require('../database/queries/questions-set')
 const { Op } = require('sequelize')
 const user = require('@health-checks/user')
 

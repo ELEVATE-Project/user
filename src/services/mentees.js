@@ -6,7 +6,7 @@ const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 
 const { successResponse } = require('@constants/common')
-const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { UniqueConstraintError } = require('sequelize')
 const menteeQueries = require('@database/queries/userExtension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')

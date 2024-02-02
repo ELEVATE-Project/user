@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const questionsService = require('@services/questionsSet')
+const questionsService = require('@services/questions-set')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')

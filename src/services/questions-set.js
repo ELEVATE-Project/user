@@ -1,7 +1,7 @@
 //Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
-const questionsSetQueries = require('../database/queries/questionSet')
+const questionsSetQueries = require('../database/queries/questions-set')
 const questionQueries = require('../database/queries/questions')
 
 module.exports = class questionsSetHelper {
