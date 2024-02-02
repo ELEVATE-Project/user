@@ -48,10 +48,9 @@
         next_tag_number: "{{ starting_tag_number + tag_increment }}"
 
     - name: Create Git Tag
-      command: >
-        git tag -a "{{ git_tag_prefix }}{{ next_tag_number }}"
-        -m "tag creation"
-        && git push origin "{{ git_tag_prefix }}{{ next_tag_number }}"
+      shell: >
+        git tag -a "{{ git_tag_prefix }}{{ next_tag_number }}" -m "Your tag message" &&
+        git push origin "{{ git_tag_prefix }}{{ next_tag_number }}"
       args:
         chdir: "{{ release_path }}"
 
