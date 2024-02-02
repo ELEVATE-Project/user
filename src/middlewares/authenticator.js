@@ -16,25 +16,16 @@ const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {
-	const serviceName = requestPath.match(/\/([^\/]+)\/v1\//)?.[1] ?? 'not found'
-	const moduleName = requestPath.match(/\/v1\/([^\/]+)/)?.[1] || 'module not found'
-	const afterModule = requestPath.match(/\/v1\/[^\/]+\/(.+)/)?.[1] ?? 'after module not found'
-	const filter = {
-		role_id: roleId,
-		module: moduleName,
-		api_path: {
-			[Op.in]: [
-				`/${serviceName}/v1/${moduleName}/*`,
-				`/${serviceName}/v1/${moduleName}/${afterModule}`,
-				`${serviceName}/v1/${moduleName}/${afterModule}*`,
-			],
-		},
-	}
+	const parts = requestPath.match(/[^/]+/g)
+	const api_path = [
+		`/${parts[0]}/${parts[1]}/${parts[2]}/*`,
+		`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3] || '*'}`,
+	]
+	const filter = { role_id: roleId, module: parts[2], api_path: { [Op.in]: api_path } }
 	const attributes = ['request_type', 'api_path', 'module']
 	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
 	const isPermissionValid = allPermissions.some((permission) => {
-		const pathRegex = new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$')
-		return requestPath.match(pathRegex) && permission.request_type.includes(requestMethod)
+		return permission.request_type.includes(requestMethod)
 	})
 	return isPermissionValid
 }
@@ -167,18 +158,3 @@ module.exports = async function (req, res, next) {
 		next(err)
 	}
 }
-
-// async function checkPermissions(roleId, requestPath, requestMethod) {
-//     const modulename = (requestPath.match(/\/v1\/([^\/]+)/)?.[1]) || "module not found"
-// 	const filter = { role_id: roleId , module: modulename}
-// 	const attributes = ['request_type', 'api_path', 'module']
-// 	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-
-// 	const matchingPermissions = allPermissions.filter((permission) =>
-// 		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
-// 	)
-
-// 	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
-
-// 	return isPermissionValid
-// }
