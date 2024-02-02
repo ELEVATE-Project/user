@@ -10,6 +10,7 @@ const questionsService = require('@services/questions-set')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 
 module.exports = class QuestionsSet {
 	/**
@@ -23,7 +24,7 @@ module.exports = class QuestionsSet {
 	async create(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -48,7 +49,7 @@ module.exports = class QuestionsSet {
 	async update(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
