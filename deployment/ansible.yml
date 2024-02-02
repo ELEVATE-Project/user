@@ -47,6 +47,13 @@
       set_fact:
         next_tag_number: "{{ starting_tag_number + tag_increment }}"
 
+    - name: Set Git user information
+      shell: >
+        git config --global user.email "rakesh@pacewisdom.com" &&
+        git config --global user.name "rakeshSgr"
+      args:
+        chdir: "{{ release_path }}"
+
     - name: Create Git Tag
       shell: >
         git tag -a "{{ git_tag_prefix }}{{ next_tag_number }}" -m "Your tag message" &&
