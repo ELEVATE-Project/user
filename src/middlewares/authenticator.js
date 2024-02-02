@@ -15,18 +15,29 @@ const rolePermissionMappingQueries = require('@database/queries/role-permission-
 const userRequests = require('@requests/user')
 const permissionsQueries = require('@database/queries/permissions')
 const responses = require('@helpers/responses')
+const { Op } = require('sequelize')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {
-	const filter = { role_id: roleId }
+	const serviceName = requestPath.match(/\/([^\/]+)\/v1\//)?.[1] ?? 'not found'
+	const moduleName = requestPath.match(/\/v1\/([^\/]+)/)?.[1] || 'module not found'
+	const afterModule = requestPath.match(/\/v1\/[^\/]+\/(.+)/)?.[1] ?? 'after module not found'
+	const filter = {
+		role_id: roleId,
+		module: moduleName,
+		api_path: {
+			[Op.in]: [
+				`/${serviceName}/v1/${moduleName}/*`,
+				`/${serviceName}/v1/${moduleName}/${afterModule}`,
+				`${serviceName}/v1/${moduleName}/${afterModule}*`,
+			],
+		},
+	}
 	const attributes = ['request_type', 'api_path', 'module']
-	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-
-	const matchingPermissions = allPermissions.filter((permission) =>
-		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
-	)
-
-	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
-
+	const allPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
+	const isPermissionValid = allPermissions.some((permission) => {
+		const pathRegex = new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$')
+		return requestPath.match(pathRegex) && permission.request_type.includes(requestMethod)
+	})
 	return isPermissionValid
 }
 
@@ -167,3 +178,18 @@ module.exports = async function (req, res, next) {
 		next(err)
 	}
 }
+
+// async function checkPermissions(roleId, requestPath, requestMethod) {
+// 	const modulename = (requestPath.match(/\/v1\/([^\/]+)/)?.[1]) || "module not found"
+// 	const filter = { role_id: roleId , module: modulename}
+// 	const attributes = ['request_type', 'api_path', 'module']
+// 	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+
+// 	const matchingPermissions = allPermissions.filter((permission) =>
+// 		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
+// 	)
+
+// 	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
+
+// 	return isPermissionValid
+// }
