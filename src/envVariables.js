@@ -219,6 +219,14 @@ let enviromentVariables = {
 		optional: false,
 		default: 'aes-256-cbc',
 	},
+	EVENT_ORG_LISTENER_URLS: {
+		message: 'Required List Of Org Event Listener Urls',
+		optional: false,
+	},
+	EVENT_ENABLE_ORG_EVENTS: {
+		message: 'Required Enable Org Events Flag',
+		optional: false,
+	},
 	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
 		message: 'Required generic invitation email template code',
 		optional: false,

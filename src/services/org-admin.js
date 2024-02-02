@@ -24,6 +24,7 @@ const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
+const responses = require('@helpers/responses')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -57,7 +58,7 @@ module.exports = class OrgAdminHelper {
 			const result = await fileUploadQueries.create(creationData)
 
 			if (!result?.id) {
-				return common.successResponse({
+				return responses.successResponse({
 					responseCode: 'CLIENT_ERROR',
 					statusCode: httpStatusCode.bad_request,
 					message: 'USER_CSV_UPLOADED_FAILED',
@@ -89,7 +90,7 @@ module.exports = class OrgAdminHelper {
 				}
 			)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_CSV_UPLOADED',
 				result: result,
@@ -131,7 +132,7 @@ module.exports = class OrgAdminHelper {
 				)
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FILE_UPLOAD_FETCHED',
 				result: listFileUpload,
@@ -163,14 +164,14 @@ module.exports = class OrgAdminHelper {
 			)
 
 			if (!requestDetails) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'REQUEST_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_ROLE_REQ_FETCHED',
 				result: requestDetails,
@@ -214,7 +215,7 @@ module.exports = class OrgAdminHelper {
 				params.decodedToken.organization_id
 			)
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_ROLE_REQ_LIST_FETCHED',
 				result: requestList,
@@ -243,7 +244,7 @@ module.exports = class OrgAdminHelper {
 			)
 
 			if (rowsAffected === 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ORG_ROLE_REQ_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -276,7 +277,7 @@ module.exports = class OrgAdminHelper {
 				await sendRoleRequestStatusEmail(user, bodyData.status)
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message,
 				result: requestDetails,
@@ -328,7 +329,7 @@ module.exports = class OrgAdminHelper {
 			})
 
 			if (rowsAffected == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -342,7 +343,7 @@ module.exports = class OrgAdminHelper {
 				},
 			})
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_DEACTIVATED',
 			})
@@ -371,7 +372,7 @@ module.exports = class OrgAdminHelper {
 			)
 			defaultOrgId = defaultOrgId.id
 			if (defaultOrgId === userOrgId) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'USER_IS_FROM_DEFAULT_ORG',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -388,7 +389,7 @@ module.exports = class OrgAdminHelper {
 
 			// If no matching data found return failure response
 			if (!entityTypeDetails) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -405,7 +406,7 @@ module.exports = class OrgAdminHelper {
 
 			// Create new inherited entity type
 			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: inheritedEntityType,
