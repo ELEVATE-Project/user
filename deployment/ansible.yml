@@ -45,27 +45,17 @@
 
     - name: Determine the next tag number
       set_fact:
-        next_tag_number: "{{ starting_tag_number + tag_increment }}"
-
-    - name: Set Git user information
-      shell: >
-        git config --global user.email "rakesh@pacewisdom.com" &&
-        git config --global user.name "rakeshSgr"
-      args:
-        chdir: "{{ release_path }}"
+        next_tag_number: "Release_{{ gitBranch }}_{{ starting_tag_number + tag_increment }}"
 
     - name: Create Git Tag
-      shell: "git tag -a '{{ git_tag_prefix }}{{ next_tag_number }}' -m 'Your tag message' && git push origin '{{ git_tag_prefix }}{{ next_tag_number }}'"
+      shell: "git remote set-url origin https://{{ GIT_USER_NAME }}:{{ GIT_TOKEN }}@{{ GIT_REPO }} 
+      && git config --global user.email '{{ GIT_EMAIL }}' && 
+       git config --global user.name '{{ GIT_USER_NAME }}' && 
+       git tag -a '{{ next_tag_number }}' -m 'Tag creation for {{ next_tag_number }}' 
+       && git push origin {{ next_tag_number }}"
       args:
         chdir: "{{ release_path }}"
 
-    - name: Push the tag to the remote repository
-      git:
-        repo: "{{ GIT_REPO }}"
-        dest: "{{ release_path }}"
-        remote: "origin"
-        state: "push"
-        tags: "yes"
 
     - name: Update npm
       shell: cd {{release_path}}/src && npm i
