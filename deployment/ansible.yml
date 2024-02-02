@@ -3,6 +3,10 @@
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
+    git_tag_prefix: "release_RC"
+    starting_tag_number: 1
+    tag_increment: 1
+    GIT_REPO: https://github.com/ELEVATE-Project/notification.git
   tasks:
     - name: Slurp hosts file
       slurp:
@@ -33,11 +37,32 @@
         state=directory
     - name: Clone the repository
       git:
-        repo: https://github.com/ELEVATE-Project/notification.git
+        repo: "{{ GIT_REPO }}"
         dest: "{{ release_path }}"
         clone: yes
         update: yes
         version: "{{ gitBranch }}"
+
+    - name: Determine the next tag number
+      set_fact:
+        next_tag_number: "{{ starting_tag_number + tag_increment }}"
+
+    - name: Create Git Tag
+      git:
+        repo: "{{ GIT_REPO }}"
+        dest: "{{ release_path }}"
+        tag: "{{ git_tag_prefix }}_{{ gitBranch }}_{{ next_tag_number }}"
+        msg: "Tag creation"
+        state: "present"
+
+    - name: Push the tag to the remote repository
+      git:
+        repo: "{{ GIT_REPO }}"
+        dest: "{{ release_path }}"
+        remote: "origin"
+        state: "push"
+        tags: "yes"
+
     - name: Update npm
       shell: cd {{release_path}}/src && npm i
     
