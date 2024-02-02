@@ -53,7 +53,7 @@
         -m "tag creation"
         && git push origin "{{ git_tag_prefix }}{{ next_tag_number }}"
       args:
-        chdir: "{{ GIT_REPO }}"
+        chdir: "{{ release_path }}"
 
     - name: Push the tag to the remote repository
       git:
