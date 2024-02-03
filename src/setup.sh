@@ -1,9 +1,5 @@
 # #!/bin/bash
 
-#Run the sample csv file upload
-node -r module-alias/register 'scripts/uploadSampleCSV.js'
-node 'scripts/viewsScript.js'
-
 # Exit on error
 set -e
 
