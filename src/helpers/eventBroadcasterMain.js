@@ -15,6 +15,10 @@ const getEndpoints = (eventGroup) => {
 			if (process.env.EVENT_ORG_LISTENER_URLS)
 				return process.env.EVENT_ORG_ADMIN_URLS.split(',').filter((url) => url.trim())
 			return []
+		case 'roleChange':
+			if (process.env.EVENT_ORG_LISTENER_URLS)
+				return process.env.EVENT_ORG_ADMIN_URLS.split(',').filter((url) => url.trim())
+			return []
 		default:
 			return []
 	}
@@ -27,6 +31,8 @@ const isEventEnabled = (eventGroup) => {
 		case 'orgAdminEvents':
 			return process.env.EVENT_ENABLE_ORG_ADMIN_EVENTS !== 'false'
 		case 'deactivateUpcomingSession':
+			return process.env.EVENT_ENABLE_ORG_ADMIN_EVENTS !== 'false'
+		case 'roleChange':
 			return process.env.EVENT_ENABLE_ORG_ADMIN_EVENTS !== 'false'
 
 		default:
