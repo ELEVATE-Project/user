@@ -31,8 +31,8 @@ module.exports = class OrgAdminService {
 			let current_roles, new_roles
 
 			if (isEvent) {
-				current_roles = bodyData.changes.roles.newValue
-				new_roles = bodyData.changes.organization_id.newValue
+				current_roles = bodyData.changes.roles.oldValue
+				new_roles = bodyData.changes.roles.newValue
 
 				// update body data
 				bodyData.user_id = bodyData.entityId
