@@ -8,16 +8,16 @@
 const commonHelper = require('@commonTests')
 const { faker } = require('@faker-js/faker')
 const questionsData = require('../questions/questionsData')
-const questionsSetData = require('./questionsSetData')
+const questionsSetData = require('./question-setData')
 const schema = require('./responseSchema')
 
-describe('mentoring/v1/questionsSet', function () {
+describe('mentoring/v1/question-set', function () {
 	beforeAll(async () => {
 		await commonHelper.logIn()
 	})
 	it('/create', async () => {
 		let questionId = await questionsData.insertQuestion()
-		let res = await request.post('/mentoring/v1/questionsSet/create').send({
+		let res = await request.post('/mentoring/v1/question-set/create').send({
 			questions: [questionId],
 			code: faker.random.alpha(5),
 		})
@@ -27,7 +27,7 @@ describe('mentoring/v1/questionsSet', function () {
 	})
 	it('/read', async () => {
 		let questionSetId = await questionsSetData.insertQuestionSet()
-		let res = await request.get('/mentoring/v1/questionsSet/read/' + questionSetId)
+		let res = await request.get('/mentoring/v1/question-set/read/' + questionSetId)
 
 		//console.log(res.body)
 		expect(res.statusCode).toBe(200)
@@ -36,7 +36,7 @@ describe('mentoring/v1/questionsSet', function () {
 	it('/update', async () => {
 		let questionId = await questionsData.insertQuestion()
 		let questionSetId = await questionsSetData.insertQuestionSet()
-		let res = await request.post('/mentoring/v1/questionsSet/update/' + questionSetId).send({
+		let res = await request.post('/mentoring/v1/question-set/update/' + questionSetId).send({
 			questions: [questionId],
 		})
 		//console.log(res.body)

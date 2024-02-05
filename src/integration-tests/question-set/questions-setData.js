@@ -10,7 +10,7 @@ const insertQuestionSet = async () => {
 			questions: [faker.database.mongodbObjectId(), faker.database.mongodbObjectId()],
 			code: faker.random.alpha(5),
 		}
-		let data = await questionsSetData.createQuestionsSet(bodyData)
+		let data = await questionsSetData.createQuestionSet(bodyData)
 		//console.log(data)
 		return data._id.valueOf()
 	} catch (error) {

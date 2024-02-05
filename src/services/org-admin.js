@@ -11,7 +11,7 @@ const entityTypeQueries = require('@database/queries/entityType')
 const userRequests = require('@requests/user')
 const utils = require('@generics/utils')
 const _ = require('lodash')
-const questionsSetQueries = require('../database/queries/questionSet')
+const questionSetQueries = require('../database/queries/question-set')
 const { Op } = require('sequelize')
 const user = require('@health-checks/user')
 const responses = require('@helpers/responses')
@@ -546,7 +546,7 @@ module.exports = class OrgAdminService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			const questionSets = await questionsSetQueries.findQuestionsSets(
+			const questionSets = await questionSetQueries.findQuestionSets(
 				{
 					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
 				},
