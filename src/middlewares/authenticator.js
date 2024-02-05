@@ -19,14 +19,13 @@ const { Op } = require('sequelize')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
-	const api_path = [
-		`/${parts[0]}/${parts[1]}/${parts[2]}/*`,
-		`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3] || '*'}`,
-	]
+	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+	if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
+	else api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`)
 	const filter = { role_id: roleId, module: parts[2], api_path: { [Op.in]: api_path } }
 	const attributes = ['request_type', 'api_path', 'module']
-	const allPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
-	const isPermissionValid = allPermissions.some((permission) => {
+	const allowedPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
+	const isPermissionValid = allowedPermissions.some((permission) => {
 		return permission.request_type.includes(requestMethod)
 	})
 	return isPermissionValid
