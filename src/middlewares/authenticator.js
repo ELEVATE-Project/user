@@ -55,10 +55,7 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if (internalAccess && !authHeader) {
-			next()
-			return
-		}
+		if (internalAccess && !authHeader) return next()
 
 		if (!authHeader) {
 			try {
@@ -74,14 +71,9 @@ module.exports = async function (req, res, next) {
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
-
 				return next()
 			} catch (error) {
-				throw responses.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
+				throw unAuthorizedResponse
 			}
 		}
 
