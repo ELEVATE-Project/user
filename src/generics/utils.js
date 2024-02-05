@@ -12,34 +12,37 @@ const path = require('path')
 const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
-const crypto = require('crypto')
 
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
-const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
+	//Move to utils/auth.js
 	return jwt.sign(tokenData, secretKey, { expiresIn })
 }
 
 const hashPassword = (password) => {
+	//Move to utils/auth.js
 	const salt = bcryptJs.genSaltSync(10)
 	let hashPassword = bcryptJs.hashSync(password, salt)
 	return hashPassword
 }
 
 const comparePassword = (password1, password2) => {
+	//Move to utils/auth.js
 	return bcryptJs.compareSync(password1, password2)
 }
 
 const clearFile = (filePath) => {
+	//Move to utils/file.js
 	fs.unlink(filePath, (err) => {
 		if (err) logger.error(err)
 	})
 }
 
 const composeEmailBody = (body, params) => {
+	//Move to utils/email.js
 	return body.replace(/{([^{}]*)}/g, (a, b) => {
 		var r = params[b]
 		return typeof r === 'string' || typeof r === 'number' ? r : a
@@ -47,6 +50,7 @@ const composeEmailBody = (body, params) => {
 }
 
 const getDownloadableUrl = async (imgPath) => {
+	//Move to utils/cloud.js
 	if (process.env.CLOUD_STORAGE === 'GCP') {
 		const options = {
 			destFilePath: imgPath,
@@ -83,7 +87,16 @@ const getDownloadableUrl = async (imgPath) => {
 	return imgPath
 }
 
+const generateFileName = (name, extension) => {
+	//Move to utils/file.js
+	const currentDate = new Date()
+	const fileExtensionWithTime = moment(currentDate).tz('Asia/Kolkata').format('YYYY_MM_DD_HH_mm') + extension
+	return name + fileExtensionWithTime
+}
+
+//Move to utils/roles.js
 const validateRoleAccess = (roles, requiredRoles) => {
+	//Move to
 	if (!roles || roles.length === 0) return false
 
 	if (!Array.isArray(requiredRoles)) {
@@ -93,12 +106,18 @@ const validateRoleAccess = (roles, requiredRoles) => {
 	return roles.some((role) => requiredRoles.includes(role.title))
 }
 
-const generateFileName = (name, extension) => {
-	const currentDate = new Date()
-	const fileExtensionWithTime = moment(currentDate).tz('Asia/Kolkata').format('YYYY_MM_DD_HH_mm') + extension
-	return name + fileExtensionWithTime
+/**
+ * md5 hash
+ * @function
+ * @name md5Hash
+ * @returns {String} returns uuid.
+ */
+//Move to utils.generic.js
+function md5Hash(value) {
+	return md5(value)
 }
 
+//Move to utils/cache.js
 const generateRedisConfigForQueue = () => {
 	const parseURL = new URL(process.env.REDIS_HOST)
 	return {
@@ -108,49 +127,54 @@ const generateRedisConfigForQueue = () => {
 		},
 	}
 }
-/**
- * md5 hash
- * @function
- * @name md5Hash
- * @returns {String} returns uuid.
- */
 
-function md5Hash(value) {
-	return md5(value)
-}
-
+//Move to utils/cache.js
 function internalSet(key, value) {
 	return InternalCache.setKey(key, value)
 }
+
+//Move to utils/cache.js
 function internalGet(key) {
 	return InternalCache.getKey(key)
 }
+
+//Move to utils/cache.js
 function internalDel(key) {
 	return InternalCache.delKey(key)
 }
 
+//Move to utils/cache.js
 function redisSet(key, value, exp) {
 	return RedisCache.setKey(key, value, exp)
 }
+
+//Move to utils/cache.js
 function redisGet(key) {
 	return RedisCache.getKey(key)
 }
+
+//Move to utils/cache.js
 function redisDel(key) {
 	return RedisCache.deleteKey(key)
 }
+
+//Move to utils/generic.js
 function isNumeric(value) {
 	return /^\d+$/.test(value)
 }
 
+//Move to utils/file.js
 function extractFilename(fileString) {
 	const match = fileString.match(/([^/]+)(?=\.\w+$)/)
 	return match ? match[0] : null
 }
 
+//Move to utils/email.js
 function extractDomainFromEmail(email) {
 	return email.substring(email.lastIndexOf('@') + 1)
 }
 
+//Move to utils/file.js
 function generateCSVContent(data) {
 	// If data is empty
 	if (data.length === 0) {
@@ -163,6 +187,7 @@ function generateCSVContent(data) {
 	].join('\n')
 }
 
+//Move to helpers/entity.js == import this as EntityHelper
 function validateInput(input, validationData, modelName) {
 	const errors = []
 	for (const field of validationData) {
@@ -264,6 +289,7 @@ function validateInput(input, validationData, modelName) {
 	}
 }
 
+//Move to helpers/entity.js == import this as EntityHelper
 const entityTypeMapGenerator = (entityTypeData) => {
 	try {
 		const entityTypeMap = new Map()
@@ -287,6 +313,7 @@ const entityTypeMapGenerator = (entityTypeData) => {
 	}
 }
 
+//Move to helpers/entity.js == import this as EntityHelper
 function restructureBody(requestBody, entityData, allowedKeys) {
 	try {
 		const entityTypeMap = entityTypeMapGenerator(entityData)
@@ -337,6 +364,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
+//Move to helpers/entity.js == import this as EntityHelper
 function processDbResponse(responseBody, entityType) {
 	if (responseBody.meta) {
 		entityType.forEach((entity) => {
@@ -388,11 +416,13 @@ function processDbResponse(responseBody, entityType) {
 	return data
 }
 
+//Move to helpers/entity.js == import this as EntityHelper
 function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
 }
 
+//Move to helpers/entity.js == import this as EntityHelper
 const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	const entityTypeMap = new Map()
 	entityTypes.forEach((entityType) => {
@@ -402,15 +432,19 @@ const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 	return Array.from(entityTypeMap.values())
 }
 
+//Move to utils/email.js
 function isValidEmail(email) {
 	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 	return emailRegex.test(email)
 }
 
+//Move to utils/generic
 function isValidName(name) {
 	const nameRegex = /^[A-Za-z\s'-]+$/
 	return nameRegex.test(name)
 }
+
+//Move to helpers/whereClauseGenerator ==> import as whereClauseHelper ==> call like whereClauseHelper.generate
 const generateWhereClause = (tableName) => {
 	let whereClause = ''
 
@@ -426,6 +460,7 @@ const generateWhereClause = (tableName) => {
 	return whereClause
 }
 
+//Move to utils/roles.js
 const getRoleTitlesFromId = (roleIds = [], roleList = []) => {
 	return roleIds.map((roleId) => {
 		const role = roleList.find((r) => r.id === roleId)
