@@ -346,14 +346,33 @@ module.exports = class UserInviteHelper {
 							//remove session_manager role because the mentee role is enough to change role in mentoring side
 							newRoles = newRoles.filter((role) => role !== common.SESSION_MANAGER_ROLE)
 
+							const currentDate = new Date()
+
 							//call event to update organization in mentoring
 							if (isOrgUpdate) {
-								eventBroadcaster('updateOrganization', {
-									requestBody: {
-										user_id: existingUser.id,
-										organization_id: user.organization_id,
-										roles: currentRoles,
+								const eventBody = eventBodyDTO({
+									entity: 'organization',
+									eventType: 'update',
+									entityId: userId,
+									changedValues: [
+										{
+											fieldName: 'organization_id',
+											oldValue: '',
+											newValue: user.organization_id,
+										},
+										{
+											fieldName: 'roles',
+											oldValue: '',
+											newValue: currentRoles,
+										},
+									],
+									args: {
+										updated_at: currentDate.toISOString(),
 									},
+								})
+								await eventBroadcasterMain('orgAdminEvents', {
+									requestBody: eventBody,
+									isInternal: true,
 								})
 							}
 
@@ -365,9 +384,23 @@ module.exports = class UserInviteHelper {
 									current_roles: currentRoles,
 								}
 								if (isOrgUpdate) requestBody.organization_id = user.organization_id
-								eventBroadcaster('roleChange', {
-									requestBody,
+
+								const eventBody = eventBodyDTO({
+									entity: 'userRoles',
+									eventType: 'update',
+									entityId: requestDetails.requester_id,
+									changedValues: [
+										{
+											fieldName: 'roles',
+											oldValue: currentRoles,
+											newValue: newRoles,
+										},
+									],
+									args: {
+										updated_at: currentDate.toISOString(),
+									},
 								})
+								await eventBroadcasterMain('roleChange', { requestBody: eventBody, isInternal: true })
 							}
 
 							//remove user data from redis

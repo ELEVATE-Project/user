@@ -20,6 +20,7 @@ const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
@@ -336,12 +337,17 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			//check and deactivate upcoming sessions
-			eventBroadcaster('deactivateUpcomingSession', {
-				requestBody: {
-					user_ids: userIds,
+			const currentDate = new Date()
+			const eventBody = eventBodyDTO({
+				entity: 'sessions',
+				eventType: 'update',
+				entityId: userIds,
+				changedValues: [],
+				args: {
+					updated_at: currentDate.toISOString(),
 				},
 			})
+			await eventBroadcasterMain('deactivateUpcomingSession', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -431,13 +437,23 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
-			eventBroadcaster('roleChange', {
-				requestBody: {
-					user_id: requestDetails.requester_id,
-					new_roles: [newRole.title],
-					current_roles: _.map(userRoles, 'title'),
+			const currentDate = new Date()
+			const eventBody = eventBodyDTO({
+				entity: 'userRoles',
+				eventType: 'update',
+				entityId: requestDetails.requester_id,
+				changedValues: [
+					{
+						fieldName: 'roles',
+						oldValue: _.map(userRoles, 'title'),
+						newValue: [newRole.title],
+					},
+				],
+				args: {
+					updated_at: currentDate.toISOString(),
 				},
 			})
+			await eventBroadcasterMain('roleChange', { requestBody: eventBody, isInternal: true })
 
 			let rolesToUpdate = [requestDetails.role]
 

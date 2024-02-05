@@ -99,12 +99,6 @@ module.exports = class UserHelper {
 			const previousName = currentUser._previousDataValues?.name || null
 
 			if (currentName !== previousName) {
-				eventBroadcaster('updateName', {
-					requestBody: {
-						mentor_name: currentName,
-						mentor_id: id,
-					},
-				})
 				// fetch current date for updatedAt
 				const currentDate = new Date()
 
