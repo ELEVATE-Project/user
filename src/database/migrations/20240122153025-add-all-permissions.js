@@ -3,6 +3,8 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
+		await queryInterface.bulkDelete('permissions', null, {})
+
 		try {
 			const permissionsData = [
 				//Mentoring API's
@@ -331,6 +333,15 @@ module.exports = {
 					updated_at: new Date(),
 				},
 				{
+					code: 'list_role_mapping_permissionss',
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					status: 'ACTIVE',
+					created_at: new Date(),
+					updated_at: new Date(),
+				},
+				{
 					code: 'manage_sessions_permissionss',
 					module: 'manage-sessions',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -353,6 +364,24 @@ module.exports = {
 					module: 'profile',
 					request_type: ['GET'],
 					api_path: '/mentoring/v1/profile/filterList',
+					status: 'ACTIVE',
+					created_at: new Date(),
+					updated_at: new Date(),
+				},
+				{
+					code: 'mentee_list_permissionss',
+					module: 'mentees',
+					request_type: ['GET'],
+					api_path: '/mentoring/v1/mentees/list',
+					status: 'ACTIVE',
+					created_at: new Date(),
+					updated_at: new Date(),
+				},
+				{
+					code: 'remove_mentees_permissionss',
+					module: 'sessions',
+					request_type: ['DELETE'],
+					api_path: '/mentoring/v1/sessions/removeMentees',
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),

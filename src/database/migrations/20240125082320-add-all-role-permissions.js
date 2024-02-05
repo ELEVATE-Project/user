@@ -21,7 +21,6 @@ const getRoleIds = async () => {
 		}
 		const roleIds = allRoles.map((role) => role.id)
 		const titles = [
-			common.SESSION_MANAGER_ROLE,
 			common.ADMIN_ROLE,
 			common.MENTOR_ROLE,
 			common.MENTEE_ROLE,
@@ -62,6 +61,7 @@ const getPermissionId = async (module, request_type, api_path) => {
 
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		await queryInterface.bulkDelete('role_permission_mapping', null, {})
 		try {
 			await getRoleIds()
 
@@ -1447,7 +1447,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_id: matchingResults[common.MENTOR_ROLE].id,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1470,6 +1470,145 @@ module.exports = {
 					updated_at: new Date(),
 					created_by: 0,
 				},
+				{
+					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					permission_id: await getPermissionId(
+						'manage-sessions',
+						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
+						'/mentoring/v1/manage-sessions/*'
+					),
+					module: 'manage-sessions',
+					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
+					api_path: '/mentoring/v1/manage-sessions/*',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					permission_id: await getPermissionId('mentees', ['GET'], '/mentoring/v1/mentees/list'),
+					module: 'mentees',
+					request_type: ['GET'],
+					api_path: '/mentoring/v1/mentees/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					permission_id: await getPermissionId(
+						'sessions',
+						['DELETE'],
+						'/mentoring/v1/sessions/removeMentees'
+					),
+					module: 'sessions',
+					request_type: ['DELETE'],
+					api_path: '/mentoring/v1/sessions/removeMentees',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.MENTOR_ROLE].id,
+					permission_id: await getPermissionId(
+						'sessions',
+						['DELETE'],
+						'/mentoring/v1/sessions/removeMentees'
+					),
+					module: 'sessions',
+					request_type: ['DELETE'],
+					api_path: '/mentoring/v1/sessions/removeMentees',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.MENTEE_ROLE].id,
+					permission_id: await getPermissionId(
+						'role-permission-mapping',
+						['POST'],
+						'/mentoring/v1/role-permission-mapping/list'
+					),
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.MENTOR_ROLE].id,
+					permission_id: await getPermissionId(
+						'role-permission-mapping',
+						['POST'],
+						'/mentoring/v1/role-permission-mapping/list'
+					),
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.USER_ROLE].id,
+					permission_id: await getPermissionId(
+						'role-permission-mapping',
+						['POST'],
+						'/mentoring/v1/role-permission-mapping/list'
+					),
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.ADMIN_ROLE].id,
+					permission_id: await getPermissionId(
+						'role-permission-mapping',
+						['POST'],
+						'/mentoring/v1/role-permission-mapping/list'
+					),
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					permission_id: await getPermissionId(
+						'role-permission-mapping',
+						['POST'],
+						'/mentoring/v1/role-permission-mapping/list'
+					),
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				{
+					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					permission_id: await getPermissionId(
+						'role-permission-mapping',
+						['POST'],
+						'/mentoring/v1/role-permission-mapping/list'
+					),
+					module: 'role-permission-mapping',
+					request_type: ['POST'],
+					api_path: '/mentoring/v1/role-permission-mapping/list',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
+				// /mentoring/v1/manage-sessions/ * : Sessionmanager
+				//   /mentoring/v1/mentees/list : Sessionmanager
+				//    /mentoring/v1/sessions/removeMentees : SessionManager , Mentor
 			]
 
 			await queryInterface.bulkInsert('role_permission_mapping', rolePermissionsData)
