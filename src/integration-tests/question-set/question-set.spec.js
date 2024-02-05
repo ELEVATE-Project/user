@@ -8,7 +8,7 @@
 const commonHelper = require('@commonTests')
 const { faker } = require('@faker-js/faker')
 const questionsData = require('../questions/questionsData')
-const questionsSetData = require('./questions-setData')
+const questionsSetData = require('./question-setData')
 const schema = require('./responseSchema')
 
 describe('mentoring/v1/question-set', function () {

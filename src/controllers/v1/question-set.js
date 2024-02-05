@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const questionsService = require('@services/questions-set')
+const questionsService = require('@services/question-set')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
@@ -30,8 +30,8 @@ module.exports = class QuestionsSet {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const createQuestionsSet = await questionsService.create(req.body, req.decodedToken)
-			return createQuestionsSet
+			const createQuestionSet = await questionsService.create(req.body, req.decodedToken)
+			return createQuestionSet
 		} catch (error) {
 			return error
 		}

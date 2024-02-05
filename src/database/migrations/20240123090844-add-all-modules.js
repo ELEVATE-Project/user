@@ -24,6 +24,8 @@ module.exports = {
 			{ code: 'platform', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'profile', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'questions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'question-set', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
+			{ code: 'admin', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'sessions', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'users', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
 			{ code: 'role-permission-mapping', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },

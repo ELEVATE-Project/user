@@ -1512,9 +1512,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions-set/create",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/question-set/create",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions-set", "create"]
+							"path": ["v1", "question-set", "create"]
 						}
 					},
 					"response": []
@@ -1540,9 +1540,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions-set/update/:id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/question-set/update/:id",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions-set", "update", ":id"],
+							"path": ["v1", "question-set", "update", ":id"],
 							"variable": [
 								{
 									"key": "id",
@@ -1575,9 +1575,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questions-set/read/:id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/question-set/read/:id",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questions-set", "read", ":id"],
+							"path": ["v1", "question-set", "read", ":id"],
 							"variable": [
 								{
 									"key": "id",

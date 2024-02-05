@@ -979,13 +979,13 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'questions-set',
+						'question-set',
 						['POST', 'PUT', 'PATCH'],
-						'/mentoring/v1/questions-set/*'
+						'/mentoring/v1/question-set/*'
 					),
-					module: 'questions-set',
+					module: 'question-set',
 					request_type: ['POST', 'PUT', 'PATCH'],
-					api_path: '/mentoring/v1/questions-set/*',
+					api_path: '/mentoring/v1/question-set/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -1023,13 +1023,13 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'questions-set',
+						'question-set',
 						['POST', 'PUT', 'PATCH'],
-						'/mentoring/v1/questions-set/*'
+						'/mentoring/v1/question-set/*'
 					),
-					module: 'questions-set',
+					module: 'question-set',
 					request_type: ['POST', 'PUT', 'PATCH'],
-					api_path: '/mentoring/v1/questions-set/*',
+					api_path: '/mentoring/v1/question-set/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -1096,84 +1096,60 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
-					permission_id: await getPermissionId(
-						'questions-set',
-						['POST'],
-						'/mentoring/v1/questions-set/read*'
-					),
-					module: 'questions-set',
+					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
+					module: 'question-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questions-set/read*',
+					api_path: '/mentoring/v1/question-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.MENTEE_ROLE].id,
-					permission_id: await getPermissionId(
-						'questions-set',
-						['POST'],
-						'/mentoring/v1/questions-set/read*'
-					),
-					module: 'questions-set',
+					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
+					module: 'question-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questions-set/read*',
+					api_path: '/mentoring/v1/question-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
-					permission_id: await getPermissionId(
-						'questions-set',
-						['POST'],
-						'/mentoring/v1/questions-set/read*'
-					),
-					module: 'questions-set',
+					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
+					module: 'question-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questions-set/read*',
+					api_path: '/mentoring/v1/question-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.USER_ROLE].id,
-					permission_id: await getPermissionId(
-						'questions-set',
-						['POST'],
-						'/mentoring/v1/questions-set/read*'
-					),
-					module: 'questions-set',
+					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
+					module: 'question-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questions-set/read*',
+					api_path: '/mentoring/v1/question-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
-					permission_id: await getPermissionId(
-						'questions-set',
-						['POST'],
-						'/mentoring/v1/questions-set/read*'
-					),
-					module: 'questions-set',
+					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
+					module: 'question-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questions-set/read*',
+					api_path: '/mentoring/v1/question-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
-					permission_id: await getPermissionId(
-						'questions-set',
-						['POST'],
-						'/mentoring/v1/questions-set/read*'
-					),
-					module: 'questions-set',
+					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
+					module: 'question-set',
 					request_type: ['POST'],
-					api_path: '/mentoring/v1/questions-set/read*',
+					api_path: '/mentoring/v1/question-set/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
