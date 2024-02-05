@@ -115,13 +115,13 @@
 								},
 								{
 									"key": "email",
-									"value": "suman.vv@pacewisdom.com",
+									"value": "suman@shikshalokam.org",
 									"type": "text",
 									"disabled": true
 								},
 								{
 									"key": "password",
-									"value": "password",
+									"value": "testing",
 									"type": "text",
 									"disabled": true
 								},
@@ -152,6 +152,28 @@
 									"description": "admin dev",
 									"type": "text",
 									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "anupama.pujar@qualitrix.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "adminmaster@admin.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text"
 								}
 							]
 						},
@@ -1680,9 +1702,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userRole/list?page=1&limit=10&search=system",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/list?page=1&limit=10",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userRole", "list"],
+							"path": ["v1", "user-role", "list"],
 							"query": [
 								{
 									"key": "page",
@@ -1732,9 +1754,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userRole/default?page=1&limit=10&search=a",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/default?page=1&limit=10",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userRole", "default"],
+							"path": ["v1", "user-role", "default"],
 							"query": [
 								{
 									"key": "page",
@@ -1794,9 +1816,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userRole/create",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/create",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userRole", "create"]
+							"path": ["v1", "user-role", "create"]
 						}
 					},
 					"response": []
@@ -1822,13 +1844,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userRole/update/:id",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/update/:id",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userRole", "update", ":id"],
+							"path": ["v1", "user-role", "update", ":id"],
 							"variable": [
 								{
 									"key": "id",
-									"value": "9"
+									"value": "10"
 								}
 							]
 						}
@@ -1847,13 +1869,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/userRole/delete/:id",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/delete/:id",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "userRole", "delete", ":id"],
+							"path": ["v1", "user-role", "delete", ":id"],
 							"variable": [
 								{
 									"key": "id",
-									"value": "9"
+									"value": "7"
 								}
 							]
 						}
@@ -1889,8 +1911,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/permissions/create",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "permissions", "create"]
 						}
 					},
@@ -1908,8 +1930,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/permissions/list?page=1&limit=10",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "permissions", "list"],
 							"query": [
 								{
@@ -1956,8 +1978,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/permissions/update/:id",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "permissions", "update", ":id"],
 							"variable": [
 								{
@@ -1982,8 +2004,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/permissions/delete/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/permissions/delete/:id",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "permissions", "delete", ":id"],
 							"variable": [
 								{
@@ -2022,8 +2044,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/create",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/modules/create",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "modules", "create"]
 						}
 					},
@@ -2050,8 +2072,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/update/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/modules/update/:id",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "modules", "update", ":id"],
 							"query": [
 								{
@@ -2083,8 +2105,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/list?page=1&limit=10&search=cw==",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/modules/list?page=1&limit=10&search=cw==",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "modules", "list"],
 							"query": [
 								{
@@ -2116,8 +2138,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/modules/delete/:id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/modules/delete/:id",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
 							"path": ["v1", "modules", "delete", ":id"],
 							"variable": [
 								{
@@ -2156,9 +2178,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/create/:role_id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "rolePermissionMapping", "create", ":role_id"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/create/:role_id",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
+							"path": ["v1", "role-permission-mapping", "create", ":role_id"],
 							"variable": [
 								{
 									"key": "role_id",
@@ -2190,15 +2212,34 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/delete/:role_id",
-							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "rolePermissionMapping", "delete", ":role_id"],
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/delete/:role_id",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
+							"path": ["v1", "role-permission-mapping", "delete", ":role_id"],
 							"variable": [
 								{
 									"key": "role_id",
 									"value": "5"
 								}
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List RolePermission",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/list",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
+							"path": ["v1", "role-permission-mapping", "list"]
 						}
 					},
 					"response": []

@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const roleService = require('@services/userRole')
+const roleService = require('@services/user-role')
 
 module.exports = class userRole {
 	/**

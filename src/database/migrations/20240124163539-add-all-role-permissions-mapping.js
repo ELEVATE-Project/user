@@ -5,8 +5,6 @@ const userRoles = require('@database/models/index').UserRole
 require('dotenv').config()
 const common = require('@constants/common')
 const Permissions = require('@database/models/index').Permission
-// const roleService = require('@services/userRole')
-// const { filter } = require('lodash')
 const { Op } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 
@@ -66,9 +64,6 @@ module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		try {
 			await getRoleIds()
-
-			//   common.SESSION_MANAGER_ROLE, common.ADMIN_ROLE, common.MENTOR_ROLE, common.MENTEE_ROLE,
-			// common.ORG_ADMIN_ROLE,common.USER_ROLE
 
 			const rolePermissionsData = [
 				{
@@ -165,75 +160,30 @@ module.exports = {
 					updated_at: new Date(),
 					created_by: 0,
 				},
-				// {
-				// 	role_id: matchingResults[common.MENTOR_ROLE].id,
-				// 	permission_id: await getPermissionId('user_role', ['POST','DELETE','GET','PUT','PATCH']
-				//   , '/user/v1/userRole/*'),
-				// 	module: 'user_role',
-				// 	request_type: ['POST','DELETE','GET','PUT','PATCH'],
-				// 	api_path: '/user/v1/userRole/*',
-				// 	created_at: new Date(),
-				// 	updated_at: new Date(),
-				// 	created_by: 0,
-				// },
-				// {
-				// 	role_id: matchingResults[common.MENTEE_ROLE].id,
-				// 	permission_id: await getPermissionId('user_role', ['POST','DELETE','GET','PUT','PATCH']
-				//   , '/user/v1/userRole/*'),
-				// 	module: 'user_role',
-				// 	request_type: ['POST','DELETE','GET','PUT','PATCH'],
-				// 	api_path: '/user/v1/userRole/*',
-				// 	created_at: new Date(),
-				// 	updated_at: new Date(),
-				// 	created_by: 0,
-				// },
-				// {
-				// 	role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
-				// 	permission_id: await getPermissionId('user_role', ['POST','DELETE','GET','PUT','PATCH']
-				//   , '/user/v1/userRole/*'),
-				// 	module: 'user_role',
-				// 	request_type: ['POST','DELETE','GET','PUT','PATCH'],
-				// 	api_path: '/user/v1/userRole/*',
-				// 	created_at: new Date(),
-				// 	updated_at: new Date(),
-				// 	created_by: 0,
-				// },
-				// {
-				// 	role_id: matchingResults[common.USER_ROLE].id,
-				// 	permission_id: await getPermissionId('user_role', ['POST','DELETE','GET','PUT','PATCH']
-				//   , '/user/v1/userRole/*'),
-				// 	module: 'user_role',
-				// 	request_type: ['POST','DELETE','GET','PUT','PATCH'],
-				// 	api_path: '/user/v1/userRole/*',
-				// 	created_at: new Date(),
-				// 	updated_at: new Date(),
-				// 	created_by: 0,
-				// },
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
-					permission_id: await getPermissionId(
-						'user_role',
-						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
-						'/user/v1/userRole/*'
-					),
-					module: 'user_role',
-					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
-					api_path: '/user/v1/userRole/*',
+					role_id: matchingResults[common.PUBLIC_ROLE].id,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/default'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/default',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
-				// {
-				// 	role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
-				// 	permission_id: await getPermissionId('user_role', ['POST','DELETE','GET','PUT','PATCH']
-				//   , '/user/v1/userRole/*'),
-				// 	module: 'user_role',
-				// 	request_type: ['POST','DELETE','GET','PUT','PATCH'],
-				// 	api_path: '/user/v1/userRole/*',
-				// 	created_at: new Date(),
-				// 	updated_at: new Date(),
-				// 	created_by: 0,
-				// },
+				{
+					role_id: matchingResults[common.ADMIN_ROLE].id,
+					permission_id: await getPermissionId(
+						'user-role',
+						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
+						'/user/v1/user-role/*'
+					),
+					module: 'user-role',
+					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
+					api_path: '/user/v1/user-role/*',
+					created_at: new Date(),
+					updated_at: new Date(),
+					created_by: 0,
+				},
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
 					permission_id: await getPermissionId(
@@ -321,11 +271,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/cloud-services/*'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					created_at: new Date(),
@@ -335,11 +285,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.MENTEE_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/cloud-services/*'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					created_at: new Date(),
@@ -349,11 +299,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/cloud-services/*'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					created_at: new Date(),
@@ -363,11 +313,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.USER_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/cloud-services/*'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					created_at: new Date(),
@@ -377,11 +327,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/cloud-services/*'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					created_at: new Date(),
@@ -391,11 +341,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
 					permission_id: await getPermissionId(
-						'cloud_services',
+						'cloud-services',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/cloud-services/*'
 					),
-					module: 'cloud_services',
+					module: 'cloud-services',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					created_at: new Date(),
@@ -509,11 +459,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'entity_type',
+						'entity-type',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/entity-type/*'
 					),
-					module: 'entity_type',
+					module: 'entity-type',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/entity-type/*',
 					created_at: new Date(),
@@ -523,11 +473,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'entity_type',
+						'entity-type',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/entity-type/*'
 					),
-					module: 'entity_type',
+					module: 'entity-type',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/entity-type/*',
 					created_at: new Date(),
@@ -536,8 +486,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.MENTOR_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['GET'], '/user/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['GET'], '/user/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['GET'],
 					api_path: '/user/v1/entity-type/read',
 					created_at: new Date(),
@@ -546,8 +496,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.MENTEE_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['GET'], '/user/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['GET'], '/user/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['GET'],
 					api_path: '/user/v1/entity-type/read',
 					created_at: new Date(),
@@ -556,8 +506,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['GET'], '/user/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['GET'], '/user/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['GET'],
 					api_path: '/user/v1/entity-type/read',
 					created_at: new Date(),
@@ -566,8 +516,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.USER_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['GET'], '/user/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['GET'], '/user/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['GET'],
 					api_path: '/user/v1/entity-type/read',
 					created_at: new Date(),
@@ -576,8 +526,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.ADMIN_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['GET'], '/user/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['GET'], '/user/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['GET'],
 					api_path: '/user/v1/entity-type/read',
 					created_at: new Date(),
@@ -586,8 +536,8 @@ module.exports = {
 				},
 				{
 					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
-					permission_id: await getPermissionId('entity_type', ['GET'], '/user/v1/entity-type/read'),
-					module: 'entity_type',
+					permission_id: await getPermissionId('entity-type', ['GET'], '/user/v1/entity-type/read'),
+					module: 'entity-type',
 					request_type: ['GET'],
 					api_path: '/user/v1/entity-type/read',
 					created_at: new Date(),
@@ -741,11 +691,11 @@ module.exports = {
 				{
 					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
 					permission_id: await getPermissionId(
-						'org_admin',
+						'org-admin',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 						'/user/v1/org-admin/*'
 					),
-					module: 'org_admin',
+					module: 'org-admin',
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/org-admin/*',
 					created_at: new Date(),

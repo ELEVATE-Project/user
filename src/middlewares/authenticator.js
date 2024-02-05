@@ -10,21 +10,23 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/userRole')
-const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const roleQueries = require('@database/queries/user-role')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
+const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {
-	const filter = { role_id: roleId }
+	const parts = requestPath.match(/[^/]+/g)
+	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+	if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
+	else api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`)
+	const filter = { role_id: roleId, module: parts[2], api_path: { [Op.in]: api_path } }
 	const attributes = ['request_type', 'api_path', 'module']
-	const allPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-
-	const matchingPermissions = allPermissions.filter((permission) =>
-		requestPath.match(new RegExp('^' + permission.api_path.replace(/\*/g, '.*') + '$'))
-	)
-
-	const isPermissionValid = matchingPermissions.some((permission) => permission.request_type.includes(requestMethod))
-
+	const allowedPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+	console.log(allowedPermissions)
+	const isPermissionValid = allowedPermissions.some((permission) => {
+		return permission.request_type.includes(requestMethod)
+	})
 	return isPermissionValid
 }
 
@@ -35,7 +37,6 @@ module.exports = async function (req, res, next) {
 		responseCode: 'UNAUTHORIZED',
 	})
 	try {
-		let guestUrl = false
 		let roleValidation = false
 
 		const authHeader = req.get('X-auth-token')
@@ -63,7 +64,7 @@ module.exports = async function (req, res, next) {
 				const isPermissionValid = await checkPermissions(roleId.rows[0].id, req.path, req.method)
 
 				if (!isPermissionValid) {
-					throw failureResponse({
+					throw responses.failureResponse({
 						message: 'PERMISSION_DENIED',
 						statusCode: httpStatusCode.unauthorized,
 						responseCode: 'UNAUTHORIZED',
@@ -135,7 +136,7 @@ module.exports = async function (req, res, next) {
 			req.method
 		)
 		if (!isPermissionValid) {
-			throw common.failureResponse({
+			throw responses.failureResponse({
 				message: 'PERMISSION_DENIED',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
