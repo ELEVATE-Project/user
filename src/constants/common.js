@@ -61,6 +61,7 @@ module.exports = {
 		'/sessions/completed',
 		'/sessions/bulkUpdateMentorNames',
 		'/organization/eventListener',
+		'/org-admin/eventListener',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',

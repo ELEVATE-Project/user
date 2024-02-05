@@ -15,6 +15,7 @@ const questionsSetQueries = require('../database/queries/questionSet')
 const { Op } = require('sequelize')
 const user = require('@health-checks/user')
 const responses = require('@helpers/responses')
+const { eventListenerRouter } = require('@helpers/eventListnerRouter')
 
 module.exports = class OrgAdminService {
 	/**
@@ -25,16 +26,31 @@ module.exports = class OrgAdminService {
 	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
 	 */
 
-	static async roleChange(bodyData) {
+	static async roleChange(bodyData, isEvent = false) {
 		try {
+			let current_roles, new_roles
+
+			if (isEvent) {
+				current_roles = bodyData.changes.roles.newValue
+				new_roles = bodyData.changes.organization_id.newValue
+
+				// update body data
+				bodyData.user_id = bodyData.entityId
+				bodyData.current_roles = current_roles
+				bodyData.new_roles = new_roles
+			} else {
+				current_roles = bodyData.current_roles
+				new_roles = bodyData.new_roles
+			}
+
 			if (
-				utils.validateRoleAccess(bodyData.current_roles, common.MENTOR_ROLE) &&
-				utils.validateRoleAccess(bodyData.new_roles, common.MENTEE_ROLE)
+				utils.validateRoleAccess(current_roles, common.MENTOR_ROLE) &&
+				utils.validateRoleAccess(new_roles, common.MENTEE_ROLE)
 			) {
 				return await this.changeRoleToMentee(bodyData)
 			} else if (
-				utils.validateRoleAccess(bodyData.current_roles, common.MENTEE_ROLE) &&
-				utils.validateRoleAccess(bodyData.new_roles, common.MENTOR_ROLE)
+				utils.validateRoleAccess(current_roles, common.MENTEE_ROLE) &&
+				utils.validateRoleAccess(new_roles, common.MENTOR_ROLE)
 			) {
 				return await this.changeRoleToMentor(bodyData)
 			}
@@ -381,9 +397,18 @@ module.exports = class OrgAdminService {
 	 * @param {Object} bodyData
 	 * @returns {JSON} - User data.
 	 */
-	static async updateOrganization(bodyData) {
+	static async updateOrganization(bodyData, eventFlag = false) {
 		try {
-			const orgId = bodyData.organization_id
+			let roles, user_id, orgId
+			if (eventFlag) {
+				orgId = bodyData.changes.organization_id.newValue
+				roles = bodyData.changes.roles.newValue
+				user_id = bodyData.entityId
+			} else {
+				orgId = bodyData.organization_id
+				roles = bodyData.roles
+				user_id = bodyData.user_id
+			}
 			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
 			// Get organization details
 			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
@@ -413,9 +438,9 @@ module.exports = class OrgAdminService {
 				visibility: orgPolicies.mentor_visibility_policy,
 				visible_to_organizations: organizationDetails.data.result.related_orgs,
 			}
-			if (utils.validateRoleAccess(bodyData.roles, common.MENTOR_ROLE))
-				await mentorQueries.updateMentorExtension(bodyData.user_id, updateData)
-			else await menteeQueries.updateMenteeExtension(bodyData.user_id, updateData)
+			if (utils.validateRoleAccess(roles, common.MENTOR_ROLE))
+				await mentorQueries.updateMentorExtension(user_id, updateData)
+			else await menteeQueries.updateMenteeExtension(user_id, updateData)
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'UPDATE_ORG_SUCCESSFULLY',
@@ -433,12 +458,15 @@ module.exports = class OrgAdminService {
 	 * @param {Object} bodyData
 	 * @returns {JSON} - User data.
 	 */
-	static async deactivateUpcomingSession(userIds) {
+	static async deactivateUpcomingSession(req, isEvent = false) {
 		try {
 			let deactivatedIdsList = []
 			let failedUserIds = []
-			for (let key in userIds) {
-				const userId = userIds[key]
+			let listUserIds = req
+			if (isEvent) listUserIds = req.entityId
+
+			for (let key in listUserIds) {
+				const userId = listUserIds[key]
 				const mentorDetails = await mentorQueries.getMentorExtension(userId)
 				if (mentorDetails?.user_id) {
 					// Deactivate upcoming sessions of user as mentor
@@ -500,7 +528,7 @@ module.exports = class OrgAdminService {
 		return policyData
 	}
 
-	static async updateRelatedOrgs(relatedOrgs, orgId) {
+	static async updateRelatedOrgs(relatedOrgs, orgId, isEvent = false) {
 		try {
 			const orgPolicies = await organisationExtensionQueries.getById(orgId)
 			if (
@@ -583,6 +611,42 @@ module.exports = class OrgAdminService {
 			})
 		} catch (error) {
 			console.log(error)
+		}
+	}
+
+	static async updateFnWrapper(eventBody, isEvent) {
+		try {
+			switch (eventBody.entity) {
+				case 'organization':
+					await OrgAdminService.updateOrganization(eventBody, isEvent)
+					break
+				case 'sessions':
+					await OrgAdminService.deactivateUpcomingSession(eventBody, isEvent)
+					break
+				case 'userRoles':
+					await OrgAdminService.roleChange(eventBody, isEvent)
+					break
+				case 'relatedOrganization':
+					await OrgAdminService.updateRelatedOrgs(eventBody.changes.relatedOrgs.newValue, eventBody.entityId)
+					break
+			}
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
+	static async eventListener(eventBody) {
+		try {
+			//EventBody Validation - TODO: Check if this should be a middleware
+			const { entity, eventType, entityId } = eventBody
+			if (!entity || !eventType || !entityId)
+				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
+			return await eventListenerRouter(eventBody, {
+				updateFn: this.updateFnWrapper,
+			})
+		} catch (error) {
+			console.log(error)
+			return error
 		}
 	}
 }
