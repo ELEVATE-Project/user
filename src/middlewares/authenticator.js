@@ -12,6 +12,7 @@ const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/userRole')
 const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const responses = require('@helpers/responses')
 
 async function checkPermissions(roleId, requestPath, requestMethod) {
 	const filter = { role_id: roleId }
@@ -28,23 +29,22 @@ async function checkPermissions(roleId, requestPath, requestMethod) {
 }
 
 module.exports = async function (req, res, next) {
+	const unAuthorizedResponse = responses.failureResponse({
+		message: 'UNAUTHORIZED_REQUEST',
+		statusCode: httpStatusCode.unauthorized,
+		responseCode: 'UNAUTHORIZED',
+	})
 	try {
-		let internalAccess = false
+		let guestUrl = false
 		let roleValidation = false
 
 		const authHeader = req.get('X-auth-token')
-
-		common.internalAccessUrls.map(function (path) {
+		const internalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
-				console.log('REQUEST PATH: ', req.path)
-				console.log('INTERNAL ACCESS PATH: ', path)
-				if (
-					req.headers.internal_access_token &&
-					process.env.INTERNAL_ACCESS_TOKEN == req.headers.internal_access_token
-				) {
-					internalAccess = true
-				}
+				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
+				else throw unAuthorizedResponse
 			}
+			return false
 		})
 
 		common.roleValidationPaths.map(function (path) {
@@ -53,10 +53,7 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if (internalAccess && !authHeader) {
-			next()
-			return
-		}
+		if (internalAccess && !authHeader) return next()
 
 		if (!authHeader) {
 			try {
@@ -72,57 +69,34 @@ module.exports = async function (req, res, next) {
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
-
 				return next()
 			} catch (error) {
-				throw failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
+				throw unAuthorizedResponse
 			}
 		}
 
 		// let splittedUrl = req.url.split('/');
 		// if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
 		//     if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
-		//         throw common.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
+		//         throw responses.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
 		//     }
 		// }
 		const authHeaderArray = authHeader.split(' ')
-		if (authHeaderArray[0] !== 'bearer') {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
 
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 		} catch (err) {
 			if (err.name === 'TokenExpiredError') {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'ACCESS_TOKEN_EXPIRED',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
-			} else {
-				throw common.failureResponse({
-					message: 'UNAUTHORIZED_REQUEST',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
+			} else throw unAuthorizedResponse
 		}
 
-		if (!decodedToken) {
-			throw common.failureResponse({
-				message: 'UNAUTHORIZED_REQUEST',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
-			})
-		}
+		if (!decodedToken) throw unAuthorizedResponse
 
 		//check for admin user
 		let isAdmin = false
@@ -138,7 +112,7 @@ module.exports = async function (req, res, next) {
 			/* Invalidate token when user role is updated, say from mentor to mentee or vice versa */
 			const user = await userQueries.findByPk(decodedToken.data.id)
 			if (!user) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -169,7 +143,7 @@ module.exports = async function (req, res, next) {
 		}
 
 		req.decodedToken = decodedToken.data
-		next()
+		return next()
 	} catch (err) {
 		next(err)
 	}

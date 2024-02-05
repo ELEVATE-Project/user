@@ -11,10 +11,6 @@ let enviromentVariables = {
 		message: 'Required node environment',
 		optional: false,
 	},
-	MONGODB_URL: {
-		message: 'Required mongodb url',
-		optional: false,
-	},
 	ACCESS_TOKEN_SECRET: {
 		message: 'Required access token secret',
 		optional: false,
@@ -147,14 +143,6 @@ let enviromentVariables = {
 		message: 'Required oci bucket name',
 		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
 	},
-	REPLICA_SET_NAME: {
-		message: 'Required replica set name',
-		optional: true,
-	},
-	REPLICA_SET_READ_PREFERENCE: {
-		message: 'Required replica read preferance',
-		optional: process.env.REPLICA_SET_NAME ? false : true,
-	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
 		optional: false,
@@ -230,6 +218,14 @@ let enviromentVariables = {
 		message: 'Required Email ID Encryption Algorithm',
 		optional: false,
 		default: 'aes-256-cbc',
+	},
+	EVENT_ORG_LISTENER_URLS: {
+		message: 'Required List Of Org Event Listener Urls',
+		optional: false,
+	},
+	EVENT_ENABLE_ORG_EVENTS: {
+		message: 'Required Enable Org Events Flag',
+		optional: false,
 	},
 	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
 		message: 'Required generic invitation email template code',

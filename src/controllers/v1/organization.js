@@ -10,6 +10,7 @@ const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const orgService = require('@services/organization')
+const responses = require('@helpers/responses')
 
 module.exports = class Organization {
 	/**
@@ -34,7 +35,7 @@ module.exports = class Organization {
 			}
 
 			if (!isAdmin) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -72,19 +73,19 @@ module.exports = class Organization {
 
 			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
 				if (req.body.related_orgs) {
-					throw common.failureResponse({
+					throw responses.failureResponse({
 						message: 'CONTACT_ADMIN_RELATED_ORGANIZATIONS',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_DOES_NOT_HAVE_ACCESS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (!isAdmin && !isOrgAdmin) {
-				throw common.failureResponse({
+				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
