@@ -736,7 +736,7 @@ module.exports = class SessionsHelper {
 									unitOfTime: common.UNIT_OF_TIME,
 									newSessionDuration: Math.round(revisedDuration),
 									sessionDuration: Math.round(oldSessionDuration),
-									sessionType: sessionDetail.title,
+									sessionType: sessionDetail.type,
 									sessionPlatform:
 										sessionDetail.meeting_info && sessionDetail.meeting_info.platform
 											? sessionDetail.meeting_info.platform
