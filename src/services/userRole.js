@@ -12,6 +12,7 @@ const roleQueries = require('@database/queries/userRole')
 const common = require('@constants/common')
 const { Op } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
+const responses = require('@helpers/responses')
 
 module.exports = class userRoleHelper {
 	/**
@@ -31,7 +32,7 @@ module.exports = class userRoleHelper {
 		try {
 			bodyData.organization_id = userOrganizationId
 			const roles = await roleQueries.create(bodyData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_CREATED_SUCCESSFULLY',
 				result: {
@@ -66,13 +67,13 @@ module.exports = class userRoleHelper {
 			const filter = { id: id, organization_id: userOrganizationId }
 			const [updateCount, updateRole] = await roleQueries.updateRole(filter, bodyData)
 			if (updateCount == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_NOT_UPDATED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_UPDATED_SUCCESSFULLY',
 				result: {
@@ -101,14 +102,14 @@ module.exports = class userRoleHelper {
 			const deleteRole = await roleQueries.deleteRole(filter)
 
 			if (deleteRole === 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_NOT_DELETED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ROLE_DELETED_SUCCESSFULLY',
 				result: {},
@@ -152,7 +153,7 @@ module.exports = class userRoleHelper {
 			const roles = await roleQueries.findAllRoles(filter, attributes, options)
 
 			if (roles.rows == 0 || roles.count == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLES_HAS_EMPTY_LIST',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -163,7 +164,7 @@ module.exports = class userRoleHelper {
 				count: roles.count,
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ROLES_FETCHED_SUCCESSFULLY',
 				result: results,
@@ -205,7 +206,7 @@ module.exports = class userRoleHelper {
 			const roles = await roleQueries.findAllRoles(filter, attributes, options)
 
 			if (roles.rows == 0 || roles.count == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLES_HAS_EMPTY_LIST',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -216,7 +217,7 @@ module.exports = class userRoleHelper {
 				count: roles.count,
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ROLES_FETCHED_SUCCESSFULLY',
 				result: results,
