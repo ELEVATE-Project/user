@@ -1,5 +1,4 @@
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
 const utils = require('@generics/utils')
 const form = require('@generics/form')
 const KafkaProducer = require('@generics/kafka-communication')
@@ -9,6 +8,8 @@ const { UniqueConstraintError } = require('sequelize')
 
 const entityTypeQueries = require('../database/queries/entityType')
 const { getDefaultOrgId } = require('@helpers/getDefaultOrgId')
+
+const responses = require('@helpers/responses')
 
 module.exports = class FormsHelper {
 	/**
@@ -28,14 +29,14 @@ module.exports = class FormsHelper {
 
 			await KafkaProducer.clearInternalCache('formVersion')
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FORM_CREATED_SUCCESSFULLY',
 				result: form,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -68,17 +69,17 @@ module.exports = class FormsHelper {
 					organization_id: orgId,
 				}
 			}
-			bodyData['organization_id'] = orgId
+
 			const result = await formQueries.updateOneForm(filter, bodyData)
 
 			if (result === 'ENTITY_ALREADY_EXISTS') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (result === 'ENTITY_NOT_FOUND') {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -86,13 +87,13 @@ module.exports = class FormsHelper {
 			}
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'FORM_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -123,7 +124,7 @@ module.exports = class FormsHelper {
 			if (!form) {
 				const defaultOrgId = await getDefaultOrgId()
 				if (!defaultOrgId)
-					return common.failureResponse({
+					return responses.failureResponse({
 						message: 'DEFAULT_ORG_ID_NOT_SET',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
@@ -132,14 +133,14 @@ module.exports = class FormsHelper {
 				defaultOrgForm = await formQueries.findOneForm(filter)
 			}
 			if (!form && !defaultOrgForm) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'FORM_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_FETCHED_SUCCESSFULLY',
 				result: form ? form : defaultOrgForm,
@@ -151,7 +152,7 @@ module.exports = class FormsHelper {
 	}
 	static async readAllFormsVersion() {
 		try {
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'FORM_VERSION_FETCHED_SUCCESSFULLY',
 				result: (await form.getAllFormsVersion()) || {},

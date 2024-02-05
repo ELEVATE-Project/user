@@ -1,9 +1,9 @@
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
 const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
 const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
+const responses = require('@helpers/responses')
 
 module.exports = class modulesHelper {
 	/**
@@ -20,7 +20,7 @@ module.exports = class modulesHelper {
 		try {
 			const permission = await permissionsQueries.findPermissionId(permissionId)
 			if (!permission) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'PERMISSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -35,7 +35,7 @@ module.exports = class modulesHelper {
 				created_by: id,
 			}
 			const rolePermissionMapping = await rolePermissionMappingQueries.create(data)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_CREATED_SUCCESSFULLY',
 				result: {
@@ -47,7 +47,7 @@ module.exports = class modulesHelper {
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_PERMISSION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -71,16 +71,62 @@ module.exports = class modulesHelper {
 			const filter = { role_id: roleId, permission_id: permissionId }
 			const rolePermissionMapping = await rolePermissionMappingQueries.delete(filter)
 			if (rolePermissionMapping == 0) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ROLE_PERMISSION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_DELETED_SUCCESSFULLY',
 				result: {},
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * list rolePermission.
+	 * @method
+	 * @name list
+	 * @param {Integer} roleIds - role_id
+	 * @returns {JSON} - RolePermission list object.
+	 */
+
+	static async list(roleIds) {
+		try {
+			const filter = { role_id: roleIds }
+			const attributes = ['module', 'request_type']
+			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter, attributes)
+			const permissionsByModule = {}
+			permissionAndModules.forEach(({ module, request_type }) => {
+				if (permissionsByModule[module]) {
+					permissionsByModule[module].request_type = [
+						...new Set([...permissionsByModule[module].request_type, ...request_type]),
+					]
+				} else {
+					permissionsByModule[module] = { module, request_type: [...request_type] }
+				}
+			})
+
+			const permissions = Object.values(permissionsByModule).map(({ module, request_type }) => ({
+				module,
+				request_type,
+			}))
+
+			if (!permissions.length) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.created,
+					message: 'ROLE_PERMISSION_NOT_FOUND',
+					result: { permissions: [] },
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'FETCHED_ROLE_PERMISSION_SUCCESSFULLY',
+				result: { permissions },
 			})
 		} catch (error) {
 			throw error

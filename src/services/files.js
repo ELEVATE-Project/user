@@ -2,6 +2,7 @@ const cloudServices = require('@generics/cloud-services')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const utils = require('@generics/utils')
+const responses = require('@helpers/responses')
 
 module.exports = class FilesHelper {
 	static async getSignedUrl(fileName, _id, dynamicPath) {
@@ -25,7 +26,7 @@ module.exports = class FilesHelper {
 
 			response.destFilePath = destFilePath
 
-			return common.successResponse({
+			return responses.successResponse({
 				message: 'SIGNED_URL_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				responseCode: 'OK',
@@ -39,7 +40,7 @@ module.exports = class FilesHelper {
 	static async getDownloadableUrl(path) {
 		try {
 			let response = await utils.getDownloadableUrl(path)
-			return common.successResponse({
+			return responses.successResponse({
 				message: 'DOWNLOAD_URL_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
 				responseCode: 'OK',
