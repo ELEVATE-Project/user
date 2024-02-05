@@ -72,7 +72,8 @@ module.exports = class Sessions {
 			const sessionDetails = await sessionService.details(
 				req.params.id,
 				req.decodedToken ? req.decodedToken.id : '',
-				req.decodedToken ? isAMentor(req.decodedToken.roles) : ''
+				req.decodedToken ? isAMentor(req.decodedToken.roles) : '',
+				req.query
 			)
 			return sessionDetails
 		} catch (error) {
@@ -142,7 +143,8 @@ module.exports = class Sessions {
 			const enrolledSession = await sessionService.enroll(
 				req.params.id,
 				req.decodedToken,
-				req.headers['timezone']
+				req.headers['timezone'],
+				isAMentor(req.decodedToken.roles)
 			)
 			return enrolledSession
 		} catch (error) {

@@ -19,7 +19,7 @@ exports.delete = async (filter) => {
 	}
 }
 
-exports.find = async (filter, attributes) => {
+exports.findAll = async (filter, attributes) => {
 	try {
 		return RolePermissionMapping.findAll({
 			where: filter,

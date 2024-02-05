@@ -11,6 +11,7 @@ const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
 const userRequests = require('@requests/user')
 const adminService = require('../generics/materializedViews')
+const responses = require('@helpers/responses')
 
 module.exports = class AdminHelper {
 	/**
@@ -25,7 +26,7 @@ module.exports = class AdminHelper {
 	static async userDelete(decodedToken, userId) {
 		try {
 			if (!decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'UNAUTHORIZED_REQUEST',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
@@ -53,13 +54,13 @@ module.exports = class AdminHelper {
 			result.isUnenrolledFromSessions = await this.unenrollFromUpcomingSessions(userId)
 
 			if (result.isUnenrolledFromSessions && result.areUserDetailsCleared) {
-				return common.successResponse({
+				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_REMOVED_SUCCESSFULLY',
 					result,
 				})
 			}
-			return common.failureResponse({
+			return responses.failureResponse({
 				statusCode: httpStatusCode.bad_request,
 				message: 'USER_NOT_REMOVED_SUCCESSFULLY',
 				result,
@@ -152,7 +153,7 @@ module.exports = class AdminHelper {
 	static async triggerViewRebuild(decodedToken) {
 		try {
 			const result = await adminService.triggerViewBuild()
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY',
 			})
@@ -164,7 +165,7 @@ module.exports = class AdminHelper {
 	static async triggerPeriodicViewRefresh(decodedToken) {
 		try {
 			const result = await adminService.triggerPeriodicViewRefresh()
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
 			})
@@ -177,7 +178,7 @@ module.exports = class AdminHelper {
 		try {
 			const result = await adminService.refreshMaterializedView(modelName)
 			console.log(result)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
 			})

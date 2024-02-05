@@ -4,6 +4,7 @@ const common = require('@constants/common')
 const userRequests = require('@requests/user')
 const menteeQueries = require('@database/queries/userExtension')
 const mentorQueries = require('@database/queries/mentorExtension')
+const responses = require('@helpers/responses')
 module.exports = class UserHelper {
 	/**
 	 * Get user list.
@@ -50,7 +51,7 @@ module.exports = class UserHelper {
 				return false // Remove this item
 			})
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: userDetails.data.message,
 				result: userDetails.data.result,

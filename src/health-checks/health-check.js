@@ -9,15 +9,9 @@
 
 const { v1: uuidv1 } = require('uuid')
 const userHealthCheck = require('./user')
-const mongodbHealthCheck = require('./mongodb')
 const kafkaHealthCheck = require('./kafka')
 
 const obj = {
-	MONGO_DB: {
-		NAME: 'Mongo.db',
-		FAILED_CODE: 'MONGODB_HEALTH_FAILED',
-		FAILED_MESSAGE: 'Mongo db is not connected',
-	},
 	USER_SERVICE: {
 		NAME: 'userservice.api',
 		FAILED_CODE: 'USER_SERVICE_HEALTH_FAILED',
@@ -34,11 +28,9 @@ const obj = {
 
 let health_check = async function (req, res) {
 	let checks = []
-	let mongodbConnection = await mongodbHealthCheck.health_check()
 	let userServiceStatus = await userHealthCheck.health_check()
 	let kafkaServiceStatus = await kafkaHealthCheck.health_check()
 
-	checks.push(checkResult('MONGO_DB', mongodbConnection))
 	checks.push(checkResult('KAFKA', kafkaServiceStatus))
 	checks.push(checkResult('USER_SERVICE', userServiceStatus))
 

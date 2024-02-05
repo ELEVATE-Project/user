@@ -86,4 +86,13 @@ module.exports = class OrganizationExtensionQueries {
 			throw new Error(`Error fetching organisation extension: ${error.message}`)
 		}
 	}
+
+	static async create(data, options = {}) {
+		try {
+			const newOrgExtension = await OrganizationExtension.create(data, options)
+			return newOrgExtension
+		} catch (error) {
+			throw error
+		}
+	}
 }
