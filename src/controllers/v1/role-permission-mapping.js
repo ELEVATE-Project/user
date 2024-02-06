@@ -1,4 +1,3 @@
-const common = require('@constants/common')
 const rolePermissionService = require('@services/role-permission-mapping')
 
 module.exports = class RolePermission {
@@ -7,7 +6,7 @@ module.exports = class RolePermission {
 	 * @method
 	 * @name create
 	 * @param {Object} req - Request data.
-	 * @param {Integer} req.params.id - role_id
+	 * @param {String} req.body.role_title - user Role Title
 	 * @param {Integer} req.body.permission_id - permission_id
 	 * @param {Integer} req.decodedToken.id - id
 	 * @returns {JSON} - RolePermission creation object.
@@ -16,7 +15,7 @@ module.exports = class RolePermission {
 	async create(req) {
 		try {
 			const createRolePermission = await rolePermissionService.create(
-				req.params.id,
+				req.body.role_title,
 				req.body.permission_id,
 				req.decodedToken.id
 			)
@@ -31,14 +30,14 @@ module.exports = class RolePermission {
 	 * @method
 	 * @name delete
 	 * @param {Object} req - Request data.
-	 * @param {Integer} req.params.id - role_id
+	 * @param {String} req.body.role_title - user Role Title
 	 * @param {Integer} req.body.permission_id - permission_id
 	 * @returns {JSON} - RolePermission deletion object.
 	 */
 
 	async delete(req) {
 		try {
-			const deleteRolePermission = await rolePermissionService.delete(req.params.id, req.body.permission_id)
+			const deleteRolePermission = await rolePermissionService.delete(req.body.role_title, req.body.permission_id)
 			return deleteRolePermission
 		} catch (error) {
 			return error
