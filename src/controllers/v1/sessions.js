@@ -30,12 +30,15 @@ module.exports = class Sessions {
 					req.body['time_zone'] = req.headers.timezone
 				}
 
+				const notifyUser = req.query.notifyUser ? req.query.notifyUser.toLowerCase() === 'true' : true
+
 				const sessionUpdated = await sessionService.update(
 					req.params.id,
 					req.body,
 					req.decodedToken.id,
 					req.method,
-					req.decodedToken.organization_id
+					req.decodedToken.organization_id,
+					notifyUser
 				)
 
 				return sessionUpdated
@@ -47,7 +50,8 @@ module.exports = class Sessions {
 					req.body,
 					req.decodedToken.id,
 					req.decodedToken.organization_id,
-					isAMentor(req.decodedToken.roles)
+					isAMentor(req.decodedToken.roles),
+					notifyUser
 				)
 
 				return sessionCreated
