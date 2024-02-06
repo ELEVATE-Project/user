@@ -137,7 +137,7 @@ module.exports = class AccountHelper {
 								}
 							)
 
-							roles.push(defaultRole.id)
+							if (!roles.includes(defaultRole.id)) roles.push(defaultRole.id)
 							if (eachRole.title === common.ORG_ADMIN_ROLE) isOrgAdmin = true
 						}
 					})
