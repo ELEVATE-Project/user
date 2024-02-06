@@ -17,12 +17,20 @@ const permissionsQueries = require('@database/queries/permissions')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
 
-async function checkPermissions(roleId, requestPath, requestMethod) {
+async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
 	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
 	if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
-	else api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`)
-	const filter = { role_id: roleId, module: parts[2], api_path: { [Op.in]: api_path } }
+	else
+		api_path.push(
+			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`,
+			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`
+		)
+
+	if (Array.isArray(roleTitle) && !roleTitle.includes(common.PUBLIC_ROLE)) {
+		roleTitle.push(common.PUBLIC_ROLE)
+	}
+	const filter = { role_title: roleTitle, module: parts[2], api_path: { [Op.in]: api_path } }
 	const attributes = ['request_type', 'api_path', 'module']
 	const allowedPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
 	const isPermissionValid = allowedPermissions.some((permission) => {
@@ -61,16 +69,7 @@ module.exports = async function (req, res, next) {
 
 		if (!authHeader) {
 			try {
-				const response = await userRequests.getListOfUserRoles(
-					common.pagination.DEFAULT_PAGE_NO,
-					common.pagination.DEFAULT_PAGE_SIZE,
-					common.PUBLIC_ROLE
-				)
-				const isPermissionValid = await checkPermissions(
-					response.result.data.map((role) => role.id),
-					req.path,
-					req.method
-				)
+				const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
 				if (!isPermissionValid) {
 					throw responses.failureResponse({
 						message: 'PERMISSION_DENIED',
@@ -135,7 +134,7 @@ module.exports = async function (req, res, next) {
 		}
 
 		const isPermissionValid = await checkPermissions(
-			decodedToken.data.roles.map((role) => role.id),
+			decodedToken.data.roles.map((role) => role.title),
 			req.path,
 			req.method
 		)
