@@ -281,6 +281,61 @@ module.exports = {
 				},
 				{
 					role_title: common.MENTOR_ROLE,
+					permission_id: await getPermissionId(
+						'organization',
+						['POST'],
+						'/user/v1/organization/requestOrgRole'
+					),
+					module: 'organization',
+					request_type: ['POST'],
+					api_path: '/user/v1/organization/requestOrgRole',
+				},
+				{
+					role_title: common.ORG_ADMIN_ROLE,
+					permission_id: await getPermissionId(
+						'organization',
+						['POST'],
+						'/user/v1/organization/requestOrgRole'
+					),
+					module: 'organization',
+					request_type: ['POST'],
+					api_path: '/user/v1/organization/requestOrgRole',
+				},
+				{
+					role_title: common.ADMIN_ROLE,
+					permission_id: await getPermissionId(
+						'organization',
+						['POST'],
+						'/user/v1/organization/requestOrgRole'
+					),
+					module: 'organization',
+					request_type: ['POST'],
+					api_path: '/user/v1/organization/requestOrgRole',
+				},
+				{
+					role_title: common.SESSION_MANAGER_ROLE,
+					permission_id: await getPermissionId(
+						'organization',
+						['POST'],
+						'/user/v1/organization/requestOrgRole'
+					),
+					module: 'organization',
+					request_type: ['POST'],
+					api_path: '/user/v1/organization/requestOrgRole',
+				},
+				{
+					role_title: common.USER_ROLE,
+					permission_id: await getPermissionId(
+						'organization',
+						['POST'],
+						'/user/v1/organization/requestOrgRole'
+					),
+					module: 'organization',
+					request_type: ['POST'],
+					api_path: '/user/v1/organization/requestOrgRole',
+				},
+				{
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('organization', ['GET'], '/user/v1/organization/*'),
 					module: 'organization',
 					request_type: ['GET'],
