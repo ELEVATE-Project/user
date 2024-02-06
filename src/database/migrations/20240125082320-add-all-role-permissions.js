@@ -6,45 +6,6 @@ require('dotenv').config()
 const common = require('@constants/common')
 const Permissions = require('@database/models/index').Permission
 
-let matchingResults = {}
-
-const getRoleIds = async () => {
-	try {
-		const response = await userRequests.getListOfUserRoles(
-			common.pagination.DEFAULT_PAGE_NO,
-			common.pagination.DEFAULT_PAGE_SIZE,
-			common.SEARCH
-		)
-		const allRoles = response.result.data
-		if (!allRoles || !Array.isArray(allRoles)) {
-			throw new Error('No roles found.')
-		}
-		const roleIds = allRoles.map((role) => role.id)
-		const titles = [
-			common.ADMIN_ROLE,
-			common.MENTOR_ROLE,
-			common.MENTEE_ROLE,
-			common.ORG_ADMIN_ROLE,
-			common.SESSION_MANAGER_ROLE,
-			common.USER_ROLE,
-			common.PUBLIC_ROLE,
-		]
-		await Promise.all(
-			titles.map(async (title) => {
-				const matchingRole = allRoles.find((role) => role.title === title)
-				if (matchingRole) {
-					matchingResults[title] = matchingRole
-				} else {
-					throw new Error(`Role with title ${title} not found.`)
-				}
-			})
-		)
-		return matchingResults
-	} catch (error) {
-		throw error
-	}
-}
-
 const getPermissionId = async (module, request_type, api_path) => {
 	try {
 		const permission = await Permissions.findOne({
@@ -63,11 +24,9 @@ module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.bulkDelete('role_permission_mapping', null, {})
 		try {
-			await getRoleIds()
-
 			const rolePermissionsData = [
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'admin',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -81,7 +40,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'cloud-services',
 						['POST', 'GET'],
@@ -95,7 +54,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'cloud-services',
 						['POST', 'GET'],
@@ -109,7 +68,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'cloud-services',
 						['POST', 'GET'],
@@ -123,7 +82,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'cloud-services',
 						['POST', 'GET'],
@@ -137,7 +96,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'cloud-services',
 						['POST', 'GET'],
@@ -151,7 +110,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'cloud-services',
 						['POST', 'GET'],
@@ -166,7 +125,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'entity-type',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -181,7 +140,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'entity-type',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -195,7 +154,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
 					module: 'entity-type',
 					request_type: ['POST'],
@@ -205,7 +164,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
 					module: 'entity-type',
 					request_type: ['POST'],
@@ -215,7 +174,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
 					module: 'entity-type',
 					request_type: ['POST'],
@@ -225,7 +184,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
 					module: 'entity-type',
 					request_type: ['POST'],
@@ -235,7 +194,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
 					module: 'entity-type',
 					request_type: ['POST'],
@@ -245,7 +204,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('entity-type', ['POST'], '/mentoring/v1/entity-type/read'),
 					module: 'entity-type',
 					request_type: ['POST'],
@@ -255,7 +214,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'entity',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -270,7 +229,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'entity',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -284,7 +243,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('entity', ['POST'], '/mentoring/v1/entity/read'),
 					module: 'entity',
 					request_type: ['POST'],
@@ -294,7 +253,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('entity', ['POST'], '/mentoring/v1/entity/read'),
 					module: 'entity',
 					request_type: ['POST'],
@@ -304,7 +263,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('entity', ['POST'], '/mentoring/v1/entity/read'),
 					module: 'entity',
 					request_type: ['POST'],
@@ -314,7 +273,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('entity', ['POST'], '/mentoring/v1/entity/read'),
 					module: 'entity',
 					request_type: ['POST'],
@@ -324,7 +283,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('entity', ['POST'], '/mentoring/v1/entity/read'),
 					module: 'entity',
 					request_type: ['POST'],
@@ -334,7 +293,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('entity', ['POST'], '/mentoring/v1/entity/read'),
 					module: 'entity',
 					request_type: ['POST'],
@@ -344,7 +303,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'feedback',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -358,7 +317,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'feedback',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -372,7 +331,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'feedback',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -386,7 +345,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'feedback',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -400,7 +359,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'feedback',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -414,7 +373,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'feedback',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -428,7 +387,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'form',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -443,7 +402,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'form',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -457,7 +416,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('form', ['POST'], '/mentoring/v1/form/read*'),
 					module: 'form',
 					request_type: ['POST'],
@@ -467,7 +426,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('form', ['POST'], '/mentoring/v1/form/read*'),
 					module: 'form',
 					request_type: ['POST'],
@@ -477,7 +436,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('form', ['POST'], '/mentoring/v1/form/read*'),
 					module: 'form',
 					request_type: ['POST'],
@@ -487,7 +446,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('form', ['POST'], '/mentoring/v1/form/read*'),
 					module: 'form',
 					request_type: ['POST'],
@@ -497,7 +456,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('form', ['POST'], '/mentoring/v1/form/read*'),
 					module: 'form',
 					request_type: ['POST'],
@@ -507,7 +466,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('form', ['POST'], '/mentoring/v1/form/read*'),
 					module: 'form',
 					request_type: ['POST'],
@@ -517,7 +476,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('issues', ['POST'], '/mentoring/v1/issues/create'),
 					module: 'issues',
 					request_type: ['POST'],
@@ -527,7 +486,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('issues', ['POST'], '/mentoring/v1/issues/create'),
 					module: 'issues',
 					request_type: ['POST'],
@@ -537,7 +496,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('issues', ['POST'], '/mentoring/v1/issues/create'),
 					module: 'issues',
 					request_type: ['POST'],
@@ -547,7 +506,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('issues', ['POST'], '/mentoring/v1/issues/create'),
 					module: 'issues',
 					request_type: ['POST'],
@@ -557,7 +516,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('issues', ['POST'], '/mentoring/v1/issues/create'),
 					module: 'issues',
 					request_type: ['POST'],
@@ -567,7 +526,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('issues', ['POST'], '/mentoring/v1/issues/create'),
 					module: 'issues',
 					request_type: ['POST'],
@@ -577,7 +536,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'mentees',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -591,7 +550,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'mentees',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -605,7 +564,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'mentees',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -619,7 +578,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'mentees',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -633,7 +592,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'mentees',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -647,7 +606,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'mentees',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -661,7 +620,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -675,7 +634,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -689,7 +648,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE'],
@@ -703,7 +662,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('mentors', ['GET'], '/mentoring/v1/mentors/reports'),
 					module: 'mentors',
 					request_type: ['GET'],
@@ -713,7 +672,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'PUT', 'PATCH'],
@@ -727,7 +686,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -741,7 +700,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -755,7 +714,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -769,7 +728,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -783,7 +742,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -797,7 +756,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'mentors',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -811,7 +770,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'notification',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -826,7 +785,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'notification',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -840,7 +799,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'org-admin',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -855,7 +814,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'org-admin',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -869,7 +828,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'organization',
 						['POST', 'PUT', 'PATCH'],
@@ -883,7 +842,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.PUBLIC_ROLE].id,
+					role_title: common.PUBLIC_ROLE,
 					permission_id: await getPermissionId('platform', ['GET'], '/mentoring/v1/platform/config'),
 					module: 'platform',
 					request_type: ['GET'],
@@ -893,7 +852,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'profile',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -907,7 +866,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'profile',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -921,7 +880,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'profile',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -935,7 +894,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'profile',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -949,7 +908,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'profile',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -963,7 +922,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'profile',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -977,7 +936,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'question-set',
 						['POST', 'PUT', 'PATCH'],
@@ -992,7 +951,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'questions',
 						['POST', 'PUT', 'PATCH'],
@@ -1006,7 +965,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'questions',
 						['POST', 'PUT', 'PATCH'],
@@ -1021,7 +980,7 @@ module.exports = {
 				},
 
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'question-set',
 						['POST', 'PUT', 'PATCH'],
@@ -1035,7 +994,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('questions', ['GET'], '/mentoring/v1/questions/read*'),
 					module: 'questions',
 					request_type: ['GET'],
@@ -1045,7 +1004,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('questions', ['GET'], '/mentoring/v1/questions/read*'),
 					module: 'questions',
 					request_type: ['GET'],
@@ -1055,7 +1014,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('questions', ['GET'], '/mentoring/v1/questions/read*'),
 					module: 'questions',
 					request_type: ['GET'],
@@ -1065,7 +1024,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('questions', ['GET'], '/mentoring/v1/questions/read*'),
 					module: 'questions',
 					request_type: ['GET'],
@@ -1075,7 +1034,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('questions', ['GET'], '/mentoring/v1/questions/read*'),
 					module: 'questions',
 					request_type: ['GET'],
@@ -1085,7 +1044,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('questions', ['GET'], '/mentoring/v1/questions/read*'),
 					module: 'questions',
 					request_type: ['GET'],
@@ -1095,7 +1054,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
 					module: 'question-set',
 					request_type: ['POST'],
@@ -1105,7 +1064,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
 					module: 'question-set',
 					request_type: ['POST'],
@@ -1115,7 +1074,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
 					module: 'question-set',
 					request_type: ['POST'],
@@ -1125,7 +1084,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
 					module: 'question-set',
 					request_type: ['POST'],
@@ -1135,7 +1094,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
 					module: 'question-set',
 					request_type: ['POST'],
@@ -1145,7 +1104,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('question-set', ['POST'], '/mentoring/v1/question-set/read*'),
 					module: 'question-set',
 					request_type: ['POST'],
@@ -1155,7 +1114,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.PUBLIC_ROLE].id,
+					role_title: common.PUBLIC_ROLE,
 					permission_id: await getPermissionId('sessions', ['PATCH'], '/mentoring/v1/sessions/completed*'),
 					module: 'sessions',
 					request_type: ['PATCH'],
@@ -1165,7 +1124,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['GET'],
@@ -1179,7 +1138,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['GET'],
@@ -1193,7 +1152,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('sessions', ['POST'], '/mentoring/v1/sessions/start*'),
 					module: 'sessions',
 					request_type: ['POST'],
@@ -1203,7 +1162,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('sessions', ['POST'], '/mentoring/v1/sessions/start*'),
 					module: 'sessions',
 					request_type: ['POST'],
@@ -1213,7 +1172,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('sessions', ['POST'], '/mentoring/v1/sessions/update*'),
 					module: 'sessions',
 					request_type: ['POST'],
@@ -1223,7 +1182,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('sessions', ['POST'], '/mentoring/v1/sessions/update*'),
 					module: 'sessions',
 					request_type: ['POST'],
@@ -1233,7 +1192,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.PUBLIC_ROLE].id,
+					role_title: common.PUBLIC_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST'],
@@ -1247,7 +1206,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1261,7 +1220,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1275,7 +1234,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1289,7 +1248,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1303,7 +1262,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1317,7 +1276,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1331,7 +1290,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId('users', ['GET'], '/mentoring/v1/users/*'),
 					module: 'users',
 					request_type: ['GET'],
@@ -1341,7 +1300,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId('users', ['GET'], '/mentoring/v1/users/*'),
 					module: 'users',
 					request_type: ['GET'],
@@ -1351,7 +1310,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId('users', ['GET'], '/mentoring/v1/users/*'),
 					module: 'users',
 					request_type: ['GET'],
@@ -1361,7 +1320,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('users', ['GET'], '/mentoring/v1/users/*'),
 					module: 'users',
 					request_type: ['GET'],
@@ -1371,7 +1330,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId('users', ['GET'], '/mentoring/v1/users/*'),
 					module: 'users',
 					request_type: ['GET'],
@@ -1381,7 +1340,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('users', ['GET'], '/mentoring/v1/users/*'),
 					module: 'users',
 					request_type: ['GET'],
@@ -1391,7 +1350,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'permissions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1405,7 +1364,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'modules',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1419,7 +1378,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1433,7 +1392,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1447,7 +1406,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1461,7 +1420,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('profile', ['GET'], '/mentoring/v1/profile/filterList'),
 					module: 'profile',
 					request_type: ['GET'],
@@ -1471,7 +1430,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'manage-sessions',
 						['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
@@ -1485,7 +1444,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId('mentees', ['GET'], '/mentoring/v1/mentees/list'),
 					module: 'mentees',
 					request_type: ['GET'],
@@ -1495,7 +1454,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['DELETE'],
@@ -1509,7 +1468,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'sessions',
 						['DELETE'],
@@ -1523,7 +1482,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTEE_ROLE].id,
+					role_title: common.MENTEE_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST'],
@@ -1537,7 +1496,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.MENTOR_ROLE].id,
+					role_title: common.MENTOR_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST'],
@@ -1551,7 +1510,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.USER_ROLE].id,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST'],
@@ -1565,7 +1524,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ADMIN_ROLE].id,
+					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST'],
@@ -1579,7 +1538,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.ORG_ADMIN_ROLE].id,
+					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST'],
@@ -1593,7 +1552,7 @@ module.exports = {
 					created_by: 0,
 				},
 				{
-					role_id: matchingResults[common.SESSION_MANAGER_ROLE].id,
+					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'role-permission-mapping',
 						['POST'],
@@ -1606,9 +1565,6 @@ module.exports = {
 					updated_at: new Date(),
 					created_by: 0,
 				},
-				// /mentoring/v1/manage-sessions/ * : Sessionmanager
-				//   /mentoring/v1/mentees/list : Sessionmanager
-				//    /mentoring/v1/sessions/removeMentees : SessionManager , Mentor
 			]
 
 			await queryInterface.bulkInsert('role_permission_mapping', rolePermissionsData)

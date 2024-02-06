@@ -62,8 +62,8 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const fetchrole = menteeDetails.data.result.roles
-		const filter = { role_id: fetchrole }
+		const titles = menteeDetails.data.result.user_roles.map((role) => role.title)
+		const filter = { role_title: titles }
 		const permissionAndModules = await rolePermissionMappingQueries.findAll(filter)
 		const permissionsByModule = {}
 

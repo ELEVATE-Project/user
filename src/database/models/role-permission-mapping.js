@@ -2,8 +2,8 @@ module.exports = (sequelize, DataTypes) => {
 	const RolePermission = sequelize.define(
 		'RolePermission',
 		{
-			role_id: {
-				type: DataTypes.INTEGER,
+			role_title: {
+				type: DataTypes.STRING,
 				primaryKey: true,
 				allowNull: false,
 			},
