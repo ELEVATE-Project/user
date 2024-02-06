@@ -122,21 +122,27 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				role.forEach(async (eachRole) => {
-					if (eachRole.title === common.ORG_ADMIN_ROLE) {
-						const defaultRole = await roleQueries.findOne(
-							{ title: process.env.DEFAULT_ROLE },
-							{
-								attributes: {
-									exclude: ['created_at', 'updated_at', 'deleted_at'],
-								},
-							}
-						)
+				await Promise.all(
+					role.map(async (eachRole) => {
+						if (
+							eachRole.title === common.ORG_ADMIN_ROLE ||
+							eachRole.title === common.SESSION_MANAGER_ROLE
+						) {
+							const defaultRole = await roleQueries.findOne(
+								{ title: process.env.DEFAULT_ROLE },
+								{
+									attributes: {
+										exclude: ['created_at', 'updated_at', 'deleted_at'],
+									},
+								}
+							)
 
-						roles.push(defaultRole.id)
-						isOrgAdmin = true
-					}
-				})
+							roles.push(defaultRole.id)
+							if (eachRole.title === common.ORG_ADMIN_ROLE) isOrgAdmin = true
+						}
+					})
+				)
+
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
@@ -180,6 +186,7 @@ module.exports = class AccountHelper {
 
 			delete bodyData.role
 			bodyData.email = encryptedEmailId
+
 			const insertedUser = await userQueries.create(bodyData)
 
 			const userCredentialsBody = {
@@ -243,6 +250,8 @@ module.exports = class AccountHelper {
 				if (mentorRoleExists) {
 					const updatedRoleList = roleData.filter((role) => role.title !== common.MENTEE_ROLE)
 					roleArray = _.map(updatedRoleList, 'title')
+				} else {
+					roleArray = _.map(roleData, 'title')
 				}
 			}
 
