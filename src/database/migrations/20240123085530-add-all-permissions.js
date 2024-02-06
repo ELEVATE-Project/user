@@ -12,8 +12,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/user/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'user_share',
@@ -21,8 +19,6 @@ module.exports = {
 					request_type: ['GET'],
 					api_path: '/user/v1/user/share*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'user_role_default_list_permissions',
@@ -30,8 +26,6 @@ module.exports = {
 					request_type: ['GET'],
 					api_path: '/user/v1/user-role/default',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'user_role_permissions',
@@ -39,8 +33,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/user-role/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'form_permissions',
@@ -48,8 +40,13 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/form/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
+				},
+				{
+					code: 'read_form_permissions',
+					module: 'form',
+					request_type: ['POST'],
+					api_path: '/user/v1/form/read*',
+					status: 'ACTIVE',
 				},
 				{
 					code: 'cloud_service_permissions',
@@ -57,8 +54,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/cloud-services/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'create_organization',
@@ -66,8 +61,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/organization/create',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'update_organization',
@@ -75,8 +68,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/organization/update*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'request_organization_role',
@@ -84,8 +75,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/organization/requestOrgRole',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'read_list_organization',
@@ -93,8 +82,6 @@ module.exports = {
 					request_type: ['GET'],
 					api_path: '/user/v1/organization/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'entity_type_permissions',
@@ -102,17 +89,13 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/entity-type/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'read_entity_type',
 					module: 'entity-type',
-					request_type: ['GET'],
+					request_type: ['POST'],
 					api_path: '/user/v1/entity-type/read',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'entity_permissions',
@@ -120,8 +103,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'PUT', 'PATCH'],
 					api_path: '/user/v1/entity/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'read_entity',
@@ -129,8 +110,6 @@ module.exports = {
 					request_type: ['GET'],
 					api_path: '/user/v1/entity/read*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'org_admin_permissions',
@@ -138,8 +117,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/org-admin/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'notification_permissions',
@@ -147,8 +124,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/notification/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'account_permissions',
@@ -156,8 +131,6 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'GET', 'PUT', 'PATCH'],
 					api_path: '/user/v1/account/*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'logout_account_permissions',
@@ -165,8 +138,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/account/logout',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'list_account_permissions',
@@ -174,8 +145,6 @@ module.exports = {
 					request_type: ['GET'],
 					api_path: '/user/v1/account/list',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'search_account_permissions',
@@ -183,8 +152,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/account/search',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'delete_admin',
@@ -192,8 +159,6 @@ module.exports = {
 					request_type: ['DELETE'],
 					api_path: '/user/v1/admin/delete*',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'deactivate_org_by_id',
@@ -201,8 +166,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/admin/deactivateOrg/:id',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'create_admin_permissions',
@@ -210,8 +173,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/admin/create',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'login_admin_permissions',
@@ -219,8 +180,6 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/admin/login',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 				{
 					code: 'addorgadmin_permissions',
@@ -228,17 +187,31 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/admin/addOrgAdmin',
 					status: 'ACTIVE',
-					created_at: new Date(),
-					updated_at: new Date(),
 				},
 			]
-			await queryInterface.bulkInsert('permissions', permissionsData)
+
+			// Batch insert permissions
+			await queryInterface.bulkInsert(
+				'permissions',
+				permissionsData.map((permission) => ({
+					...permission,
+					created_at: new Date(),
+					updated_at: new Date(),
+				}))
+			)
 		} catch (error) {
-			console.log(error)
+			console.error('Error in migration:', error)
+			throw error
 		}
 	},
 
-	down: async (queryInterface, Sequelize) => {
-		await queryInterface.bulkDelete('permissions', null, {})
+	async down(queryInterface, Sequelize) {
+		try {
+			// Rollback migration by deleting all permissions
+			await queryInterface.bulkDelete('permissions', null, {})
+		} catch (error) {
+			console.error('Error in rollback migration:', error)
+			throw error
+		}
 	},
 }

@@ -15,14 +15,25 @@ const rolePermissionMappingQueries = require('@database/queries/role-permission-
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 
-async function checkPermissions(roleId, requestPath, requestMethod) {
+async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
 	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+
 	if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
-	else api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`)
-	const filter = { role_id: roleId, module: parts[2], api_path: { [Op.in]: api_path } }
+	else
+		api_path.push(
+			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`,
+			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`
+		)
+
+	if (Array.isArray(roleTitle) && !roleTitle.includes(common.PUBLIC_ROLE)) {
+		roleTitle.push(common.PUBLIC_ROLE)
+	}
+
+	const filter = { role_title: roleTitle, module: parts[2], api_path: { [Op.in]: api_path } }
 	const attributes = ['request_type', 'api_path', 'module']
-	const allowedPermissions = await rolePermissionMappingQueries.find(filter, attributes)
+	const allowedPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
+
 	const isPermissionValid = allowedPermissions.some((permission) => {
 		return permission.request_type.includes(requestMethod)
 	})
@@ -57,10 +68,7 @@ module.exports = async function (req, res, next) {
 
 		if (!authHeader) {
 			try {
-				const filters = { title: common.PUBLIC_ROLE }
-				const attribute = ['id']
-				const roleId = await roleQueries.findAllRoles(filters, attribute)
-				const isPermissionValid = await checkPermissions(roleId.rows[0].id, req.path, req.method)
+				const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
 
 				if (!isPermissionValid) {
 					throw responses.failureResponse({
@@ -71,6 +79,7 @@ module.exports = async function (req, res, next) {
 				}
 				return next()
 			} catch (error) {
+				console.error(error)
 				throw unAuthorizedResponse
 			}
 		}
@@ -130,7 +139,7 @@ module.exports = async function (req, res, next) {
 		}
 
 		const isPermissionValid = await checkPermissions(
-			decodedToken.data.roles.map((role) => role.id),
+			decodedToken.data.roles.map((role) => role.title),
 			req.path,
 			req.method
 		)
