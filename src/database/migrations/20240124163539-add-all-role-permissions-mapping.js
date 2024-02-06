@@ -440,28 +440,7 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/entity-type/read',
 				},
-				{
-					role_title: common.MENTOR_ROLE,
-					permission_id: await getPermissionId(
-						'entity',
-						['POST', 'DELETE', 'PUT', 'PATCH'],
-						'/user/v1/entity/*'
-					),
-					module: 'entity',
-					request_type: ['POST', 'DELETE', 'PUT', 'PATCH'],
-					api_path: '/user/v1/entity/*',
-				},
-				{
-					role_title: common.MENTEE_ROLE,
-					permission_id: await getPermissionId(
-						'entity',
-						['POST', 'DELETE', 'PUT', 'PATCH'],
-						'/user/v1/entity/*'
-					),
-					module: 'entity',
-					request_type: ['POST', 'DELETE', 'PUT', 'PATCH'],
-					api_path: '/user/v1/entity/*',
-				},
+
 				{
 					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
@@ -473,30 +452,9 @@ module.exports = {
 					request_type: ['POST', 'DELETE', 'PUT', 'PATCH'],
 					api_path: '/user/v1/entity/*',
 				},
-				{
-					role_title: common.USER_ROLE,
-					permission_id: await getPermissionId(
-						'entity',
-						['POST', 'DELETE', 'PUT', 'PATCH'],
-						'/user/v1/entity/*'
-					),
-					module: 'entity',
-					request_type: ['POST', 'DELETE', 'PUT', 'PATCH'],
-					api_path: '/user/v1/entity/*',
-				},
+
 				{
 					role_title: common.ADMIN_ROLE,
-					permission_id: await getPermissionId(
-						'entity',
-						['POST', 'DELETE', 'PUT', 'PATCH'],
-						'/user/v1/entity/*'
-					),
-					module: 'entity',
-					request_type: ['POST', 'DELETE', 'PUT', 'PATCH'],
-					api_path: '/user/v1/entity/*',
-				},
-				{
-					role_title: common.SESSION_MANAGER_ROLE,
 					permission_id: await getPermissionId(
 						'entity',
 						['POST', 'DELETE', 'PUT', 'PATCH'],
