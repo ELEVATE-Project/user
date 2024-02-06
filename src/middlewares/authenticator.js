@@ -23,7 +23,6 @@ async function checkPermissions(roleId, requestPath, requestMethod) {
 	const filter = { role_id: roleId, module: parts[2], api_path: { [Op.in]: api_path } }
 	const attributes = ['request_type', 'api_path', 'module']
 	const allowedPermissions = await rolePermissionMappingQueries.find(filter, attributes)
-	console.log(allowedPermissions)
 	const isPermissionValid = allowedPermissions.some((permission) => {
 		return permission.request_type.includes(requestMethod)
 	})
