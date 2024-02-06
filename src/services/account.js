@@ -54,6 +54,7 @@ module.exports = class AccountHelper {
 					[Op.ne]: null,
 				},
 			})
+
 			if (user) {
 				return responses.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -80,7 +81,6 @@ module.exports = class AccountHelper {
 				roles = []
 
 			let invitedUserMatch = false
-
 			const invitedUserId = await UserCredentialQueries.findOne(
 				{
 					email: encryptedEmailId,
@@ -122,27 +122,24 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				await Promise.all(
-					role.map(async (eachRole) => {
-						if (
-							eachRole.title === common.ORG_ADMIN_ROLE ||
-							eachRole.title === common.SESSION_MANAGER_ROLE
-						) {
-							const defaultRole = await roleQueries.findOne(
-								{ title: process.env.DEFAULT_ROLE },
-								{
-									attributes: {
-										exclude: ['created_at', 'updated_at', 'deleted_at'],
-									},
-								}
-							)
-
-							if (!roles.includes(defaultRole.id)) roles.push(defaultRole.id)
-							if (eachRole.title === common.ORG_ADMIN_ROLE) isOrgAdmin = true
-						}
-					})
+				const defaultRole = await roleQueries.findOne(
+					{ title: process.env.DEFAULT_ROLE },
+					{
+						attributes: {
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
+						},
+					}
 				)
 
+				let roleTitles = _.map(role, 'title')
+				if (!roleTitles.includes(common.MENTOR_ROLE)) {
+					roles.push(defaultRole.id)
+				}
+				if (roleTitles.includes(common.ORG_ADMIN_ROLE)) {
+					isOrgAdmin = true
+				}
+
+				roles = _.uniq(roles)
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
@@ -162,7 +159,6 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
-
 				role = await roleQueries.findOne(
 					{ title: process.env.DEFAULT_ROLE },
 					{
@@ -247,11 +243,9 @@ module.exports = class AccountHelper {
 			let roleArray = []
 			if (roleData.length > 0) {
 				const mentorRoleExists = roleData.some((role) => role.title === common.MENTOR_ROLE)
+				roleArray = _.map(roleData, 'title')
 				if (mentorRoleExists) {
-					const updatedRoleList = roleData.filter((role) => role.title !== common.MENTEE_ROLE)
-					roleArray = _.map(updatedRoleList, 'title')
-				} else {
-					roleArray = _.map(roleData, 'title')
+					_.remove(roleArray, (title) => title === common.MENTEE_ROLE)
 				}
 			}
 
