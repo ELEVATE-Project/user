@@ -588,7 +588,6 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-			const fetchrole = mentorProfile.roles
 			const titles = mentorProfile.user_roles.map((role) => role.title)
 			const filter = { role_title: titles }
 			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter)
