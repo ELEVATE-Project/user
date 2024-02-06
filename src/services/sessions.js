@@ -738,7 +738,7 @@ module.exports = class SessionsHelper {
 									unitOfTime: common.UNIT_OF_TIME,
 									newSessionDuration: Math.round(revisedDuration),
 									sessionDuration: Math.round(oldSessionDuration),
-									sessionType: sessionDetail.title,
+									sessionType: sessionDetail.type,
 									sessionPlatform:
 										sessionDetail.meeting_info && sessionDetail.meeting_info.platform
 											? sessionDetail.meeting_info.platform
@@ -826,6 +826,7 @@ module.exports = class SessionsHelper {
 				})
 				if (sessionAttendee) {
 					sessionDetails.is_enrolled = true
+					sessionDetails.enrolment_type = sessionAttendee.type
 					isInvited = sessionAttendee.type === common.INVITED
 				}
 			}
@@ -1049,15 +1050,15 @@ module.exports = class SessionsHelper {
 	 * @returns {JSON} 						- Enroll session.
 	 */
 
-	static async enroll(sessionId, userTokenData, timeZone, isSelfEnrolled = true, session = {}, isAMentor) {
+	static async enroll(sessionId, userTokenData, timeZone, isAMentor, isSelfEnrolled = true, session = {}) {
 		try {
 			let email
 			let name
 			let userId
 			let enrollmentType
 			let emailTemplateCode = process.env.MENTEE_SESSION_ENROLLMENT_EMAIL_TEMPLATE
-			// If entrolled by the mentee get email and name from user service via api call.
-			// Else it will be avalable in userTokenData
+			// If enrolled by the mentee get email and name from user service via api call.
+			// Else it will be available in userTokenData
 			if (isSelfEnrolled) {
 				const userDetails = (await userRequests.details('', userTokenData.id)).data.result
 				userId = userDetails.id
@@ -1133,7 +1134,7 @@ module.exports = class SessionsHelper {
 			let elapsedMinutes = duration.asMinutes()
 
 			if (templateData) {
-				// Push successfull enrollment to session in kafka
+				// Push successful enrollment to session in kafka
 				const payload = {
 					type: 'email',
 					email: {
@@ -2102,7 +2103,7 @@ module.exports = class SessionsHelper {
 
 			const enrollPromises = menteeDetails.map((menteeData) => {
 				let isAMentor = utils.isAMentor(menteeData.roles)
-				return this.enroll(sessionId, menteeData, timeZone, false, sessionDetails, isAMentor)
+				return this.enroll(sessionId, menteeData, timeZone, isAMentor, false, sessionDetails)
 					.then((response) => {
 						if (response.statusCode == httpStatusCode.created) {
 							// Enrolled successfully

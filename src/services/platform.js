@@ -4,19 +4,24 @@ const responses = require('@helpers/responses')
 
 module.exports = class platformHelper {
 	/**
-	 * Get app related config details
+	 * Get application configuration.
+	 *
+	 * @static
+	 * @async
 	 * @method
 	 * @name getConfig
-	 * @returns {JSON} - returns success response.
+	 * @returns {Promise<Object>} - A promise that resolves with the application configuration.
+	 * @throws {Error} - Throws an error if there's an issue during configuration retrieval.
 	 */
 	static async getConfig() {
 		try {
 			let config = {
-				meetingPlatform: process.env.DEFAULT_MEETING_SERVICE,
-				reportIssue: {
+				meeting_platform: process.env.DEFAULT_MEETING_SERVICE,
+				report_issue: {
 					to: process.env.SUPPORT_EMAIL_ID,
 					subject: common.REPORT_EMAIL_SUBJECT,
 				},
+				session_mentee_limit: process.env.SESSION_MENTEE_LIMIT,
 			}
 
 			return responses.successResponse({
