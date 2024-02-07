@@ -188,6 +188,13 @@ module.exports = {
 					api_path: '/user/v1/admin/addOrgAdmin',
 					status: 'ACTIVE',
 				},
+				{
+					code: 'list_user_role_permissions',
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+					status: 'ACTIVE',
+				},
 			]
 
 			// Batch insert permissions

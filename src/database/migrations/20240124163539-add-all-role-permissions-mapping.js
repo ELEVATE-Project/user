@@ -711,6 +711,48 @@ module.exports = {
 					request_type: ['POST'],
 					api_path: '/user/v1/admin/login',
 				},
+				{
+					role_title: common.MENTOR_ROLE,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/list'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+				},
+				{
+					role_title: common.MENTEE_ROLE,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/list'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+				},
+				{
+					role_title: common.ORG_ADMIN_ROLE,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/list'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+				},
+				{
+					role_title: common.USER_ROLE,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/list'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+				},
+				{
+					role_title: common.ADMIN_ROLE,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/list'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+				},
+				{
+					role_title: common.SESSION_MANAGER_ROLE,
+					permission_id: await getPermissionId('user-role', ['GET'], '/user/v1/user-role/list'),
+					module: 'user-role',
+					request_type: ['GET'],
+					api_path: '/user/v1/user-role/list',
+				},
 			])
 
 			await queryInterface.bulkInsert(
