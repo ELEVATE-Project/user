@@ -245,7 +245,7 @@ module.exports = {
 				{
 					code: 'sessions_completed_permissions',
 					module: 'sessions',
-					request_type: ['PATCH'],
+					request_type: ['PATCH', 'GET'],
 					api_path: '/mentoring/v1/sessions/completed*',
 					status: 'ACTIVE',
 					created_at: new Date(),

@@ -1115,9 +1115,13 @@ module.exports = {
 				},
 				{
 					role_title: common.PUBLIC_ROLE,
-					permission_id: await getPermissionId('sessions', ['PATCH'], '/mentoring/v1/sessions/completed*'),
+					permission_id: await getPermissionId(
+						'sessions',
+						['PATCH', 'GET'],
+						'/mentoring/v1/sessions/completed*'
+					),
 					module: 'sessions',
-					request_type: ['PATCH'],
+					request_type: ['PATCH', 'GET'],
 					api_path: '/mentoring/v1/sessions/completed*',
 					created_at: new Date(),
 					updated_at: new Date(),
