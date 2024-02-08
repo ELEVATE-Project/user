@@ -383,7 +383,7 @@ module.exports = class OrgAdminService {
 	 */
 	static async updateOrganization(bodyData) {
 		try {
-			orgId = bodyData.organization_id
+			const orgId = bodyData.organization_id
 			console.log('UPDATE ORGANIZATION: BODY DATA: ', bodyData)
 			// Get organization details
 			let organizationDetails = await userRequests.fetchDefaultOrgDetails(orgId)
@@ -433,7 +433,7 @@ module.exports = class OrgAdminService {
 	 * @param {Object} bodyData
 	 * @returns {JSON} - User data.
 	 */
-	static async deactivateUpcomingSession(req) {
+	static async deactivateUpcomingSession(userIds) {
 		try {
 			let deactivatedIdsList = []
 			let failedUserIds = []
