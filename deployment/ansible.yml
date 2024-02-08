@@ -50,7 +50,7 @@
       args:
         chdir: "{{ release_path }}"
       register: latest_tag
-    - debug: " latest tag : {{ latest_tag.stdout }} "
+    - debug: msg=" latest tag : {{ latest_tag }} "
     
 
     - name: Extract numeric part of tag
@@ -63,7 +63,7 @@
       set_fact:
         next_tag_numeric: "{{ current_tag_numeric | default(0) + 1 }}"
       register: next_tag_numeric
-    - debug: msg=" tag {{ next_tag_numeric }} "
+    - debug: msg=" Incr tag {{ next_tag_numeric }} "
 
     - name: Create Git Tag
       shell: "git remote set-url origin https://{{ GIT_USER_NAME }}:{{ GIT_TOKEN }}@github.com/ELEVATE-Project/notification.git
