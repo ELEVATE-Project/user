@@ -1,14 +1,14 @@
 const { request, logIn, logError } = require('@commonTests')
 let responseSchema = require('./responseSchema')
 
-describe('/user/v1/userRole', function () {
+describe('/user/v1/user-role', function () {
 	let userDetails
 	beforeAll(async () => {
 		userDetails = await logIn()
 	})
 
 	it('/create', async () => {
-		let res = await request.post('/user/v1/userRole/create').send({
+		let res = await request.post('/user/v1/user-role/create').send({
 			title: 'system_admin',
 			user_type: 1,
 			status: 'ACTIVE',
@@ -22,7 +22,7 @@ describe('/user/v1/userRole', function () {
 	})
 
 	it('/update', async () => {
-		let res = await request.post('/user/v1/userRole/update/7').send({
+		let res = await request.post('/user/v1/user-role/update/7').send({
 			title: 'system_adm',
 			user_type: 1,
 			status: 'ACTIVE',
@@ -36,7 +36,7 @@ describe('/user/v1/userRole', function () {
 	})
 
 	it('/delete', async () => {
-		let res = await request.post('/user/v1/userRole/delete/7')
+		let res = await request.post('/user/v1/user-role/delete/7')
 
 		logError(res)
 		expect(res.statusCode).toBe(202)
@@ -45,7 +45,7 @@ describe('/user/v1/userRole', function () {
 
 	it('/list', async () => {
 		let res = await request
-			.get('/user/v1/userRole/list')
+			.get('/user/v1/user-role/list')
 			.query({ page: 1, limit: 10, code: 'system', organization_id: 1 })
 
 		logError(res)
@@ -55,7 +55,7 @@ describe('/user/v1/userRole', function () {
 
 	it('/default', async () => {
 		let res = await request
-			.get('/user/v1/userRole/default')
+			.get('/user/v1/user-role/default')
 			.query({ page: 1, limit: 10, code: 'system', organization_id: 1 })
 
 		logError(res)

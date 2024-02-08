@@ -27,7 +27,6 @@ paths:
          - Then Endpoint for creating user `/user/v1/account/create` 
          - It is mandatory to provide values for parameter marked with `required` 
          - Mandatory parameter cannot be empty or null
-
       requestBody:
         required: true
         description: Request body consist of metadata and accepts payload as JSON
@@ -2207,26 +2206,25 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - Org Admin APIs
+      tags: []
       parameters:
         - name: X-auth-token
           in: header
           description: Access token of the org admin.
           required: true
-          schema:
+          schema: &ref_9
             type: string
         - name: page
           in: query
           description: Page number for pagination.
           required: true
-          schema:
+          schema: &ref_10
             type: integer
         - name: limit
           in: query
           description: Number of items per page.
           required: true
-          schema:
+          schema: &ref_11
             type: integer
         - name: status
           in: query
@@ -2400,8 +2398,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - User Roles APIs
+      tags: []
       parameters:
         - name: X-auth-token
           in: header
@@ -2629,6 +2626,673 @@ paths:
                     meta:
                       formsVersion: []
                       correlation: 645c901e-a7db-49a3-8d4c-dfc4f0b6dadb
+  /user/v1/permissions/create:
+    post:
+      summary: Create Permissions
+      description: >
+        Create permissions for users.
+
+        - Endpoint: `/user/v1/permissions/create`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags: &ref_6 []
+      parameters: &ref_13
+        - name: X-auth-token
+          in: header
+          description: Access token of the admin.
+          required: true
+          schema: *ref_2
+      requestBody: &ref_7
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+                  description: unique permission name
+                module:
+                  type: string
+                  description: module name
+                request_type:
+                  type: array
+                  items:
+                    type: string
+                  description: request types of the api
+                api_path:
+                  type: string
+                  description: permission api path
+                status:
+                  type: string
+                  description: status of the permission
+              required:
+                - code
+                - module
+                - request_type
+                - api_path
+            examples:
+              example1:
+                value:
+                  code: ssss
+                  module: ssss
+                  request_type:
+                    - POST
+                  api_path: /mentoring/v1/sessions/sections/
+                  status: ACTIVE
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: &ref_8
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      Id:
+                        type: number
+                      status:
+                        type: string
+                      module:
+                        type: string
+                      request_type:
+                        type: array
+                        items:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: PERMISSION_CREATED_SUCCESSFULLY
+                    result:
+                      Id: 40
+                      status: ACTIVE
+                      module: ssss
+                      request_type:
+                        - POST
+                    meta:
+                      correlation: 7961f058-f152-4dc2-8a3d-081183f06242
+                      meetingPlatform: BBB
+  /user/v1/permissions/update/{id}:
+    post:
+      summary: Update Permissions
+      description: >
+        Create permissions for users.
+
+        - Endpoint: `/user/v1/permissions/update`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags: *ref_6
+      parameters: &ref_12
+        - name: X-auth-token
+          in: header
+          description: Access token of the admin.
+          required: true
+          schema: *ref_2
+      requestBody: *ref_7
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema: *ref_8
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: PERMISSION_UPDATED_SUCCESSFULLY
+                    result:
+                      Id: 40
+                      status: ACTIVE
+                      module: ssss
+                      request_type:
+                        - POST
+                    meta:
+                      correlation: 7c47fa4b-605c-49d6-9cb4-baf496de91ac
+                      meetingPlatform: BBB
+  /user/v1/permissions/list?page={page}&limit={limit}&search={search}:
+    get:
+      summary: Permissions List
+      description: >
+        Get a list of permissions.
+
+        - Endpoint: `/user/v1/permissions/list`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags: []
+      parameters: &ref_14
+        - name: X-auth-token
+          in: header
+          description: Access token of the admin.
+          required: true
+          schema: *ref_9
+        - name: page
+          in: query
+          description: Page number for pagination.
+          required: false
+          schema: *ref_10
+        - name: limit
+          in: query
+          description: Number of items per page.
+          required: false
+          schema: *ref_11
+        - in: query
+          name: search
+          description: search on code
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      results:
+                        type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: number
+                                code:
+                                  type: string
+                                module:
+                                  type: string
+                                request_type:
+                                  type: array
+                                  items:
+                                    type: string
+                                api_path:
+                                  type: string
+                                status:
+                                  type: string
+                          count:
+                            type: number
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permissions fetched successfully
+                    result:
+                      results:
+                        data:
+                          - id: 3
+                            code: read_modules_list
+                            module: modules
+                            request_type:
+                              - GET
+                            api_path: /mentoring/v1/modules/list
+                            status: ACTIVE
+                        count: 1
+                    meta:
+                      correlation: 0e36b1d1-adcf-4c5e-812a-1ad1d00a9163
+                      meetingPlatform: BBB
+  /user/v1/permissions/delete/{id}:
+    delete:
+      summary: Delete Permissions
+      description: >
+        Create permissions for users.
+
+        - Endpoint: `/user/v1/permissions/delete`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags: *ref_6
+      parameters: *ref_12
+      requestBody: &ref_15
+        required: true
+      responses:
+        '202':
+          description: OK
+          content:
+            application/json:
+              schema: &ref_16
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties: {}
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permission deleted successfully
+                    result: {}
+                    meta:
+                      correlation: a3f7cde4-83f2-4143-a5c4-7e3291085cb4
+                      meetingPlatform: BBB
+  /user/v1/modules/create:
+    post:
+      summary: Create Modules
+      description: >
+        Create modules for users.
+
+        - Endpoint: `/user/v1/modules/create`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags: []
+      parameters: *ref_13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+              required:
+                - code
+            examples:
+              example1:
+                value:
+                  code: systemadmin
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      Id:
+                        type: number
+                      code:
+                        type: string
+                      status:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: MODULES_CREATED_SUCCESSFULLY
+                    result:
+                      Id: 6
+                      code: systemadmin
+                      status: ACTIVE
+                    meta:
+                      correlation: 39c77b7e-5fd8-4806-8602-20604fdb7f42
+                      meetingPlatform: BBB
+  /user/v1/modules/update/{id}:
+    post:
+      summary: Update Modules
+      description: >
+        Create modules for users.
+
+        - Endpoint: `/user/v1/modules/update`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags:
+        - Modules
+      parameters: *ref_12
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                code:
+                  type: string
+              required:
+                - code
+            examples:
+              example1:
+                value:
+                  code: allsessionss
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      status:
+                        type: string
+                      code:
+                        type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: MODULES_UPDATED_SUCCESSFULLY
+                    result:
+                      id: 6
+                      status: ACTIVE
+                      code: allsessionss
+                    meta:
+                      correlation: 17c9e91d-5b08-4db0-9ed6-627a803c804b
+                      meetingPlatform: BBB
+  /user/v1/modules/list?page={page}&limit={limit}&search={search}:
+    get:
+      summary: Modules List
+      description: >
+        Get a list of modules.
+
+        - Endpoint: `/user/v1/modules/list`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags:
+        - Modules
+      parameters: *ref_14
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: number
+                            code:
+                              type: string
+                            status:
+                              type: string
+                          required:
+                            - id
+                            - code
+                            - status
+                      count:
+                        type: number
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module fetched successfully
+                    result:
+                      data:
+                        - id: 6
+                          code: adminsystem
+                          status: ACTIVE
+                        - id: 2
+                          code: manage_session
+                          status: ACTIVE
+                        - id: 4
+                          code: modules
+                          status: ACTIVE
+                        - id: 5
+                          code: system
+                          status: ACTIVE
+                      count: 4
+                    meta:
+                      correlation: 4cbb42f7-ed92-41a1-b93d-d689121cda08
+                      meetingPlatform: BBB
+  /user/v1/modules/delete/{id}:
+    delete:
+      summary: Delete Modules
+      description: >
+        Create modules for users.
+
+        - Endpoint: `/user/v1/modules/delete`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags: []
+      parameters: *ref_12
+      requestBody: *ref_15
+      responses:
+        '202':
+          description: OK
+          content:
+            application/json:
+              schema: *ref_16
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Module deleted successfully
+                    result: {}
+                    meta:
+                      correlation: 471d834a-4954-4564-ae91-6a1f24bec1e5
+                      meetingPlatform: BBB
+  /user/v1/rolePermissionMapping/create/{role_id}:
+    post:
+      summary: Create Role Permissions Mapping
+      description: >
+        Create rolePermissionMapping for users.
+
+        - Endpoint: `/user/v1/rolePermissionMapping/create`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags:
+        - RolePermissionMapping
+      parameters: *ref_13
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                permission_id:
+                  type: number
+            examples:
+              example1:
+                value:
+                  permission_id: 1
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      roleId:
+                        type: number
+                      permissionId:
+                        type: number
+                      module:
+                        type: string
+                      request_type:
+                        type: array
+                        items:
+                          type: string
+                  meta:
+                    type: object
+                    properties:
+                      correlation:
+                        type: string
+                      meetingPlatform:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Permission added to the role
+                    result:
+                      roleId: 2
+                      permissionId: 1
+                      module: mentees
+                      request_type:
+                        - GET
+                    meta:
+                      correlation: ad793d7f-3bb1-4bbd-9d59-bdf79dff5f86
+                      meetingPlatform: BBB
+  /user/v1/rolePermissionMapping/delete/{role_id}:
+    post:
+      summary: Delete rolePermissionMapping
+      description: >
+        Create rolePermissionMapping for users.
+
+        - Endpoint: `/user/v1/rolePermissionMapping/delete`.
+
+        - It is mandatory to provide values for parameters marked with
+        `required`.
+
+        - Mandatory parameters cannot be empty or null.
+      tags:
+        - RolePermissionMapping
+      parameters: *ref_12
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $schema: http://json-schema.org/draft-04/schema#
+              type: object
+              properties:
+                permission_id:
+                  type: number
+              required:
+                - permission_id
+            examples:
+              example1:
+                value:
+                  permission_id: 1
+      responses:
+        '202':
+          description: OK
+          content:
+            application/json:
+              schema: *ref_16
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY
+                    result: {}
+                    meta:
+                      correlation: 4373a59a-ca10-4932-b7ce-8675009ef388
+                      meetingPlatform: BBB
 components:
   schemas:
     user:
@@ -5020,6 +5684,21 @@ components:
       in: header
 tags:
   - name: User Roles APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Permissions
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Modules
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: RolePermissionMapping
     description: ''
     externalDocs:
       description: ''
