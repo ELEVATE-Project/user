@@ -43,12 +43,12 @@
     - name: get new tags from remote
       shell: "git fetch --tags"
       args:
-        chdir: "{{ path }}"
+        chdir: "{{ release_path }}"
 
     - name: get latest tag name
       shell: "git describe --tags `git rev-list --tags --max-count=1`"
       args:
-        chdir: "{{ path }}"
+        chdir: "{{ release_path }}"
       register: latest_tag
     - debug: " latest tag : {{ latest_tag.stdout }} "
     
