@@ -40,7 +40,7 @@
         update: yes
         version: "{{ gitBranch }}"
 
-   - name: Retrieve current tag number
+    - name: Retrieve current tag number
       command: "git describe --abbrev=0 --tags"
       args:
         chdir: "{{ GIT_REPO }}"
