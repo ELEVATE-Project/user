@@ -40,17 +40,22 @@
         update: yes
         version: "{{ gitBranch }}"
 
-    - name: Retrieve current tag number
-      command: "git describe --abbrev=0 --tags"
+    - name: get new tags from remote
+      shell: "git fetch --tags"
       args:
-        chdir: "{{ current_path }}"
-      register: current_tag
-      ignore_errors: true
+        chdir: "{{ path }}"
+
+    - name: get latest tag name
+      shell: "git describe --tags `git rev-list --tags --max-count=1`"
+      args:
+        chdir: "{{ path }}"
+      register: latest_tag
+    - debug: " latest tag : {{ latest_tag.stdout }} "
     
 
     - name: Extract numeric part of tag
       set_fact:
-        current_tag_numeric: "{{ current_tag.stdout | default('') | regex_replace('^(.*?)(\\d+)$', '\\2') | default(0) | int }}"
+        current_tag_numeric: "{{ latest_tag.stdout  | regex_replace('^(.*?)(\\d+)$', '\\2') | default(0) | int }}"
       register: current_tag_numeric
     - debug: msg=" tag {{ current_tag_numeric }} "
 
