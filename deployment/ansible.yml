@@ -55,7 +55,7 @@
 
     - name: Increment tag number
       set_fact:
-        next_tag_numeric: "Release_{{ gitBranch }}_{{ current_tag_numeric | default(0) + 1 }}"
+        next_tag_numeric: "{{ current_tag_numeric | default(0) + 1 }}"
       register: next_tag_numeric
 
     - name: Create Git Tag
