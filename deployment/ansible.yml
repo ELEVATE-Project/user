@@ -62,7 +62,6 @@
     - name: Increment tag number
       set_fact:
         next_tag_numeric: "{{ current_tag_numeric | default(0) | int + 1 }}"
-        tag_name: "Release_{{ gitBranch }}_{{ next_tag_numeric }}"
       register: next_tag_numeric
     - debug: msg=" Incr tag {{ next_tag_numeric }} "
 
