@@ -57,20 +57,27 @@
       set_fact:
         current_tag_numeric: "{{ latest_tag.stdout | default('') | regex_replace('^(.*?)(\\d+)$', '\\2') | default(0)  }}"
       register: current_tag_numeric
-    - debug: msg=" tag {{ current_tag_numeric }} "
+    - debug: msg="tag {{ current_tag_numeric }} "
 
     - name: Increment tag number
       set_fact:
         next_tag_numeric: "{{ current_tag_numeric | default(0) | int + 1 }}"
+        tag_name: "Release_{{ gitBranch }}_{{ next_tag_numeric }}"
       register: next_tag_numeric
     - debug: msg=" Incr tag {{ next_tag_numeric }} "
+
+    - name: Release Tag Name
+      set_fact:
+        tag_name: "Release_{{ gitBranch }}_{{ next_tag_numeric }}"
+      register: tag_name
+    - debug: msg=" Tag Name {{ tag_name }} "
 
     - name: Create Git Tag
       shell: "git remote set-url origin https://{{ GIT_USER_NAME }}:{{ GIT_TOKEN }}@github.com/ELEVATE-Project/notification.git
       && git config --global user.email '{{ GIT_EMAIL }}' && 
        git config --global user.name '{{ GIT_USER_NAME }}' && 
-       git tag -a '{{ next_tag_numeric }}' -m 'Tag creation for {{ next_tag_numeric }}' 
-       && git push origin {{ next_tag_numeric }}"
+       git tag -a '{{ tag_name }}' -m 'Tag creation for {{ tag_name }}' 
+       && git push origin {{ tag_name }}"
       args:
         chdir: "{{ release_path }}"
 
