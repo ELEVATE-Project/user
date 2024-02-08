@@ -113,5 +113,6 @@
 	"ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT": "Roles already exists OR Roles not present",
 	"ROLE_NOT_DELETED": "Roles not deleted",
 	"ROLES_HAS_EMPTY_LIST": "Empty roles list",
-	"COLUMN_DOES_NOT_EXISTS": "Role column does not exists"
+	"COLUMN_DOES_NOT_EXISTS": "Role column does not exists",
+	"PERMISSION_DENIED": "You do not have the required permissions to access this resource. Please contact your administrator for assistance."
 }
