@@ -32,7 +32,6 @@ module.exports = {
 		'/org-admin/updateRelatedOrgs',
 		'/sessions/bulkUpdateMentorNames',
 		'/organization/eventListener',
-		'/org-admin/eventListener',
 	],
 	COMPLETED_STATUS: 'COMPLETED',
 	UNFULFILLED_STATUS: 'UNFULFILLED',

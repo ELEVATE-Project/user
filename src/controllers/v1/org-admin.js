@@ -138,12 +138,4 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
-
-	async eventListener(req) {
-		try {
-			return await orgAdminService.eventListener(req.body)
-		} catch (error) {
-			throw error
-		}
-	}
 }

@@ -2,17 +2,16 @@
 
 exports.eventListenerRouter = async (eventBody, { createFn = null, updateFn = null, deleteFn = null }) => {
 	try {
-		const isEvent = true
 		switch (eventBody.eventType) {
 			case 'create':
 				validateFunction(createFn, 'create')
-				return await createFn(eventBody, isEvent)
+				return await createFn(eventBody)
 			case 'update':
 				validateFunction(updateFn, 'update')
-				return await updateFn(eventBody, isEvent)
+				return await updateFn(eventBody)
 			case 'delete':
 				validateFunction(deleteFn, 'delete')
-				return await deleteFn(eventBody, isEvent)
+				return await deleteFn(eventBody)
 			default:
 				throw new Error(`Invalid EventType: ${eventBody.eventType}`)
 		}
