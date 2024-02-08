@@ -58,7 +58,6 @@ module.exports = {
 		'/admin/triggerPeriodicViewRefreshInternal',
 		'/admin/triggerViewRebuildInternal',
 		'/org-admin/updateRelatedOrgs',
-		'/sessions/completed',
 		'/sessions/bulkUpdateMentorNames',
 		'/organization/eventListener',
 		'/org-admin/eventListener',

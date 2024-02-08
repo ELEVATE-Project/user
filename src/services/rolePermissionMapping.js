@@ -117,13 +117,13 @@ module.exports = class modulesHelper {
 			}))
 
 			if (!permissions.length) {
-				return common.failureResponse({
+				return responses.successResponse({
+					statusCode: httpStatusCode.created,
 					message: 'ROLE_PERMISSION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+					result: { permissions: [] },
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'FETCHED_ROLE_PERMISSION_SUCCESSFULLY',
 				result: { permissions },
