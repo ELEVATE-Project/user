@@ -1,6 +1,6 @@
 //Dependencies
 const httpStatusCode = require('@generics/http-status')
-const questionsSetQueries = require('../database/queries/questionSet')
+const questionSetQueries = require('../database/queries/question-set')
 const questionQueries = require('../database/queries/questions')
 const responses = require('@helpers/responses')
 
@@ -26,7 +26,7 @@ module.exports = class questionsSetHelper {
 			const questionSetData = {
 				code: bodyData.code,
 			}
-			let questionSet = await questionsSetQueries.findOneQuestionsSet(questionSetData)
+			let questionSet = await questionSetQueries.findOneQuestionSet(questionSetData)
 			if (questionSet) {
 				return responses.failureResponse({
 					message: 'QUESTIONS_SET_ALREADY_EXISTS',
@@ -37,7 +37,7 @@ module.exports = class questionsSetHelper {
 			questionSetData['questions'] = bodyData.questions
 			questionSetData['created_by'] = decodedToken.id
 			questionSetData['updated_by'] = decodedToken.id
-			questionSet = await questionsSetQueries.createQuestionsSet(questionSetData)
+			questionSet = await questionSetQueries.createQuestionSet(questionSetData)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -80,7 +80,7 @@ module.exports = class questionsSetHelper {
 				created_by: decodedToken.id,
 				questions: bodyData.questions,
 			}
-			const questionSet = await questionsSetQueries.updateOneQuestionsSet(filter, questionSetData)
+			const questionSet = await questionSetQueries.updateOneQuestionSet(filter, questionSetData)
 			if (questionSet === 'QUESTIONS_SET_NOT_FOUND') {
 				return responses.failureResponse({
 					message: 'QUESTIONS_SET_NOT_FOUND',
@@ -115,7 +115,7 @@ module.exports = class questionsSetHelper {
 			if (questionSetCode) {
 				filter.code = questionSetCode
 			}
-			const questionSet = await questionsSetQueries.findOneQuestionsSet(filter)
+			const questionSet = await questionSetQueries.findOneQuestionSet(filter)
 			if (!questionSet) {
 				return responses.failureResponse({
 					message: 'QUESTION_NOT_FOUND',

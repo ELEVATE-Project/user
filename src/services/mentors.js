@@ -5,7 +5,7 @@ const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const mentorQueries = require('@database/queries/mentorExtension')
 const menteeQueries = require('@database/queries/userExtension')
-const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { UniqueConstraintError } = require('sequelize')
 const _ = require('lodash')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -588,8 +588,8 @@ module.exports = class MentorsHelper {
 
 			const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-			const fetchrole = mentorProfile.roles
-			const filter = { role_id: fetchrole }
+			const titles = mentorProfile.user_roles.map((role) => role.title)
+			const filter = { role_title: titles }
 			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter)
 			const permissionsByModule = {}
 

@@ -4,9 +4,9 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		await queryInterface.createTable('role_permission_mapping', {
-			role_id: {
+			role_title: {
 				allowNull: false,
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				primaryKey: true,
 			},
 			permission_id: {

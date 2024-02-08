@@ -2,7 +2,7 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const organisationExtensionQueries = require('@database/queries/organisationExtension')
-const questionsSetQueries = require('../database/queries/questionSet')
+const questionSetQueries = require('../database/queries/question-set')
 const { Op } = require('sequelize')
 const { eventListenerRouter } = require('@helpers/eventListnerRouter')
 const responses = require('@helpers/responses')
@@ -17,7 +17,7 @@ module.exports = class OrganizationService {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			const questionSets = await questionsSetQueries.findQuestionsSets(
+			const questionSets = await questionSetQueries.findQuestionSets(
 				{
 					code: { [Op.in]: [bodyData.mentee_feedback_question_set, bodyData.mentor_feedback_question_set] },
 				},
