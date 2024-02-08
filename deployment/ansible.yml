@@ -49,7 +49,7 @@
 
     - name: Extract numeric part of tag
       set_fact:
-        current_tag_numeric: "{{ current_tag.stdout | regex_replace('^(.*?)(\\d+)$', '\\2') | default(0) | int }}"
+        current_tag_numeric: "{{ current_tag.stdout | default('') | regex_replace('^(.*?)(\\d+)$', '\\2') | default(0) | int }}"
     
     - name: Increment tag number
       set_fact:
