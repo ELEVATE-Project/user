@@ -3,9 +3,6 @@
   vars:
     #contents: "{{ lookup('file', '/opt/rsync/text.txt') }}"
     project_path: /opt/backend/deployment
-    git_tag_prefix: "release_RC"
-    starting_tag_number: 1
-    tag_increment: 1
     GIT_REPO: https://github.com/ELEVATE-Project/notification.git
   tasks:
     - name: Slurp hosts file
@@ -43,9 +40,24 @@
         update: yes
         version: "{{ gitBranch }}"
 
+   - name: Retrieve current tag number
+      command: "git describe --abbrev=0 --tags"
+      args:
+        chdir: "{{ GIT_REPO }}"
+      register: current_tag
+      ignore_errors: true
+
+    - name: Extract numeric part of tag
+      set_fact:
+        current_tag_numeric: "{{ current_tag.stdout | regex_replace('^(.*?)(\\d+)$', '\\2') | default(0) | int }}"
+    
+    - name: Increment tag number
+      set_fact:
+        next_tag_numeric: "{{ current_tag_numeric + 1 }}"
+
     - name: Determine the next tag number
       set_fact:
-        next_tag_number: "Release_{{ gitBranch }}_{{ starting_tag_number + tag_increment }}"
+        next_tag_number: "Release_{{ gitBranch }}_{{ next_tag_numeric }}"
 
     - name: Create Git Tag
       shell: "git remote set-url origin https://{{ GIT_USER_NAME }}:{{ GIT_TOKEN }}@github.com/ELEVATE-Project/notification.git
