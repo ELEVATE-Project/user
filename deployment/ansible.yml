@@ -43,7 +43,7 @@
     - name: Retrieve current tag number
       command: "git describe --abbrev=0 --tags"
       args:
-        chdir: "{{ GIT_REPO }}"
+        chdir: "{{ current_path }}"
       register: current_tag
       ignore_errors: true
 
@@ -53,11 +53,7 @@
     
     - name: Increment tag number
       set_fact:
-        next_tag_numeric: "{{ current_tag_numeric + 1 }}"
-
-    - name: Determine the next tag number
-      set_fact:
-        next_tag_number: "Release_{{ gitBranch }}_{{ next_tag_numeric }}"
+        next_tag_numeric: "Release_{{ gitBranch }}_{{ current_tag_numeric | default(0) + 1 }}"
 
     - name: Create Git Tag
       shell: "git remote set-url origin https://{{ GIT_USER_NAME }}:{{ GIT_TOKEN }}@github.com/ELEVATE-Project/notification.git
