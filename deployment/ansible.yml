@@ -50,7 +50,7 @@
       args:
         chdir: "{{ release_path }}"
       register: latest_tag
-    - debug: msg=" latest tag : {{ latest_tag }} "
+    - debug: msg=" latest tag  {{ latest_tag }} "
     
 
     - name: Extract numeric part of tag
