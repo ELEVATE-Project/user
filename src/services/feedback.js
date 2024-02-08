@@ -2,7 +2,7 @@
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const sessionQueries = require('@database/queries/sessions')
-const questionSetQueries = require('@database/queries/questionSet')
+const questionSetQueries = require('@database/queries/question-set')
 const questionsQueries = require('@database/queries/questions')
 const feedbackQueries = require('@database/queries/feedback')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -316,14 +316,14 @@ module.exports = class MenteesHelper {
 
 const getFeedbackQuestions = async function (formCode) {
 	try {
-		let questionsSet = await questionSetQueries.findOneQuestionsSet({
+		let QuestionSet = await questionSetQueries.findOneQuestionSet({
 			code: formCode,
 		})
 
 		let result = {}
-		if (questionsSet && questionsSet.questions) {
+		if (QuestionSet && QuestionSet.questions) {
 			let questions = await questionsQueries.find({
-				id: questionsSet.questions,
+				id: QuestionSet.questions,
 			})
 
 			if (questions && questions.length > 0) {

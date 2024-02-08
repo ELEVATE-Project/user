@@ -22,7 +22,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('Module field is empty')
-			.matches(/^[a-z_]+$/)
+			.matches(/^[a-zA-Z_-]+$/)
 			.withMessage('Module is invalid, must not contain spaces')
 
 		const allowedRequestType = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
@@ -35,7 +35,7 @@ module.exports = {
 
 		req.checkBody('api_path')
 			.trim()
-			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+(?:\/:[a-zA-Z0-9_]+)?$/)
+			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_*:/\-]+(?:\/:[a-zA-Z0-9_]+)?$/)
 			.withMessage('API Path is invalid')
 
 		req.checkBody('status')
@@ -61,7 +61,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('Module field is empty')
-			.matches(/^[a-z_]+$/)
+			.matches(/^[a-zA-Z_-]+$/)
 			.withMessage('Module is invalid, must not contain spaces')
 
 		const allowedRequestType = ['GET', 'POST', 'PATCH', 'PUT', 'DELETE']
@@ -74,7 +74,7 @@ module.exports = {
 
 		req.checkBody('api_path')
 			.trim()
-			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+(?:\/:[a-zA-Z0-9_]+)?$/)
+			.matches(/^\/[a-zA-Z0-9_]+\/v[0-9]+\/[a-zA-Z0-9_*:/\-]+(?:\/:[a-zA-Z0-9_]+)?$/)
 			.withMessage('API Path is invalid')
 
 		req.checkBody('status')

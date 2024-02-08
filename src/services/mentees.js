@@ -6,7 +6,7 @@ const feedbackHelper = require('./feedback')
 const utils = require('@generics/utils')
 
 const { successResponse } = require('@constants/common')
-const rolePermissionMappingQueries = require('@database/queries/rolePermissionMapping')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { UniqueConstraintError } = require('sequelize')
 const menteeQueries = require('@database/queries/userExtension')
 const sessionAttendeesQueries = require('@database/queries/sessionAttendees')
@@ -62,8 +62,8 @@ module.exports = class MenteesHelper {
 
 		const totalSession = await sessionAttendeesQueries.countEnrolledSessions(id)
 
-		const fetchrole = menteeDetails.data.result.roles
-		const filter = { role_id: fetchrole }
+		const titles = menteeDetails.data.result.user_roles.map((role) => role.title)
+		const filter = { role_title: titles }
 		const permissionAndModules = await rolePermissionMappingQueries.findAll(filter)
 		const permissionsByModule = {}
 

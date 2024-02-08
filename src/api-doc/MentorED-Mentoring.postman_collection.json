@@ -1512,9 +1512,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/create",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/question-set/create",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "create"]
+							"path": ["v1", "question-set", "create"]
 						}
 					},
 					"response": []
@@ -1540,9 +1540,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/update/:id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/question-set/update/:id",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "update", ":id"],
+							"path": ["v1", "question-set", "update", ":id"],
 							"variable": [
 								{
 									"key": "id",
@@ -1575,9 +1575,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/questionsSet/read/:id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/question-set/read/:id",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "questionsSet", "read", ":id"],
+							"path": ["v1", "question-set", "read", ":id"],
 							"variable": [
 								{
 									"key": "id",
@@ -2201,7 +2201,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\"code\": \"ssss\", \n\"module\": \"ssss\", \n\"request_type\": [\"POST\"],\n\"api_path\" : \"/mentoring/v1/sessions/sections\",\n\"status\": \"ACTIVE\"\n}",
+							"raw": "{\n\"code\": \"delete_entity_permissions\", \n\"module\": \"manage_user\", \n\"request_type\": [\"POST\"],\n\"api_path\" : \"/mentoring/v1/entity/delete\",\n\"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2795,9 +2795,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/create/:role_id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/role-permission-mapping/create/:role_id",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "rolePermissionMapping", "create", ":role_id"],
+							"path": ["v1", "role-permission-mapping", "create", ":role_id"],
 							"variable": [
 								{
 									"key": "role_id",
@@ -2829,9 +2829,9 @@
 							}
 						},
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/delete/:role_id",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/role-permission-mapping/delete/:role_id",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "rolePermissionMapping", "delete", ":role_id"],
+							"path": ["v1", "role-permission-mapping", "delete", ":role_id"],
 							"variable": [
 								{
 									"key": "role_id",
@@ -2854,9 +2854,9 @@
 							}
 						],
 						"url": {
-							"raw": "{{MentoringBaseUrl}}mentoring/v1/rolePermissionMapping/list",
+							"raw": "{{MentoringBaseUrl}}mentoring/v1/role-permission-mapping/list",
 							"host": ["{{MentoringBaseUrl}}mentoring"],
-							"path": ["v1", "rolePermissionMapping", "list"]
+							"path": ["v1", "role-permission-mapping", "list"]
 						}
 					},
 					"response": []
