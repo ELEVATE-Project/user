@@ -64,17 +64,7 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if (internalAccess) {
-			if (authHeader) {
-				throw responses.failureResponse({
-					message: 'INVALID_AUTHENTICATION',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			} else {
-				return next()
-			}
-		}
+		if (internalAccess && !authHeader) return next()
 
 		if (!authHeader) {
 			try {

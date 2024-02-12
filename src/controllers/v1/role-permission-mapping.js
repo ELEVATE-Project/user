@@ -60,20 +60,4 @@ module.exports = class RolePermission {
 			return error
 		}
 	}
-
-	/**
-	 * Internal call list rolePermission.
-	 * @method
-	 * @name list
-	 * @param {String} req.query - roles_title
-	 * @returns {JSON} - RolePermission list object.
-	 */
-
-	async internalList(req) {
-		try {
-			return await rolePermissionService.internalList(req.query)
-		} catch (error) {
-			return error
-		}
-	}
 }
