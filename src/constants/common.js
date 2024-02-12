@@ -26,6 +26,7 @@ module.exports = {
 		'/user/v1/account/search',
 		'/user/v1/organization/list',
 		'/user/v1/user-role/default',
+		'/user/v1/role-permission-mapping/internalList',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
@@ -38,6 +39,7 @@ module.exports = {
 	USER_ROLE: 'user',
 	SESSION_MANAGER_ROLE: 'session_manager',
 	PUBLIC_ROLE: 'public',
+	USER_SERVICE: 'user',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
 		'/user/v1/accounts/verifyUser',

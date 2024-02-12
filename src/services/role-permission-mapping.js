@@ -3,6 +3,7 @@ const rolePermissionMappingQueries = require('@database/queries/role-permission-
 const permissionsQueries = require('@database/queries/permissions')
 const { UniqueConstraintError } = require('sequelize')
 const responses = require('@helpers/responses')
+const common = require('@constants/common')
 
 module.exports = class modulesHelper {
 	/**
@@ -80,6 +81,85 @@ module.exports = class modulesHelper {
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_PERMISSION_DELETED_SUCCESSFULLY',
 				result: {},
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async list(roleTitles) {
+		try {
+			const filter = { role_title: roleTitles }
+			const attributes = ['module', 'request_type']
+			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter, attributes)
+			const permissionsByModule = {}
+			permissionAndModules.forEach(({ module, request_type }) => {
+				if (permissionsByModule[module]) {
+					permissionsByModule[module].request_type = [
+						...new Set([...permissionsByModule[module].request_type, ...request_type]),
+					]
+				} else {
+					permissionsByModule[module] = { module, request_type: [...request_type] }
+				}
+			})
+
+			const permissions = Object.values(permissionsByModule).map(({ module, request_type }) => ({
+				module,
+				request_type,
+				service: common.USER_SERVICE,
+			}))
+
+			if (!permissions.length) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.created,
+					message: 'ROLE_PERMISSION_NOT_FOUND',
+					result: { permissions: [] },
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'FETCHED_ROLE_PERMISSION_SUCCESSFULLY',
+				result: { permissions },
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async internalList(roleTitles) {
+		try {
+			const roleTitle = roleTitles.role_title.toLowerCase().split(',')
+			const filter = { role_title: roleTitle }
+			const attributes = ['module', 'request_type']
+			const permissionAndModules = await rolePermissionMappingQueries.findAll(filter, attributes)
+			const permissionsByModule = {}
+			permissionAndModules.forEach(({ module, request_type }) => {
+				if (permissionsByModule[module]) {
+					permissionsByModule[module].request_type = [
+						...new Set([...permissionsByModule[module].request_type, ...request_type]),
+					]
+				} else {
+					permissionsByModule[module] = { module, request_type: [...request_type] }
+				}
+			})
+
+			const permissions = Object.values(permissionsByModule).map(({ module, request_type }) => ({
+				module,
+				request_type,
+				service: common.USER_SERVICE,
+			}))
+
+			if (!permissions.length) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.created,
+					message: 'ROLE_PERMISSION_NOT_FOUND',
+					result: { permissions: [] },
+				})
+			}
+			return responses.successResponse({
+				statusCode: httpStatusCode.created,
+				message: 'FETCHED_ROLE_PERMISSION_SUCCESSFULLY',
+				result: { permissions },
 			})
 		} catch (error) {
 			throw error
