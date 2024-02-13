@@ -18,7 +18,7 @@ const userQueries = require('@database/queries/users')
 const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const roleQueries = require('@database/queries/userRole')
+const roleQueries = require('@database/queries/user-role')
 const orgDomainQueries = require('@database/queries/orgDomain')
 const userInviteQueries = require('@database/queries/orgUserInvite')
 const entityTypeQueries = require('@database/queries/entityType')
@@ -54,6 +54,7 @@ module.exports = class AccountHelper {
 					[Op.ne]: null,
 				},
 			})
+
 			if (user) {
 				return responses.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
@@ -80,7 +81,6 @@ module.exports = class AccountHelper {
 				roles = []
 
 			let invitedUserMatch = false
-
 			const invitedUserId = await UserCredentialQueries.findOne(
 				{
 					email: encryptedEmailId,
@@ -122,21 +122,24 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				role.forEach(async (eachRole) => {
-					if (eachRole.title === common.ORG_ADMIN_ROLE) {
-						const defaultRole = await roleQueries.findOne(
-							{ title: process.env.DEFAULT_ROLE },
-							{
-								attributes: {
-									exclude: ['created_at', 'updated_at', 'deleted_at'],
-								},
-							}
-						)
-
-						roles.push(defaultRole.id)
-						isOrgAdmin = true
+				const defaultRole = await roleQueries.findOne(
+					{ title: process.env.DEFAULT_ROLE },
+					{
+						attributes: {
+							exclude: ['created_at', 'updated_at', 'deleted_at'],
+						},
 					}
-				})
+				)
+
+				let roleTitles = _.map(role, 'title')
+				if (!roleTitles.includes(common.MENTOR_ROLE)) {
+					roles.push(defaultRole.id)
+				}
+				if (roleTitles.includes(common.ORG_ADMIN_ROLE)) {
+					isOrgAdmin = true
+				}
+
+				roles = _.uniq(roles)
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
@@ -156,7 +159,6 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
-
 				role = await roleQueries.findOne(
 					{ title: process.env.DEFAULT_ROLE },
 					{
@@ -180,6 +182,7 @@ module.exports = class AccountHelper {
 
 			delete bodyData.role
 			bodyData.email = encryptedEmailId
+
 			const insertedUser = await userQueries.create(bodyData)
 
 			const userCredentialsBody = {
@@ -240,9 +243,9 @@ module.exports = class AccountHelper {
 			let roleArray = []
 			if (roleData.length > 0) {
 				const mentorRoleExists = roleData.some((role) => role.title === common.MENTOR_ROLE)
+				roleArray = _.map(roleData, 'title')
 				if (mentorRoleExists) {
-					const updatedRoleList = roleData.filter((role) => role.title !== common.MENTEE_ROLE)
-					roleArray = _.map(updatedRoleList, 'title')
+					_.remove(roleArray, (title) => title === common.MENTEE_ROLE)
 				}
 			}
 

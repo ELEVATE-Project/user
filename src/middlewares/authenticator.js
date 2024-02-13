@@ -10,8 +10,35 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/userRole')
+const roleQueries = require('@database/queries/user-role')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
+const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
+
+async function checkPermissions(roleTitle, requestPath, requestMethod) {
+	const parts = requestPath.match(/[^/]+/g)
+	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
+
+	if (parts[4]) api_path.push(`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`)
+	else
+		api_path.push(
+			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}`,
+			`/${parts[0]}/${parts[1]}/${parts[2]}/${parts[3]}*`
+		)
+
+	if (Array.isArray(roleTitle) && !roleTitle.includes(common.PUBLIC_ROLE)) {
+		roleTitle.push(common.PUBLIC_ROLE)
+	}
+
+	const filter = { role_title: roleTitle, module: parts[2], api_path: { [Op.in]: api_path } }
+	const attributes = ['request_type', 'api_path', 'module']
+	const allowedPermissions = await rolePermissionMappingQueries.findAll(filter, attributes)
+
+	const isPermissionValid = allowedPermissions.some((permission) => {
+		return permission.request_type.includes(requestMethod)
+	})
+	return isPermissionValid
+}
 
 module.exports = async function (req, res, next) {
 	const unAuthorizedResponse = responses.failureResponse({
@@ -20,7 +47,6 @@ module.exports = async function (req, res, next) {
 		responseCode: 'UNAUTHORIZED',
 	})
 	try {
-		let guestUrl = false
 		let roleValidation = false
 
 		const authHeader = req.get('X-auth-token')
@@ -32,20 +58,31 @@ module.exports = async function (req, res, next) {
 			return false
 		})
 
-		common.guestUrls.map(function (path) {
-			if (req.path.includes(path)) {
-				guestUrl = true
-			}
-		})
 		common.roleValidationPaths.map(function (path) {
 			if (req.path.includes(path)) {
 				roleValidation = true
 			}
 		})
 
-		if ((internalAccess || guestUrl) && !authHeader) return next()
+		if (internalAccess && !authHeader) return next()
 
-		if (!authHeader) throw unAuthorizedResponse
+		if (!authHeader) {
+			try {
+				const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
+
+				if (!isPermissionValid) {
+					throw responses.failureResponse({
+						message: 'PERMISSION_DENIED',
+						statusCode: httpStatusCode.unauthorized,
+						responseCode: 'UNAUTHORIZED',
+					})
+				}
+				return next()
+			} catch (error) {
+				console.error(error)
+				throw unAuthorizedResponse
+			}
+		}
 
 		// let splittedUrl = req.url.split('/');
 		// if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
@@ -100,6 +137,20 @@ module.exports = async function (req, res, next) {
 			decodedToken.data.roles = roles
 			decodedToken.data.organization_id = user.organization_id
 		}
+
+		const isPermissionValid = await checkPermissions(
+			decodedToken.data.roles.map((role) => role.title),
+			req.path,
+			req.method
+		)
+		if (!isPermissionValid) {
+			throw responses.failureResponse({
+				message: 'PERMISSION_DENIED',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'UNAUTHORIZED',
+			})
+		}
+
 		req.decodedToken = decodedToken.data
 		return next()
 	} catch (err) {

@@ -57,6 +57,7 @@ exports.findAllRoles = async (filter, attributes, options) => {
 			where: filter,
 			attributes,
 			...options,
+			raw: true,
 		})
 	} catch (error) {
 		throw error
