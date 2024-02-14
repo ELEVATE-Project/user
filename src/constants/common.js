@@ -38,6 +38,7 @@ module.exports = {
 	USER_ROLE: 'user',
 	SESSION_MANAGER_ROLE: 'session_manager',
 	PUBLIC_ROLE: 'public',
+	USER_SERVICE: 'user',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
 		'/user/v1/accounts/verifyUser',
