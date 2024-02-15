@@ -186,23 +186,12 @@ module.exports = class OrganizationsHelper {
 					raw: true,
 				})
 
-				const currentDate = new Date()
-				const eventBody = eventBodyDTO({
-					entity: 'relatedOrganization',
-					eventType: 'update',
-					entityId: orgDetails.updatedRows[0].id,
-					changedValues: [
-						{
-							fieldName: 'relatedOrgs',
-							oldValue: [],
-							newValue: orgDetails.updatedRows[0].related_orgs,
-						},
-					],
-					args: {
-						updated_at: currentDate.toISOString(),
+				eventBroadcaster('updateRelatedOrgs', {
+					requestBody: {
+						related_organization_ids: orgDetails.updatedRows[0].related_orgs,
+						organization_id: orgDetails.updatedRows[0].id,
 					},
 				})
-				await eventBroadcasterMain('orgAdminEvents', { requestBody: eventBody, isInternal: true })
 			}
 
 			let domains = []

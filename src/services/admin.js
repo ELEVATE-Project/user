@@ -15,8 +15,6 @@ const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/user-role')
 const organizationQueries = require('@database/queries/organization')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
-const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
-const { eventBodyDTO } = require('@dtos/eventBody')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
@@ -350,28 +348,14 @@ module.exports = class AdminHelper {
 				}
 			)
 
-			const currentDate = new Date()
-			const eventBody = eventBodyDTO({
-				entity: 'organization',
-				eventType: 'update',
-				entityId: userId,
-				changedValues: [
-					{
-						fieldName: 'organization_id',
-						oldValue: '',
-						newValue: organizationId,
-					},
-					{
-						fieldName: 'roles',
-						oldValue: '',
-						newValue: _.map(roleData, 'title'),
-					},
-				],
-				args: {
-					updated_at: currentDate.toISOString(),
+			// update organization in mentoring
+			eventBroadcaster('updateOrganization', {
+				requestBody: {
+					user_id: userId,
+					organization_id: organizationId,
+					roles: _.map(roleData, 'title'),
 				},
 			})
-			await eventBroadcasterMain('orgAdminEvents', { requestBody: eventBody, isInternal: true })
 
 			const result = {
 				user_id: userId,
@@ -440,18 +424,11 @@ module.exports = class AdminHelper {
 			)
 
 			const userIds = _.map(users, 'id')
-
-			const currentDate = new Date()
-			const eventBody = eventBodyDTO({
-				entity: 'sessions',
-				eventType: 'update',
-				entityId: userIds,
-				changedValues: [],
-				args: {
-					updated_at: currentDate.toISOString(),
+			eventBroadcaster('deactivateUpcomingSession', {
+				requestBody: {
+					user_ids: userIds,
 				},
 			})
-			await eventBroadcasterMain('deactivateUpcomingSession', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -513,17 +490,12 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			const currentDate = new Date()
-			const eventBody = eventBodyDTO({
-				entity: 'sessions',
-				eventType: 'update',
-				entityId: userIds,
-				changedValues: [],
-				args: {
-					updated_at: currentDate.toISOString(),
+			//check and deactivate upcoming sessions
+			eventBroadcaster('deactivateUpcomingSession', {
+				requestBody: {
+					user_ids: userIds,
 				},
 			})
-			await eventBroadcasterMain('deactivateUpcomingSession', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,

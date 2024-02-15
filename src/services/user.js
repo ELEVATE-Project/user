@@ -18,10 +18,8 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
-const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
-const helper = require('csvtojson')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 
 module.exports = class UserHelper {
@@ -100,22 +98,12 @@ module.exports = class UserHelper {
 			const previousName = currentUser._previousDataValues?.name || null
 
 			if (currentName !== previousName) {
-				// fetch current date for updatedAt
-				const currentDate = new Date()
-
-				eventBroadcasterMain('updateName'),
-					{
-						entity: 'user',
-						eventType: 'update',
-						entityId: id,
-						changes: {
-							mentor_name: {
-								oldValue: previousName,
-								newValue: currentName,
-							},
-						},
-						updatedAt: currentDate.toISOString(),
-					}
+				eventBroadcaster('updateName', {
+					requestBody: {
+						mentor_name: currentName,
+						mentor_id: id,
+					},
+				})
 			}
 			const redisUserKey = common.redisUserPrefix + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
