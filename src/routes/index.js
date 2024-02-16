@@ -105,7 +105,7 @@ module.exports = (app) => {
 			// Detailed error response
 			const status = error.statusCode || 500
 			const responseCode = error.responseCode || 'SERVER_ERROR'
-			const message = error.message || 'Oops! Something went wrong on our end. Please try again later.'
+			const message = error.message || 'Oops! Something Went Wrong.'
 			const errorData = error.data || []
 
 			logger.info(message, { message: error })
@@ -126,7 +126,7 @@ module.exports = (app) => {
 			res.status(status).json(options)
 		} else {
 			// Limited info response
-			const errorMessage = 'Oops! Something went wrong on our end. Please try again later.'
+			const errorMessage = 'Oops! Something Went Wrong.'
 
 			logger.error('Server error!', { message: error.stack, triggerNotification: true })
 			console.error('Error occurred on the server:')
