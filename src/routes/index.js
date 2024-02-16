@@ -101,27 +101,42 @@ module.exports = (app) => {
 
 	// Global error handling middleware, should be present in last in the stack of a middleware's
 	app.use((error, req, res, next) => {
-		console.error(error)
+		if (error.statusCode || error.responseCode || error.message) {
+			// Detailed error response
+			const status = error.statusCode || 500
+			const responseCode = error.responseCode || 'SERVER_ERROR'
+			const message = error.message || 'Oops! Something Went Wrong.'
+			const errorData = error.data || []
 
-		const status = error.statusCode || 500
-		const responseCode = error.responseCode || 'SERVER_ERROR'
-		const message = error.message || ''
-		let errorData = []
-
-		if (error.data) {
-			errorData = error.data
-		}
-		if (status == 500) {
-			logger.error('Server error!', { message: error, triggerNotification: true })
-		} else {
 			logger.info(message, { message: error })
-		}
 
-		res.status(status).json({
-			responseCode,
-			message: req.t(message),
-			error: errorData,
-			meta: { correlation: correlationId.getId() },
-		})
+			const options = {
+				responseCode,
+				error: errorData,
+				meta: { correlation: correlationId.getId() },
+			}
+
+			const interpolationOptions = {
+				...error?.interpolation,
+				interpolation: { escapeValue: false },
+			}
+
+			options.message = error.interpolation ? req.t(message, interpolationOptions) : req.t(message)
+
+			res.status(status).json(options)
+		} else {
+			// Limited info response
+			const errorMessage = 'Oops! Something Went Wrong.'
+
+			logger.error('Server error!', { message: error.stack, triggerNotification: true })
+			console.error('Error occurred on the server:')
+			console.error(error)
+
+			res.status(500).json({
+				responseCode: 'SERVER_ERROR',
+				message: errorMessage,
+				meta: { correlation: correlationId.getId() },
+			})
+		}
 	})
 }
