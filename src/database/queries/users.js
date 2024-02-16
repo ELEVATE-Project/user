@@ -196,7 +196,6 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 
 		const filterQuery = `
             SELECT
-				COUNT(*) OVER () as total_count,
                 users.id,
                 users.name,
 				users.email,
@@ -242,7 +241,21 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			return user
 		})
 
-		return { count: users.length > 0 ? Number(users[0].total_count) : 0, data: users }
+		const countQuery = ` SELECT COUNT(*) as total_count
+    				FROM m_${database.User.tableName} AS users
+    				LEFT JOIN ${Organization.tableName} AS organization
+        			ON users.organization_id = organization.id
+        			AND organization.status = 'ACTIVE'
+    				${filterClause};
+				`
+
+		const totalCountData = await Sequelize.query(countQuery, {
+			type: QueryTypes.SELECT,
+			replacements: replacements,
+		})
+		const totalCount = totalCountData.length > 0 ? Number(totalCountData[0].total_count) : 0
+
+		return { count: totalCount, data: users }
 	} catch (error) {
 		throw error
 	}
