@@ -373,13 +373,13 @@ module.exports = class UserInviteHelper {
 							//remove user data from redis
 							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
 							await utils.redisDel(redisUserKey)
-							invitee.statusOrUserId = 'success'
+							invitee.statusOrUserId = 'Success'
 						} else {
 							invitee.statusOrUserId = 'No updates needed. User details are already up to date'
 						}
 					} else {
 						//user doesn't have access to update user data
-						invitee.statusOrUserId = 'Unauthorized to update user details in a different organization.'
+						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
 					}
 				} else {
 					//new user invitee creation
