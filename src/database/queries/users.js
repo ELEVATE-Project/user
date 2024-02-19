@@ -215,7 +215,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
                 AND organization.status = 'ACTIVE'
             ${filterClause}
             ORDER BY
-                users.name ASC
+				LOWER(users.name) ASC
 			OFFSET
                 :offset
             LIMIT
@@ -240,7 +240,6 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			user.email = emailEncryption.decrypt(user.email)
 			return user
 		})
-
 		const countQuery = ` SELECT COUNT(*) as total_count
     				FROM m_${database.User.tableName} AS users
     				LEFT JOIN ${Organization.tableName} AS organization
@@ -248,7 +247,6 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
         			AND organization.status = 'ACTIVE'
     				${filterClause};
 				`
-
 		const totalCountData = await Sequelize.query(countQuery, {
 			type: QueryTypes.SELECT,
 			replacements: replacements,

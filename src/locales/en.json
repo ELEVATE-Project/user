@@ -100,8 +100,6 @@
 	"USER_DOES_NOT_HAVE_ACCESS": "User does not have access to perform this action",
 	"CONTACT_ADMIN_RELATED_ORGANIZATIONS": "Please contact the admin for setting related organizations",
 	"ROLE_CHANGE_REQUESTED": "Admin has received your request. Further information will be received through Email.",
-	"ROLE_INVALID": "Role is invalid.",
-	"NAME_INVALID": "Name is invalid.",
 	"ROLE_CHANGE_APPROVED": "Your request for becoming a mentor has been approved. Check email or login again to start your journey.",
 	"MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY": "Materialized views generated successfully",
 	"MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY": "Materialized views refresh initiated successfully",
