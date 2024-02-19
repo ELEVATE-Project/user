@@ -240,11 +240,9 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			user.email = emailEncryption.decrypt(user.email)
 			return user
 		})
-		// Record the start time
-		const startTime = performance.now()
 		const countQuery = ` SELECT COUNT(*) as total_count
     				FROM m_${database.User.tableName} AS users
-    				INNER JOIN ${Organization.tableName} AS organization
+    				LEFT JOIN ${Organization.tableName} AS organization
         			ON users.organization_id = organization.id
         			AND organization.status = 'ACTIVE'
     				${filterClause};
@@ -253,31 +251,6 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			type: QueryTypes.SELECT,
 			replacements: replacements,
 		})
-
-		// Record the end time
-		const endTime = performance.now()
-		// Calculate the elapsed time
-		const elapsedTime = endTime - startTime
-
-		// Record the start time
-		const startTime1 = performance.now()
-		const countQuery1 = ` SELECT COUNT(*) as total_count
-    				FROM m_${database.User.tableName} AS users
-    				LEFT JOIN ${Organization.tableName} AS organization
-        			ON users.organization_id = organization.id
-        			AND organization.status = 'ACTIVE'
-    				${filterClause};
-				`
-		const totalCountData1 = await Sequelize.query(countQuery1, {
-			type: QueryTypes.SELECT,
-			replacements: replacements,
-		})
-
-		// Record the end time
-		const endTime1 = performance.now()
-		// Calculate the elapsed time
-		const elapsedTime1 = endTime1 - startTime1
-
 		const totalCount = totalCountData.length > 0 ? Number(totalCountData[0].total_count) : 0
 
 		return { count: totalCount, data: users }
