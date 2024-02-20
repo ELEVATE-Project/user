@@ -145,7 +145,7 @@ module.exports = class UserInviteHelper {
 			if (header.map((column) => column.toLowerCase()).includes('roles')) {
 				// Process the data, split roles, and handle unquoted roles
 				csvToJsonData.forEach((row) => {
-					if (row.name && row.email && row.roles) {
+					if (row.name || row.email || row.roles) {
 						const roles = row.roles.replace(/"/g, '').split(',')
 						row.roles = roles
 						parsedCSVData.push(row)
