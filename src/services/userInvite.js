@@ -140,18 +140,23 @@ module.exports = class UserInviteHelper {
 		try {
 			const csvToJsonData = await csv().fromFile(csvFilePath)
 			const header = Object.keys(csvToJsonData[0])
+			const parsedCSVData = []
 
 			if (header.map((column) => column.toLowerCase()).includes('roles')) {
 				// Process the data, split roles, and handle unquoted roles
 				csvToJsonData.forEach((row) => {
-					const roles = row.roles.replace(/"/g, '').split(',')
-					row.roles = roles
+					if (row.name && row.email && row.roles) {
+						const roles = row.roles.replace(/"/g, '').split(',')
+						row.roles = roles
+						parsedCSVData.push(row)
+					}
 				})
 			}
+
 			return {
 				success: true,
 				result: {
-					data: csvToJsonData,
+					data: parsedCSVData,
 				},
 			}
 		} catch (error) {
