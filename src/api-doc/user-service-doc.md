@@ -532,8 +532,8 @@ Output should look like this (Sample output, might slightly differ in your insta
 ┌────┬─────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
 │ id │ name                    │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
 ├────┼─────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
-│ 29 │ elevate-user            │ default     │ 1.0.0   │ cluster │ 106976   │ 27h    │ 0    │ online    │ 0%       │ 167.0mb  │ jenkins  │ disabled │
-│ 30 │ elevate-user            │ default     │ 1.0.0   │ cluster │ 106986   │ 27h    │ 0    │ online    │ 0%       │ 169.3mb  │ jenkins  │ disabled │
+│ 1 │ elevate-user            │ default     │ 1.0.0   │ cluster │ 106976   │ 27h    │ 0    │ online    │ 0%       │ 167.0mb  │ jenkins  │ disabled │
+│ 2 │ elevate-user            │ default     │ 1.0.0   │ cluster │ 106986   │ 27h    │ 0    │ online    │ 0%       │ 169.3mb  │ jenkins  │ disabled │
 └────┴─────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
 ```
 
