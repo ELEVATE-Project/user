@@ -190,7 +190,7 @@ module.exports = class UserInviteHelper {
 
 			//get all existing user
 			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) =>
-				emailEncryption.encrypt(email.toLowerCase())
+				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
 
 			const userCredentials = await UserCredentialQueries.findAll(
@@ -235,7 +235,8 @@ module.exports = class UserInviteHelper {
 
 			// process csv data
 			for (const invitee of csvData) {
-				invitee.email = invitee.email.toLowerCase()
+				invitee.email = invitee.email.trim().toLowerCase()
+				invitee.roles = invitee.roles.map((role) => role.trim())
 				const encryptedEmail = emailEncryption.encrypt(invitee.email.toLowerCase())
 
 				//find the invalid fields and generate error message
@@ -243,6 +244,7 @@ module.exports = class UserInviteHelper {
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
+
 				if (!utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
