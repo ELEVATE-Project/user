@@ -7,7 +7,6 @@
 
 // Dependencies
 const _ = require('lodash')
-const utils = require('@generics/utils')
 const fs = require('fs')
 const path = require('path')
 const csv = require('csvtojson')
@@ -29,6 +28,13 @@ const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
 const UserCredentialQueries = require('@database/queries/userCredential')
 const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
+
+const cacheUtils = require('@utils/cache')
+const cloudUtils = require('@utils/cloud')
+const genericUtils = require('@utils/generic')
+const roleUtils = require('@utils/role')
+const fileUtils = require('@utils/file')
+const emailUtils = require('@utils/email')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -77,14 +83,14 @@ module.exports = class UserInviteHelper {
 					)
 
 					if (templateData) {
-						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
+						const inviteeUploadURL = await cloudUtils.getDownloadableUrl(output_path)
 						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL) //Rename this to function to generic name since this function is used for both Invitee & Org-admin.
 					}
 				}
 
 				// delete the downloaded file and output file.
-				utils.clearFile(response.result.downloadPath)
-				utils.clearFile(createResponse.result.outputFilePath)
+				fileUtils.clearFile(response.result.downloadPath)
+				fileUtils.clearFile(createResponse.result.outputFilePath)
 
 				return resolve({
 					success: true,
@@ -102,7 +108,7 @@ module.exports = class UserInviteHelper {
 
 	static async downloadCSV(filePath) {
 		try {
-			const downloadableUrl = await utils.getDownloadableUrl(filePath)
+			const downloadableUrl = await cloudUtils.getDownloadableUrl(filePath)
 			const fileName = path.basename(downloadableUrl)
 			const downloadPath = path.join(inviteeFileDir, fileName)
 
@@ -164,7 +170,7 @@ module.exports = class UserInviteHelper {
 
 	static async createUserInvites(csvData, user, fileUploadId) {
 		try {
-			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
+			const outputFileName = fileUtils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 			let menteeRoleId, mentorRoleId
 
 			//get all the roles and map title and id
@@ -235,10 +241,10 @@ module.exports = class UserInviteHelper {
 
 				//find the invalid fields and generate error message
 				let invalidFields = []
-				if (!utils.isValidName(invitee.name)) {
+				if (!genericUtils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
-				if (!utils.isValidEmail(invitee.email)) {
+				if (!genericUtils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
 
@@ -337,9 +343,9 @@ module.exports = class UserInviteHelper {
 								{ organization_id: user.organization_id }
 							)
 
-							const currentRoles = utils.getRoleTitlesFromId(existingUser.roles, roleList)
+							const currentRoles = roleUtils.getRoleTitlesFromId(existingUser.roles, roleList)
 							let newRoles = []
-							newRoles = utils.getRoleTitlesFromId(
+							newRoles = roleUtils.getRoleTitlesFromId(
 								_.difference(userUpdateData.roles, existingUser.roles),
 								roleList
 							)
@@ -372,7 +378,7 @@ module.exports = class UserInviteHelper {
 
 							//remove user data from redis
 							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
-							await utils.redisDel(redisUserKey)
+							await cacheUtils.redisDel(redisUserKey)
 							invitee.statusOrUserId = 'success'
 						} else {
 							invitee.statusOrUserId = 'No updates needed. User details are already up to date'
@@ -408,7 +414,7 @@ module.exports = class UserInviteHelper {
 
 						if (newUserCred?.id) {
 							const { name, email } = invitee
-							const roles = utils.getRoleTitlesFromId(newInvitee.roles, roleList)
+							const roles = roleUtils.getRoleTitlesFromId(newInvitee.roles, roleList)
 							const roleToString =
 								roles.length > 0
 									? roles
@@ -447,7 +453,7 @@ module.exports = class UserInviteHelper {
 			}
 
 			//generate output csv
-			const csvContent = utils.generateCSVContent(input)
+			const csvContent = fileUtils.generateCSVContent(input)
 			const outputFilePath = path.join(inviteeFileDir, outputFileName)
 			fs.writeFileSync(outputFilePath, csvContent)
 
@@ -521,9 +527,9 @@ module.exports = class UserInviteHelper {
 					to: userData.email,
 					subject:
 						subjectComposeData && Object.keys(subjectComposeData).length > 0
-							? utils.composeEmailBody(templateData.subject, subjectComposeData)
+							? emailUtils.composeEmailBody(templateData.subject, subjectComposeData)
 							: templateData.subject,
-					body: utils.composeEmailBody(templateData.body, {
+					body: emailUtils.composeEmailBody(templateData.body, {
 						name: userData.name,
 						role: userData.role || '',
 						orgName: userData.org_name || '',

@@ -1,7 +1,5 @@
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
-const utils = require('@generics/utils')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
 

@@ -8,7 +8,7 @@
 //Dependencies
 const { Kafka } = require('kafkajs')
 
-const utils = require('@generics/utils')
+const cacheUtils = require('@utils/cache')
 
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
@@ -27,10 +27,10 @@ module.exports = async () => {
 	await consumer.connect()
 
 	producer.on('producer.connect', () => {
-		logger.info(`KafkaProvider: connected`)
+		logger.info('KafkaProvider: connected')
 	})
 	producer.on('producer.disconnect', () => {
-		logger.error(`KafkaProvider: could not connect`, {
+		logger.error('KafkaProvider: could not connect', {
 			triggerNotification: true,
 		})
 	})
@@ -42,7 +42,7 @@ module.exports = async () => {
 				try {
 					let streamingData = JSON.parse(message.value)
 					if (streamingData.type == 'CLEAR_INTERNAL_CACHE') {
-						utils.internalDel(streamingData.value)
+						cacheUtils.internalDel(streamingData.value)
 					}
 				} catch (error) {
 					logger.error('Subscribe to consumer failed:' + error, {

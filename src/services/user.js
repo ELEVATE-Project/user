@@ -9,17 +9,20 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/user-role')
 const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
-const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
+const cacheUtils = require('@utils/cache')
+const cloudUtils = require('@utils/cloud')
+const genericUtils = require('@utils/generic')
+const entityHelper = require('@helpers/entity')
+const roleUtils = require('@utils/role')
 
 module.exports = class UserHelper {
 	/**
@@ -69,11 +72,11 @@ module.exports = class UserHelper {
 				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+			const prunedEntities = entityHelper.removeDefaultOrgEntityTypes(validationData)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
+			let res = entityHelper.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -84,7 +87,7 @@ module.exports = class UserHelper {
 			}
 
 			let userModel = await userQueries.getColumns()
-			bodyData = utils.restructureBody(bodyData, validationData, userModel)
+			bodyData = entityHelper.restructureBody(bodyData, validationData, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, organization_id: orgId },
@@ -105,10 +108,10 @@ module.exports = class UserHelper {
 				})
 			}
 			const redisUserKey = common.redisUserPrefix + id.toString()
-			if (await utils.redisGet(redisUserKey)) {
-				await utils.redisDel(redisUserKey)
+			if (await cacheUtils.redisGet(redisUserKey)) {
+				await cacheUtils.redisDel(redisUserKey)
 			}
-			const processDbResponse = utils.processDbResponse(
+			const processDbResponse = entityHelper.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				validationData
 			)
@@ -138,14 +141,14 @@ module.exports = class UserHelper {
 		try {
 			let filter = {}
 
-			if (utils.isNumeric(id)) {
+			if (genericUtils.isNumeric(id)) {
 				filter = { id: id }
 			} else {
 				filter = { share_link: id }
 			}
 
 			const redisUserKey = common.redisUserPrefix + id.toString()
-			const userDetails = (await utils.redisGet(redisUserKey)) || false
+			const userDetails = (await cacheUtils.redisGet(redisUserKey)) || false
 			if (!userDetails) {
 				let options = {
 					attributes: {
@@ -165,7 +168,7 @@ module.exports = class UserHelper {
 				}
 
 				if (user && user.image) {
-					user.image = await utils.getDownloadableUrl(user.image)
+					user.image = await cloudUtils.getDownloadableUrl(user.image)
 				}
 
 				let roles = await roleQueries.findAll(
@@ -200,13 +203,13 @@ module.exports = class UserHelper {
 					},
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
-				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-				const processDbResponse = utils.processDbResponse(user, prunedEntities)
+				const prunedEntities = entityHelper.removeDefaultOrgEntityTypes(validationData, user.organization_id)
+				const processDbResponse = entityHelper.processDbResponse(user, prunedEntities)
 
 				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 
-				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
-					await utils.redisSet(redisUserKey, processDbResponse)
+				if (roleUtils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
+					await cacheUtils.redisSet(redisUserKey, processDbResponse)
 				}
 
 				return responses.successResponse({
@@ -249,7 +252,7 @@ module.exports = class UserHelper {
 
 			let shareLink = user.share_link
 			if (!shareLink) {
-				shareLink = utils.md5Hash(userId)
+				shareLink = genericUtils.md5Hash(userId)
 				await userQueries.updateUser({ id: userId }, { share_link: shareLink })
 			}
 			return responses.successResponse({

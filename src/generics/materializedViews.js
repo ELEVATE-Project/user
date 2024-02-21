@@ -1,7 +1,7 @@
 'use strict'
 const entityTypeQueries = require('@database/queries/entityType')
 const { sequelize } = require('@database/models/index')
-const utils = require('@generics/utils')
+const whereClauseGeneratorHelper = require('@helpers/whereClauseGenerator')
 const common = require('@constants/common')
 const getDefaultOrgId = process.env.DEFAULT_ORG_ID
 let refreshInterval
@@ -146,7 +146,7 @@ const materializedViewQueryBuilder = async (model, concreteFields, metaFields) =
 						.join(',\n')
 				: '' // Empty string if there are no meta fields
 
-		const whereClause = utils.generateWhereClause(tableName)
+		const whereClause = whereClauseGeneratorHelper.generateWhereClause(tableName)
 
 		const materializedViewGenerationQuery = `CREATE MATERIALIZED VIEW ${temporaryMaterializedViewName} AS
 		  SELECT 
