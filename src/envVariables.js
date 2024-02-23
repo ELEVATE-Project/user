@@ -229,7 +229,8 @@ let enviromentVariables = {
 	},
 	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
 		message: 'Required generic invitation email template code',
-		optional: false,
+		optional: true,
+		default: 'generic_invite',
 	},
 }
 
