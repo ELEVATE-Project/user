@@ -15,12 +15,12 @@ const generateFileName = (name, extension) => {
 	return name + fileExtensionWithTime
 }
 
-function extractFilename(fileString) {
+const extractFilename = (fileString) => {
 	const match = fileString.match(/([^/]+)(?=\.\w+$)/)
 	return match ? match[0] : null
 }
 
-function generateCSVContent(data) {
+const generateCSVContent = (data) => {
 	// If data is empty
 	if (data.length === 0) {
 		return 'No Data Found'

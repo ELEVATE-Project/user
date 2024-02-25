@@ -4,7 +4,7 @@ const composeEmailBody = (body, params) => {
 		return typeof r === 'string' || typeof r === 'number' ? r : a
 	})
 }
-function extractDomainFromEmail(email) {
+const extractDomainFromEmail = (email) => {
 	return email.substring(email.lastIndexOf('@') + 1)
 }
 

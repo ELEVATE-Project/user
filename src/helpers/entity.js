@@ -1,4 +1,4 @@
-function validateInput(input, validationData, modelName) {
+const validateInput = (input, validationData, modelName) => {
 	const errors = []
 	for (const field of validationData) {
 		const fieldValue = input[field.value]
@@ -122,7 +122,7 @@ const entityTypeMapGenerator = (entityTypeData) => {
 	}
 }
 
-function restructureBody(requestBody, entityData, allowedKeys) {
+const restructureBody = (requestBody, entityData, allowedKeys) => {
 	try {
 		const entityTypeMap = entityTypeMapGenerator(entityData)
 		const doesAffectedFieldsExist = Object.keys(requestBody).some((element) => entityTypeMap.has(element))
@@ -172,7 +172,7 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
-function processDbResponse(responseBody, entityType) {
+const processDbResponse = (responseBody, entityType) => {
 	if (responseBody.meta) {
 		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
@@ -223,7 +223,7 @@ function processDbResponse(responseBody, entityType) {
 	return data
 }
 
-function removeParentEntityTypes(data) {
+const removeParentEntityTypes = (data) => {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
 }
@@ -239,7 +239,6 @@ const removeDefaultOrgEntityTypes = (entityTypes, orgId) => {
 
 const entity = {
 	validateInput,
-	entityTypeMapGenerator,
 	restructureBody,
 	processDbResponse,
 	removeParentEntityTypes,
