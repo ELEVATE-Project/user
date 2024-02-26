@@ -16,6 +16,7 @@ const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBodyDTO } = require('@dtos/eventBody')
 const responses = require('@helpers/responses')
+const organization = require('@database/models/organization')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -157,6 +158,7 @@ module.exports = class OrganizationsHelper {
 	static async update(id, bodyData, loggedInUserId) {
 		try {
 			bodyData.updated_by = loggedInUserId
+			bodyData.related_orgs = [...new Set([...bodyData.related_orgs])] //use Set to remove any duplicates
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
@@ -172,10 +174,15 @@ module.exports = class OrganizationsHelper {
 					bodyData?.related_orgs &&
 					_.isEqual(orgDetails.updatedRows[0].related_orgs, bodyData.related_orgs)
 				) {
-					await organizationQueries.appendRelatedOrg(orgDetails.updatedRows[0].id, bodyData.related_orgs, {
-						returning: true,
-						raw: true,
-					})
+					// const relatedOrgs = [...new Set([...bodyData.related_orgs])]
+					let x = await organizationQueries.appendRelatedOrg(
+						orgDetails.updatedRows[0].id,
+						bodyData.related_orgs,
+						{
+							returning: true,
+							raw: true,
+						}
+					)
 				}
 				const removedOrgIds = _.difference(
 					orgDetailsBeforeUpdate.related_orgs,
@@ -186,10 +193,25 @@ module.exports = class OrganizationsHelper {
 					raw: true,
 				})
 
+				// fetch the list of all unique related orgs
+				const allRelatedOrgs = [
+					...new Set([...orgDetails.updatedRows[0].related_orgs, orgDetails.updatedRows[0].id]),
+				]
+
+				const organizationDetails = await organizationQueries.findAll(
+					{
+						id: { [Op.in]: allRelatedOrgs },
+					},
+					{
+						attributes: ['id', 'related_orgs'],
+					}
+				)
+
 				eventBroadcaster('updateRelatedOrgs', {
 					requestBody: {
 						related_organization_ids: orgDetails.updatedRows[0].related_orgs,
 						organization_id: orgDetails.updatedRows[0].id,
+						organizationDetails,
 					},
 				})
 			}
