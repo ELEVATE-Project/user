@@ -1,7 +1,6 @@
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
 const formQueries = require('@database/queries/form')
-const utils = require('@generics/utils')
+const cacheUtils = require('@utils/cache')
 const KafkaProducer = require('@generics/kafka-communication')
 const form = require('@generics/form')
 const organizationQueries = require('@database/queries/organization')
@@ -28,7 +27,7 @@ module.exports = class FormsHelper {
 			}
 			bodyData['organization_id'] = orgId
 			await formQueries.create(bodyData)
-			await utils.internalDel('formVersion')
+			await cacheUtils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -70,7 +69,7 @@ module.exports = class FormsHelper {
 				})
 			}
 
-			await utils.internalDel('formVersion')
+			await cacheUtils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

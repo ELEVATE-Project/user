@@ -10,7 +10,12 @@ const bcryptJs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const _ = require('lodash')
 
-const utilsHelper = require('@generics/utils')
+const cacheUtils = require('@utils/cache')
+const authUtils = require('@utils/auth')
+const emailUtils = require('@utils/email')
+const cloudUtils = require('@utils/cloud')
+const genericUtils = require('@utils/generic')
+const entityHelper = require('@helpers/entity')
 const httpStatusCode = require('@generics/http-status')
 
 const common = require('@constants/common')
@@ -22,9 +27,8 @@ const roleQueries = require('@database/queries/user-role')
 const orgDomainQueries = require('@database/queries/orgDomain')
 const userInviteQueries = require('@database/queries/orgUserInvite')
 const entityTypeQueries = require('@database/queries/entityType')
-const utils = require('@generics/utils')
+
 const { Op } = require('sequelize')
-const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
@@ -64,7 +68,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(encryptedEmailId)
+				const redisData = await cacheUtils.redisGet(encryptedEmailId)
 				if (!redisData || redisData.otp != bodyData.otp) {
 					return responses.failureResponse({
 						message: 'OTP_INVALID',
@@ -74,7 +78,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			bodyData.password = utilsHelper.hashPassword(bodyData.password)
+			bodyData.password = authUtils.hashPassword(bodyData.password)
 
 			//check user exist in invitee list
 			let role,
@@ -143,7 +147,7 @@ module.exports = class AccountHelper {
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
-				let emailDomain = utilsHelper.extractDomainFromEmail(plaintextEmailId)
+				let emailDomain = emailUtils.extractDomainFromEmail(plaintextEmailId)
 				let domainDetails = await orgDomainQueries.findOne({
 					domain: emailDomain,
 				})
@@ -256,12 +260,12 @@ module.exports = class AccountHelper {
 							.join(' and ')
 					: ''
 
-			const accessToken = utilsHelper.generateToken(
+			const accessToken = authUtils.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
 				common.accessTokenExpiry
 			)
-			const refreshToken = utilsHelper.generateToken(
+			const refreshToken = authUtils.generateToken(
 				tokenDetail,
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
@@ -280,7 +284,7 @@ module.exports = class AccountHelper {
 			}
 
 			await userQueries.updateUser({ id: user.id, organization_id: userCredentials.organization_id }, update)
-			await utilsHelper.redisDel(encryptedEmailId)
+			await cacheUtils.redisDel(encryptedEmailId)
 
 			//make the user as org admin
 			if (isOrgAdmin) {
@@ -309,7 +313,7 @@ module.exports = class AccountHelper {
 					email: {
 						to: plaintextEmailId,
 						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
+						body: emailUtils.composeEmailBody(templateData.body, {
 							name: bodyData.name,
 							appName: process.env.APP_NAME,
 							roles: roleToString || '',
@@ -428,12 +432,12 @@ module.exports = class AccountHelper {
 				},
 			}
 
-			const accessToken = utilsHelper.generateToken(
+			const accessToken = authUtils.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
 				common.accessTokenExpiry
 			)
-			const refreshToken = utilsHelper.generateToken(
+			const refreshToken = authUtils.generateToken(
 				tokenDetail,
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
@@ -483,11 +487,11 @@ module.exports = class AccountHelper {
 				model_names: { [Op.contains]: [modelName] },
 			})
 
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
+			const prunedEntities = entityHelper.removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			user = entityHelper.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
-				user.image = await utils.getDownloadableUrl(user.image)
+				user.image = await cloudUtils.getDownloadableUrl(user.image)
 			}
 			user.email = plaintextEmailId
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
@@ -605,7 +609,7 @@ module.exports = class AccountHelper {
 		}
 
 		/* Generate new access token */
-		const accessToken = utilsHelper.generateToken(
+		const accessToken = authUtils.generateToken(
 			{ data: decodedToken.data },
 			process.env.ACCESS_TOKEN_SECRET,
 			common.accessTokenExpiry
@@ -664,7 +668,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			const userData = await utilsHelper.redisGet(encryptedEmailId)
+			const userData = await cacheUtils.redisGet(encryptedEmailId)
 			const [otp, isNew] =
 				userData && userData.action === 'forgetpassword'
 					? [userData.otp, false]
@@ -675,7 +679,7 @@ module.exports = class AccountHelper {
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
+				const res = await cacheUtils.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
 				if (res !== 'OK')
 					return responses.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
@@ -694,7 +698,7 @@ module.exports = class AccountHelper {
 					email: {
 						to: plaintextEmailId,
 						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
+						body: emailUtils.composeEmailBody(templateData.body, { name: user.name, otp }),
 					},
 				}
 				await kafkaCommunication.pushEmailToKafka(payload)
@@ -735,7 +739,7 @@ module.exports = class AccountHelper {
 				responseCode: 'CLIENT_ERROR',
 			})
 
-		const userData = await utilsHelper.redisGet(encryptedEmailId)
+		const userData = await cacheUtils.redisGet(encryptedEmailId)
 		const [otp, isNew] =
 			userData && userData.action === 'signup'
 				? [userData.otp, false]
@@ -746,7 +750,7 @@ module.exports = class AccountHelper {
 				action: 'signup',
 				otp,
 			}
-			const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
+			const res = await cacheUtils.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
 			if (res !== 'OK') {
 				return responses.failureResponse({
 					message: 'UNABLE_TO_SEND_OTP',
@@ -764,7 +768,7 @@ module.exports = class AccountHelper {
 				email: {
 					to: plaintextEmailId,
 					subject: templateData.subject,
-					body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
+					body: emailUtils.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
 				},
 			}
 			await kafkaCommunication.pushEmailToKafka(payload)
@@ -830,7 +834,7 @@ module.exports = class AccountHelper {
 			}
 			user.user_roles = roles
 
-			const redisData = await utilsHelper.redisGet(encryptedEmailId)
+			const redisData = await cacheUtils.redisGet(encryptedEmailId)
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return responses.failureResponse({
 					message: 'RESET_OTP_INVALID',
@@ -846,7 +850,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			bodyData.password = utilsHelper.hashPassword(bodyData.password)
+			bodyData.password = authUtils.hashPassword(bodyData.password)
 			const tokenDetail = {
 				data: {
 					id: user.id,
@@ -856,8 +860,8 @@ module.exports = class AccountHelper {
 				},
 			}
 
-			const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
-			const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
+			const accessToken = authUtils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
+			const refreshToken = authUtils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
 
 			let currentToken = {
 				token: refreshToken,
@@ -890,13 +894,13 @@ module.exports = class AccountHelper {
 				},
 				{ password: bodyData.password }
 			)
-			await utilsHelper.redisDel(encryptedEmailId)
+			await cacheUtils.redisDel(encryptedEmailId)
 
 			delete user.password
 			delete user.otpInfo
 
 			// Check if user and user.image exist, then fetch a downloadable URL for the image
-			if (user && user.image) user.image = await utils.getDownloadableUrl(user.image)
+			if (user && user.image) user.image = await cloudUtils.getDownloadableUrl(user.image)
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -936,7 +940,7 @@ module.exports = class AccountHelper {
 				const userDetailsFoundInRedis = []
 				for (let i = 0; i < userIds.length; i++) {
 					let userDetails =
-						(await utilsHelper.redisGet(common.redisUserPrefix + userIds[i].toString())) || false
+						(await cacheUtils.redisGet(common.redisUserPrefix + userIds[i].toString())) || false
 
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])
@@ -974,7 +978,7 @@ module.exports = class AccountHelper {
 					if (user.roles && user.roles.length > 0) {
 						let roleData = roles.filter((role) => user.roles.includes(role.id))
 						user['user_roles'] = roleData
-						// await utilsHelper.redisSet(element._id.toString(), element)
+						// await cacheUtils.redisSet(element._id.toString(), element)
 					}
 					user.email = emailEncryption.decrypt(user.email)
 				})
@@ -1009,7 +1013,7 @@ module.exports = class AccountHelper {
 					users.data.map(async (user) => {
 						/* Assigned image url from the stored location */
 						if (user.image) {
-							user.image = await utilsHelper.getDownloadableUrl(user.image)
+							user.image = await cloudUtils.getDownloadableUrl(user.image)
 						}
 						return user
 					})
@@ -1081,7 +1085,7 @@ module.exports = class AccountHelper {
 				{ id: userId, organization_id: orgId },
 				{ has_accepted_terms_and_conditions: true }
 			)
-			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
+			await cacheUtils.redisDel(common.redisUserPrefix + userId.toString())
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1182,7 +1186,7 @@ module.exports = class AccountHelper {
 				searchText = params.searchText.split(',')
 			}
 			searchText.forEach((element) => {
-				if (utils.isValidEmail(element)) {
+				if (genericUtils.isValidEmail(element)) {
 					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
 				}
 			})
@@ -1204,7 +1208,7 @@ module.exports = class AccountHelper {
 				users.data.map(async (user) => {
 					/* Assigned image url from the stored location */
 					if (user.image) {
-						user.image = await utilsHelper.getDownloadableUrl(user.image)
+						user.image = await cloudUtils.getDownloadableUrl(user.image)
 					}
 					return user
 				})

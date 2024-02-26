@@ -1,11 +1,10 @@
-// DependenciesI
+// Dependencies
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
 const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const { Op } = require('sequelize')
-const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const entityHelper = require('@helpers/entity')
 const responses = require('@helpers/responses')
 module.exports = class EntityHelper {
 	/**
@@ -128,7 +127,7 @@ module.exports = class EntityHelper {
 			}
 			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
-			const prunedEntities = removeDefaultOrgEntityTypes(entities, orgId)
+			const prunedEntities = entityHelper.removeDefaultOrgEntityTypes(entities, orgId)
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',

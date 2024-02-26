@@ -6,7 +6,7 @@
  */
 
 // Dependencies
-const utilsHelper = require('@generics/utils')
+const roleUtils = require('@utils/role')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const orgService = require('@services/organization')
@@ -31,7 +31,7 @@ module.exports = class Organization {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isAdmin = roleUtils.validateRoleAccess(roles, common.ADMIN_ROLE)
 			}
 
 			if (!isAdmin) {
@@ -67,8 +67,8 @@ module.exports = class Organization {
 			const roles = req.decodedToken.roles
 
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
-				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+				isAdmin = roleUtils.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isOrgAdmin = roleUtils.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
 			}
 
 			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {

@@ -9,7 +9,7 @@
 const adminService = require('@services/admin')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const utilsHelper = require('@generics/utils')
+const roleUtils = require('@utils/role')
 const responses = require('@helpers/responses')
 
 module.exports = class Admin {
@@ -23,7 +23,7 @@ module.exports = class Admin {
 
 	async deleteUser(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+			if (!roleUtils.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -97,7 +97,7 @@ module.exports = class Admin {
 
 	async addOrgAdmin(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+			if (!roleUtils.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -126,7 +126,7 @@ module.exports = class Admin {
 	 */
 	async deactivateOrg(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+			if (!roleUtils.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -150,7 +150,7 @@ module.exports = class Admin {
 	 */
 	async deactivateUser(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+			if (!roleUtils.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,

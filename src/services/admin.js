@@ -9,7 +9,11 @@
 
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const utils = require('@generics/utils')
+
+const cacheUtils = require('@utils/cache')
+const authUtils = require('@utils/auth')
+const genericUtils = require('@utils/generic')
+
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/user-role')
@@ -47,7 +51,7 @@ module.exports = class AdminHelper {
 			delete update.id
 			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
 
-			await utils.redisDel(common.redisUserPrefix + userId.toString())
+			await cacheUtils.redisDel(common.redisUserPrefix + userId.toString())
 
 			//code for remove user folder from cloud
 
@@ -102,7 +106,7 @@ module.exports = class AdminHelper {
 				)
 				bodyData.organization_id = organization.id
 			}
-			bodyData.password = utils.hashPassword(bodyData.password)
+			bodyData.password = authUtils.hashPassword(bodyData.password)
 			bodyData.email = encryptedEmailId
 			const createdUser = await userQueries.create(bodyData)
 			const userCredentialsBody = {
@@ -162,7 +166,7 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const isPasswordCorrect = utils.comparePassword(bodyData.password, user.password)
+			const isPasswordCorrect = authUtils.comparePassword(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return responses.failureResponse({
 					message: 'PASSWORD_INVALID',
@@ -198,8 +202,8 @@ module.exports = class AdminHelper {
 
 			user.user_roles = roles
 
-			const accessToken = utils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
-			const refreshToken = utils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
+			const accessToken = authUtils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
+			const refreshToken = authUtils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
 
 			delete user.password
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
@@ -337,7 +341,7 @@ module.exports = class AdminHelper {
 			)
 			//delete from cache
 			const redisUserKey = common.redisUserPrefix + userId.toString()
-			await utils.redisDel(redisUserKey)
+			await cacheUtils.redisDel(redisUserKey)
 
 			const roleData = await roleQueries.findAll(
 				{ id: roles, status: common.ACTIVE_STATUS },
@@ -566,7 +570,7 @@ function _generateUpdateParams(userId) {
 	const updateUser = {
 		deleted_at: new Date(),
 		name: 'Anonymous User',
-		email: utils.md5Hash(userId) + '@' + 'deletedUser',
+		email: genericUtils.md5Hash(userId) + '@' + 'deletedUser',
 		refresh_tokens: [],
 		preferred_language: 'en',
 		location: '',

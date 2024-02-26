@@ -9,7 +9,10 @@
 
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const utils = require('@generics/utils')
+const cacheUtils = require('@utils/cache')
+const emailUtils = require('@utils/email')
+const cloudUtils = require('@utils/cloud')
+const fileUtils = require('@utils/file')
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const kafkaCommunication = require('@generics/kafka-communication')
@@ -48,7 +51,7 @@ module.exports = class OrgAdminHelper {
 			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
 
 			const creationData = {
-				name: utils.extractFilename(filePath),
+				name: fileUtils.extractFilename(filePath),
 				input_path: filePath,
 				type: common.fileTypeCSV,
 				organization_id,
@@ -66,7 +69,7 @@ module.exports = class OrgAdminHelper {
 			}
 
 			//push to queue
-			const redisConfiguration = utils.generateRedisConfigForQueue()
+			const redisConfiguration = cacheUtils.generateRedisConfigForQueue()
 			const invitesQueue = new Queue(process.env.DEFAULT_QUEUE, redisConfiguration)
 			await invitesQueue.add(
 				'upload_invites',
@@ -123,9 +126,9 @@ module.exports = class OrgAdminHelper {
 				await Promise.all(
 					listFileUpload.data.map(async (upload) => {
 						/* Assigned upload url from the stored location */
-						upload.input_path = await utils.getDownloadableUrl(upload.input_path)
+						upload.input_path = await cloudUtils.getDownloadableUrl(upload.input_path)
 						if (upload.output_path) {
-							upload.output_path = await utils.getDownloadableUrl(upload.output_path)
+							upload.output_path = await cloudUtils.getDownloadableUrl(upload.output_path)
 						}
 						return upload
 					})
@@ -464,7 +467,7 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 
 			//delete from cache
 			const redisUserKey = common.redisUserPrefix + requestDetails.requester_id.toString()
-			await utils.redisDel(redisUserKey)
+			await cacheUtils.redisDel(redisUserKey)
 
 			return resolve({
 				success: true,
@@ -502,7 +505,7 @@ async function sendRoleRequestStatusEmail(userDetails, status) {
 				email: {
 					to: emailEncryption.decrypt(userDetails.email),
 					subject: templateData.subject,
-					body: utils.composeEmailBody(templateData.body, {
+					body: emailUtils.composeEmailBody(templateData.body, {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
 						orgName: organization.name,

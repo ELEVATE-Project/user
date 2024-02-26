@@ -3,13 +3,13 @@ const { Worker } = require('bullmq')
 const fs = require('fs')
 const userInviteService = require('@services/userInvite')
 const common = require('@constants/common')
-const utils = require('@generics/utils')
+const cacheUtils = require('@utils/cache')
 const path = require('path')
 
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 
-const redisConfiguration = utils.generateRedisConfigForQueue()
+const redisConfiguration = cacheUtils.generateRedisConfigForQueue()
 
 module.exports = function () {
 	try {

@@ -1,7 +1,6 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const organizationQueries = require('@database/queries/organization')
-const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/user-role')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const orgDomainQueries = require('@database/queries/orgDomain')
@@ -16,6 +15,8 @@ const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBodyDTO } = require('@dtos/eventBody')
 const responses = require('@helpers/responses')
+const emailUtils = require('@utils/email')
+const cacheUtils = require('@utils/cache')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -108,7 +109,7 @@ module.exports = class OrganizationsHelper {
 							email: {
 								to: plaintextEmailId,
 								subject: templateData.subject,
-								body: utils.composeEmailBody(templateData.body, {
+								body: emailUtils.composeEmailBody(templateData.body, {
 									name: inviteeData.name,
 									role: common.ORG_ADMIN_ROLE,
 									orgName: bodyData.name,
@@ -124,7 +125,7 @@ module.exports = class OrganizationsHelper {
 			}
 
 			const cacheKey = common.redisOrgPrefix + createdOrganization.id.toString()
-			await utils.internalDel(cacheKey)
+			await cacheUtils.internalDel(cacheKey)
 
 			const eventBody = eventBodyDTO({
 				entity: 'organization',
@@ -224,7 +225,7 @@ module.exports = class OrganizationsHelper {
 			}
 
 			const cacheKey = common.redisOrgPrefix + id.toString()
-			await utils.internalDel(cacheKey)
+			await cacheUtils.internalDel(cacheKey)
 			// await KafkaProducer.clearInternalCache(cacheKey)
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -251,7 +252,7 @@ module.exports = class OrganizationsHelper {
 				const orgDetailsFoundInRedis = []
 				for (let i = 0; i < organizationIds.length; i++) {
 					let orgDetails =
-						(await utils.redisGet(common.redisOrgPrefix + organizationIds[i].toString())) || false
+						(await cacheUtils.redisGet(common.redisOrgPrefix + organizationIds[i].toString())) || false
 
 					if (!orgDetails) {
 						orgIdsNotFoundInRedis.push(organizationIds[i])

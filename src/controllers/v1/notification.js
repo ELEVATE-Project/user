@@ -7,7 +7,7 @@
 
 // Dependencies
 const notificationService = require('@services/notification')
-const utilsHelper = require('@generics/utils')
+const roleUtils = require('@utils/role')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
@@ -29,7 +29,7 @@ module.exports = class NotificationTemplate {
 
 	async template(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
+			if (!roleUtils.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
