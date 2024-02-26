@@ -19,28 +19,28 @@ const createEntitySchema = {
 				status: {
 					type: 'string',
 				},
-				deleted: {
-					type: 'boolean',
+				deleted_at: {
+					type: 'null',
 				},
 				type: {
 					type: 'string',
 				},
-				createdBy: {
+				created_by: {
+					type: 'integer',
+				},
+				updated_by: {
+					type: 'integer',
+				},
+				id: {
+					type: 'integer',
+				},
+				updated_at: {
 					type: 'string',
 				},
-				updatedBy: {
+				created_at: {
 					type: 'string',
 				},
-				_id: {
-					type: 'string',
-				},
-				updatedAt: {
-					type: 'string',
-				},
-				createdAt: {
-					type: 'string',
-				},
-				__v: {
+				entity_type_id: {
 					type: 'integer',
 				},
 			},
@@ -48,14 +48,14 @@ const createEntitySchema = {
 				'value',
 				'label',
 				'status',
-				'deleted',
+				'deleted_at',
 				'type',
-				'createdBy',
-				'updatedBy',
-				'_id',
-				'updatedAt',
-				'createdAt',
-				'__v',
+				'created_by',
+				'updated_by',
+				'id',
+				'updated_at',
+				'created_at',
+				'entity_type_id',
 			],
 		},
 	},

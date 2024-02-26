@@ -1,20 +1,30 @@
-const { request, logIn, logError } = require('@commonTests')
+const { request, logIn, adminLogIn, logError } = require('@commonTests')
 let responseSchema = require('./responseSchema')
+const { faker } = require('@faker-js/faker')
+const { insertUserRole } = require('./userRoleData')
 
 describe('/user/v1/user-role', function () {
 	let userDetails
 	beforeAll(async () => {
-		userDetails = await logIn()
+		userDetails = await adminLogIn()
+		insertRole = await insertUserRole()
 	})
 
 	it('/create', async () => {
-		let res = await request.post('/user/v1/user-role/create').send({
-			title: 'system_admin',
-			user_type: 1,
-			status: 'ACTIVE',
-			visibility: 'PUBLIC',
-			organization_id: 1,
-		})
+		let name = faker.lorem.word().toLowerCase()
+		let res = await request
+			.post('/user/v1/user-role/create')
+			.set({
+				'X-auth-token': 'bearer ' + userDetails.token,
+				Connection: 'keep-alive',
+				'Content-Type': 'application/json',
+			})
+			.send({
+				title: name,
+				user_type: 1,
+				status: 'ACTIVE',
+				visibility: 'PUBLIC',
+			})
 
 		logError(res)
 		expect(res.statusCode).toBe(201)
@@ -22,13 +32,20 @@ describe('/user/v1/user-role', function () {
 	})
 
 	it('/update', async () => {
-		let res = await request.post('/user/v1/user-role/update/7').send({
-			title: 'system_adm',
-			user_type: 1,
-			status: 'ACTIVE',
-			visibility: 'PUBLIC',
-			organization_id: 1,
-		})
+		let name = faker.lorem.word().toLowerCase()
+		let res = await request
+			.post('/user/v1/user-role/update/' + insertRole[0])
+			.set({
+				'X-auth-token': 'bearer ' + insertRole[1],
+				Connection: 'keep-alive',
+				'Content-Type': 'application/json',
+			})
+			.send({
+				title: name,
+				user_type: 1,
+				status: 'ACTIVE',
+				visibility: 'PUBLIC',
+			})
 
 		logError(res)
 		expect(res.statusCode).toBe(201)
@@ -36,7 +53,11 @@ describe('/user/v1/user-role', function () {
 	})
 
 	it('/delete', async () => {
-		let res = await request.post('/user/v1/user-role/delete/7')
+		let res = await request.post('/user/v1/user-role/delete/' + insertRole[0]).set({
+			'X-auth-token': 'bearer ' + insertRole[1],
+			Connection: 'keep-alive',
+			'Content-Type': 'application/json',
+		})
 
 		logError(res)
 		expect(res.statusCode).toBe(202)
@@ -46,7 +67,12 @@ describe('/user/v1/user-role', function () {
 	it('/list', async () => {
 		let res = await request
 			.get('/user/v1/user-role/list')
-			.query({ page: 1, limit: 10, code: 'system', organization_id: 1 })
+			.set({
+				'X-auth-token': 'bearer ' + userDetails.token,
+				Connection: 'keep-alive',
+				'Content-Type': 'application/json',
+			})
+			.query({ page: 1, limit: 10, search: 'user' })
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
@@ -56,7 +82,10 @@ describe('/user/v1/user-role', function () {
 	it('/default', async () => {
 		let res = await request
 			.get('/user/v1/user-role/default')
-			.query({ page: 1, limit: 10, code: 'system', organization_id: 1 })
+			.set({
+				internal_access_token: 'internal_access_token',
+			})
+			.query({ page: 1, limit: 10 })
 
 		logError(res)
 		expect(res.statusCode).toBe(200)
