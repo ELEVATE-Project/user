@@ -5,10 +5,10 @@ const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
 }
 
-const hashPassword = async (password) => {
+const hashPassword = (password) => {
 	const saltRounds = 10
-	const salt = await genSaltSync(saltRounds)
-	const hashedPassword = await hashSync(password, salt)
+	const salt = genSaltSync(saltRounds)
+	const hashedPassword = hashSync(password, salt)
 	return hashedPassword
 }
 
