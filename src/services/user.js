@@ -23,6 +23,7 @@ const cloudUtils = require('@utils/cloud')
 const genericUtils = require('@utils/generic')
 const entityHelper = require('@helpers/entity')
 const roleUtils = require('@utils/role')
+const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 
 module.exports = class UserHelper {
 	/**
@@ -130,6 +131,35 @@ module.exports = class UserHelper {
 	}
 
 	/**
+	 * Get permissions
+	 * @method
+	 * @name getPermissions
+	 * @param {Array} roles - Array of user roles.
+	 * @returns {Array} - Array of permissions by module.
+	 */
+	static async getPermissions(roles) {
+		const roleTitle = roles.map(({ title }) => title)
+		const filter = { role_title: roleTitle }
+		const attributes = ['module', 'request_type']
+		const permissionAndModules = await rolePermissionMappingQueries.findAll(filter, attributes)
+		const permissionsByModule = {}
+		permissionAndModules.forEach(({ module, request_type }) => {
+			if (permissionsByModule[module]) {
+				permissionsByModule[module].request_type = [
+					...new Set([...permissionsByModule[module].request_type, ...request_type]),
+				]
+			} else {
+				permissionsByModule[module] = { module, request_type: [...request_type] }
+			}
+		})
+		return Object.values(permissionsByModule).map(({ module, request_type }) => ({
+			module,
+			request_type,
+			service: common.USER_SERVICE,
+		}))
+	}
+
+	/**
 	 * user details
 	 * @method
 	 * @name read
@@ -204,6 +234,9 @@ module.exports = class UserHelper {
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = entityHelper.removeDefaultOrgEntityTypes(validationData, user.organization_id)
+				const permissionsByModule = await this.getPermissions(user.user_roles)
+				user.permissions = permissionsByModule
+
 				const processDbResponse = entityHelper.processDbResponse(user, prunedEntities)
 
 				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)

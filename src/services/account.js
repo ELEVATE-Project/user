@@ -307,7 +307,7 @@ module.exports = class AccountHelper {
 			)
 
 			if (templateData) {
-				// Push successfull registration email to kafka
+				// Push successful registration email to kafka
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
@@ -324,6 +324,24 @@ module.exports = class AccountHelper {
 
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
+
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			const defaultOrgId = defaultOrg.id
+			const modelName = await userQueries.getModelName()
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [user.organization_id, defaultOrgId],
+				},
+				model_names: { [Op.contains]: [modelName] },
+			})
+
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			result.user = utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
 			return responses.successResponse({
