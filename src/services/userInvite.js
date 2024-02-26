@@ -138,20 +138,26 @@ module.exports = class UserInviteHelper {
 
 	static async extractDataFromCSV(csvFilePath) {
 		try {
+			const parsedCSVData = []
 			const csvToJsonData = await csv().fromFile(csvFilePath)
-			const header = Object.keys(csvToJsonData[0])
-
-			if (header.map((column) => column.toLowerCase()).includes('roles')) {
-				// Process the data, split roles, and handle unquoted roles
+			if (csvToJsonData.length > 0) {
+				const header = Object.keys(csvToJsonData[0])
+				const isRoleExist = header.map((column) => column.toLowerCase()).includes('roles')
 				csvToJsonData.forEach((row) => {
-					const roles = row.roles.replace(/"/g, '').split(',')
-					row.roles = roles
+					if (row.name || row.email || row.roles) {
+						if (isRoleExist) {
+							const roles = row.roles.replace(/"/g, '').split(',')
+							row.roles = roles.map((role) => role.trim()) // Trim each role
+						}
+						parsedCSVData.push(row)
+					}
 				})
 			}
+
 			return {
 				success: true,
 				result: {
-					data: csvToJsonData,
+					data: parsedCSVData,
 				},
 			}
 		} catch (error) {
@@ -185,7 +191,7 @@ module.exports = class UserInviteHelper {
 
 			//get all existing user
 			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) =>
-				emailEncryption.encrypt(email.toLowerCase())
+				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
 
 			const userCredentials = await UserCredentialQueries.findAll(
@@ -230,7 +236,8 @@ module.exports = class UserInviteHelper {
 
 			// process csv data
 			for (const invitee of csvData) {
-				invitee.email = invitee.email.toLowerCase()
+				invitee.email = invitee.email.trim().toLowerCase()
+				invitee.roles = invitee.roles.map((role) => role.trim())
 				const encryptedEmail = emailEncryption.encrypt(invitee.email.toLowerCase())
 
 				//find the invalid fields and generate error message
@@ -238,6 +245,7 @@ module.exports = class UserInviteHelper {
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
+
 				if (!utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
@@ -373,13 +381,13 @@ module.exports = class UserInviteHelper {
 							//remove user data from redis
 							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
 							await utils.redisDel(redisUserKey)
-							invitee.statusOrUserId = 'success'
+							invitee.statusOrUserId = 'Success'
 						} else {
 							invitee.statusOrUserId = 'No updates needed. User details are already up to date'
 						}
 					} else {
 						//user doesn't have access to update user data
-						invitee.statusOrUserId = 'Unauthorized to update user details in a different organization.'
+						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
 					}
 				} else {
 					//new user invitee creation
