@@ -366,7 +366,7 @@ npm test
 
 # Used in
 
-This project was built to be used with [Mentoring Service](https://github.com/ELEVATE-Project/mentoring.git).
+This project was built to be used with [Mentor Service](https://github.com/ELEVATE-Project/mentoring.git).
 
 Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git).
 
