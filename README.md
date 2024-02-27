@@ -41,14 +41,14 @@
 </details>
 
 </br>
-The Mentoring building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities.MentorED is an open source mentoring application that facilitates peer learning and professional development by creating a community of mentors and mentees.
+The Mentor building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities. Mentor is an open-source mentoring application that facilitates peer learning and professional development by creating a community of mentors and mentees.
 
 </div>
 <br>
 
 # Setup Options
 
-Elevate user services can be setup in local using two methods:
+Elevate user services can be set in local using two methods:
 
 <details><summary>Dockerized service with local dependencies(Intermediate)</summary>
 
@@ -61,9 +61,6 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-     #MongoDb Connectivity Url
-     MONGODB_URL = mongodb://host.docker.internal:27017/elevate-mentoring
-
      #Kafka Host Server URL
      KAFKA_URL = host.docker.external:9092
     ```
@@ -107,8 +104,8 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-     #MongoDb Connectivity Url
-     MONGODB_URL = mongodb://10.1.2.34:27017/elevate-mentoring
+     #DB Connectivity Url
+     DATABASE_URL=postgres://postgres:postgres@localhost:5432/elevate-user
 
      #Kafka Host Server URL
      KAFKA_URL = 11.2.3.45:9092
@@ -168,7 +165,7 @@ Elevate user services can be setup in local using two methods:
     APPLICATION_ENV = development
 
     # Database connectivity url
-    MONGODB_URL = mongodb://localhost:27017/db-name
+    DATABASE_URL=postgres://postgres:postgres@localhost:5432/elevate-user
 
     # Token secret to generate access token
     ACCESS_TOKEN_SECRET = 'access-token-secret'
@@ -224,8 +221,12 @@ Elevate user services can be setup in local using two methods:
     # Azure storage container which stores files
     DEFAULT_AZURE_CONTAINER_NAME = 'azure-container-storage-name'
 
-    # Internal access token for communicationcation between services via network call
+    # Internal access token for communication between services via network call
     INTERNAL_ACCESS_TOKEN = 'internal-access-token'
+
+
+    #Enable logging of network request
+    ENABLE_LOG = true
 
     # JWT Access Token expiry In Days
     ACCESS_TOKEN_EXPIRY = '1'
@@ -366,13 +367,13 @@ npm test
 
 # Used in
 
-This project was built to be used with [Mentoring Service](https://github.com/ELEVATE-Project/mentoring.git).
+This project was built to be used with [Mentor Service](https://github.com/ELEVATE-Project/mentoring.git).
 
 Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git).
 
-The frontend/mobile application [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
+The PWA [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
 
-You can learn more about the full implementation of MentorEd [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
+You can learn more about the full implementation of Mentor [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
 <br>
 
 # Team

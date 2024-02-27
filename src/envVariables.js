@@ -7,6 +7,10 @@ let enviromentVariables = {
 		message: 'Required port no',
 		optional: false,
 	},
+	APPLICATION_HOST: {
+		message: 'Required host',
+		optional: false,
+	},
 	APPLICATION_ENV: {
 		message: 'Required node environment',
 		optional: false,
