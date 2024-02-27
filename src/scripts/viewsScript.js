@@ -1,8 +1,9 @@
 // Dependencies
+require('module-alias/register')
+
 const request = require('request')
 require('dotenv').config({ path: '../.env' })
 const entityTypeQueries = require('../database/queries/entityType')
-
 // Data
 const schedulerServiceUrl = process.env.SCHEDULER_SERVICE_HOST // Port address on which the scheduler service is running
 const mentoringBaseurl = `http://${process.env.APPLICATION_HOST}:${process.env.APPLICATION_PORT}`

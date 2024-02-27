@@ -6,6 +6,7 @@ const { UniqueConstraintError } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
+const responses = require('@helpers/responses')
 module.exports = class EntityHelper {
 	/**
 	 * Create entity type.
@@ -22,14 +23,14 @@ module.exports = class EntityHelper {
 		bodyData.organization_id = orgId
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: entityType,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ENTITY_TYPE_ALREADY_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -52,27 +53,27 @@ module.exports = class EntityHelper {
 	static async update(bodyData, id, loggedInUserId, orgId) {
 		;(bodyData.updated_by = loggedInUserId), (bodyData.organization_id = orgId)
 		try {
-			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, bodyData, {
+			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, orgId, bodyData, {
 				returning: true,
 				raw: true,
 			})
 
-			if (updateCount === '0') {
-				return common.failureResponse({
+			if (updateCount === 0) {
+				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_TYPE_UPDATED_SUCCESSFULLY',
 				result: updatedEntityType,
 			})
 		} catch (error) {
 			if (error instanceof UniqueConstraintError) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ENTITY_TYPE_ALREADY_DELETED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -82,20 +83,26 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readAllSystemEntityTypes(organization_id) {
+	static async readAllSystemEntityTypes(orgId) {
 		try {
+			const defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			const defaultOrgId = defaultOrg.id
+
 			const attributes = ['value', 'label', 'id']
 
-			const entities = await entityTypeQueries.findAllEntityTypes(organization_id, attributes)
+			const entities = await entityTypeQueries.findAllEntityTypes([orgId, defaultOrgId], attributes)
 
 			if (!entities.length) {
-				return common.failureResponse({
+				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
 				result: entities,
@@ -122,7 +129,7 @@ module.exports = class EntityHelper {
 			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
 			const prunedEntities = removeDefaultOrgEntityTypes(entities, orgId)
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
 				result: { entity_types: prunedEntities },
@@ -140,18 +147,18 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
-	static async delete(id) {
+	static async delete(id, orgId) {
 		try {
-			const deleteCount = await entityTypeQueries.deleteOneEntityType(id)
-			if (deleteCount === '0') {
-				return common.failureResponse({
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, orgId)
+			if (deleteCount === 0) {
+				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return common.successResponse({
+			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_TYPE_DELETED_SUCCESSFULLY',
 			})

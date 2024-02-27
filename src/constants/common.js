@@ -5,49 +5,15 @@
  * Description : All commonly used constants through out the service
  */
 
-const form = require('@generics/form')
-const { elevateLog, correlationId } = require('elevate-logger')
-const logger = elevateLog.init()
-const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
-	const versions = await form.getAllFormsVersion()
-	let response = {
-		statusCode,
-		responseCode,
-		message,
-		result,
-		meta: { ...meta, formsVersion: versions, correlation: correlationId.getId() },
-	}
-	logger.info('Request Response', { response: response })
-
-	return response
+function getPaginationOffset(page, limit) {
+	return (page - 1) * limit
 }
-
-const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode, result }) => {
-	const error = new Error(message)
-	error.statusCode = statusCode
-	error.responseCode = responseCode
-	error.data = result || []
-
-	return error
-}
-
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
 		DEFAULT_PAGE_SIZE: 100,
 	},
-	successResponse,
-	failureResponse,
-	guestUrls: [
-		'/user/v1/account/login',
-		'/user/v1/account/create',
-		'/user/v1/account/generateToken',
-		'/user/v1/account/generateOtp',
-		'/user/v1/account/registrationOtp',
-		'/user/v1/account/resetPassword',
-		'/user/v1/admin/login',
-		'/user/v1/userRole/list',
-	],
+	getPaginationOffset,
 	internalAccessUrls: [
 		'/user/v1/profile/details',
 		'/user/v1/account/list',
@@ -58,6 +24,8 @@ module.exports = {
 		'/user/v1/admin/triggerViewRebuildInternal',
 		'/user/v1/admin/triggerPeriodicViewRefreshInternal',
 		'/user/v1/account/search',
+		'/user/v1/organization/list',
+		'/user/v1/user-role/default',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
@@ -68,6 +36,9 @@ module.exports = {
 	ADMIN_ROLE: 'admin',
 	ORG_ADMIN_ROLE: 'org_admin',
 	USER_ROLE: 'user',
+	SESSION_MANAGER_ROLE: 'session_manager',
+	PUBLIC_ROLE: 'public',
+	USER_SERVICE: 'user',
 	roleValidationPaths: [
 		'/user/v1/account/verifyMentor',
 		'/user/v1/accounts/verifyUser',
@@ -90,12 +61,12 @@ module.exports = {
 	INACTIVE_STATUS: 'INACTIVE',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
+	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
 	languages: 'languages',
 	typeSystem: 'system',
-	ORG_ADMIN_ROLE: 'org_admin',
 	UPLOADED_STATUS: 'UPLOADED',
 	FAILED_STATUS: 'FAILED',
 	PROCESSED_STATUS: 'PROCESSED',
@@ -113,6 +84,9 @@ module.exports = {
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
 	NO_OF_ATTEMPTS: 3,
+	SEARCH: '',
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
+	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
+	ROLE_TYPE_NON_SYSTEM: 0,
 }

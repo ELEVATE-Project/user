@@ -224,6 +224,7 @@ Elevate user services can be set in local using two methods:
     # Internal access token for communication between services via network call
     INTERNAL_ACCESS_TOKEN = 'internal-access-token'
 
+
     #Enable logging of network request
     ENABLE_LOG = true
 

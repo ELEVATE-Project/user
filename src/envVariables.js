@@ -168,14 +168,6 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
-	MENTOR_INVITATION_EMAIL_TEMPLATE_CODE: {
-		message: 'Required mentor invitation email template code',
-		optional: false,
-	},
-	MENTEE_INVITATION_EMAIL_TEMPLATE_CODE: {
-		message: 'Required mentee invitation email template code',
-		optional: false,
-	},
 	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {
 		message: 'Required admin upload invitee email template code',
 		optional: false,
@@ -217,6 +209,32 @@ let enviromentVariables = {
 		message: 'Interval to refresh views in milliseconds',
 		optional: false,
 		default: 540000,
+	},
+	EMAIL_ID_ENCRYPTION_KEY: {
+		message: 'Required Email ID Encryption Key',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_IV: {
+		message: 'Required Email ID Encryption IV',
+		optional: false,
+	},
+	EMAIL_ID_ENCRYPTION_ALGORITHM: {
+		message: 'Required Email ID Encryption Algorithm',
+		optional: false,
+		default: 'aes-256-cbc',
+	},
+	EVENT_ORG_LISTENER_URLS: {
+		message: 'Required List Of Org Event Listener Urls',
+		optional: false,
+	},
+	EVENT_ENABLE_ORG_EVENTS: {
+		message: 'Required Enable Org Events Flag',
+		optional: false,
+	},
+	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required generic invitation email template code',
+		optional: true,
+		default: 'generic_invite',
 	},
 }
 
