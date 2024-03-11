@@ -160,4 +160,87 @@ module.exports = class Organization {
 			return error
 		}
 	}
+
+	async addRelatedOrg(req) {
+		try {
+			let isAdmin,
+				isOrgAdmin = false
+			const roles = req.decodedToken.roles
+
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+			}
+
+			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
+				if (req.body.related_orgs) {
+					throw responses.failureResponse({
+						message: 'CONTACT_ADMIN_RELATED_ORGANIZATIONS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				throw responses.failureResponse({
+					message: 'USER_DOES_NOT_HAVE_ACCESS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else if (!isAdmin && !isOrgAdmin) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgService.addRelatedOrg(
+				req.params.id ? req.params.id : '',
+				req.body.related_orgs ? req.body.related_orgs : []
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+	async removeRelatedOrg(req) {
+		try {
+			let isAdmin,
+				isOrgAdmin = false
+			const roles = req.decodedToken.roles
+
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+			}
+
+			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
+				if (req.body.related_orgs) {
+					throw responses.failureResponse({
+						message: 'CONTACT_ADMIN_RELATED_ORGANIZATIONS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				throw responses.failureResponse({
+					message: 'USER_DOES_NOT_HAVE_ACCESS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else if (!isAdmin && !isOrgAdmin) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgService.removeRelatedOrg(
+				req.params.id ? req.params.id : '',
+				req.body.related_orgs ? req.body.related_orgs : []
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }

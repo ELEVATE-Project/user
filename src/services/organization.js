@@ -17,6 +17,7 @@ const emailEncryption = require('@utils/emailEncryption')
 const { eventBodyDTO } = require('@dtos/eventBody')
 const responses = require('@helpers/responses')
 const organization = require('@database/models/organization')
+const sequelize = require('@database/models/index').sequelize
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -158,7 +159,9 @@ module.exports = class OrganizationsHelper {
 	static async update(id, bodyData, loggedInUserId) {
 		try {
 			bodyData.updated_by = loggedInUserId
-			bodyData.related_orgs = [...new Set([...bodyData.related_orgs])] //use Set to remove any duplicates
+			if (bodyData.relatedOrgs) {
+				delete bodyData.relatedOrgs
+			}
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
@@ -168,53 +171,6 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
-
-			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, bodyData?.related_orgs)) {
-				if (
-					bodyData?.related_orgs &&
-					_.isEqual(orgDetails.updatedRows[0].related_orgs, bodyData.related_orgs)
-				) {
-					// const relatedOrgs = [...new Set([...bodyData.related_orgs])]
-					let x = await organizationQueries.appendRelatedOrg(
-						orgDetails.updatedRows[0].id,
-						bodyData.related_orgs,
-						{
-							returning: true,
-							raw: true,
-						}
-					)
-				}
-				const removedOrgIds = _.difference(
-					orgDetailsBeforeUpdate.related_orgs,
-					orgDetails.updatedRows[0].related_orgs
-				)
-				await organizationQueries.removeRelatedOrg(orgDetails.updatedRows[0].id, removedOrgIds, {
-					returning: true,
-					raw: true,
-				})
-
-				// fetch the list of all unique related orgs
-				const allRelatedOrgs = [
-					...new Set([...orgDetails.updatedRows[0].related_orgs, orgDetails.updatedRows[0].id]),
-				]
-
-				const organizationDetails = await organizationQueries.findAll(
-					{
-						id: { [Op.in]: allRelatedOrgs },
-					},
-					{
-						attributes: ['id', 'related_orgs'],
-					}
-				)
-
-				eventBroadcaster('updateRelatedOrgs', {
-					requestBody: {
-						related_organization_ids: orgDetails.updatedRows[0].related_orgs,
-						organization_id: orgDetails.updatedRows[0].id,
-						organizationDetails,
-					},
-				})
-			}
 
 			let domains = []
 			if (bodyData.domains?.length) {
@@ -403,6 +359,113 @@ module.exports = class OrganizationsHelper {
 				statusCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				result: organisationDetails,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async addRelatedOrg(id, relatedOrgs) {
+		try {
+			// fetch organization details before update
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
+			if (!orgDetailsBeforeUpdate) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
+			// append related organizations and make sure it is unique
+			let newRelatedOrgs = [...new Set([...orgDetailsBeforeUpdate?.related_orgs, ...relatedOrgs])]
+
+			// check if there are any addition to related_org
+			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, newRelatedOrgs)) {
+				// update parent org related orgs
+				const parentOrganzationUpdate = await organizationQueries.update(
+					{
+						id: id,
+					},
+					{
+						related_orgs: newRelatedOrgs,
+					},
+					{
+						returning: true,
+						raw: true,
+					}
+				)
+				// update child org related orgs
+				const childOrganzationUpdate = await organizationQueries.appendRelatedOrg(id, newRelatedOrgs, {
+					returning: true,
+					raw: true,
+				})
+				const deltaOrgs = _.difference(newRelatedOrgs, orgDetailsBeforeUpdate?.related_orgs)
+
+				eventBroadcaster('updateRelatedOrgs', {
+					requestBody: {
+						delta_organization_ids: deltaOrgs,
+						organization_id: id,
+						action: 'PUSH',
+					},
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	static async removeRelatedOrg(id, relatedOrgs) {
+		try {
+			// fetch organization details before update
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
+			if (!orgDetailsBeforeUpdate) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
+
+			const relatedOrganizations = _.difference(orgDetailsBeforeUpdate?.related_orgs, relatedOrgs)
+
+			// check if there are any addition to related_org
+			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, relatedOrganizations)) {
+				// update parent org related orgs
+				const parentOrganzationUpdate = await organizationQueries.update(
+					{
+						id: parseInt(id, 10),
+					},
+					{
+						related_orgs: relatedOrganizations,
+					},
+					{
+						returning: true,
+						raw: true,
+					}
+				)
+
+				// update child org related orgs
+				const childOrganzationUpdate = await organizationQueries.removeRelatedOrg(id, relatedOrgs, {
+					returning: true,
+					raw: true,
+				})
+
+				eventBroadcaster('updateRelatedOrgs', {
+					requestBody: {
+						delta_organization_ids: relatedOrgs,
+						organization_id: id,
+						action: 'POP',
+					},
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
