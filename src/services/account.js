@@ -340,8 +340,8 @@ module.exports = class AccountHelper {
 				model_names: { [Op.contains]: [modelName] },
 			})
 
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			result.user = utils.processDbResponse(result.user, prunedEntities)
+			const prunedEntities = entityHelper.removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			result.user = entityHelper.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
 			return responses.successResponse({
