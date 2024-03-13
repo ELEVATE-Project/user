@@ -12,15 +12,92 @@ const expressValidator = require('express-validator')
 const fs = require('fs')
 const { elevateLog, correlationId } = require('elevate-logger')
 const logger = elevateLog.init()
+const path = require('path')
 
 module.exports = (app) => {
 	app.use(authenticator)
 	app.use(pagination)
 	app.use(expressValidator())
+	async function getAllowedControllers(directoryPath) {
+		try {
+			const getAllFilesAndDirectories = (dir) => {
+				let filesAndDirectories = []
+				fs.readdirSync(dir).forEach((item) => {
+					const itemPath = path.join(dir, item)
+					const stat = fs.statSync(itemPath)
+					if (stat.isDirectory()) {
+						filesAndDirectories.push({
+							name: item,
+							type: 'directory',
+							path: itemPath,
+						})
+						filesAndDirectories = filesAndDirectories.concat(getAllFilesAndDirectories(itemPath))
+					} else {
+						filesAndDirectories.push({
+							name: item,
+							type: 'file',
+							path: itemPath,
+						})
+					}
+				})
+				return filesAndDirectories
+			}
 
+			const allFilesAndDirectories = getAllFilesAndDirectories(directoryPath)
+			const allowedControllers = allFilesAndDirectories
+				.filter((item) => item.type === 'file' && item.name.endsWith('.js'))
+				.map((item) => path.basename(item.name, '.js')) // Remove the ".js" extension
+
+			const allowedVersions = allFilesAndDirectories
+				.filter((item) => item.type === 'directory')
+				.map((item) => item.name)
+
+			return {
+				allowedControllers,
+				allowedVersions,
+			}
+		} catch (err) {
+			console.error('Unable to scan directory:', err)
+			return {
+				allowedControllers: [],
+				directories: [],
+			}
+		}
+	}
 	async function router(req, res, next) {
 		let controllerResponse
 		let validationError
+		const version = (req.params.version.match(/^v\d+$/) || [])[0] // Match version like v1, v2, etc.
+		const controllerName = (req.params.controller.match(/^[a-zA-Z0-9_-]+$/) || [])[0] // Allow only alphanumeric characters, underscore, and hyphen
+		const file = req.params.file ? (req.params.file.match(/^[a-zA-Z0-9_-]+$/) || [])[0] : null // Same validation as controller, or null if file is not provided
+		const method = (req.params.method.match(/^[a-zA-Z0-9]+$/) || [])[0] // Allow only alphanumeric characters
+		try {
+			if (!version || !controllerName || !method || (req.params.file && !file)) {
+				// Invalid input, return an error response
+				const error = new Error('Invalid Path')
+				error.statusCode = 400
+				throw error
+			}
+
+			const directoryPath = path.resolve(__dirname, '..', 'controllers')
+
+			const { allowedControllers, allowedVersions } = await getAllowedControllers(directoryPath)
+
+			// Validate version
+			if (!allowedVersions.includes(version)) {
+				const error = new Error('Invalid version.')
+				error.statusCode = 400
+				throw error
+			}
+			// Validate controller
+			if (!allowedControllers.includes(controllerName)) {
+				const error = new Error('Invalid controller.')
+				error.statusCode = 400
+				throw error
+			}
+		} catch (error) {
+			return next(error)
+		}
 
 		/* Check for input validation error */
 		try {
@@ -53,16 +130,14 @@ module.exports = (app) => {
 						'.js'
 				)
 				if (folderExists) {
-					controller = require(`@controllers/${req.params.version}/${req.params.controller}/${req.params.file}`)
+					controller = require(`@controllers/${version}/${controllerName}/${file}`)
 				} else {
-					controller = require(`@controllers/${req.params.version}/${req.params.controller}`)
+					controller = require(`@controllers/${version}/${controllerName}`)
 				}
 			} else {
-				controller = require(`@controllers/${req.params.version}/${req.params.controller}`)
+				controller = require(`@controllers/${version}/${controllerName}`)
 			}
-			controllerResponse = new controller()[req.params.method]
-				? await new controller()[req.params.method](req)
-				: next()
+			controllerResponse = new controller()[method] ? await new controller()[method](req) : next()
 		} catch (error) {
 			// If controller or service throws some random error
 			return next(error)
