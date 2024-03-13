@@ -368,7 +368,7 @@ module.exports = class OrganizationsHelper {
 	static async addRelatedOrg(id, relatedOrgs) {
 		try {
 			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
@@ -381,10 +381,10 @@ module.exports = class OrganizationsHelper {
 
 			// check if there are any addition to related_org
 			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, newRelatedOrgs)) {
-				// update parent org related orgs
-				const parentOrganzationUpdate = await organizationQueries.update(
+				// update org related orgs
+				await organizationQueries.update(
 					{
-						id: id,
+						id,
 					},
 					{
 						related_orgs: newRelatedOrgs,
@@ -394,8 +394,8 @@ module.exports = class OrganizationsHelper {
 						raw: true,
 					}
 				)
-				// update child org related orgs
-				const childOrganzationUpdate = await organizationQueries.appendRelatedOrg(id, newRelatedOrgs, {
+				// update related orgs to append org Id
+				await organizationQueries.appendRelatedOrg(id, newRelatedOrgs, {
 					returning: true,
 					raw: true,
 				})
@@ -421,7 +421,7 @@ module.exports = class OrganizationsHelper {
 	static async removeRelatedOrg(id, relatedOrgs) {
 		try {
 			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
@@ -432,10 +432,23 @@ module.exports = class OrganizationsHelper {
 
 			const relatedOrganizations = _.difference(orgDetailsBeforeUpdate?.related_orgs, relatedOrgs)
 
+			// check if the given org ids are present in the organization's related org
+			const relatedOrgMismatchFlag = relatedOrgs.some(
+				(orgId) => !orgDetailsBeforeUpdate?.related_orgs.includes(orgId)
+			)
+
+			if (relatedOrgMismatchFlag) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'RELATED_ORG_REMOVAL_FAILED',
+				})
+			}
+
 			// check if there are any addition to related_org
 			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, relatedOrganizations)) {
-				// update parent org related orgs
-				const parentOrganzationUpdate = await organizationQueries.update(
+				// update org remove related orgs
+				await organizationQueries.update(
 					{
 						id: parseInt(id, 10),
 					},
@@ -448,8 +461,8 @@ module.exports = class OrganizationsHelper {
 					}
 				)
 
-				// update child org related orgs
-				const childOrganzationUpdate = await organizationQueries.removeRelatedOrg(id, relatedOrgs, {
+				// update related orgs remove orgId
+				await organizationQueries.removeRelatedOrg(id, relatedOrgs, {
 					returning: true,
 					raw: true,
 				})
