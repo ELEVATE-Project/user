@@ -1,6 +1,4 @@
 const { request, adminLogIn, logError } = require('@commonTests')
-const entityTypeQueries = require('@database/queries/entities')
-const Entity = require('@database/models/index').Entity
 
 const { faker } = require('@faker-js/faker')
 

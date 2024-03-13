@@ -245,6 +245,7 @@ module.exports = class OrganizationsHelper {
 
 	static async list(params) {
 		try {
+			console.log('params===========', params)
 			if (params.body && params.body.organizationIds) {
 				const organizationIds = params.body.organizationIds
 				const orgIdsNotFoundInRedis = []
