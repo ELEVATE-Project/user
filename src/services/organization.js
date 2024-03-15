@@ -365,7 +365,7 @@ module.exports = class OrganizationsHelper {
 		}
 	}
 
-	static async addRelatedOrg(id, relatedOrgs) {
+	static async addRelatedOrg(id, relatedOrgs = []) {
 		try {
 			// fetch organization details before update
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
@@ -377,7 +377,7 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 			// append related organizations and make sure it is unique
-			let newRelatedOrgs = [...new Set([...orgDetailsBeforeUpdate?.related_orgs, ...relatedOrgs])]
+			let newRelatedOrgs = [...new Set([...(orgDetailsBeforeUpdate?.related_orgs ?? []), ...relatedOrgs])]
 
 			// check if there are any addition to related_org
 			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, newRelatedOrgs)) {
@@ -418,7 +418,7 @@ module.exports = class OrganizationsHelper {
 			throw error
 		}
 	}
-	static async removeRelatedOrg(id, relatedOrgs) {
+	static async removeRelatedOrg(id, relatedOrgs = []) {
 		try {
 			// fetch organization details before update
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
@@ -429,7 +429,13 @@ module.exports = class OrganizationsHelper {
 					message: 'ORGANIZATION_NOT_FOUND',
 				})
 			}
-
+			if (orgDetailsBeforeUpdate?.related_orgs == null) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'RELATED_ORG_REMOVAL_FAILED',
+				})
+			}
 			const relatedOrganizations = _.difference(orgDetailsBeforeUpdate?.related_orgs, relatedOrgs)
 
 			// check if the given org ids are present in the organization's related org
