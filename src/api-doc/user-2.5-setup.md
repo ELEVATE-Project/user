@@ -6,6 +6,7 @@
 -   **Node.js:** v20
 -   **PostgreSQL:** 16
 -   **Citus:** 12.1
+-   **Apache Kafka:** 3.5.0
 
 ## Installations
 
