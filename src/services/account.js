@@ -639,10 +639,9 @@ module.exports = class AccountHelper {
 				},
 			})
 			if (!userCredentials)
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'OTP_SENT_SUCCESSFULLY',
 				})
 
 			const user = await userQueries.findOne({
@@ -650,10 +649,9 @@ module.exports = class AccountHelper {
 				organization_id: userCredentials.organization_id,
 			})
 			if (!user)
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'OTP_SENT_SUCCESSFULLY',
 				})
 
 			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
