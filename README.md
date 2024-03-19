@@ -41,7 +41,7 @@
 </details>
 
 </br>
-The Mentoring building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities.MentorED is an open source mentoring application that facilitates peer learning and professional development by creating a community of mentors and mentees.
+The Mentor building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities. Mentor is an open-source mentoring application that facilitates peer learning and professional development by creating a community of mentors and mentees.
 
 </div>
 <br>
@@ -56,7 +56,7 @@ The Mentoring building block enables effective mentoring interactions between me
 
 # Setup Options
 
-Elevate user services can be setup in local using two methods:
+Elevate user services can be set in local using two methods:
 
 <details><summary>Dockerized service with local dependencies(Intermediate)</summary>
 
@@ -69,9 +69,6 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-     #MongoDb Connectivity Url
-     MONGODB_URL = mongodb://host.docker.internal:27017/elevate-mentoring
-
      #Kafka Host Server URL
      KAFKA_URL = host.docker.external:9092
     ```
@@ -115,8 +112,8 @@ Elevate user services can be setup in local using two methods:
     Eg:
 
     ```
-     #MongoDb Connectivity Url
-     MONGODB_URL = mongodb://10.1.2.34:27017/elevate-mentoring
+     #DB Connectivity Url
+     DATABASE_URL=postgres://postgres:postgres@localhost:5432/elevate-user
 
      #Kafka Host Server URL
      KAFKA_URL = 11.2.3.45:9092
@@ -211,6 +208,7 @@ Refer to [Kafka Ubuntu 22.04 setup guide](https://www.fosstechnix.com/install-ap
 
 4. Reload systemd:
 
+
     ```bash
     $ sudo systemctl daemon-reload
     ```
@@ -276,6 +274,7 @@ Refer to [Kafka Ubuntu 22.04 setup guide](https://www.fosstechnix.com/install-ap
     Kafka status should be shown as active (running).
 
 ### Install Redis
+
 
 Refer to [Redis Ubuntu 22.04 setup guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-22-04)
 
@@ -745,13 +744,13 @@ npm test
 
 # Used in
 
-This project was built to be used with [Mentoring Service](https://github.com/ELEVATE-Project/mentoring.git).
+This project was built to be used with [Mentor Service](https://github.com/ELEVATE-Project/mentoring.git).
 
 Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git).
 
-The frontend/mobile application [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
+The PWA [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
 
-You can learn more about the full implementation of MentorEd [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
+You can learn more about the full implementation of Mentor [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
 <br>
 
 # Team

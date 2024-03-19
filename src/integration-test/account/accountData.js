@@ -1,4 +1,4 @@
-const usersData = require('@db/users/queries')
+const usersData = require('@database/queries/users')
 const { faker } = require('@faker-js/faker')
 const utilsHelper = require('@generics/utils')
 const crypto = require('crypto')
