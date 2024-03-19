@@ -53,8 +53,9 @@ const getDownloadableUrl = async (imgPath) => {
 			bucketName: process.env.DEFAULT_GCP_BUCKET_NAME,
 			gcpProjectId: process.env.GCP_PROJECT_ID,
 			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH),
+			expiry: Date.now() + parseFloat(process.env.DOWNLOAD_URL_EXPIRATION_DURATION),
 		}
-		imgPath = await GcpFileHelper.getDownloadableUrl(options)
+		imgPath = await GcpFileHelper.getSignedDownloadableUrl(options)
 	} else if (process.env.CLOUD_STORAGE === 'AWS') {
 		const options = {
 			destFilePath: imgPath,
