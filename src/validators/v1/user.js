@@ -4,9 +4,11 @@
  * Date : 17-July-2023
  * Description : Validations of user controller
  */
-
+const filterRequestBody = require('../common')
+const { user } = require('@constants/blacklistConfig')
 module.exports = {
 	update: (req) => {
+		req.body = filterRequestBody(req.body, user.update)
 		if (req.body.preferred_language) {
 			req.checkBody('preferred_language')
 				.trim()

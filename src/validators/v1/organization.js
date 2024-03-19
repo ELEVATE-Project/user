@@ -4,9 +4,11 @@
  * Date : 25-July-2023
  * Description : Validations of Organization controller
  */
-
+const filterRequestBody = require('../common')
+const { organization } = require('@constants/blacklistConfig')
 module.exports = {
 	create: (req) => {
+		req.body = filterRequestBody(req.body, organization.create)
 		req.checkBody('code').trim().notEmpty().withMessage('code field is empty')
 		req.checkBody('name')
 			.trim()
@@ -20,10 +22,12 @@ module.exports = {
 	},
 
 	update: (req) => {
+		req.body = filterRequestBody(req.body, organization.update)
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 
 	requestOrgRole: (req) => {
+		req.body = filterRequestBody(req.body, organization.requestOrgRole)
 		req.checkBody('role').notEmpty().withMessage('role field is empty')
 		req.checkBody('form_data').notEmpty().withMessage('form_data field is empty')
 	},
