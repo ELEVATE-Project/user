@@ -232,6 +232,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'generic_invite',
 	},
+	ALLOWED_HOST: {
+		message: 'Required CORS allowed host',
+		optional: true,
+		default: '*',
+	},
 }
 
 let success = true
