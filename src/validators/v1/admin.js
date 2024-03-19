@@ -27,7 +27,15 @@ module.exports = {
 			.withMessage('email is invalid')
 			.normalizeEmail()
 
-		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
+			req.checkBody('password')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}|:"<>?~`\-=[\];',.\/])[^ ]{10,}$/)
+			.withMessage(
+				'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long'
+			)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
 	},
 
 	login: (req) => {

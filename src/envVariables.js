@@ -96,11 +96,11 @@ let enviromentVariables = {
 		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
 	},
 	ACCESS_TOKEN_EXPIRY: {
-		message: 'Required access token expiry in days',
+		message: 'Required access token expiry',
 		optional: false,
 	},
 	REFRESH_TOKEN_EXPIRY: {
-		message: 'Required refresh token expiry in days',
+		message: 'Required refresh token expiry',
 		optional: false,
 	},
 	API_DOC_URL: {
