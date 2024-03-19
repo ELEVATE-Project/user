@@ -25,7 +25,15 @@ module.exports = {
 			.withMessage('email is invalid')
 			.normalizeEmail({ gmail_remove_dots: false })
 
-		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
+		req.checkBody('password')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}|:"<>?~`\-=[\];',.\/])[^ ]{10,}$/)
+			.withMessage(
+				'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long'
+			)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
 
 		if (req.body.role) {
 			req.checkBody('role').trim().not().isIn([common.ADMIN_ROLE]).withMessage("User does't have admin access")
@@ -64,7 +72,15 @@ module.exports = {
 
 	resetPassword: (req) => {
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-		req.checkBody('password').notEmpty().withMessage('password field is empty')
+		req.checkBody('password')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}|:"<>?~`\-=[\];',.\/])[^ ]{10,}$/)
+			.withMessage(
+				'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long'
+			)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
 
 		req.checkBody('otp')
 			.notEmpty()
