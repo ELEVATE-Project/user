@@ -1,5 +1,6 @@
 const Permission = require('@database/models/index').Permission
-
+const filterRequestBody = require('../common')
+const { permissions } = require('@constants/blacklistConfig')
 async function isUniqueCode(value) {
 	const existingRecord = await Permission.findOne({ where: { code: value } })
 	if (existingRecord) {
@@ -10,6 +11,7 @@ async function isUniqueCode(value) {
 
 module.exports = {
 	create: (req) => {
+		req.body = filterRequestBody(req.body, permissions.create)
 		req.checkBody('code')
 			.trim()
 			.notEmpty()
@@ -48,6 +50,7 @@ module.exports = {
 	},
 
 	update: (req) => {
+		req.body = filterRequestBody(req.body, permissions.update)
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 
 		req.checkBody('code')

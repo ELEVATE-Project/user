@@ -4,9 +4,11 @@
  * Date : 04-Nov-2021
  * Description : Validations of user entities controller
  */
-
+const filterRequestBody = require('../common')
+const { entityType } = require('@constants/blacklistConfig')
 module.exports = {
 	create: (req) => {
+		req.body = filterRequestBody(req.body, entityType.create)
 		req.checkBody('value')
 			.trim()
 			.notEmpty()
@@ -41,6 +43,7 @@ module.exports = {
 	},
 
 	update: (req) => {
+		req.body = filterRequestBody(req.body, entityType.update)
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 
 		req.checkBody('value')

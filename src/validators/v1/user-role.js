@@ -1,3 +1,5 @@
+const filterRequestBody = require('../common')
+const { userRole } = require('@constants/blacklistConfig')
 const validateList = (req, allowedVariables) => {
 	allowedVariables.forEach((variable) => {
 		req.checkQuery(variable)
@@ -9,6 +11,7 @@ const validateList = (req, allowedVariables) => {
 
 module.exports = {
 	create: (req) => {
+		req.body = filterRequestBody(req.body, userRole.create)
 		req.checkBody('title')
 			.trim()
 			.notEmpty()
@@ -40,6 +43,7 @@ module.exports = {
 	},
 
 	update: (req) => {
+		req.body = filterRequestBody(req.body, userRole.update)
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 
 		req.checkBody('title')

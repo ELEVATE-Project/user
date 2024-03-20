@@ -1,5 +1,8 @@
+const filterRequestBody = require('../common')
+const { modules } = require('@constants/blacklistConfig')
 module.exports = {
 	create: (req) => {
+		req.body = filterRequestBody(req.body, modules.create)
 		req.checkBody('code')
 			.trim()
 			.notEmpty()
@@ -16,6 +19,7 @@ module.exports = {
 	},
 
 	update: (req) => {
+		req.body = filterRequestBody(req.body, modules.update)
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 
 		req.checkBody('code')
