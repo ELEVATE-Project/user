@@ -241,6 +241,11 @@ let enviromentVariables = {
 		optional: true,
 		default: '*',
 	},
+	DOWNLOAD_URL_EXPIRATION_DURATION: {
+		message: 'Required downloadable url expiration time',
+		optional: true,
+		default: 3600000,
+	},
 }
 
 let success = true
