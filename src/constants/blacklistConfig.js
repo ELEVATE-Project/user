@@ -370,6 +370,7 @@ const user = {
 		'languages',
 		'preferred_language',
 		'organization_id',
+		'roles',
 		'custom_entity_text',
 		'meta',
 	],
