@@ -89,7 +89,9 @@ module.exports = (app) => {
 				error.statusCode = 400
 				throw error
 			}
+
 			// Validate controller
+			allowedControllers.push('cloud-services')
 			if (!allowedControllers.includes(controllerName)) {
 				const error = new Error('Invalid controller.')
 				error.statusCode = 400
