@@ -1,5 +1,5 @@
 const account = {
-	create: ['id', 'last_logged_in_at', 'has_accepted_terms_and_conditions', 'refresh_tokens', 'organization_id'],
+	create: ['id', 'last_logged_in_at', 'refresh_tokens', 'organization_id'],
 	login: [
 		'id',
 		'email_verified',
@@ -152,7 +152,6 @@ const admin = {
 		'status',
 		'image',
 		'last_logged_in_at',
-		'has_accepted_terms_and_conditions',
 		'refresh_tokens',
 		'languages',
 		'preferred_language',
