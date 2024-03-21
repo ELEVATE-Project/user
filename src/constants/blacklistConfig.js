@@ -220,26 +220,8 @@ const admin = {
 	],
 }
 const entityType = {
-	create: [
-		'id',
-		'status',
-		'created_by',
-		'updated_by',
-		'organization_id',
-		'parent_id',
-		'allow_custom_entities',
-		'has_entities',
-	],
-	update: [
-		'id',
-		'created_by',
-		'updated_by',
-		'allow_filtering',
-		'organization_id',
-		'parent_id',
-		'allow_custom_entities',
-		'has_entities',
-	],
+	create: ['id', 'status', 'created_by', 'updated_by', 'organization_id', 'parent_id', 'allow_filtering'],
+	update: ['id', 'created_by', 'updated_by', 'allow_filtering', 'organization_id', 'parent_id'],
 }
 
 const entity = {
@@ -307,7 +289,6 @@ const orgAdmin = {
 const organization = {
 	create: [
 		'id',
-		'description',
 		'status',
 		'org_admin',
 		'parent_id',
@@ -316,17 +297,7 @@ const organization = {
 		'created_by',
 		'updated_by',
 	],
-	update: [
-		'id',
-		'description',
-		'status',
-		'org_admin',
-		'parent_id',
-		'related_orgs',
-		'in_domain_visibility',
-		'created_by',
-		'updated_by',
-	],
+	update: ['id', 'org_admin', 'parent_id', 'related_orgs', 'in_domain_visibility', 'created_by', 'updated_by'],
 	requestOrgRole: [
 		'id',
 		'description',
@@ -365,6 +336,9 @@ const user = {
 		'roles',
 		'custom_entity_text',
 		'meta',
+		'email',
+		'email_verified',
+		'password',
 	],
 }
 
