@@ -338,6 +338,7 @@ const user = {
 		'email',
 		'email_verified',
 		'password',
+		'has_accepted_terms_and_conditions',
 	],
 }
 
