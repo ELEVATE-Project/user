@@ -1,16 +1,18 @@
-const usersData = require('@db/users/queries')
+const usersData = require('@database/queries/users')
 const { faker } = require('@faker-js/faker')
 let bodyData
 const insertMentor = async () => {
 	try {
 		bodyData = {
 			name: 'Nevil (Mentor)',
-			email: { address: faker.internet.email(), verified: false },
+			email: faker.internet.email(),
 			password: faker.internet.password(),
 			isAMentor: true,
-			secretCode: 'secret-code',
+			secret_code: 'secret-code',
+			roles: 2,
+			organization_id: 1,
 		}
-		await usersData.createUser(bodyData)
+		await usersData.create(bodyData)
 	} catch (error) {
 		console.error(error)
 	}

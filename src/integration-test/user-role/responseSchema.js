@@ -73,7 +73,7 @@ const updateSchema = {
 					type: 'integer',
 				},
 			},
-			required: ['title', 'user_type', 'status', 'visibility', 'organization_id'],
+			required: [],
 		},
 		meta: {
 			type: 'object',

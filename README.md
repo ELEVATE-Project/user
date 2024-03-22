@@ -208,7 +208,6 @@ Refer to [Kafka Ubuntu 22.04 setup guide](https://www.fosstechnix.com/install-ap
 
 4. Reload systemd:
 
-
     ```bash
     $ sudo systemctl daemon-reload
     ```
@@ -274,7 +273,6 @@ Refer to [Kafka Ubuntu 22.04 setup guide](https://www.fosstechnix.com/install-ap
     Kafka status should be shown as active (running).
 
 ### Install Redis
-
 
 Refer to [Redis Ubuntu 22.04 setup guide](https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-22-04)
 
