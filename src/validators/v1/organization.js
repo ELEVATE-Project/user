@@ -17,13 +17,33 @@ module.exports = {
 			.matches(/^[A-Za-z ]+$/)
 			.withMessage('name is invalid')
 
-		req.checkBody('description').trim().notEmpty().withMessage('description field is empty')
+		req.checkBody('description')
+			.trim()
+			.notEmpty()
+			.withMessage('description field is empty')
+			.matches(/(\b)(on\S+)(\s*)=|javascript:|<(|\/|[^\/>][^>]+|\/[^>][^>]+)>/gi)
+			.withMessage('invalid description')
 		req.checkBody('domains').trim().notEmpty().withMessage('domains field is empty')
 	},
 
 	update: (req) => {
 		req.body = filterRequestBody(req.body, organization.update)
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		req.checkBody('name')
+			.optional()
+			.trim()
+			.notEmpty()
+			.withMessage('name field is empty')
+			.matches(/^[A-Za-z ]+$/)
+			.withMessage('name is invalid')
+
+		req.checkBody('description')
+			.optional()
+			.trim()
+			.notEmpty()
+			.withMessage('description field is empty')
+			.matches(/(\b)(on\S+)(\s*)=|javascript:|<(|\/|[^\/>][^>]+|\/[^>][^>]+)>/gi)
+			.withMessage('invalid description')
 	},
 
 	requestOrgRole: (req) => {

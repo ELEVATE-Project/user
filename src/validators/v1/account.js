@@ -28,7 +28,13 @@ module.exports = {
 			.withMessage('email is invalid')
 			.normalizeEmail({ gmail_remove_dots: false })
 
-		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
+		req.checkBody('password')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(process.env.PASSWORD_POLICY_REGEX)
+			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
 
 		if (req.body.role) {
 			req.checkBody('role').trim().not().isIn([common.ADMIN_ROLE]).withMessage("User does't have admin access")
@@ -73,7 +79,13 @@ module.exports = {
 	resetPassword: (req) => {
 		req.body = filterRequestBody(req.body, account.resetPassword)
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
-		req.checkBody('password').notEmpty().withMessage('password field is empty')
+		req.checkBody('password')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(process.env.PASSWORD_POLICY_REGEX)
+			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
 
 		req.checkBody('otp')
 			.notEmpty()

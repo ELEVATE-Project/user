@@ -29,6 +29,18 @@ module.exports = {
 			.withMessage('entity_type_id field is empty')
 			.isNumeric()
 			.withMessage('entity_type_id is invalid, must be numeric')
+
+		req.checkBody('status')
+			.optional()
+			.notEmpty()
+			.withMessage('status field is empty')
+			.matches(/^[A-Z]+$/)
+			.withMessage('status is invalid, must be in all caps and no spaces')
+		req.checkBody('type')
+			.notEmpty()
+			.withMessage('type field is empty')
+			.matches(/^[A-Z]+$/)
+			.withMessage('type is invalid, must be in all caps and no spaces')
 	},
 
 	update: (req) => {
@@ -47,15 +59,17 @@ module.exports = {
 
 		req.checkBody('status')
 			.optional()
+			.optional()
+			.notEmpty()
+			.withMessage('status field is empty')
 			.matches(/^[A-Z]+$/)
-			.withMessage('status is invalid, must be in all caps')
-
-		req.checkBody('deleted').optional().isBoolean().withMessage('deleted is invalid')
-
+			.withMessage('status is invalid, must be in all caps and no spaces')
 		req.checkBody('type')
 			.optional()
-			.matches(/^[A-Za-z]+$/)
-			.withMessage('type is invalid, must not contain spaces')
+			.notEmpty()
+			.withMessage('type field is empty')
+			.matches(/^[A-Z]+$/)
+			.withMessage('type is invalid, must be in all caps and no spaces')
 	},
 
 	read: (req) => {

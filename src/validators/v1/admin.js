@@ -30,7 +30,13 @@ module.exports = {
 			.withMessage('email is invalid')
 			.normalizeEmail()
 
-		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
+		req.checkBody('password')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(process.env.PASSWORD_POLICY_REGEX)
+			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
 	},
 
 	login: (req) => {

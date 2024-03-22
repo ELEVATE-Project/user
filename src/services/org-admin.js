@@ -237,6 +237,19 @@ module.exports = class OrgAdminHelper {
 			const requestId = bodyData.request_id
 			delete bodyData.request_id
 
+			const requestDetail = await orgRoleReqQueries.requestDetails({
+				id: requestId,
+				organization_id: tokenInformation.organization_id,
+			})
+
+			if (requestDetail.status !== common.REQUESTED_STATUS) {
+				return responses.failureResponse({
+					message: 'INAVLID_ORG_ROLE_REQ',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			bodyData.handled_by = tokenInformation.id
 			const rowsAffected = await orgRoleReqQueries.update(
 				{ id: requestId, organization_id: tokenInformation.organization_id },

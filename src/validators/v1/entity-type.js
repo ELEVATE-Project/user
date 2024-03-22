@@ -27,7 +27,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('data_type field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[A-Za-z\[\]]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
 
 		req.checkBody('model_names')
@@ -61,14 +61,11 @@ module.exports = {
 			.matches(/^[A-Z]+$/)
 			.withMessage('status is invalid, must be in all caps')
 
-		req.checkBody('deleted').optional().isBoolean().withMessage('deleted is invalid')
-		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
-
 		req.checkBody('data_type')
 			.trim()
 			.notEmpty()
 			.withMessage('data_type field is empty')
-			.matches(/^[A-Za-z]+$/)
+			.matches(/^[A-Za-z\[\]]+$/)
 			.withMessage('data_type is invalid, must not contain spaces')
 
 		req.checkBody('model_names')

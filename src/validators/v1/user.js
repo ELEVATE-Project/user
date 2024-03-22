@@ -21,7 +21,12 @@ module.exports = {
 				.isIn(['MALE', 'FEMALE', 'OTHER'])
 				.withMessage('gender is invalid, must be either MALE, FEMALE or OTHER')
 
-			req.checkBody('name').trim().notEmpty().withMessage('name field is empty')
+			req.checkBody('name')
+				.trim()
+				.notEmpty()
+				.withMessage('name field is empty')
+				.matches(/^[A-Za-z ]+$/)
+				.withMessage('This field can only contain alphabets')
 
 			req.checkBody('location')
 				.notEmpty()
@@ -29,7 +34,12 @@ module.exports = {
 				.isString()
 				.withMessage('location is invalid')
 
-			req.checkBody('about').trim().notEmpty().withMessage('about field is empty')
+			req.checkBody('about')
+				.trim()
+				.notEmpty()
+				.withMessage('about field is empty')
+				.matches(/(\b)(on\S+)(\s*)=|javascript:|<(|\/|[^\/>][^>]+|\/[^>][^>]+)>/gi)
+				.withMessage('invalid about')
 
 			req.checkBody('has_accepted_terms_and_conditions')
 				.optional()
