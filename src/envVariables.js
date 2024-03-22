@@ -100,11 +100,11 @@ let enviromentVariables = {
 		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
 	},
 	ACCESS_TOKEN_EXPIRY: {
-		message: 'Required access token expiry in days',
+		message: 'Required access token expiry',
 		optional: false,
 	},
 	REFRESH_TOKEN_EXPIRY: {
-		message: 'Required refresh token expiry in days',
+		message: 'Required refresh token expiry',
 		optional: false,
 	},
 	API_DOC_URL: {
@@ -240,6 +240,22 @@ let enviromentVariables = {
 		message: 'Required CORS allowed host',
 		optional: true,
 		default: '*',
+	},
+	PASSWORD_POLICY_REGEX: {
+		message: 'Required password policy',
+		optional: true,
+		default: '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{10,}$',
+	},
+	PASSWORD_POLICY_MESSAGE: {
+		message: 'Required password policy message',
+		optional: true,
+		default:
+			'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long',
+	},
+	DOWNLOAD_URL_EXPIRATION_DURATION: {
+		message: 'Required downloadable url expiration time',
+		optional: true,
+		default: 3600000,
 	},
 }
 
