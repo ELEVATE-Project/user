@@ -5,12 +5,15 @@
  * Description : Validations of admin controller
  */
 
+const filterRequestBody = require('../common')
+const { admin } = require('@constants/blacklistConfig')
 module.exports = {
 	deleteUser: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 
 	create: (req) => {
+		req.body = filterRequestBody(req.body, admin.create)
 		req.checkBody('secret_code').trim().notEmpty().withMessage('secret_code field is empty')
 		req.checkBody('name')
 			.trim()
@@ -30,15 +33,14 @@ module.exports = {
 		req.checkBody('password')
 			.notEmpty()
 			.withMessage('Password field is empty')
-			.matches(/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}|:"<>?~`\-=[\];',.\/])[^ ]{10,}$/)
-			.withMessage(
-				'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long'
-			)
+			.matches(process.env.PASSWORD_POLICY_REGEX)
+			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
 			.custom((value) => !/\s/.test(value))
 			.withMessage('Password cannot contain spaces')
 	},
 
 	login: (req) => {
+		req.body = filterRequestBody(req.body, admin.login)
 		req.checkBody('email')
 			.trim()
 			.notEmpty()
@@ -51,6 +53,7 @@ module.exports = {
 	},
 
 	addOrgAdmin: (req) => {
+		req.body = filterRequestBody(req.body, admin.addOrgAdmin)
 		req.checkBody('organization_id').notEmpty().withMessage('organization_id field is empty')
 
 		req.checkBody(['user_id', 'email']).custom(() => {
@@ -73,6 +76,7 @@ module.exports = {
 	},
 
 	deactivateUser: (req) => {
+		req.body = filterRequestBody(req.body, admin.deactivateUser)
 		const field = req.body.email ? 'email' : req.body.id ? 'id' : null
 		if (field) {
 			req.checkBody(field).isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)

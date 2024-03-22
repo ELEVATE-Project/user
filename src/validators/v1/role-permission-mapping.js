@@ -1,5 +1,8 @@
+const filterRequestBody = require('../common')
+const { rolePermissionMapping } = require('@constants/blacklistConfig')
 module.exports = {
 	create: (req) => {
+		req.body = filterRequestBody(req.body, rolePermissionMapping.create)
 		req.checkBody('permission_id')
 			.trim()
 			.notEmpty()
@@ -15,6 +18,7 @@ module.exports = {
 	},
 
 	delete: (req) => {
+		req.body = filterRequestBody(req.body, rolePermissionMapping.delete)
 		req.checkBody('permission_id')
 			.trim()
 			.notEmpty()
