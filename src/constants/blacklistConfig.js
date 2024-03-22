@@ -84,7 +84,6 @@ const account = {
 	registrationOtp: [
 		'id',
 		'email_verified',
-		'name',
 		'gender',
 		'location',
 		'about',
