@@ -244,7 +244,7 @@ let enviromentVariables = {
 	PASSWORD_POLICY_REGEX: {
 		message: 'Required password policy',
 		optional: true,
-		default: '/^(?=.*[A-Z])(?=.*d)(?=.*[!@#$%^&*()_+{}|:<>?~`-=[];,./])[^ ]{11,}$/',
+		default: '^(?=.*[A-Z])(?=.*d)(?=.*[!@#$%^&*()_+{}|:<>?~`-=[];,./])[^ ]{11,}$',
 	},
 	PASSWORD_POLICY_MESSAGE: {
 		message: 'Required password policy message',
