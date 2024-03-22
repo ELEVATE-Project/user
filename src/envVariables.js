@@ -7,6 +7,10 @@ let enviromentVariables = {
 		message: 'Required port no',
 		optional: false,
 	},
+	APPLICATION_HOST: {
+		message: 'Required host',
+		optional: false,
+	},
 	APPLICATION_ENV: {
 		message: 'Required node environment',
 		optional: false,
@@ -247,6 +251,11 @@ let enviromentVariables = {
 		optional: true,
 		default:
 			'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long',
+  },
+	DOWNLOAD_URL_EXPIRATION_DURATION: {
+		message: 'Required downloadable url expiration time',
+		optional: true,
+		default: 3600000,
 	},
 }
 
