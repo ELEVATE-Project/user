@@ -279,7 +279,7 @@ module.exports = class AccountHelper {
 				last_logged_in_at: new Date().getTime(),
 			}
 
-			await userQueries.updateUser({ id: user.id, organization_id: userCredentials.organization_id }, update)
+			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, update)
 			await utilsHelper.redisDel(encryptedEmailId)
 
 			//make the user as org admin
