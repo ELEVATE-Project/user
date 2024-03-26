@@ -14,6 +14,7 @@ const roleQueries = require('@database/queries/user-role')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
+const { verifyCaptchaToken } = require('@utils/captcha')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -57,6 +58,20 @@ module.exports = async function (req, res, next) {
 			}
 			return false
 		})
+		if (process.env.CAPTCHA_ENABLE && process.env.CAPTCHA_TYPE == 'recaptcha') {
+			let isCaptchaEnabled = false
+			isCaptchaEnabled = common.captchaEnabledAPIs.includes(req.path)
+
+			const captchaToken = req.get('captcha-token')
+
+			if (isCaptchaEnabled && !(await verifyCaptchaToken(captchaToken))) {
+				throw responses.failureResponse({
+					message: 'CAPTCHA_VERIFICATION_FAILED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+		}
 
 		common.roleValidationPaths.map(function (path) {
 			if (req.path.includes(path)) {
