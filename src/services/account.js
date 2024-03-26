@@ -1253,4 +1253,147 @@ module.exports = class AccountHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * change password
+	 * @method
+	 * @name changePassword
+	 * @param {Object} req -request data.
+	 * @param {Object} req.decodedToken.id - UserId.
+	 * @param {string} req.body - request body contains user password
+	 * @param {string} req.body.OldPassword - user Old Password.
+	 * @param {string} req.body.NewPassword - user New Password.
+	 * @param {string} req.body.ConfirmNewPassword - user Confirming New Password.
+	 * @returns {JSON} - password changed response
+	 */
+
+	static async changePassword(bodyData, userId, userName) {
+		const projection = ['location']
+		try {
+			const userCredentials = await UserCredentialQueries.findOne({ user_id: userId })
+			const plaintextEmailId = emailEncryption.decrypt(userCredentials.email)
+			if (!userCredentials) {
+				return responses.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let user = await userQueries.findOne(
+				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
+				{
+					attributes: {
+						exclude: projection,
+					},
+				}
+			)
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
+			if (!roles) {
+				return responses.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			user.user_roles = roles
+
+			const verifyOldPassword = utilsHelper.comparePassword(bodyData.oldPassword, userCredentials.password)
+			if (!verifyOldPassword) {
+				return responses.failureResponse({
+					message: 'INCORRECT_OLD_PASSWORD',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const isPasswordSame = bcryptJs.compareSync(bodyData.newPassword, userCredentials.password)
+			if (isPasswordSame) {
+				return responses.failureResponse({
+					message: 'INCORRECT_OLD_PASSWORD',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
+
+			const updateParams = {
+				lastLoggedInAt: new Date().getTime(),
+				password: bodyData.newPassword,
+			}
+
+			await userQueries.updateUser(
+				{ id: user.id, organization_id: userCredentials.organization_id },
+				updateParams
+			)
+			await UserCredentialQueries.updateUser(
+				{
+					email: userCredentials.email,
+				},
+				{ password: bodyData.newPassword }
+			)
+			await utilsHelper.redisDel(userCredentials.email)
+
+			delete user.newPassword
+
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
+			)
+
+			if (templateData) {
+				// Push successful registration email to kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: plaintextEmailId,
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, {
+							name: userName,
+						}),
+					},
+				}
+
+				await kafkaCommunication.pushEmailToKafka(payload)
+			}
+
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			const modelName = await userQueries.getModelName()
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [user.organization_id, defaultOrgId],
+				},
+				model_names: { [Op.contains]: [modelName] },
+			})
+
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			user = utils.processDbResponse(user, prunedEntities)
+
+			if (user && user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+			user.email = plaintextEmailId
+
+			const result = {}
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PASSWORD_CHANGED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 }
