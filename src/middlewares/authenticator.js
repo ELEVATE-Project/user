@@ -58,13 +58,19 @@ module.exports = async function (req, res, next) {
 			}
 			return false
 		})
-		if (process.env.CAPTCHA_ENABLE && process.env.CAPTCHA_TYPE == 'recaptcha') {
-			let isCaptchaEnabled = false
-			isCaptchaEnabled = common.captchaEnabledAPIs.includes(req.path)
 
+		// check if captcha is enabled for the route
+		const isCaptchaEnabledForRoute = common.captchaEnabledAPIs.includes(req.path) ? true : false
+
+		// check if captcha check is enabled in the env
+		const isCaptchaEnabled =
+			process.env.CAPTCHA_ENABLE.toLowerCase() == 'true' || process.env.CAPTCHA_ENABLE == true ? true : false
+
+		if (isCaptchaEnabled && isCaptchaEnabledForRoute) {
+			// get the token from API
 			const captchaToken = req.get('captcha-token')
-
-			if (isCaptchaEnabled && !(await verifyCaptchaToken(captchaToken))) {
+			// verify token
+			if (!(await verifyCaptchaToken(captchaToken))) {
 				throw responses.failureResponse({
 					message: 'CAPTCHA_VERIFICATION_FAILED',
 					statusCode: httpStatusCode.unauthorized,

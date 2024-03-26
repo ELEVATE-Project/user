@@ -10,23 +10,16 @@ exports.verifyCaptchaToken = async (token, options = {}) => {
 	const requestBody = {}
 	const queryParams = {}
 	let response
-	if (common.google_recaptcha_API.METHOD === 'POST')
-		response = await requester.post(
-			common.google_recaptcha_API.HOST,
-			common.google_recaptcha_API.URL,
-			headers,
-			requestBody,
-			queryParams
-		)
-	else if (common.google_recaptcha_API.METHOD === 'GET')
-		response = await requester.get(
-			ecommon.google_recaptcha_API.HOST,
-			common.google_recaptcha_API.URL,
-			headers,
-			pathParams,
-			queryParams
-		)
+	if (process.env.CAPTCHA_SERVICE == 'googleRecaptcha') {
+		if (process.env.GOOGLE_RECAPTCHA_METHOD === 'POST')
+			response = await requester.post(
+				process.env.GOOGLE_RECAPTCHA_HOST,
+				process.env.GOOGLE_RECAPTCHA_URL,
+				headers,
+				requestBody,
+				queryParams
+			)
+	}
 	if (response.success) return true
-
-	return false
+	else if (!response.success) return false
 }
