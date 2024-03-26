@@ -244,4 +244,26 @@ module.exports = class Account {
 			return error
 		}
 	}
+
+	/**
+	 * change password
+	 * @method
+	 * @name changePassword
+	 * @param {Object} req -request data.
+	 * @param {Object} req.decodedToken.id - UserId.
+	 * @param {string} req.body - request body contains user password
+	 * @param {string} req.body.OldPassword - user Old Password.
+	 * @param {string} req.body.NewPassword - user New Password.
+	 * @param {string} req.body.ConfirmNewPassword - user Confirming New Password.
+	 * @returns {JSON} - password changed response
+	 */
+
+	async changePassword(req) {
+		try {
+			const result = await accountService.changePassword(req.body, req.decodedToken.id)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }
