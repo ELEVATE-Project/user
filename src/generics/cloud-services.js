@@ -17,7 +17,7 @@ module.exports = class FilesHelper {
 			destFilePath: destFilePath, // Stored file path - location from bucket - example - users/abc.png
 			bucketName: bucketName, // google cloud storage bucket in which action is peformed over file
 			actionType: actionType, // signed url usage type - example ('read' | 'write' | 'delete' | 'resumable')
-			expiry: Date.now() + 1000 * 60 * 30, // signed url expiration time - In ms from current time - type number | string | Date
+			expiry: Date.now() + parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS), // signed url expiration time - In ms from current time - type number | string | Date
 			gcpProjectId: process.env.GCP_PROJECT_ID, // google cloud storage project id
 			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH), // google cloud storage json configuration file absolute path for connectivity
 			contentType: 'multipart/form-data', // content type of file, example multipart/form-data, image/png, csv/text etc
@@ -37,7 +37,7 @@ module.exports = class FilesHelper {
 			destFilePath: destFilePath, // Stored file path - i.e location from bucket - ex - users/abc.png
 			bucketName: bucketName, // aws s3 storage bucket in which action is peformed over file
 			actionType: actionType, // signed url usage type - example ('putObject' | 'getObject')
-			expiry: 30 * 60, // signed url expiration time - In sec - type number
+			expiry: parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS) / 1000, // signed url expiration time - In sec - type number
 			accessKeyId: process.env.AWS_ACCESS_KEY_ID, // aws s3 access key id
 			secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, // aws s3 secret access key
 			bucketRegion: process.env.AWS_BUCKET_REGION, // aws region where bucket will be located, example - 'ap-south-1'
@@ -61,7 +61,7 @@ module.exports = class FilesHelper {
 		const options = {
 			destFilePath: destFilePath, // Stored file path - i.e location from container - ex - users/abc.png
 			containerName: containerName, // container in which file gets saved
-			expiry: 30, // signed url expiration time - In minute - type number
+			expiry: parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS) / 60000, // signed url expiration time - In minute - type number
 			actionType: 'w', // signed url usage type - example ('w' | 'r' | 'wr' | 'racwdl') - pair of any alphabets among racwdl
 			accountName: process.env.AZURE_ACCOUNT_NAME, // account name of azure storage
 			accountKey: process.env.AZURE_ACCOUNT_KEY, // account key of azure storage
@@ -82,7 +82,7 @@ module.exports = class FilesHelper {
 			destFilePath: destFilePath, // Stored file path - i.e location from bucket - ex - users/abc.png
 			bucketName: bucketName, // Oci storage bucket in which action is peformed over file
 			actionType: actionType, // signed url usage type - example ('putObject' | 'getObject')
-			expiry: 30 * 60, // signed url expiration time - In sec - type number
+			expiry: parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS) / 1000, // signed url expiration time - In sec - type number
 			accessKeyId: process.env.OCI_ACCESS_KEY_ID, // Oci access key id
 			secretAccessKey: process.env.OCI_SECRET_ACCESS_KEY, // Oci secret access key
 			bucketRegion: process.env.OCI_BUCKET_REGION, // Oci region where bucket will be located, example - 'ap-south-1'
