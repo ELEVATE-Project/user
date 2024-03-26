@@ -89,7 +89,7 @@ module.exports = {
 	DELETED_STATUS: 'DELETED',
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
 	ROLE_TYPE_NON_SYSTEM: 0,
-	captchaEnabledAPIs: ['/user/v1/account/login', '/interface/v1/account/login'],
+	captchaEnabledAPIs: ['/user/v1/account/login'],
 	google_recaptcha_API: {
 		HOST: 'https://www.google.com',
 		URL: '/recaptcha/api/siteverify',
