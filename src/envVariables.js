@@ -244,13 +244,12 @@ let enviromentVariables = {
 	PASSWORD_POLICY_REGEX: {
 		message: 'Required password policy',
 		optional: true,
-		default: '^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{10,}$',
+		default: '^.{8,}$',
 	},
 	PASSWORD_POLICY_MESSAGE: {
 		message: 'Required password policy message',
 		optional: true,
-		default:
-			'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long',
+		default: 'Password must have at least 8 characters long',
 	},
 	DOWNLOAD_URL_EXPIRATION_DURATION: {
 		message: 'Required downloadable url expiration time',
@@ -284,6 +283,11 @@ let enviromentVariables = {
 		message: 'Required CAPTCHA SERVICE Method',
 		optional: true,
 		default: 'POST',
+	},
+	SIGNED_URL_EXPIRY_IN_MILLISECONDS: {
+		message: 'Required signed url expiration time in milliseconds',
+		optional: true,
+		default: 3600000,
 	},
 }
 

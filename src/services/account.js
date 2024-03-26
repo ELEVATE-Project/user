@@ -1253,4 +1253,101 @@ module.exports = class AccountHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * change password
+	 * @method
+	 * @name changePassword
+	 * @param {Object} req -request data.
+	 * @param {Object} req.decodedToken.id - UserId.
+	 * @param {string} req.body - request body contains user password
+	 * @param {string} req.body.OldPassword - user Old Password.
+	 * @param {string} req.body.NewPassword - user New Password.
+	 * @param {string} req.body.ConfirmNewPassword - user Confirming New Password.
+	 * @returns {JSON} - password changed response
+	 */
+
+	static async changePassword(bodyData, userId) {
+		const projection = ['location']
+		try {
+			const userCredentials = await UserCredentialQueries.findOne({ user_id: userId })
+			if (!userCredentials) {
+				return responses.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const plaintextEmailId = emailEncryption.decrypt(userCredentials.email)
+
+			let user = await userQueries.findOne(
+				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
+				{ attributes: { exclude: projection } }
+			)
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const verifyOldPassword = utilsHelper.comparePassword(bodyData.oldPassword, userCredentials.password)
+			if (!verifyOldPassword) {
+				return responses.failureResponse({
+					message: 'INCORRECT_OLD_PASSWORD',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const isPasswordSame = bcryptJs.compareSync(bodyData.newPassword, userCredentials.password)
+			if (isPasswordSame) {
+				return responses.failureResponse({
+					message: 'SAME_PASSWORD_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
+
+			const updateParams = { password: bodyData.newPassword }
+
+			await userQueries.updateUser(
+				{ id: user.id, organization_id: userCredentials.organization_id },
+				updateParams
+			)
+			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
+			await utilsHelper.redisDel(userCredentials.email)
+
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
+			)
+
+			if (templateData) {
+				// Push successful registration email to kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: plaintextEmailId,
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, {
+							name: user.name,
+						}),
+					},
+				}
+				await kafkaCommunication.pushEmailToKafka(payload)
+			}
+
+			const result = {}
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PASSWORD_CHANGED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 }

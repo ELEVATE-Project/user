@@ -115,5 +115,7 @@
 	"PERMISSION_DENIED": "You do not have the required permissions to access this resource. Please contact your administrator for assistance.",
 	"RELATED_ORG_REMOVAL_FAILED": "Requested organization not related the organization. Please check the values.",
 	"INAVLID_ORG_ROLE_REQ": "Invalid organisation request",
-	"CAPTCHA_VERIFICATION_FAILED": "Captcha verification Failed!"
+	"INCORRECT_OLD_PASSWORD": "Invalid old password",
+	"SAME_PASSWORD_ERROR": "New password cannot be same as old password",
+	"PASSWORD_CHANGED_SUCCESSFULLY": "Password changed successfully."
 }
