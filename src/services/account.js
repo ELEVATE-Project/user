@@ -1267,11 +1267,10 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - password changed response
 	 */
 
-	static async changePassword(bodyData, userId, userName) {
+	static async changePassword(bodyData, userId) {
 		const projection = ['location']
 		try {
 			const userCredentials = await UserCredentialQueries.findOne({ user_id: userId })
-			const plaintextEmailId = emailEncryption.decrypt(userCredentials.email)
 			if (!userCredentials) {
 				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -1279,13 +1278,11 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const plaintextEmailId = emailEncryption.decrypt(userCredentials.email)
+
 			let user = await userQueries.findOne(
 				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
-				{
-					attributes: {
-						exclude: projection,
-					},
-				}
+				{ attributes: { exclude: projection } }
 			)
 			if (!user) {
 				return responses.failureResponse({
@@ -1294,15 +1291,6 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
-			if (!roles) {
-				return responses.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			user.user_roles = roles
 
 			const verifyOldPassword = utilsHelper.comparePassword(bodyData.oldPassword, userCredentials.password)
 			if (!verifyOldPassword) {
@@ -1316,28 +1304,20 @@ module.exports = class AccountHelper {
 			const isPasswordSame = bcryptJs.compareSync(bodyData.newPassword, userCredentials.password)
 			if (isPasswordSame) {
 				return responses.failureResponse({
-					message: 'INCORRECT_OLD_PASSWORD',
+					message: 'SAME_PASSWORD_ERROR',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
 
-			const updateParams = {
-				lastLoggedInAt: new Date().getTime(),
-				password: bodyData.newPassword,
-			}
+			const updateParams = { password: bodyData.newPassword }
 
 			await userQueries.updateUser(
 				{ id: user.id, organization_id: userCredentials.organization_id },
 				updateParams
 			)
-			await UserCredentialQueries.updateUser(
-				{
-					email: userCredentials.email,
-				},
-				{ password: bodyData.newPassword }
-			)
+			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
 			await utilsHelper.redisDel(userCredentials.email)
 
 			delete user.newPassword
@@ -1354,36 +1334,12 @@ module.exports = class AccountHelper {
 						to: plaintextEmailId,
 						subject: templateData.subject,
 						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: userName,
+							name: user.name,
 						}),
 					},
 				}
-
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
-			const modelName = await userQueries.getModelName()
-
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
-				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
-				},
-				model_names: { [Op.contains]: [modelName] },
-			})
-
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
-
-			if (user && user.image) {
-				user.image = await utils.getDownloadableUrl(user.image)
-			}
-			user.email = plaintextEmailId
 
 			const result = {}
 			return responses.successResponse({

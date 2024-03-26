@@ -260,7 +260,7 @@ module.exports = class Account {
 
 	async changePassword(req) {
 		try {
-			const result = await accountService.changePassword(req.body, req.decodedToken.id, req.decodedToken.name)
+			const result = await accountService.changePassword(req.body, req.decodedToken.id)
 			return result
 		} catch (error) {
 			return error
