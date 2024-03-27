@@ -279,11 +279,6 @@ let enviromentVariables = {
 		optional: true,
 		default: '/recaptcha/api/siteverify',
 	},
-	GOOGLE_RECAPTCHA_METHOD: {
-		message: 'Required CAPTCHA SERVICE Method',
-		optional: true,
-		default: 'POST',
-	},
 	SIGNED_URL_EXPIRY_IN_MILLISECONDS: {
 		message: 'Required signed url expiration time in milliseconds',
 		optional: true,
