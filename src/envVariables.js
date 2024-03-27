@@ -260,6 +260,34 @@ let enviromentVariables = {
 		message: 'Required change password email template code',
 		optional: false,
 	},
+	CAPTCHA_ENABLE: {
+		message: 'Required CAPTCHA ENABLE true or false',
+		optional: false,
+	},
+	CAPTCHA_SERVICE: {
+		message: 'Required CAPTCHA SERVICE',
+		optional: true,
+		default: 'googleRecaptcha',
+	},
+	RECAPTCHA_SECRET_KEY: {
+		message: 'Required CAPTCHA SERVICE secret key',
+		optional: false,
+	},
+	GOOGLE_RECAPTCHA_HOST: {
+		message: 'Required CAPTCHA Host IP',
+		optional: true,
+		default: 'https://www.google.com',
+	},
+	GOOGLE_RECAPTCHA_URL: {
+		message: 'Required CAPTCHA SERVICE API URL',
+		optional: true,
+		default: '/recaptcha/api/siteverify',
+	},
+	SIGNED_URL_EXPIRY_IN_MILLISECONDS: {
+		message: 'Required signed url expiration time in milliseconds',
+		optional: true,
+		default: 3600000,
+	},
 }
 
 let success = true
