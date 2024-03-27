@@ -4,10 +4,9 @@ const requester = require('@utils/requester')
 
 exports.verifyCaptchaToken = async (token, options = {}) => {
 	const headers = {
-		secret: process.env.RECAPTCHA_SECRET_KEY,
-		response: token,
+		'Content-Type': 'application/x-www-form-urlencoded',
 	}
-	const requestBody = {}
+	const requestBody = `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`
 	const queryParams = {}
 	let response
 	if (process.env.CAPTCHA_SERVICE == 'googleRecaptcha') {
