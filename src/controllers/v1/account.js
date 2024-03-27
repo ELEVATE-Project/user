@@ -45,8 +45,9 @@ module.exports = class Account {
 
 	async login(req) {
 		const params = req.body
+		const device_info = req.headers && req.headers['device-info'] ? req.headers['device-info'] : {}
 		try {
-			const loggedInAccount = await accountService.login(params)
+			const loggedInAccount = await accountService.login(params, device_info)
 			return loggedInAccount
 		} catch (error) {
 			return error

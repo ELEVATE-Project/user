@@ -28,6 +28,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
+const userSessions = require('@services/user-sessions')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -358,10 +359,11 @@ module.exports = class AccountHelper {
 	 * @param {Object} bodyData -request body contains user login deatils.
 	 * @param {String} bodyData.email - user email.
 	 * @param {String} bodyData.password - user password.
+	 * @param {Object} deviceInformation - device information
 	 * @returns {JSON} - returns susccess or failure of login details.
 	 */
 
-	static async login(bodyData) {
+	static async login(bodyData, deviceInformation) {
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
@@ -419,6 +421,14 @@ module.exports = class AccountHelper {
 				})
 			}
 
+			// create user session entry and add session_id to token data
+			const userSessionDetails = await userSessions.createUserSession(
+				user.id, // userid
+				'', // refresh token
+				'', // Access token
+				deviceInformation
+			)
+			console.log('userSessionDetails : ', userSessionDetails)
 			const tokenDetail = {
 				data: {
 					id: user.id,
@@ -491,6 +501,17 @@ module.exports = class AccountHelper {
 			}
 			user.email = plaintextEmailId
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
+
+			// update user-sessions with refresh token and access token
+			// update filter
+			// const updatedUserSession = await userSessions.createUserSession(
+			// 	user.id, // userid
+			// 	"",		// refresh token
+			// 	"",		// Access token
+			// 	deviceInformation
+			// )
+
+			// save data in redis against session_id, write a function for this
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,

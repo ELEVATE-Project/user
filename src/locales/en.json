@@ -117,5 +117,6 @@
 	"INAVLID_ORG_ROLE_REQ": "Invalid organisation request",
 	"INCORRECT_OLD_PASSWORD": "Invalid old password",
 	"SAME_PASSWORD_ERROR": "New password cannot be same as old password",
-	"PASSWORD_CHANGED_SUCCESSFULLY": "Password changed successfully."
+	"PASSWORD_CHANGED_SUCCESSFULLY": "Password changed successfully.",
+	"USER_SESSION_CREATED_SUCCESSFULLY": "User session created successfully"
 }

@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			token: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			device_info: {
 				type: DataTypes.JSONB,
@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			refresh_token: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 		},
 		{
