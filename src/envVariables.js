@@ -256,6 +256,10 @@ let enviromentVariables = {
 		optional: true,
 		default: 3600000,
 	},
+	CHANGE_PASSWORD_TEMPLATE_CODE: {
+		message: 'Required change password email template code',
+		optional: false,
+	},
 	CAPTCHA_ENABLE: {
 		message: 'Required CAPTCHA ENABLE true or false',
 		optional: false,
