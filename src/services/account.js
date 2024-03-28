@@ -634,6 +634,7 @@ module.exports = class AccountHelper {
 		// Get redis key for session
 		console.log(' decoed token data ><<<<<<>>>: ', decodedToken)
 		const sessionId = decodedToken.data.session_id.toString()
+
 		// Get data from redis
 		let redisData = await utilsHelper.redisGet(sessionId)
 		console.log('check+++hhhhhhhhh++++++137redisData :', redisData, sessionId)
