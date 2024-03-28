@@ -1319,12 +1319,6 @@ module.exports = class AccountHelper {
 			)
 			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
 
-			let refreshTokens = user.refresh_tokens ? user.refresh_tokens : []
-
-			// if (refreshTokens.length > 0) {
-			// await userQueries.updateUser(
-			// 	{ id: user.id, organization_id: user.organization_id },{ refresh_tokens: [] })
-			// }
 			await utilsHelper.redisDel(userCredentials.email)
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
