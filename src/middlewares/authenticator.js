@@ -67,7 +67,7 @@ module.exports = async function (req, res, next) {
 			const isCaptchaEnabledForRoute = common.captchaEnabledAPIs.includes(req.path)
 			if (isCaptchaEnabledForRoute) {
 				// get the token from API
-				const captchaToken = req.get('Captcha-Token')
+				const captchaToken = req.get('captcha-token')
 				// verify token
 				if (!(await verifyCaptchaToken(captchaToken))) {
 					throw responses.failureResponse({
