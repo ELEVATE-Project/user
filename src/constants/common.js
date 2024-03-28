@@ -26,6 +26,7 @@ module.exports = {
 		'/user/v1/account/search',
 		'/user/v1/organization/list',
 		'/user/v1/user-role/default',
+		'/user/v1/account/validateUserSession',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY,
