@@ -256,6 +256,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 3600000,
 	},
+	ALLOWED_IDLE_TIME: {
+		message: 'Require allowed idle time',
+		optional: true,
+		default: 0,
+	},
 	CHANGE_PASSWORD_TEMPLATE_CODE: {
 		message: 'Required change password email template code',
 		optional: false,
