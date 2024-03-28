@@ -15,7 +15,7 @@ module.exports = {
 				allowNull: false,
 			},
 			started_at: {
-				type: Sequelize.DATE,
+				type: Sequelize.BIGINT,
 				allowNull: false,
 			},
 			ended_at: {
@@ -23,7 +23,7 @@ module.exports = {
 				allowNull: true,
 			},
 			token: {
-				type: Sequelize.STRING,
+				type: Sequelize.TEXT,
 				allowNull: true,
 			},
 			device_info: {
@@ -31,8 +31,19 @@ module.exports = {
 				allowNull: true,
 			},
 			refresh_token: {
-				type: Sequelize.STRING,
+				type: Sequelize.TEXT,
 				allowNull: true,
+			},
+			created_at: {
+				allowNull: false,
+				type: Sequelize.DATE,
+			},
+			updated_at: {
+				allowNull: false,
+				type: Sequelize.DATE,
+			},
+			deleted_at: {
+				type: Sequelize.DATE,
 			},
 		})
 	},

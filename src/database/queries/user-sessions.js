@@ -68,7 +68,7 @@ exports.findAll = async (filter, options = {}) => {
  */
 exports.update = async (filter, update, options = {}) => {
 	try {
-		return await await Session.update(update, {
+		return await await UserSessions.update(update, {
 			where: filter,
 			...options,
 		})

@@ -14,6 +14,7 @@ const roleQueries = require('@database/queries/user-role')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
+const utilsHelper = require('@generics/utils')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -95,6 +96,20 @@ module.exports = async function (req, res, next) {
 
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+			// Get redis key for session
+			const sessionId = decodedToken.data.session_id.toString()
+			// Get data from redis
+			const redisData = await utilsHelper.redisGet(sessionId)
+
+			// If data is not in redis, token is invalid
+			if (!redisData || redisData.accessToken !== authHeaderArray[1]) {
+				throw unAuthorizedResponse
+			}
+
+			// Renew the TTL if allowed idle time is greater than zero
+			if (process.env.ALLOWED_IDLE_TIME != null) {
+				await utilsHelper.redisSet(sessionId, redisData, process.env.ALLOWED_IDLE_TIME)
+			}
 		} catch (err) {
 			if (err.name === 'TokenExpiredError') {
 				throw responses.failureResponse({

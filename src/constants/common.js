@@ -59,6 +59,7 @@ module.exports = {
 	roleAssociationName: 'user_roles',
 	ACTIVE_STATUS: 'ACTIVE',
 	INACTIVE_STATUS: 'INACTIVE',
+	EXPIRED_STATUS: 'EXPIRED',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
 	SESSION_MANAGER_ROLE: 'session_manager',

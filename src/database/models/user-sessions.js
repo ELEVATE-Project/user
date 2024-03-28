@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			started_at: {
-				type: DataTypes.DATE,
+				type: DataTypes.BIGINT,
 				allowNull: false,
 			},
 			ended_at: {
@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			token: {
-				type: DataTypes.STRING,
+				type: DataTypes.TEXT,
 				allowNull: true,
 			},
 			device_info: {
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			refresh_token: {
-				type: DataTypes.STRING,
+				type: DataTypes.TEXT,
 				allowNull: true,
 			},
 		},
