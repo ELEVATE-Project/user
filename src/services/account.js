@@ -1318,7 +1318,6 @@ module.exports = class AccountHelper {
 				updateParams
 			)
 			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
-
 			await utilsHelper.redisDel(userCredentials.email)
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
