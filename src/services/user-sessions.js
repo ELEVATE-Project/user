@@ -15,8 +15,21 @@ const jwt = require('jsonwebtoken')
 
 // create user-session
 module.exports = class UserSessionsHelper {
+	/**
+	 * Create a user session.
+	 * @param {number} userId - The ID of the user.
+	 * @param {string} [refreshToken=''] - Optional. The refresh token associated with the session.
+	 * @param {string} [accessToken=''] - Optional. The access token associated with the session.
+	 * @param {Object} deviceInfo - Information about the device used for the session.
+	 * @returns {Promise<Object>} - A promise that resolves to a success response with the created session details.
+	 * @throws {Error} - Throws an error if any issue occurs during the process.
+	 */
+
 	static async createUserSession(userId, refreshToken = '', accessToken = '', deviceInfo) {
 		try {
+			/**
+			 * data for user-session creation
+			 */
 			const userSessionDetails = {
 				user_id: userId,
 				device_info: deviceInfo,
@@ -28,11 +41,9 @@ module.exports = class UserSessionsHelper {
 			if (accessToken !== '') {
 				userSessionDetails.refresh_token = refreshToken
 			}
-			console.log('user sessions details >>>>>>>>>>>>>>>>>>>>>>>%%%%%%%%%%%%%: ', userSessionDetails)
+
 			// create userSession
 			const userSession = await userSessionsQueries.create(userSessionDetails)
-
-			console.log('userSessions : ', userSession)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -45,6 +56,15 @@ module.exports = class UserSessionsHelper {
 		}
 	}
 
+	/**
+	 * Update a user session.
+	 * @param {Object} filter - The filter criteria to select the user session(s) to update.
+	 * @param {Object} update - The data to be updated for the user session(s).
+	 * @param {Object} [options={}] - Optional. Additional options for the update operation.
+	 * @returns {Promise<Object>} - A promise that resolves to a success response with the updated session details.
+	 * @throws {Error} - Throws an error if any issue occurs during the process.
+	 */
+
 	static async updateUserSession(filter, update, options = {}) {
 		try {
 			const result = await userSessionsQueries.update(filter, update, options)
@@ -54,7 +74,6 @@ module.exports = class UserSessionsHelper {
 				result: result,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -92,7 +111,9 @@ module.exports = class UserSessionsHelper {
 					if (status === common.ACTIVE_STATUS) {
 						continue // Skip this element if data is not in Redis and status is active
 					} else {
-						statusToSend = common.INACTIVE_STATUS
+						session.ended_at == null
+							? (statusToSend = common.EXPIRED_STATUS)
+							: (statusToSend = common.INACTIVE_STATUS)
 					}
 				} else {
 					statusToSend = common.ACTIVE_STATUS
@@ -120,12 +141,11 @@ module.exports = class UserSessionsHelper {
 						: inActiveSessions.push(responseObj)
 				}
 			}
-			console.log('activeSessions : ', activeSessions)
-			console.log('inActiveSessions : ', inActiveSessions)
 
 			const result = [...activeSessions, ...inActiveSessions]
 
 			// Paginate the result array
+			// The response is accumulated from two places. db and redis. So pagination is not possible on the fly
 			const paginatedResult = result.slice(offset, offset + limit)
 
 			return responses.successResponse({
@@ -137,10 +157,65 @@ module.exports = class UserSessionsHelper {
 				},
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
+
+	/**
+	 * Remove user sessions from both database and Redis.
+	 * @param {number[]} userSessionIds - An array of user session IDs to be removed.
+	 * @returns {Promise<Object>} - A promise that resolves to a success response upon successful removal.
+	 */
+
+	static async removeUserSessions(userSessionIds) {
+		try {
+			// Delete user sessions from Redis
+			for (const sessionId of userSessionIds) {
+				await utilsHelper.redisDel(sessionId.toString())
+			}
+
+			// Update ended_at of user sessions in the database
+			const currentTime = Math.floor(Date.now() / 1000) // Current epoch time in seconds
+			const updateResult = await userSessionsQueries.update({ id: userSessionIds }, { ended_at: currentTime })
+
+			// Check if the update was successful
+			if (updateResult instanceof Error) {
+				throw updateResult // Throw error if update failed
+			}
+
+			// Return success response
+			const result = {}
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_SESSIONS_REMOVED_SUCCESSFULLY',
+				result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Find user sessions based on the provided filter and options.
+	 * @param {Object} filter - The filter criteria to find user sessions.
+	 * @param {Object} [options={}] - Optional. Additional options for the query.
+	 * @returns {Promise<Object[]>} - A promise that resolves to an array of user session objects.
+	 * @throws {Error} - Throws an error if any issue occurs during the process.
+	 */
+	static async findUserSession(filter, options = {}) {
+		try {
+			return await userSessionsQueries.findAll(filter, options)
+		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Validate the user session token.
+	 * @param {string} token - The token to validate.
+	 * @returns {Promise<Object>} - A promise that resolves to a success response if the token is valid, otherwise throws an error.
+	 * @throws {Error} - Throws an error if the token validation fails.
+	 */
 
 	static async validateUserSession(token) {
 		// token validation failure message
@@ -186,7 +261,3 @@ module.exports = class UserSessionsHelper {
 		}
 	}
 }
-
-// update-user session
-// add entry to redis
-// update user session entry in redis

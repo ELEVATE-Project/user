@@ -20,6 +20,7 @@ const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
+const userSessionsService = require('@services/user-sessions')
 
 module.exports = class AdminHelper {
 	/**
@@ -48,6 +49,21 @@ module.exports = class AdminHelper {
 			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
 
 			await utils.redisDel(common.redisUserPrefix + userId.toString())
+
+			/**
+			 * Using userId get his active sessions
+			 */
+			const userSessionData = await userSessionsService.findUserSession(
+				{
+					user_id: userId,
+					ended_at: null,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+			const userSessionIds = userSessionData.map(({ id }) => id)
+			await userSessionsService.removeUserSessions(userSessionIds)
 
 			//code for remove user folder from cloud
 

@@ -19,7 +19,7 @@ module.exports = {
 				allowNull: false,
 			},
 			ended_at: {
-				type: Sequelize.DATE,
+				type: Sequelize.BIGINT,
 				allowNull: true,
 			},
 			token: {

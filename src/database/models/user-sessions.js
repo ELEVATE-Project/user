@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			ended_at: {
-				type: DataTypes.DATE,
+				type: DataTypes.BIGINT,
 				allowNull: true,
 			},
 			token: {

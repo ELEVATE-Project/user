@@ -28,7 +28,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
-const userSessions = require('@services/user-sessions')
+const userSessionsService = require('@services/user-sessions')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -40,6 +40,7 @@ module.exports = class AccountHelper {
 	 * @param {Boolean} bodyData.isAMentor - is a mentor or not .
 	 * @param {String} bodyData.email - user email.
 	 * @param {String} bodyData.password - user password.
+	 * @param {Object} deviceInfo - Device information
 	 * @returns {JSON} - returns account creation details.
 	 */
 
@@ -229,8 +230,11 @@ module.exports = class AccountHelper {
 				}
 			)
 
-			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessions.createUserSession(
+			/**
+			 * create user session entry and add session_id to token data
+			 * Entry should be created first, the session_id has to be added to token creation data
+			 */
+			const userSessionDetails = await userSessionsService.createUserSession(
 				user.id, // userid
 				'', // refresh token
 				'', // Access token
@@ -278,6 +282,11 @@ module.exports = class AccountHelper {
 				common.refreshTokenExpiry
 			)
 
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
 			await this.updateUserSessionAndsetRedisData(userSessionDetails.result.id, accessToken, refreshToken)
 
 			let refresh_token = new Array()
@@ -377,7 +386,6 @@ module.exports = class AccountHelper {
 
 	static async login(bodyData, deviceInformation) {
 		try {
-			console.log('Yeaahhhhh +++= :', common.accessTokenExpiry)
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			const userCredentials = await UserCredentialQueries.findOne({
@@ -435,13 +443,13 @@ module.exports = class AccountHelper {
 			}
 
 			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessions.createUserSession(
+			const userSessionDetails = await userSessionsService.createUserSession(
 				user.id, // userid
 				'', // refresh token
 				'', // Access token
 				deviceInformation
 			)
-			console.log('userSessionDetails ****************: ', userSessionDetails.result.id)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
@@ -516,6 +524,11 @@ module.exports = class AccountHelper {
 			user.email = plaintextEmailId
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
 			await this.updateUserSessionAndsetRedisData(userSessionDetails.result.id, accessToken, refreshToken)
 
 			return responses.successResponse({
@@ -540,7 +553,7 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
-	static async logout(bodyData, user_id, organization_id) {
+	static async logout(bodyData, user_id, organization_id, userSessionId) {
 		try {
 			const user = await userQueries.findOne({ id: user_id, organization_id })
 			if (!user) {
@@ -550,10 +563,34 @@ module.exports = class AccountHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
+			/**
+			 * Aquire user session_id based on the requests
+			 */
+			let userSessions = []
+			if (bodyData.userSessionIds && bodyData.userSessionIds.length > 0) {
+				userSessions = bodyData.userSessionIds
+			} else {
+				userSessions.push(userSessionId)
+			}
+
+			let tokenToRemove = []
+			if (userSessions.length > 0) {
+				const userSessionData = await userSessionsService.findUserSession(
+					{
+						id: userSessions,
+					},
+					{
+						attributes: ['refresh_token'],
+					}
+				)
+				tokenToRemove = userSessionData.map(({ refresh_token }) => refresh_token)
+			}
+
+			await userSessionsService.removeUserSessions(userSessions)
 
 			let refreshTokens = user.refresh_tokens ? user.refresh_tokens : []
-			refreshTokens = refreshTokens.filter(function (tokenData) {
-				return tokenData.token !== bodyData.refresh_token
+			refreshTokens = tokenToRemove.filter(function (tokenData) {
+				return !bodyData.refresh_token.includes(tokenData.token)
 			})
 
 			/* Destroy refresh token for user */
@@ -632,12 +669,31 @@ module.exports = class AccountHelper {
 
 		/* check if redis data is present*/
 		// Get redis key for session
-		console.log(' decoed token data ><<<<<<>>>: ', decodedToken)
 		const sessionId = decodedToken.data.session_id.toString()
 
 		// Get data from redis
-		let redisData = await utilsHelper.redisGet(sessionId)
-		console.log('check+++hhhhhhhhh++++++137redisData :', redisData, sessionId)
+		let redisData = {}
+		redisData = await utilsHelper.redisGet(sessionId)
+
+		// if idle time set to infinity then db check should be done
+		if (!redisData && process.env.ALLOWED_IDLE_TIME == null) {
+			const userSessionData = await userSessionsService.findUserSession(
+				{
+					id: decodedToken.data.session_id,
+				},
+				{
+					attributes: ['refresh_token'],
+				}
+			)
+			if (!userSessionData) {
+				return responses.failureResponse({
+					message: 'REFRESH_TOKEN_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			redisData.refreshToken = userSessionData[0].refresh_token
+		}
 
 		// If data is not in redis, token is invalid
 		if (!redisData || redisData.refreshToken !== bodyData.refresh_token) {
@@ -655,18 +711,19 @@ module.exports = class AccountHelper {
 			common.accessTokenExpiry
 		)
 
+		/**
+		 * When idle tine is infinity set TTL to access token expiry
+		 * If not redis data won't expire and timeout session will show as active in listing
+		 */
 		let expiryTime = process.env.ALLOWED_IDLE_TIME
 		if (process.env.ALLOWED_IDLE_TIME == null) {
-			console.log('inside if..............')
 			expiryTime = utilsHelper.convertDurationToSeconds(common.accessTokenExpiry)
 		}
-		console.log('++++++++++++############ : ', expiryTime, process.env.ALLOWED_IDLE_TIME)
 		redisData.accessToken = accessToken
 		const res = await utilsHelper.redisSet(sessionId, redisData, expiryTime)
-		console.log('response redis set  ::: ', res)
 
 		// update user-sessions with access token
-		let check = await userSessions.updateUserSession(
+		let check = await userSessionsService.updateUserSession(
 			{
 				id: decodedToken.data.id,
 			},
@@ -674,9 +731,6 @@ module.exports = class AccountHelper {
 				token: accessToken,
 			}
 		)
-
-		console.log('wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : ', check)
-
 		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
@@ -913,7 +967,7 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
 			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessions.createUserSession(
+			const userSessionDetails = await userSessionsService.createUserSession(
 				user.id, // userid
 				'', // refresh token
 				'', // Access token
@@ -997,6 +1051,11 @@ module.exports = class AccountHelper {
 			user.email = plaintextEmailId
 
 			/**update a new session entry with redis insert */
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
 			await this.updateUserSessionAndsetRedisData(userSessionDetails.result.id, accessToken, refreshToken)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
@@ -1393,7 +1452,7 @@ module.exports = class AccountHelper {
 			}
 			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
 
-			const updateParams = { password: bodyData.newPassword }
+			const updateParams = { password: bodyData.newPassword, refresh_tokens: [] }
 
 			await userQueries.updateUser(
 				{ id: user.id, organization_id: userCredentials.organization_id },
@@ -1401,6 +1460,23 @@ module.exports = class AccountHelper {
 			)
 			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
 			await utilsHelper.redisDel(userCredentials.email)
+
+			// Find active sessions of user and remove them
+			const userSessionData = await userSessionsService.findUserSession(
+				{
+					user_id: userId,
+					ended_at: null,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+			const userSessionIds = userSessionData.map(({ id }) => id)
+			/**
+			 * 1: Remove redis data
+			 * 2: Update ended_at in user-sessions
+			 */
+			await userSessionsService.removeUserSessions(userSessionIds)
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
@@ -1433,11 +1509,18 @@ module.exports = class AccountHelper {
 		}
 	}
 
+	/**
+	 * Update the user session with access token and refresh token, and set the data in Redis.
+	 * @param {number} userSessionId - The ID of the user session to update.
+	 * @param {string} accessToken - The new access token.
+	 * @param {string} refreshToken - The new refresh token.
+	 * @returns {Promise<Object>} - A promise that resolves to a success response after updating the user session and setting data in Redis.
+	 * @throws {Error} - Throws an error if the update operation fails.
+	 */
 	static async updateUserSessionAndsetRedisData(userSessionId, accessToken, refreshToken) {
 		try {
-			console.log(' ggggggggggggggggggggggggggggggggggggggggggg : ', userSessionId, accessToken, refreshToken)
 			// update user-sessions with refresh token and access token
-			let check = await userSessions.updateUserSession(
+			let check = await userSessionsService.updateUserSession(
 				{
 					id: userSessionId,
 				},
@@ -1446,7 +1529,6 @@ module.exports = class AccountHelper {
 					refresh_token: refreshToken,
 				}
 			)
-			console.log('checkkkkkkkkkkkkkkkkkkkk+++++++++', check)
 
 			// save data in redis against session_id, write a function for this
 			const redisData = {
@@ -1460,10 +1542,8 @@ module.exports = class AccountHelper {
 
 			let expiryTime = process.env.ALLOWED_IDLE_TIME
 			if (process.env.ALLOWED_IDLE_TIME == null) {
-				console.log('inside if..............')
 				expiryTime = utilsHelper.convertDurationToSeconds(common.accessTokenExpiry)
 			}
-			console.log('++++++++++++############ : ', expiryTime, process.env.ALLOWED_IDLE_TIME)
 			const redisKey = userSessionId.toString()
 			const res = await utilsHelper.redisSet(redisKey, redisData, expiryTime)
 

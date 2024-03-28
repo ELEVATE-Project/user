@@ -8,7 +8,6 @@
 // Dependencies
 const accountService = require('@services/account')
 const userSessionsService = require('@services/user-sessions')
-
 module.exports = class Account {
 	/**
 	 * create mentee account
@@ -72,7 +71,8 @@ module.exports = class Account {
 			const loggedOutAccount = await accountService.logout(
 				req.body,
 				req.decodedToken.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.session_id
 			)
 			return loggedOutAccount
 		} catch (error) {

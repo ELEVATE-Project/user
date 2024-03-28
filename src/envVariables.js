@@ -259,7 +259,7 @@ let enviromentVariables = {
 	ALLOWED_IDLE_TIME: {
 		message: 'Require allowed idle time',
 		optional: true,
-		default: 3600,
+		default: 0,
 	},
 }
 
