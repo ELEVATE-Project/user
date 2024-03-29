@@ -404,6 +404,17 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			// check if login is allowed or not
+			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
+				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
+				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
+					return responses.failureResponse({
+						message: 'ACTIVE_SESSION_LIMIT_EXCEEDED',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
 
 			let roles = await roleQueries.findAll(
 				{ id: user.roles, status: common.ACTIVE_STATUS },

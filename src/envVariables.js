@@ -293,6 +293,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 3600000,
 	},
+	ALLOWED_ACTIVE_SESSIONS: {
+		message: 'Require allowed active sessions',
+		optional: true,
+		default: 0,
+	},
 }
 
 let success = true

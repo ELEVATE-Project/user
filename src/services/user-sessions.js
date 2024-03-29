@@ -309,4 +309,38 @@ module.exports = class UserSessionsHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Retrieve the count of active user sessions for a given userId.
+	 * @param {number} userId - The ID of the user for which to retrieve active sessions.
+	 * @returns {Promise<number>} - A Promise that resolves to the count of active user sessions.
+	 * @throws {Error} - If an error occurs while retrieving the count of active user sessions.
+	 */
+	static async activeUserSessionCounts(userId) {
+		try {
+			// Define filter criteria
+			const filterQuery = {
+				user_id: userId,
+				ended_at: null,
+			}
+
+			// Fetch user sessions based on filter criteria
+			const userSessions = await userSessionsQueries.findAll(filterQuery)
+
+			// Initialize count of active sessions
+			let activeSession = 0
+
+			// Loop through user sessions and check if each session exists in Redis
+			for (const session of userSessions) {
+				const id = session.id.toString()
+				const redisData = await utilsHelper.redisGet(id)
+				if (redisData !== null) {
+					activeSession++
+				}
+			}
+			return activeSession
+		} catch (error) {
+			throw error
+		}
+	}
 }
