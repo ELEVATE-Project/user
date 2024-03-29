@@ -260,4 +260,53 @@ module.exports = class UserSessionsHelper {
 			throw unAuthorizedResponse
 		}
 	}
+
+	/**
+	 * Update the user session with access token and refresh token, and set the data in Redis.
+	 * @param {number} userSessionId - The ID of the user session to update.
+	 * @param {string} accessToken - The new access token.
+	 * @param {string} refreshToken - The new refresh token.
+	 * @returns {Promise<Object>} - A promise that resolves to a success response after updating the user session and setting data in Redis.
+	 * @throws {Error} - Throws an error if the update operation fails.
+	 */
+	static async updateUserSessionAndsetRedisData(userSessionId, accessToken, refreshToken) {
+		try {
+			// update user-sessions with refresh token and access token
+			await this.updateUserSession(
+				{
+					id: userSessionId,
+				},
+				{
+					token: accessToken,
+					refresh_token: refreshToken,
+				}
+			)
+
+			// save data in redis against session_id, write a function for this
+			const redisData = {
+				accessToken: accessToken,
+				refreshToken: refreshToken,
+			}
+			/** Allowed idle time set to zero (infinity indicator here)
+			 * set TTL of redis to accessTokenExpiry.
+			 * Else it will be there in redis permenantly and will affect listing of user sessions
+			 */
+
+			let expiryTime = process.env.ALLOWED_IDLE_TIME
+			if (process.env.ALLOWED_IDLE_TIME == null) {
+				expiryTime = utilsHelper.convertDurationToSeconds(common.accessTokenExpiry)
+			}
+			const redisKey = userSessionId.toString()
+			await utilsHelper.redisSet(redisKey, redisData, expiryTime)
+
+			const result = {}
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_SESSION_UPDATED_CESSFULLY',
+				result,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 }

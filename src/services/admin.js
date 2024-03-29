@@ -152,9 +152,10 @@ module.exports = class AdminHelper {
 	 * @param {Object} bodyData - user login data.
 	 * @param {string} bodyData.email - email.
 	 * @param {string} bodyData.password - email.
+	 * @param {string} deviceInformation - device information.
 	 * @returns {JSON} - returns login response
 	 */
-	static async login(bodyData) {
+	static async login(bodyData, deviceInformation) {
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
@@ -203,10 +204,19 @@ module.exports = class AdminHelper {
 				})
 			}
 
+			// create user session entry and add session_id to token data
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id, // userid
+				'', // refresh token
+				'', // Access token
+				deviceInformation
+			)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
+					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
 				},
@@ -214,8 +224,27 @@ module.exports = class AdminHelper {
 
 			user.user_roles = roles
 
-			const accessToken = utils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
-			const refreshToken = utils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
+			const accessToken = utils.generateToken(
+				tokenDetail,
+				process.env.ACCESS_TOKEN_SECRET,
+				common.accessTokenExpiry
+			)
+			const refreshToken = utils.generateToken(
+				tokenDetail,
+				process.env.REFRESH_TOKEN_SECRET,
+				common.refreshTokenExpiry
+			)
+
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
+			await userSessionsService.updateUserSessionAndsetRedisData(
+				userSessionDetails.result.id,
+				accessToken,
+				refreshToken
+			)
 
 			delete user.password
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
