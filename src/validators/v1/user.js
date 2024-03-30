@@ -38,6 +38,7 @@ module.exports = {
 				.trim()
 				.notEmpty()
 				.withMessage('about field is empty')
+				.not()
 				.matches(/(\b)(on\S+)(\s*)=|javascript:|<(|\/|[^\/>][^>]+|\/[^>][^>]+)>/gi)
 				.withMessage('invalid about')
 
