@@ -24,7 +24,7 @@ module.exports = class Account {
 
 	async create(req) {
 		const params = req.body
-		const device_info = req.headers && req.headers['device-info'] ? req.headers['device-info'] : {}
+		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
 			const createdAccount = await accountService.create(params, device_info)
 			return createdAccount
@@ -46,7 +46,7 @@ module.exports = class Account {
 
 	async login(req) {
 		const params = req.body
-		const device_info = req.headers && req.headers['device-info'] ? req.headers['device-info'] : {}
+		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
 			const loggedInAccount = await accountService.login(params, device_info)
 			return loggedInAccount
@@ -131,7 +131,7 @@ module.exports = class Account {
 	async resetPassword(req) {
 		const params = req.body
 		try {
-			const deviceInfo = req.headers && req.headers['device-info'] ? req.headers['device-info'] : {}
+			const deviceInfo = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 			const result = await accountService.resetPassword(params, deviceInfo)
 			return result
 		} catch (error) {
