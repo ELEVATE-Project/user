@@ -78,7 +78,7 @@ module.exports = class Admin {
 
 	async login(req) {
 		try {
-			const device_info = req.headers && req.headers['device-info'] ? req.headers['device-info'] : {}
+			const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 			const loggedInAccount = await adminService.login(req.body, device_info)
 			return loggedInAccount
 		} catch (error) {
