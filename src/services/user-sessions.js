@@ -122,7 +122,7 @@ module.exports = class UserSessionsHelper {
 				if (status === common.ACTIVE_STATUS && statusToSend === common.ACTIVE_STATUS) {
 					const responseObj = {
 						id: session.id,
-						device_info: session.device_info,
+						device_info: JSON.parse(session.device_info),
 						status: statusToSend,
 						login_time: session.started_at,
 						logout_time: session.ended_at,
@@ -131,7 +131,7 @@ module.exports = class UserSessionsHelper {
 				} else if (status === '') {
 					const responseObj = {
 						id: session.id,
-						device_info: session.device_info,
+						device_info: JSON.parse(session.device_info),
 						status: statusToSend,
 						login_time: session.started_at,
 						logout_time: session.ended_at,
