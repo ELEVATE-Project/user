@@ -21,7 +21,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('description field is empty')
-			.matches(/^[a-zA-Z0-9\-.,]+$/)
+			.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 			.withMessage('invalid description')
 		req.checkBody('domains').trim().notEmpty().withMessage('domains field is empty')
 	},
@@ -42,7 +42,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('description field is empty')
-			.matches(/^[a-zA-Z0-9\-.,]+$/)
+			.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 			.withMessage('invalid description')
 	},
 
