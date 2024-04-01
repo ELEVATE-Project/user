@@ -1363,7 +1363,7 @@ module.exports = class AccountHelper {
 			}
 			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
 
-			const updateParams = { password: bodyData.newPassword }
+			const updateParams = { password: bodyData.newPassword, refresh_tokens: [] }
 
 			await userQueries.updateUser(
 				{ id: user.id, organization_id: userCredentials.organization_id },
