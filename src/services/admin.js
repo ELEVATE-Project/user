@@ -596,11 +596,9 @@ function _removeUserKeys() {
 		'gender',
 		'about',
 		'share_link',
-		'last_logged_in_at',
 		'preferred_language',
 		'location',
 		'languages',
-		'refresh_tokens',
 		'image',
 		'roles',
 	]
