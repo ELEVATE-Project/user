@@ -243,7 +243,7 @@ module.exports = class UserSessionsHelper {
 			}
 
 			// Renew the TTL if allowed idle is not infinite
-			if (process.env.ALLOWED_IDLE_TIME == null) {
+			if (process.env.ALLOWED_IDLE_TIME != null) {
 				await utilsHelper.redisSet(sessionId, redisData, process.env.ALLOWED_IDLE_TIME)
 			}
 
