@@ -28,6 +28,7 @@ const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
+const userSessionsService = require('@services/user-sessions')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -39,11 +40,12 @@ module.exports = class AccountHelper {
 	 * @param {Boolean} bodyData.isAMentor - is a mentor or not .
 	 * @param {String} bodyData.email - user email.
 	 * @param {String} bodyData.password - user password.
+	 * @param {Object} deviceInfo - Device information
 	 * @returns {JSON} - returns account creation details.
 	 */
 
-	static async create(bodyData) {
-		const projection = ['password', 'refresh_tokens']
+	static async create(bodyData, deviceInfo) {
+		const projection = ['password']
 
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
@@ -228,10 +230,22 @@ module.exports = class AccountHelper {
 				}
 			)
 
+			/**
+			 * create user session entry and add session_id to token data
+			 * Entry should be created first, the session_id has to be added to token creation data
+			 */
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id, // userid
+				'', // refresh token
+				'', // Access token
+				deviceInfo
+			)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
+					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roleData,
 				},
@@ -261,25 +275,23 @@ module.exports = class AccountHelper {
 				process.env.ACCESS_TOKEN_SECRET,
 				common.accessTokenExpiry
 			)
+
 			const refreshToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
 			)
 
-			let refresh_token = new Array()
-			refresh_token.push({
-				token: refreshToken,
-				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
-				userId: user.id,
-			})
-
-			const update = {
-				refresh_tokens: refresh_token,
-				last_logged_in_at: new Date().getTime(),
-			}
-
-			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, update)
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
+			await userSessionsService.updateUserSessionAndsetRedisData(
+				userSessionDetails.result.id,
+				accessToken,
+				refreshToken
+			)
 			await utilsHelper.redisDel(encryptedEmailId)
 
 			//make the user as org admin
@@ -358,10 +370,11 @@ module.exports = class AccountHelper {
 	 * @param {Object} bodyData -request body contains user login deatils.
 	 * @param {String} bodyData.email - user email.
 	 * @param {String} bodyData.password - user password.
+	 * @param {Object} deviceInformation - device information
 	 * @returns {JSON} - returns susccess or failure of login details.
 	 */
 
-	static async login(bodyData) {
+	static async login(bodyData, deviceInformation) {
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
@@ -391,6 +404,17 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			// check if login is allowed or not
+			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
+				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
+				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
+					return responses.failureResponse({
+						message: 'ACTIVE_SESSION_LIMIT_EXCEEDED',
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
 
 			let roles = await roleQueries.findAll(
 				{ id: user.roles, status: common.ACTIVE_STATUS },
@@ -419,10 +443,19 @@ module.exports = class AccountHelper {
 				})
 			}
 
+			// create user session entry and add session_id to token data
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id, // userid
+				'', // refresh token
+				'', // Access token
+				deviceInformation
+			)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
+					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
 				},
@@ -439,33 +472,7 @@ module.exports = class AccountHelper {
 				common.refreshTokenExpiry
 			)
 
-			let currentToken = {
-				token: refreshToken,
-				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
-				userId: user.id,
-			}
-
-			let userTokens = user.refresh_tokens ? user.refresh_tokens : []
-			let noOfTokensToKeep = common.refreshTokenLimit - 1
-			let refreshTokens = []
-
-			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
-				refreshTokens = userTokens.splice(-noOfTokensToKeep)
-			} else {
-				refreshTokens = userTokens
-			}
-
-			refreshTokens.push(currentToken)
-
-			const updateParams = {
-				refresh_tokens: refreshTokens,
-				last_logged_in_at: new Date().getTime(),
-			}
-
-			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, updateParams)
-
 			delete user.password
-			delete user.refresh_tokens
 
 			//Change to
 			let defaultOrg = await organizationQueries.findOne(
@@ -492,6 +499,17 @@ module.exports = class AccountHelper {
 			user.email = plaintextEmailId
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
+			await userSessionsService.updateUserSessionAndsetRedisData(
+				userSessionDetails.result.id,
+				accessToken,
+				refreshToken
+			)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_IN_SUCCESSFULLY',
@@ -514,7 +532,7 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
-	static async logout(bodyData, user_id, organization_id) {
+	static async logout(bodyData, user_id, organization_id, userSessionId) {
 		try {
 			const user = await userQueries.findOne({ id: user_id, organization_id })
 			if (!user) {
@@ -524,26 +542,17 @@ module.exports = class AccountHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-
-			let refreshTokens = user.refresh_tokens ? user.refresh_tokens : []
-			refreshTokens = refreshTokens.filter(function (tokenData) {
-				return tokenData.token !== bodyData.refresh_token
-			})
-
-			/* Destroy refresh token for user */
-			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: user.id, organization_id: user.organization_id },
-				{ refresh_tokens: refreshTokens }
-			)
-
-			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
-			if (affectedRows == 0) {
-				return responses.failureResponse({
-					message: 'INVALID_REFRESH_TOKEN',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
+			/**
+			 * Aquire user session_id based on the requests
+			 */
+			let userSessions = []
+			if (bodyData.userSessionIds && bodyData.userSessionIds.length > 0) {
+				userSessions = bodyData.userSessionIds
+			} else {
+				userSessions.push(userSessionId)
 			}
+
+			await userSessionsService.removeUserSessions(userSessions)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -586,17 +595,36 @@ module.exports = class AccountHelper {
 			})
 		}
 
-		/* Check valid refresh token stored in db */
-		if (!user.refresh_tokens.length) {
-			return responses.failureResponse({
-				message: 'REFRESH_TOKEN_NOT_FOUND',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'CLIENT_ERROR',
-			})
+		/* check if redis data is present*/
+		// Get redis key for session
+		const sessionId = decodedToken.data.session_id.toString()
+
+		// Get data from redis
+		let redisData = {}
+		redisData = await utilsHelper.redisGet(sessionId)
+
+		// if idle time set to infinity then db check should be done
+		if (!redisData && process.env.ALLOWED_IDLE_TIME == null) {
+			const userSessionData = await userSessionsService.findUserSession(
+				{
+					id: decodedToken.data.session_id,
+				},
+				{
+					attributes: ['refresh_token'],
+				}
+			)
+			if (!userSessionData) {
+				return responses.failureResponse({
+					message: 'REFRESH_TOKEN_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			redisData.refreshToken = userSessionData[0].refresh_token
 		}
 
-		const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
-		if (!token) {
+		// If data is not in redis, token is invalid
+		if (!redisData || redisData.refreshToken !== bodyData.refresh_token) {
 			return responses.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
@@ -611,6 +639,26 @@ module.exports = class AccountHelper {
 			common.accessTokenExpiry
 		)
 
+		/**
+		 * When idle tine is infinity set TTL to access token expiry
+		 * If not redis data won't expire and timeout session will show as active in listing
+		 */
+		let expiryTime = process.env.ALLOWED_IDLE_TIME
+		if (process.env.ALLOWED_IDLE_TIME == null) {
+			expiryTime = utilsHelper.convertDurationToSeconds(common.accessTokenExpiry)
+		}
+		redisData.accessToken = accessToken
+		const res = await utilsHelper.redisSet(sessionId, redisData, expiryTime)
+
+		// update user-sessions with access token
+		let check = await userSessionsService.updateUserSession(
+			{
+				id: decodedToken.data.id,
+			},
+			{
+				token: accessToken,
+			}
+		)
 		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
@@ -785,7 +833,7 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns password reset response
 	 */
 
-	static async resetPassword(bodyData) {
+	static async resetPassword(bodyData, deviceInfo) {
 		const projection = ['location']
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
@@ -845,43 +893,35 @@ module.exports = class AccountHelper {
 				})
 			}
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
+
+			// create user session entry and add session_id to token data
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id, // userid
+				'', // refresh token
+				'', // Access token
+				deviceInfo
+			)
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
+					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles,
 				},
 			}
 
-			const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
-			const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
-
-			let currentToken = {
-				token: refreshToken,
-				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
-				userId: user.id,
-			}
-
-			let userTokens = user.refresh_tokens ? user.refresh_tokens : []
-			let noOfTokensToKeep = common.refreshTokenLimit - 1
-			let refreshTokens = []
-
-			if (userTokens && userTokens.length >= common.refreshTokenLimit)
-				refreshTokens = userTokens.splice(-noOfTokensToKeep)
-			else refreshTokens = userTokens
-
-			refreshTokens.push(currentToken)
-			const updateParams = {
-				refresh_tokens: refreshTokens,
-				lastLoggedInAt: new Date().getTime(),
-				password: bodyData.password,
-			}
-
-			await userQueries.updateUser(
-				{ id: user.id, organization_id: userCredentials.organization_id },
-				updateParams
+			const accessToken = utilsHelper.generateToken(
+				tokenDetail,
+				process.env.ACCESS_TOKEN_SECRET,
+				common.accessTokenExpiry
 			)
+			const refreshToken = utilsHelper.generateToken(
+				tokenDetail,
+				process.env.REFRESH_TOKEN_SECRET,
+				common.refreshTokenExpiry
+			)
+
 			await UserCredentialQueries.updateUser(
 				{
 					email: encryptedEmailId,
@@ -916,6 +956,18 @@ module.exports = class AccountHelper {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
 			user.email = plaintextEmailId
+
+			/**update a new session entry with redis insert */
+			/**
+			 * This function call will do below things
+			 * 1: create redis entry for the session
+			 * 2: update user-session with token and refresh_token
+			 */
+			await userSessionsService.updateUserSessionAndsetRedisData(
+				userSessionDetails.result.id,
+				accessToken,
+				refreshToken
+			)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 			return responses.successResponse({
@@ -1311,7 +1363,7 @@ module.exports = class AccountHelper {
 			}
 			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
 
-			const updateParams = { password: bodyData.newPassword }
+			const updateParams = { password: bodyData.newPassword, refresh_tokens: [] }
 
 			await userQueries.updateUser(
 				{ id: user.id, organization_id: userCredentials.organization_id },
@@ -1319,6 +1371,23 @@ module.exports = class AccountHelper {
 			)
 			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
 			await utilsHelper.redisDel(userCredentials.email)
+
+			// Find active sessions of user and remove them
+			const userSessionData = await userSessionsService.findUserSession(
+				{
+					user_id: userId,
+					ended_at: null,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+			const userSessionIds = userSessionData.map(({ id }) => id)
+			/**
+			 * 1: Remove redis data
+			 * 2: Update ended_at in user-sessions
+			 */
+			await userSessionsService.removeUserSessions(userSessionIds)
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
