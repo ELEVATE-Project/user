@@ -127,4 +127,16 @@ module.exports = {
 				return true
 			})
 	},
+
+	changePassword: (req) => {
+		req.checkBody('oldPassword').notEmpty().withMessage('Password field is empty')
+
+		req.checkBody('newPassword')
+			.notEmpty()
+			.withMessage('Password field is empty')
+			.matches(process.env.PASSWORD_POLICY_REGEX)
+			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
+	},
 }

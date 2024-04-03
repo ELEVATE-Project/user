@@ -450,6 +450,53 @@
 				}
 			]
 		},
+
+		{
+			"name": "Change Password",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "oldPassword",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "newPassword",
+							"value": "Password@123",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
+					"host": ["{{UserDevBaseUrl}}user"],
+					"path": ["v1", "account", "changePassword"],
+					"query": [
+						{
+							"key": "oldPassword",
+							"value": "password",
+							"disabled": true
+						},
+						{
+							"key": "newPassword",
+							"value": "Password@123",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
 		{
 			"name": "User",
 			"item": [

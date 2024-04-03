@@ -114,5 +114,14 @@
 	"COLUMN_DOES_NOT_EXISTS": "Role column does not exists",
 	"PERMISSION_DENIED": "You do not have the required permissions to access this resource. Please contact your administrator for assistance.",
 	"RELATED_ORG_REMOVAL_FAILED": "Requested organization not related the organization. Please check the values.",
-	"INAVLID_ORG_ROLE_REQ": "Invalid organisation request"
+	"INAVLID_ORG_ROLE_REQ": "Invalid organisation request",
+	"INCORRECT_OLD_PASSWORD": "Invalid old password",
+	"SAME_PASSWORD_ERROR": "New password cannot be same as old password",
+	"USER_SESSION_CREATED_SUCCESSFULLY": "User session created successfully",
+	"USER_SESSION_UPDATED_CESSFULLY": "User session updated successfully",
+	"USER_SESSION_VALIDATED_SUCCESSFULLY": "User session validated successfully",
+	"USER_SESSION_FETCHED_SUCCESSFULLY": "User sessions fetched successfully",
+	"USER_SESSIONS_REMOVED_SUCCESSFULLY": "User sesions removed successfully",
+	"PASSWORD_CHANGED_SUCCESSFULLY": "Your password has been changed successfully. Please log-in to continue.",
+	"ACTIVE_SESSION_LIMIT_EXCEEDED": "Sorry! Your allowed active session limi exceeded. Please log-off from other sessions to continue"
 }

@@ -50,8 +50,8 @@ module.exports = class UserInviteHelper {
 
 				// upload output file to cloud
 				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, data.user.id)
-				const output_path = uploadRes.result.uploadDest
 
+				const output_path = uploadRes.result.uploadDest
 				const update = {
 					output_path,
 					updated_by: data.user.id,
@@ -103,13 +103,17 @@ module.exports = class UserInviteHelper {
 	static async downloadCSV(filePath) {
 		try {
 			const downloadableUrl = await utils.getDownloadableUrl(filePath)
-			const fileName = path.basename(downloadableUrl)
-			const downloadPath = path.join(inviteeFileDir, fileName)
+			let fileName = path.basename(downloadableUrl)
 
+			// Find the index of the first occurrence of '?'
+			const index = fileName.indexOf('?')
+			// Extract the portion of the string before the '?' if it exists, otherwise use the entire string
+			fileName = index !== -1 ? fileName.substring(0, index) : fileName
+
+			const downloadPath = path.join(inviteeFileDir, fileName)
 			const response = await axios.get(downloadableUrl, {
 				responseType: common.responseType,
 			})
-
 			const writeStream = fs.createWriteStream(downloadPath)
 			response.data.pipe(writeStream)
 

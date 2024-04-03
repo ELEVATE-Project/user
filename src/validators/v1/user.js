@@ -38,8 +38,7 @@ module.exports = {
 				.trim()
 				.notEmpty()
 				.withMessage('about field is empty')
-				.not()
-				.matches(/(\b)(on\S+)(\s*)=|javascript:|<(|\/|[^\/>][^>]+|\/[^>][^>]+)>/gi)
+				.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 				.withMessage('invalid about')
 
 			req.checkBody('has_accepted_terms_and_conditions')

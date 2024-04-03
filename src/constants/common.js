@@ -26,6 +26,7 @@ module.exports = {
 		'/user/v1/account/search',
 		'/user/v1/organization/list',
 		'/user/v1/user-role/default',
+		'/user/v1/account/validateUserSession',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY,
@@ -59,6 +60,7 @@ module.exports = {
 	roleAssociationName: 'user_roles',
 	ACTIVE_STATUS: 'ACTIVE',
 	INACTIVE_STATUS: 'INACTIVE',
+	EXPIRED_STATUS: 'EXPIRED',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
 	SESSION_MANAGER_ROLE: 'session_manager',
@@ -89,4 +91,5 @@ module.exports = {
 	DELETED_STATUS: 'DELETED',
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
 	ROLE_TYPE_NON_SYSTEM: 0,
+	captchaEnabledAPIs: ['/user/v1/account/login', '/user/v1/account/create', '/user/v1/account/resetPassword'],
 }
