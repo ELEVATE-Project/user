@@ -91,5 +91,5 @@ module.exports = {
 	DELETED_STATUS: 'DELETED',
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
 	ROLE_TYPE_NON_SYSTEM: 0,
-	captchaEnabledAPIs: ['/user/v1/account/login', '/user/v1/account/create', '/user/v1/account/resetPassword'],
+	captchaEnabledAPIs: ['/user/v1/account/login', '/user/v1/account/generateOtp', '/user/v1/account/registrationOtp'],
 }

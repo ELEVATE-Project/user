@@ -838,6 +838,15 @@ module.exports = class AccountHelper {
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+
+			const redisData = await utilsHelper.redisGet(encryptedEmailId)
+			if (!redisData || redisData.otp != bodyData.otp) {
+				return responses.failureResponse({
+					message: 'RESET_OTP_INVALID',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			const userCredentials = await UserCredentialQueries.findOne({
 				email: encryptedEmailId,
 				password: {
@@ -876,14 +885,6 @@ module.exports = class AccountHelper {
 			}
 			user.user_roles = roles
 
-			const redisData = await utilsHelper.redisGet(encryptedEmailId)
-			if (!redisData || redisData.otp != bodyData.otp) {
-				return responses.failureResponse({
-					message: 'RESET_OTP_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (isPasswordSame) {
 				return responses.failureResponse({
