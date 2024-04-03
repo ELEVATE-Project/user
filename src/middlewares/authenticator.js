@@ -124,7 +124,11 @@ module.exports = async function (req, res, next) {
 
 			// If data is not in redis, token is invalid
 			if (!redisData || redisData.accessToken !== authHeaderArray[1]) {
-				throw unAuthorizedResponse
+				throw responses.failureResponse({
+					message: 'USER_SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
 			}
 
 			// Renew the TTL if allowed idle time is greater than zero
@@ -132,7 +136,7 @@ module.exports = async function (req, res, next) {
 				await utilsHelper.redisSet(sessionId, redisData, process.env.ALLOWED_IDLE_TIME)
 			}
 		} catch (err) {
-			if (err.name === 'TokenExpiredError') {
+			if (err.name === 'TokenExpiredError' || err.message === 'USER_SESSION_NOT_FOUND') {
 				throw responses.failureResponse({
 					message: 'ACCESS_TOKEN_EXPIRED',
 					statusCode: httpStatusCode.unauthorized,
@@ -140,7 +144,6 @@ module.exports = async function (req, res, next) {
 				})
 			} else throw unAuthorizedResponse
 		}
-
 		if (!decodedToken) throw unAuthorizedResponse
 
 		//check for admin user

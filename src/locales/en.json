@@ -123,5 +123,6 @@
 	"USER_SESSION_FETCHED_SUCCESSFULLY": "User sessions fetched successfully",
 	"USER_SESSIONS_REMOVED_SUCCESSFULLY": "User sesions removed successfully",
 	"PASSWORD_CHANGED_SUCCESSFULLY": "Your password has been changed successfully. Please log-in to continue.",
-	"ACTIVE_SESSION_LIMIT_EXCEEDED": "Sorry! Your allowed active session limi exceeded. Please log-off from other sessions to continue"
+	"ACTIVE_SESSION_LIMIT_EXCEEDED": "Sorry! Your allowed active session limi exceeded. Please log-off from other sessions to continue",
+	"USER_SESSION_NOT_FOUND": "User session not found"
 }
