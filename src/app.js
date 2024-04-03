@@ -29,6 +29,7 @@ if (!environmentData.success) {
 }
 
 require('@configs')
+const materializedViewsService = require('./generics/materializedViews')
 
 i18next
 	.use(Backend)
@@ -83,6 +84,22 @@ app.all('*', (req, res, next) => {
 	})
 	next()
 })
+
+async function buildViews() {
+	console.log('Building Materialized views if not exits...')
+	const startTime = Date.now()
+
+	try {
+		await materializedViewsService.checkAndCreateMaterializedViews()
+		const endTime = Date.now()
+		const elapsedTime = endTime - startTime
+		console.log(`Completed building views. Time taken: ${elapsedTime} ms`)
+	} catch (error) {
+		console.error('Error while creating Materialized views:', error)
+	}
+}
+
+buildViews()
 
 /* Registered routes here */
 require('./routes')(app)
