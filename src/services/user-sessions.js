@@ -12,6 +12,8 @@ const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
 const common = require('@constants/common')
 const jwt = require('jsonwebtoken')
+const moment = require('moment')
+const { Op } = require('sequelize')
 
 // create user-session
 module.exports = class UserSessionsHelper {
@@ -88,7 +90,7 @@ module.exports = class UserSessionsHelper {
 	 * @returns {Promise<Object>} - A promise that resolves to the user session details.
 	 */
 
-	static async list(userId, status, limit, page, currentSessionId) {
+	static async list(userId, status, limit, page, currentSessionId, period = '') {
 		try {
 			const filter = {
 				user_id: userId,
@@ -98,6 +100,14 @@ module.exports = class UserSessionsHelper {
 			// If ended at is null, the status can be active. after verification with redis we can confirm
 			if (status === common.ACTIVE_STATUS) {
 				filter.ended_at = null
+			}
+
+			// If front end passes a period
+			if (period != '') {
+				const periodInSeconds = await utilsHelper.convertDurationToSeconds(period)
+				const currentTimeEpoch = moment().unix()
+				const threshold = currentTimeEpoch - periodInSeconds
+				filter.started_at = { [Op.gte]: threshold }
 			}
 
 			// create userSession
