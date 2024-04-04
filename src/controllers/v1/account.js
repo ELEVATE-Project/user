@@ -284,7 +284,9 @@ module.exports = class Account {
 				req.decodedToken.id,
 				filter,
 				req.pageSize,
-				req.pageNo
+				req.pageNo,
+				req.decodedToken.session_id,
+				req.query && req.query.period ? req.query.period : ''
 			)
 			return userSessionDetails
 		} catch (error) {
