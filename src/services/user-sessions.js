@@ -84,10 +84,11 @@ module.exports = class UserSessionsHelper {
 	 * @param {string} status - The status of the user sessions (e.g., 'ACTIVE', '').
 	 * @param {number} limit - The maximum number of user sessions to retrieve per page.
 	 * @param {number} page - The page number for pagination.
+	 * @param {number} currentSessionId - The id of current session.
 	 * @returns {Promise<Object>} - A promise that resolves to the user session details.
 	 */
 
-	static async list(userId, status, limit, page) {
+	static async list(userId, status, limit, page, currentSessionId) {
 		try {
 			const filter = {
 				user_id: userId,
@@ -103,6 +104,7 @@ module.exports = class UserSessionsHelper {
 			const userSessions = await userSessionsQueries.findAll(filter)
 			const activeSessions = []
 			const inActiveSessions = []
+			const currentSession = []
 			for (const session of userSessions) {
 				const id = session.id.toString() // Convert ID to string
 				const redisData = await utilsHelper.redisGet(id)
@@ -127,7 +129,11 @@ module.exports = class UserSessionsHelper {
 						login_time: session.started_at,
 						logout_time: session.ended_at,
 					}
-					activeSessions.push(responseObj)
+					if (responseObj.id == currentSessionId) {
+						currentSession.push(responseObj)
+					} else {
+						activeSessions.push(responseObj)
+					}
 				} else if (status === '') {
 					const responseObj = {
 						id: session.id,
@@ -136,13 +142,18 @@ module.exports = class UserSessionsHelper {
 						login_time: session.started_at,
 						logout_time: session.ended_at,
 					}
-					responseObj.status === common.ACTIVE_STATUS
-						? activeSessions.push(responseObj)
-						: inActiveSessions.push(responseObj)
+					// get current session data
+					if (responseObj.id == currentSessionId) {
+						currentSession.push(responseObj)
+					} else {
+						responseObj.status === common.ACTIVE_STATUS
+							? activeSessions.push(responseObj)
+							: inActiveSessions.push(responseObj)
+					}
 				}
 			}
 
-			const result = [...activeSessions, ...inActiveSessions]
+			const result = [...currentSession, ...activeSessions, ...inActiveSessions]
 
 			// Paginate the result array
 			// The response is accumulated from two places. db and redis. So pagination is not possible on the fly
