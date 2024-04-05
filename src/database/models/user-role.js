@@ -1,5 +1,5 @@
 'use strict'
-const common = require('@constants/common')
+const common = require('../../constants/common')
 module.exports = (sequelize, DataTypes) => {
 	const defaultOrgId = sequelize.options.defaultOrgId
 	const UserRole = sequelize.define(
