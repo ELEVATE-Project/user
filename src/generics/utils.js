@@ -53,8 +53,9 @@ const getDownloadableUrl = async (imgPath) => {
 			bucketName: process.env.DEFAULT_GCP_BUCKET_NAME,
 			gcpProjectId: process.env.GCP_PROJECT_ID,
 			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH),
+			expiry: Date.now() + parseFloat(process.env.DOWNLOAD_URL_EXPIRATION_DURATION),
 		}
-		imgPath = await GcpFileHelper.getDownloadableUrl(options)
+		imgPath = await GcpFileHelper.getSignedDownloadableUrl(options)
 	} else if (process.env.CLOUD_STORAGE === 'AWS') {
 		const options = {
 			destFilePath: imgPath,
@@ -433,6 +434,29 @@ const getRoleTitlesFromId = (roleIds = [], roleList = []) => {
 	})
 }
 
+const convertDurationToSeconds = (duration) => {
+	const timeUnits = {
+		s: 1,
+		m: 60,
+		h: 3600,
+		d: 86400,
+	}
+
+	const match = /^(\d*\.?\d*)([smhd])$/.exec(duration)
+	if (!match) {
+		throw new Error('Invalid duration format')
+	}
+
+	const value = parseFloat(match[1])
+	const unit = match[2]
+
+	if (!(unit in timeUnits)) {
+		throw new Error('Invalid duration unit')
+	}
+
+	return value * timeUnits[unit]
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -463,4 +487,5 @@ module.exports = {
 	isValidName,
 	generateWhereClause,
 	getRoleTitlesFromId,
+	convertDurationToSeconds,
 }

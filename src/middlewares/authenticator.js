@@ -14,6 +14,8 @@ const roleQueries = require('@database/queries/user-role')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
+const utilsHelper = require('@generics/utils')
+const { verifyCaptchaToken } = require('@utils/captcha')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -58,6 +60,26 @@ module.exports = async function (req, res, next) {
 			return false
 		})
 
+		// check if captcha check is enabled in the env
+		const isCaptchaEnabled = process.env.CAPTCHA_ENABLE.toLowerCase() == 'true'
+
+		if (isCaptchaEnabled) {
+			// check if captcha is enabled for the route
+			const isCaptchaEnabledForRoute = common.captchaEnabledAPIs.includes(req.path)
+			if (isCaptchaEnabledForRoute) {
+				// get the token from API
+				const captchaToken = req.get('captcha-token')
+				// verify token
+				if (!(await verifyCaptchaToken(captchaToken))) {
+					throw responses.failureResponse({
+						message: 'CAPTCHA_VERIFICATION_FAILED',
+						statusCode: httpStatusCode.unauthorized,
+						responseCode: 'UNAUTHORIZED',
+					})
+				}
+			}
+		}
+
 		common.roleValidationPaths.map(function (path) {
 			if (req.path.includes(path)) {
 				roleValidation = true
@@ -95,8 +117,26 @@ module.exports = async function (req, res, next) {
 
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+			// Get redis key for session
+			const sessionId = decodedToken.data.session_id.toString()
+			// Get data from redis
+			const redisData = await utilsHelper.redisGet(sessionId)
+
+			// If data is not in redis, token is invalid
+			if (!redisData || redisData.accessToken !== authHeaderArray[1]) {
+				throw responses.failureResponse({
+					message: 'USER_SESSION_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+
+			// Renew the TTL if allowed idle time is greater than zero
+			if (process.env.ALLOWED_IDLE_TIME != null) {
+				await utilsHelper.redisSet(sessionId, redisData, process.env.ALLOWED_IDLE_TIME)
+			}
 		} catch (err) {
-			if (err.name === 'TokenExpiredError') {
+			if (err.name === 'TokenExpiredError' || err.message === 'USER_SESSION_NOT_FOUND') {
 				throw responses.failureResponse({
 					message: 'ACCESS_TOKEN_EXPIRED',
 					statusCode: httpStatusCode.unauthorized,
@@ -104,7 +144,6 @@ module.exports = async function (req, res, next) {
 				})
 			} else throw unAuthorizedResponse
 		}
-
 		if (!decodedToken) throw unAuthorizedResponse
 
 		//check for admin user

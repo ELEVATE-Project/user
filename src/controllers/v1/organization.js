@@ -160,4 +160,27 @@ module.exports = class Organization {
 			return error
 		}
 	}
+
+	async addRelatedOrg(req) {
+		try {
+			const result = await orgService.addRelatedOrg(
+				req.params.id ? req.params.id : '',
+				req.body.related_orgs ? req.body.related_orgs : []
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+	async removeRelatedOrg(req) {
+		try {
+			const result = await orgService.removeRelatedOrg(
+				req.params.id ? req.params.id : '',
+				req.body.related_orgs ? req.body.related_orgs : []
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }
