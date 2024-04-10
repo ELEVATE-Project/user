@@ -29,7 +29,6 @@ const common = require('../constants/common')
 		const uploadFilePath = process.env.SAMPLE_CSV_FILE_PATH
 		const uploadFolder = path.dirname(uploadFilePath)
 		const uploadFileName = path.basename(uploadFilePath)
-		console.log(uploadFileName, uploadFolder)
 
 		//get signed url
 		const getSignedUrl = await fileService.getSignedUrl(uploadFileName, '', uploadFolder)

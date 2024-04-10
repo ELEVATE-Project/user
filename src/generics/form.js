@@ -1,4 +1,4 @@
-const formsQueries = require('../database/queries/form')
+const formsQueries = require('@database/queries/form')
 
 //const utils = require('@generics/utils')
 async function getAllFormsVersion() {

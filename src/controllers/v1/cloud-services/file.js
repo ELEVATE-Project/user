@@ -19,7 +19,6 @@ module.exports = class File {
 	 */
 	async getSignedUrl(req) {
 		try {
-			//console.log("req signed url",req)
 			const signedUrlResponse = await filesService.getSignedUrl(
 				req.query.fileName,
 				req.decodedToken.id,

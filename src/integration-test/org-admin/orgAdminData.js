@@ -33,23 +33,3 @@ const insertRequest = async () => {
 module.exports = {
 	insertRequest,
 }
-
-//     roleRequestData = {
-//         requester_id: userDetails.userId,
-//         role: 2,
-//         status: 'REQUESTED',
-//         organization_id: userDetails.organization_id,
-//         handled_by: null,
-//         meta: {
-//           designation: 'Manager',
-//           experience: '5 years',
-//           area_of_expertise: ['Finance', 'Management'],
-//           about: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-//         },
-//         comments: ['Needs approval']
-//       }
-//         let createdReq = await OrganizationRoleRequests.create(roleRequestData)
-//         return createdReq.get({ plain: true })
-//       const result = await orgRoleReqQueries.create(roleRequestData)
-//       console.log("result of  inserting request",result)
-// return result

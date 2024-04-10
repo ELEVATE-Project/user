@@ -5,9 +5,8 @@
  * Description : Integration test for mentor controllers.
  */
 
-const { request, logIn, mentorLogIn, logError } = require('@commonTests')
+const { request, mentorLogIn, logError } = require('@commonTests')
 const { listMentorsSchema } = require('./responseSchema')
-const { insertMentor } = require('./mentorData')
 
 describe('user/v1/mentors', function () {
 	let userDetails
@@ -16,7 +15,6 @@ describe('user/v1/mentors', function () {
 		userDetails = await mentorLogIn()
 	})
 	it('/list', async () => {
-		//	await insertMentor()
 		let res = await request.post('/user/v1/mentors/list').set({
 			'X-auth-token': 'bearer ' + userDetails.token,
 			Connection: 'keep-alive',
