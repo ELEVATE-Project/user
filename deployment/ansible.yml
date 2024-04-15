@@ -86,7 +86,7 @@
       shell: rm -rf  {{ release_path }}
 
     - name: Start pm2
-      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-user"
+      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-project-user"
       register: pm2Info
 
     - name: debug info
