@@ -25,7 +25,7 @@
         release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
         current_path: "{{ project_path }}/users"
     - name: Retrieve current release folder
-      command: readlink -f users
+      command: readlink -f elevate-project-users
       register: current_release_path
       ignore_errors: yes
       args:
@@ -51,7 +51,6 @@
     
     - name: Move code
       shell: mv "{{ release_path }}"/* {{ current_path }}/
-
    # - name: Update symlink
     #  file:
      #   src={{ release_path }}
