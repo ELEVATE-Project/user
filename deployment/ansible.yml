@@ -79,7 +79,7 @@
       command: "chdir={{current_path}}/src npx sequelize-cli db:migrate"
 
     - name: Delete old pm2 process
-      command: pm2 delete elevate-user
+      command: pm2 delete elevate-project-user
       ignore_errors: yes
 
     - name: Delete release folder
