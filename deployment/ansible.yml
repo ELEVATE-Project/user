@@ -47,7 +47,7 @@
       shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
     
     - name: Delete Old Folder 
-      shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir users
+      shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir elevate-project-users
     
     - name: Move code
       shell: mv "{{ release_path }}"/* {{ current_path }}/
