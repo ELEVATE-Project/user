@@ -1,18 +1,26 @@
-const userEntitiesData = require('@db/userentities/query')
+const { request, adminLogIn, logError } = require('@commonTests')
+
 const { faker } = require('@faker-js/faker')
-let res, bodyData
 
 const insertEntity = async () => {
 	try {
-		bodyData = {
-			value: faker.random.alpha(5),
-			label: faker.random.alpha(5),
-			type: 'roles',
-			updatedBy: faker.database.mongodbObjectId(),
-			createdBy: faker.database.mongodbObjectId(),
-		}
-		res = await userEntitiesData.createEntity(bodyData)
-		return res._id.valueOf()
+		userDetails = await adminLogIn()
+
+		let res = await request
+			.post('/user/v1/entity/create')
+			.set({
+				'X-auth-token': 'bearer ' + userDetails.token,
+				Connection: 'keep-alive',
+				'Content-Type': 'application/json',
+			})
+			.send({
+				value: faker.random.alpha(5),
+				label: faker.random.alpha(5),
+				status: 'ACTIVE',
+				type: 'roles',
+				entity_type_id: 1,
+			})
+		return [res.body.result.id, userDetails.token]
 	} catch (error) {
 		console.error(error)
 	}

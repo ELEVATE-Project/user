@@ -1,15 +1,13 @@
 let commonBody = {
 	properties: {
-		message: {
-			type: 'string',
-		},
-		meta: {
-			type: 'object',
-		},
 		responseCode: {
 			type: 'string',
 		},
+		message: {
+			type: 'string',
+		},
 		result: {
+			type: 'object',
 			properties: {
 				access_token: {
 					type: 'string',
@@ -18,80 +16,181 @@ let commonBody = {
 					type: 'string',
 				},
 				user: {
+					type: 'object',
 					properties: {
-						_id: {
-							type: 'string',
-						},
-						areasOfExpertise: {
-							items: {},
-							type: 'array',
-						},
-						createdAt: {
-							type: 'string',
-						},
-						deleted: {
-							type: 'boolean',
-						},
-						designation: {
-							items: {},
-							type: 'array',
-						},
-						educationQualification: {
-							type: 'null',
+						id: {
+							type: 'integer',
 						},
 						email: {
-							properties: {
-								address: {
-									type: 'string',
-								},
-								verified: {
-									type: 'boolean',
-								},
-							},
-							required: ['address', 'verified'],
-							type: 'object',
+							type: 'string',
 						},
-						hasAcceptedTAndC: {
-							type: 'boolean',
-						},
-						isAMentor: {
-							type: 'boolean',
-						},
-						languages: {
-							items: {},
-							type: 'array',
-						},
-						location: {
-							items: {},
-							type: 'array',
+						email_verified: {
+							type: 'string',
 						},
 						name: {
 							type: 'string',
 						},
-						updatedAt: {
+						gender: {
+							type: 'null',
+						},
+						location: {
+							type: 'null',
+						},
+						about: {
+							type: 'null',
+						},
+						share_link: {
+							type: 'null',
+						},
+						status: {
 							type: 'string',
+						},
+						image: {
+							type: 'null',
+						},
+						has_accepted_terms_and_conditions: {
+							type: 'boolean',
+						},
+						languages: {
+							type: 'null',
+						},
+						preferred_language: {
+							type: 'object',
+							properties: {
+								value: {
+									type: 'string',
+								},
+								label: {
+									type: 'string',
+								},
+							},
+							required: ['value', 'label'],
+						},
+						organization_id: {
+							type: 'integer',
+						},
+						roles: {
+							type: 'array',
+							items: [
+								{
+									type: 'integer',
+								},
+								{
+									type: 'integer',
+								},
+								{
+									type: 'integer',
+								},
+							],
+						},
+						meta: {
+							type: 'null',
+						},
+						created_at: {
+							type: 'string',
+						},
+						updated_at: {
+							type: 'string',
+						},
+						deleted_at: {
+							type: 'null',
+						},
+						organization: {
+							type: 'object',
+						},
+						user_roles: {
+							type: 'array',
+							items: [
+								{
+									type: 'object',
+									properties: {
+										id: {
+											type: 'integer',
+										},
+										title: {
+											type: 'string',
+										},
+										user_type: {
+											type: 'integer',
+										},
+										status: {
+											type: 'string',
+										},
+										organization_id: {
+											type: 'integer',
+										},
+										visibility: {
+											type: 'string',
+										},
+									},
+									required: ['id', 'title', 'user_type', 'status', 'organization_id', 'visibility'],
+								},
+								{
+									type: 'object',
+									properties: {
+										id: {
+											type: 'integer',
+										},
+										title: {
+											type: 'string',
+										},
+										user_type: {
+											type: 'integer',
+										},
+										status: {
+											type: 'string',
+										},
+										organization_id: {
+											type: 'integer',
+										},
+										visibility: {
+											type: 'string',
+										},
+									},
+									required: ['id', 'title', 'user_type', 'status', 'organization_id', 'visibility'],
+								},
+							],
 						},
 					},
 					required: [
+						'id',
 						'email',
-						'_id',
+						'email_verified',
 						'name',
-						'isAMentor',
-						'hasAcceptedTAndC',
-						'deleted',
-						'educationQualification',
-						'designation',
+						'gender',
 						'location',
-						'areasOfExpertise',
+						'about',
+						'share_link',
+						'status',
+						'image',
+						'has_accepted_terms_and_conditions',
 						'languages',
-						'updatedAt',
-						'createdAt',
+						'preferred_language',
+						'organization_id',
+						'roles',
+						'meta',
+						'created_at',
+						'updated_at',
+						'deleted_at',
+						'organization',
+						'user_roles',
 					],
-					type: 'object',
 				},
 			},
 			required: ['access_token', 'refresh_token', 'user'],
+		},
+		meta: {
 			type: 'object',
+			properties: {
+				formsVersion: {
+					type: 'array',
+					items: {},
+				},
+				correlation: {
+					type: 'string',
+				},
+			},
+			required: ['formsVersion', 'correlation'],
 		},
 	},
 	required: ['responseCode', 'message', 'result', 'meta'],
@@ -103,7 +202,6 @@ const createProfileSchema = {
 commonBody.properties.result.properties.user.properties['lastLoggedInAt'] = {
 	type: 'string',
 }
-
 const loginSchema = {
 	type: 'object',
 	...commonBody,

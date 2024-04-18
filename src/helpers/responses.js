@@ -5,7 +5,7 @@
  * Description : Response constants used in this service
  */
 
-const form = require('@generics/form')
+const form = require('../generics/form')
 const { elevateLog, correlationId } = require('elevate-logger')
 const logger = elevateLog.init()
 const successResponse = async ({ statusCode = 500, responseCode = 'OK', message, result = [], meta = {} }) => {
