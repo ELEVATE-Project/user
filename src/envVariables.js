@@ -51,54 +51,54 @@ let enviromentVariables = {
 		message: 'Required kafka topic',
 		optional: false,
 	},
-	CLOUD_STORAGE: {
-		message: 'Required cloud storage type ex: AWS/GCP/AZURE',
-		optional: false,
-	},
-	GCP_PATH: {
-		message: 'Required gcp file path ex: gcp.json',
-		optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
-	},
-	DEFAULT_GCP_BUCKET_NAME: {
-		message: 'Required gcp bucket name',
-		optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
-	},
-	GCP_PROJECT_ID: {
-		message: 'Required gcp project id',
-		optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
-	},
-	AWS_ACCESS_KEY_ID: {
-		message: 'Required aws access key id',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AWS_SECRET_ACCESS_KEY: {
-		message: 'Required aws secret access key',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AWS_BUCKET_REGION: {
-		message: 'Required aws bucket region',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AWS_BUCKET_ENDPOINT: {
-		message: 'Required aws bucket endpoint',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	DEFAULT_AWS_BUCKET_NAME: {
-		message: 'Required aws bucket name',
-		optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
-	},
-	AZURE_ACCOUNT_NAME: {
-		message: 'Required azure account name',
-		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
-	},
-	AZURE_ACCOUNT_KEY: {
-		message: 'Required azure account key',
-		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
-	},
-	DEFAULT_AZURE_CONTAINER_NAME: {
-		message: 'Required azure container name',
-		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
-	},
+	// CLOUD_STORAGE: {
+	// 	message: 'Required cloud storage type ex: AWS/GCP/AZURE',
+	// 	optional: false,
+	// },
+	// GCP_PATH: {
+	// 	message: 'Required gcp file path ex: gcp.json',
+	// 	optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
+	// },
+	// DEFAULT_GCP_BUCKET_NAME: {
+	// 	message: 'Required gcp bucket name',
+	// 	optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
+	// },
+	// GCP_PROJECT_ID: {
+	// 	message: 'Required gcp project id',
+	// 	optional: process.env.CLOUD_STORAGE === 'GCP' ? false : true,
+	// },
+	// AWS_ACCESS_KEY_ID: {
+	// 	message: 'Required aws access key id',
+	// 	optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
+	// },
+	// AWS_SECRET_ACCESS_KEY: {
+	// 	message: 'Required aws secret access key',
+	// 	optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
+	// },
+	// AWS_BUCKET_REGION: {
+	// 	message: 'Required aws bucket region',
+	// 	optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
+	// },
+	// AWS_BUCKET_ENDPOINT: {
+	// 	message: 'Required aws bucket endpoint',
+	// 	optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
+	// },
+	// DEFAULT_AWS_BUCKET_NAME: {
+	// 	message: 'Required aws bucket name',
+	// 	optional: process.env.CLOUD_STORAGE === 'AWS' ? false : true,
+	// },
+	// AZURE_ACCOUNT_NAME: {
+	// 	message: 'Required azure account name',
+	// 	optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
+	// },
+	// AZURE_ACCOUNT_KEY: {
+	// 	message: 'Required azure account key',
+	// 	optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
+	// },
+	// DEFAULT_AZURE_CONTAINER_NAME: {
+	// 	message: 'Required azure container name',
+	// 	optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
+	// },
 	ACCESS_TOKEN_EXPIRY: {
 		message: 'Required access token expiry',
 		optional: false,
@@ -127,26 +127,26 @@ let enviromentVariables = {
 		message: 'iv is missing for email encryption',
 		optional: false,
 	},
-	OCI_ACCESS_KEY_ID: {
-		message: 'Required oci access key id',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	OCI_SECRET_ACCESS_KEY: {
-		message: 'Required oci secret access key',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	OCI_BUCKET_REGION: {
-		message: 'Required oci bucket region',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	OCI_BUCKET_ENDPOINT: {
-		message: 'Required oci bucket endpoint',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
-	DEFAULT_OCI_BUCKET_NAME: {
-		message: 'Required oci bucket name',
-		optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
-	},
+	// OCI_ACCESS_KEY_ID: {
+	// 	message: 'Required oci access key id',
+	// 	optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	// },
+	// OCI_SECRET_ACCESS_KEY: {
+	// 	message: 'Required oci secret access key',
+	// 	optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	// },
+	// OCI_BUCKET_REGION: {
+	// 	message: 'Required oci bucket region',
+	// 	optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	// },
+	// OCI_BUCKET_ENDPOINT: {
+	// 	message: 'Required oci bucket endpoint',
+	// 	optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	// },
+	// DEFAULT_OCI_BUCKET_NAME: {
+	// 	message: 'Required oci bucket name',
+	// 	optional: process.env.CLOUD_STORAGE === 'OCI' ? false : true,
+	// },
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
 		optional: false,
@@ -254,7 +254,7 @@ let enviromentVariables = {
 	DOWNLOAD_URL_EXPIRATION_DURATION: {
 		message: 'Required downloadable url expiration time',
 		optional: true,
-		default: 3600000,
+		default: 300,
 	},
 	ALLOWED_IDLE_TIME: {
 		message: 'Require allowed idle time',
@@ -288,15 +288,35 @@ let enviromentVariables = {
 		optional: true,
 		default: '/recaptcha/api/siteverify',
 	},
-	SIGNED_URL_EXPIRY_IN_MILLISECONDS: {
+	SIGNED_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required signed url expiration time in milliseconds',
 		optional: true,
-		default: 3600000,
+		default: 300,
 	},
 	ALLOWED_ACTIVE_SESSIONS: {
 		message: 'Require allowed active sessions',
 		optional: true,
 		default: 0,
+	},
+	CLOUD_STORAGE_PROVIDER: {
+		message: 'Require cloud storage provider',
+		optional: false,
+	},
+	CLOUD_STORAGE_SECRET: {
+		message: 'Require client storage provider identity',
+		optional: false,
+	},
+	CLOUD_STORAGE_BUCKETNAME: {
+		message: 'Require client storage bucket name',
+		optional: false,
+	},
+	CLOUD_STORAGE_BUCKET_TYPE: {
+		message: 'Require storage bucket type',
+		optional: false,
+	},
+	PUBLIC_ASSET_BUCKETNAME: {
+		message: 'Require asset storage bucket name',
+		optional: false,
 	},
 }
 

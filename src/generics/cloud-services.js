@@ -9,23 +9,24 @@
 const path = require('path')
 
 const { AwsFileHelper, AzureFileHelper, GcpFileHelper, OciFileHelper } = require('elevate-cloud-storage')
+const common = require('@constants/common')
+const { cloudClient } = require('@configs/cloud-service')
 
 module.exports = class FilesHelper {
-	static async getGcpSignedUrl(destFilePath, actionType = 'write') {
-		const bucketName = process.env.DEFAULT_GCP_BUCKET_NAME
-		const options = {
-			destFilePath: destFilePath, // Stored file path - location from bucket - example - users/abc.png
-			bucketName: bucketName, // google cloud storage bucket in which action is peformed over file
-			actionType: actionType, // signed url usage type - example ('read' | 'write' | 'delete' | 'resumable')
-			expiry: Date.now() + parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS), // signed url expiration time - In ms from current time - type number | string | Date
-			gcpProjectId: process.env.GCP_PROJECT_ID, // google cloud storage project id
-			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH), // google cloud storage json configuration file absolute path for connectivity
-			contentType: 'multipart/form-data', // content type of file, example multipart/form-data, image/png, csv/text etc
-		}
-
+	static async getSignedUrl(bucketName, destFilePath, actionType = common.WRITE_ACCESS, expiryTime = '') {
 		try {
-			const signedUrl = await GcpFileHelper.getSignedUrl(options)
-			return signedUrl
+			console.log('client ation type : ', actionType)
+			const signedUrl = await cloudClient.getSignedUrl(
+				bucketName, // bucket name
+				destFilePath, // file path
+				expiryTime, // expire
+				actionType // read/write
+			)
+			console.log('Response : ', signedUrl)
+			return {
+				signedUrl: signedUrl,
+				filePath: destFilePath,
+			}
 		} catch (error) {
 			throw error
 		}

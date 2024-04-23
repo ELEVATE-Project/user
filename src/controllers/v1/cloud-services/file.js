@@ -22,7 +22,8 @@ module.exports = class File {
 			const signedUrlResponse = await filesService.getSignedUrl(
 				req.query.fileName,
 				req.decodedToken.id,
-				req.query.dynamicPath ? req.query.dynamicPath : ''
+				req.query.dynamicPath ? req.query.dynamicPath : '',
+				req.query.public && req.query.public == 'true' ? true : false
 			)
 			return signedUrlResponse
 		} catch (error) {
@@ -39,7 +40,11 @@ module.exports = class File {
 	 */
 	async getDownloadableUrl(req) {
 		try {
-			const downlopadUrlResponse = await filesService.getDownloadableUrl(req.query.filePath)
+			console.log('*******************req.query.public :', req.query.public)
+			const downlopadUrlResponse = await filesService.getDownloadableUrl(
+				req.query.filePath,
+				req.query.public && req.query.public == 'true' ? true : false
+			)
 			return downlopadUrlResponse
 		} catch (error) {
 			return error

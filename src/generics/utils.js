@@ -18,6 +18,8 @@ const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
+const common = require('@constants/common')
+const { cloudClient } = require('@configs/cloud-service')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -46,7 +48,13 @@ const composeEmailBody = (body, params) => {
 	})
 }
 
-const getDownloadableUrl = async (imgPath) => {
+const getDownloadableUrl = async (bucketName, filePath) => {
+	const downloadableUrl = await cloudClient.getDownloadableUrl(
+		bucketName, // bucket name
+		filePath // file path
+	)
+	console.log('response from client-cloud-service :', downloadableUrl)
+	return downloadableUrl
 	if (process.env.CLOUD_STORAGE === 'GCP') {
 		const options = {
 			destFilePath: imgPath,
