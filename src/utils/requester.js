@@ -3,7 +3,7 @@ const axios = require('axios')
 const { isEmpty } = require('@utils/generic')
 const { compile } = require('path-to-regexp')
 
-const post = async (baseURL, route = '', headers = {}, body = {}, queryParams = {}) => {
+const post = async (baseURL, route, headers = {}, body = {}, queryParams = {}) => {
 	try {
 		baseURL = baseURL.replace(/\/$/, '')
 		let url = baseURL + route

@@ -7,7 +7,8 @@
 
 // Dependencies
 const accountService = require('@services/account')
-const userSessionsService = require('@services/user-sessions')
+const csv = require('csvtojson')
+
 module.exports = class Account {
 	/**
 	 * create mentee account
@@ -24,9 +25,8 @@ module.exports = class Account {
 
 	async create(req) {
 		const params = req.body
-		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
-			const createdAccount = await accountService.create(params, device_info)
+			const createdAccount = await accountService.create(params)
 			return createdAccount
 		} catch (error) {
 			return error
@@ -46,9 +46,8 @@ module.exports = class Account {
 
 	async login(req) {
 		const params = req.body
-		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
-			const loggedInAccount = await accountService.login(params, device_info)
+			const loggedInAccount = await accountService.login(params)
 			return loggedInAccount
 		} catch (error) {
 			return error
@@ -61,19 +60,17 @@ module.exports = class Account {
 	 * @name logout
 	 * @param {Object} req -request data.
 	 * @param {Object} req.decodedToken - it contains user token informations.
+	 * @param {string} req.body.loggedInId - user id.
 	 * @param {string} req.body.refresh_token - refresh token.
 	 * @param {String} req.decodedToken.id - userId.
 	 * @returns {JSON} - accounts loggedout.
 	 */
 
 	async logout(req) {
+		const params = req.body
+		params.loggedInId = req.decodedToken.id
 		try {
-			const loggedOutAccount = await accountService.logout(
-				req.body,
-				req.decodedToken.id,
-				req.decodedToken.organization_id,
-				req.decodedToken.session_id
-			)
+			const loggedOutAccount = await accountService.logout(params)
 			return loggedOutAccount
 		} catch (error) {
 			return error
@@ -90,8 +87,9 @@ module.exports = class Account {
 	 */
 
 	async generateToken(req) {
+		const params = req.body
 		try {
-			const createdToken = await accountService.generateToken(req.body)
+			const createdToken = await accountService.generateToken(params)
 			return createdToken
 		} catch (error) {
 			return error
@@ -131,9 +129,25 @@ module.exports = class Account {
 	async resetPassword(req) {
 		const params = req.body
 		try {
-			const deviceInfo = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
-			const result = await accountService.resetPassword(params, deviceInfo)
+			const result = await accountService.resetPassword(params)
 			return result
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Bulk create mentors
+	 * @method
+	 * @name bulkCreateMentors
+	 * @param {Object} req -request data.
+	 * @returns {CSV} - created mentors.
+	 */
+	async bulkCreateMentors(req) {
+		try {
+			const mentors = await csv().fromString(req.files.mentors.data.toString())
+			const createdMentors = await accountService.bulkCreateMentors(mentors, req.decodedToken)
+			return createdMentors
 		} catch (error) {
 			return error
 		}
@@ -244,68 +258,6 @@ module.exports = class Account {
 		try {
 			const result = await accountService.search(req)
 			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * change password
-	 * @method
-	 * @name changePassword
-	 * @param {Object} req -request data.
-	 * @param {Object} req.decodedToken.id - UserId.
-	 * @param {string} req.body - request body contains user password
-	 * @param {string} req.body.OldPassword - user Old Password.
-	 * @param {string} req.body.NewPassword - user New Password.
-	 * @param {string} req.body.ConfirmNewPassword - user Confirming New Password.
-	 * @returns {JSON} - password changed response
-	 */
-
-	async changePassword(req) {
-		try {
-			const result = await accountService.changePassword(req.body, req.decodedToken.id)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Retrieve user sessions based on the request parameters.
-	 * @param {Object} req - The request object containing query parameters and decoded token.
-	 * @returns {Promise<Object>} - A promise that resolves to the user session details.
-	 */
-
-	async sessions(req) {
-		try {
-			const filter = req.query && req.query.status ? req.query.status.toUpperCase() : ''
-			const userSessionDetails = await userSessionsService.list(
-				req.decodedToken.id,
-				filter,
-				req.pageSize,
-				req.pageNo,
-				req.decodedToken.session_id,
-				req.query && req.query.period ? req.query.period : ''
-			)
-			return userSessionDetails
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
-	 * Validate a user session based on the provided token.
-	 * @param {Object} req - The request object containing the token in the request body.
-	 * @param {string} req.body.token - The token to validate the user session.
-	 * @returns {Promise<Object>} - A promise that resolves to the validation result of the user session.
-	 */
-
-	async validateUserSession(req) {
-		try {
-			const token = req.body.token
-			const validateUserSession = await userSessionsService.validateUserSession(token)
-			return validateUserSession
 		} catch (error) {
 			return error
 		}

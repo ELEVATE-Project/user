@@ -2,7 +2,7 @@ const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const organizationQueries = require('@database/queries/organization')
 const utils = require('@generics/utils')
-const roleQueries = require('@database/queries/user-role')
+const roleQueries = require('@database/queries/userRole')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const orgDomainQueries = require('@database/queries/orgDomain')
 const userInviteQueries = require('@database/queries/orgUserInvite')
@@ -11,13 +11,7 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { Op } = require('sequelize')
 const _ = require('lodash')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
-const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const UserCredentialQueries = require('@database/queries/userCredential')
-const emailEncryption = require('@utils/emailEncryption')
-const { eventBodyDTO } = require('@dtos/eventBody')
-const responses = require('@helpers/responses')
-const organization = require('@database/models/organization')
-const sequelize = require('@database/models/index').sequelize
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -33,7 +27,7 @@ module.exports = class OrganizationsHelper {
 			const existingOrganization = await organizationQueries.findOne({ code: bodyData.code })
 
 			if (existingOrganization) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ORGANIZATION_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -60,8 +54,6 @@ module.exports = class OrganizationsHelper {
 
 			// Send an invitation to the admin if an email is provided.
 			if (bodyData.admin_email) {
-				const plaintextEmailId = bodyData.admin_email.toLowerCase()
-				const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 				const role = await roleQueries.findOne(
 					{ title: common.ORG_ADMIN_ROLE },
 					{
@@ -70,7 +62,7 @@ module.exports = class OrganizationsHelper {
 				)
 
 				if (!role?.id) {
-					return responses.failureResponse({
+					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
@@ -78,7 +70,7 @@ module.exports = class OrganizationsHelper {
 				}
 
 				const inviteeData = {
-					email: encryptedEmailId,
+					email: bodyData.admin_email,
 					name: common.USER_ROLE,
 					organization_id: createdOrganization.id,
 					roles: [role.id],
@@ -86,19 +78,11 @@ module.exports = class OrganizationsHelper {
 				}
 
 				const createdInvite = await userInviteQueries.create(inviteeData)
-				const userCred = await UserCredentialQueries.create({
-					email: encryptedEmailId,
+				await UserCredentialQueries.create({
+					email: bodyData.admin_email,
 					organization_id: createdOrganization.id,
 					organization_user_invite_id: createdInvite.id,
 				})
-
-				if (!userCred?.id) {
-					return responses.failureResponse({
-						message: userCred,
-						statusCode: httpStatusCode.not_acceptable,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
 				//send email invitation
 				const templateCode = process.env.ORG_ADMIN_INVITATION_EMAIL_TEMPLATE_CODE
 				if (templateCode) {
@@ -108,7 +92,7 @@ module.exports = class OrganizationsHelper {
 						const payload = {
 							type: common.notificationEmailType,
 							email: {
-								to: plaintextEmailId,
+								to: bodyData.admin_email,
 								subject: templateData.subject,
 								body: utils.composeEmailBody(templateData.body, {
 									name: inviteeData.name,
@@ -128,22 +112,12 @@ module.exports = class OrganizationsHelper {
 			const cacheKey = common.redisOrgPrefix + createdOrganization.id.toString()
 			await utils.internalDel(cacheKey)
 
-			const eventBody = eventBodyDTO({
-				entity: 'organization',
-				eventType: 'create',
-				entityId: createdOrganization.id,
-				args: {
-					created_by: loggedInUserId,
-				},
-			})
-			eventBroadcasterMain('organizationEvents', { requestBody: eventBody, isInternal: true })
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
 				result: createdOrganization,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -159,18 +133,42 @@ module.exports = class OrganizationsHelper {
 	static async update(id, bodyData, loggedInUserId) {
 		try {
 			bodyData.updated_by = loggedInUserId
-			if (bodyData.relatedOrgs) {
-				delete bodyData.relatedOrgs
-			}
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
 			if (!orgDetailsBeforeUpdate) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 					message: 'ORGANIZATION_NOT_FOUND',
 				})
 			}
 			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
+
+			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, bodyData?.related_orgs)) {
+				if (
+					bodyData?.related_orgs &&
+					_.isEqual(orgDetails.updatedRows[0].related_orgs, bodyData.related_orgs)
+				) {
+					await organizationQueries.appendRelatedOrg(orgDetails.updatedRows[0].id, bodyData.related_orgs, {
+						returning: true,
+						raw: true,
+					})
+				}
+				const removedOrgIds = _.difference(
+					orgDetailsBeforeUpdate.related_orgs,
+					orgDetails.updatedRows[0].related_orgs
+				)
+				await organizationQueries.removeRelatedOrg(orgDetails.updatedRows[0].id, removedOrgIds, {
+					returning: true,
+					raw: true,
+				})
+
+				eventBroadcaster('updateRelatedOrgs', {
+					requestBody: {
+						related_organization_ids: orgDetails.updatedRows[0].related_orgs,
+						organization_id: orgDetails.updatedRows[0].id,
+					},
+				})
+			}
 
 			let domains = []
 			if (bodyData.domains?.length) {
@@ -204,7 +202,7 @@ module.exports = class OrganizationsHelper {
 			const cacheKey = common.redisOrgPrefix + id.toString()
 			await utils.internalDel(cacheKey)
 			// await KafkaProducer.clearInternalCache(cacheKey)
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
@@ -250,7 +248,7 @@ module.exports = class OrganizationsHelper {
 					options
 				)
 
-				return responses.successResponse({
+				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 					result: [...organizations, ...orgDetailsFoundInRedis],
@@ -262,7 +260,7 @@ module.exports = class OrganizationsHelper {
 					params.searchText
 				)
 
-				return responses.successResponse({
+				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 					result: organizations,
@@ -286,7 +284,7 @@ module.exports = class OrganizationsHelper {
 		try {
 			const role = await roleQueries.findByPk(bodyData.role)
 			if (!role) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -297,7 +295,6 @@ module.exports = class OrganizationsHelper {
 				{
 					requester_id: tokenInformation.id,
 					role: bodyData.role,
-					organization_id: tokenInformation.organization_id,
 				},
 				{
 					order: [['created_at', 'DESC']],
@@ -318,7 +315,7 @@ module.exports = class OrganizationsHelper {
 				result = checkForRoleRequest
 			}
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: isAccepted ? 'ROLE_CHANGE_APPROVED' : 'ROLE_CHANGE_REQUESTED',
 				result,
@@ -348,143 +345,17 @@ module.exports = class OrganizationsHelper {
 
 			const organisationDetails = await organizationQueries.findOne(filter)
 			if (!organisationDetails) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				result: organisationDetails,
-			})
-		} catch (error) {
-			throw error
-		}
-	}
-
-	static async addRelatedOrg(id, relatedOrgs = []) {
-		try {
-			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
-			if (!orgDetailsBeforeUpdate) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-					message: 'ORGANIZATION_NOT_FOUND',
-				})
-			}
-			// append related organizations and make sure it is unique
-			let newRelatedOrgs = [...new Set([...(orgDetailsBeforeUpdate?.related_orgs ?? []), ...relatedOrgs])]
-
-			// check if there are any addition to related_org
-			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, newRelatedOrgs)) {
-				// update org related orgs
-				await organizationQueries.update(
-					{
-						id,
-					},
-					{
-						related_orgs: newRelatedOrgs,
-					},
-					{
-						returning: true,
-						raw: true,
-					}
-				)
-				// update related orgs to append org Id
-				await organizationQueries.appendRelatedOrg(id, newRelatedOrgs, {
-					returning: true,
-					raw: true,
-				})
-				const deltaOrgs = _.difference(newRelatedOrgs, orgDetailsBeforeUpdate?.related_orgs)
-
-				eventBroadcaster('updateRelatedOrgs', {
-					requestBody: {
-						delta_organization_ids: deltaOrgs,
-						organization_id: id,
-						action: 'PUSH',
-					},
-				})
-			}
-
-			return responses.successResponse({
-				statusCode: httpStatusCode.accepted,
-				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
-			})
-		} catch (error) {
-			throw error
-		}
-	}
-	static async removeRelatedOrg(id, relatedOrgs = []) {
-		try {
-			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
-			if (!orgDetailsBeforeUpdate) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-					message: 'ORGANIZATION_NOT_FOUND',
-				})
-			}
-			if (orgDetailsBeforeUpdate?.related_orgs == null) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-					message: 'RELATED_ORG_REMOVAL_FAILED',
-				})
-			}
-			const relatedOrganizations = _.difference(orgDetailsBeforeUpdate?.related_orgs, relatedOrgs)
-
-			// check if the given org ids are present in the organization's related org
-			const relatedOrgMismatchFlag = relatedOrgs.some(
-				(orgId) => !orgDetailsBeforeUpdate?.related_orgs.includes(orgId)
-			)
-
-			if (relatedOrgMismatchFlag) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-					message: 'RELATED_ORG_REMOVAL_FAILED',
-				})
-			}
-
-			// check if there are any addition to related_org
-			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, relatedOrganizations)) {
-				// update org remove related orgs
-				await organizationQueries.update(
-					{
-						id: parseInt(id, 10),
-					},
-					{
-						related_orgs: relatedOrganizations,
-					},
-					{
-						returning: true,
-						raw: true,
-					}
-				)
-
-				// update related orgs remove orgId
-				await organizationQueries.removeRelatedOrg(id, relatedOrgs, {
-					returning: true,
-					raw: true,
-				})
-
-				eventBroadcaster('updateRelatedOrgs', {
-					requestBody: {
-						delta_organization_ids: relatedOrgs,
-						organization_id: id,
-						action: 'POP',
-					},
-				})
-			}
-
-			return responses.successResponse({
-				statusCode: httpStatusCode.accepted,
-				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
 			throw error
