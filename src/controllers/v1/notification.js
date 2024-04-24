@@ -10,7 +10,6 @@ const notificationService = require('@services/notification')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
-const responses = require('@helpers/responses')
 
 module.exports = class NotificationTemplate {
 	/**
@@ -30,7 +29,7 @@ module.exports = class NotificationTemplate {
 	async template(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
-				throw responses.failureResponse({
+				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',

@@ -100,11 +100,11 @@ let enviromentVariables = {
 		optional: process.env.CLOUD_STORAGE === 'AZURE' ? false : true,
 	},
 	ACCESS_TOKEN_EXPIRY: {
-		message: 'Required access token expiry',
+		message: 'Required access token expiry in days',
 		optional: false,
 	},
 	REFRESH_TOKEN_EXPIRY: {
-		message: 'Required refresh token expiry',
+		message: 'Required refresh token expiry in days',
 		optional: false,
 	},
 	API_DOC_URL: {
@@ -168,6 +168,14 @@ let enviromentVariables = {
 		message: 'Required Mentoring Service Url',
 		optional: false,
 	},
+	MENTOR_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentor invitation email template code',
+		optional: false,
+	},
+	MENTEE_INVITATION_EMAIL_TEMPLATE_CODE: {
+		message: 'Required mentee invitation email template code',
+		optional: false,
+	},
 	ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE: {
 		message: 'Required admin upload invitee email template code',
 		optional: false,
@@ -209,94 +217,6 @@ let enviromentVariables = {
 		message: 'Interval to refresh views in milliseconds',
 		optional: false,
 		default: 540000,
-	},
-	EMAIL_ID_ENCRYPTION_KEY: {
-		message: 'Required Email ID Encryption Key',
-		optional: false,
-	},
-	EMAIL_ID_ENCRYPTION_IV: {
-		message: 'Required Email ID Encryption IV',
-		optional: false,
-	},
-	EMAIL_ID_ENCRYPTION_ALGORITHM: {
-		message: 'Required Email ID Encryption Algorithm',
-		optional: false,
-		default: 'aes-256-cbc',
-	},
-	EVENT_ORG_LISTENER_URLS: {
-		message: 'Required List Of Org Event Listener Urls',
-		optional: false,
-	},
-	EVENT_ENABLE_ORG_EVENTS: {
-		message: 'Required Enable Org Events Flag',
-		optional: false,
-	},
-	GENERIC_INVITATION_EMAIL_TEMPLATE_CODE: {
-		message: 'Required generic invitation email template code',
-		optional: true,
-		default: 'generic_invite',
-	},
-	ALLOWED_HOST: {
-		message: 'Required CORS allowed host',
-		optional: true,
-		default: '*',
-	},
-	PASSWORD_POLICY_REGEX: {
-		message: 'Required password policy',
-		optional: true,
-		default: '^.{8,}$',
-	},
-	PASSWORD_POLICY_MESSAGE: {
-		message: 'Required password policy message',
-		optional: true,
-		default: 'Password must have at least 8 characters long',
-	},
-	DOWNLOAD_URL_EXPIRATION_DURATION: {
-		message: 'Required downloadable url expiration time',
-		optional: true,
-		default: 3600000,
-	},
-	ALLOWED_IDLE_TIME: {
-		message: 'Require allowed idle time',
-		optional: true,
-		default: 0,
-	},
-	CHANGE_PASSWORD_TEMPLATE_CODE: {
-		message: 'Required change password email template code',
-		optional: false,
-	},
-	CAPTCHA_ENABLE: {
-		message: 'Required CAPTCHA ENABLE true or false',
-		optional: false,
-	},
-	CAPTCHA_SERVICE: {
-		message: 'Required CAPTCHA SERVICE',
-		optional: true,
-		default: 'googleRecaptcha',
-	},
-	RECAPTCHA_SECRET_KEY: {
-		message: 'Required CAPTCHA SERVICE secret key',
-		optional: false,
-	},
-	GOOGLE_RECAPTCHA_HOST: {
-		message: 'Required CAPTCHA Host IP',
-		optional: true,
-		default: 'https://www.google.com',
-	},
-	GOOGLE_RECAPTCHA_URL: {
-		message: 'Required CAPTCHA SERVICE API URL',
-		optional: true,
-		default: '/recaptcha/api/siteverify',
-	},
-	SIGNED_URL_EXPIRY_IN_MILLISECONDS: {
-		message: 'Required signed url expiration time in milliseconds',
-		optional: true,
-		default: 3600000,
-	},
-	ALLOWED_ACTIVE_SESSIONS: {
-		message: 'Require allowed active sessions',
-		optional: true,
-		default: 0,
 	},
 }
 

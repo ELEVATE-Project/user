@@ -1,7 +1,5 @@
 'use strict'
-const common = require('@constants/common')
 module.exports = (sequelize, DataTypes) => {
-	const defaultOrgId = sequelize.options.defaultOrgId
 	const UserRole = sequelize.define(
 		'UserRole',
 		{
@@ -17,20 +15,12 @@ module.exports = (sequelize, DataTypes) => {
 				unique: true,
 			},
 			user_type: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.INTEGER, //0 - non system user , 1 - system user
 				allowNull: false,
 			},
 			status: {
 				type: DataTypes.STRING,
-				defaultValue: common.ACTIVE_STATUS,
-			},
-			organization_id: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-			},
-			visibility: {
-				type: DataTypes.STRING,
-				defaultValue: 'PUBLIC',
+				defaultValue: 'ACTIVE',
 			},
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }

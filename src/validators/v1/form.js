@@ -4,12 +4,9 @@
  * Date : 03-Nov-2021
  * Description : Validations of forms controller
  */
-const filterRequestBody = require('../common')
-const { form } = require('@constants/blacklistConfig')
 
 module.exports = {
 	create: (req) => {
-		req.body = filterRequestBody(req.body, form.create)
 		req.checkBody('type')
 			.trim()
 			.notEmpty()
@@ -37,7 +34,6 @@ module.exports = {
 	},
 
 	update: (req) => {
-		req.body = filterRequestBody(req.body, form.update)
 		req.checkBody('type')
 			.notEmpty()
 			.withMessage('type field is empty')

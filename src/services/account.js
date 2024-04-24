@@ -18,17 +18,15 @@ const userQueries = require('@database/queries/users')
 const organizationQueries = require('@database/queries/organization')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const kafkaCommunication = require('@generics/kafka-communication')
-const roleQueries = require('@database/queries/user-role')
+const roleQueries = require('@database/queries/userRole')
 const orgDomainQueries = require('@database/queries/orgDomain')
 const userInviteQueries = require('@database/queries/orgUserInvite')
+const FILESTREAM = require('@generics/file-stream')
 const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
-const emailEncryption = require('@utils/emailEncryption')
-const responses = require('@helpers/responses')
-const userSessionsService = require('@services/user-sessions')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -40,25 +38,22 @@ module.exports = class AccountHelper {
 	 * @param {Boolean} bodyData.isAMentor - is a mentor or not .
 	 * @param {String} bodyData.email - user email.
 	 * @param {String} bodyData.password - user password.
-	 * @param {Object} deviceInfo - Device information
 	 * @returns {JSON} - returns account creation details.
 	 */
 
-	static async create(bodyData, deviceInfo) {
-		const projection = ['password']
+	static async create(bodyData) {
+		const projection = ['password', 'refresh_tokens']
 
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const email = bodyData.email.toLowerCase()
 			let user = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
+				email: email.toLowerCase(),
 				password: {
 					[Op.ne]: null,
 				},
 			})
-
 			if (user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -66,9 +61,9 @@ module.exports = class AccountHelper {
 			}
 
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(encryptedEmailId)
+				const redisData = await utilsHelper.redisGet(email)
 				if (!redisData || redisData.otp != bodyData.otp) {
-					return responses.failureResponse({
+					return common.failureResponse({
 						message: 'OTP_INVALID',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
@@ -83,9 +78,10 @@ module.exports = class AccountHelper {
 				roles = []
 
 			let invitedUserMatch = false
+
 			const invitedUserId = await UserCredentialQueries.findOne(
 				{
-					email: encryptedEmailId,
+					email: email,
 					organization_user_invite_id: {
 						[Op.ne]: null,
 					},
@@ -93,13 +89,12 @@ module.exports = class AccountHelper {
 						[Op.eq]: null,
 					},
 				},
-				{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
+				{ attributes: ['organization_user_invite_id'], raw: true }
 			)
 
 			if (invitedUserId) {
 				invitedUserMatch = await userInviteQueries.findOne({
 					id: invitedUserId.organization_user_invite_id,
-					organization_id: invitedUserId.organization_id,
 				}) //add org id here to optimize the query
 			}
 
@@ -107,7 +102,7 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch.roles
-				role = await roleQueries.findAll(
+				role = await roleQueries.findOne(
 					{ id: invitedUserMatch.roles },
 					{
 						attributes: {
@@ -116,36 +111,32 @@ module.exports = class AccountHelper {
 					}
 				)
 
-				if (!role.length > 0) {
-					return responses.failureResponse({
+				if (!role) {
+					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
 
-				const defaultRole = await roleQueries.findOne(
-					{ title: process.env.DEFAULT_ROLE },
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
-					}
-				)
+				if (role.title === common.ORG_ADMIN_ROLE) {
+					isOrgAdmin = true
 
-				let roleTitles = _.map(role, 'title')
-				if (!roleTitles.includes(common.MENTOR_ROLE)) {
+					const defaultRole = await roleQueries.findOne(
+						{ title: process.env.DEFAULT_ROLE },
+						{
+							attributes: {
+								exclude: ['created_at', 'updated_at', 'deleted_at'],
+							},
+						}
+					)
+
 					roles.push(defaultRole.id)
 				}
-				if (roleTitles.includes(common.ORG_ADMIN_ROLE)) {
-					isOrgAdmin = true
-				}
-
-				roles = _.uniq(roles)
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
-				let emailDomain = utilsHelper.extractDomainFromEmail(plaintextEmailId)
+				let emailDomain = utilsHelper.extractDomainFromEmail(email)
 				let domainDetails = await orgDomainQueries.findOne({
 					domain: emailDomain,
 				})
@@ -161,6 +152,7 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
+
 				role = await roleQueries.findOne(
 					{ title: process.env.DEFAULT_ROLE },
 					{
@@ -171,7 +163,7 @@ module.exports = class AccountHelper {
 				)
 
 				if (!role) {
-					return responses.failureResponse({
+					return common.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
@@ -183,12 +175,10 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-			bodyData.email = encryptedEmailId
-
 			const insertedUser = await userQueries.create(bodyData)
 
 			const userCredentialsBody = {
-				email: encryptedEmailId,
+				email: bodyData.email,
 				password: bodyData.password,
 				organization_id: insertedUser.organization_id,
 				user_id: insertedUser.id,
@@ -197,7 +187,7 @@ module.exports = class AccountHelper {
 			if (invitedUserMatch) {
 				userCredentials = await UserCredentialQueries.updateUser(
 					{
-						email: encryptedEmailId,
+						email: bodyData.email,
 					},
 					{ user_id: insertedUser.id, password: bodyData.password },
 					{
@@ -230,22 +220,10 @@ module.exports = class AccountHelper {
 				}
 			)
 
-			/**
-			 * create user session entry and add session_id to token data
-			 * Entry should be created first, the session_id has to be added to token creation data
-			 */
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInfo
-			)
-
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
-					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roleData,
 				},
@@ -253,46 +231,31 @@ module.exports = class AccountHelper {
 
 			user.user_roles = roleData
 
-			// format the roles for email template
-			let roleArray = []
-			if (roleData.length > 0) {
-				const mentorRoleExists = roleData.some((role) => role.title === common.MENTOR_ROLE)
-				roleArray = _.map(roleData, 'title')
-				if (mentorRoleExists) {
-					_.remove(roleArray, (title) => title === common.MENTEE_ROLE)
-				}
-			}
-
-			let roleToString =
-				roleArray.length > 0
-					? roleArray
-							.map((role) => role.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()))
-							.join(' and ')
-					: ''
-
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
 				common.accessTokenExpiry
 			)
-
 			const refreshToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
 			)
 
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
-			await userSessionsService.updateUserSessionAndsetRedisData(
-				userSessionDetails.result.id,
-				accessToken,
-				refreshToken
-			)
-			await utilsHelper.redisDel(encryptedEmailId)
+			let refresh_token = new Array()
+			refresh_token.push({
+				token: refreshToken,
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+				userId: user.id,
+			})
+
+			const update = {
+				refresh_tokens: refresh_token,
+				last_logged_in_at: new Date().getTime(),
+			}
+
+			await userQueries.updateUser({ id: user.id, organization_id: userCredentials.organization_id }, update)
+			await utilsHelper.redisDel(email)
 
 			//make the user as org admin
 			if (isOrgAdmin) {
@@ -315,17 +278,15 @@ module.exports = class AccountHelper {
 			)
 
 			if (templateData) {
-				// Push successful registration email to kafka
+				// Push successfull registration email to kafka
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
-						to: plaintextEmailId,
+						to: email,
 						subject: templateData.subject,
 						body: utilsHelper.composeEmailBody(templateData.body, {
 							name: bodyData.name,
 							appName: process.env.APP_NAME,
-							roles: roleToString || '',
-							portalURL: process.env.PORTAL_URL,
 						}),
 					},
 				}
@@ -333,26 +294,7 @@ module.exports = class AccountHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
-				{ attributes: ['id'] }
-			)
-			const defaultOrgId = defaultOrg.id
-			const modelName = await userQueries.getModelName()
-
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
-				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
-				},
-				model_names: { [Op.contains]: [modelName] },
-			})
-
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			result.user = utils.processDbResponse(result.user, prunedEntities)
-
-			result.user.email = plaintextEmailId
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
 				result,
@@ -370,23 +312,20 @@ module.exports = class AccountHelper {
 	 * @param {Object} bodyData -request body contains user login deatils.
 	 * @param {String} bodyData.email - user email.
 	 * @param {String} bodyData.password - user password.
-	 * @param {Object} deviceInformation - device information
 	 * @returns {JSON} - returns susccess or failure of login details.
 	 */
 
-	static async login(bodyData, deviceInformation) {
+	static async login(bodyData) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
+				email: bodyData.email.toLowerCase(),
 				password: {
 					[Op.ne]: null,
 				},
 			})
 
 			if (!userCredentials) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -398,22 +337,11 @@ module.exports = class AccountHelper {
 				status: common.ACTIVE_STATUS,
 			})
 			if (!user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'EMAIL_ID_NOT_REGISTERED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
-			}
-			// check if login is allowed or not
-			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
-				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
-				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
-					return responses.failureResponse({
-						message: 'ACTIVE_SESSION_LIMIT_EXCEEDED',
-						statusCode: httpStatusCode.not_acceptable,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
 			}
 
 			let roles = await roleQueries.findAll(
@@ -425,7 +353,7 @@ module.exports = class AccountHelper {
 				}
 			)
 			if (!roles) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -436,26 +364,17 @@ module.exports = class AccountHelper {
 
 			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
 			if (!isPasswordCorrect) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USERNAME_OR_PASSWORD_IS_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInformation
-			)
-
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
-					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
 				},
@@ -472,7 +391,33 @@ module.exports = class AccountHelper {
 				common.refreshTokenExpiry
 			)
 
+			let currentToken = {
+				token: refreshToken,
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+				userId: user.id,
+			}
+
+			let userTokens = user.refresh_tokens ? user.refresh_tokens : []
+			let noOfTokensToKeep = common.refreshTokenLimit - 1
+			let refreshTokens = []
+
+			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
+				refreshTokens = userTokens.splice(-noOfTokensToKeep)
+			} else {
+				refreshTokens = userTokens
+			}
+
+			refreshTokens.push(currentToken)
+
+			const updateParams = {
+				refresh_tokens: refreshTokens,
+				last_logged_in_at: new Date().getTime(),
+			}
+
+			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, updateParams)
+
 			delete user.password
+			delete user.refresh_tokens
 
 			//Change to
 			let defaultOrg = await organizationQueries.findOne(
@@ -480,37 +425,23 @@ module.exports = class AccountHelper {
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
-			const modelName = await userQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
-				model_names: { [Op.contains]: [modelName] },
 			})
-
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			user = utils.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-			user.email = plaintextEmailId
+
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
-			await userSessionsService.updateUserSessionAndsetRedisData(
-				userSessionDetails.result.id,
-				accessToken,
-				refreshToken
-			)
-
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_IN_SUCCESSFULLY',
 				result,
@@ -526,35 +457,42 @@ module.exports = class AccountHelper {
 	 * @method
 	 * @name logout
 	 * @param {Object} req -request data.
-	 * @param {Integer} user_id - user id.
-	 * @param {Integer} organization_id - organization id.
+	 * @param {string} bodyData.loggedInId - user id.
 	 * @param {string} bodyData.refresh_token - refresh token.
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
-	static async logout(bodyData, user_id, organization_id, userSessionId) {
+	static async logout(bodyData) {
 		try {
-			const user = await userQueries.findOne({ id: user_id, organization_id })
+			const user = await userQueries.findByPk(bodyData.loggedInId)
 			if (!user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			/**
-			 * Aquire user session_id based on the requests
-			 */
-			let userSessions = []
-			if (bodyData.userSessionIds && bodyData.userSessionIds.length > 0) {
-				userSessions = bodyData.userSessionIds
-			} else {
-				userSessions.push(userSessionId)
+
+			let refreshTokens = user.refresh_tokens ? user.refresh_tokens : []
+			refreshTokens = refreshTokens.filter(function (tokenData) {
+				return tokenData.token !== bodyData.refresh_token
+			})
+
+			/* Destroy refresh token for user */
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: user.id, organization_id: user.organization_id },
+				{ refresh_tokens: refreshTokens }
+			)
+			/* If user doc not updated because of stored token does not matched with bodyData.refreshToken */
+			if (affectedRows == 0) {
+				return common.failureResponse({
+					message: 'INVALID_REFRESH_TOKEN',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
 			}
 
-			await userSessionsService.removeUserSessions(userSessions)
-
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_OUT_SUCCESSFULLY',
 			})
@@ -588,44 +526,25 @@ module.exports = class AccountHelper {
 
 		/* Check valid user */
 		if (!user) {
-			return responses.failureResponse({
+			return common.failureResponse({
 				message: 'USER_NOT_FOUND',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
 
-		/* check if redis data is present*/
-		// Get redis key for session
-		const sessionId = decodedToken.data.session_id.toString()
-
-		// Get data from redis
-		let redisData = {}
-		redisData = await utilsHelper.redisGet(sessionId)
-
-		// if idle time set to infinity then db check should be done
-		if (!redisData && process.env.ALLOWED_IDLE_TIME == null) {
-			const userSessionData = await userSessionsService.findUserSession(
-				{
-					id: decodedToken.data.session_id,
-				},
-				{
-					attributes: ['refresh_token'],
-				}
-			)
-			if (!userSessionData) {
-				return responses.failureResponse({
-					message: 'REFRESH_TOKEN_NOT_FOUND',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			redisData.refreshToken = userSessionData[0].refresh_token
+		/* Check valid refresh token stored in db */
+		if (!user.refresh_tokens.length) {
+			return common.failureResponse({
+				message: 'REFRESH_TOKEN_NOT_FOUND',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'CLIENT_ERROR',
+			})
 		}
 
-		// If data is not in redis, token is invalid
-		if (!redisData || redisData.refreshToken !== bodyData.refresh_token) {
-			return responses.failureResponse({
+		const token = user.refresh_tokens.find((tokenData) => tokenData.token === bodyData.refresh_token)
+		if (!token) {
+			return common.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'CLIENT_ERROR',
@@ -639,27 +558,7 @@ module.exports = class AccountHelper {
 			common.accessTokenExpiry
 		)
 
-		/**
-		 * When idle tine is infinity set TTL to access token expiry
-		 * If not redis data won't expire and timeout session will show as active in listing
-		 */
-		let expiryTime = process.env.ALLOWED_IDLE_TIME
-		if (process.env.ALLOWED_IDLE_TIME == null) {
-			expiryTime = utilsHelper.convertDurationToSeconds(common.accessTokenExpiry)
-		}
-		redisData.accessToken = accessToken
-		const res = await utilsHelper.redisSet(sessionId, redisData, expiryTime)
-
-		// update user-sessions with access token
-		let check = await userSessionsService.updateUserSession(
-			{
-				id: decodedToken.data.id,
-			},
-			{
-				token: accessToken,
-			}
-		)
-		return responses.successResponse({
+		return common.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'ACCESS_TOKEN_GENERATED_SUCCESSFULLY',
 			result: { access_token: accessToken },
@@ -678,80 +577,96 @@ module.exports = class AccountHelper {
 
 	static async generateOtp(bodyData) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			let otp
+			let isValidOtpExist = true
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
+				email: bodyData.email.toLowerCase(),
 				password: {
 					[Op.ne]: null,
 				},
 			})
-			if (!userCredentials)
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'OTP_SENT_SUCCESSFULLY',
+			if (!userCredentials) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
 				})
-
+			}
 			const user = await userQueries.findOne({
 				id: userCredentials.user_id,
 				organization_id: userCredentials.organization_id,
 			})
-			if (!user)
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'OTP_SENT_SUCCESSFULLY',
+			if (!user) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
 				})
+			}
 
-			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
-			if (isPasswordSame)
-				return responses.failureResponse({
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+
+			if (userData && userData.action === 'forgetpassword') {
+				otp = userData.otp // If valid then get previuosly generated otp
+				console.log(otp)
+			} else {
+				isValidOtpExist = false
+			}
+
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
+			if (isPasswordCorrect) {
+				return common.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
 
-			const userData = await utilsHelper.redisGet(encryptedEmailId)
-			const [otp, isNew] =
-				userData && userData.action === 'forgetpassword'
-					? [userData.otp, false]
-					: [Math.floor(Math.random() * 900000 + 100000), true]
-			if (isNew) {
+			if (!isValidOtpExist) {
+				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
 				const redisData = {
-					verify: encryptedEmailId,
+					verify: bodyData.email.toLowerCase(),
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
-				if (res !== 'OK')
-					return responses.failureResponse({
+				const res = await utilsHelper.redisSet(
+					bodyData.email.toLowerCase(),
+					redisData,
+					common.otpExpirationTime
+				)
+				if (res !== 'OK') {
+					return common.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
 						statusCode: httpStatusCode.internal_server_error,
 						responseCode: 'SERVER_ERROR',
 					})
+				}
 			}
 
 			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.OTP_EMAIL_TEMPLATE_CODE,
 				user.organization_id
 			)
+
 			if (templateData) {
+				// Push otp to kafka
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
-						to: plaintextEmailId,
+						to: bodyData.email,
 						subject: templateData.subject,
 						body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
 					},
 				}
+
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
-			if (process.env.APPLICATION_ENV === 'development') console.log({ otp, isNew })
-			return responses.successResponse({
+
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -766,60 +681,79 @@ module.exports = class AccountHelper {
 	 */
 
 	static async registrationOtp(bodyData) {
-		const plaintextEmailId = bodyData.email.toLowerCase()
-		const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-		const userCredentials = await UserCredentialQueries.findOne({
-			email: encryptedEmailId,
-			password: {
-				[Op.ne]: null,
-			},
-		})
-		if (userCredentials)
-			return responses.failureResponse({
-				message: 'USER_ALREADY_EXISTS',
-				statusCode: httpStatusCode.bad_request,
-				responseCode: 'CLIENT_ERROR',
+		try {
+			let otp
+			let isValidOtpExist = true
+			const userCredentials = await UserCredentialQueries.findOne({
+				email: bodyData.email.toLowerCase(),
+				password: {
+					[Op.ne]: null,
+				},
 			})
-
-		const userData = await utilsHelper.redisGet(encryptedEmailId)
-		const [otp, isNew] =
-			userData && userData.action === 'signup'
-				? [userData.otp, false]
-				: [Math.floor(Math.random() * 900000 + 100000), true]
-		if (isNew) {
-			const redisData = {
-				verify: encryptedEmailId,
-				action: 'signup',
-				otp,
-			}
-			const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
-			if (res !== 'OK') {
-				return responses.failureResponse({
-					message: 'UNABLE_TO_SEND_OTP',
-					statusCode: httpStatusCode.internal_server_error,
-					responseCode: 'SERVER_ERROR',
+			if (userCredentials) {
+				return common.failureResponse({
+					message: 'USER_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
 				})
 			}
-		}
-		const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-			process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
-		)
-		if (templateData) {
-			const payload = {
-				type: common.notificationEmailType,
-				email: {
-					to: plaintextEmailId,
-					subject: templateData.subject,
-					body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
-				},
+
+			const userData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+
+			if (userData && userData.action === 'signup') {
+				otp = userData.otp // If valid then get previuosly generated otp
+			} else {
+				isValidOtpExist = false
 			}
-			await kafkaCommunication.pushEmailToKafka(payload)
+
+			if (!isValidOtpExist) {
+				otp = Math.floor(Math.random() * 900000 + 100000) // 6 digit otp
+				const redisData = {
+					verify: bodyData.email.toLowerCase(),
+					action: 'signup',
+					otp,
+				}
+				const res = await utilsHelper.redisSet(
+					bodyData.email.toLowerCase(),
+					redisData,
+					common.otpExpirationTime
+				)
+				if (res !== 'OK') {
+					return common.failureResponse({
+						message: 'UNABLE_TO_SEND_OTP',
+						statusCode: httpStatusCode.internal_server_error,
+						responseCode: 'SERVER_ERROR',
+					})
+				}
+			}
+
+			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
+			)
+
+			if (templateData) {
+				// Push otp to kafka
+				const payload = {
+					type: common.notificationEmailType,
+					email: {
+						to: bodyData.email,
+						subject: templateData.subject,
+						body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
+					},
+				}
+
+				await kafkaCommunication.pushEmailToKafka(payload)
+			}
+			if (process.env.APPLICATION_ENV === 'development') {
+				console.log(otp)
+			}
+			return common.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
 		}
-		if (process.env.APPLICATION_ENV === 'development') console.log(otp)
-		return responses.successResponse({
-			statusCode: httpStatusCode.ok,
-			message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
-		})
 	}
 
 	/**
@@ -833,28 +767,17 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns password reset response
 	 */
 
-	static async resetPassword(bodyData, deviceInfo) {
+	static async resetPassword(bodyData) {
 		const projection = ['location']
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-
-			const redisData = await utilsHelper.redisGet(encryptedEmailId)
-			if (!redisData || redisData.otp != bodyData.otp) {
-				return responses.failureResponse({
-					message: 'RESET_OTP_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
+				email: bodyData.email.toLowerCase(),
 				password: {
 					[Op.ne]: null,
 				},
 			})
 			if (!userCredentials) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -869,7 +792,7 @@ module.exports = class AccountHelper {
 				}
 			)
 			if (!user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -877,107 +800,153 @@ module.exports = class AccountHelper {
 			}
 			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
 			if (!roles) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			user.user_roles = roles
 
-			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
-			if (isPasswordSame) {
-				return responses.failureResponse({
+			const redisData = await utilsHelper.redisGet(bodyData.email.toLowerCase())
+			if (!redisData || redisData.otp != bodyData.otp) {
+				return common.failureResponse({
+					message: 'RESET_OTP_INVALID',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
+			if (isPasswordCorrect) {
+				return common.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
-			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInfo
-			)
+			const salt = bcryptJs.genSaltSync(10)
+			bodyData.password = bcryptJs.hashSync(bodyData.password, salt)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
-					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles,
 				},
 			}
 
-			const accessToken = utilsHelper.generateToken(
-				tokenDetail,
-				process.env.ACCESS_TOKEN_SECRET,
-				common.accessTokenExpiry
-			)
-			const refreshToken = utilsHelper.generateToken(
-				tokenDetail,
-				process.env.REFRESH_TOKEN_SECRET,
-				common.refreshTokenExpiry
-			)
+			const accessToken = utilsHelper.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
+			const refreshToken = utilsHelper.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
 
+			let currentToken = {
+				token: refreshToken,
+				exp: new Date().getTime() + common.refreshTokenExpiryInMs,
+				userId: user.id,
+			}
+
+			let userTokens = user.refresh_tokens ? user.refresh_tokens : []
+			let noOfTokensToKeep = common.refreshTokenLimit - 1
+			let refreshTokens = []
+
+			if (userTokens && userTokens.length >= common.refreshTokenLimit) {
+				refreshTokens = userTokens.splice(-noOfTokensToKeep)
+			} else {
+				refreshTokens = userTokens
+			}
+
+			refreshTokens.push(currentToken)
+			const updateParams = {
+				refresh_tokens: refreshTokens,
+				lastLoggedInAt: new Date().getTime(),
+				password: bodyData.password,
+			}
+
+			await userQueries.updateUser(
+				{ id: user.id, organization_id: userCredentials.organization_id },
+				updateParams
+			)
 			await UserCredentialQueries.updateUser(
 				{
-					email: encryptedEmailId,
+					email: userCredentials.email,
 				},
 				{ password: bodyData.password }
 			)
-			await utilsHelper.redisDel(encryptedEmailId)
+			await utilsHelper.redisDel(bodyData.email.toLowerCase())
 
 			delete user.password
 			delete user.otpInfo
-
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
-			const modelName = await userQueries.getModelName()
-
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
-				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
-				},
-				model_names: { [Op.contains]: [modelName] },
-			})
-
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
 
 			// Check if user and user.image exist, then fetch a downloadable URL for the image
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-			user.email = plaintextEmailId
-
-			/**update a new session entry with redis insert */
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
-			await userSessionsService.updateUserSessionAndsetRedisData(
-				userSessionDetails.result.id,
-				accessToken,
-				refreshToken
-			)
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-			return responses.successResponse({
+
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'PASSWORD_RESET_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
-			console.log(error)
+			throw error
+		}
+	}
+
+	//Is this api used ?
+	/**
+	 * Bulk create mentors
+	 * @method
+	 * @name bulkCreateMentors
+	 * @param {Array} mentors - mentor details.
+	 * @param {Object} tokenInformation - token details.
+	 * @returns {CSV} - created mentors.
+	 */
+	static async bulkCreateMentors(mentors, tokenInformation) {
+		try {
+			const systemUser = await systemUserData.findUsersByEmail(tokenInformation.email)
+
+			if (!systemUser) {
+				return common.failureResponse({
+					message: 'USER_DOESNOT_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (systemUser.role.toLowerCase() !== 'admin') {
+				return common.failureResponse({
+					message: 'NOT_AN_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const fileName = 'mentors-creation'
+			let fileStream = new FILESTREAM(fileName)
+			let input = fileStream.initStream()
+
+			;(async function () {
+				await fileStream.getProcessorPromise()
+				return {
+					isResponseAStream: true,
+					fileNameWithPath: fileStream.fileNameWithPath(),
+				}
+			})()
+
+			for (const mentor of mentors) {
+				mentor.isAMentor = true
+				const data = await this.create(mentor)
+				mentor.email = mentor.email.address
+				mentor.status = data.message
+				input.push(mentor)
+			}
+
+			input.push(null)
+		} catch (error) {
 			throw error
 		}
 	}
@@ -1049,10 +1018,9 @@ module.exports = class AccountHelper {
 						user['user_roles'] = roleData
 						// await utilsHelper.redisSet(element._id.toString(), element)
 					}
-					user.email = emailEncryption.decrypt(user.email)
 				})
 
-				return responses.successResponse({
+				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USERS_FETCHED_SUCCESSFULLY',
 					result: [...users, ...userDetailsFoundInRedis],
@@ -1072,6 +1040,7 @@ module.exports = class AccountHelper {
 					params.pageSize,
 					params.searchText
 				)
+				console.log('USERS:', users)
 				let foundKeys = {}
 				let result = []
 
@@ -1088,7 +1057,7 @@ module.exports = class AccountHelper {
 					})
 				)
 				if (users.count == 0) {
-					return responses.successResponse({
+					return common.successResponse({
 						statusCode: httpStatusCode.ok,
 						message: 'USER_LIST',
 						result: {
@@ -1116,7 +1085,7 @@ module.exports = class AccountHelper {
 
 				const sortedData = _.sortBy(result, 'key') || []
 
-				return responses.successResponse({
+				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_LIST',
 					result: {
@@ -1143,7 +1112,7 @@ module.exports = class AccountHelper {
 			const user = await userQueries.findByPk(userId)
 
 			if (!user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -1156,7 +1125,7 @@ module.exports = class AccountHelper {
 			)
 			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_UPDATED_SUCCESSFULLY',
 			})
@@ -1175,24 +1144,22 @@ module.exports = class AccountHelper {
 	 */
 	static async changeRole(bodyData) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 			let role = await roleQueries.findOne({ title: bodyData.role.toLowerCase() })
 			if (!role) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
+				email: bodyData.email.toLowerCase(),
 				password: {
 					[Op.ne]: null,
 				},
 			})
 			if (!userCredentials) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -1204,19 +1171,18 @@ module.exports = class AccountHelper {
 			)
 			/* If user doc not updated  */
 			if (affectedRows == 0) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -1239,35 +1205,20 @@ module.exports = class AccountHelper {
 	 */
 	static async search(params) {
 		try {
-			const types = params.query.type.toLowerCase().split(',')
-			const roles = await roleQueries.findAll(
-				{ title: types },
+			let role = await roleQueries.findOne(
+				{ title: params.query.type.toLowerCase() },
 				{
 					attributes: ['id'],
 				}
 			)
 
-			const roleIds = roles.map((role) => role.id)
-			let emailIds = []
-			let searchText = []
-
-			if (params.searchText) {
-				searchText = params.searchText.split(',')
-			}
-			searchText.forEach((element) => {
-				if (utils.isValidEmail(element)) {
-					emailIds.push(emailEncryption.encrypt(element.toLowerCase()))
-				}
-			})
-
 			let users = await userQueries.listUsersFromView(
-				roleIds ? roleIds : [],
+				role && role.id ? role.id : '',
 				params.query.organization_id ? params.query.organization_id : '',
 				params.pageNo,
 				params.pageSize,
-				emailIds.length == 0 ? params.searchText : false,
-				params.body.user_ids ? params.body.user_ids : false,
-				emailIds.length > 0 ? emailIds : false
+				params.searchText,
+				params.body.user_ids ? params.body.user_ids : false
 			)
 
 			/* Required to resolve all promises first before preparing response object else sometime 
@@ -1283,7 +1234,7 @@ module.exports = class AccountHelper {
 				})
 			)
 			if (users.count == 0) {
-				return responses.successResponse({
+				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'USER_LIST',
 					result: {
@@ -1293,127 +1244,13 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_LIST',
 				result: {
 					data: users.data,
 					count: users.count,
 				},
-			})
-		} catch (error) {
-			console.log(error)
-			throw error
-		}
-	}
-
-	/**
-	 * change password
-	 * @method
-	 * @name changePassword
-	 * @param {Object} req -request data.
-	 * @param {Object} req.decodedToken.id - UserId.
-	 * @param {string} req.body - request body contains user password
-	 * @param {string} req.body.OldPassword - user Old Password.
-	 * @param {string} req.body.NewPassword - user New Password.
-	 * @param {string} req.body.ConfirmNewPassword - user Confirming New Password.
-	 * @returns {JSON} - password changed response
-	 */
-
-	static async changePassword(bodyData, userId) {
-		const projection = ['location']
-		try {
-			const userCredentials = await UserCredentialQueries.findOne({ user_id: userId })
-			if (!userCredentials) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			const plaintextEmailId = emailEncryption.decrypt(userCredentials.email)
-
-			let user = await userQueries.findOne(
-				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
-				{ attributes: { exclude: projection } }
-			)
-			if (!user) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const verifyOldPassword = utilsHelper.comparePassword(bodyData.oldPassword, userCredentials.password)
-			if (!verifyOldPassword) {
-				return responses.failureResponse({
-					message: 'INCORRECT_OLD_PASSWORD',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			const isPasswordSame = bcryptJs.compareSync(bodyData.newPassword, userCredentials.password)
-			if (isPasswordSame) {
-				return responses.failureResponse({
-					message: 'SAME_PASSWORD_ERROR',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			bodyData.newPassword = utilsHelper.hashPassword(bodyData.newPassword)
-
-			const updateParams = { password: bodyData.newPassword, refresh_tokens: [] }
-
-			await userQueries.updateUser(
-				{ id: user.id, organization_id: userCredentials.organization_id },
-				updateParams
-			)
-			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
-			await utilsHelper.redisDel(userCredentials.email)
-
-			// Find active sessions of user and remove them
-			const userSessionData = await userSessionsService.findUserSession(
-				{
-					user_id: userId,
-					ended_at: null,
-				},
-				{
-					attributes: ['id'],
-				}
-			)
-			const userSessionIds = userSessionData.map(({ id }) => id)
-			/**
-			 * 1: Remove redis data
-			 * 2: Update ended_at in user-sessions
-			 */
-			await userSessionsService.removeUserSessions(userSessionIds)
-
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
-			)
-
-			if (templateData) {
-				// Push successful registration email to kafka
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: plaintextEmailId,
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: user.name,
-						}),
-					},
-				}
-				await kafkaCommunication.pushEmailToKafka(payload)
-			}
-
-			const result = {}
-			return responses.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'PASSWORD_CHANGED_SUCCESSFULLY',
-				result,
 			})
 		} catch (error) {
 			console.log(error)

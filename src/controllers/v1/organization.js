@@ -10,7 +10,6 @@ const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const orgService = require('@services/organization')
-const responses = require('@helpers/responses')
 
 module.exports = class Organization {
 	/**
@@ -35,7 +34,7 @@ module.exports = class Organization {
 			}
 
 			if (!isAdmin) {
-				throw responses.failureResponse({
+				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -73,19 +72,19 @@ module.exports = class Organization {
 
 			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
 				if (req.body.related_orgs) {
-					throw responses.failureResponse({
+					throw common.failureResponse({
 						message: 'CONTACT_ADMIN_RELATED_ORGANIZATIONS',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				throw responses.failureResponse({
+				throw common.failureResponse({
 					message: 'USER_DOES_NOT_HAVE_ACCESS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			} else if (!isAdmin && !isOrgAdmin) {
-				throw responses.failureResponse({
+				throw common.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -154,29 +153,6 @@ module.exports = class Organization {
 			const result = await orgService.read(
 				req.query.organisation_id ? req.query.organisation_id : '',
 				req.query.organisation_code ? req.query.organisation_code : ''
-			)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-
-	async addRelatedOrg(req) {
-		try {
-			const result = await orgService.addRelatedOrg(
-				req.params.id ? req.params.id : '',
-				req.body.related_orgs ? req.body.related_orgs : []
-			)
-			return result
-		} catch (error) {
-			return error
-		}
-	}
-	async removeRelatedOrg(req) {
-		try {
-			const result = await orgService.removeRelatedOrg(
-				req.params.id ? req.params.id : '',
-				req.body.related_orgs ? req.body.related_orgs : []
 			)
 			return result
 		} catch (error) {

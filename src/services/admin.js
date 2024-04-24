@@ -12,15 +12,12 @@ const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user-role')
+const roleQueries = require('@database/queries/userRole')
 const organizationQueries = require('@database/queries/organization')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
-const emailEncryption = require('@utils/emailEncryption')
-const responses = require('@helpers/responses')
-const userSessionsService = require('@services/user-sessions')
 
 module.exports = class AdminHelper {
 	/**
@@ -34,7 +31,7 @@ module.exports = class AdminHelper {
 		try {
 			let user = await userQueries.findByPk(userId)
 			if (!user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -44,30 +41,15 @@ module.exports = class AdminHelper {
 			let updateParams = _generateUpdateParams(userId)
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
-			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, update)
+			await userQueries.updateUser({ email: user.email }, update)
 			delete update.id
 			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
 
 			await utils.redisDel(common.redisUserPrefix + userId.toString())
 
-			/**
-			 * Using userId get his active sessions
-			 */
-			const userSessionData = await userSessionsService.findUserSession(
-				{
-					user_id: userId,
-					ended_at: null,
-				},
-				{
-					attributes: ['id'],
-				}
-			)
-			const userSessionIds = userSessionData.map(({ id }) => id)
-			await userSessionsService.removeUserSessions(userSessionIds)
-
 			//code for remove user folder from cloud
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_DELETED_SUCCESSFULLY',
 			})
@@ -88,12 +70,11 @@ module.exports = class AdminHelper {
 	 */
 	static async create(bodyData) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const user = await UserCredentialQueries.findOne({ email: encryptedEmailId })
+			const email = bodyData.email.toLowerCase()
+			const user = await UserCredentialQueries.findOne({ email: email })
 
 			if (user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ADMIN_USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -102,7 +83,7 @@ module.exports = class AdminHelper {
 
 			let role = await roleQueries.findOne({ title: common.ADMIN_ROLE })
 			if (!role) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -118,8 +99,8 @@ module.exports = class AdminHelper {
 				)
 				bodyData.organization_id = organization.id
 			}
+
 			bodyData.password = utils.hashPassword(bodyData.password)
-			bodyData.email = encryptedEmailId
 			const createdUser = await userQueries.create(bodyData)
 			const userCredentialsBody = {
 				email: bodyData.email,
@@ -127,20 +108,12 @@ module.exports = class AdminHelper {
 				organization_id: createdUser.organization_id,
 				user_id: createdUser.id,
 			}
-			const userData = await UserCredentialQueries.create(userCredentialsBody)
-			if (!userData?.id) {
-				return responses.failureResponse({
-					message: userData,
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			return responses.successResponse({
+			await UserCredentialQueries.create(userCredentialsBody)
+			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -152,16 +125,13 @@ module.exports = class AdminHelper {
 	 * @param {Object} bodyData - user login data.
 	 * @param {string} bodyData.email - email.
 	 * @param {string} bodyData.password - email.
-	 * @param {string} deviceInformation - device information.
 	 * @returns {JSON} - returns login response
 	 */
-	static async login(bodyData, deviceInformation) {
+	static async login(bodyData) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const userCredentials = await UserCredentialQueries.findOne({ email: encryptedEmailId })
+			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
 			if (!userCredentials) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -173,7 +143,7 @@ module.exports = class AdminHelper {
 				organization_id: userCredentials.organization_id,
 			})
 			if (!user) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -181,7 +151,7 @@ module.exports = class AdminHelper {
 			}
 			const isPasswordCorrect = utils.comparePassword(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'PASSWORD_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -197,26 +167,17 @@ module.exports = class AdminHelper {
 				}
 			)
 			if (!roles) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInformation
-			)
-
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
-					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
 				},
@@ -224,38 +185,18 @@ module.exports = class AdminHelper {
 
 			user.user_roles = roles
 
-			const accessToken = utils.generateToken(
-				tokenDetail,
-				process.env.ACCESS_TOKEN_SECRET,
-				common.accessTokenExpiry
-			)
-			const refreshToken = utils.generateToken(
-				tokenDetail,
-				process.env.REFRESH_TOKEN_SECRET,
-				common.refreshTokenExpiry
-			)
-
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
-			await userSessionsService.updateUserSessionAndsetRedisData(
-				userSessionDetails.result.id,
-				accessToken,
-				refreshToken
-			)
+			const accessToken = utils.generateToken(tokenDetail, process.env.ACCESS_TOKEN_SECRET, '1d')
+			const refreshToken = utils.generateToken(tokenDetail, process.env.REFRESH_TOKEN_SECRET, '183d')
 
 			delete user.password
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'LOGGED_IN_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -272,10 +213,8 @@ module.exports = class AdminHelper {
 		try {
 			let userCredentials
 			if (emailId) {
-				const plaintextEmailId = emailId.toLowerCase()
-				const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 				userCredentials = await UserCredentialQueries.findOne({
-					email: encryptedEmailId,
+					email: emailId.toLowerCase(),
 				})
 			} else {
 				userCredentials = await UserCredentialQueries.findOne({
@@ -284,7 +223,7 @@ module.exports = class AdminHelper {
 			}
 
 			if (!userCredentials?.id) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -296,7 +235,7 @@ module.exports = class AdminHelper {
 				organization_id: userCredentials.organization_id,
 			})
 			if (!user?.id) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -306,7 +245,7 @@ module.exports = class AdminHelper {
 
 			let organization = await organizationQueries.findByPk(organizationId)
 			if (!organization?.id) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -315,7 +254,7 @@ module.exports = class AdminHelper {
 
 			const userOrg = await organizationQueries.findByPk(user.organization_id)
 			if (!userOrg) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -335,7 +274,7 @@ module.exports = class AdminHelper {
 				}
 			)
 			if (orgRowsAffected == 0) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ORG_ADMIN_MAPPING_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -344,7 +283,7 @@ module.exports = class AdminHelper {
 
 			let role = await roleQueries.findOne({ title: common.ORG_ADMIN_ROLE }, { attributes: ['id'] })
 			if (!role?.id) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -354,7 +293,7 @@ module.exports = class AdminHelper {
 			const roles = _.uniq([...(user.roles || []), role.id])
 
 			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE && userOrg.id != organizationId) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -408,7 +347,7 @@ module.exports = class AdminHelper {
 				user_roles: roleData,
 			}
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_ADMIN_MAPPED_SUCCESSFULLY',
 				result,
@@ -441,7 +380,7 @@ module.exports = class AdminHelper {
 			)
 
 			if (rowsAffected == 0) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -475,7 +414,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_DEACTIVATED',
 				result: {
@@ -498,7 +437,6 @@ module.exports = class AdminHelper {
 	 */
 	static async deactivateUser(bodyData, loggedInUserId) {
 		try {
-			let filterQuery = {}
 			for (let item in bodyData) {
 				filterQuery[item] = {
 					[Op.in]: bodyData[item],
@@ -508,9 +446,8 @@ module.exports = class AdminHelper {
 			let userIds = []
 
 			if (bodyData.email) {
-				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
 				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: encryptedEmailIds } },
+					{ email: { [Op.in]: bodyData.email } },
 					{
 						attributes: ['user_id'],
 					}
@@ -528,7 +465,7 @@ module.exports = class AdminHelper {
 			})
 
 			if (rowsAffected == 0) {
-				return responses.failureResponse({
+				return common.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
@@ -542,20 +479,18 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
-
 	static async triggerViewRebuild(decodedToken) {
 		try {
 			const result = await adminService.triggerViewBuild()
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MATERIALIZED_VIEW_GENERATED_SUCCESSFULLY',
 			})
@@ -567,7 +502,7 @@ module.exports = class AdminHelper {
 	static async triggerPeriodicViewRefresh(decodedToken) {
 		try {
 			const result = await adminService.triggerPeriodicViewRefresh()
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
 			})
@@ -580,7 +515,7 @@ module.exports = class AdminHelper {
 		try {
 			const result = await adminService.refreshMaterializedView(modelName)
 			console.log(result)
-			return responses.successResponse({
+			return common.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'MATERIALIZED_VIEW_REFRESH_INITIATED_SUCCESSFULLY',
 			})
@@ -596,9 +531,11 @@ function _removeUserKeys() {
 		'gender',
 		'about',
 		'share_link',
+		'last_logged_in_at',
 		'preferred_language',
 		'location',
 		'languages',
+		'refresh_tokens',
 		'image',
 		'roles',
 	]

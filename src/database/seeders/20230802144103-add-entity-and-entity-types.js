@@ -149,10 +149,8 @@ module.exports = {
 
 			if (key === 'location') {
 				entityTypeRow.allow_custom_entities = false
-				entityTypeRow.data_type = 'STRING'
 			} else {
 				entityTypeRow.allow_custom_entities = true
-				entityTypeRow.data_type = 'ARRAY[STRING]'
 			}
 			return entityTypeRow
 		})

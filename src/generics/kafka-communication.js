@@ -10,7 +10,6 @@ const pushEmailToKafka = async (message) => {
 		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
-		console.log(error)
 		return error
 	}
 }

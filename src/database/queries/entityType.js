@@ -28,7 +28,14 @@ module.exports = class UserEntityData {
 		try {
 			const entityData = await EntityType.findAll({
 				where: {
-					organization_id: orgId,
+					[Op.or]: [
+						{
+							created_by: 0,
+						},
+						{
+							organization_id: orgId,
+						},
+					],
 					...filter,
 				},
 				attributes,
@@ -43,24 +50,21 @@ module.exports = class UserEntityData {
 		try {
 			const entityTypes = await EntityType.findAll({
 				where: filter,
-				raw: true,
 			})
 
-			const entityTypeIds = entityTypes.map((entityType) => entityType.id)
+			const result = await Promise.all(
+				entityTypes.map(async (entityType) => {
+					const entities = await Entity.findAll({
+						where: { entity_type_id: entityType.id },
+						//attributes: { exclude: ['entity_type_id'] },
+					})
 
-			const entities = await Entity.findAll({
-				where: { entity_type_id: entityTypeIds, status: 'ACTIVE' },
-				raw: true,
-				//attributes: { exclude: ['entity_type_id'] },
-			})
-
-			const result = entityTypes.map((entityType) => {
-				const matchingEntities = entities.filter((entity) => entity.entity_type_id === entityType.id)
-				return {
-					...entityType,
-					entities: matchingEntities,
-				}
-			})
+					return {
+						...entityType.toJSON(),
+						entities: entities.map((entity) => entity.toJSON()),
+					}
+				})
+			)
 
 			return result
 		} catch (error) {
@@ -69,7 +73,7 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	/* 	static async findUserEntityTypesAndEntitiesRaw(filter) {
+	static async findUserEntityTypesAndEntitiesRaw(filter) {
 		try {
 			const [result, metadata] = await Sequelize.query(
 				`SELECT
@@ -93,14 +97,13 @@ module.exports = class UserEntityData {
 			console.error('Error fetching data:', error)
 			throw error
 		}
-	} */
+	}
 
-	static async updateOneEntityType(id, organizationId, update, options = {}) {
+	static async updateOneEntityType(id, update, options = {}) {
 		try {
 			return await EntityType.update(update, {
 				where: {
 					id: id,
-					organization_id: organizationId,
 				},
 				...options,
 			})
@@ -109,12 +112,11 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async deleteOneEntityType(id, orgId) {
+	static async deleteOneEntityType(id) {
 		try {
 			return await EntityType.destroy({
 				where: {
 					id: id,
-					organization_id: orgId,
 				},
 				individualHooks: true,
 			})
@@ -135,25 +137,22 @@ module.exports = class UserEntityData {
 		try {
 			const entityTypes = await EntityType.findAll({
 				where: filter,
-				raw: true,
 			})
 
-			const entityTypeIds = entityTypes.map((entityType) => entityType.id)
+			const result = await Promise.all(
+				entityTypes.map(async (entityType) => {
+					const entities = await Entity.findAll({
+						where: { entity_type_id: entityType.id, status: 'ACTIVE' },
+						//attributes: { exclude: ['entity_type_id'] },
+					})
 
-			// Fetch all matching entities using the IDs
-			const entities = await Entity.findAll({
-				where: { entity_type_id: entityTypeIds, status: 'ACTIVE' },
-				raw: true,
-				//attributes: { exclude: ['entity_type_id'] },
-			})
+					return {
+						...entityType.toJSON(),
+						entities: entities.map((entity) => entity.toJSON()),
+					}
+				})
+			)
 
-			const result = entityTypes.map((entityType) => {
-				const matchingEntities = entities.filter((entity) => entity.entity_type_id === entityType.id)
-				return {
-					...entityType,
-					entities: matchingEntities,
-				}
-			})
 			return result
 		} catch (error) {
 			return error

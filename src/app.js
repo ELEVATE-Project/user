@@ -65,12 +65,6 @@ app.use(bodyParser.json({ limit: '50MB' }))
 
 app.use(express.static('public'))
 
-// Middleware to set Access-Control-Allow-Origin header
-app.use((req, res, next) => {
-	res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_HOST)
-	next()
-})
-
 /* Logs request info if environment is configured to enable log */
 app.all('*', (req, res, next) => {
 	logger.info('***User Service Request Log***', {
