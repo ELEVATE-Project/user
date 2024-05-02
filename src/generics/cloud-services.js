@@ -6,93 +6,23 @@
  */
 
 // Dependencies
-const path = require('path')
-
-const { AwsFileHelper, AzureFileHelper, GcpFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const common = require('@constants/common')
 const { cloudClient } = require('@configs/cloud-service')
 
 module.exports = class FilesHelper {
 	static async getSignedUrl(bucketName, destFilePath, actionType = common.WRITE_ACCESS, expiryTime = '') {
 		try {
-			console.log('client ation type : ', actionType)
 			const signedUrl = await cloudClient.getSignedUrl(
-				bucketName, // bucket name
-				destFilePath, // file path
-				expiryTime, // expire
-				actionType // read/write
+				bucketName, //BucketName
+				destFilePath, //FilePath
+				expiryTime, //Expiry
+				actionType //Read[r] or Write[w]
 			)
-			console.log('Response : ', signedUrl)
+
 			return {
-				signedUrl: signedUrl,
+				signedUrl: signedUrl[0],
 				filePath: destFilePath,
 			}
-		} catch (error) {
-			throw error
-		}
-	}
-
-	static async getAwsSignedUrl(destFilePath, actionType = 'putObject') {
-		const bucketName = process.env.DEFAULT_AWS_BUCKET_NAME
-		const options = {
-			destFilePath: destFilePath, // Stored file path - i.e location from bucket - ex - users/abc.png
-			bucketName: bucketName, // aws s3 storage bucket in which action is peformed over file
-			actionType: actionType, // signed url usage type - example ('putObject' | 'getObject')
-			expiry: parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS) / 1000, // signed url expiration time - In sec - type number
-			accessKeyId: process.env.AWS_ACCESS_KEY_ID, // aws s3 access key id
-			secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY, // aws s3 secret access key
-			bucketRegion: process.env.AWS_BUCKET_REGION, // aws region where bucket will be located, example - 'ap-south-1'
-		}
-
-		try {
-			let signedUrl = await AwsFileHelper.getSignedUrl(options)
-			return signedUrl
-		} catch (error) {
-			throw error
-		}
-	}
-
-	static async getAzureSignedUrl(destFilePath) {
-		const containerName = process.env.DEFAULT_AZURE_CONTAINER_NAME
-
-		const startDate = new Date()
-		const expiryDate = new Date(startDate)
-		expiryDate.setMinutes(startDate.getMinutes() + 30)
-
-		const options = {
-			destFilePath: destFilePath, // Stored file path - i.e location from container - ex - users/abc.png
-			containerName: containerName, // container in which file gets saved
-			expiry: parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS) / 60000, // signed url expiration time - In minute - type number
-			actionType: 'w', // signed url usage type - example ('w' | 'r' | 'wr' | 'racwdl') - pair of any alphabets among racwdl
-			accountName: process.env.AZURE_ACCOUNT_NAME, // account name of azure storage
-			accountKey: process.env.AZURE_ACCOUNT_KEY, // account key of azure storage
-			contentType: 'multipart/form-data', // content type of file, example multipart/form-data, image/png, csv/text etc
-		}
-
-		try {
-			const signedUrl = await AzureFileHelper.getSignedUrl(options)
-			return signedUrl
-		} catch (error) {
-			throw error
-		}
-	}
-
-	static async getOciSignedUrl(destFilePath, actionType = 'putObject') {
-		const bucketName = process.env.DEFAULT_OCI_BUCKET_NAME
-		const options = {
-			destFilePath: destFilePath, // Stored file path - i.e location from bucket - ex - users/abc.png
-			bucketName: bucketName, // Oci storage bucket in which action is peformed over file
-			actionType: actionType, // signed url usage type - example ('putObject' | 'getObject')
-			expiry: parseFloat(process.env.SIGNED_URL_EXPIRY_IN_MILLISECONDS) / 1000, // signed url expiration time - In sec - type number
-			accessKeyId: process.env.OCI_ACCESS_KEY_ID, // Oci access key id
-			secretAccessKey: process.env.OCI_SECRET_ACCESS_KEY, // Oci secret access key
-			bucketRegion: process.env.OCI_BUCKET_REGION, // Oci region where bucket will be located, example - 'ap-south-1'
-			endpoint: process.env.OCI_BUCKET_ENDPOINT,
-		}
-
-		try {
-			let signedUrl = await OciFileHelper.getSignedUrl(options)
-			return signedUrl
 		} catch (error) {
 			throw error
 		}

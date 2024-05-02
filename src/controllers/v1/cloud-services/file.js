@@ -40,12 +40,10 @@ module.exports = class File {
 	 */
 	async getDownloadableUrl(req) {
 		try {
-			console.log('*******************req.query.public :', req.query.public)
-			const downlopadUrlResponse = await filesService.getDownloadableUrl(
+			return await filesService.getDownloadableUrl(
 				req.query.filePath,
 				req.query.public && req.query.public == 'true' ? true : false
 			)
-			return downlopadUrlResponse
 		} catch (error) {
 			return error
 		}

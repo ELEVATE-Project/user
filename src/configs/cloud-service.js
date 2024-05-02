@@ -12,12 +12,12 @@ function initializeCloudClient() {
 			provider: process.env.CLOUD_STORAGE_PROVIDER,
 			identity: process.env.CLOUD_STORAGE_ACCOUNTNAME,
 			credential: process.env.CLOUD_STORAGE_SECRET,
-			publicContainer: process.env.CLOUD_STORAGE_BUCKETNAME,
+			privateObjectStorage: process.env.CLOUD_STORAGE_BUCKETNAME,
+			publicObjectStorage: process.env.PUBLIC_ASSET_BUCKETNAME,
 			region: process.env.CLOUD_STORAGE_REGION || null,
 			projectId: process.env.CLOUD_STORAGE_PROJECT || null,
 			endpoint: process.env.CLOUD_ENDPOINT || null,
 		}
-
 		// Initialize the cloud client using the provided configuration
 		let cloudClient = cloudService.init(cloudConfig)
 		// Export the cloudClient so that it can be used in other modules

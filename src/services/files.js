@@ -37,23 +37,14 @@ module.exports = class FilesHelper {
 			} else {
 				cloudBucket = process.env.CLOUD_STORAGE_BUCKETNAME
 			}
+			let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
 			let response = await cloudServices.getSignedUrl(
 				cloudBucket,
 				destFilePath,
 				common.WRITE_ACCESS,
-				process.env.SIGNED_URL_EXPIRY_IN_SECONDS
+				expiryInSeconds
 			)
-			// let response
-			// if (process.env.CLOUD_STORAGE === 'GCP') {
-			// 	response = await cloudServices.getGcpSignedUrl(destFilePath)
-			// } else if (process.env.CLOUD_STORAGE === 'AWS') {
-			// 	response = await cloudServices.getAwsSignedUrl(destFilePath)
-			// } else if (process.env.CLOUD_STORAGE === 'AZURE') {
-			// 	response = await cloudServices.getAzureSignedUrl(destFilePath)
-			// } else if (process.env.CLOUD_STORAGE === 'OCI') {
-			// 	response = await cloudServices.getOciSignedUrl(destFilePath)
-			// }
-			response.destFilePath = destFilePath
+
 			return responses.successResponse({
 				message: 'SIGNED_URL_GENERATED_SUCCESSFULLY',
 				statusCode: httpStatusCode.ok,
@@ -67,26 +58,17 @@ module.exports = class FilesHelper {
 
 	static async getDownloadableUrl(path, isAssetBucket = false) {
 		try {
-			console.log('+++++++++', isAssetBucket)
 			let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
 			let response
+			let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
+
 			// downloadable url for public bucket
 			if (isAssetBucket || process.env.CLOUD_STORAGE_BUCKET_TYPE != 'private') {
-				console.log('yeah inside this +++++++')
-				if (isAssetBucket) {
-					bucketName = process.env.PUBLIC_ASSET_BUCKETNAME
-				}
-				response = await utils.getDownloadableUrl(bucketName, path)
+				response = await utils.getPublicDownloadableUrl(process.env.PUBLIC_ASSET_BUCKETNAME, path)
 			} else {
-				response = await cloudServices.getSignedUrl(
-					bucketName,
-					path,
-					common.READ_ACCESS,
-					process.env.DOWNLOAD_URL_EXPIRATION_DURATION
-				)
+				response = await cloudServices.getSignedUrl(bucketName, path, common.READ_ACCESS, expiryInSeconds)
 				response = response.signedUrl
 			}
-			console.log('result in services : ', response)
 			// let response = await utils.getDownloadableUrl(path, isAssetBucket)
 			return responses.successResponse({
 				message: 'DOWNLOAD_URL_GENERATED_SUCCESSFULLY',
