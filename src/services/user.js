@@ -194,10 +194,6 @@ module.exports = class UserHelper {
 					})
 				}
 
-				if (user && user.image) {
-					user.image = await utils.getDownloadableUrl(user.image)
-				}
-
 				let roles = await roleQueries.findAll(
 					{ id: user.roles, status: common.ACTIVE_STATUS },
 					{
@@ -242,12 +238,18 @@ module.exports = class UserHelper {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
+				if (processDbResponse && processDbResponse.image) {
+					processDbResponse.image = await utils.getDownloadableUrl(processDbResponse.image)
+				}
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
 					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
+				if (userDetails && userDetails.image) {
+					userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+				}
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
