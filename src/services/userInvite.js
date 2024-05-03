@@ -545,7 +545,6 @@ module.exports = class UserInviteHelper {
 						role: userData.role || '',
 						orgName: userData.org_name || '',
 						appName: process.env.APP_NAME,
-						inviteeUploadURL,
 						portalURL: process.env.PORTAL_URL,
 						roles: userData.roles || '',
 					}),

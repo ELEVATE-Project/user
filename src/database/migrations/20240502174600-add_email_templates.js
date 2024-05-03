@@ -170,6 +170,13 @@ module.exports = {
 		})
 
 		await queryInterface.bulkInsert('notification_templates', notificationTemplateData, {})
+
+		const body = `<p>Dear {name},</p> Please find attached the status of your bulk upload activity.`
+		const updateData = { body }
+
+		const updateFilter = { code: 'invitee_upload_status', organization_id: defaultOrgId }
+
+		await queryInterface.bulkUpdate('notification_templates', updateData, updateFilter)
 	},
 
 	down: async (queryInterface, Sequelize) => {

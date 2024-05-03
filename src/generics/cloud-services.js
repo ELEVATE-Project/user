@@ -15,7 +15,6 @@ module.exports = class FilesHelper {
 			if (['azure', 'gcloud'].includes(process.env.CLOUD_STORAGE_PROVIDER)) {
 				expiryTime = Math.floor(expiryTime / 60)
 			}
-
 			const signedUrl = await cloudClient.getSignedUrl(
 				bucketName, //BucketName
 				destFilePath, //FilePath
