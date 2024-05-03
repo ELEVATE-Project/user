@@ -12,6 +12,10 @@ const { cloudClient } = require('@configs/cloud-service')
 module.exports = class FilesHelper {
 	static async getSignedUrl(bucketName, destFilePath, actionType = common.WRITE_ACCESS, expiryTime = '') {
 		try {
+			if (['azure', 'gcloud'].includes(process.env.CLOUD_STORAGE_PROVIDER)) {
+				expiryTime = Math.floor(expiryTime / 60)
+			}
+
 			const signedUrl = await cloudClient.getSignedUrl(
 				bucketName, //BucketName
 				destFilePath, //FilePath

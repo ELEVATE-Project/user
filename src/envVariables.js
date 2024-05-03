@@ -223,7 +223,7 @@ let enviromentVariables = {
 	SIGNED_URL_EXPIRY_IN_SECONDS: {
 		message: 'Required signed url expiration time in seconds',
 		optional: true,
-		default: 300,
+		default: 900,
 	},
 	ALLOWED_ACTIVE_SESSIONS: {
 		message: 'Require allowed active sessions',
