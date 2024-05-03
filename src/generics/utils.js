@@ -9,7 +9,6 @@ const bcryptJs = require('bcryptjs')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
@@ -53,7 +52,6 @@ const getDownloadableUrl = async (filePath) => {
 	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
 
 	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
-	console.log(response)
 	return response[0]
 }
 const getPublicDownloadableUrl = async (bucketName, filePath) => {
