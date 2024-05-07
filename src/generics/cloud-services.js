@@ -23,7 +23,7 @@ module.exports = class FilesHelper {
 			)
 
 			return {
-				signedUrl: signedUrl[0],
+				signedUrl: signedUrl,
 				filePath: destFilePath,
 			}
 		} catch (error) {
