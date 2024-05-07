@@ -25,6 +25,7 @@ module.exports = class FilesHelper {
 			return {
 				signedUrl: process.env.CLOUD_STORAGE_PROVIDER == 'gcloud' ? signedUrl[0] : signedUrl,
 				filePath: destFilePath,
+				destFilePath,
 			}
 		} catch (error) {
 			throw error
