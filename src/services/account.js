@@ -1014,6 +1014,9 @@ module.exports = class AccountHelper {
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])
 					} else {
+						if (userDetails.image) {
+							userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+						}
 						userDetailsFoundInRedis.push(userDetails)
 					}
 				}
