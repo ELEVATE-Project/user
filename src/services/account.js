@@ -1436,8 +1436,9 @@ module.exports = class AccountHelper {
 	static async searchByEmailIds(params) {
 		if (params.hasOwnProperty('body') && params.body.hasOwnProperty('emailIds')) {
 			const emailIds = params.body.emailIds
+			const encryptedMenteeEmail = emailEncryption.encrypt(emailIds)
 			let filterQuery = {
-				email: emailIds,
+				email: encryptedMenteeEmail,
 			}
 
 			let options = {
