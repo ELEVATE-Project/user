@@ -1447,11 +1447,6 @@ module.exports = class AccountHelper {
 				},
 			}
 
-			//returning deleted user if internal token is passing
-			if (params.headers.internal_access_token) {
-				options.paranoid = false
-			}
-
 			let users = await userQueries.findAll(filterQuery, options)
 
 			let roles = await roleQueries.findAll(
