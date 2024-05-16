@@ -310,4 +310,22 @@ module.exports = class Account {
 			return error
 		}
 	}
+
+	/**
+	 * Account Search By Email
+	 * @method
+	 * @name list
+	 * @param {Object} req -request data with method POST.
+	 * @param {Object} req.body -request body contains user deatils.
+	 * @param {Array} req.body.userIds -contains emailIds.
+	 * @returns {JSON} - all accounts data
+	 */
+	async searchByEmailIds(req) {
+		try {
+			const result = await accountService.searchByEmailIds(req)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 }
