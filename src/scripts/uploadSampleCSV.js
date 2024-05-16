@@ -4,7 +4,7 @@
  * created-date : 02-Nov-2023
  * Description : script to upload the sample csv for bulk upload.
  */
-
+require('module-alias/register')
 const fs = require('fs')
 require('dotenv').config({ path: '../.env' })
 const path = require('path')
@@ -31,7 +31,7 @@ const common = require('../constants/common')
 		const uploadFileName = path.basename(uploadFilePath)
 
 		//get signed url
-		const getSignedUrl = await fileService.getSignedUrl(uploadFileName, '', uploadFolder)
+		const getSignedUrl = await fileService.getSignedUrl(uploadFileName, '', uploadFolder, false)
 
 		if (!getSignedUrl.result) {
 			throw new Error('FAILED_TO_GENERATE_SIGNED_URL')
@@ -52,7 +52,7 @@ const common = require('../constants/common')
 			body: fileData,
 		})
 
-		console.log('file path: ' + getSignedUrl.result.destFilePath)
+		console.log('file path: ' + getSignedUrl.result.filePath)
 		console.log('completed')
 	} catch (error) {
 		console.log(error)

@@ -1014,6 +1014,9 @@ module.exports = class AccountHelper {
 					if (!userDetails) {
 						userIdsNotFoundInRedis.push(userIds[i])
 					} else {
+						if (userDetails.image) {
+							userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+						}
 						userDetailsFoundInRedis.push(userDetails)
 					}
 				}
@@ -1418,6 +1421,63 @@ module.exports = class AccountHelper {
 		} catch (error) {
 			console.log(error)
 			throw error
+		}
+	}
+
+	/**
+	 * Account Search By Email
+	 * @method
+	 * @name list method post
+	 * @param {Object} req -request data.
+	 * @param {Array} userIds -contains emailIds.
+	 * @returns {JSON} - all accounts data
+	 */
+
+	static async searchByEmailIds(params) {
+		if (params.hasOwnProperty('body') && params.body.hasOwnProperty('emailIds')) {
+			const emailIds = params.body.emailIds
+			const encryptedMenteeEmail = emailEncryption.encrypt(emailIds)
+			let filterQuery = {
+				email: encryptedMenteeEmail,
+			}
+
+			let options = {
+				attributes: {
+					exclude: ['password', 'refresh_tokens'],
+				},
+			}
+
+			let users = await userQueries.findAll(filterQuery, options)
+
+			let roles = await roleQueries.findAll(
+				{},
+				{
+					attributes: {
+						exclude: ['created_at', 'updated_at', 'deleted_at'],
+					},
+				}
+			)
+
+			users.forEach(async (user) => {
+				if (user.roles && user.roles.length > 0) {
+					let roleData = roles.filter((role) => user.roles.includes(role.id))
+					user['user_roles'] = roleData
+				}
+				user.email = emailEncryption.decrypt(user.email)
+			})
+			if (!users) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USERS_FETCHED_SUCCESSFULLY',
+					result: {},
+				})
+			} else {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USERS_FETCHED_SUCCESSFULLY',
+					result: users[0],
+				})
+			}
 		}
 	}
 }
