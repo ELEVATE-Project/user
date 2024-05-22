@@ -429,6 +429,66 @@ module.exports = class OrgAdminHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * @description 					- Update user API for org-admin to assign role to user
+	 * @method
+	 * @name 							- updateUser
+	 * @param {number} userId 			- User ID to which role is assigned
+	 * @param {object} bodyData 		- It will contain organization id and roles array
+	 * @param {object} tokenInformation - user token information
+	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 */
+
+	static async updateUser(userId, bodyData, tokenInformation) {
+		try {
+			if (bodyData.organization_id == tokenInformation.organization_id) {
+				let roles = _.without(bodyData.roles, 'admin')
+				let getRoleIds = await roleQueries.findAll({ title: roles }, { attributes: ['id'] })
+				if (!getRoleIds) {
+					return responses.successResponse({
+						responseCode: 'CLIENT_ERROR',
+						statusCode: httpStatusCode.bad_request,
+						message: 'INVALID_ROLE_ASSGINMENTS',
+					})
+				}
+				let roleIds = getRoleIds.map((roleId) => roleId.id)
+				let userRoleIds = await userQueries.findOne({ id: userId }, { attributes: ['roles'] })
+				if (!userRoleIds) {
+					return responses.successResponse({
+						responseCode: 'CLIENT_ERROR',
+						statusCode: httpStatusCode.bad_request,
+						message: 'USER_NOT_FOUND',
+					})
+				}
+				let isRolePresent = roleIds.every((role) => userRoleIds.roles.includes(role))
+				if (!isRolePresent) {
+					userRoleIds.roles.push(...roleIds)
+					userRoleIds.roles = _.uniq(userRoleIds.roles)
+					await userQueries.updateUser({ id: userId }, { roles: userRoleIds.roles })
+					return responses.successResponse({
+						statusCode: httpStatusCode.ok,
+						message: 'USER_ROLE_UPDATE_SUCCESSFUL',
+					})
+				} else {
+					return responses.successResponse({
+						responseCode: 'CLIENT_ERROR',
+						statusCode: httpStatusCode.bad_request,
+						message: 'ROLE_ALREADY_EXISTS',
+					})
+				}
+			} else {
+				return responses.successResponse({
+					responseCode: 'CLIENT_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					message: 'YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES',
+				})
+			}
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
 }
 
 function updateRoleForApprovedRequest(requestDetails, user) {
