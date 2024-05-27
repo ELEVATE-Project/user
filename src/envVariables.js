@@ -265,6 +265,7 @@ let enviromentVariables = {
 	APPLICATION_BASE_URL: {
 		message: 'Require Base URL',
 		optional: false,
+		default: '/user'
 	},
 }
 
