@@ -262,6 +262,11 @@ let enviromentVariables = {
 		message: 'Require account name',
 		optional: false,
 	},
+	APPLICATION_BASE_URL: {
+		message: 'Require Base URL',
+		optional: false,
+		default: '/user'
+	},
 }
 
 let success = true
