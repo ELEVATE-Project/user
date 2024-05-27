@@ -298,6 +298,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 0,
 	},
+	APPLICATION_BASE_URL: {
+		message: 'Require Base URL',
+		optional: false,
+		default: '/user',
+	},
 }
 
 let success = true
