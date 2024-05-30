@@ -1434,50 +1434,73 @@ module.exports = class AccountHelper {
 	 */
 
 	static async searchByEmailIds(params) {
-		if (params.hasOwnProperty('body') && params.body.hasOwnProperty('emailIds')) {
+		params.body.emailIds = !params.body.emailIds ? [] : params.body.emailIds
+		if (params?.body?.emailIds) {
 			const emailIds = params.body.emailIds
-			const encryptedMenteeEmail = emailEncryption.encrypt(emailIds)
-			let filterQuery = {
-				email: encryptedMenteeEmail,
+
+			if (!Array.isArray(emailIds)) {
+				throw new TypeError('The "emailIds" argument must be an array of strings.')
 			}
 
-			let options = {
-				attributes: {
-					exclude: ['password', 'refresh_tokens'],
-				},
+			if (emailIds.length === 0) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USERS_FETCHED_SUCCESSFULLY',
+					result: {
+						invalidEmails: [],
+						userIdsAndInvalidEmails: [],
+					},
+				})
 			}
+
+			const encryptedEmailIds = emailIds.map((email) => {
+				if (typeof email !== 'string') {
+					throw new TypeError('Each email ID must be a string.')
+				}
+				return emailEncryption.encrypt(email)
+			})
+
+			let filterQuery = { email: { [Op.in]: encryptedEmailIds } }
+			const options = { attributes: ['email', 'id'] }
 
 			let users = await userQueries.findAll(filterQuery, options)
+			users = users || []
 
-			let roles = await roleQueries.findAll(
-				{},
-				{
-					attributes: {
-						exclude: ['created_at', 'updated_at', 'deleted_at'],
-					},
-				}
-			)
+			const validUsers = []
+			const invalidEmails = []
+			const userIdsAndInvalidEmails = []
 
-			users.forEach(async (user) => {
-				if (user.roles && user.roles.length > 0) {
-					let roleData = roles.filter((role) => user.roles.includes(role.id))
-					user['user_roles'] = roleData
+			for (const encryptedEmail of encryptedEmailIds) {
+				const user = users.find((u) => u.email === encryptedEmail) // Find user by email
+				if (user) {
+					try {
+						user.email = emailEncryption.decrypt(user.email)
+						validUsers.push(user)
+						userIdsAndInvalidEmails.push(user.id)
+					} catch (err) {
+						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
+						const originalEmail = emailEncryption.decrypt(encryptedEmail)
+						invalidEmails.push(originalEmail)
+						userIdsAndInvalidEmails.push(originalEmail)
+					}
+				} else {
+					try {
+						const originalEmail = emailEncryption.decrypt(encryptedEmail)
+						invalidEmails.push(originalEmail)
+						userIdsAndInvalidEmails.push(originalEmail)
+					} catch (err) {
+						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
+						invalidEmails.push('Decryption failed')
+						userIdsAndInvalidEmails.push('Decryption failed')
+					}
 				}
-				user.email = emailEncryption.decrypt(user.email)
-			})
-			if (!users) {
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USERS_FETCHED_SUCCESSFULLY',
-					result: {},
-				})
-			} else {
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USERS_FETCHED_SUCCESSFULLY',
-					result: users[0],
-				})
 			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USERS_FETCHED_SUCCESSFULLY',
+				result: { invalidEmails, userIdsAndInvalidEmails },
+			})
 		}
 	}
 }
