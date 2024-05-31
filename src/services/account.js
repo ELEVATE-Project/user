@@ -1433,26 +1433,9 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - all accounts data
 	 */
 
-	static async searchByEmailIds(params) {
-		params.body.emailIds = !params.body.emailIds ? [] : params.body.emailIds
+	static async validatingEmailIds(params) {
 		if (params?.body?.emailIds) {
 			const emailIds = params.body.emailIds
-
-			if (!Array.isArray(emailIds)) {
-				throw new TypeError('The "emailIds" argument must be an array of strings.')
-			}
-
-			if (emailIds.length === 0) {
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'USERS_FETCHED_SUCCESSFULLY',
-					result: {
-						invalidEmails: [],
-						userIdsAndInvalidEmails: [],
-					},
-				})
-			}
-
 			const encryptedEmailIds = emailIds.map((email) => {
 				if (typeof email !== 'string') {
 					throw new TypeError('Each email ID must be a string.')
@@ -1465,9 +1448,6 @@ module.exports = class AccountHelper {
 
 			let users = await userQueries.findAll(filterQuery, options)
 			users = users || []
-
-			const validUsers = []
-			const invalidEmails = []
 			const userIdsAndInvalidEmails = []
 
 			for (const encryptedEmail of encryptedEmailIds) {
@@ -1475,22 +1455,18 @@ module.exports = class AccountHelper {
 				if (user) {
 					try {
 						user.email = emailEncryption.decrypt(user.email)
-						validUsers.push(user)
 						userIdsAndInvalidEmails.push(user.id)
 					} catch (err) {
 						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
 						const originalEmail = emailEncryption.decrypt(encryptedEmail)
-						invalidEmails.push(originalEmail)
 						userIdsAndInvalidEmails.push(originalEmail)
 					}
 				} else {
 					try {
 						const originalEmail = emailEncryption.decrypt(encryptedEmail)
-						invalidEmails.push(originalEmail)
 						userIdsAndInvalidEmails.push(originalEmail)
 					} catch (err) {
 						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
-						invalidEmails.push('Decryption failed')
 						userIdsAndInvalidEmails.push('Decryption failed')
 					}
 				}
@@ -1499,7 +1475,7 @@ module.exports = class AccountHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USERS_FETCHED_SUCCESSFULLY',
-				result: { invalidEmails, userIdsAndInvalidEmails },
+				result: { userIdsAndInvalidEmails },
 			})
 		}
 	}
