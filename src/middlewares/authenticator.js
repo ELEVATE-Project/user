@@ -18,6 +18,7 @@ const utilsHelper = require('@generics/utils')
 const { verifyCaptchaToken } = require('@utils/captcha')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
+	console.log('requestPathrequestPath : ', requestPath)
 	const parts = requestPath.match(/[^/]+/g)
 	const api_path = [`/${parts[0]}/${parts[1]}/${parts[2]}/*`]
 
@@ -54,6 +55,11 @@ module.exports = async function (req, res, next) {
 		const authHeader = req.get('X-auth-token')
 		const internalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
+				console.log(
+					'line 59 error from here',
+					req.headers.internal_access_token,
+					process.env.INTERNAL_ACCESS_TOKEN
+				)
 				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
 				else throw unAuthorizedResponse
 			}
@@ -91,7 +97,14 @@ module.exports = async function (req, res, next) {
 		if (!authHeader) {
 			try {
 				const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
-
+				console.log(
+					'common.PUBLIC_ROLE, req.path, req.method :',
+					common.PUBLIC_ROLE,
+					req.path,
+					req.method,
+					'+++++++++++++',
+					isPermissionValid
+				)
 				if (!isPermissionValid) {
 					throw responses.failureResponse({
 						message: 'PERMISSION_DENIED',
@@ -114,7 +127,7 @@ module.exports = async function (req, res, next) {
 		// }
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
-
+		console.log('++++++++++++++++line 119')
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 			// Get redis key for session
@@ -136,6 +149,7 @@ module.exports = async function (req, res, next) {
 				await utilsHelper.redisSet(sessionId, redisData, process.env.ALLOWED_IDLE_TIME)
 			}
 		} catch (err) {
+			console.log('inside this error block +++++++++++yeah 141')
 			if (err.name === 'TokenExpiredError' || err.message === 'USER_SESSION_NOT_FOUND') {
 				throw responses.failureResponse({
 					message: 'ACCESS_TOKEN_EXPIRED',
