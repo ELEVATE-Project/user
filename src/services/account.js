@@ -1475,7 +1475,7 @@ module.exports = class AccountHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USERS_FETCHED_SUCCESSFULLY',
-				result: { userIdsAndInvalidEmails },
+				result: userIdsAndInvalidEmails,
 			})
 		}
 	}
