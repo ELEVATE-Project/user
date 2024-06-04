@@ -320,9 +320,9 @@ module.exports = class Account {
 	 * @param {Array} req.body.userIds -contains emailIds.
 	 * @returns {JSON} - all accounts data
 	 */
-	async searchByEmailIds(req) {
+	async validatingEmailIds(req) {
 		try {
-			const result = await accountService.searchByEmailIds(req)
+			const result = await accountService.validatingEmailIds(req)
 			return result
 		} catch (error) {
 			return error
