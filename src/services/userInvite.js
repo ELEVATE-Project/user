@@ -561,7 +561,7 @@ module.exports = class UserInviteHelper {
 					},
 				]
 			}
-
+			const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
 			await kafkaCommunication.pushEmailToKafka(payload)
 			console.log('===========kafkaCommunication', currentDate)
 			return {
