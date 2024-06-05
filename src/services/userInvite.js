@@ -563,6 +563,7 @@ module.exports = class UserInviteHelper {
 			}
 
 			await kafkaCommunication.pushEmailToKafka(payload)
+			console.log('===========kafkaCommunication', currentDate)
 			return {
 				success: true,
 			}
