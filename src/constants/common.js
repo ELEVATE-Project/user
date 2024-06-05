@@ -83,7 +83,7 @@ module.exports = {
 	ROLE_TYPE_SYSTEM: 1,
 	inviteeOutputFile: 'output-user-invite',
 	csvExtension: '.csv',
-	BACK_OFF_RETRY_QUEUE: 600000,
+	BACK_OFF_RETRY_QUEUE: 30000,
 	PATCH_METHOD: 'PATCH',
 	GET_METHOD: 'GET',
 	NO_OF_ATTEMPTS: 3,
