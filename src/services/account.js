@@ -455,7 +455,7 @@ module.exports = class AccountHelper {
 				data: {
 					id: user.id,
 					name: user.name,
-					// session_id: userSessionDetails.result.id,
+					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
 				},
