@@ -444,18 +444,18 @@ module.exports = class AccountHelper {
 			}
 
 			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInformation
-			)
+			// const userSessionDetails = await userSessionsService.createUserSession(
+			// 	user.id, // userid
+			// 	'', // refresh token
+			// 	'', // Access token
+			// 	deviceInformation
+			// )
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
-					session_id: userSessionDetails.result.id,
+					// session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
 				},
@@ -504,11 +504,11 @@ module.exports = class AccountHelper {
 			 * 1: create redis entry for the session
 			 * 2: update user-session with token and refresh_token
 			 */
-			await userSessionsService.updateUserSessionAndsetRedisData(
-				userSessionDetails.result.id,
-				accessToken,
-				refreshToken
-			)
+			// await userSessionsService.updateUserSessionAndsetRedisData(
+			// 	userSessionDetails.result.id,
+			// 	accessToken,
+			// 	refreshToken
+			// )
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1239,13 +1239,17 @@ module.exports = class AccountHelper {
 	 */
 	static async search(params) {
 		try {
-			const types = params.query.type.toLowerCase().split(',')
-			const roles = await roleQueries.findAll(
-				{ title: types },
-				{
-					attributes: ['id'],
-				}
-			)
+			let roleQuery = {}
+			if (params.query.type.toLowerCase() === common.TYPE_ALL) {
+				roleQuery.status = common.ACTIVE_STATUS
+			} else {
+				const types = params.query.type.toLowerCase().split(',')
+				roleQuery.title = types
+			}
+
+			const roles = await roleQueries.findAll(roleQuery, {
+				attributes: ['id'],
+			})
 
 			const roleIds = roles.map((role) => role.id)
 			let emailIds = []
