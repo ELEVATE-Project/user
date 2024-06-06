@@ -444,12 +444,12 @@ module.exports = class AccountHelper {
 			}
 
 			// create user session entry and add session_id to token data
-			// const userSessionDetails = await userSessionsService.createUserSession(
-			// 	user.id, // userid
-			// 	'', // refresh token
-			// 	'', // Access token
-			// 	deviceInformation
-			// )
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id, // userid
+				'', // refresh token
+				'', // Access token
+				deviceInformation
+			)
 
 			const tokenDetail = {
 				data: {
@@ -504,11 +504,11 @@ module.exports = class AccountHelper {
 			 * 1: create redis entry for the session
 			 * 2: update user-session with token and refresh_token
 			 */
-			// await userSessionsService.updateUserSessionAndsetRedisData(
-			// 	userSessionDetails.result.id,
-			// 	accessToken,
-			// 	refreshToken
-			// )
+			await userSessionsService.updateUserSessionAndsetRedisData(
+				userSessionDetails.result.id,
+				accessToken,
+				refreshToken
+			)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
