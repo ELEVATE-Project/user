@@ -111,7 +111,7 @@ module.exports = {
 			.notEmpty()
 			.withMessage('type can not be null')
 			.isString()
-			.notIn([common.ADMIN_ROLE, common.MENTEE_ROLE, common.MENTEE_ROLE, common.ORG_ADMIN_ROLE])
+			.notIn([common.ADMIN_ROLE, common.MENTEE_ROLE, common.MENTEE_ROLE, common.ORG_ADMIN_ROLE, common.TYPE_ALL])
 			.withMessage('Invalid type value')
 		req.checkQuery('organization_id').isNumeric().withMessage('organization_id must be an Id')
 		req.checkBody('user_ids')
