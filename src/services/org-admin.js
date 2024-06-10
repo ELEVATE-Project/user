@@ -79,15 +79,15 @@ module.exports = class OrgAdminHelper {
 						organization_id,
 						org_name: organization.name,
 					},
+				},
+				{
+					removeOnComplete: true,
+					attempts: common.NO_OF_ATTEMPTS,
+					backoff: {
+						type: 'fixed',
+						delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
+					},
 				}
-				// {
-				// 	removeOnComplete: true,
-				// 	// attempts: common.NO_OF_ATTEMPTS,
-				// 	// backoff: {
-				// 	// 	type: 'fixed',
-				// 	// 	delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
-				// 	// },
-				// }
 			)
 
 			return responses.successResponse({

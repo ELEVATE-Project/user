@@ -7,8 +7,6 @@
 
 const pushEmailToKafka = async (message) => {
 	try {
-		const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
-		console.log('===========pushEmailToKafka', currentDate)
 		const payload = { topic: process.env.NOTIFICATION_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
 		return await pushPayloadToKafka(payload)
 	} catch (error) {
@@ -19,8 +17,6 @@ const pushEmailToKafka = async (message) => {
 
 const pushPayloadToKafka = async (payload) => {
 	try {
-		const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
-		console.log('===========pushPayloadToKafka', currentDate)
 		let response = await kafkaProducer.send(payload)
 		return response
 	} catch (error) {
