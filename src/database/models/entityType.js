@@ -21,6 +21,11 @@ module.exports = (sequelize, DataTypes) => {
 			allow_custom_entities: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 			has_entities: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
 			model_names: { type: DataTypes.ARRAY(DataTypes.STRING) },
+			meta: {
+				type: DataTypes.JSONB,
+				allowNull: true,
+			},
+			external_entity_type: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 		},
 		{ sequelize, modelName: 'EntityType', tableName: 'entity_types', freezeTableName: true, paranoid: true }
 	)
