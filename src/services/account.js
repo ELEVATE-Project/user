@@ -1239,13 +1239,17 @@ module.exports = class AccountHelper {
 	 */
 	static async search(params) {
 		try {
-			const types = params.query.type.toLowerCase().split(',')
-			const roles = await roleQueries.findAll(
-				{ title: types },
-				{
-					attributes: ['id'],
-				}
-			)
+			let roleQuery = {}
+			if (params.query.type.toLowerCase() === common.TYPE_ALL) {
+				roleQuery.status = common.ACTIVE_STATUS
+			} else {
+				const types = params.query.type.toLowerCase().split(',')
+				roleQuery.title = types
+			}
+
+			const roles = await roleQueries.findAll(roleQuery, {
+				attributes: ['id'],
+			})
 
 			const roleIds = roles.map((role) => role.id)
 			let emailIds = []

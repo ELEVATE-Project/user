@@ -63,7 +63,6 @@ module.exports = {
 	EXPIRED_STATUS: 'EXPIRED',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
-	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
@@ -92,4 +91,5 @@ module.exports = {
 	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
 	ROLE_TYPE_NON_SYSTEM: 0,
 	captchaEnabledAPIs: ['/user/v1/account/login', '/user/v1/account/generateOtp', '/user/v1/account/registrationOtp'],
+	TYPE_ALL: 'all',
 }
