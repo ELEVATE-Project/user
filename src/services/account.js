@@ -1425,4 +1425,60 @@ module.exports = class AccountHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Account Search By Email
+	 * @method
+	 * @name list method post
+	 * @param {Object} req -request data.
+	 * @param {Array} userIds -contains emailIds.
+	 * @returns {JSON} - all accounts data
+	 */
+
+	static async validatingEmailIds(params) {
+		if (params?.body?.emailIds) {
+			const emailIds = params.body.emailIds
+			const encryptedEmailIds = emailIds.map((email) => {
+				if (typeof email !== 'string') {
+					throw new TypeError('Each email ID must be a string.')
+				}
+				return emailEncryption.encrypt(email)
+			})
+
+			let filterQuery = { email: { [Op.in]: encryptedEmailIds } }
+			const options = { attributes: ['email', 'id'] }
+
+			let users = await userQueries.findAll(filterQuery, options)
+			users = users || []
+			const userIdsAndInvalidEmails = []
+
+			for (const encryptedEmail of encryptedEmailIds) {
+				const user = users.find((u) => u.email === encryptedEmail) // Find user by email
+				if (user) {
+					try {
+						user.email = emailEncryption.decrypt(user.email)
+						userIdsAndInvalidEmails.push(user.id)
+					} catch (err) {
+						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
+						const originalEmail = emailEncryption.decrypt(encryptedEmail)
+						userIdsAndInvalidEmails.push(originalEmail)
+					}
+				} else {
+					try {
+						const originalEmail = emailEncryption.decrypt(encryptedEmail)
+						userIdsAndInvalidEmails.push(originalEmail)
+					} catch (err) {
+						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
+						userIdsAndInvalidEmails.push('Decryption failed')
+					}
+				}
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USERS_FETCHED_SUCCESSFULLY',
+				result: userIdsAndInvalidEmails,
+			})
+		}
+	}
 }
