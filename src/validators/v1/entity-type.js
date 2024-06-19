@@ -36,8 +36,8 @@ module.exports = {
 			.withMessage('model_names must be an array with at least one element')
 
 		req.checkBody('model_names.*')
-			.isIn(['Session', 'MentorExtension', 'UserExtension'])
-			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
+			.isIn(['Session', 'MentorExtension', 'UserExtension', 'User'])
+			.withMessage('model_names must be in Session,MentorExtension,UserExtension, User')
 
 		req.checkBody('allow_filtering').optional().isEmpty().withMessage('allow_filtering is not allowed in create')
 	},
