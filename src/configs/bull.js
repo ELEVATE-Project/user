@@ -10,7 +10,7 @@ const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 
 const redisConfiguration = utils.generateRedisConfigForQueue()
-const logInterval = 30000
+const logInterval = 300000
 module.exports = function () {
 	try {
 		const ProjectRootDir = path.join(__dirname, '..')
