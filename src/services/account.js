@@ -1034,6 +1034,8 @@ module.exports = class AccountHelper {
 				//returning deleted user if internal token is passing
 				if (params.headers.internal_access_token) {
 					options.paranoid = false
+					if (params.query.exclude_deleted_records)
+						options.paranoid = params.query.exclude_deleted_records === 'true'
 				}
 
 				let users = await userQueries.findAllUserWithOrganization(filterQuery, options)
