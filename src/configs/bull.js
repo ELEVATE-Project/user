@@ -1,5 +1,5 @@
 ;('use strict')
-const { Worker, Queue } = require('bullmq')
+const { Worker } = require('bullmq')
 const fs = require('fs')
 const userInviteService = require('@services/userInvite')
 const common = require('@constants/common')
