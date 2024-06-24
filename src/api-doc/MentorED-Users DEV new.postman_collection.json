@@ -95,7 +95,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
+							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"\",\n    \"role\":\"mentee\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -113,7 +113,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
+							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"\",\n    \"role\":\"mentor\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -305,12 +305,24 @@
 									"key": "email",
 									"value": "Ramkumar@yopmail.com",
 									"description": "QA SCP",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
 									"value": "Pace@12345",
 									"description": "QA SCP Ramkumar@yopmail.com ",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
 									"type": "text"
 								}
 							]
@@ -388,7 +400,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"id\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjozMywibmFtZSI6IkFsZXhhIE9uZSIsIm9yZ2FuaXphdGlvbl9pZCI6MTUsInJvbGVzIjpbeyJpZCI6MiwidGl0bGUiOiJtZW50b3IiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsIm9yZ2FuaXphdGlvbl9pZCI6MSwidmlzaWJpbGl0eSI6IlBVQkxJQyJ9LHsiaWQiOjUsInRpdGxlIjoib3JnX2FkbWluIiwidXNlcl90eXBlIjoxLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMifSx7ImlkIjo2LCJ0aXRsZSI6InNlc3Npb25fbWFuYWdlciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIn1dfSwiaWF0IjoxNzEwODUyMjQ3LCJleHAiOjE3MTA5Mzg2NDd9.Y4hAUY22NO3LVlxUvvc0Lx8UlAzVN2yuFlf3pSfazwk\",\n    \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjozMywibmFtZSI6IkFsZXhhIE9uZSIsIm9yZ2FuaXphdGlvbl9pZCI6MTUsInJvbGVzIjpbeyJpZCI6MiwidGl0bGUiOiJtZW50b3IiLCJ1c2VyX3R5cGUiOjAsInN0YXR1cyI6IkFDVElWRSIsIm9yZ2FuaXphdGlvbl9pZCI6MSwidmlzaWJpbGl0eSI6IlBVQkxJQyJ9LHsiaWQiOjUsInRpdGxlIjoib3JnX2FkbWluIiwidXNlcl90eXBlIjoxLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMifSx7ImlkIjo2LCJ0aXRsZSI6InNlc3Npb25fbWFuYWdlciIsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIn1dfSwiaWF0IjoxNzEwODUyMjQ3LCJleHAiOjE3MjY2NjM0NDd9.5EV9AjCmoibivA4Pq9jZ4Jdo97qN9Uo7fLwq_sOints\"\n}",
+							"raw": "{\n    \"id\": \"\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -424,17 +436,17 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdomss.com",
+									"value": "",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "test123",
+									"value": "",
 									"type": "text"
 								},
 								{
 									"key": "otp",
-									"value": "336969",
+									"value": "",
 									"type": "text"
 								}
 							]
@@ -491,7 +503,7 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "ankit.s@pacewisdomss.com",
+									"value": "",
 									"type": "text"
 								},
 								{
