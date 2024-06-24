@@ -754,7 +754,7 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/permissions/create"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/permissions/create"
 					},
 					"response": []
 				},
@@ -770,8 +770,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/permissions/list?page=1&limit=10",
-							"host": ["{{UserDevBaseUrl}}user"],
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/permissions/list?page=1&limit=10",
+							"host": ["{{UserDevBaseUrl}}elevate-user"],
 							"path": ["v1", "permissions", "list"],
 							"query": [
 								{
@@ -818,8 +818,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/permissions/update/:id",
-							"host": ["{{UserDevBaseUrl}}user"],
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/permissions/update/:id",
+							"host": ["{{UserDevBaseUrl}}elevate-user"],
 							"path": ["v1", "permissions", "update", ":id"],
 							"variable": [
 								{
@@ -844,8 +844,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/permissions/delete/:id",
-							"host": ["{{UserDevBaseUrl}}user"],
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/permissions/delete/:id",
+							"host": ["{{UserDevBaseUrl}}elevate-user"],
 							"path": ["v1", "permissions", "delete", ":id"],
 							"variable": [
 								{
@@ -886,7 +886,7 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/read/1"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/user/read/"
 					},
 					"response": []
 				},
@@ -910,7 +910,7 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/update"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/user/update"
 					},
 					"response": []
 				},
@@ -932,7 +932,7 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/share/1"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/user/share/1"
 					},
 					"response": []
 				}
@@ -1054,7 +1054,7 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/form/create"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/form/create"
 					},
 					"response": []
 				},
@@ -1078,7 +1078,7 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/form/read/1"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/form/read/1"
 					},
 					"response": []
 				},
@@ -1102,7 +1102,7 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}mentoring/v1/form/update/10"
+						"url": "{{UserDevBaseUrl}}elevate-user/v1/form/update/10"
 					},
 					"response": []
 				}
