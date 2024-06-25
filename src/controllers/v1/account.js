@@ -284,7 +284,9 @@ module.exports = class Account {
 				req.decodedToken.id,
 				filter,
 				req.pageSize,
-				req.pageNo
+				req.pageNo,
+				req.decodedToken.session_id,
+				req.query && req.query.period ? req.query.period : ''
 			)
 			return userSessionDetails
 		} catch (error) {
@@ -304,6 +306,24 @@ module.exports = class Account {
 			const token = req.body.token
 			const validateUserSession = await userSessionsService.validateUserSession(token)
 			return validateUserSession
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Account Search By Email
+	 * @method
+	 * @name list
+	 * @param {Object} req -request data with method POST.
+	 * @param {Object} req.body -request body contains user deatils.
+	 * @param {Array} req.body.userIds -contains emailIds.
+	 * @returns {JSON} - all accounts data
+	 */
+	async validatingEmailIds(req) {
+		try {
+			const result = await accountService.validatingEmailIds(req)
+			return result
 		} catch (error) {
 			return error
 		}

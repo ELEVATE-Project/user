@@ -50,6 +50,20 @@ module.exports = {
 		req.body = filterRequestBody(req.body, organization.requestOrgRole)
 		req.checkBody('role').notEmpty().withMessage('role field is empty')
 		req.checkBody('form_data').notEmpty().withMessage('form_data field is empty')
+		req.checkBody('form_data.about')
+			.optional()
+			.trim()
+			.notEmpty()
+			.withMessage('about field is empty')
+			.matches(/^[a-zA-Z0-9\-.,\s]+$/)
+			.withMessage('invalid about')
+		req.checkBody('form_data.experience')
+			.optional()
+			.trim()
+			.notEmpty()
+			.withMessage('form_data.experience field is empty')
+			.isNumeric()
+			.withMessage('invalid form_data.experience')
 	},
 
 	read: (req) => {

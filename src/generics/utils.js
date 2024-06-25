@@ -9,7 +9,6 @@ const bcryptJs = require('bcryptjs')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
@@ -18,6 +17,8 @@ const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
+const common = require('@constants/common')
+const { cloudClient } = require('@configs/cloud-service')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -46,44 +47,20 @@ const composeEmailBody = (body, params) => {
 	})
 }
 
-const getDownloadableUrl = async (imgPath) => {
-	if (process.env.CLOUD_STORAGE === 'GCP') {
-		const options = {
-			destFilePath: imgPath,
-			bucketName: process.env.DEFAULT_GCP_BUCKET_NAME,
-			gcpProjectId: process.env.GCP_PROJECT_ID,
-			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH),
-			expiry: Date.now() + parseFloat(process.env.DOWNLOAD_URL_EXPIRATION_DURATION),
-		}
-		imgPath = await GcpFileHelper.getSignedDownloadableUrl(options)
-	} else if (process.env.CLOUD_STORAGE === 'AWS') {
-		const options = {
-			destFilePath: imgPath,
-			bucketName: process.env.DEFAULT_AWS_BUCKET_NAME,
-			bucketRegion: process.env.AWS_BUCKET_REGION,
-		}
-		imgPath = await AwsFileHelper.getDownloadableUrl(options.destFilePath, options.bucketName, options.bucketRegion)
-	} else if (process.env.CLOUD_STORAGE === 'AZURE') {
-		const options = {
-			destFilePath: imgPath,
-			containerName: process.env.DEFAULT_AZURE_CONTAINER_NAME,
-			expiry: 30,
-			actionType: 'rw',
-			accountName: process.env.AZURE_ACCOUNT_NAME,
-			accountKey: process.env.AZURE_ACCOUNT_KEY,
-		}
-		imgPath = await AzureFileHelper.getDownloadableUrl(options)
-	} else if (process.env.CLOUD_STORAGE === 'OCI') {
-		const options = {
-			destFilePath: imgPath,
-			bucketName: process.env.DEFAULT_OCI_BUCKET_NAME,
-			endpoint: process.env.OCI_BUCKET_ENDPOINT,
-		}
-		imgPath = await OciFileHelper.getDownloadableUrl(options)
-	}
-	return imgPath
-}
+const getDownloadableUrl = async (filePath) => {
+	let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
+	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
 
+	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
+	return response[0]
+}
+const getPublicDownloadableUrl = async (bucketName, filePath) => {
+	let downloadableUrl = await cloudClient.getDownloadableUrl(bucketName, filePath)
+	if (process.env.CLOUD_STORAGE_PROVIDER == 'azure') {
+		downloadableUrl = downloadableUrl.toString().split('?')[0]
+	}
+	return downloadableUrl
+}
 const validateRoleAccess = (roles, requiredRoles) => {
 	if (!roles || roles.length === 0) return false
 
@@ -488,4 +465,5 @@ module.exports = {
 	generateWhereClause,
 	getRoleTitlesFromId,
 	convertDurationToSeconds,
+	getPublicDownloadableUrl,
 }
