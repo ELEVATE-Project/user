@@ -358,10 +358,35 @@ const triggerPeriodicViewRefresh = async () => {
 	}
 }
 
+const checkAndCreateMaterializedViews = async () => {
+	const allowFilteringEntityTypes = await getAllowFilteringEntityTypes()
+	const entityTypesGroupedByModel = await groupByModelNames(allowFilteringEntityTypes)
+
+	const query = 'select matviewname from pg_matviews;'
+	const [result, metadata] = await sequelize.query(query)
+
+	await Promise.all(
+		entityTypesGroupedByModel.map(async (modelEntityTypes) => {
+			const model = require('@database/models/index')[modelEntityTypes.modelName]
+
+			const mViewExits = result.some(
+				({ matviewname }) => matviewname === common.materializedViewsPrefix + model.tableName
+			)
+			if (!mViewExits) {
+				return generateMaterializedView(modelEntityTypes)
+			}
+			return true
+		})
+	)
+
+	return entityTypesGroupedByModel
+}
+
 const adminService = {
 	triggerViewBuild,
 	triggerPeriodicViewRefresh,
 	refreshMaterializedView,
+	checkAndCreateMaterializedViews,
 }
 
 module.exports = adminService

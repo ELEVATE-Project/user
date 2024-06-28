@@ -38,6 +38,7 @@
 		"crypto": "^1.0.1",
 		"csvtojson": "^2.0.10",
 		"dotenv": "^10.0.0",
+		"elevate-cloud-storage": "^2.6.3",
 		"elevate-encryption": "^1.0.1",
 		"elevate-logger": "^3.1.0",
 		"elevate-node-cache": "^1.0.6",
