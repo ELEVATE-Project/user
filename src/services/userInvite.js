@@ -561,6 +561,7 @@ module.exports = class UserInviteHelper {
 					},
 				]
 			}
+
 			await kafkaCommunication.pushEmailToKafka(payload)
 			return {
 				success: true,

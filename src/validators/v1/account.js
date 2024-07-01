@@ -160,6 +160,7 @@ module.exports = {
 			.custom((value) => !/\s/.test(value))
 			.withMessage('Password cannot contain spaces')
 	},
+
 	validatingEmailIds: (req) => {
 		req.checkBody('emailIds').notEmpty().withMessage('emailIds field is empty').custom(emailArrayValidation)
 	},
