@@ -592,16 +592,7 @@ module.exports = class AdminHelper {
 }
 
 function _removeUserKeys() {
-	let removedFields = [
-		'gender',
-		'about',
-		'share_link',
-		'preferred_language',
-		'location',
-		'languages',
-		'image',
-		'roles',
-	]
+	let removedFields = ['about', 'share_link', 'preferred_language', 'location', 'languages', 'image', 'roles']
 	return removedFields
 }
 

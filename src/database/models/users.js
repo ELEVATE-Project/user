@@ -26,7 +26,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			gender: DataTypes.STRING,
 			location: DataTypes.STRING,
 			about: DataTypes.TEXT,
 			share_link: DataTypes.STRING,
