@@ -33,6 +33,7 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - update user response
 	 */
 	static async update(bodyData, id, orgId) {
+		let skipValidation = true
 		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
@@ -74,7 +75,7 @@ module.exports = class UserHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
+			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName(), skipValidation)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
