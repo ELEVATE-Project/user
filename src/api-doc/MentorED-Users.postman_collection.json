@@ -584,6 +584,30 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Update Language",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"preferred_language\" : \"en\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{UserDevBaseUrl}}user/v1/user/updateLanguage"
+					},
+					"response": []
 				}
 			]
 		},
