@@ -453,8 +453,8 @@ module.exports = class OrgAdminHelper {
 					})
 				}
 				let roleIds = getRoleIds.map((roleId) => roleId.id)
-				let userRoleIds = await userQueries.findOne({ id: userId }, { attributes: ['roles'] })
-				if (!userRoleIds) {
+				let checkUser = await userQueries.findOne({ id: userId })
+				if (!checkUser) {
 					return responses.successResponse({
 						responseCode: 'CLIENT_ERROR',
 						statusCode: httpStatusCode.bad_request,
