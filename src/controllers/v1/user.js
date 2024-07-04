@@ -61,4 +61,26 @@ module.exports = class User {
 			return error
 		}
 	}
+
+	/**
+	 * Updates preferred language of user
+	 * @method
+	 * @name update
+	 * @param {Object} req -request data.
+	 * @param {Object} req.body - contains user preferred language.
+	 * @returns {JSON} - user updated data.
+	 */
+	async updateLanguage(req) {
+		const params = req.body
+		try {
+			const updateUsersLanguagePreference = await userService.updateLanguage(
+				params,
+				req.decodedToken.id,
+				req.decodedToken.organization_id
+			)
+			return updateUsersLanguagePreference
+		} catch (error) {
+			return error
+		}
+	}
 }

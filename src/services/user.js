@@ -33,7 +33,6 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - update user response
 	 */
 	static async update(bodyData, id, orgId) {
-		let skipRequiredValidation = true
 		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
@@ -75,12 +74,7 @@ module.exports = class UserHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-			let res = utils.validateInput(
-				bodyData,
-				prunedEntities,
-				await userQueries.getModelName(),
-				skipRequiredValidation
-			)
+			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
@@ -299,6 +293,84 @@ module.exports = class UserHelper {
 				result: { shareLink },
 			})
 		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * update user preferred language
+	 * @method
+	 * @name update
+	 * @param {Object} bodyData - it contains user preferred language
+	 * @returns {JSON} - updated user response
+	 */
+	static async updateLanguage(bodyData, id, orgId) {
+		let skipRequiredValidation = true
+		bodyData.updated_at = new Date().getTime()
+		try {
+			const user = await userQueries.findOne({ id: id, organization_id: orgId })
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			let userModel = await userQueries.getColumns()
+			const filter = {
+				status: 'ACTIVE',
+				organization_id: { [Op.in]: [orgId, defaultOrgId] },
+				model_names: { [Op.contains]: [userModel] },
+			}
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+
+			let res = utils.validateInput(bodyData, prunedEntities, userModel, skipRequiredValidation)
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
+
+			bodyData = utils.restructureBody(bodyData, validationData, userModel)
+
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: id, organization_id: orgId },
+				bodyData
+			)
+			const currentUser = updatedData[0]
+			const currentName = currentUser.dataValues.name
+			const previousName = currentUser._previousDataValues?.name || null
+
+			if (currentName !== previousName) {
+				eventBroadcaster('updateName', { requestBody: { mentor_name: currentName, mentor_id: id } })
+			}
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			if (await utils.redisGet(redisUserKey)) {
+				await utils.redisDel(redisUserKey)
+			}
+			const processDbResponse = utils.processDbResponse(
+				JSON.parse(JSON.stringify(updatedData[0])),
+				validationData
+			)
+			delete processDbResponse.refresh_tokens
+			delete processDbResponse.password
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'PROFILE_UPDATED_SUCCESSFULLY',
+				result: processDbResponse,
+			})
+		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
