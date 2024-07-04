@@ -461,22 +461,11 @@ module.exports = class OrgAdminHelper {
 						message: 'USER_NOT_FOUND',
 					})
 				}
-				let isRolePresent = roleIds.every((role) => userRoleIds.roles.includes(role))
-				if (!isRolePresent) {
-					userRoleIds.roles.push(...roleIds)
-					userRoleIds.roles = _.uniq(userRoleIds.roles)
-					await userQueries.updateUser({ id: userId }, { roles: userRoleIds.roles })
-					return responses.successResponse({
-						statusCode: httpStatusCode.ok,
-						message: 'USER_ROLE_UPDATE_SUCCESSFUL',
-					})
-				} else {
-					return responses.successResponse({
-						responseCode: 'CLIENT_ERROR',
-						statusCode: httpStatusCode.bad_request,
-						message: 'ROLE_ALREADY_EXISTS',
-					})
-				}
+				await userQueries.updateUser({ id: userId }, { roles: roleIds })
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USER_ROLE_UPDATE_SUCCESSFUL',
+				})
 			} else {
 				return responses.successResponse({
 					responseCode: 'CLIENT_ERROR',
