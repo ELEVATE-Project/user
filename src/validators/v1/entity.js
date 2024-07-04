@@ -93,4 +93,12 @@ module.exports = {
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
+	list: (req) => {
+		req.checkQuery('entity_type_id')
+			.trim()
+			.notEmpty()
+			.withMessage('entity_type_id param is empty')
+			.isNumeric()
+			.withMessage('entity_type_id param is invalid, must be an integer')
+	},
 }

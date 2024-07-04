@@ -83,4 +83,18 @@ module.exports = class Entity {
 			return error
 		}
 	}
+	/**
+	 * entity list
+	 * @method
+	 * @name list
+	 * @param {Object} req - request data.
+	 * @returns {JSON} - entities.
+	 */
+	async list(req) {
+		try {
+			return await entityService.list(req.query, req.searchText, req.pageNo, req.pageSize)
+		} catch (error) {
+			return error
+		}
+	}
 }
