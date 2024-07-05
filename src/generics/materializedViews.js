@@ -172,14 +172,13 @@ const createIndexesOnAllowFilteringFields = async (model, modelEntityTypes, fiel
 					(element) => element.key === attribute || element.value === attribute
 				)
 
-				fieldsWithDatatype.find((element) => element.value === attribute)
 				// Retrieve the type
 				const type = item ? item.type || item.data_type : undefined
 
 				if (!type) return false
 				// Determine the query based on the type
 				let query
-				if (type === 'character varying') {
+				if (type === 'character varying' || type === 'character text') {
 					query = `CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} USING gin (${attribute} gin_trgm_ops);`
 				} else {
 					query = `CREATE INDEX ${common.materializedViewsPrefix}idx_${model.tableName}_${attribute} ON ${common.materializedViewsPrefix}${model.tableName} USING gin (${attribute});`
