@@ -124,8 +124,12 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				const defaultRole = await roleQueries.findOne(
-					{ title: process.env.DEFAULT_ROLE },
+				const defaultRole = await roleQueries.findAll(
+					{
+						title: {
+							[Op.in]: process.env.DEFAULT_ROLE.split(','),
+						},
+					},
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -161,8 +165,12 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
-				role = await roleQueries.findOne(
-					{ title: process.env.DEFAULT_ROLE },
+				role = await roleQueries.findAll(
+					{
+						title: {
+							[Op.in]: process.env.DEFAULT_ROLE.split(','),
+						},
+					},
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -178,7 +186,9 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				roles.push(role.id)
+				roles = role.map((userRoles) => {
+					return userRoles.id
+				})
 				bodyData.roles = roles
 			}
 
