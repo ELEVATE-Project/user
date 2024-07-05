@@ -70,10 +70,10 @@ module.exports = class User {
 	 * @param {Object} req.body - contains user preferred language.
 	 * @returns {JSON} - user updated data.
 	 */
-	async updateLanguage(req) {
+	async setLanguagePreference(req) {
 		const params = req.body
 		try {
-			const updateUsersLanguagePreference = await userService.updateLanguage(
+			const updateUsersLanguagePreference = await userService.setLanguagePreference(
 				params,
 				req.decodedToken.id,
 				req.decodedToken.organization_id

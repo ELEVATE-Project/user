@@ -586,7 +586,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Language",
+					"name": "Set Language Preferences",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -605,7 +605,7 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/updateLanguage"
+						"url": "{{UserDevBaseUrl}}user/v1/user/setLanguagePreference"
 					},
 					"response": []
 				}

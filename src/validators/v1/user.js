@@ -48,7 +48,7 @@ module.exports = {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
 
-	updateLanguage: (req) => {
+	setLanguagePreference: (req) => {
 		req.checkBody('preferred_language')
 			.trim()
 			.isIn(['en', 'hi'])

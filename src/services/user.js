@@ -304,7 +304,7 @@ module.exports = class UserHelper {
 	 * @param {Object} bodyData - it contains user preferred language
 	 * @returns {JSON} - updated user response
 	 */
-	static async updateLanguage(bodyData, id, orgId) {
+	static async setLanguagePreference(bodyData, id, orgId) {
 		let skipRequiredValidation = true
 		bodyData.updated_at = new Date().getTime()
 		try {
@@ -326,6 +326,7 @@ module.exports = class UserHelper {
 				status: 'ACTIVE',
 				organization_id: { [Op.in]: [orgId, defaultOrgId] },
 				model_names: { [Op.contains]: [userModel] },
+				value: 'preferred_language',
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
@@ -347,13 +348,6 @@ module.exports = class UserHelper {
 				{ id: id, organization_id: orgId },
 				bodyData
 			)
-			const currentUser = updatedData[0]
-			const currentName = currentUser.dataValues.name
-			const previousName = currentUser._previousDataValues?.name || null
-
-			if (currentName !== previousName) {
-				eventBroadcaster('updateName', { requestBody: { mentor_name: currentName, mentor_id: id } })
-			}
 			const redisUserKey = common.redisUserPrefix + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
