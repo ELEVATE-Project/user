@@ -298,16 +298,16 @@ module.exports = class UserHelper {
 	}
 
 	/**
-	 * update user preferred language
+	 * Setting preferred language of user
 	 * @method
 	 * @name update
 	 * @param {Object} bodyData - it contains user preferred language
-	 * @returns {JSON} - updated user response
+	 * @returns {JSON} - updated user preferred languages response
 	 */
 	static async setLanguagePreference(bodyData, id, orgId) {
-		let skipRequiredValidation = true
 		bodyData.updated_at = new Date().getTime()
 		try {
+			let skipRequiredValidation = true
 			const user = await userQueries.findOne({ id: id, organization_id: orgId })
 			if (!user) {
 				return responses.failureResponse({
@@ -323,26 +323,25 @@ module.exports = class UserHelper {
 			let defaultOrgId = defaultOrg.id
 			let userModel = await userQueries.getColumns()
 			const filter = {
-				status: 'ACTIVE',
+				status: common.ACTIVE_STATUS,
 				organization_id: { [Op.in]: [orgId, defaultOrgId] },
 				model_names: { [Op.contains]: [userModel] },
 				value: 'preferred_language',
 			}
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
-			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
+			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
 
-			let res = utils.validateInput(bodyData, prunedEntities, userModel, skipRequiredValidation)
-			if (!res.success) {
+			let validatedData = utils.validateInput(bodyData, prunedEntities, userModel, skipRequiredValidation)
+			if (!validatedData.success) {
 				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
+					message: 'PROFILE_UPDATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
-					result: res.errors,
+					result: validatedData.errors,
 				})
 			}
 
-			bodyData = utils.restructureBody(bodyData, validationData, userModel)
+			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, organization_id: orgId },
@@ -354,14 +353,15 @@ module.exports = class UserHelper {
 			}
 			const processDbResponse = utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
-				validationData
+				dataValidation
 			)
-			delete processDbResponse.refresh_tokens
-			delete processDbResponse.password
+			const keysToDelete = ['refresh_tokens', 'password']
+			const cleanedResponse = utils.deleteKeysFromObject(processDbResponse, keysToDelete)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
-				message: 'PROFILE_UPDATED_SUCCESSFULLY',
-				result: processDbResponse,
+				message: 'UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY',
+				result: cleanedResponse,
 			})
 		} catch (error) {
 			console.log(error)

@@ -465,6 +465,14 @@ const convertDurationToSeconds = (duration) => {
 	return value * timeUnits[unit]
 }
 
+function deleteKeysFromObject(obj, keys) {
+	keys.forEach((key) => {
+		delete obj[key]
+	})
+
+	return obj
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -497,4 +505,5 @@ module.exports = {
 	getRoleTitlesFromId,
 	convertDurationToSeconds,
 	getPublicDownloadableUrl,
+	deleteKeysFromObject,
 }

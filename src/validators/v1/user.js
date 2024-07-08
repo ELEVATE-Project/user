@@ -51,7 +51,9 @@ module.exports = {
 	setLanguagePreference: (req) => {
 		req.checkBody('preferred_language')
 			.trim()
-			.isIn(['en', 'hi'])
-			.withMessage('Language is invalid, must be either en or hi')
+			.notEmpty()
+			.withMessage('preferred_language field is empty')
+			.isString()
+			.withMessage('preferred_language must be string')
 	},
 }

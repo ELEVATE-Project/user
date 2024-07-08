@@ -63,12 +63,12 @@ module.exports = class User {
 	}
 
 	/**
-	 * Updates preferred language of user
+	 * Setting preferred language of user
 	 * @method
 	 * @name update
 	 * @param {Object} req -request data.
 	 * @param {Object} req.body - contains user preferred language.
-	 * @returns {JSON} - user updated data.
+	 * @returns {JSON} - user preferred language updated data.
 	 */
 	async setLanguagePreference(req) {
 		const params = req.body
