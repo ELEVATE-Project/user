@@ -435,6 +435,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/profile/Unauthorized401Response'
+  /user/v1/user/setLanguagePreference:
+    patch:
+      summary: Setting preferred language of user
+      tags:
+        - Users APIs
+      description: |
+        This API updates a user's preferred language.
+        - Endpoint: `/user/v1/user/setLanguagePreference`
+        - Mandatory parameters marked as `required` must have valid values.
+        - Parameters cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profile/updateRequest'
+      responses:
+        '200':
+          description: Language preferneces updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profile/updateRequest200Response'
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profile/Unauthorized401Response'
   /user/v1/user/update:
     patch:
       summary: Update User Profile

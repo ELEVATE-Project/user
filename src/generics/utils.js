@@ -141,16 +141,17 @@ function generateCSVContent(data) {
 	].join('\n')
 }
 
-function validateInput(input, validationData, modelName) {
+function validateInput(input, validationData, modelName, skipValidation = false) {
 	const errors = []
 	for (const field of validationData) {
-		if (field.required === true && !input.hasOwnProperty(field.value)) {
-			errors.push({
-				param: field.value,
-				msg: `${field.value} is required but missing in the input data.`,
-			})
+		if (!skipValidation) {
+			if (field.required === true && !input.hasOwnProperty(field.value)) {
+				errors.push({
+					param: field.value,
+					msg: `${field.value} is required but missing in the input data.`,
+				})
+			}
 		}
-
 		const fieldValue = input[field.value] // Get the value of the current field from the input data
 
 		// Check if the field is not allowed for the current model and has a value
@@ -464,6 +465,14 @@ const convertDurationToSeconds = (duration) => {
 	return value * timeUnits[unit]
 }
 
+function deleteKeysFromObject(obj, keys) {
+	keys.forEach((key) => {
+		delete obj[key]
+	})
+
+	return obj
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -496,4 +505,5 @@ module.exports = {
 	getRoleTitlesFromId,
 	convertDurationToSeconds,
 	getPublicDownloadableUrl,
+	deleteKeysFromObject,
 }
