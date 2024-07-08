@@ -20,7 +20,7 @@ paths:
   /user/v1/account/create:
     post:
       summary: Create user
-      tags:
+      x-tags:
         - User APIs
       description: |-
         This Api is associated with Create User on mentoring 
@@ -56,7 +56,7 @@ paths:
   /user/v1/account/login:
     post:
       summary: Login
-      tags:
+      x-tags:
         - User APIs
       description: |
         This API is associated with logging in a user.
@@ -85,7 +85,7 @@ paths:
   /user/v1/account/acceptTermsAndCondition:
     patch:
       summary: Terms & Condition
-      tags:
+      x-tags:
         - Depreciated APIs
       description: >
         This API sets the 'email_verified' field to true using only the
@@ -119,7 +119,7 @@ paths:
   /user/v1/account/generateToken:
     post:
       summary: Generate Access Token
-      tags:
+      x-tags:
         - User APIs
       description: >
         This API is for re-login and generating an access token from a refresh
@@ -172,7 +172,7 @@ paths:
   /user/v1/account/generateOtp:
     post:
       summary: Generate OTP
-      tags:
+      x-tags:
         - User APIs
       description: |
         This API is for generating OTP.
@@ -215,7 +215,7 @@ paths:
   /user/v1/account/resetPassword:
     post:
       summary: Reset Password
-      tags:
+      x-tags:
         - User APIs
       description: |
         This API is for resetting the user password.
@@ -258,7 +258,7 @@ paths:
   /user/v1/account/logout:
     post:
       summary: Logout
-      tags:
+      x-tags:
         - User APIs
       description: |
         This API is for logging out a user.
@@ -301,7 +301,7 @@ paths:
   /user/v1/account/registrationOtp:
     post:
       summary: Registration OTP
-      tags:
+      x-tags:
         - User APIs
       description: |
         This API is for registration OTP.
@@ -344,7 +344,7 @@ paths:
   /user/v1/account/list:
     get:
       summary: List user
-      tags:
+      x-tags:
         - Users APIs
       description: |
         This API lists users based on specified conditions.
@@ -398,7 +398,7 @@ paths:
   /user/v1/user/read/{userId}:
     get:
       summary: User Details
-      tags:
+      x-tags:
         - Users APIs
       description: |
         This API retrieves details of a user's profile.
@@ -435,10 +435,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/profile/Unauthorized401Response'
+  /user/v1/user/setLanguagePreference:
+    patch:
+      summary: Setting preferred language of user
+      x-tags:
+        - Users APIs
+      description: |
+        This API updates a user's preferred language.
+        - Endpoint: `/user/v1/user/setLanguagePreference`
+        - Mandatory parameters marked as `required` must have valid values.
+        - Parameters cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profile/updateRequest'
+      responses:
+        '200':
+          description: Language preferneces updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profile/updateRequest200Response'
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profile/Unauthorized401Response'
   /user/v1/user/update:
     patch:
       summary: Update User Profile
-      tags:
+      x-tags:
         - Users APIs
       description: |
         This API updates a user's profile.
@@ -475,7 +512,7 @@ paths:
   /user/v1/user/share/{userId}:
     get:
       summary: Share Mentor Profile
-      tags:
+      x-tags:
         - Users APIs
       description: >
         This API is associated with sharing a mentor's profile.
@@ -525,7 +562,7 @@ paths:
   /user/v1/cloud-services/file/getSignedUrl?fileName={file_name}:
     get:
       summary: Cloud Services - Get Signed URL
-      tags:
+      x-tags:
         - Cloud Services APIs
       description: >
         This API is associated with cloud services for obtaining a signed URL.
@@ -564,7 +601,7 @@ paths:
   /user/v1/cloud-services/file/getDownloadableUrl?file_path={file_path}:
     get:
       summary: Cloud Services - Get Downloadable URL
-      tags:
+      x-tags:
         - Cloud Services APIs
       description: >
         This API is associated with cloud services for obtaining a downloadable
@@ -605,7 +642,7 @@ paths:
   /user/v1/cloud-services/file/getSampleCSV:
     get:
       summary: Cloud Services - Get Sample CSV
-      tags:
+      x-tags:
         - Cloud Services APIs
       description: >
         This API is associated with cloud services for obtaining a sample CSV
@@ -636,7 +673,7 @@ paths:
   /user/v1/form/create:
     post:
       summary: Create Form
-      tags:
+      x-tags:
         - Form APIs
       description: |
         This API is associated with creating a form.
@@ -673,7 +710,7 @@ paths:
   /user/v1/form/update/{formId}:
     patch:
       summary: Update Form
-      tags:
+      x-tags:
         - Form APIs
       description: |
         This API is associated with updating a form.
@@ -717,7 +754,7 @@ paths:
   /user/v1/form/read/{formId}:
     post:
       summary: Get Form Details
-      tags:
+      x-tags:
         - Form APIs
       description: >
         This API is associated with retrieving form details.
@@ -765,7 +802,7 @@ paths:
   /user/v1/admin/create:
     post:
       summary: Create Admin User
-      tags:
+      x-tags:
         - Admin APIs
       description: |
         API associated with creating a new admin user.
@@ -793,7 +830,7 @@ paths:
   /user/v1/admin/login:
     post:
       summary: Admin Login
-      tags:
+      x-tags:
         - Admin APIs
       description: |
         This API is associated with the login of the system user.
@@ -821,7 +858,7 @@ paths:
   /user/v1/admin/deleteUser/{id}:
     delete:
       summary: Delete User
-      tags:
+      x-tags:
         - Admin APIs
       description: |
         Delete a user.
@@ -867,7 +904,7 @@ paths:
         - Endpoint: `/user/v1/admin/addOrgAdmin`
         - Mandatory parameters marked as `required` must have valid values.
         - Parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Admin APIs
       parameters:
         - name: X-auth-token
@@ -947,7 +984,7 @@ paths:
   /user/v1/admin/deactivateOrg/{id}:
     post:
       summary: Deactivate Organization
-      tags:
+      x-tags:
         - Admin APIs
       description: |
         Deactivates an organization.
@@ -986,7 +1023,7 @@ paths:
   /user/v1/admin/deactivateUser:
     post:
       summary: Deactivate User
-      tags:
+      x-tags:
         - Admin APIs
       description: |
         Deactivates one or more users.
@@ -1032,7 +1069,7 @@ paths:
   /user/v1/organization/create:
     post:
       summary: Create Organization
-      tags:
+      x-tags:
         - Organization
       description: |
         Creates a new organization.
@@ -1072,7 +1109,7 @@ paths:
   /user/v1/organization/update/{id}:
     post:
       summary: Update Organization
-      tags:
+      x-tags:
         - Organization
       description: >
         This API is associated with updating an organization.
@@ -1123,7 +1160,7 @@ paths:
   /user/v1/organization/list:
     get:
       summary: List Organization
-      tags:
+      x-tags:
         - Organization
       description: >
         This API is associated with listing organizations based on specified
@@ -1183,7 +1220,7 @@ paths:
         - Mandatory parameters marked as `required` must have valid values.
 
         - Parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Organization
       parameters:
         - name: X-auth-token
@@ -1224,7 +1261,7 @@ paths:
   /user/v1/userRole/list:
     get:
       summary: Get User Roles
-      tags:
+      x-tags:
         - User Roles APIs
       description: >
         Retrieve the list of user roles.
@@ -1346,7 +1383,7 @@ paths:
   /user/v1/entity-type/create:
     post:
       summary: Create Entity Type
-      tags:
+      x-tags:
         - EntityType APIs
       description: |
         Use this API to create a user entity.
@@ -1384,7 +1421,8 @@ paths:
   /user/v1/entity-type/update/{id}:
     post:
       summary: Update Entity Type
-      tags: []
+      x-tags:
+        - EntityType APIs
       description: |
         Use this API to update an entity type.
 
@@ -1426,7 +1464,7 @@ paths:
   /user/v1/entity-type/read:
     post:
       summary: Read Entity Type
-      tags:
+      x-tags:
         - EntityType APIs
       description: |
         Use this API to retrieve a list of entity types.
@@ -1574,7 +1612,7 @@ paths:
   /user/v1/entity-type/delete/{id}:
     delete:
       summary: Delete Entity Type
-      tags:
+      x-tags:
         - EntityType APIs
       description: >
         This API is associated with deleting an entity type.  - Endpoint for
@@ -1613,7 +1651,7 @@ paths:
   /user/v1/entity/create:
     post:
       summary: Create Entity
-      tags:
+      x-tags:
         - Entity APIs
       description: >
         This API is associated with entity creation.
@@ -1717,7 +1755,7 @@ paths:
   /user/v1/entity/update/{id}:
     patch:
       summary: Update Entity
-      tags:
+      x-tags:
         - Entity APIs
       description: >
         This API is associated with updating an entity.
@@ -1856,7 +1894,7 @@ paths:
   /user/v1/entity/read?id={id}:
     get:
       summary: Read User Entity
-      tags:
+      x-tags:
         - Entity APIs
       description: >
         This API is associated with retrieving a user entity based on ID or
@@ -1894,7 +1932,7 @@ paths:
   /user/v1/entity/list:
     post:
       summary: Get entity list with pagination and search
-      tags:
+      x-tags:
         - Entity APIs
       description: |-
         Use this API to get the list of a user entities.   
@@ -1993,7 +2031,8 @@ paths:
   /user/v1/entity/delete/{id}:
     delete:
       summary: Delete Entity
-      tags: []
+      x-tags:
+        - EntityType APIs
       description: >
         This API is associated with deleting an entity.
 
@@ -2045,7 +2084,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Org Admin APIs
       parameters:
         - name: X-auth-token
@@ -2142,7 +2181,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Org Admin APIs
       parameters:
         - name: X-auth-token
@@ -2205,7 +2244,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Org Admin APIs
       parameters:
         - name: X-auth-token
@@ -2258,7 +2297,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      x-tags:
+        - Org Admin APIs
       parameters:
         - name: X-auth-token
           in: header
@@ -2305,7 +2345,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      x-tags:
+        - Org Admin APIs
       parameters:
         - name: X-auth-token
           in: header
@@ -2373,7 +2414,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Org Admin APIs
       parameters:
         - name: X-auth-token
@@ -2414,7 +2455,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Org Admin APIs
       parameters:
         - name: X-auth-token
@@ -2445,7 +2486,7 @@ paths:
   /user/v1/notification/template:
     post:
       summary: Create, Update, and Delete Notification
-      tags:
+      x-tags:
         - Notification APIs
       description: >
         This API is associated with notification create or update.
@@ -2497,7 +2538,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      x-tags:
+        - User Roles APIs
       parameters:
         - name: X-auth-token
           in: header
@@ -2584,7 +2626,7 @@ paths:
   /user/v1/userRole/update/{id}:
     post:
       summary: Update User Roles
-      tags:
+      x-tags:
         - User Roles APIs
       description: |
         Use this API to update an user Role.
@@ -2672,7 +2714,7 @@ paths:
   /user/v1/userRole/delete/{id}:
     delete:
       summary: Delete User Role
-      tags:
+      x-tags:
         - User Roles APIs
       description: >
         This API is associated with deleting an role.
@@ -2737,7 +2779,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: &ref_6 []
+      x-tags:
+        - permissions
       parameters: &ref_13
         - name: X-auth-token
           in: header
@@ -2842,7 +2885,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: *ref_6
+      x-tags:
+        - permissions
       parameters: &ref_12
         - name: X-auth-token
           in: header
@@ -2882,7 +2926,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      x-tags:
+        - permissions
       parameters: &ref_14
         - name: X-auth-token
           in: header
@@ -2983,7 +3028,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: *ref_6
+      x-tags:
+        - permissions
       parameters: *ref_12
       requestBody: &ref_15
         required: true
@@ -3031,7 +3077,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      x-tags:
+        - Modules
       parameters: *ref_13
       requestBody:
         required: true
@@ -3102,7 +3149,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Modules
       parameters: *ref_12
       requestBody:
@@ -3174,7 +3221,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - Modules
       parameters: *ref_14
       responses:
@@ -3252,7 +3299,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      x-tags:
+        - Modules
       parameters: *ref_12
       requestBody: *ref_15
       responses:
@@ -3282,7 +3330,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - RolePermissionMapping
       parameters: *ref_13
       requestBody:
@@ -3358,7 +3406,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
+      x-tags:
         - RolePermissionMapping
       parameters: *ref_12
       requestBody:
@@ -5781,7 +5829,7 @@ components:
       type: apiKey
       name: X-auth-token
       in: header
-tags:
+x-tags:
   - name: User Roles APIs
     description: ''
     externalDocs:
@@ -5798,6 +5846,61 @@ tags:
       description: ''
       url: ''
   - name: RolePermissionMapping
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: User APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Depreciated APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Cloud Services APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Users APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Form APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Admin APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Organization
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: EntityType APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Entity APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Org Admin APIs
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: Notification APIs
     description: ''
     externalDocs:
       description: ''
