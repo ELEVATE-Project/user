@@ -65,7 +65,7 @@ module.exports = class User {
 	/**
 	 * Setting preferred language of user
 	 * @method
-	 * @name update
+	 * @name setLanguagePreference
 	 * @param {Object} req -request data.
 	 * @param {Object} req.body - contains user preferred language.
 	 * @returns {JSON} - user preferred language updated data.

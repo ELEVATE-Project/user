@@ -33,7 +33,6 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - update user response
 	 */
 	static async update(bodyData, id, orgId) {
-		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -85,6 +84,7 @@ module.exports = class UserHelper {
 			}
 
 			let userModel = await userQueries.getColumns()
+			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
@@ -300,12 +300,11 @@ module.exports = class UserHelper {
 	/**
 	 * Setting preferred language of user
 	 * @method
-	 * @name update
+	 * @name setLanguagePreference
 	 * @param {Object} bodyData - it contains user preferred language
 	 * @returns {JSON} - updated user preferred languages response
 	 */
 	static async setLanguagePreference(bodyData, id, orgId) {
-		bodyData.updated_at = new Date().getTime()
 		try {
 			let skipRequiredValidation = true
 			const user = await userQueries.findOne({ id: id, organization_id: orgId })
@@ -340,7 +339,7 @@ module.exports = class UserHelper {
 					result: validatedData.errors,
 				})
 			}
-
+			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
