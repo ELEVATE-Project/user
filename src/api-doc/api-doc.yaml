@@ -1421,8 +1421,7 @@ paths:
   /user/v1/entity-type/update/{id}:
     post:
       summary: Update Entity Type
-      tags:
-        - EntityType APIs
+      tags: []
       description: |
         Use this API to update an entity type.
 
@@ -2031,8 +2030,7 @@ paths:
   /user/v1/entity/delete/{id}:
     delete:
       summary: Delete Entity
-      tags:
-        - EntityType APIs
+      tags: []
       description: >
         This API is associated with deleting an entity.
 
@@ -2297,8 +2295,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - Org Admin APIs
+      tags: []
       parameters:
         - name: X-auth-token
           in: header
@@ -2345,8 +2342,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - Org Admin APIs
+      tags: []
       parameters:
         - name: X-auth-token
           in: header
@@ -2538,8 +2534,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - User Roles APIs
+      tags: []
       parameters:
         - name: X-auth-token
           in: header
@@ -2779,8 +2774,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - permissions
+      tags: &ref_6 []
       parameters: &ref_13
         - name: X-auth-token
           in: header
@@ -2885,8 +2879,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - permissions
+      tags: *ref_6
       parameters: &ref_12
         - name: X-auth-token
           in: header
@@ -2926,8 +2919,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - permissions
+      tags: []
       parameters: &ref_14
         - name: X-auth-token
           in: header
@@ -3028,8 +3020,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - permissions
+      tags: *ref_6
       parameters: *ref_12
       requestBody: &ref_15
         required: true
@@ -3077,8 +3068,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - Modules
+      tags: []
       parameters: *ref_13
       requestBody:
         required: true
@@ -3299,8 +3289,7 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags:
-        - Modules
+      tags: []
       parameters: *ref_12
       requestBody: *ref_15
       responses:
@@ -5846,61 +5835,6 @@ tags:
       description: ''
       url: ''
   - name: RolePermissionMapping
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: User APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Depreciated APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Cloud Services APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Users APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Form APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Admin APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Organization
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: EntityType APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Entity APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Org Admin APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
-  - name: Notification APIs
     description: ''
     externalDocs:
       description: ''
