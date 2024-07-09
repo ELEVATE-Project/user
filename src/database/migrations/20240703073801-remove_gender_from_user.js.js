@@ -8,7 +8,7 @@ module.exports = {
 	async up(queryInterface, Sequelize) {
 		try {
 			// drop view to remove dependency
-			await queryInterface.sequelize.query(`DROP MATERIALIZED VIEW m_users;`)
+			await queryInterface.sequelize.query(`DROP MATERIALIZED VIEW IF EXISTS m_users;`)
 
 			await queryInterface.removeColumn('users', 'gender')
 
