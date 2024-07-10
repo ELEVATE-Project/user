@@ -33,7 +33,6 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - update user response
 	 */
 	static async update(bodyData, id, orgId) {
-		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -85,6 +84,7 @@ module.exports = class UserHelper {
 			}
 
 			let userModel = await userQueries.getColumns()
+			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
@@ -293,6 +293,77 @@ module.exports = class UserHelper {
 				result: { shareLink },
 			})
 		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Setting preferred language of user
+	 * @method
+	 * @name setLanguagePreference
+	 * @param {Object} bodyData - it contains user preferred language
+	 * @returns {JSON} - updated user preferred languages response
+	 */
+	static async setLanguagePreference(bodyData, id, orgId) {
+		try {
+			let skipRequiredValidation = true
+			const user = await userQueries.findOne({ id: id, organization_id: orgId })
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			let userModel = await userQueries.getColumns()
+			const filter = {
+				status: common.ACTIVE_STATUS,
+				organization_id: { [Op.in]: [orgId, defaultOrgId] },
+				model_names: { [Op.contains]: [userModel] },
+				value: 'preferred_language',
+			}
+			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
+
+			let validatedData = utils.validateInput(bodyData, prunedEntities, userModel, skipRequiredValidation)
+			if (!validatedData.success) {
+				return responses.failureResponse({
+					message: 'PROFILE_UPDATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: validatedData.errors,
+				})
+			}
+			bodyData.updated_at = new Date().getTime()
+			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
+
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: id, organization_id: orgId },
+				bodyData
+			)
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			if (await utils.redisGet(redisUserKey)) {
+				await utils.redisDel(redisUserKey)
+			}
+			const processDbResponse = utils.processDbResponse(
+				JSON.parse(JSON.stringify(updatedData[0])),
+				dataValidation
+			)
+			const keysToDelete = ['refresh_tokens', 'password']
+			const cleanedResponse = utils.deleteKeysFromObject(processDbResponse, keysToDelete)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY',
+				result: cleanedResponse,
+			})
+		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
