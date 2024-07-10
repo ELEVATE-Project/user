@@ -21,12 +21,6 @@ module.exports = {
 			.matches(/^[A-Za-z ]+$/)
 			.withMessage('This field can only contain alphabets')
 
-		req.checkBody('location')
-			.notEmpty()
-			.withMessage('location field is empty')
-			.isString()
-			.withMessage('location is invalid')
-
 		req.checkBody('about')
 			.trim()
 			.notEmpty()
