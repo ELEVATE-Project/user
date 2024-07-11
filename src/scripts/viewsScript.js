@@ -6,7 +6,7 @@ require('dotenv').config({ path: '../.env' })
 const entityTypeQueries = require('../database/queries/entityType')
 // Data
 const schedulerServiceUrl = process.env.SCHEDULER_SERVICE_HOST // Port address on which the scheduler service is running
-const mentoringBaseurl = `http://${process.env.APPLICATION_HOST}:${process.env.APPLICATION_PORT}`
+const userBaseurl = `http://${process.env.APPLICATION_HOST}:${process.env.APPLICATION_PORT}`
 const apiEndpoints = require('../constants/endpoints')
 const defaultOrgId = process.env.DEFAULT_ORG_ID
 
@@ -110,11 +110,11 @@ const triggerPeriodicViewRefresh = async () => {
 		let offset = process.env.REFRESH_VIEW_INTERVAL / modelNames.length
 		modelNames.map((model, index) => {
 			createSchedulerJob(
-				'Users_repeatable_view_job' + model,
+				'project_users_repeatable_view_job' + model,
 				process.env.REFRESH_VIEW_INTERVAL,
-				'Users_repeatable_view_job' + model,
+				'project_users_repeatable_view_job' + model,
 				true,
-				mentoringBaseurl + '/user/v1/admin/triggerPeriodicViewRefreshInternal?model_name=' + model,
+				userBaseurl + '/user/v1/admin/triggerPeriodicViewRefreshInternal?model_name=' + model,
 				offset * index
 			)
 		})
@@ -125,11 +125,11 @@ const triggerPeriodicViewRefresh = async () => {
 const buildMaterializedViews = async () => {
 	try {
 		createSchedulerJob(
-			'BuildMaterializedViewsUsers',
+			'BuildMaterializedViewsprojectUsers',
 			10000,
-			'BuildMaterializedViewsUsers',
+			'BuildMaterializedViewsprojectUsers',
 			false,
-			mentoringBaseurl + '/user/v1/admin/triggerViewRebuildInternal'
+			userBaseurl + '/user/v1/admin/triggerViewRebuildInternal'
 		)
 	} catch (err) {
 		console.log(err)

@@ -237,7 +237,12 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 			}
 		}
 
-		if (!fieldValue || field.allow_custom_entities === true || field.has_entities === false) {
+		if (
+			!fieldValue ||
+			field.allow_custom_entities === true ||
+			field.has_entities === false ||
+			field.external_entity_type === true
+		) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -287,6 +292,7 @@ const entityTypeMapGenerator = (entityTypeData) => {
 				entityMap.set('allow_custom_entities', entityType.allow_custom_entities)
 				entityMap.set('entities', new Set(entities))
 				entityMap.set('labels', labelsMap)
+				entityMap.set('external_entity_type', entityType.external_entity_type)
 				entityTypeMap.set(entityType.value, entityMap)
 			}
 		})
@@ -313,8 +319,11 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 					requestBody[currentFieldName] = []
 					const recognizedEntities = []
 					const customEntities = []
+					// this array can hold values for external entity types
+					const externalEntities = []
 					for (const value of currentFieldValue) {
 						if (entityType.get('entities').has(value)) recognizedEntities.push(value)
+						else if (entityType.get('external_entity_type')) externalEntities.push(value)
 						else customEntities.push({ value: 'other', label: value })
 					}
 					if (recognizedEntities.length > 0)
@@ -324,15 +333,27 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 						requestBody[currentFieldName].push('other') //This should cause error at DB write
 						requestBody.custom_entity_text[currentFieldName] = customEntities
 					}
+					// If external entities are passed store it in meta
+					if (externalEntities.length > 0) {
+						requestBody.meta[currentFieldName] = externalEntities
+					}
 				} else {
 					if (!entityType.get('entities').has(currentFieldValue)) {
-						requestBody.custom_entity_text[currentFieldName] = {
-							value: 'other',
-							label: currentFieldValue,
+						if (!entityType.get('external_entity_type')) {
+							requestBody.custom_entity_text[currentFieldName] = {
+								value: 'other',
+								label: currentFieldValue,
+							}
 						}
-						if (allowedKeys.includes(currentFieldName))
+
+						if (allowedKeys.includes(currentFieldName)) {
 							requestBody[currentFieldName] = 'other' //This should cause error at DB write
-						else requestBody.meta[currentFieldName] = 'other'
+						} else {
+							// if entity type is external meta should store current field value else 'other'
+							entityType.get('external_entity_type')
+								? (requestBody.meta[currentFieldName] = currentFieldValue)
+								: (requestBody.meta[currentFieldName] = 'other')
+						}
 					} else if (!allowedKeys.includes(currentFieldName))
 						requestBody.meta[currentFieldName] = currentFieldValue
 				}
@@ -351,10 +372,13 @@ function processDbResponse(responseBody, entityType) {
 		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
 			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
-				// Move the key from responseBody.meta to responseBody root level
-				responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
-				// Delete the key from responseBody.meta
-				delete responseBody.meta[entityTypeValue]
+				// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+				if (!entity.external_entity_type) {
+					// Move the key from responseBody.meta to responseBody root level
+					responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
+					// Delete the key from responseBody.meta
+					delete responseBody.meta[entityTypeValue]
+				}
 			}
 		})
 	}

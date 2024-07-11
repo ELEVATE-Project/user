@@ -64,7 +64,6 @@ module.exports = {
 	EXPIRED_STATUS: 'EXPIRED',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
-	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
@@ -95,4 +94,5 @@ module.exports = {
 	captchaEnabledAPIs: ['/user/v1/account/login', '/user/v1/account/generateOtp', '/user/v1/account/registrationOtp'],
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
+	TYPE_ALL: 'all',
 }
