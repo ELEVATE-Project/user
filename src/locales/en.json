@@ -130,5 +130,5 @@
 	"YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES": "You do not have access to update roles",
 	"USER_ROLE_UPDATE_SUCCESSFUL": "User updated successfully",
 	"ROLE_ALREADY_EXISTS": "Role already exists",
-	"INVALID_ROLE_ASSGINMENTS": "Invalid role assignment"
+	"INVALID_ROLE_ASSIGNMENTS": "Invalid role assignment"
 }

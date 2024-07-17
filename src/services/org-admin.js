@@ -443,19 +443,19 @@ module.exports = class OrgAdminHelper {
 	static async updateUser(userId, bodyData, tokenInformation) {
 		try {
 			if (bodyData.organization_id == tokenInformation.organization_id) {
-				let roles = _.without(bodyData.roles, 'admin')
+				let roles = _.without(bodyData.roles, common.ADMIN_ROLE)
 				let getRoleIds = await roleQueries.findAll({ title: roles }, { attributes: ['id'] })
 				if (!getRoleIds) {
-					return responses.successResponse({
-						responseCode: 'CLIENT_ERROR',
+					return responses.failureResponse({
+						message: 'INVALID_ROLE_ASSIGNMENTS',
 						statusCode: httpStatusCode.bad_request,
-						message: 'INVALID_ROLE_ASSGINMENTS',
+						responseCode: 'CLIENT_ERROR',
 					})
 				}
 				let roleIds = getRoleIds.map((roleId) => roleId.id)
 				let checkUser = await userQueries.findOne({ id: userId })
 				if (!checkUser) {
-					return responses.successResponse({
+					return responses.failureResponse({
 						responseCode: 'CLIENT_ERROR',
 						statusCode: httpStatusCode.bad_request,
 						message: 'USER_NOT_FOUND',
@@ -467,7 +467,7 @@ module.exports = class OrgAdminHelper {
 					message: 'USER_ROLE_UPDATE_SUCCESSFUL',
 				})
 			} else {
-				return responses.successResponse({
+				return responses.failureResponse({
 					responseCode: 'CLIENT_ERROR',
 					statusCode: httpStatusCode.bad_request,
 					message: 'YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES',
