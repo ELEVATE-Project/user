@@ -265,7 +265,15 @@ let enviromentVariables = {
 	APPLICATION_BASE_URL: {
 		message: 'Require Base URL',
 		optional: false,
-		default: '/user'
+		default: '/user',
+	},
+	SCHEDULER_PERIODIC_JOB_NAME_USER_MVIEWS: {
+		message: 'Require Scheduler service periodic job name',
+		optional: false,
+	},
+	SCHEDULER_JOB_NAME_USER_MVIEWS: {
+		message: 'Require Scheduler service job name',
+		optional: false,
 	},
 }
 
