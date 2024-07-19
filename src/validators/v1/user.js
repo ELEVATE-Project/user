@@ -8,12 +8,6 @@ const filterRequestBody = require('../common')
 const { user } = require('@constants/blacklistConfig')
 module.exports = {
 	update: (req) => {
-		req.checkBody('gender')
-			.trim()
-			.optional()
-			.isIn(['MALE', 'FEMALE', 'OTHER'])
-			.withMessage('gender is invalid, must be either MALE, FEMALE or OTHER')
-
 		req.checkBody('name')
 			.trim()
 			.notEmpty()
