@@ -98,6 +98,23 @@ module.exports = class userRole {
 	}
 
 	/**
+	 * Handles the request to read roles based on the provided filter criteria.
+	 * @name read
+	 * @param {Object} req - The request object.
+	 * @param {Object} req.body - The request body containing the filter criteria.
+	 * @returns {JSON} A promise that resolves to the response containing the fetched roles or an error object.
+	 */
+	async read(req) {
+		try {
+			// Calling the readroleService to fetch roles based on the request body
+			const roleList = await roleService.readroleService(req.body)
+			return roleList
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
 	 * Get all available roles.
 	 * @method
 	 * @name default

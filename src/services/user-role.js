@@ -90,6 +90,37 @@ module.exports = class userRoleHelper {
 	}
 
 	/**
+	 * @param {Object} body - The request body containing the filter criteria.
+	 * @param {string} body.entityTypeId - The ID of the entity type to filter roles.
+	 * @returns {Promise<Object>} A promise that resolves to the success response with the fetched roles.
+	 * @throws Will throw an error if there is an issue with fetching the roles from the database.
+	 */
+	static async readroleService(body) {
+		try {
+			// Constructing the filter criteria based on the entityTypeId in the request body
+			const filter = {
+				meta: {
+					[Op.contains]: {
+						entityTypes: [{ entityTypeId: body.entityTypeId }],
+					},
+				},
+			}
+			// Specifying the attributes to be fetched for each role
+			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
+			// Fetching roles from the database based on the filter criteria
+			const roles = await roleQueries.findAllRoles(filter, attributes)
+			// Returning a success response with the fetched roles
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ROLES_FETCHED_SUCCESSFULLY',
+				result: roles,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	
+	/**
 	 * Delete role.
 	 * @method
 	 * @name delete
