@@ -87,6 +87,10 @@ module.exports = class UserHelper {
 			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
+			if (bodyData.user_roles && bodyData.user_roles.length > 0) {
+				const validatedUserRoleIds = await this.validateUserRoles(bodyData.user_roles)
+				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
+			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, organization_id: orgId },
 				bodyData
@@ -125,6 +129,27 @@ module.exports = class UserHelper {
 			console.log(error)
 			throw error
 		}
+	}
+
+	/**
+	 * Validates the given user role IDs.
+	 *
+	 * @param {Array} userRoleIds - An array of user role IDs to be validated.
+	 * @returns {Promise<Array|Object>} - Returns an array of valid role IDs or an error response object if validation fails.
+	 * @throws {Error} - Throws an error if there's an issue with the database query.
+	 */
+	static async validateUserRoles(userRoleIds) {
+		const roles = await userQueries.findOne({
+			roles: userRoleIds,
+		})
+		if (!roles.roles) {
+			return responses.failureResponse({
+				message: 'USER_NOT_FOUND',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'UNAUTHORIZED',
+			})
+		}
+		return roles.roles
 	}
 
 	/**
