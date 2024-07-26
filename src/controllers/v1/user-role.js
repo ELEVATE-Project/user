@@ -99,15 +99,15 @@ module.exports = class userRole {
 
 	/**
 	 * Handles the request to read roles based on the provided filter criteria.
-	 * @name read
+	 * @name readUserRolesBasedOnEntityType
 	 * @param {Object} req - The request object.
 	 * @param {Object} req.body - The request body containing the filter criteria.
 	 * @returns {JSON} A promise that resolves to the response containing the fetched roles or an error object.
 	 */
-	async read(req) {
+	async readUserRolesBasedOnEntityType(req) {
 		try {
-			// Calling the readroleService to fetch roles based on the request body
-			const roleList = await roleService.readroleService(req.body)
+			// Calling the readUserRolesBasedOnEntityType to fetch roles based on the request body
+			const roleList = await roleService.readUserRolesBasedOnEntityType(req.body)
 			return roleList
 		} catch (error) {
 			return error

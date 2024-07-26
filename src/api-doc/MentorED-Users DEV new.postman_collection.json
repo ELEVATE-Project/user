@@ -1006,6 +1006,42 @@
 					"response": []
 				},
 				{
+					"name": "readUserRolesBasedOnEntityType",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"disabled": true
+							},
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"entityTypeId\" : [\"5f32d8228e0dc8312404056b\",\"5f32d8228e0dc8312404056c\",\"5f32d8228e0dc83124040567\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/user-role/readUserRolesBasedOnEntityType"
+						}
+					},
+					"response": []
+				}
+			]
+		},
+				{
 					"name": "Create User Roles",
 					"request": {
 						"method": "POST",
@@ -1064,9 +1100,7 @@
 						"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
 					},
 					"response": []
-				}
-			]
-		},
+				},
 		{
 			"name": "Form",
 			"item": [

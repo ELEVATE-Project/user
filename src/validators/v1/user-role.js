@@ -79,6 +79,9 @@ module.exports = {
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
+	readUserRolesBasedOnEntityType: (req) => {
+		req.checkParams('entityTypeId').notEmpty().withMessage('entityTypeId field is empty')
+	},
 
 	list: (req) => {
 		const allowedVariables = ['title', 'user_type', 'visibility', 'organization_id', 'status']

@@ -87,6 +87,7 @@ module.exports = class UserHelper {
 			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
+			// Check if 'user_roles' is present in the request body and is not empty
 			if (bodyData.user_roles && bodyData.user_roles.length > 0) {
 				const validatedUserRoleIds = await this.validateUserRoles(bodyData.user_roles)
 				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
@@ -139,17 +140,30 @@ module.exports = class UserHelper {
 	 * @throws {Error} - Throws an error if there's an issue with the database query.
 	 */
 	static async validateUserRoles(userRoleIds) {
-		const roles = await userQueries.findOne({
-			roles: userRoleIds,
-		})
-		if (!roles.roles) {
+		// Creating a filter object to query roles by their IDs using Sequelize's 'in' operator.
+		const filter = {
+			status: 'ACTIVE',
+			deleted_at: {
+				[Op.is]: null,
+			},
+			id: {
+				[Op.in]: userRoleIds,
+			},
+		}
+		// Fetching roles from the database that match the provided IDs.
+		const roles = await roleQueries.findAll(filter)
+
+		// Check if no roles were found (roles array is empty).
+		if (roles.length < 0) {
 			return responses.failureResponse({
 				message: 'USER_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
 			})
 		}
-		return roles.roles
+		// Extracting the IDs of the found roles and storing them in an array.
+		const userRoles = roles.map((role) => role.id)
+		return userRoles
 	}
 
 	/**
