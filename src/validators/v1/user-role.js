@@ -16,7 +16,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('title field is empty')
-			.matches(/^[a-zA-Z_]+$/)
+			.matches(/^[a-z_]+$/)
 			.withMessage('title is invalid, must not contain spaces')
 
 		req.checkBody('user_type')

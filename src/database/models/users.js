@@ -59,10 +59,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.JSONB,
 				allowNull: true,
 			},
-			location_ids: {
-				type: DataTypes.ARRAY(DataTypes.STRING),
-				allowNull: true,
-			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)
