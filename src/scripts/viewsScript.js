@@ -110,9 +110,9 @@ const triggerPeriodicViewRefresh = async () => {
 		let offset = process.env.REFRESH_VIEW_INTERVAL / modelNames.length
 		modelNames.map((model, index) => {
 			createSchedulerJob(
-				'project_users_repeatable_view_job' + model,
+				process.env.SCHEDULER_PERIODIC_JOB_NAME_USER_MVIEWS + model,
 				process.env.REFRESH_VIEW_INTERVAL,
-				'project_users_repeatable_view_job' + model,
+				process.env.SCHEDULER_PERIODIC_JOB_NAME_USER_MVIEWS + model,
 				true,
 				userBaseurl + '/user/v1/admin/triggerPeriodicViewRefreshInternal?model_name=' + model,
 				offset * index
