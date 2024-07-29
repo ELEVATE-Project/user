@@ -142,7 +142,7 @@ module.exports = class UserHelper {
 	static async validateUserRoles(userRoleIds) {
 		// Creating a filter object to query roles by their IDs using Sequelize's 'in' operator.
 		const filter = {
-			status: 'ACTIVE',
+			status: common.ACTIVE_STATUS,
 			deleted_at: {
 				[Op.is]: null,
 			},
@@ -156,7 +156,7 @@ module.exports = class UserHelper {
 		// Check if no roles were found (roles array is empty).
 		if (roles.length < 0) {
 			return responses.failureResponse({
-				message: 'USER_NOT_FOUND',
+				message: 'ROLE_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
 				responseCode: 'UNAUTHORIZED',
 			})

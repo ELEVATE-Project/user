@@ -28,7 +28,7 @@ module.exports = {
 		'/user/v1/user-role/default',
 		'/user/v1/account/validateUserSession',
 		'/user/v1/account/validatingEmailIds',
-		'/user/v1/user-role/read',
+		'/user/v1/user-role/readUserRolesBasedOnEntityType',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY,

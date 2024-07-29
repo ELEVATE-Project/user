@@ -1259,7 +1259,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/organization/requestOrgRole200Response'
   /user/v1/userRole/readUserRolesBasedOnEntityType:
-    get:
+    post:
       summary: Read User Roles Based on Entity Type
       tags:
         - User Roles APIs
