@@ -1266,10 +1266,10 @@ paths:
       description: >-
         Retrieve user roles based on entity type
 
-        * Endpoint: ``` /user/v1/userRole/``readUserRolesBasedOnEntityType ```
+        * Endpoint: ``` /user/v1/user-role/``readUserRolesBasedOnEntityType ```
 
         * It is mandatory to provide values for parameters marked as `required`.
-        
+
         header.
       parameters:
         - name: internal_access_token
