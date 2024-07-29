@@ -49,7 +49,12 @@ module.exports = class UserInviteHelper {
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
 				// upload output file to cloud
-				const uploadRes = await this.uploadFileToCloud(outputFilename, inviteeFileDir, data.user.id)
+				const uploadRes = await this.uploadFileToCloud(
+					outputFilename,
+					inviteeFileDir,
+					data.user.id,
+					'userInviteStatusCSV/' + data.user.organization_id
+				)
 
 				const output_path = uploadRes.result.uploadDest
 				const update = {
@@ -480,7 +485,7 @@ module.exports = class UserInviteHelper {
 
 	static async uploadFileToCloud(fileName, folderPath, userId = '', dynamicPath = '') {
 		try {
-			const getSignedUrl = await fileService.getSignedUrl(fileName, userId, dynamicPath)
+			const getSignedUrl = await fileService.getSignedUrl(fileName, userId, dynamicPath, false)
 			if (!getSignedUrl.result) {
 				throw new Error('FAILED_TO_GENERATE_SIGNED_URL')
 			}
@@ -514,7 +519,7 @@ module.exports = class UserInviteHelper {
 			return {
 				success: true,
 				result: {
-					uploadDest: getSignedUrl.result.destFilePath,
+					uploadDest: getSignedUrl.result.filePath,
 				},
 			}
 		} catch (error) {
@@ -540,11 +545,21 @@ module.exports = class UserInviteHelper {
 						role: userData.role || '',
 						orgName: userData.org_name || '',
 						appName: process.env.APP_NAME,
-						inviteeUploadURL,
 						portalURL: process.env.PORTAL_URL,
 						roles: userData.roles || '',
 					}),
 				},
+			}
+			if (inviteeUploadURL != null) {
+				const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
+
+				payload.email.attachments = [
+					{
+						url: inviteeUploadURL,
+						filename: `user-invite-status_${currentDate}.csv`,
+						type: 'text/csv',
+					},
+				]
 			}
 
 			await kafkaCommunication.pushEmailToKafka(payload)

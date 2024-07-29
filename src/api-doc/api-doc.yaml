@@ -435,6 +435,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/profile/Unauthorized401Response'
+  /user/v1/user/setLanguagePreference:
+    patch:
+      summary: Setting preferred language of user
+      tags:
+        - Users APIs
+      description: |
+        This API updates a user's preferred language.
+        - Endpoint: `/user/v1/user/setLanguagePreference`
+        - Mandatory parameters marked as `required` must have valid values.
+        - Parameters cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: >-
+            To make use of the API, you require X-auth-token. This is Available
+            in login API Response.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profile/updateRequest'
+      responses:
+        '200':
+          description: Language preferneces updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profile/updateRequest200Response'
+        '401':
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/profile/Unauthorized401Response'
   /user/v1/user/update:
     patch:
       summary: Update User Profile
@@ -1891,6 +1928,105 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/userentity/readUserEntity200Response'
+  /user/v1/entity/list:
+    post:
+      summary: Get entity list with pagination and search
+      tags:
+        - Entity APIs
+      description: |-
+        Use this API to get the list of a user entities.   
+         - The API Endpoint for reading the list of the user entities is `/user/v1/entity/list` 
+         - It is mandatory to provide values for parameters which are marked as `required` 
+         - This is a mandatory parameter and cannot be empty or null.
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: >-
+            To use this API, you require an X-auth-token, which is available in
+            the login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: page
+          description: Please add page number
+          schema:
+            type: number
+          example: 1
+        - in: path
+          name: limit
+          description: Number of records to limit
+          schema:
+            type: number
+          example: 10
+        - in: path
+          name: search
+          description: search text
+          schema:
+            type: string
+          example: teacher
+        - in: path
+          name: entity_type_id
+          description: entity_type_id
+          required: true
+          schema:
+            type: number
+          example: teacher
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application.json:
+              schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  responseCode:
+                    type: string
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                      entity_type_id:
+                        type: number
+                      value:
+                        type: string
+                      label:
+                        type: string
+                      status:
+                        type: string
+                      type:
+                        type: string
+                      created_by:
+                        type: number
+                      created_at:
+                        type: string
+              examples:
+                example1:
+                  value:
+                    responseCode: OK
+                    message: Entity fetched successfully
+                    result:
+                      data:
+                        - id: 1
+                          entity_type_id: 1
+                          value: english
+                          label: English
+                          status: ACTIVE
+                          type: SYSTEM
+                          created_by: 0
+                          created_at: '2023-07-21T21:46:41.392Z'
+                      count: 1
+
+                    meta:
+                      formsVersion: []
+                      correlation: 0d392602-cb68-4690-8f38-3d3de9f94198
+                      meeting_platform: BBB
+                    parameters: []
+
   /user/v1/entity/delete/{id}:
     delete:
       summary: Delete Entity

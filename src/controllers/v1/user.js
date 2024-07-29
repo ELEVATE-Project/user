@@ -61,4 +61,26 @@ module.exports = class User {
 			return error
 		}
 	}
+
+	/**
+	 * Setting preferred language of user
+	 * @method
+	 * @name setLanguagePreference
+	 * @param {Object} req -request data.
+	 * @param {Object} req.body - contains user preferred language.
+	 * @returns {JSON} - user preferred language updated data.
+	 */
+	async setLanguagePreference(req) {
+		const params = req.body
+		try {
+			const updateUsersLanguagePreference = await userService.setLanguagePreference(
+				params,
+				req.decodedToken.id,
+				req.decodedToken.organization_id
+			)
+			return updateUsersLanguagePreference
+		} catch (error) {
+			return error
+		}
+	}
 }
