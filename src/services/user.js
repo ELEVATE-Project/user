@@ -157,8 +157,8 @@ module.exports = class UserHelper {
 		if (roles.length < 0) {
 			return responses.failureResponse({
 				message: 'ROLE_NOT_FOUND',
-				statusCode: httpStatusCode.unauthorized,
-				responseCode: 'UNAUTHORIZED',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
 			})
 		}
 		// Extracting the IDs of the found roles and storing them in an array.
