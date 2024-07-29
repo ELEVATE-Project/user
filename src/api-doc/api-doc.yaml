@@ -1258,7 +1258,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/organization/requestOrgRole200Response'
-  /user/v1/userRole/readUserRolesBasedOnEntityType:
+  /user/v1/user-role/readUserRolesBasedOnEntityType:
     post:
       summary: Read User Roles Based on Entity Type
       tags:
@@ -1269,16 +1269,9 @@ paths:
         * Endpoint: ``` /user/v1/userRole/``readUserRolesBasedOnEntityType ```
 
         * It is mandatory to provide values for parameters marked as `required`.
-
-        * The X-auth-token obtained from the login API is required in the
+        
         header.
       parameters:
-        - name: X-auth-token
-          in: header
-          description: X-auth-token obtained from the login API response.
-          required: true
-          schema:
-            type: string
         - name: internal_access_token
           in: header
           schema:
