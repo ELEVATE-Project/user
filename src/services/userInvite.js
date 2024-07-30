@@ -377,7 +377,7 @@ module.exports = class UserInviteHelper {
 							if (newRoles.length > 0) {
 								//call event to update role and organization in mentoring
 								let requestBody = {
-									user_id: existingUser.id.toString(),
+									user_id: existingUser.id,
 									new_roles: newRoles,
 									current_roles: currentRoles,
 								}
