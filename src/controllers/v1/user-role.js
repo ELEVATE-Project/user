@@ -98,23 +98,6 @@ module.exports = class userRole {
 	}
 
 	/**
-	 * Handles the request to read roles based on the provided entity Type ID's .
-	 * @name readUserRolesBasedOnEntityType
-	 * @param {Object} req - The request object.
-	 * @param {Object} req.body - The request body containing the entity Type ID's passed in an array.
-	 * @returns {JSON} A promise that resolves to the response containing the fetched roles or an error object.
-	 */
-	async readUserRolesBasedOnEntityType(req) {
-		try {
-			// Calling the readUserRolesBasedOnEntityType to fetch roles based on the request body
-			const roleList = await roleService.readUserRolesBasedOnEntityType(req.body)
-			return roleList
-		} catch (error) {
-			return error
-		}
-	}
-
-	/**
 	 * Get all available roles.
 	 * @method
 	 * @name default

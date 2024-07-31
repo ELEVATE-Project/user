@@ -1004,103 +1004,69 @@
 						"url": "{{interfaceBaseUrl}}elevate-user/v1/user-role/list"
 					},
 					"response": []
-				},
-				{
-					"name": "readUserRolesBasedOnEntityType",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"disabled": true
-							},
-							{
-								"key": "internal_access_token",
-								"value": "{{internal_access_token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"entityTypeId\" : [\"5f32d8228e0dc8312404056b\",\"5f32d8228e0dc8312404056c\",\"5f32d8228e0dc83124040567\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}elevate-user/v1/user-role/readUserRolesBasedOnEntityType"
-						}
-					},
-					"response": []
 				}
 			]
 		},
-				{
-					"name": "Create User Roles",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create"
-					},
-					"response": []
+		{
+			"name": "Create User Roles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
-				{
-					"name": "Update User Roles",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13"
-					},
-					"response": []
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create"
+			},
+			"response": []
+		},
+		{
+			"name": "Update User Roles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
-				{
-					"name": "Delete User Roles",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}"
-							}
-						],
-						"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
-					},
-					"response": []
-				},
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User Roles",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
+			},
+			"response": []
+		},
 		{
 			"name": "Form",
 			"item": [

@@ -32,10 +32,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'PUBLIC',
 			},
-			meta: {
-				type: DataTypes.JSONB,
-				allowNull: true,
-			},
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }
 	)
