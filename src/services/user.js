@@ -139,16 +139,22 @@ module.exports = class UserHelper {
 	 * @returns {Promise<Array|Object>} - Returns an array of valid role IDs or an error response object if validation fails.
 	 * @throws {Error} - Throws an error if there's an issue with the database query.
 	 */
-	static async validateUserRoles(userRoleIds) {
+	static async validateUserRoles(userRoleIds = []) {
+		if (userRoleIds.length <= 0) {
+			return responses.failureResponse({
+				message: 'ROLE_NOT_FOUND',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
 		// Creating a filter object to query roles by their IDs using Sequelize's 'in' operator.
 		const filter = {
 			status: common.ACTIVE_STATUS,
-			id: userRoleIds
-			
-		};
+			id: userRoleIds,
+		}
 		const attributes = ['id']
 		// Fetching roles from the database that match the provided IDs.
-		const userRoleId = await roleQueries.findAll(filter,attributes)
+		const userRoleId = await roleQueries.findAll(filter, attributes)
 		// Check if no roles were found (roles array is empty).
 		if (userRoleId.length < 0) {
 			return responses.failureResponse({
