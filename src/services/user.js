@@ -143,13 +143,9 @@ module.exports = class UserHelper {
 		// Creating a filter object to query roles by their IDs using Sequelize's 'in' operator.
 		const filter = {
 			status: common.ACTIVE_STATUS,
-			deleted_at: {
-				[Op.is]: null,
-			},
-			id: {
-				[Op.in]: userRoleIds,
-			},
-		}
+			id: userRoleIds
+			
+		};
 		// Fetching roles from the database that match the provided IDs.
 		const roles = await roleQueries.findAll(filter)
 
