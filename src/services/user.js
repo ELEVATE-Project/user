@@ -89,7 +89,7 @@ module.exports = class UserHelper {
 
 			// Check if 'user_roles' is present in the request body and is not empty
 			if (bodyData.roles && bodyData.roles.length > 0) {
-				const validatedUserRoleIds = await this.validateUserRoles(bodyData.roles)
+				const validatedUserRoleIds = await this.validateUserRoles(bodyData)
 				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
@@ -146,11 +146,11 @@ module.exports = class UserHelper {
 			id: userRoleIds
 			
 		};
+		const attributes = ['id']
 		// Fetching roles from the database that match the provided IDs.
-		const roles = await roleQueries.findAll(filter)
-
+		const userRoleId = await roleQueries.findAll(filter,attributes)
 		// Check if no roles were found (roles array is empty).
-		if (roles.length < 0) {
+		if (userRoleId.length < 0) {
 			return responses.failureResponse({
 				message: 'ROLE_NOT_FOUND',
 				statusCode: httpStatusCode.not_acceptable,
@@ -158,7 +158,7 @@ module.exports = class UserHelper {
 			})
 		}
 		// Extracting the IDs of the found roles and storing them in an array.
-		const userRoles = roles.map((role) => role.id)
+		const userRoles = userRoleId.map((role) => role.id)
 		return userRoles
 	}
 
