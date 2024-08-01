@@ -88,7 +88,7 @@ module.exports = class UserHelper {
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
 			// Check if 'user_roles' is present in the request body and is not empty
-			if (bodyData.user_roles && bodyData.user_roles.length > 0) {
+			if (bodyData.roles && bodyData.roles.length > 0) {
 				const validatedUserRoleIds = await this.validateUserRoles(bodyData.user_roles)
 				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
 			}
