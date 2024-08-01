@@ -87,6 +87,11 @@ module.exports = class UserHelper {
 			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
+			// Check if 'user_roles' is present in the request body and is not empty
+			if (bodyData.roles && bodyData.roles.length > 0) {
+				const validatedUserRoleIds = await this.validateUserRoles(bodyData.roles)
+				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
+			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, organization_id: orgId },
 				bodyData
@@ -125,6 +130,42 @@ module.exports = class UserHelper {
 			console.log(error)
 			throw error
 		}
+	}
+
+	/**
+	 * Validates the given user role IDs.
+	 *
+	 * @param {Array} userRoleIds - An array of user role IDs to be validated.
+	 * @returns {Promise<Array|Object>} - Returns an array of valid role IDs or an error response object if validation fails.
+	 * @throws {Error} - Throws an error if there's an issue with the database query.
+	 */
+	static async validateUserRoles(userRoleIds = []) {
+		if (userRoleIds.length <= 0) {
+			return responses.failureResponse({
+				message: 'ROLE_NOT_FOUND',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+		// Creating a filter object to query roles by their IDs using Sequelize's 'in' operator.
+		const filter = {
+			status: common.ACTIVE_STATUS,
+			id: userRoleIds,
+		}
+		const attributes = ['id']
+		// Fetching roles from the database that match the provided IDs.
+		const userRoleId = await roleQueries.findAll(filter, attributes)
+		// Check if no roles were found (roles array is empty).
+		if (userRoleId.length < 0) {
+			return responses.failureResponse({
+				message: 'ROLE_NOT_FOUND',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+		// Extracting the IDs of the found roles and storing them in an array.
+		const userRoles = userRoleId.map((role) => role.id)
+		return userRoles
 	}
 
 	/**
