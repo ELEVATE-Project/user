@@ -126,5 +126,6 @@
 	"ACTIVE_SESSION_LIMIT_EXCEEDED": "Sorry! Your allowed active session limi exceeded. Please log-off from other sessions to continue",
 	"USER_SESSION_NOT_FOUND": "User session not found",
 	"PROFILE_UPDATION_FAILED": "Failed to update profile.",
-	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully"
+	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully",
+	"ROLE_CHANGE_PENDING": "Your request is under review"
 }
