@@ -86,9 +86,27 @@ module.exports = class UserHelper {
 
 			let userModel = await userQueries.getColumns()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
+
+			const fetchExistingRole = await userQueries.findOne({ id: id }, { attributes: ['roles'] })
+			const roleId = fetchExistingRole.roles
+
+			const filterRole = {
+				status: common.ACTIVE_STATUS,
+				user_type: 1,
+				id: roleId,
+			}
+			const roleAttributes = ['id']
+			// Fetching roles from the database that match the provided IDs.
+			const existingRoleId = await roleQueries.findAll(filterRole, roleAttributes)
+			const userRoles = existingRoleId.map((role) => role.id)
+
+			const newUserRoleId = bodyData.roles
+
+			let newUserRoleIds = [...newUserRoleId, ...userRoles]
+
 			// Check if 'user_roles' is present in the request body and is not empty
 			if (bodyData.roles && bodyData.roles.length > 0) {
-				const validatedUserRoleIds = await this.validateUserRoles(bodyData.roles)
+				const validatedUserRoleIds = await this.validateUserRoles(newUserRoleIds)
 				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
