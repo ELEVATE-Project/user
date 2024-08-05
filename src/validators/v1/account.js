@@ -126,6 +126,18 @@ module.exports = {
 				}
 				return true
 			})
+		req.checkBody('excluded_user_ids')
+			.isArray()
+			.withMessage('excluded_user_ids must be an array')
+			.custom((value) => {
+				// Check if all elements in the array are integers
+				for (const id of value) {
+					if (!Number.isInteger(id)) {
+						throw new Error('All elements in excluded_user_ids must be integers')
+					}
+				}
+				return true
+			})
 	},
 
 	changePassword: (req) => {

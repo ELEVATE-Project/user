@@ -599,7 +599,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"user_ids\" : [6]\n}",
+							"raw": "{\n    \"user_ids\" : [6],\n    \"email_ids\" : [],\n    \"excluded_user_ids\" : [1]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -607,13 +607,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/search?type=mentee&page=1&limit=2&search=mentee",
+							"raw": "{{UserDevBaseUrl}}user/v1/account/search?type=reviewer&page=1&limit=2&search=adithya@shikshalokam.org",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "account", "search"],
 							"query": [
 								{
 									"key": "type",
-									"value": "mentee"
+									"value": "reviewer"
 								},
 								{
 									"key": "page",
@@ -625,7 +625,7 @@
 								},
 								{
 									"key": "search",
-									"value": "mentee"
+									"value": "adithya@shikshalokam.org"
 								}
 							]
 						}
