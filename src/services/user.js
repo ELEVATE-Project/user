@@ -89,8 +89,25 @@ module.exports = class UserHelper {
 
 			// Check if 'user_roles' is present in the request body and is not empty
 			if (bodyData.roles && bodyData.roles.length > 0) {
-				const validatedUserRoleIds = await this.validateUserRoles(bodyData.roles)
-				bodyData.roles = validatedUserRoleIds // Add validated user_role IDs to roles key
+				// Fetch the existing roles for the user from the database
+				const fetchExistingRole = await userQueries.findOne({ id: id }, { attributes: ['roles'] })
+				const existingRoleIds = fetchExistingRole.roles
+				// Validate the existing roles with user_type = 1 (system admin roles)
+				const validatedExistingRoleIds = await this.validateUserRoles(existingRoleIds, false)
+
+				// Get the new roles from the request body
+				const newUserRoleId = bodyData.roles
+				// Validate the combined list of roles
+				const validatedUserRoleIds = await this.validateUserRoles(newUserRoleId)
+				// Combine new roles and existing system admin roles
+				let newUserRoleIds = [...validatedUserRoleIds, ...validatedExistingRoleIds]
+
+				bodyData.roles = newUserRoleIds // Add validated user_role IDs to roles key
+			}
+
+			// remove body data from the roles from the request if it is empty
+			if (bodyData.roles && !bodyData.roles.length > 0) {
+				delete bodyData.roles
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, organization_id: orgId },
@@ -133,13 +150,14 @@ module.exports = class UserHelper {
 	}
 
 	/**
-	 * Validates the given user role IDs.
-	 *
-	 * @param {Array} userRoleIds - An array of user role IDs to be validated.
-	 * @returns {Promise<Array|Object>} - Returns an array of valid role IDs or an error response object if validation fails.
-	 * @throws {Error} - Throws an error if there's an issue with the database query.
+	 * Validates the user roles by checking if the provided role IDs exist in the database.
+	 * If the `getSystemUserRoles` flag is true.
+	 * @param {Array<number>} userRoleIds - An array of user role IDs to validate.
+	 * @param {boolean} [getSystemUserRoles=true] - A flag indicating which filter to use for validation.
+	 * @returns {Promise<Array<number>>} - A promise that resolves to an array of valid user role IDs.
 	 */
-	static async validateUserRoles(userRoleIds = []) {
+	static async validateUserRoles(userRoleIds = [], getSystemUserRoles = true) {
+		// Check if the userRoleIds array is empty
 		if (userRoleIds.length <= 0) {
 			return responses.failureResponse({
 				message: 'ROLE_NOT_FOUND',
@@ -147,11 +165,17 @@ module.exports = class UserHelper {
 				responseCode: 'CLIENT_ERROR',
 			})
 		}
-		// Creating a filter object to query roles by their IDs using Sequelize's 'in' operator.
-		const filter = {
+		// Determine the filter object based on the getSystemUserRoles flag
+		let filter = {
 			status: common.ACTIVE_STATUS,
 			id: userRoleIds,
 		}
+		if (getSystemUserRoles == true) {
+			filter.user_type = 0
+		} else {
+			filter.user_type = 1
+		}
+
 		const attributes = ['id']
 		// Fetching roles from the database that match the provided IDs.
 		const userRoleId = await roleQueries.findAll(filter, attributes)
