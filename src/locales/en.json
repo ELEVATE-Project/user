@@ -126,9 +126,9 @@
 	"ACTIVE_SESSION_LIMIT_EXCEEDED": "Sorry! Your allowed active session limi exceeded. Please log-off from other sessions to continue",
 	"USER_SESSION_NOT_FOUND": "User session not found",
 	"PROFILE_UPDATION_FAILED": "Failed to update profile.",
-	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Language preferneces updated successfully",
 	"YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES": "You do not have access to update roles",
 	"USER_ROLE_UPDATE_SUCCESSFUL": "User updated successfully",
 	"ROLE_ALREADY_EXISTS": "Role already exists",
-	"INVALID_ROLE_ASSGINMENTS": "Invalid role assignment"
+	"INVALID_ROLE_ASSIGNMENTS": "Invalid role assignment",
+	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully"
 }

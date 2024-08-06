@@ -513,6 +513,99 @@
 			]
 		},
 		{
+			"name": "User Role",
+			"item": [
+				{
+					"name": "List User Roles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "{{interfaceBaseUrl}}elevate-user/v1/user-role/list"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create User Roles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create"
+			},
+			"response": []
+		},
+		{
+			"name": "Update User Roles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User Roles",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
+			},
+			"response": []
+		},
+		{
 			"name": "Form",
 			"item": [
 				{
