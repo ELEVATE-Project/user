@@ -51,9 +51,14 @@ const getDownloadableUrl = async (filePath) => {
 	let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
 	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
 
+	if (['azure', 'gcloud'].includes(process.env.CLOUD_STORAGE_PROVIDER)) {
+		expiryInSeconds = Math.floor(expiryInSeconds / 60)
+	}
+
 	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
-	return response[0]
+	return process.env.CLOUD_STORAGE_PROVIDER == 'gcloud' ? response[0] : response
 }
+
 const getPublicDownloadableUrl = async (bucketName, filePath) => {
 	let downloadableUrl = await cloudClient.getDownloadableUrl(bucketName, filePath)
 	if (process.env.CLOUD_STORAGE_PROVIDER == 'azure') {

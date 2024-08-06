@@ -130,5 +130,6 @@
 	"USER_ROLE_UPDATE_SUCCESSFUL": "User updated successfully",
 	"ROLE_ALREADY_EXISTS": "Role already exists",
 	"INVALID_ROLE_ASSIGNMENTS": "Invalid role assignment",
-	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully"
+	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully",
+	"ROLE_CHANGE_PENDING": "Your request is under review"
 }
