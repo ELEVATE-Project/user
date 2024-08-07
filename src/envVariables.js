@@ -264,8 +264,18 @@ let enviromentVariables = {
 	},
 	APPLICATION_BASE_URL: {
 		message: 'Require Base URL',
-		optional: true,
+		optional: false,
 		default: '/user',
+	},
+	SCHEDULER_PERIODIC_JOB_NAME_USER_MVIEWS: {
+		message: 'Require Scheduler service periodic job name',
+		optional: true,
+		default : 'project_users_repeatable_view_job'
+	},
+	SCHEDULER_JOB_NAME_USER_MVIEWS: {
+		message: 'Require Scheduler service job name',
+		optional: true,
+		default : 'BuildMaterializedViewsprojectUsers'
 	},
 }
 

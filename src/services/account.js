@@ -124,8 +124,12 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				const defaultRole = await roleQueries.findOne(
-					{ title: process.env.DEFAULT_ROLE },
+				const defaultRole = await roleQueries.findAll(
+					{
+						title: {
+							[Op.in]: process.env.DEFAULT_ROLE.split(','),
+						},
+					},
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -161,8 +165,12 @@ module.exports = class AccountHelper {
 					  ).id
 
 				//add default role as mentee
-				role = await roleQueries.findOne(
-					{ title: process.env.DEFAULT_ROLE },
+				role = await roleQueries.findAll(
+					{
+						title: {
+							[Op.in]: process.env.DEFAULT_ROLE.split(','),
+						},
+					},
 					{
 						attributes: {
 							exclude: ['created_at', 'updated_at', 'deleted_at'],
@@ -178,7 +186,9 @@ module.exports = class AccountHelper {
 					})
 				}
 
-				roles.push(role.id)
+				roles = role.map((userRoles) => {
+					return userRoles.id
+				})
 				bodyData.roles = roles
 			}
 
@@ -1244,13 +1254,17 @@ module.exports = class AccountHelper {
 	 */
 	static async search(params) {
 		try {
-			const types = params.query.type.toLowerCase().split(',')
-			const roles = await roleQueries.findAll(
-				{ title: types },
-				{
-					attributes: ['id'],
-				}
-			)
+			let roleQuery = {}
+			if (params.query.type.toLowerCase() === common.TYPE_ALL) {
+				roleQuery.status = common.ACTIVE_STATUS
+			} else {
+				const types = params.query.type.toLowerCase().split(',')
+				roleQuery.title = types
+			}
+
+			const roles = await roleQueries.findAll(roleQuery, {
+				attributes: ['id'],
+			})
 
 			const roleIds = roles.map((role) => role.id)
 			let emailIds = []
