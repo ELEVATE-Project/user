@@ -501,7 +501,7 @@ const convertExpiryTimeToSeconds = (expiryTime) => {
 		const value = parseInt(match[1], 10) // Numeric value
 		const unit = match[2]
 		if (unit === 'm') {
-			return value / 60
+			return Math.floor(value / 60)
 		} else {
 			return value
 		}
