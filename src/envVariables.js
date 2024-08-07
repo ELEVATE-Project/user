@@ -269,11 +269,13 @@ let enviromentVariables = {
 	},
 	SCHEDULER_PERIODIC_JOB_NAME_USER_MVIEWS: {
 		message: 'Require Scheduler service periodic job name',
-		optional: false,
+		optional: true,
+		default : 'project_users_repeatable_view_job'
 	},
 	SCHEDULER_JOB_NAME_USER_MVIEWS: {
 		message: 'Require Scheduler service job name',
-		optional: false,
+		optional: true,
+		default : 'BuildMaterializedViewsprojectUsers'
 	},
 }
 

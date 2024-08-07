@@ -125,9 +125,9 @@ const triggerPeriodicViewRefresh = async () => {
 const buildMaterializedViews = async () => {
 	try {
 		createSchedulerJob(
-			'BuildMaterializedViewsprojectUsers',
+			process.env.SCHEDULER_JOB_NAME_USER_MVIEWS,
 			10000,
-			'BuildMaterializedViewsprojectUsers',
+			process.env.SCHEDULER_JOB_NAME_USER_MVIEWS,
 			false,
 			userBaseurl + '/user/v1/admin/triggerViewRebuildInternal'
 		)
