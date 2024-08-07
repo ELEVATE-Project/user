@@ -37,7 +37,7 @@ module.exports = class FilesHelper {
 			} else {
 				cloudBucket = process.env.CLOUD_STORAGE_BUCKETNAME
 			}
-			let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
+			let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_DURATION) || 300
 			let response = await cloudServices.getSignedUrl(
 				cloudBucket,
 				destFilePath,
@@ -60,7 +60,7 @@ module.exports = class FilesHelper {
 		try {
 			let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
 			let response
-			let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
+			let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_DURATION) || 300
 
 			// downloadable url for public bucket
 			if (isAssetBucket || process.env.CLOUD_STORAGE_BUCKET_TYPE != 'private') {
