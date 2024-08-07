@@ -495,7 +495,7 @@ function deleteKeysFromObject(obj, keys) {
 	return obj
 }
 
-const convertExpiryTimeToSeconds = (expiryTime) => {
+function convertExpiryTimeToSeconds(expiryTime) {
 	const match = expiryTime.match(/^(\d+)([m]?)$/)
 	if (match) {
 		const value = parseInt(match[1], 10) // Numeric value
