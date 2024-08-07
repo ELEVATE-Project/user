@@ -304,6 +304,17 @@ module.exports = class OrganizationsHelper {
 				}
 			)
 
+			if (
+				checkForRoleRequest &&
+				checkForRoleRequest?.id &&
+				checkForRoleRequest.status === common.REQUESTED_STATUS
+			) {
+				return responses.failureResponse({
+					message: 'ROLE_CHANGE_PENDING',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			let result
 			let isAccepted = false
 			if (

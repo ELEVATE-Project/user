@@ -429,6 +429,55 @@ module.exports = class OrgAdminHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * @description 					- Update user API for org-admin to assign role to user
+	 * @method
+	 * @name 							- updateUser
+	 * @param {number} userId 			- User ID to which role is assigned
+	 * @param {object} bodyData 		- It will contain organization id and roles array
+	 * @param {object} tokenInformation - user token information
+	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 */
+
+	static async updateUser(userId, bodyData, tokenInformation) {
+		try {
+			if (bodyData.organization_id == tokenInformation.organization_id) {
+				let roles = _.without(bodyData.roles, common.ADMIN_ROLE)
+				let getRoleIds = await roleQueries.findAll({ title: roles }, { attributes: ['id'] })
+				if (!getRoleIds) {
+					return responses.failureResponse({
+						message: 'INVALID_ROLE_ASSIGNMENTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				let roleIds = getRoleIds.map((roleId) => roleId.id)
+				let checkUser = await userQueries.findOne({ id: userId })
+				if (!checkUser) {
+					return responses.failureResponse({
+						responseCode: 'CLIENT_ERROR',
+						statusCode: httpStatusCode.bad_request,
+						message: 'USER_NOT_FOUND',
+					})
+				}
+				await userQueries.updateUser({ id: userId }, { roles: roleIds })
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USER_ROLE_UPDATE_SUCCESSFUL',
+				})
+			} else {
+				return responses.failureResponse({
+					responseCode: 'CLIENT_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					message: 'YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES',
+				})
+			}
+		} catch (error) {
+			console.log(error)
+			return error
+		}
+	}
 }
 
 function updateRoleForApprovedRequest(requestDetails, user) {

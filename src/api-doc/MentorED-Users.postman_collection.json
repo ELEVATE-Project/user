@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "4b5d5720-bd48-4145-afb9-8661f40c17e5",
+		"_postman_id": "a4603eb4-a163-485a-aa40-a696066416a7",
 		"name": "MentorED-Users",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "24204448",
-		"_collection_link": "https://dark-astronaut-764227.postman.co/workspace/Elevate-Workspace~39b977d8-9e5b-4232-87f3-3da4bed3a67c/collection/24204448-4b5d5720-bd48-4145-afb9-8661f40c17e5?action=share&source=collection_link&creator=24204448"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "12011146",
+		"_collection_link": "https://crimson-star-573488.postman.co/workspace/backend~c1daa04f-8872-40f8-9e04-dcefba7434d5/collection/12011146-a4603eb4-a163-485a-aa40-a696066416a7?action=share&source=collection_link&creator=12011146"
 	},
 	"item": [
 		{
@@ -24,11 +24,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/create"
 					},
 					"response": []
 				},
@@ -46,11 +42,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/create"
 					},
 					"response": []
 				},
@@ -177,11 +169,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/login",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "login"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/login"
 					},
 					"response": []
 				},
@@ -196,11 +184,7 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "acceptTermsAndCondition"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition"
 					},
 					"response": []
 				},
@@ -229,11 +213,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/resetPassword",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "resetPassword"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/resetPassword"
 					},
 					"response": []
 				},
@@ -264,11 +244,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/generateToken",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "generateToken"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/generateToken"
 					},
 					"response": []
 				},
@@ -299,11 +275,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "generateOtp"]
-						},
+						"url": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
 						"description": "To generate and regenerate otp"
 					},
 					"response": []
@@ -335,11 +307,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/logout",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "logout"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/logout"
 					},
 					"response": []
 				},
@@ -412,11 +380,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/registrationOtp",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "registrationOtp"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/registrationOtp"
 					},
 					"response": []
 				},
@@ -440,62 +404,11 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/list",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "list"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/account/list"
 					},
 					"response": []
 				}
 			]
-		},
-
-		{
-			"name": "Change Password",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "oldPassword",
-							"value": "password",
-							"type": "text"
-						},
-						{
-							"key": "newPassword",
-							"value": "Password@123",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
-					"host": ["{{UserDevBaseUrl}}user"],
-					"path": ["v1", "account", "changePassword"],
-					"query": [
-						{
-							"key": "oldPassword",
-							"value": "password",
-							"disabled": true
-						},
-						{
-							"key": "newPassword",
-							"value": "Password@123",
-							"disabled": true
-						}
-					]
-				}
-			},
-			"response": []
 		},
 		{
 			"name": "User",
@@ -523,11 +436,7 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "user", "read", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/user/read/1"
 					},
 					"response": []
 				},
@@ -551,11 +460,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user/update",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "user", "update"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/user/update"
 					},
 					"response": []
 				},
@@ -577,11 +482,7 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user/share/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "user", "share", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/user/share/1"
 					},
 					"response": []
 				},
@@ -612,6 +513,99 @@
 			]
 		},
 		{
+			"name": "User Role",
+			"item": [
+				{
+					"name": "List User Roles",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "internal_access_token",
+								"value": "{{internal_access_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": "{{interfaceBaseUrl}}elevate-user/v1/user-role/list"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create User Roles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create"
+			},
+			"response": []
+		},
+		{
+			"name": "Update User Roles",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User Roles",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}"
+					}
+				],
+				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
+			},
+			"response": []
+		},
+		{
 			"name": "Form",
 			"item": [
 				{
@@ -634,11 +628,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/form/create"
 					},
 					"response": []
 				},
@@ -662,11 +652,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/read/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "read", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/form/read/1"
 					},
 					"response": []
 				},
@@ -690,11 +676,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/form/update",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "form", "update"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/form/update"
 					},
 					"response": []
 				}
@@ -782,11 +764,7 @@
 								"disabled": true
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "cloud-services", "file", "getSampleCSV"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV"
 					},
 					"response": []
 				}
@@ -806,11 +784,7 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "admin", "deleteUser", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/1"
 					},
 					"response": []
 				},
@@ -834,11 +808,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/admin/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "admin", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/admin/create"
 					},
 					"response": []
 				},
@@ -869,11 +839,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/admin/login",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "admin", "login"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/admin/login"
 					},
 					"response": []
 				},
@@ -897,11 +863,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/admin/addOrgAdmin",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "admin", "addOrgAdmin"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/admin/addOrgAdmin"
 					},
 					"response": []
 				},
@@ -1011,11 +973,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "organization", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/organization/create"
 					},
 					"response": []
 				},
@@ -1039,11 +997,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "organization", "update", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/organization/update/1"
 					},
 					"response": []
 				},
@@ -1096,11 +1050,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/organization/requestOrgRole",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "organization", "requestOrgRole"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/organization/requestOrgRole"
 					},
 					"response": []
 				}
@@ -1129,11 +1079,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "create"]
-						},
+						"url": "{{UserDevBaseUrl}}user/v1/entity/create",
 						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
@@ -1206,11 +1152,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "update", "1"]
-						},
+						"url": "{{UserDevBaseUrl}}user/v1/entity/update/1",
 						"description": "NOET: All body req parameters are optional to update."
 					},
 					"response": []
@@ -1226,11 +1168,7 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity", "delete", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/entity/delete/1"
 					},
 					"response": []
 				}
@@ -1259,11 +1197,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "create"]
-						},
+						"url": "{{UserDevBaseUrl}}user/v1/entity-type/create",
 						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
@@ -1279,11 +1213,7 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "read"]
-						},
+						"url": "{{UserDevBaseUrl}}user/v1/entity-type/read",
 						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
 					},
 					"response": []
@@ -1354,11 +1284,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "update", "1"]
-						},
+						"url": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
 						"description": "NOET: All body req parameters are optional to update."
 					},
 					"response": []
@@ -1374,11 +1300,7 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "entity-type", "delete", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1"
 					},
 					"response": []
 				}
@@ -1401,11 +1323,7 @@
 							"mode": "raw",
 							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}interface"],
-							"path": ["v1", "account", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}interface/v1/account/create"
 					},
 					"response": []
 				},
@@ -1434,11 +1352,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
-							"host": ["{{UserDevBaseUrl}}interface"],
-							"path": ["v1", "account", "update"]
-						}
+						"url": "{{UserDevBaseUrl}}interface/v1/account/update"
 					},
 					"response": []
 				}
@@ -1477,11 +1391,7 @@
 								}
 							]
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/bulkUserCreate",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "org-admin", "bulkUserCreate"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/org-admin/bulkUserCreate"
 					},
 					"response": []
 				},
@@ -1529,11 +1439,7 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequestDetails/1",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "org-admin", "getRequestDetails", "1"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/org-admin/getRequestDetails/1"
 					},
 					"response": []
 				},
@@ -1597,11 +1503,7 @@
 							"mode": "raw",
 							"raw": "{\n  \"filters\": {\n    \"role\": [\n      \"3\"\n    ],\n    \"status\": [\n      \"REQUESTED\"\n    ],\n    \"handled_by\": [\n      1\n    ]\n  }\n}"
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequests",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "org-admin", "getRequests"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/org-admin/getRequests"
 					},
 					"response": []
 				},
@@ -1630,11 +1532,7 @@
 							"mode": "raw",
 							"raw": "{\n\t\"request_id\": 1,\n\t\"comments\": [\"All uploaded documents verified\", \"Profile information verified\"],\n\t\"status\": \"APPROVED\"\n}\n"
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "org-admin", "updateRequestStatus"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus"
 					},
 					"response": []
 				},
@@ -1656,11 +1554,34 @@
 							"mode": "raw",
 							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
 						},
-						"url": {
-							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
-							"host": ["{{MentoringBaseUrl}}"],
-							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
-						}
+						"url": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType"
+					},
+					"response": []
+				},
+				{
+					"name": "Update user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roles\": [\n        \"content_creator\"\n    ],\n    \"organization_id\": 24\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{interfaceBaseUrl}}user/v1/org-admin/updateUser/157"
 					},
 					"response": []
 				}
@@ -1689,11 +1610,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/notification/template",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "notification", "template"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/notification/template"
 					},
 					"response": []
 				},
@@ -1720,11 +1637,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "notification", "template", "14"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/notification/template/14"
 					},
 					"response": []
 				},
@@ -1748,11 +1661,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "notification", "template", "14"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/notification/template/14"
 					},
 					"response": []
 				}
@@ -1773,7 +1682,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user-role/list?page=1&limit=10",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/list?page=1&limit=10&search=system&organization_id=1",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "user-role", "list"],
 							"query": [
@@ -1825,7 +1734,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user-role/default?page=1&limit=10",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/default?page=1&limit=10&search=a",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "user-role", "default"],
 							"query": [
@@ -1886,11 +1795,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user-role/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "user-role", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}user/v1/user-role/create"
 					},
 					"response": []
 				},
@@ -1981,11 +1886,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}mentoring/v1/permissions/create",
-							"host": ["{{UserDevBaseUrl}}mentoring"],
-							"path": ["v1", "permissions", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}mentoring/v1/permissions/create"
 					},
 					"response": []
 				},
@@ -2114,11 +2015,7 @@
 								}
 							}
 						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}mentoring/v1/modules/create",
-							"host": ["{{UserDevBaseUrl}}mentoring"],
-							"path": ["v1", "modules", "create"]
-						}
+						"url": "{{UserDevBaseUrl}}mentoring/v1/modules/create"
 					},
 					"response": []
 				},
@@ -2307,15 +2204,57 @@
 								"type": "text"
 							}
 						],
-						"url": {
-							"raw": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/list",
-							"host": ["{{UserDevBaseUrl}}mentoring"],
-							"path": ["v1", "role-permission-mapping", "list"]
-						}
+						"url": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/list"
 					},
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Change Password",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-auth-token",
+						"value": "bearer {{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "oldPassword",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "newPassword",
+							"value": "Password@123",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
+					"host": ["{{UserDevBaseUrl}}user"],
+					"path": ["v1", "account", "changePassword"],
+					"query": [
+						{
+							"key": "oldPassword",
+							"value": "password",
+							"disabled": true
+						},
+						{
+							"key": "newPassword",
+							"value": "Password@123",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
