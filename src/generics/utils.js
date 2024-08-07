@@ -49,10 +49,10 @@ const composeEmailBody = (body, params) => {
 
 const getDownloadableUrl = async (filePath) => {
 	let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
-	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
-
-	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
-	return response
+	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_DURATION) || 300
+	let updatedExpiryTime = convertExpiryTimeToSeconds(expiryInSeconds)
+	let response = await cloudClient.getSignedUrl(bucketName, filePath, updatedExpiryTime, common.READ_ACCESS)
+	return Array.isArray(response) ? response[0] : response
 }
 
 const getPublicDownloadableUrl = async (bucketName, filePath) => {
@@ -495,6 +495,20 @@ function deleteKeysFromObject(obj, keys) {
 	return obj
 }
 
+function convertExpiryTimeToSeconds(expiryTime) {
+	expiryTime = String(expiryTime)
+	const match = expiryTime.match(/^(\d+)([m]?)$/)
+	if (match) {
+		const value = parseInt(match[1], 10) // Numeric value
+		const unit = match[2]
+		if (unit === 'm') {
+			return Math.floor(value / 60)
+		} else {
+			return value
+		}
+	}
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -528,4 +542,5 @@ module.exports = {
 	convertDurationToSeconds,
 	getPublicDownloadableUrl,
 	deleteKeysFromObject,
+	convertExpiryTimeToSeconds,
 }

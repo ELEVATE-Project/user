@@ -220,7 +220,7 @@ let enviromentVariables = {
 		optional: true,
 		default: '/recaptcha/api/siteverify',
 	},
-	SIGNED_URL_EXPIRY_IN_SECONDS: {
+	SIGNED_URL_EXPIRY_DURATION: {
 		message: 'Required signed url expiration time in seconds',
 		optional: true,
 		default: 900,
@@ -270,12 +270,12 @@ let enviromentVariables = {
 	SCHEDULER_PERIODIC_JOB_NAME_USER_MVIEWS: {
 		message: 'Require Scheduler service periodic job name',
 		optional: true,
-		default : 'project_users_repeatable_view_job'
+		default: 'project_users_repeatable_view_job',
 	},
 	SCHEDULER_JOB_NAME_USER_MVIEWS: {
 		message: 'Require Scheduler service job name',
 		optional: true,
-		default : 'BuildMaterializedViewsprojectUsers'
+		default: 'BuildMaterializedViewsprojectUsers',
 	},
 }
 
