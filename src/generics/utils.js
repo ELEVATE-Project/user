@@ -9,7 +9,6 @@ const bcryptJs = require('bcryptjs')
 const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const path = require('path')
-const { AwsFileHelper, GcpFileHelper, AzureFileHelper, OciFileHelper } = require('elevate-cloud-storage')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
@@ -18,6 +17,8 @@ const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
+const common = require('@constants/common')
+const { cloudClient } = require('@configs/cloud-service')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -46,44 +47,18 @@ const composeEmailBody = (body, params) => {
 	})
 }
 
-const getDownloadableUrl = async (imgPath) => {
-	if (process.env.CLOUD_STORAGE === 'GCP') {
-		const options = {
-			destFilePath: imgPath,
-			bucketName: process.env.DEFAULT_GCP_BUCKET_NAME,
-			gcpProjectId: process.env.GCP_PROJECT_ID,
-			gcpJsonFilePath: path.join(__dirname, '../', process.env.GCP_PATH),
-			expiry: Date.now() + parseFloat(process.env.DOWNLOAD_URL_EXPIRATION_DURATION),
-		}
-		imgPath = await GcpFileHelper.getSignedDownloadableUrl(options)
-	} else if (process.env.CLOUD_STORAGE === 'AWS') {
-		const options = {
-			destFilePath: imgPath,
-			bucketName: process.env.DEFAULT_AWS_BUCKET_NAME,
-			bucketRegion: process.env.AWS_BUCKET_REGION,
-		}
-		imgPath = await AwsFileHelper.getDownloadableUrl(options.destFilePath, options.bucketName, options.bucketRegion)
-	} else if (process.env.CLOUD_STORAGE === 'AZURE') {
-		const options = {
-			destFilePath: imgPath,
-			containerName: process.env.DEFAULT_AZURE_CONTAINER_NAME,
-			expiry: 30,
-			actionType: 'rw',
-			accountName: process.env.AZURE_ACCOUNT_NAME,
-			accountKey: process.env.AZURE_ACCOUNT_KEY,
-		}
-		imgPath = await AzureFileHelper.getDownloadableUrl(options)
-	} else if (process.env.CLOUD_STORAGE === 'OCI') {
-		const options = {
-			destFilePath: imgPath,
-			bucketName: process.env.DEFAULT_OCI_BUCKET_NAME,
-			endpoint: process.env.OCI_BUCKET_ENDPOINT,
-		}
-		imgPath = await OciFileHelper.getDownloadableUrl(options)
-	}
-	return imgPath
+const getDownloadableUrl = async (filePath) => {
+	let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
+	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_DURATION) || 300
+	let updatedExpiryTime = convertExpiryTimeToSeconds(expiryInSeconds)
+	let response = await cloudClient.getSignedUrl(bucketName, filePath, updatedExpiryTime, common.READ_ACCESS)
+	return Array.isArray(response) ? response[0] : response
 }
 
+const getPublicDownloadableUrl = async (bucketName, filePath) => {
+	let downloadableUrl = await cloudClient.getDownloadableUrl(bucketName, filePath)
+	return downloadableUrl
+}
 const validateRoleAccess = (roles, requiredRoles) => {
 	if (!roles || roles.length === 0) return false
 
@@ -164,10 +139,20 @@ function generateCSVContent(data) {
 	].join('\n')
 }
 
-function validateInput(input, validationData, modelName) {
+function validateInput(input, validationData, modelName, skipValidation = false) {
 	const errors = []
 	for (const field of validationData) {
-		const fieldValue = input[field.value]
+		if (!skipValidation) {
+			if (field.required === true && !input.hasOwnProperty(field.value)) {
+				errors.push({
+					param: field.value,
+					msg: `${field.value} is required but missing in the input data.`,
+				})
+			}
+		}
+		const fieldValue = input[field.value] // Get the value of the current field from the input data
+
+		// Check if the field is not allowed for the current model and has a value
 		if (modelName && !field.model_names.includes(modelName) && input[field.value]) {
 			errors.push({
 				param: field.value,
@@ -183,45 +168,64 @@ function validateInput(input, validationData, modelName) {
 		}
 
 		if (fieldValue !== undefined) {
-			const dataType = field.data_type
+			// Check if the field value is defined in the input data
+			const dataType = field.data_type // Get the data type of the field from validation data
 
 			switch (dataType) {
 				case 'ARRAY[STRING]':
 					if (Array.isArray(fieldValue)) {
 						fieldValue.forEach((element) => {
 							if (typeof element !== 'string') {
-								addError(field, element, dataType, 'It should be a string')
-							} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(element)) {
-								addError(
-									field,
-									element,
-									dataType,
-									'It should not contain special characters except underscore.'
-								)
+								addError(field.value, element, dataType, 'It should be a string')
+							} else if (field.allow_custom_entities) {
+								if (field.regex && !new RegExp(field.regex).test(element)) {
+									addError(
+										field.value,
+										element,
+										dataType,
+										`Does not match the required pattern: ${field.regex}`
+									)
+								} else if (!field.regex && /[^A-Za-z0-9\s_]/.test(element)) {
+									addError(
+										field.value,
+										element,
+										dataType,
+										'It should not contain special characters except underscore.'
+									)
+								}
 							}
 						})
 					} else {
-						addError(field, field.value, dataType, '')
+						addError(field.value, field.value, dataType, '')
 					}
 					break
 
 				case 'STRING':
 					if (typeof fieldValue !== 'string') {
-						addError(field, fieldValue, dataType, 'It should be a string')
-					} else if (field.allow_custom_entities && /[^A-Za-z0-9\s_]/.test(fieldValue)) {
-						addError(
-							field,
-							fieldValue,
-							dataType,
-							'It should not contain special characters except underscore.'
-						)
+						addError(field.value, fieldValue, dataType, 'It should be a string')
+					} else if (field.allow_custom_entities) {
+						if (field.regex && !new RegExp(field.regex).test(fieldValue)) {
+							addError(
+								field.value,
+								fieldValue,
+								dataType,
+								`Does not match the required pattern: ${field.regex}`
+							)
+						} else if (!field.regex && /[^A-Za-z0-9\s_]/.test(fieldValue)) {
+							addError(
+								field.value,
+								fieldValue,
+								dataType,
+								'It should not contain special characters except underscore.'
+							)
+						}
 					}
 					break
 
 				case 'NUMBER':
 					console.log('Type of', typeof fieldValue)
 					if (typeof fieldValue !== 'number') {
-						addError(field, fieldValue, dataType, '')
+						addError(field.value, fieldValue, dataType, '')
 					}
 					break
 
@@ -241,8 +245,10 @@ function validateInput(input, validationData, modelName) {
 		}
 
 		if (Array.isArray(fieldValue)) {
+			// Check if the field value is an array
 			for (const value of fieldValue) {
 				if (!field.entities.some((entity) => entity.value === value)) {
+					// Check if the value is a valid entity
 					errors.push({
 						param: field.value,
 						msg: `${value} is not a valid entity.`,
@@ -481,6 +487,28 @@ const convertDurationToSeconds = (duration) => {
 	return value * timeUnits[unit]
 }
 
+function deleteKeysFromObject(obj, keys) {
+	keys.forEach((key) => {
+		delete obj[key]
+	})
+
+	return obj
+}
+
+function convertExpiryTimeToSeconds(expiryTime) {
+	expiryTime = String(expiryTime)
+	const match = expiryTime.match(/^(\d+)([m]?)$/)
+	if (match) {
+		const value = parseInt(match[1], 10) // Numeric value
+		const unit = match[2]
+		if (unit === 'm') {
+			return Math.floor(value / 60)
+		} else {
+			return value
+		}
+	}
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -512,4 +540,7 @@ module.exports = {
 	generateWhereClause,
 	getRoleTitlesFromId,
 	convertDurationToSeconds,
+	getPublicDownloadableUrl,
+	deleteKeysFromObject,
+	convertExpiryTimeToSeconds,
 }

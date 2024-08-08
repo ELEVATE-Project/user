@@ -206,4 +206,49 @@ module.exports = class EntityHelper {
 			throw error
 		}
 	}
+
+	/**
+	 * Get list of entity
+	 * @method
+	 * @name list
+	 * @param {Object} query - query params
+	 * @param {String} userId - logged in user id.
+	 * @param {String} searchText - search label in entity.
+	 * @param {Integer} page -  page no.
+	 * @param {Integer} pageSize -  page limit per api.
+	 * @returns {JSON} - Entity search matched response.
+	 */
+	static async list(query, searchText, pageNo, pageSize) {
+		try {
+			let entityType = query.entity_type_id ? query.entity_type_id : ''
+			let filter = {}
+			if (entityType) {
+				filter['entity_type_id'] = entityType
+			}
+
+			const attributes = ['id', 'entity_type_id', 'value', 'label', 'status', 'type', 'created_by', 'created_at']
+			const entities = await entityTypeQueries.getAllEntities(filter, attributes, pageNo, pageSize, searchText)
+
+			if (entities.rows == 0 || entities.count == 0) {
+				return responses.failureResponse({
+					message: 'ENTITY_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else {
+				const results = {
+					data: entities.rows,
+					count: entities.count,
+				}
+
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ENTITY_FETCHED_SUCCESSFULLY',
+					result: results,
+				})
+			}
+		} catch (error) {
+			throw error
+		}
+	}
 }

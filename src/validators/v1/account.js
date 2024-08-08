@@ -7,6 +7,27 @@
 const common = require('@constants/common')
 const filterRequestBody = require('../common')
 const { account } = require('@constants/blacklistConfig')
+
+const emailArrayValidation = (emailIds) => {
+	if (!Array.isArray(emailIds)) {
+		throw new Error('Email must be an array')
+	}
+	if (emailIds.length === 0) {
+		throw new Error('Email array is empty')
+	}
+	emailIds.forEach((email) => {
+		if (!email || typeof email !== 'string') {
+			throw new Error('email must be a string')
+		}
+		const emailRegex =
+			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+		if (!emailRegex.test(email)) {
+			throw new Error(`Invalid email format: ${email}`)
+		}
+	})
+	return true
+}
+
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, account.create)
@@ -150,5 +171,9 @@ module.exports = {
 			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
 			.custom((value) => !/\s/.test(value))
 			.withMessage('Password cannot contain spaces')
+	},
+
+	validatingEmailIds: (req) => {
+		req.checkBody('emailIds').notEmpty().withMessage('emailIds field is empty').custom(emailArrayValidation)
 	},
 }

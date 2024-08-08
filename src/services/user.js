@@ -33,7 +33,6 @@ module.exports = class UserHelper {
 	 * @returns {JSON} - update user response
 	 */
 	static async update(bodyData, id, orgId) {
-		bodyData.updated_at = new Date().getTime()
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -85,8 +84,31 @@ module.exports = class UserHelper {
 			}
 
 			let userModel = await userQueries.getColumns()
+			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)
 
+			// Check if 'user_roles' is present in the request body and is not empty
+			if (bodyData.roles && bodyData.roles.length > 0) {
+				// Fetch the existing roles for the user from the database
+				const fetchExistingRole = await userQueries.findOne({ id: id }, { attributes: ['roles'] })
+				const existingRoleIds = fetchExistingRole.roles
+				// Validate the existing roles with user_type = 1 (system admin roles)
+				const validatedExistingRoleIds = await this.validateUserRoles(existingRoleIds, false)
+
+				// Get the new roles from the request body
+				const newUserRoleId = bodyData.roles
+				// Validate the combined list of roles
+				const validatedUserRoleIds = await this.validateUserRoles(newUserRoleId)
+				// Combine new roles and existing system admin roles
+				let newUserRoleIds = [...validatedUserRoleIds, ...validatedExistingRoleIds]
+
+				bodyData.roles = newUserRoleIds // Add validated user_role IDs to roles key
+			}
+
+			// remove body data from the roles from the request if it is empty
+			if (bodyData.roles && !bodyData.roles.length > 0) {
+				delete bodyData.roles
+			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, organization_id: orgId },
 				bodyData
@@ -125,6 +147,49 @@ module.exports = class UserHelper {
 			console.log(error)
 			throw error
 		}
+	}
+
+	/**
+	 * Validates the user roles by checking if the provided role IDs exist in the database.
+	 * If the `getSystemUserRoles` flag is true.
+	 * @param {Array<number>} userRoleIds - An array of user role IDs to validate.
+	 * @param {boolean} [getSystemUserRoles=true] - A flag indicating which filter to use for validation.
+	 * @returns {Promise<Array<number>>} - A promise that resolves to an array of valid user role IDs.
+	 */
+	static async validateUserRoles(userRoleIds = [], getSystemUserRoles = true) {
+		// Check if the userRoleIds array is empty
+		if (userRoleIds.length <= 0) {
+			return responses.failureResponse({
+				message: 'ROLE_NOT_FOUND',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+		// Determine the filter object based on the getSystemUserRoles flag
+		let filter = {
+			status: common.ACTIVE_STATUS,
+			id: userRoleIds,
+		}
+		if (getSystemUserRoles == true) {
+			filter.user_type = 0
+		} else {
+			filter.user_type = 1
+		}
+
+		const attributes = ['id']
+		// Fetching roles from the database that match the provided IDs.
+		const userRoleId = await roleQueries.findAll(filter, attributes)
+		// Check if no roles were found (roles array is empty).
+		if (userRoleId.length < 0) {
+			return responses.failureResponse({
+				message: 'ROLE_NOT_FOUND',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+		// Extracting the IDs of the found roles and storing them in an array.
+		const userRoles = userRoleId.map((role) => role.id)
+		return userRoles
 	}
 
 	/**
@@ -194,10 +259,6 @@ module.exports = class UserHelper {
 					})
 				}
 
-				if (user && user.image) {
-					user.image = await utils.getDownloadableUrl(user.image)
-				}
-
 				let roles = await roleQueries.findAll(
 					{ id: user.roles, status: common.ACTIVE_STATUS },
 					{
@@ -242,12 +303,18 @@ module.exports = class UserHelper {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
+				if (processDbResponse && processDbResponse.image) {
+					processDbResponse.image = await utils.getDownloadableUrl(processDbResponse.image)
+				}
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
 					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
+				if (userDetails && userDetails.image) {
+					userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+				}
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
@@ -291,6 +358,77 @@ module.exports = class UserHelper {
 				result: { shareLink },
 			})
 		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Setting preferred language of user
+	 * @method
+	 * @name setLanguagePreference
+	 * @param {Object} bodyData - it contains user preferred language
+	 * @returns {JSON} - updated user preferred languages response
+	 */
+	static async setLanguagePreference(bodyData, id, orgId) {
+		try {
+			let skipRequiredValidation = true
+			const user = await userQueries.findOne({ id: id, organization_id: orgId })
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			let userModel = await userQueries.getColumns()
+			const filter = {
+				status: common.ACTIVE_STATUS,
+				organization_id: { [Op.in]: [orgId, defaultOrgId] },
+				model_names: { [Op.contains]: [userModel] },
+				value: 'preferred_language',
+			}
+			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
+
+			let validatedData = utils.validateInput(bodyData, prunedEntities, userModel, skipRequiredValidation)
+			if (!validatedData.success) {
+				return responses.failureResponse({
+					message: 'PROFILE_UPDATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: validatedData.errors,
+				})
+			}
+			bodyData.updated_at = new Date().getTime()
+			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
+
+			const [affectedRows, updatedData] = await userQueries.updateUser(
+				{ id: id, organization_id: orgId },
+				bodyData
+			)
+			const redisUserKey = common.redisUserPrefix + id.toString()
+			if (await utils.redisGet(redisUserKey)) {
+				await utils.redisDel(redisUserKey)
+			}
+			const processDbResponse = utils.processDbResponse(
+				JSON.parse(JSON.stringify(updatedData[0])),
+				dataValidation
+			)
+			const keysToDelete = ['refresh_tokens', 'password']
+			const cleanedResponse = utils.deleteKeysFromObject(processDbResponse, keysToDelete)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY',
+				result: cleanedResponse,
+			})
+		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
