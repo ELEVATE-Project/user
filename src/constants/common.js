@@ -94,5 +94,11 @@ module.exports = {
 	captchaEnabledAPIs: ['/user/v1/account/login', '/user/v1/account/generateOtp', '/user/v1/account/registrationOtp'],
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
+	ROLE_DESCRIPTION: {
+		MENTOR: 'As a Mentor: You will have the opportunity to guide and support mentees, sharing your knowledge and expertise to help them achieve their goals.',
+		MENTEE: 'As a Mentee: You will benefit from the guidance and support of a mentor, helping you to grow and develop in your personal and professional journey.',
+		SESSION_MANAGER:
+			'As a Session Manager: You will be responsible for organizing and managing mentoring sessions, ensuring that they run smoothly and effectively.',
+	},
 	TYPE_ALL: 'all',
 }
