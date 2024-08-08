@@ -203,4 +203,20 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	/**
+	 * @description						- Update user role
+	 * @method 							- post
+	 * @name 							- updateUser
+	 * @returns {Json}					- returns message with status whether user has been updated or not
+	 */
+
+	async updateUser(req) {
+		try {
+			let updateUserDetails = await orgAdminService.updateUser(req.params.id, req.body, req.decodedToken)
+			return updateUserDetails
+		} catch (error) {
+			return error
+		}
+	}
 }

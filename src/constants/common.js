@@ -64,7 +64,6 @@ module.exports = {
 	EXPIRED_STATUS: 'EXPIRED',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
-	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
@@ -101,4 +100,5 @@ module.exports = {
 		SESSION_MANAGER:
 			'As a Session Manager: You will be responsible for organizing and managing mentoring sessions, ensuring that they run smoothly and effectively.',
 	},
+	TYPE_ALL: 'all',
 }

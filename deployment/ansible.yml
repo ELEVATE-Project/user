@@ -11,7 +11,7 @@
     #- debug: msg="{{ slurpfile['content'] | b64decode }}"
     #- debug: msg="the value of foo.txt is {{ contents }}"
     - name: Get vault credentials
-      shell: "curl --location --request GET '{{ vaultAddress }}users' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
+      shell: "curl --location --request GET '{{ vaultAddress }}{{ vaultName }}' --header 'X-Vault-Token: {{ slurpfile['content'] | b64decode }}' | jq '.data' > '{{ project_path 
 }}/data2.json'"
       register: credentials
     - debug: msg="{{ credentials }}"
@@ -23,9 +23,9 @@
     - name: Set some variable
       set_fact:
         release_path: "{{ project_path }}/releases/{{ lookup('pipe','date +%Y%m%d%H%M%S') }}"
-        current_path: "{{ project_path }}/users"
+        current_path: "{{ project_path }}/{{ directoryName }}"
     - name: Retrieve current release folder
-      command: readlink -f users
+      command: readlink -f {{ directoryName }}
       register: current_release_path
       ignore_errors: yes
       args:
@@ -47,11 +47,10 @@
       shell: cd {{release_path}}/src && npm i && npm i redoc-cli 
     
     - name: Delete Old Folder 
-      shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir users
+      shell: rm -rf {{ current_path }} &&  cd {{ project_path }} && mkdir {{ directoryName }}
     
     - name: Move code
       shell: mv "{{ release_path }}"/* {{ current_path }}/
-
    # - name: Update symlink
     #  file:
      #   src={{ release_path }}
@@ -79,14 +78,14 @@
       command: "chdir={{current_path}}/src npx sequelize-cli db:migrate"
 
     - name: Delete old pm2 process
-      command: pm2 delete elevate-user
+      command: pm2 delete {{ serviceName }}
       ignore_errors: yes
 
     - name: Delete release folder
       shell: rm -rf  {{ release_path }}
 
     - name: Start pm2
-      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name elevate-user"
+      command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name {{ serviceName }}"
       register: pm2Info
 
     - name: debug info

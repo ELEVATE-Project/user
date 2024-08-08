@@ -49,21 +49,14 @@ const composeEmailBody = (body, params) => {
 
 const getDownloadableUrl = async (filePath) => {
 	let bucketName = process.env.CLOUD_STORAGE_BUCKETNAME
-	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_IN_SECONDS) || 300
-
-	if (['azure', 'gcloud'].includes(process.env.CLOUD_STORAGE_PROVIDER)) {
-		expiryInSeconds = Math.floor(expiryInSeconds / 60)
-	}
-
-	let response = await cloudClient.getSignedUrl(bucketName, filePath, expiryInSeconds, common.READ_ACCESS)
-	return process.env.CLOUD_STORAGE_PROVIDER == 'gcloud' ? response[0] : response
+	let expiryInSeconds = parseInt(process.env.SIGNED_URL_EXPIRY_DURATION) || 300
+	let updatedExpiryTime = convertExpiryTimeToSeconds(expiryInSeconds)
+	let response = await cloudClient.getSignedUrl(bucketName, filePath, updatedExpiryTime, common.READ_ACCESS)
+	return Array.isArray(response) ? response[0] : response
 }
 
 const getPublicDownloadableUrl = async (bucketName, filePath) => {
 	let downloadableUrl = await cloudClient.getDownloadableUrl(bucketName, filePath)
-	if (process.env.CLOUD_STORAGE_PROVIDER == 'azure') {
-		downloadableUrl = downloadableUrl.toString().split('?')[0]
-	}
 	return downloadableUrl
 }
 const validateRoleAccess = (roles, requiredRoles) => {
@@ -242,7 +235,12 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 			}
 		}
 
-		if (!fieldValue || field.allow_custom_entities === true || field.has_entities === false) {
+		if (
+			!fieldValue ||
+			field.allow_custom_entities === true ||
+			field.has_entities === false ||
+			field.external_entity_type === true
+		) {
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -292,6 +290,7 @@ const entityTypeMapGenerator = (entityTypeData) => {
 				entityMap.set('allow_custom_entities', entityType.allow_custom_entities)
 				entityMap.set('entities', new Set(entities))
 				entityMap.set('labels', labelsMap)
+				entityMap.set('external_entity_type', entityType.external_entity_type)
 				entityTypeMap.set(entityType.value, entityMap)
 			}
 		})
@@ -318,8 +317,11 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 					requestBody[currentFieldName] = []
 					const recognizedEntities = []
 					const customEntities = []
+					// this array can hold values for external entity types
+					const externalEntities = []
 					for (const value of currentFieldValue) {
 						if (entityType.get('entities').has(value)) recognizedEntities.push(value)
+						else if (entityType.get('external_entity_type')) externalEntities.push(value)
 						else customEntities.push({ value: 'other', label: value })
 					}
 					if (recognizedEntities.length > 0)
@@ -329,15 +331,27 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 						requestBody[currentFieldName].push('other') //This should cause error at DB write
 						requestBody.custom_entity_text[currentFieldName] = customEntities
 					}
+					// If external entities are passed store it in meta
+					if (externalEntities.length > 0) {
+						requestBody.meta[currentFieldName] = externalEntities
+					}
 				} else {
 					if (!entityType.get('entities').has(currentFieldValue)) {
-						requestBody.custom_entity_text[currentFieldName] = {
-							value: 'other',
-							label: currentFieldValue,
+						if (!entityType.get('external_entity_type')) {
+							requestBody.custom_entity_text[currentFieldName] = {
+								value: 'other',
+								label: currentFieldValue,
+							}
 						}
-						if (allowedKeys.includes(currentFieldName))
+
+						if (allowedKeys.includes(currentFieldName)) {
 							requestBody[currentFieldName] = 'other' //This should cause error at DB write
-						else requestBody.meta[currentFieldName] = 'other'
+						} else {
+							// if entity type is external meta should store current field value else 'other'
+							entityType.get('external_entity_type')
+								? (requestBody.meta[currentFieldName] = currentFieldValue)
+								: (requestBody.meta[currentFieldName] = 'other')
+						}
 					} else if (!allowedKeys.includes(currentFieldName))
 						requestBody.meta[currentFieldName] = currentFieldValue
 				}
@@ -356,10 +370,13 @@ function processDbResponse(responseBody, entityType) {
 		entityType.forEach((entity) => {
 			const entityTypeValue = entity.value
 			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
-				// Move the key from responseBody.meta to responseBody root level
-				responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
-				// Delete the key from responseBody.meta
-				delete responseBody.meta[entityTypeValue]
+				// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+				if (!entity.external_entity_type) {
+					// Move the key from responseBody.meta to responseBody root level
+					responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
+					// Delete the key from responseBody.meta
+					delete responseBody.meta[entityTypeValue]
+				}
 			}
 		})
 	}
@@ -478,6 +495,20 @@ function deleteKeysFromObject(obj, keys) {
 	return obj
 }
 
+function convertExpiryTimeToSeconds(expiryTime) {
+	expiryTime = String(expiryTime)
+	const match = expiryTime.match(/^(\d+)([m]?)$/)
+	if (match) {
+		const value = parseInt(match[1], 10) // Numeric value
+		const unit = match[2]
+		if (unit === 'm') {
+			return Math.floor(value / 60)
+		} else {
+			return value
+		}
+	}
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -511,4 +542,5 @@ module.exports = {
 	convertDurationToSeconds,
 	getPublicDownloadableUrl,
 	deleteKeysFromObject,
+	convertExpiryTimeToSeconds,
 }
