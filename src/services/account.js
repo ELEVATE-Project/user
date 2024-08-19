@@ -139,7 +139,7 @@ module.exports = class AccountHelper {
 
 				let roleTitles = _.map(role, 'title')
 				if (!roleTitles.includes(common.MENTOR_ROLE)) {
-					roles.push(defaultRole.id)
+					roles.push(defaultRole[0].id)
 				}
 				if (roleTitles.includes(common.ORG_ADMIN_ROLE)) {
 					isOrgAdmin = true
