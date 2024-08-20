@@ -4,6 +4,7 @@ const Organization = require('@database/models/index').Organization
 const { Op, QueryTypes } = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const emailEncryption = require('@utils/emailEncryption')
+const _ = require('lodash')
 
 exports.getColumns = async () => {
 	try {
@@ -166,7 +167,16 @@ exports.findUserWithOrganization = async (filter, options = {}) => {
 		return error
 	}
 }
-exports.listUsersFromView = async (roleId, organization_id, page, limit, search, userIds, emailIds) => {
+exports.listUsersFromView = async (
+	roleId,
+	organization_id,
+	page,
+	limit,
+	search,
+	userIds,
+	emailIds,
+	excluded_user_ids
+) => {
 	try {
 		const offset = (page - 1) * limit
 
@@ -189,7 +199,12 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			filterConditions.push(`users.organization_id = :organization_id`)
 		}
 		if (userIds) {
+			if (excluded_user_ids) {
+				userIds = _.difference(userIds, excluded_user_ids)
+			}
 			filterConditions.push(`users.id IN (:userIds)`)
+		} else if (excluded_user_ids && excluded_user_ids.length > 0) {
+			filterConditions.push(`users.id NOT IN (:excluded_user_ids)`)
 		}
 
 		const filterClause = filterConditions.length > 0 ? `WHERE ${filterConditions.join(' AND ')}` : ''
@@ -229,6 +244,7 @@ exports.listUsersFromView = async (roleId, organization_id, page, limit, search,
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			userIds: userIds,
+			excluded_user_ids: excluded_user_ids,
 		}
 
 		let users = await Sequelize.query(filterQuery, {

@@ -137,9 +137,13 @@ module.exports = class AccountHelper {
 					}
 				)
 
+				let defaultRoles = defaultRole.map((userRoles) => {
+					return userRoles.id
+				})
+
 				let roleTitles = _.map(role, 'title')
 				if (!roleTitles.includes(common.MENTOR_ROLE)) {
-					roles.push(defaultRole.id)
+					roles.push(...defaultRoles)
 				}
 				if (roleTitles.includes(common.ORG_ADMIN_ROLE)) {
 					isOrgAdmin = true
@@ -1286,7 +1290,8 @@ module.exports = class AccountHelper {
 				params.pageSize,
 				emailIds.length == 0 ? params.searchText : false,
 				params.body.user_ids ? params.body.user_ids : false,
-				emailIds.length > 0 ? emailIds : false
+				emailIds.length > 0 ? emailIds : false,
+				params.body.excluded_user_ids ? params.body.excluded_user_ids : false
 			)
 
 			/* Required to resolve all promises first before preparing response object else sometime 
