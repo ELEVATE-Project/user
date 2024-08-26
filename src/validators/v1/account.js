@@ -132,7 +132,7 @@ module.exports = {
 			.notEmpty()
 			.withMessage('type can not be null')
 			.isString()
-			.notIn([common.ADMIN_ROLE, common.MENTEE_ROLE, common.MENTEE_ROLE, common.ORG_ADMIN_ROLE])
+			.notIn([common.ADMIN_ROLE, common.MENTEE_ROLE, common.MENTEE_ROLE, common.ORG_ADMIN_ROLE, common.TYPE_ALL])
 			.withMessage('Invalid type value')
 		req.checkQuery('organization_id').isNumeric().withMessage('organization_id must be an Id')
 		req.checkBody('user_ids')
@@ -143,6 +143,18 @@ module.exports = {
 				for (const id of value) {
 					if (!Number.isInteger(id)) {
 						throw new Error('All elements in user_ids must be integers')
+					}
+				}
+				return true
+			})
+		req.checkBody('excluded_user_ids')
+			.isArray()
+			.withMessage('excluded_user_ids must be an array')
+			.custom((value) => {
+				// Check if all elements in the array are integers
+				for (const id of value) {
+					if (!Number.isInteger(id)) {
+						throw new Error('All elements in excluded_user_ids must be integers')
 					}
 				}
 				return true

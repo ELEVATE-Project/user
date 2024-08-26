@@ -91,7 +91,6 @@ module.exports = async function (req, res, next) {
 		if (!authHeader) {
 			try {
 				const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
-
 				if (!isPermissionValid) {
 					throw responses.failureResponse({
 						message: 'PERMISSION_DENIED',
@@ -101,7 +100,6 @@ module.exports = async function (req, res, next) {
 				}
 				return next()
 			} catch (error) {
-				console.error(error)
 				throw unAuthorizedResponse
 			}
 		}
@@ -114,7 +112,6 @@ module.exports = async function (req, res, next) {
 		// }
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
-
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 			// Get redis key for session

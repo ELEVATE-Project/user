@@ -212,7 +212,7 @@ const entityType = {
 }
 
 const entity = {
-	create: ['id', 'status', 'type', 'created_by', 'updated_by'],
+	create: ['id', 'status', 'created_by', 'updated_by'],
 	update: ['id', 'entity_type_id', 'created_by', 'updated_by'],
 }
 
