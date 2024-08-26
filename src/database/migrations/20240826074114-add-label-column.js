@@ -3,13 +3,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
-		// Add the new 'label' column to the 'user-roles' table
+		// Add the new 'label' column to the 'user_roles' table
 		await queryInterface.addColumn('user_roles', 'label', {
 			type: Sequelize.STRING,
 			allowNull: false, // Assuming label can be null initially
 		})
 
-		// Fetch all rows from the 'user-roles' table
+		// Fetch all rows from the 'user_roles' table
 		const userRoles = await queryInterface.sequelize.query('SELECT id, title FROM user_roles', {
 			type: queryInterface.sequelize.QueryTypes.SELECT,
 		})
@@ -30,7 +30,7 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		// Remove the 'label' column from the 'user-roles' table
+		// Remove the 'label' column from the 'user_roles' table
 		await queryInterface.removeColumn('user_roles', 'label')
 	},
 }
