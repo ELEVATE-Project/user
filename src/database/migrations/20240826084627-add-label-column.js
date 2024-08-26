@@ -6,7 +6,7 @@ module.exports = {
 		// Add the new 'label' column to the 'user_roles' table
 		await queryInterface.addColumn('user_roles', 'label', {
 			type: Sequelize.STRING,
-			allowNull: false, // Assuming label can be null initially
+			allowNull: false,
 		})
 
 		// Fetch all rows from the 'user_roles' table
