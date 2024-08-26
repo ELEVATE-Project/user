@@ -19,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
 			label: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				unique: true,
 			},
 			user_type: {
 				type: DataTypes.INTEGER,
