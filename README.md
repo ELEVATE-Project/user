@@ -56,7 +56,7 @@ Elevate user services can be setup in local using two methods:
 
 ### Local Dependencies Steps
 
-1. Update dependency (Mongo, Kafka etc) IP addresses in .env with "**host.docker.internal**".
+1. Update dependency (Mongo v4.1.4, Kafka etc) IP addresses in .env with "**host.docker.internal**".
 
     Eg:
 
@@ -102,7 +102,7 @@ Elevate user services can be setup in local using two methods:
 
 ### Remote Dependencies Steps
 
-1. Update dependency (Mongo, Kafka etc) Ip addresses in .env with respective remote server IPs.
+1. Update dependency (Mongo v4.1.4, Kafka etc) Ip addresses in .env with respective remote server IPs.
 
     Eg:
 
@@ -170,9 +170,6 @@ Elevate user services can be setup in local using two methods:
     # Database connectivity url
     MONGODB_URL = mongodb://localhost:27017/db-name
 
-    # Number of rounds for encryption
-    SALT_ROUNDS = 10
-
     # Token secret to generate access token
     ACCESS_TOKEN_SECRET = 'access-token-secret'
 
@@ -230,12 +227,6 @@ Elevate user services can be setup in local using two methods:
     # Internal access token for communicationcation between services via network call
     INTERNAL_ACCESS_TOKEN = 'internal-access-token'
 
-    # Mentor screct code for registering
-    MENTOR_SECRET_CODE = 'secret-code'
-
-    #Enable logging of network request
-    ENABLE_LOG = true
-
     # JWT Access Token expiry In Days
     ACCESS_TOKEN_EXPIRY = '1'
 
@@ -279,7 +270,7 @@ Elevate user services can be setup in local using two methods:
 -   Node - 16.0.0
 -   Kafka - 3.1.0
 -   Jest - 28.1.1
--   MongoDB - 4.4.14
+-   MongoDB - 4.1.4
 -   Redis - 7.0.0
 
 # Migrations Commands
@@ -405,4 +396,3 @@ Several open source dependencies that have aided user service development:
 
 <!-- ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 ![CircleCI](https://img.shields.io/badge/circle%20ci-%23161616.svg?style=for-the-badge&logo=circleci&logoColor=white) -->
-

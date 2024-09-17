@@ -18,6 +18,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class AdminHelper {
 	/**
@@ -41,7 +42,7 @@ module.exports = class AdminHelper {
 			let updateParams = _generateUpdateParams(userId)
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
-			await userQueries.updateUser({ email: user.email }, update)
+			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, update)
 			delete update.id
 			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
 
@@ -70,8 +71,9 @@ module.exports = class AdminHelper {
 	 */
 	static async create(bodyData) {
 		try {
-			const email = bodyData.email.toLowerCase()
-			const user = await UserCredentialQueries.findOne({ email: email })
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const user = await UserCredentialQueries.findOne({ email: encryptedEmailId })
 
 			if (user) {
 				return common.failureResponse({
@@ -99,8 +101,8 @@ module.exports = class AdminHelper {
 				)
 				bodyData.organization_id = organization.id
 			}
-
 			bodyData.password = utils.hashPassword(bodyData.password)
+			bodyData.email = encryptedEmailId
 			const createdUser = await userQueries.create(bodyData)
 			const userCredentialsBody = {
 				email: bodyData.email,
@@ -108,12 +110,20 @@ module.exports = class AdminHelper {
 				organization_id: createdUser.organization_id,
 				user_id: createdUser.id,
 			}
-			await UserCredentialQueries.create(userCredentialsBody)
+			const userData = await UserCredentialQueries.create(userCredentialsBody)
+			if (!userData?.id) {
+				return common.failureResponse({
+					message: userData,
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			return common.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -129,7 +139,9 @@ module.exports = class AdminHelper {
 	 */
 	static async login(bodyData) {
 		try {
-			const userCredentials = await UserCredentialQueries.findOne({ email: bodyData.email.toLowerCase() })
+			const plaintextEmailId = bodyData.email.toLowerCase()
+			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const userCredentials = await UserCredentialQueries.findOne({ email: encryptedEmailId })
 			if (!userCredentials) {
 				return common.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
@@ -197,6 +209,7 @@ module.exports = class AdminHelper {
 				result,
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
@@ -213,8 +226,10 @@ module.exports = class AdminHelper {
 		try {
 			let userCredentials
 			if (emailId) {
+				const plaintextEmailId = emailId.toLowerCase()
+				const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 				userCredentials = await UserCredentialQueries.findOne({
-					email: emailId.toLowerCase(),
+					email: encryptedEmailId,
 				})
 			} else {
 				userCredentials = await UserCredentialQueries.findOne({
@@ -437,6 +452,7 @@ module.exports = class AdminHelper {
 	 */
 	static async deactivateUser(bodyData, loggedInUserId) {
 		try {
+			let filterQuery = {}
 			for (let item in bodyData) {
 				filterQuery[item] = {
 					[Op.in]: bodyData[item],
@@ -446,8 +462,9 @@ module.exports = class AdminHelper {
 			let userIds = []
 
 			if (bodyData.email) {
+				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
 				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: bodyData.email } },
+					{ email: { [Op.in]: encryptedEmailIds } },
 					{
 						attributes: ['user_id'],
 					}
@@ -484,9 +501,11 @@ module.exports = class AdminHelper {
 				message: 'USER_DEACTIVATED',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
+
 	static async triggerViewRebuild(decodedToken) {
 		try {
 			const result = await adminService.triggerViewBuild()

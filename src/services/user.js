@@ -17,6 +17,8 @@ const organizationQueries = require('@database/queries/organization')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const _ = require('lodash')
 const { Op } = require('sequelize')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const emailEncryption = require('@utils/emailEncryption')
 
 module.exports = class UserHelper {
 	/**
@@ -63,6 +65,7 @@ module.exports = class UserHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
@@ -87,6 +90,19 @@ module.exports = class UserHelper {
 				bodyData
 			)
 
+			const currentUser = updatedData[0]
+
+			const currentName = currentUser.dataValues.name
+			const previousName = currentUser._previousDataValues?.name || null
+
+			if (currentName !== previousName) {
+				eventBroadcaster('updateName', {
+					requestBody: {
+						mentor_name: currentName,
+						mentor_id: id,
+					},
+				})
+			}
 			const redisUserKey = common.redisUserPrefix + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
@@ -97,6 +113,7 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
+			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 			return common.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -180,6 +197,7 @@ module.exports = class UserHelper {
 					organization_id: {
 						[Op.in]: [user.organization_id, defaultOrgId],
 					},
+					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)
@@ -187,13 +205,14 @@ module.exports = class UserHelper {
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
-
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
 					result: processDbResponse ? processDbResponse : {},
 				})
 			} else {
+				userDetails.email = emailEncryption.decrypt(userDetails.email)
 				return common.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',

@@ -4,6 +4,7 @@
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		let roleData = []
+		const defaultOrgId = queryInterface.sequelize.options.defaultOrgId
 		let eachRow = {
 			title: 'org_admin',
 			user_type: 1,

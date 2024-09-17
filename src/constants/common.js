@@ -31,6 +31,9 @@ const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode =
 	return error
 }
 
+function getPaginationOffset(page, limit) {
+	return (page - 1) * limit
+}
 module.exports = {
 	pagination: {
 		DEFAULT_PAGE_NO: 1,
@@ -38,6 +41,7 @@ module.exports = {
 	},
 	successResponse,
 	failureResponse,
+	getPaginationOffset,
 	guestUrls: [
 		'/user/v1/account/login',
 		'/user/v1/account/create',
@@ -46,7 +50,6 @@ module.exports = {
 		'/user/v1/account/registrationOtp',
 		'/user/v1/account/resetPassword',
 		'/user/v1/admin/login',
-		'/user/v1/userRole/list',
 	],
 	internalAccessUrls: [
 		'/user/v1/profile/details',
@@ -58,6 +61,9 @@ module.exports = {
 		'/user/v1/admin/triggerViewRebuildInternal',
 		'/user/v1/admin/triggerPeriodicViewRefreshInternal',
 		'/user/v1/account/search',
+		'/user/v1/organization/list',
+		'/user/v1/userRole/default',
+		'/user/v1/userRole/list',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: `${process.env.ACCESS_TOKEN_EXPIRY}d`,
@@ -90,12 +96,12 @@ module.exports = {
 	INACTIVE_STATUS: 'INACTIVE',
 	MENTOR_ROLE: 'mentor',
 	MENTEE_ROLE: 'mentee',
+	SESSION_MANAGER_ROLE: 'session_manager',
 	redisUserPrefix: 'user_',
 	redisOrgPrefix: 'org_',
 	location: 'location',
 	languages: 'languages',
 	typeSystem: 'system',
-	ORG_ADMIN_ROLE: 'org_admin',
 	UPLOADED_STATUS: 'UPLOADED',
 	FAILED_STATUS: 'FAILED',
 	PROCESSED_STATUS: 'PROCESSED',
@@ -115,4 +121,6 @@ module.exports = {
 	NO_OF_ATTEMPTS: 3,
 	materializedViewsPrefix: 'm_',
 	DELETED_STATUS: 'DELETED',
+	DEFAULT_ORG_VISIBILITY: 'PUBLIC',
+	ROLE_TYPE_NON_SYSTEM: 0,
 }
