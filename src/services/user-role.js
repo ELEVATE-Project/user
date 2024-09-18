@@ -133,6 +133,10 @@ module.exports = class userRoleHelper {
 
 	static async list(filters, page, limit, search, userOrganizationId) {
 		try {
+			let result = {
+				data: [],
+				count: 0,
+			}
 			delete filters.search
 			const offset = common.getPaginationOffset(page, limit)
 			const options = {
@@ -152,22 +156,21 @@ module.exports = class userRoleHelper {
 			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
 			const roles = await roleQueries.findAllRoles(filter, attributes, options)
 
-			if (roles.rows == 0 || roles.count == 0) {
-				return responses.failureResponse({
-					message: 'ROLES_HAS_EMPTY_LIST',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			if (!roles.rows.length > 0 || roles.count == 0) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ROLES_FETCHED_SUCCESSFULLY',
+					result,
 				})
 			}
-			const results = {
-				data: roles.rows,
-				count: roles.count,
-			}
+
+			result.data = roles.rows
+			result.count = roles.count
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ROLES_FETCHED_SUCCESSFULLY',
-				result: results,
+				result,
 			})
 		} catch (error) {
 			throw error
