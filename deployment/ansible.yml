@@ -82,8 +82,10 @@
       ignore_errors: yes
 
     - name: Delete release folder
-      shell: rm -rf  {{ release_path }}
-
+      file:
+        path: "{{ release_path }}"
+        state: absent
+        
     - name: Start pm2
       command: "chdir={{current_path}}/src pm2 start app.js -i 2 --name {{ serviceName }}"
       register: pm2Info
