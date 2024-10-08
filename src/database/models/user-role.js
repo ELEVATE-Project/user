@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				unique: true,
 			},
+			label: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
 			user_type: {
 				type: DataTypes.INTEGER,
 				allowNull: false,

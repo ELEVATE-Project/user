@@ -33,6 +33,13 @@ module.exports = {
 			.matches(/^[A-Z_]+$/)
 			.withMessage('visibility is invalid, must not contain spaces')
 
+		req.checkBody('label')
+			.trim()
+			.notEmpty()
+			.withMessage('label field is empty')
+			.matches(/^[A-Z][a-zA-Z\s]*$/)
+			.withMessage('label is invalid, first letter must be capital')
+
 		req.checkBody('status')
 			.trim()
 			.matches(/^[A-Za-z]*$/)
