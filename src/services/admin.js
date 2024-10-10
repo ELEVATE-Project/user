@@ -179,10 +179,10 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const isPasswordCorrect = utils.comparePassword(bodyData.password, user.password)
+			const isPasswordCorrect = utils.comparePassword(bodyData.password, userCredentials.password)
 			if (!isPasswordCorrect) {
 				return responses.failureResponse({
-					message: 'PASSWORD_INVALID',
+					message: 'USERNAME_OR_PASSWORD_IS_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
