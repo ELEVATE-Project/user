@@ -5,8 +5,6 @@
  * Description : All commonly used constants through out the service
  */
 
-const { getDownloadableUrl } = require('@services/files')
-
 function getPaginationOffset(page, limit) {
 	return (page - 1) * limit
 }
