@@ -1062,6 +1062,11 @@ module.exports = class AccountHelper {
 					}
 				)
 
+				users.map(async (user) => {
+					user['image_cloud_path'] = user.image
+					return user
+				})
+
 				users.forEach(async (user) => {
 					if (user.roles && user.roles.length > 0) {
 						let roleData = roles.filter((role) => user.roles.includes(role.id))
@@ -1100,6 +1105,7 @@ module.exports = class AccountHelper {
 				await Promise.all(
 					users.data.map(async (user) => {
 						/* Assigned image url from the stored location */
+						user['image_cloud_path'] = user.image
 						if (user.image) {
 							user.image = await utilsHelper.getDownloadableUrl(user.image)
 						}
