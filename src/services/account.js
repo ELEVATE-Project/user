@@ -619,7 +619,7 @@ module.exports = class AccountHelper {
 		let redisData = (await utilsHelper.redisGet(sessionId)) || {}
 		console.log('redisData : ', redisData)
 		// if idle time set to infinity then db check should be done
-		if (!redisData && process.env.ALLOWED_IDLE_TIME == null) {
+		if (!Object.keys(redisData).length && process.env.ALLOWED_IDLE_TIME == null) {
 			const userSessionData = await userSessionsService.findUserSession(
 				{
 					id: decodedToken.data.session_id,
