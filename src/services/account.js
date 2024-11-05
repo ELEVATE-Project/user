@@ -617,7 +617,7 @@ module.exports = class AccountHelper {
 		// let redisData = {}
 		// redisData = await utilsHelper.redisGet(sessionId)
 		let redisData = (await utilsHelper.redisGet(sessionId)) || {}
-
+		console.log('redisData : ', redisData)
 		// if idle time set to infinity then db check should be done
 		if (!redisData && process.env.ALLOWED_IDLE_TIME == null) {
 			const userSessionData = await userSessionsService.findUserSession(
@@ -628,6 +628,7 @@ module.exports = class AccountHelper {
 					attributes: ['refresh_token'],
 				}
 			)
+			console.log('userdata : ', userSessionData)
 			if (!userSessionData) {
 				return responses.failureResponse({
 					message: 'REFRESH_TOKEN_NOT_FOUND',
@@ -640,6 +641,7 @@ module.exports = class AccountHelper {
 
 		// If data is not in redis, token is invalid
 		if (!redisData || redisData.refreshToken !== bodyData.refresh_token) {
+			console.log('error thrown from this block+++++++')
 			return responses.failureResponse({
 				message: 'REFRESH_TOKEN_NOT_FOUND',
 				statusCode: httpStatusCode.unauthorized,
