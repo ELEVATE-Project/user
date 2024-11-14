@@ -1029,6 +1029,7 @@ module.exports = class AccountHelper {
 						userIdsNotFoundInRedis.push(userIds[i])
 					} else {
 						if (userDetails.image) {
+							userDetails['image_cloud_path'] = user.image
 							userDetails.image = await utils.getDownloadableUrl(userDetails.image)
 						}
 						userDetailsFoundInRedis.push(userDetails)
@@ -1062,11 +1063,6 @@ module.exports = class AccountHelper {
 					}
 				)
 
-				users.map(async (user) => {
-					user['image_cloud_path'] = user.image
-					return user
-				})
-
 				users.forEach(async (user) => {
 					if (user.roles && user.roles.length > 0) {
 						let roleData = roles.filter((role) => user.roles.includes(role.id))
@@ -1074,6 +1070,10 @@ module.exports = class AccountHelper {
 						// await utilsHelper.redisSet(element._id.toString(), element)
 					}
 					user.email = emailEncryption.decrypt(user.email)
+					if (user.image) {
+						user['image_cloud_path'] = user.image
+						user.image = await utils.getDownloadableUrl(userDetails.image)
+					}
 				})
 
 				return responses.successResponse({
@@ -1105,8 +1105,8 @@ module.exports = class AccountHelper {
 				await Promise.all(
 					users.data.map(async (user) => {
 						/* Assigned image url from the stored location */
-						user['image_cloud_path'] = user.image
 						if (user.image) {
+							user['image_cloud_path'] = user.image
 							user.image = await utilsHelper.getDownloadableUrl(user.image)
 						}
 						return user
