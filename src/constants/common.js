@@ -17,7 +17,6 @@ module.exports = {
 	internalAccessUrls: [
 		'/user/v1/profile/details',
 		'/user/v1/account/list',
-		'/user/v1/user/read',
 		'/user/v1/admin/create',
 		'/user/v1/organization/read',
 		'/user/v1/user/share',
@@ -28,6 +27,7 @@ module.exports = {
 		'/user/v1/user-role/default',
 		'/user/v1/account/validateUserSession',
 		'/user/v1/account/validatingEmailIds',
+		'/v1/cloud-services/file/getDownloadableUrl',
 	],
 	notificationEmailType: 'email',
 	accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY,
