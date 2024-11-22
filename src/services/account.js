@@ -614,11 +614,10 @@ module.exports = class AccountHelper {
 		const sessionId = decodedToken.data.session_id.toString()
 
 		// Get data from redis
-		let redisData = {}
-		redisData = await utilsHelper.redisGet(sessionId)
+		let redisData = (await utilsHelper.redisGet(sessionId)) || {}
 
 		// if idle time set to infinity then db check should be done
-		if (!redisData && process.env.ALLOWED_IDLE_TIME == null) {
+		if (!Object.keys(redisData).length && process.env.ALLOWED_IDLE_TIME == null) {
 			const userSessionData = await userSessionsService.findUserSession(
 				{
 					id: decodedToken.data.session_id,
