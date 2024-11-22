@@ -1028,7 +1028,7 @@ module.exports = class AccountHelper {
 						userIdsNotFoundInRedis.push(userIds[i])
 					} else {
 						if (userDetails.image) {
-							userDetails['image_cloud_path'] = user.image
+							userDetails['image_cloud_path'] = userDetails.image
 							userDetails.image = await utils.getDownloadableUrl(userDetails.image)
 						}
 						userDetailsFoundInRedis.push(userDetails)
