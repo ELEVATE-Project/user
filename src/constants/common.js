@@ -17,6 +17,7 @@ module.exports = {
 	internalAccessUrls: [
 		'/user/v1/profile/details',
 		'/user/v1/account/list',
+		'/user/v1/user/read',
 		'/user/v1/admin/create',
 		'/user/v1/organization/read',
 		'/user/v1/user/share',
