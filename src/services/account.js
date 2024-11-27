@@ -24,6 +24,7 @@ const userInviteQueries = require('@database/queries/orgUserInvite')
 const entityTypeQueries = require('@database/queries/entityType')
 const utils = require('@generics/utils')
 const { Op } = require('sequelize')
+const sequelize = require('@database/models/index').sequelize
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
@@ -46,6 +47,7 @@ module.exports = class AccountHelper {
 
 	static async create(bodyData, deviceInfo) {
 		const projection = ['password']
+		const transaction = await sequelize.transaction()
 
 		try {
 			const plaintextEmailId = bodyData.email.toLowerCase()
@@ -199,7 +201,7 @@ module.exports = class AccountHelper {
 			delete bodyData.role
 			bodyData.email = encryptedEmailId
 
-			const insertedUser = await userQueries.create(bodyData)
+			const insertedUser = await userQueries.create(bodyData, transaction)
 
 			const userCredentialsBody = {
 				email: encryptedEmailId,
@@ -216,11 +218,14 @@ module.exports = class AccountHelper {
 					{ user_id: insertedUser.id, password: bodyData.password },
 					{
 						raw: true,
-					}
+					},
+					transaction
 				)
 			} else {
-				userCredentials = await UserCredentialQueries.create(userCredentialsBody)
+				userCredentials = await UserCredentialQueries.create(userCredentialsBody, transaction)
 			}
+			await transaction.commit()
+
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findUserWithOrganization(
 				{ id: insertedUser.id, organization_id: insertedUser.organization_id },
@@ -373,6 +378,7 @@ module.exports = class AccountHelper {
 			})
 		} catch (error) {
 			console.log(error)
+			await transaction.rollback()
 			throw error
 		}
 	}
