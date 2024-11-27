@@ -1345,6 +1345,55 @@
 			"rateLimit": {
 				"type": "public-low"
 			}
+		},
+		{
+			"sourceRoute": "/interface/v1/mentors/details/:id",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": true,
+			"orchestrated": true,
+			"responseMessage": "Profile fetched successfully.",
+			"targetPackages": [
+				{
+					"basePackageName": "mentoring",
+					"packageName": "elevate-mentoring",
+					"targetBody": [],
+					"responseBody": []
+				},
+				{
+					"basePackageName": "user",
+					"packageName": "elevate-user",
+					"targetBody": [],
+					"responseBody": []
+				}
+			]
+		},
+		{
+			"sourceRoute": "/interface/v1/profile/read",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": true,
+			"orchestrated": true,
+			"responseMessage": "Profile fetched successfully.",
+			"targetPackages": [
+				{
+					"basePackageName": "user",
+					"packageName": "elevate-user",
+					"targetBody": [],
+					"responseBody": []
+				},
+				{
+					"basePackageName": "mentoring",
+					"packageName": "elevate-mentoring",
+					"targetBody": [],
+					"responseBody": [
+						{
+							"sourceField": "permissions",
+							"targetField": "user.permissions[]"
+						}
+					]
+				}
+			]
 		}
 	]
 }
