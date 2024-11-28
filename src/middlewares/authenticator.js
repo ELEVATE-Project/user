@@ -88,9 +88,7 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if (!authHeader) {
-			if (internalAccess && !authHeader) return next()
-		}
+		if (internalAccess && !authHeader) return next()
 
 		if (!authHeader) {
 			try {
