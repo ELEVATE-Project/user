@@ -55,7 +55,9 @@ module.exports = async function (req, res, next) {
 		const internalAccess = common.internalAccessUrls.some((path) => {
 			if (req.path.includes(path)) {
 				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
-				else throw unAuthorizedResponse
+				else if (!authHeader) {
+					throw unAuthorizedResponse
+				}
 			}
 			return false
 		})
