@@ -86,16 +86,6 @@ let enviromentVariables = {
 		message: 'Redis Host Url',
 		optional: false,
 	},
-	KEY: {
-		message: 'Key is missing for email encryption',
-		optional: true,
-		default: 'E/m3RD/aM3Ed3lLfYVcKizakG9R+bFybAPZSLjIP2hY=',
-	},
-	IV: {
-		message: 'iv is missing for email encryption',
-		optional: true,
-		default: 'LHYOA5YnTonqcgrm15k3/Q==',
-	},
 	ERROR_LOG_LEVEL: {
 		message: 'Required Error log level',
 		optional: true,
@@ -169,13 +159,11 @@ let enviromentVariables = {
 	},
 	EMAIL_ID_ENCRYPTION_KEY: {
 		message: 'Required Email ID Encryption Key',
-		optional: true,
-		default: '9bbf4698e081176b4e38c3f04f9c0cff6ae80b1960e5ac868cc234ac8537aa66',
+		optional: false,
 	},
 	EMAIL_ID_ENCRYPTION_IV: {
 		message: 'Required Email ID Encryption IV',
-		optional: true,
-		default: 'a390328e496f025249a88384f318a536',
+		optional: false,
 	},
 	EMAIL_ID_ENCRYPTION_ALGORITHM: {
 		message: 'Required Email ID Encryption Algorithm',
@@ -185,7 +173,7 @@ let enviromentVariables = {
 	ENABLE_EMAIL_OTP_VERIFICATION: {
 		message: 'Required Email otp verification ',
 		optional: true,
-		default: 'false',
+		default: 'true',
 	},
 	ENABLE_LOG: {
 		message: 'Required ENABLE LOG ',
