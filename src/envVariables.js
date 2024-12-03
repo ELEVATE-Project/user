@@ -94,7 +94,7 @@ let enviromentVariables = {
 	DISABLE_LOG: {
 		message: 'Required disable log level',
 		optional: true,
-		default: 'false',
+		default: true,
 	},
 	ADMIN_SECRET_CODE: {
 		message: 'Required Admin secret code',
@@ -265,23 +265,23 @@ let enviromentVariables = {
 	},
 	CLOUD_STORAGE_PROVIDER: {
 		message: 'Require cloud storage provider, in azure,aws, gcloud,oci and s3',
-		optional: false,
+		optional: true,
 	},
 	CLOUD_STORAGE_SECRET: {
 		message: 'Require client storage provider identity',
-		optional: false,
+		optional: true,
 	},
 	CLOUD_STORAGE_BUCKETNAME: {
 		message: 'Require client storage bucket name',
-		optional: false,
+		optional: true,
 	},
 	CLOUD_STORAGE_BUCKET_TYPE: {
 		message: 'Require storage bucket type',
-		optional: false,
+		optional: true,
 	},
 	PUBLIC_ASSET_BUCKETNAME: {
 		message: 'Require asset storage bucket name',
-		optional: false,
+		optional: true,
 	},
 	CLOUD_STORAGE_REGION: {
 		message: 'Require storage region',
@@ -293,7 +293,7 @@ let enviromentVariables = {
 	},
 	CLOUD_STORAGE_ACCOUNTNAME: {
 		message: 'Require account name',
-		optional: false,
+		optional: true,
 	},
 	APPLICATION_BASE_URL: {
 		message: 'Require Base URL',
