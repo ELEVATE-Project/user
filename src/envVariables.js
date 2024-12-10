@@ -261,23 +261,23 @@ let enviromentVariables = {
 	},
 	CLOUD_STORAGE_PROVIDER: {
 		message: 'Require cloud storage provider, in azure,aws, gcloud,oci and s3',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_SECRET: {
 		message: 'Require client storage provider identity',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_BUCKETNAME: {
 		message: 'Require client storage bucket name',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_BUCKET_TYPE: {
 		message: 'Require storage bucket type',
-		optional: true,
+		optional: false,
 	},
 	PUBLIC_ASSET_BUCKETNAME: {
 		message: 'Require asset storage bucket name',
-		optional: true,
+		optional: false,
 	},
 	CLOUD_STORAGE_REGION: {
 		message: 'Require storage region',
@@ -289,7 +289,7 @@ let enviromentVariables = {
 	},
 	CLOUD_STORAGE_ACCOUNTNAME: {
 		message: 'Require account name',
-		optional: true,
+		optional: false,
 	},
 	APPLICATION_BASE_URL: {
 		message: 'Require Base URL',
