@@ -17,7 +17,7 @@
 		"integration": "node app.js",
 		"test:integration": "jest --verbose ./integration-test  --config=integrationJest.config.js --runInBand",
 		"db:init": "sequelize-cli db:create || echo 'Database already exists or some issue while creating db, Please check' && sequelize-cli db:migrate ",
-		"db:seed:all": "sequelize-cli db:seed:all"
+		"db:seed:all": "sequelize-cli db:seed:all || echo 'Seeded data already exists or some issue while seeding the data, Please check' "
 	},
 	"author": "Aman Kumar Gupta <amangupta15jan@gmail.com>",
 	"license": "ISC",
