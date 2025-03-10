@@ -1071,7 +1071,7 @@ module.exports = class AccountHelper {
 					user.email = emailEncryption.decrypt(user.email)
 					if (user.image) {
 						user['image_cloud_path'] = user.image
-						user.image = await utils.getDownloadableUrl(userDetails.image)
+						user.image = await utils.getDownloadableUrl(user.image)
 					}
 				})
 
