@@ -303,6 +303,7 @@ module.exports = class UserHelper {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
+				processDbResponse['image_cloud_path'] = processDbResponse.image
 				if (processDbResponse && processDbResponse.image) {
 					processDbResponse.image = await utils.getDownloadableUrl(processDbResponse.image)
 				}
