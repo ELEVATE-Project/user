@@ -219,4 +219,21 @@ module.exports = class OrgAdmin {
 			return error
 		}
 	}
+
+	async createUsers(req) {
+		try {
+			/* if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+ */
+			const userUploadRes = await orgAdminService.bulkCreate(req.body.file_path, req.decodedToken)
+			return userUploadRes
+		} catch (error) {
+			return error
+		}
+	}
 }

@@ -101,6 +101,70 @@ module.exports = class OrgAdminHelper {
 		}
 	}
 
+	static async bulkCreate(filePath, tokenInformation) {
+		try {
+			const { id, organization_id } = tokenInformation
+			const { name, email } = await userQueries.findOne(
+				{ id, organization_id },
+				{ attributes: ['name', 'email'] }
+			)
+			const adminPlaintextEmailId = emailEncryption.decrypt(email)
+
+			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
+
+			const creationData = {
+				name: utils.extractFilename(filePath),
+				input_path: filePath,
+				type: common.fileTypeCSV,
+				organization_id,
+				created_by: id,
+			}
+
+			const result = await fileUploadQueries.create(creationData)
+
+			if (!result?.id) {
+				return responses.successResponse({
+					responseCode: 'CLIENT_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					message: 'USER_CSV_UPLOADED_FAILED',
+				})
+			}
+
+			//push to queue
+			const redisConfiguration = utils.generateRedisConfigForQueue()
+			const invitesQueue = new Queue(process.env.DEFAULT_QUEUE, redisConfiguration)
+			await invitesQueue.add(
+				'bulk_user_create',
+				{
+					fileDetails: result,
+					user: {
+						id,
+						name,
+						email: adminPlaintextEmailId,
+						organization_id,
+						org_name: organization.name,
+					},
+				},
+				{
+					removeOnComplete: true,
+					attempts: 1 || common.NO_OF_ATTEMPTS,
+					backoff: {
+						type: 'fixed',
+						delay: common.BACK_OFF_RETRY_QUEUE, // Wait 10 min between attempts
+					},
+				}
+			)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_CSV_UPLOADED',
+				result: result,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 	/**
 	 * List of uploaded invitee file
 	 * @method
