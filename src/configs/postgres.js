@@ -17,6 +17,7 @@ module.exports = {
 			updatedAt: 'updated_at',
 			deletedAt: 'deleted_at',
 		},
+		//logging: false,
 		defaultOrgId: parseInt(process.env.DEFAULT_ORG_ID),
 	},
 	test: {

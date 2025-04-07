@@ -2,6 +2,7 @@
 const { Worker } = require('bullmq')
 const fs = require('fs')
 const userInviteService = require('@services/userInvite')
+const userBulkCreateService = require('../helpers/userInvite')
 const common = require('@constants/common')
 const utils = require('@generics/utils')
 const path = require('path')
@@ -23,16 +24,38 @@ module.exports = function () {
 		const worker = new Worker(
 			process.env.DEFAULT_QUEUE,
 			async (job) => {
-				if (job.name == 'upload_invites') {
-					console.log(`Processing job ${job.id}: ${job.data}`)
-					let response = await userInviteService.uploadInvites(job.data)
-					console.log(response, 'response from invitee upload--------')
-					if (!response.success) {
-						logger.info(`Job with id ${job.id} Error ${response.message}`)
+				const startTime = Date.now()
+
+				try {
+					logger.info(`Started processing job ${job.name} with ID: ${job.id}`)
+
+					let response
+
+					if (job.name === 'upload_invites') {
+						response = await userInviteService.uploadInvites(job.data)
+						logger.info(`upload_invites response: ${JSON.stringify(response)}`)
+					} else if (job.name === 'bulk_user_create') {
+						response = await userBulkCreateService.uploadInvites(job.data)
+						logger.info(`bulk_user_create response: ${JSON.stringify(response)}`)
 					}
+
+					if (!response?.success) {
+						logger.error(`Job ${job.name} (${job.id}) failed: ${response?.message}`)
+					}
+				} catch (err) {
+					logger.error(`Job ${job.name} (${job.id}) threw an error: ${err.message}`)
+					throw err
+				} finally {
+					const endTime = Date.now()
+					const duration = ((endTime - startTime) / 1000).toFixed(2)
+					logger.info(`Job ${job.name} (${job.id}) completed in ${duration} seconds`)
 				}
 			},
-			redisConfiguration
+			{
+				...redisConfiguration,
+				lockDuration: 200000, // 2 minutes
+				lockRenewTime: 15000, // Renew lock every 15 seconds
+			}
 		)
 
 		worker.concurrency = 5
