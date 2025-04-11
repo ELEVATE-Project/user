@@ -96,4 +96,5 @@ module.exports = {
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
 	TYPE_ALL: 'all',
+	ENGLISH_LANGUGE_CODE: 'en',
 }

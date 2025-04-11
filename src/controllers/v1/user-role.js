@@ -19,6 +19,7 @@ module.exports = class userRole {
 	 * @param {Integer} req.body.userType - User type of the role.
 	 * @param {String} req.body.status - Role status.
 	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {String} req.body.translations - Translation for roles.
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role creation details.
 	 */
@@ -42,6 +43,7 @@ module.exports = class userRole {
 	 * @param {Integer} req.body.userType - User type of the role.
 	 * @param {String} req.body.status - Role status.
 	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {String} req.body.translations - Translation for roles.
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role update details.
 	 */

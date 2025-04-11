@@ -226,10 +226,11 @@ module.exports = class UserHelper {
 	 * @method
 	 * @name read
 	 * @param {string} _id -userId.
+	 * @param {string} language -Language code.
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - user information
 	 */
-	static async read(id, internal_access_token = null) {
+	static async read(id, internal_access_token = null, language) {
 		try {
 			let filter = {}
 
@@ -273,6 +274,21 @@ module.exports = class UserHelper {
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.not_acceptable,
 						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				if (language && language !== common.ACTIVE_STATUS) {
+					roles.map((roles) => {
+						if (roles.translations) {
+							const roleTranslation = roles.translations[language] || roles.translations['en']
+							roles.label = roleTranslation?.title || roles.title
+						}
+						delete roles.translations
+						return roles
+					})
+				} else {
+					roles.map((roles) => {
+						delete roles.translations
+						return roles
 					})
 				}
 

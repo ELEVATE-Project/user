@@ -34,12 +34,17 @@ module.exports = class User {
 	 * @name read
 	 * @param {Object} req -request data.
 	 * @param {string} req.params.id - user id.
+	 * @query {string} req.query.language - Language code.
 	 * @param {string} req.headers.internal_access_token - to get deleted user details
 	 * @returns {JSON} - returns user details.
 	 */
 	async read(req) {
 		try {
-			const userDetails = await userService.read(req.params.id ? req.params.id : req.decodedToken.id, req.headers)
+			const userDetails = await userService.read(
+				req.params.id ? req.params.id : req.decodedToken.id,
+				req.headers,
+				req.query.language ? req.query.language : ''
+			)
 			return userDetails
 		} catch (error) {
 			return error
