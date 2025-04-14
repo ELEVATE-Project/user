@@ -17,14 +17,14 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
+							"raw": "{\n    \"name\": \"Suman V\",\n    \"email\":\"anekal17398@guerrillamail.com\",\n    \"password\":\"PPassword@@@123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/create"
+						"url": "{{UserDevBaseUrl}}interface/v1/account/create"
 					},
 					"response": []
 				},
@@ -57,7 +57,8 @@
 									"pm.environment.set(\"token\", jsonBody.result.access_token);",
 									"pm.environment.set(\"refresh_token\", jsonBody.result.refresh_token);"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -69,33 +70,19 @@
 							"urlencoded": [
 								{
 									"key": "email",
-									"value": "nevil@tunerlabs.com",
-									"description": "dev mentor",
+									"value": "jubedhashaik029@gmail.com\n",
 									"type": "text",
 									"disabled": true
 								},
 								{
 									"key": "password",
-									"value": "testing1234",
-									"description": "dev mentor",
+									"value": "PAssword@@123$",
 									"type": "text",
 									"disabled": true
 								},
 								{
 									"key": "email",
-									"value": "priyanka@tunerlabs.com",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "testing",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "suman.v@pacewisdom.com",
+									"value": "vishwanath.b@pacewisdom.com",
 									"type": "text",
 									"disabled": true
 								},
@@ -107,41 +94,13 @@
 								},
 								{
 									"key": "email",
-									"value": "suman@shikshalokam.org",
+									"value": "subashcs1998@yahoo.com",
 									"type": "text",
 									"disabled": true
 								},
 								{
 									"key": "password",
-									"value": "testing",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "suman@shikshalokam.org",
-									"description": "dev mentee",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "Suman@1234",
-									"description": "mentee dev",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "slmentoredtestaccdeai9iql9q@yopmail.com",
-									"description": "admin dev",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "0KaOe0Ku5X",
-									"description": "admin dev",
+									"value": "password",
 									"type": "text",
 									"disabled": true
 								},
@@ -153,18 +112,83 @@
 								},
 								{
 									"key": "password",
+									"value": "Password@123",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "thippeswamy.kv@tibilsolutions.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
 									"value": "password",
 									"type": "text",
 									"disabled": true
 								},
 								{
 									"key": "email",
-									"value": "adminmaster@admin.com",
-									"type": "text"
+									"value": "moonadmin@spam4.me",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "Password@123",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "earthadmin@yopmail.com",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "PassworD@@@123",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "prideadmin@pokemail.net",
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
 									"value": "password",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "venusadmin@grr.la",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "password",
+									"value": "password",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "adithya@shikshalokam.org",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "WWWelcome@@@123",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "Welcome@123",
 									"type": "text"
 								}
 							]
@@ -407,6 +431,60 @@
 						"url": "{{UserDevBaseUrl}}user/v1/account/list"
 					},
 					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "oldPassword",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "newPassword",
+									"value": "Password@123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "changePassword"],
+							"query": [
+								{
+									"key": "oldPassword",
+									"value": "Babu@10120",
+									"disabled": true
+								},
+								{
+									"key": "newPassword",
+									"value": "password",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "UserSessions",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			]
 		},
@@ -422,11 +500,6 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							},
-							{
 								"key": "internal_access_token",
 								"value": "{{internal_access_token}}",
 								"type": "text"
@@ -436,7 +509,7 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/read/1"
+						"url": "{{UserDevBaseUrl}}user/v1/user/read/1072"
 					},
 					"response": []
 				},
@@ -465,6 +538,30 @@
 					"response": []
 				},
 				{
+					"name": "Update Language Copy",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"preferred_language\" : \"en\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:3567/user/v1/user/updateLanguage"
+					},
+					"response": []
+				},
+				{
 					"name": "Share User",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -485,125 +582,8 @@
 						"url": "{{UserDevBaseUrl}}user/v1/user/share/1"
 					},
 					"response": []
-				},
-				{
-					"name": "Set Language Preferences",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"preferred_language\" : \"en\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/setLanguagePreference"
-					},
-					"response": []
 				}
 			]
-		},
-		{
-			"name": "User Role",
-			"item": [
-				{
-					"name": "List User Roles",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}",
-								"type": "text"
-							},
-							{
-								"key": "internal_access_token",
-								"value": "{{internal_access_token}}",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": "{{interfaceBaseUrl}}elevate-user/v1/user-role/list"
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Create User Roles",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create"
-			},
-			"response": []
-		},
-		{
-			"name": "Update User Roles",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User Roles",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}"
-					}
-				],
-				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
-			},
-			"response": []
 		},
 		{
 			"name": "Form",
@@ -645,7 +625,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"profile\",\n\t\"sub_type\": \"profileForm\"\n}",
+							"raw": "{\n    \"type\": \"editProfile\",\n\t\"sub_type\": \"editProfileForm\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -734,13 +714,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getDownloadableUrl?filePath=users/2-1695710833829-user_creation.csv",
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getDownloadableUrl?filePath=userInviteStatusCSV/16/output-user-invite2024_08_08_20_11.csv",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "cloud-services", "file", "getDownloadableUrl"],
 							"query": [
 								{
 									"key": "filePath",
-									"value": "users/2-1695710833829-user_creation.csv"
+									"value": "userInviteStatusCSV/16/output-user-invite2024_08_08_20_11.csv"
 								}
 							]
 						}
@@ -765,6 +745,52 @@
 							}
 						],
 						"url": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV"
+					},
+					"response": []
+				},
+				{
+					"name": "https://storage.googleapis.com/mentoring-dev-storage-private/users/225-1712299752691-laptop1.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com%2F20240405%2Fauto%2Fstorage%2Fgoog4_requ",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://storage.googleapis.com/mentoring-dev-storage-private/users/225-1712299752691-laptop1.jpg?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com%2F20240405%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20240405T064912Z&X-Goog-Expires=121&X-Goog-SignedHeaders=content-type%3Bhost&X-Goog-Signature=66ad1e21d35308e7bbb41c5abb1e787d241a7686fea24924972d47d5532731271eb1bc6e3080e47e296054e01b976ef51d72950d26f029578403b7de6ab323dff4a03c5bb5fdb05d150f5334a0a6cd479dc74f37d3cb8396456c431a9232bf5b236b5ab09e2d885f82849a69ca84093b539a0b3e1dd8fc117c6eb4d33f64951b3c879f5aae52e910ea391c8d4880c3fe7ebd5bb29118b921b26c5b8b56e4d2b2217a3c0a1ae4fa545dd44ad5becaba8f62d6e38e32267585c41f45c325c5c5af7a7feadc35a25290e9a49d4a6e126de219694e30a0e88f0065eee184ef0d8d3f56d26bb5d0606f39bf41bfc9964441091999d83f1e2b4838f086b11586c35942",
+							"protocol": "https",
+							"host": ["storage", "googleapis", "com"],
+							"path": ["mentoring-dev-storage-private", "users", "225-1712299752691-laptop1.jpg"],
+							"query": [
+								{
+									"key": "X-Goog-Algorithm",
+									"value": "GOOG4-RSA-SHA256"
+								},
+								{
+									"key": "X-Goog-Credential",
+									"value": "sl-mentoring-dev-storage%40sl-dev-project.iam.gserviceaccount.com%2F20240405%2Fauto%2Fstorage%2Fgoog4_request"
+								},
+								{
+									"key": "X-Goog-Date",
+									"value": "20240405T064912Z"
+								},
+								{
+									"key": "X-Goog-Expires",
+									"value": "121"
+								},
+								{
+									"key": "X-Goog-SignedHeaders",
+									"value": "content-type%3Bhost"
+								},
+								{
+									"key": "X-Goog-Signature",
+									"value": "66ad1e21d35308e7bbb41c5abb1e787d241a7686fea24924972d47d5532731271eb1bc6e3080e47e296054e01b976ef51d72950d26f029578403b7de6ab323dff4a03c5bb5fdb05d150f5334a0a6cd479dc74f37d3cb8396456c431a9232bf5b236b5ab09e2d885f82849a69ca84093b539a0b3e1dd8fc117c6eb4d33f64951b3c879f5aae52e910ea391c8d4880c3fe7ebd5bb29118b921b26c5b8b56e4d2b2217a3c0a1ae4fa545dd44ad5becaba8f62d6e38e32267585c41f45c325c5c5af7a7feadc35a25290e9a49d4a6e126de219694e30a0e88f0065eee184ef0d8d3f56d26bb5d0606f39bf41bfc9964441091999d83f1e2b4838f086b11586c35942"
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -869,6 +895,41 @@
 				},
 				{
 					"name": "Deactivate Org",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deactivateOrg/2",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "deactivateOrg", "2"],
+							"query": [
+								{
+									"key": "status",
+									"value": "completed",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1368,7 +1429,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [""],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -1555,33 +1617,6 @@
 							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
 						},
 						"url": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType"
-					},
-					"response": []
-				},
-				{
-					"name": "Update user",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-auth-token",
-								"value": "bearer {{token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"roles\": [\n        \"content_creator\"\n    ],\n    \"organization_id\": 24\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{interfaceBaseUrl}}user/v1/org-admin/updateUser/157"
 					},
 					"response": []
 				}
@@ -2209,52 +2244,6 @@
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "Change Password",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "oldPassword",
-							"value": "password",
-							"type": "text"
-						},
-						{
-							"key": "newPassword",
-							"value": "Password@123",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
-					"host": ["{{UserDevBaseUrl}}user"],
-					"path": ["v1", "account", "changePassword"],
-					"query": [
-						{
-							"key": "oldPassword",
-							"value": "password",
-							"disabled": true
-						},
-						{
-							"key": "newPassword",
-							"value": "Password@123",
-							"disabled": true
-						}
-					]
-				}
-			},
-			"response": []
 		}
 	]
 }
