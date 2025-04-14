@@ -236,6 +236,12 @@ module.exports = class UserInviteHelper {
 				user.organization_id
 			)
 
+			//fetch role change email template
+			const roleChangeEmailTemplate = await notificationTemplateQueries.findOneEmailTemplate(
+				process.env.ROLE_CHANGE_EMAIL_TEMPLATE_CODE,
+				user.organization_id
+			)
+
 			//find already invited users
 			const emailList = await userInviteQueries.findAll({ email: emailArray })
 			const existingInvitees = {}
@@ -387,10 +393,30 @@ module.exports = class UserInviteHelper {
 								})
 							}
 
+							let roleDescription
+
+							if (newRoles.includes('Mentor')) {
+								roleDescription = common.ROLE_DESCRIPTION.MENTOR
+							} else if (newRoles.includes('Mentee')) {
+								roleDescription = common.ROLE_DESCRIPTION.MENTEE
+							} else if (newRoles.includes('Session Manager')) {
+								roleDescription = common.ROLE_DESCRIPTION.SESSION_MANAGER
+							}
+
+							const updatedRoles = newRoles.length > 0 ? newRoles.join(',') : ''
+							const changeRoleRequestBody = {
+								email: invitee.email,
+								name: invitee.name,
+								role: updatedRoles,
+								description: roleDescription,
+							}
 							//remove user data from redis
 							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
 							await utils.redisDel(redisUserKey)
 							invitee.statusOrUserId = 'Success'
+							if (newRoles.length > 0 && roleChangeEmailTemplate) {
+								await this.sendInviteeEmail(roleChangeEmailTemplate, changeRoleRequestBody, null, {})
+							}
 						} else {
 							invitee.statusOrUserId = 'No updates needed. User details are already up to date'
 						}
@@ -547,6 +573,7 @@ module.exports = class UserInviteHelper {
 						appName: process.env.APP_NAME,
 						portalURL: process.env.PORTAL_URL,
 						roles: userData.roles || '',
+						description: userData.description || '',
 					}),
 				},
 			}
