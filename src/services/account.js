@@ -255,6 +255,20 @@ module.exports = class AccountHelper {
 				deviceInfo
 			)
 
+			/**
+			 * Based on user organisation id get user org parent Id value
+			 * If parent org id is present then set it to tenant of user
+			 * if not then set user organisation id to tenant
+			 */
+
+			let tenantDetails = await organizationQueries.findOne(
+				{ id: user.organization_id },
+				{ attributes: ['parent_id'] }
+			)
+
+			const tenant_id =
+				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
@@ -262,6 +276,7 @@ module.exports = class AccountHelper {
 					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roleData,
+					tenant_id: tenant_id,
 				},
 			}
 
@@ -464,6 +479,19 @@ module.exports = class AccountHelper {
 				'', // Access token
 				deviceInformation
 			)
+			/**
+			 * Based on user organisation id get user org parent Id value
+			 * If parent org id is present then set it to tenant of user
+			 * if not then set user organisation id to tenant
+			 */
+
+			let tenantDetails = await organizationQueries.findOne(
+				{ id: user.organization_id },
+				{ attributes: ['parent_id'] }
+			)
+
+			const tenant_id =
+				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
 
 			const tokenDetail = {
 				data: {
@@ -472,6 +500,7 @@ module.exports = class AccountHelper {
 					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
 					roles: roles,
+					tenant_id: tenant_id,
 				},
 			}
 
