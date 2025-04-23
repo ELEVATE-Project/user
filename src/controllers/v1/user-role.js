@@ -82,6 +82,7 @@ module.exports = class userRole {
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
 	 * @param {Integer} req.decodedToken.organization_id - user organization_id.
+	 * @query {String} req.query.language - Language Code
 	 * @returns {JSON} - Role list.
 	 */
 	async list(req) {
