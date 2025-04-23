@@ -91,7 +91,8 @@ module.exports = class userRole {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.query.language ? req.query.language : ''
 			)
 			return roleList
 		} catch (error) {

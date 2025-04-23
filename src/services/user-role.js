@@ -135,9 +135,10 @@ module.exports = class userRoleHelper {
 	 * @returns {JSON} - Role list.
 	 */
 
-	static async list(filters, page, limit, search, userOrganizationId) {
+	static async list(filters, page, limit, search, userOrganizationId, language) {
 		try {
 			delete filters.search
+			delete filters.language
 			const offset = common.getPaginationOffset(page, limit)
 			const options = {
 				offset,
@@ -153,7 +154,16 @@ module.exports = class userRoleHelper {
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
 			}
-			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
+			const attributes = [
+				'id',
+				'title',
+				'user_type',
+				'visibility',
+				'label',
+				'status',
+				'organization_id',
+				'translations',
+			]
 			const roles = await roleQueries.findAllRoles(filter, attributes, options)
 
 			if (roles.rows == 0 || roles.count == 0) {
@@ -163,6 +173,20 @@ module.exports = class userRoleHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			if (language && language !== common.ENGLISH_LANGUGE_CODE) {
+				roles.rows.map((labels) => {
+					labels.label = labels.translations[language].title
+
+					delete labels.translations
+					return labels
+				})
+			} else {
+				roles.rows.map((labels) => {
+					delete labels.translations
+					return labels
+				})
+			}
+
 			const results = {
 				data: roles.rows,
 				count: roles.count,
