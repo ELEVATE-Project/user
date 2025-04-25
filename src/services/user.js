@@ -276,15 +276,8 @@ module.exports = class UserHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				if (language && language !== common.ACTIVE_STATUS) {
-					roles.map((roles) => {
-						if (roles.translations) {
-							const roleTranslation = roles.translations[language] || roles.translations['en']
-							roles.label = roleTranslation?.title || roles.title
-						}
-						delete roles.translations
-						return roles
-					})
+				if (language && language !== common.ENGLISH_LANGUGE_CODE) {
+					utils.setRoleLabelsByLanguage(roles, language)
 				} else {
 					roles.map((roles) => {
 						delete roles.translations

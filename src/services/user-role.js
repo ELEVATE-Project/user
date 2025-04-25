@@ -13,6 +13,7 @@ const common = require('@constants/common')
 const { Op } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
+const utils = require('@generics/utils')
 
 module.exports = class userRoleHelper {
 	/**
@@ -174,12 +175,7 @@ module.exports = class userRoleHelper {
 				})
 			}
 			if (language && language !== common.ENGLISH_LANGUGE_CODE) {
-				roles.rows.map((labels) => {
-					labels.label = labels.translations[language].title
-
-					delete labels.translations
-					return labels
-				})
+				utils.setRoleLabelsByLanguage(roles.rows, language)
 			} else {
 				roles.rows.map((labels) => {
 					delete labels.translations
