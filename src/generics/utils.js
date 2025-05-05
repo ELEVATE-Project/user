@@ -525,6 +525,17 @@ function isValidPassword(password) {
 	return typeof password === 'string' && password.trim() !== '' && !/\s/.test(password) && regex.test(password)
 }
 
+function setRoleLabelsByLanguage(roles, language) {
+	roles.map((roles) => {
+		if (roles.translations) {
+			const roleTranslation = roles.translations[language] || roles.translations['en']
+			roles.label = roleTranslation?.title || roles.title
+		}
+		delete roles.translations
+		return roles
+	})
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -561,4 +572,5 @@ module.exports = {
 	convertExpiryTimeToSeconds,
 	generateRandomPassword,
 	isValidPassword,
+	setRoleLabelsByLanguage,
 }

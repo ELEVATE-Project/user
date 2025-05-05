@@ -436,7 +436,17 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/read/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1?language=kn",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "read", "1"],
+							"query": [
+								{
+									"key": "language",
+									"value": "kn"
+								}
+							]
+						}
 					},
 					"response": []
 				},
@@ -1682,7 +1692,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user-role/list?page=1&limit=10&search=system&organization_id=1",
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/list?page=1&limit=10&search=system&organization_id=1&language=kn",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "user-role", "list"],
 							"query": [
@@ -1716,6 +1726,10 @@
 									"key": "status",
 									"value": "ACTIVE",
 									"disabled": true
+								},
+								{
+									"key": "language",
+									"value": "kn"
 								}
 							]
 						}
@@ -1788,7 +1802,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \n\"title\":\"system_admins\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\"\n} ",
+							"raw": "{ \n\"id\":\"12\",\n\"title\":\"head_master\", \n\"label\":\"Head Master\",\n\"user_type\": 1, \n  \"meta\": {\n       \"entityTypes\" : [ \n           {\n               \"entityTypeId\" : \"5f32d8228e0dc8312404056e\", \n               \"entityType\" : \"state\" \n           }\n       ]\n   },\n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\",\n \"translations\" : {\n        \"hi\" : {\n            \"title\" : \"हेड मास्टर\"\n        },\n        \"kn\" : {\n            \"title\" : \"ಹೆಡ್ ಮಾಸ್ಟರ್\"\n        },\n        \"te\" : {\n            \"title\" : \"హెడ్ ​​మాస్టర్\"\n        },\n        \"bn\" : {\n            \"title\" : \"হেড মাস্টার\"\n        },\n        \"gu\" : {\n            \"title\" : \"હેડ માસ્તર\"\n        },\n        \"ta\" : {\n            \"title\" : \"தலைமை ஆசிரியர்\"\n        },\n        \"pa\" : {\n            \"title\" : \"ਹੈੱਡ ਮਾਸਟਰ\"\n        },\n        \"ml\" : {\n            \"title\" : \"ഹെഡ് മാസ്റ്റർ\"\n        },\n        \"mr\" : {\n            \"title\" : \"मुख्याध्यापक\"\n        },\n        \"ur\" : {\n            \"title\" : \"ہیڈ ماسٹر\"\n        },\n        \"or\" : {\n            \"title\" : \"ହେଡ୍ ମାଷ୍ଟର |\"\n        }\n    }\n} ",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1812,7 +1826,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \n\"title\":\"system_adminstrations\", \n\"user_type\": 1, \n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\"\n} ",
+							"raw": "{ \n\"id\":\"12\",\n\"title\":\"head_master\", \n\"label\":\"Head Master\",\n\"user_type\": 1, \n  \"meta\": {\n       \"entityTypes\" : [ \n           {\n               \"entityTypeId\" : \"5f32d8228e0dc8312404056e\", \n               \"entityType\" : \"state\" \n           }\n       ]\n   },\n\"status\":\"ACTIVE\", \n\"visibility\":\"PUBLIC\",\n \"translations\" : {\n        \"hi\" : {\n            \"title\" : \"हेड मास्टर\"\n        },\n        \"kn\" : {\n            \"title\" : \"ಹೆಡ್ ಮಾಸ್ಟರ್\"\n        },\n        \"te\" : {\n            \"title\" : \"హెడ్ ​​మాస్టర్\"\n        },\n        \"bn\" : {\n            \"title\" : \"হেড মাস্টার\"\n        },\n        \"gu\" : {\n            \"title\" : \"હેડ માસ્તર\"\n        },\n        \"ta\" : {\n            \"title\" : \"தலைமை ஆசிரியர்\"\n        },\n        \"pa\" : {\n            \"title\" : \"ਹੈੱਡ ਮਾਸਟਰ\"\n        },\n        \"ml\" : {\n            \"title\" : \"ഹെഡ് മാസ്റ്റർ\"\n        },\n        \"mr\" : {\n            \"title\" : \"मुख्याध्यापक\"\n        },\n        \"ur\" : {\n            \"title\" : \"ہیڈ ماسٹر\"\n        },\n        \"or\" : {\n            \"title\" : \"ହେଡ୍ ମାଷ୍ଟର |\"\n        }\n    }\n} ",
 							"options": {
 								"raw": {
 									"language": "json"
