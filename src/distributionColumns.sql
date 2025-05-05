@@ -10,3 +10,10 @@ SELECT create_distributed_table('organization_role_requests','organization_id');
 SELECT create_distributed_table('organization_user_invites','organization_id');
 SELECT create_distributed_table('users_credentials','email');
 SELECT create_distributed_table('users', 'organization_id');
+
+SELECT create_reference_table('features');
+SELECT create_reference_table('tenants');
+SELECT create_reference_table('tenant_domains');
+SELECT create_distributed_table('user_organizations', 'tenant_code');
+SELECT create_distributed_table('user_organization_roles', 'tenant_code');
+SELECT create_distributed_table('organization_features', 'tenant_code');
