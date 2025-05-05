@@ -59,6 +59,19 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.JSONB,
 				allowNull: true,
 			},
+			phone: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			username: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: process.env.DEFAULT_TENANT_CODE,
+			},
 		},
 		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
 	)

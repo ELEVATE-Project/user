@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 			external_entity_type: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: process.env.DEFAULT_TENANT_CODE,
+			},
 		},
 		{ sequelize, modelName: 'EntityType', tableName: 'entity_types', freezeTableName: true, paranoid: true }
 	)

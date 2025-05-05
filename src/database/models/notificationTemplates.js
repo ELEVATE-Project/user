@@ -42,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
 			updated_by: {
 				type: DataTypes.INTEGER,
 			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: process.env.DEFAULT_TENANT_CODE,
+			},
 		},
 		{
 			sequelize,
