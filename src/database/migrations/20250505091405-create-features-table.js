@@ -3,16 +3,10 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.createTable('features', {
-			id: {
-				type: Sequelize.INTEGER,
-				allowNull: false,
-				autoIncrement: true,
-				primaryKey: true,
-			},
 			code: {
-				type: Sequelize.STRING(255),
+				type: Sequelize.STRING,
 				allowNull: false,
-				unique: true,
+				primaryKey: true,
 			},
 			label: {
 				type: Sequelize.TEXT,

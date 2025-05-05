@@ -3,16 +3,10 @@ module.exports = (sequelize, DataTypes) => {
 	const Feature = sequelize.define(
 		'Feature',
 		{
-			id: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-				autoIncrement: true,
-				primaryKey: true,
-			},
 			code: {
 				type: DataTypes.STRING(255),
 				allowNull: false,
-				unique: true,
+				primaryKey: true,
 			},
 			label: {
 				type: DataTypes.TEXT,

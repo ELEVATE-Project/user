@@ -3,13 +3,13 @@ module.exports = (sequelize, DataTypes) => {
 	const OrganizationFeature = sequelize.define(
 		'OrganizationFeature',
 		{
-			organization_id: {
-				type: DataTypes.INTEGER,
+			organization_code: {
+				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
-			feature_id: {
-				type: DataTypes.UUID,
+			feature_code: {
+				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
@@ -70,11 +70,8 @@ module.exports = (sequelize, DataTypes) => {
 	)
 
 	OrganizationFeature.associate = function (models) {
-		OrganizationFeature.belongsTo(models.Organization, {
-			foreignKey: 'organization_id',
-		})
 		OrganizationFeature.belongsTo(models.Feature, {
-			foreignKey: 'feature_id',
+			foreignKey: 'feature_code',
 		})
 	}
 

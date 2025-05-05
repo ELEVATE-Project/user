@@ -67,7 +67,6 @@ module.exports = {
 					model: 'tenants',
 					key: 'code',
 				},
-				onUpdate: 'CASCADE',
 				onDelete: 'CASCADE',
 			},
 			domain: {

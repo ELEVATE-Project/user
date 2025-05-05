@@ -7,8 +7,8 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
-			organization_id: {
-				type: DataTypes.INTEGER,
+			organization_code: {
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			tenant_code: {
@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
 	UserOrganization.associate = function (models) {
 		UserOrganization.belongsTo(models.Tenant, {
 			foreignKey: 'tenant_code',
-			targetKey: 'tenant_code',
+			targetKey: 'code',
 			onDelete: 'CASCADE',
 			onUpdate: 'CASCADE',
 		})

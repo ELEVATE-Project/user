@@ -11,7 +11,6 @@ module.exports = {
 					key: 'code',
 				},
 				onDelete: 'CASCADE',
-				onUpdate: 'CASCADE',
 			},
 			user_id: {
 				type: Sequelize.INTEGER,

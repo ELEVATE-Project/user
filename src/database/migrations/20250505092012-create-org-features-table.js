@@ -3,21 +3,16 @@
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.createTable('organization_features', {
-			organization_id: {
-				type: Sequelize.INTEGER,
+			organization_code: {
+				type: Sequelize.STRING,
 				allowNull: false,
-				references: {
-					model: 'organizations',
-					key: 'id',
-				},
-				onDelete: 'CASCADE',
 			},
-			feature_id: {
-				type: Sequelize.INTEGER,
+			feature_code: {
+				type: Sequelize.STRING,
 				allowNull: false,
 				references: {
 					model: 'features',
-					key: 'id',
+					key: 'code',
 				},
 				onDelete: 'CASCADE',
 			},
@@ -69,7 +64,7 @@ module.exports = {
 		})
 
 		await queryInterface.addConstraint('organization_features', {
-			fields: ['tenant_code', 'organization_id', 'feature_id'],
+			fields: ['tenant_code', 'organization_code', 'feature_code'],
 			type: 'primary key',
 			name: 'organization_features_pkey',
 		})

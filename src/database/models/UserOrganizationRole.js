@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
 	UserOrganizationRole.associate = function (models) {
 		UserOrganizationRole.belongsTo(models.Tenant, {
 			foreignKey: 'tenant_code',
-			targetKey: 'tenant_code',
+			targetKey: 'code',
 			onDelete: 'CASCADE',
 			onUpdate: 'CASCADE',
 		})

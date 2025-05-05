@@ -7,7 +7,7 @@ module.exports = {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
-			organization_id: {
+			organization_code: {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
@@ -19,7 +19,6 @@ module.exports = {
 					key: 'code',
 				},
 				onDelete: 'CASCADE',
-				onUpdate: 'CASCADE',
 			},
 			created_at: {
 				type: Sequelize.DATE,
@@ -33,9 +32,9 @@ module.exports = {
 
 		// Add composite primary key after table creation
 		await queryInterface.addConstraint('user_organizations', {
-			fields: ['tenant_code', 'user_id', 'organization_id'],
+			fields: ['tenant_code', 'user_id', 'organization_code'],
 			type: 'primary key',
-			name: 'pk_user_organizations',
+			name: 'pk_user_organizationss',
 		})
 	},
 
