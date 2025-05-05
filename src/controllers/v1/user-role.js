@@ -19,6 +19,7 @@ module.exports = class userRole {
 	 * @param {Integer} req.body.userType - User type of the role.
 	 * @param {String} req.body.status - Role status.
 	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {String} req.body.translations - Translation for roles.
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role creation details.
 	 */
@@ -42,6 +43,7 @@ module.exports = class userRole {
 	 * @param {Integer} req.body.userType - User type of the role.
 	 * @param {String} req.body.status - Role status.
 	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {String} req.body.translations - Translation for roles.
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role update details.
 	 */
@@ -80,6 +82,7 @@ module.exports = class userRole {
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
 	 * @param {Integer} req.decodedToken.organization_id - user organization_id.
+	 * @query {String} req.query.language - Language Code
 	 * @returns {JSON} - Role list.
 	 */
 	async list(req) {
@@ -89,7 +92,8 @@ module.exports = class userRole {
 				req.pageNo,
 				req.pageSize,
 				req.searchText,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.query.language ? req.query.language : ''
 			)
 			return roleList
 		} catch (error) {
