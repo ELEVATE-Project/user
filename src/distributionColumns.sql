@@ -1,5 +1,5 @@
 SELECT create_distributed_table('entities', 'entity_type_id');
-SELECT create_distributed_table('entity_types', 'tenant_code');
+SELECT create_distributed_table('entity_types', 'organization_id');
 SELECT create_distributed_table('file_uploads', 'tenant_code');
 SELECT create_distributed_table('forms', 'tenant_code');
 SELECT create_distributed_table('notification_templates', 'tenant_code');
