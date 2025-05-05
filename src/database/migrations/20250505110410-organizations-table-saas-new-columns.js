@@ -2,6 +2,11 @@
 const tableName = 'organizations'
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		await queryInterface.addColumn(tableName, 'meta', {
+			type: Sequelize.JSON,
+			allowNull: false,
+			defaultValue: {},
+		})
 		// 1. Add as nullable
 		await queryInterface.addColumn(tableName, 'tenant_code', {
 			type: Sequelize.STRING,
