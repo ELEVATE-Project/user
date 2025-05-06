@@ -16,8 +16,8 @@ module.exports = {
 				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
-			organization_id: {
-				type: Sequelize.INTEGER,
+			organization_code: {
+				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			role_id: {
@@ -35,7 +35,7 @@ module.exports = {
 		})
 
 		await queryInterface.addConstraint('user_organization_roles', {
-			fields: ['tenant_code', 'user_id', 'organization_id', 'role_id'],
+			fields: ['tenant_code', 'user_id', 'organization_code', 'role_id'],
 			type: 'primary key',
 			name: 'user_organization_roles_pkey',
 		})

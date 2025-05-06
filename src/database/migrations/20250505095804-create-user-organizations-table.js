@@ -8,7 +8,7 @@ module.exports = {
 				allowNull: false,
 			},
 			organization_code: {
-				type: Sequelize.INTEGER,
+				type: Sequelize.STRING,
 				allowNull: false,
 			},
 			tenant_code: {
