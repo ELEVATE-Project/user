@@ -45,12 +45,5 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
-	TenantDomain.associate = (models) => {
-		TenantDomain.belongsTo(models.Tenant, {
-			foreignKey: 'tenant_code',
-			as: 'tenant',
-		})
-	}
-
 	return TenantDomain
 }
