@@ -28,6 +28,11 @@ module.exports = {
 
 		console.log('TENANT DEFAULT ADDED ')
 
+		await queryInterface.changeColumn(tableName, 'tenant_code', {
+			type: Sequelize.STRING,
+			allowNull: false,
+		})
+
 		if (isDistributed) {
 			try {
 				// Drop foreign keys

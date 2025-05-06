@@ -1,5 +1,6 @@
 'use strict'
 const tableName = 'entities'
+
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		let isDistributed = false
@@ -15,22 +16,23 @@ module.exports = {
 
 		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
 
-		// 1. Add as nullable
+		// Add tenant_code column as nullable
 		await queryInterface.addColumn(tableName, 'tenant_code', {
 			type: Sequelize.STRING,
 			allowNull: true,
 		})
-
-		// 2. Set value for existing records
+		console.log('TENANT CODE ADDED ')
+		// Set default value for existing records
 		await queryInterface.sequelize.query(`
-      UPDATE ${tableName} SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
-    `)
-		// 3. Change column to not allow nulls
+            UPDATE ${tableName} SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
+        `)
+
+		console.log('TENANT DEFAULT ADDED ')
+
 		await queryInterface.changeColumn(tableName, 'tenant_code', {
 			type: Sequelize.STRING,
 			allowNull: false,
 		})
-
 		if (isDistributed) {
 			try {
 				// Drop foreign keys
@@ -56,14 +58,53 @@ module.exports = {
 				throw error
 			}
 		}
-		// drop existing PK from entities
-		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
+
+		// Drop existing primary key
+		try {
+			console.log(`Dropping existing primary key on ${tableName}`)
+			const [constraints] = await queryInterface.sequelize.query(`
+        SELECT conname 
+        FROM pg_constraint 
+        WHERE conrelid = '${tableName}'::regclass AND contype = 'p';
     `)
-		// add new PK to the entities table
-		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id" , "tenant_code")
+			if (constraints.length > 0) {
+				const constraintName = constraints[0].conname
+				await queryInterface.sequelize.query(`
+            ALTER TABLE "${tableName}" DROP CONSTRAINT "${constraintName}";
+        `)
+				console.log('Primary key dropped successfully:', constraintName)
+			}
+		} catch (error) {
+			console.error('Error dropping primary key:', error)
+		}
+
+		// Add composite primary key
+		try {
+			console.log(`Adding composite primary key on ${tableName}`)
+			await queryInterface.sequelize.query(`
+        ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code", "id");
     `)
+			console.log('Composite primary key added successfully')
+		} catch (error) {
+			console.error('Error adding composite primary key:', error)
+			throw error
+		}
+
+		// Add unique index (without partial condition)
+		try {
+			await queryInterface.sequelize.query(`
+				CREATE UNIQUE INDEX unique_value_org_id_tenant_code
+				ON "${tableName}" (tenant_code, organization_id, value)
+				WHERE deleted_at IS NULL;
+			`)
+			console.log('Unique index added successfully')
+		} catch (error) {
+			console.error('Failed to add unique index:', error)
+			throw error
+		}
+
+		console.log('TENANT UPDATED ')
+		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
 		// add unique constrain
 		await queryInterface.addConstraint(tableName, {
 			fields: ['value', 'entity_type_id', 'tenant_code'],
@@ -83,11 +124,20 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		// drop existing PK from entities
+		// Drop composite primary key
 		await queryInterface.sequelize.query(`
-        ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
-      `)
-		await queryInterface.removeConstraint(tableName, 'unique_value_entity_type_id_tenant_code')
+            ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
+        `)
+
+		// Re-add original primary key
+		await queryInterface.sequelize.query(`
+            ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id")
+        `)
+
+		// Remove unique index
+		await queryInterface.removeIndex(tableName, 'unique_value_org_id_tenant_code')
+
+		// Remove tenant_code column
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
 }

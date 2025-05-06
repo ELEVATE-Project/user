@@ -1,5 +1,5 @@
 'use strict'
-const tableName = 'organization_domains'
+const tableName = 'file_uploads'
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		let isDistributed = false
@@ -15,21 +15,6 @@ module.exports = {
 
 		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
 
-		// 1. Add as nullable
-		await queryInterface.addColumn(tableName, 'tenant_code', {
-			type: Sequelize.STRING,
-			allowNull: true,
-		})
-
-		// 2. Set value for existing records
-		await queryInterface.sequelize.query(`
-      UPDATE ${tableName} SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
-    `)
-		// 3. Change column to not allow nulls
-		await queryInterface.changeColumn(tableName, 'tenant_code', {
-			type: Sequelize.STRING,
-			allowNull: false,
-		})
 		if (isDistributed) {
 			try {
 				// Drop foreign keys
@@ -54,22 +39,6 @@ module.exports = {
 				console.error('Error in undistribution:', error.message)
 				throw error
 			}
-		}
-
-		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" DROP CONSTRAINT "org_domains_pkey"
-    `)
-
-		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("domain", "organization_id" , "tenant_code")
-    `)
-		// Redistribute table if it was distributed
-		if (isDistributed) {
-			console.log(' ----->>>>> ')
-			console.log(`Redistributing table: ${tableName} on tenant_code`)
-			await queryInterface.sequelize.query(`
-			SELECT create_distributed_table('${tableName}', 'tenant_code');
-		`)
 		}
 	},
 

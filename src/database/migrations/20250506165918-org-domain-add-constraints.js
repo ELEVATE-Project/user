@@ -1,7 +1,37 @@
 'use strict'
-const tableName = 'file_uploads'
+const tableName = 'organization_email_domains'
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		// Check if Citus extension is enabled
+		let isCitusEnabled = false
+		try {
+			const [extensionCheckResult] = await queryInterface.sequelize.query(`
+        SELECT 1 FROM pg_extension WHERE extname = 'citus';
+      `)
+			isCitusEnabled = extensionCheckResult.length > 0
+		} catch (error) {
+			console.error('Error checking Citus extension:', error.message)
+			isCitusEnabled = false // Assume Citus is not enabled if the query fails
+		}
+
+		console.log('IS CITUS ENABLED: ----->>>>> ', isCitusEnabled)
+		// 1. Drop composite primary key
+		await queryInterface.sequelize.query(`
+      ALTER TABLE "${tableName}" DROP CONSTRAINT "org_domains_pkey"
+    `)
+
+		await queryInterface.sequelize.query(`
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("domain", "organization_id" , "tenant_code")
+    `)
+		if (isCitusEnabled) {
+			console.log(`Redistributing table: ${tableName} on tenant_code`)
+			await queryInterface.sequelize.query(`
+        SELECT create_distributed_table('${tableName}', 'tenant_code');
+      `)
+		}
+	},
+
+	down: async (queryInterface, Sequelize) => {
 		let isDistributed = false
 		try {
 			// Check if table is distributed
@@ -15,21 +45,6 @@ module.exports = {
 
 		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
 
-		// 1. Add as nullable
-		await queryInterface.addColumn(tableName, 'tenant_code', {
-			type: Sequelize.STRING,
-			allowNull: true,
-		})
-
-		// 2. Set value for existing records
-		await queryInterface.sequelize.query(`
-      UPDATE file_uploads SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
-    `)
-		// 3. Change column to not allow nulls
-		await queryInterface.changeColumn(tableName, 'tenant_code', {
-			type: Sequelize.STRING,
-			allowNull: false,
-		})
 		if (isDistributed) {
 			try {
 				// Drop foreign keys
@@ -55,29 +70,9 @@ module.exports = {
 				throw error
 			}
 		}
-
-		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
-    `)
-
-		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code" , "organization_id" , "input_path")
-    `)
-		if (isDistributed) {
-			console.log(' ----->>>>> ')
-			console.log(`Redistributing table: ${tableName} on tenant_code`)
-			await queryInterface.sequelize.query(`
-			SELECT create_distributed_table('${tableName}', 'tenant_code');
-		`)
-		}
-	},
-
-	down: async (queryInterface, Sequelize) => {
 		// 1. Drop composite primary key
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
-
-		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
 }
