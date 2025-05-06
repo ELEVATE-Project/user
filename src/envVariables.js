@@ -438,3 +438,54 @@ module.exports = function () {
 		success: success,
 	}
 }
+
+//validate if the expiry token is greater than idle time or not.
+function validateTokenExpiry() {
+	const expiry = process.env.ACCESS_TOKEN_EXPIRY // "30000m"
+	const allowedIdleTime = parseInt(process.env.ALLOWED_IDLE_TIME, 10) // 1000000
+
+	// Extract numeric part and unit
+	const expiryMatch = expiry.match(/^(\d+)([smhd])$/) // Match digits followed by 's', 'm', 'h', or 'd'
+	if (!expiryMatch) {
+		throw new Error("Invalid format for ACCESS_TOKEN_EXPIRY. Use format like '30000m', '5h', etc.")
+	}
+
+	const expiryValue = parseInt(expiryMatch[1], 10) // Numeric part
+	const expiryUnit = expiryMatch[2] // Time unit (s, m, h, d)
+
+	// Convert expiry to milliseconds
+	let expiryInMilliseconds
+	switch (expiryUnit) {
+		case 's':
+			expiryInMilliseconds = expiryValue * 1000
+			break
+		case 'm':
+			expiryInMilliseconds = expiryValue * 60 * 1000
+			break
+		case 'h':
+			expiryInMilliseconds = expiryValue * 60 * 60 * 1000
+			break
+		case 'd':
+			expiryInMilliseconds = expiryValue * 24 * 60 * 60 * 1000
+			break
+		default:
+			throw new Error('Unsupported time unit in ACCESS_TOKEN_EXPIRY.')
+	}
+
+	// Validate
+	if (expiryInMilliseconds <= allowedIdleTime) {
+		throw new Error(
+			`ACCESS_TOKEN_EXPIRY (${expiryInMilliseconds}ms) must be greater than ALLOWED_IDLE_TIME (${allowedIdleTime}ms).`
+		)
+	}
+
+	console.log('Token expiry and idle time validation passed.')
+}
+
+// Call this function during service initialization
+try {
+	validateTokenExpiry()
+} catch (error) {
+	console.error(error.message)
+	process.exit(1) // Exit the application if validation fails
+}
