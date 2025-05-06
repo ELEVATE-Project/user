@@ -55,9 +55,23 @@ module.exports = {
     `)
 
 		// Add an index for the 'value' column
-		await queryInterface.addIndex(tableName, ['phone', 'phone_code', 'username', 'tenant_code'], {
+		await queryInterface.addIndex(tableName, ['phone', 'phone_code', 'tenant_code'], {
 			unique: true,
-			name: 'unique_user',
+			name: 'unique_phone_tenant_code',
+			where: {
+				deleted_at: null,
+			},
+		})
+		await queryInterface.addIndex(tableName, ['username', 'tenant_code'], {
+			unique: true,
+			name: 'unique_phone_tenant_code',
+			where: {
+				deleted_at: null,
+			},
+		})
+		await queryInterface.addIndex(tableName, ['email', 'tenant_code'], {
+			unique: true,
+			name: 'unique_phone_tenant_code',
 			where: {
 				deleted_at: null,
 			},
