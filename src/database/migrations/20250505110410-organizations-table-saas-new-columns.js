@@ -40,14 +40,19 @@ module.exports = {
         SELECT master_remove_distributed_table('${tableName}');
       `)
 		}
+		// remove users foriegn key relation to drop org PK
+		await queryInterface.removeConstraint('users', 'fk_user_organization')
 
+		// drop existing PK from org
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
 
+		// add new PK to the org table
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id" , "code" , "tenant_code")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id" , "tenant_code")
     `)
+
 		await queryInterface.addConstraint(tableName, {
 			fields: ['code', 'tenant_code'],
 			type: 'unique',
@@ -60,8 +65,11 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
+
 		await queryInterface.removeConstraint(tableName, 'unique_domain_org_id_tenant_code')
 
 		await queryInterface.removeColumn(tableName, 'tenant_code')
+
+		await queryInterface.removeColumn(tableName, 'meta')
 	},
 }

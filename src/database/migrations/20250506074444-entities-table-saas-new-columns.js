@@ -1,5 +1,5 @@
 'use strict'
-const tableName = 'user_roles'
+const tableName = 'entities'
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		// 1. Add as nullable
@@ -17,46 +17,28 @@ module.exports = {
 			type: Sequelize.STRING,
 			allowNull: false,
 		})
-
-		let isDistributed = false
-		try {
-			// 0. Check if table is distributed and remove distribution
-			const distributionCheckResult = await queryInterface.sequelize.query(`
-          SELECT 1 FROM pg_dist_partition WHERE logicalrelid = '${tableName}'::regclass
-        `)
-			isDistributed = distributionCheckResult[0].length > 0
-		} catch (error) {
-			isDistributed = false
-		}
-
-		if (isDistributed) {
-			console.log(`Removing distribution for table: ${tableName}`)
-			await queryInterface.sequelize.query(`
-        SELECT master_remove_distributed_table('${tableName}');
-      `)
-		}
-
+		// drop existing PK from entities
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
-
+		// add new PK to the entities table
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id" , "tenant_code")
     `)
+		// add unique constrain
 		await queryInterface.addConstraint(tableName, {
-			fields: ['title', 'organization_id', 'tenant_code'],
+			fields: ['value', 'entity_type_id', 'organization_id', 'tenant_code'],
 			type: 'unique',
-			name: 'unique_title_organization_id_tenant_code',
+			name: 'unique_value_entity_type_id_org_id_tenant_code',
 		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
-		// 1. Drop composite primary key
+		// drop existing PK from entities
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
-    `)
-		await queryInterface.removeConstraint(tableName, 'unique_title_tenant_code')
-
+        ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
+      `)
+		await queryInterface.removeConstraint(tableName, 'unique_value_entity_type_id_org_id_tenant_code')
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
 }

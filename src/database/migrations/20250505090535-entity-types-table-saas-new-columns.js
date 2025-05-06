@@ -40,8 +40,17 @@ module.exports = {
     `)
 
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id", "tenant_code")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "tenant_code")
     `)
+
+		// Add an index for the 'value' column
+		await queryInterface.addIndex(tableName, ['value', 'organization_id', 'tenant_code'], {
+			unique: true,
+			name: 'unique_value_org_id_tenant_code',
+			where: {
+				deleted_at: null,
+			},
+		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
@@ -53,6 +62,7 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id")
     `)
+		await queryInterface.removeConstraint(tableName, 'unique_value_org_id_tenant_code')
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
 }

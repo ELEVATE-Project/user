@@ -40,7 +40,7 @@ module.exports = {
     `)
 
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id" , "tenant_code")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id" , "tenant_code")
     `)
 
 		await queryInterface.addConstraint(tableName, {

@@ -54,7 +54,7 @@ module.exports = {
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id", "tenant_code")
     `)
 
-		// Add an index for the 'value' column
+		// Add unique constraints
 		await queryInterface.addIndex(tableName, ['phone', 'phone_code', 'tenant_code'], {
 			unique: true,
 			name: 'unique_phone_tenant_code',
@@ -64,14 +64,14 @@ module.exports = {
 		})
 		await queryInterface.addIndex(tableName, ['username', 'tenant_code'], {
 			unique: true,
-			name: 'unique_phone_tenant_code',
+			name: 'unique_username_tenant_code',
 			where: {
 				deleted_at: null,
 			},
 		})
 		await queryInterface.addIndex(tableName, ['email', 'tenant_code'], {
 			unique: true,
-			name: 'unique_phone_tenant_code',
+			name: 'unique_email_tenant_code',
 			where: {
 				deleted_at: null,
 			},
@@ -79,12 +79,20 @@ module.exports = {
 	},
 
 	down: async (queryInterface, Sequelize) => {
+		// revert primary key
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id")
     `)
+
+		// remove unique constraints
+		await queryInterface.removeConstraint(tableName, 'unique_phone_tenant_code')
+		await queryInterface.removeConstraint(tableName, 'unique_username_tenant_code')
+		await queryInterface.removeConstraint(tableName, 'unique_email_tenant_code')
+
+		// remove columns
 		await queryInterface.removeColumn('users', 'phone')
 		await queryInterface.removeColumn('users', 'username')
 		await queryInterface.removeColumn('users', 'tenant_code')

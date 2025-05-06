@@ -41,7 +41,7 @@ module.exports = {
     `)
 
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id" , "tenant_code")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id" , "tenant_code")
     `)
 		// 6. Drop old unique constraint
 		await queryInterface.removeConstraint(tableName, 'unique_type_sub_type_org_id')

@@ -43,11 +43,6 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("code", "organization_id" , "tenant_code")
     `)
-		await queryInterface.addConstraint(tableName, {
-			fields: ['code', 'organization_id', 'tenant_code'],
-			type: 'unique',
-			name: 'unique_code_org_id_tenant_code',
-		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
@@ -55,7 +50,6 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
-		await queryInterface.removeConstraint(tableName, 'unique_code_org_id_tenant_code')
 
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
