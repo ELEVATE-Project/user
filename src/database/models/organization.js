@@ -26,10 +26,23 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: 'ACTIVE',
 			},
-			org_admin: DataTypes.ARRAY(DataTypes.INTEGER),
-			parent_id: DataTypes.INTEGER,
-			related_orgs: DataTypes.ARRAY(DataTypes.INTEGER),
-			in_domain_visibility: DataTypes.STRING,
+			org_admin: {
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
+			},
+			parent_id: {
+				type: DataTypes.INTEGER,
+			},
+			related_orgs: {
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
+			},
+			in_domain_visibility: {
+				type: DataTypes.STRING,
+			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				primaryKey: true,
+			},
 			created_by: {
 				type: DataTypes.INTEGER,
 			},
@@ -37,10 +50,14 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 		},
-		{ sequelize, modelName: 'Organization', tableName: 'organizations', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'Organization',
+			tableName: 'organizations',
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
-	Organization.associate = (models) => {
-		Organization.hasMany(models.User, { foreignKey: 'organization_id' }, { as: 'users' })
-	}
+
 	return Organization
 }
