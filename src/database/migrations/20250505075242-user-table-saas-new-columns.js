@@ -3,7 +3,11 @@ const tableName = 'users'
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		await queryInterface.addColumn(tableName, 'phone', {
-			type: Sequelize.STRING(255),
+			type: Sequelize.STRING(10),
+			allowNull: true,
+		})
+		await queryInterface.addColumn(tableName, 'phone_code', {
+			type: Sequelize.STRING(3),
 			allowNull: true,
 		})
 
@@ -49,6 +53,15 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "organization_id", "tenant_code")
     `)
+
+		// Add an index for the 'value' column
+		await queryInterface.addIndex(tableName, ['phone', 'phone_code', 'username', 'tenant_code'], {
+			unique: true,
+			name: 'unique_user',
+			where: {
+				deleted_at: null,
+			},
+		})
 	},
 
 	down: async (queryInterface, Sequelize) => {
