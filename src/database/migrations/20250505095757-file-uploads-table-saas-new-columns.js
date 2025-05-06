@@ -43,11 +43,6 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("input_path", "organization_id" , "tenant_code")
     `)
-		await queryInterface.addConstraint(tableName, {
-			fields: ['type', 'organization_id', 'tenant_code'],
-			type: 'unique',
-			name: 'unique_type_org_id_tenant_code',
-		})
 	},
 
 	down: async (queryInterface, Sequelize) => {

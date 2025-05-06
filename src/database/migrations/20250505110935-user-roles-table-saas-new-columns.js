@@ -55,7 +55,7 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
-		await queryInterface.removeConstraint(tableName, 'unique_title_tenant_code')
+		await queryInterface.removeConstraint(tableName, 'unique_title_organization_id_tenant_code')
 
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
