@@ -13,26 +13,6 @@ module.exports = {
 		} catch (error) {
 			isDistributed = false
 		}
-
-		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
-
-		// Add tenant_code column as nullable
-		await queryInterface.addColumn(tableName, 'tenant_code', {
-			type: Sequelize.STRING,
-			allowNull: true,
-		})
-		console.log('TENANT CODE ADDED ')
-		// Set default value for existing records
-		await queryInterface.sequelize.query(`
-            UPDATE ${tableName} SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
-        `)
-
-		console.log('TENANT DEFAULT ADDED ')
-
-		await queryInterface.changeColumn(tableName, 'tenant_code', {
-			type: Sequelize.STRING,
-			allowNull: false,
-		})
 		if (isDistributed) {
 			try {
 				// Drop foreign keys
@@ -58,6 +38,26 @@ module.exports = {
 				throw error
 			}
 		}
+
+		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
+
+		// Add tenant_code column as nullable
+		await queryInterface.addColumn(tableName, 'tenant_code', {
+			type: Sequelize.STRING,
+			allowNull: true,
+		})
+		console.log('TENANT CODE ADDED ')
+		// Set default value for existing records
+		await queryInterface.sequelize.query(`
+            UPDATE ${tableName} SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
+        `)
+
+		console.log('TENANT DEFAULT ADDED ')
+
+		await queryInterface.changeColumn(tableName, 'tenant_code', {
+			type: Sequelize.STRING,
+			allowNull: false,
+		})
 
 		// Drop existing primary key
 		try {
