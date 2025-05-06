@@ -234,6 +234,7 @@ module.exports = class AdminHelper {
 					organization_id: user.organization_id,
 					roles: roles,
 					tenant_id: tenant_id,
+					organization_ids: [String(user.organization_id)],
 				},
 			}
 

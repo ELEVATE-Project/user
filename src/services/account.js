@@ -277,6 +277,7 @@ module.exports = class AccountHelper {
 					organization_id: user.organization_id,
 					roles: roleData,
 					tenant_id: tenant_id,
+					organization_ids: [String(user.organization_id)],
 				},
 			}
 
@@ -501,6 +502,7 @@ module.exports = class AccountHelper {
 					organization_id: user.organization_id,
 					roles: roles,
 					tenant_id: tenant_id,
+					organization_ids: [String(user.organization_id)],
 				},
 			}
 
