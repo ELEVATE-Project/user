@@ -63,16 +63,11 @@ module.exports = {
 			tenant_code: {
 				type: Sequelize.STRING(255),
 				allowNull: false,
-				references: {
-					model: 'tenants',
-					key: 'code',
-				},
-				onDelete: 'CASCADE',
 			},
 			domain: {
 				type: Sequelize.STRING(255),
 				allowNull: false,
-				unique: true,
+				primaryKey: true,
 			},
 			verified: {
 				type: Sequelize.BOOLEAN,
@@ -93,11 +88,6 @@ module.exports = {
 		})
 
 		// Make the primary key a combination of id and tenant_code for proper sharding
-		await queryInterface.addConstraint('tenant_domains', {
-			fields: ['tenant_code', 'id'],
-			type: 'primary key',
-			name: 'pk_tenant_domains_tenant_code_id',
-		})
 	},
 
 	down: async (queryInterface) => {
