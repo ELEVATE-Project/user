@@ -32,8 +32,12 @@ module.exports = {
 		if (isDistributed) {
 			console.log(`Removing distribution for table: ${tableName}`)
 			await queryInterface.sequelize.query(`
-        SELECT master_remove_distributed_table('${tableName}');
-      `)
+		        SELECT master_remove_distributed_table('${tableName}');
+		      `)
+			console.log(`Redistributing table: ${tableName} on tenant_code`)
+			await queryInterface.sequelize.query(`
+		      		  SELECT create_distributed_table('${tableName}', 'tenant_code');
+		      		`)
 		}
 
 		await queryInterface.sequelize.query(`

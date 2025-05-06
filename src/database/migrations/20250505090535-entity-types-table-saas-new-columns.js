@@ -34,17 +34,21 @@ module.exports = {
 			await queryInterface.sequelize.query(`
         SELECT master_remove_distributed_table('${tableName}');
       `)
+			console.log(`Redistributing table: ${tableName} on tenant_code`)
+			await queryInterface.sequelize.query(`
+        SELECT create_distributed_table('${tableName}', 'tenant_code');
+      `)
 		}
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
 
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("id", "tenant_code")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code" , "id")
     `)
 
 		// Add an index for the 'value' column
-		await queryInterface.addIndex(tableName, ['value', 'organization_id', 'tenant_code'], {
+		await queryInterface.addIndex(tableName, ['tenant_code', 'organization_id', 'value'], {
 			unique: true,
 			name: 'unique_value_org_id_tenant_code',
 			where: {

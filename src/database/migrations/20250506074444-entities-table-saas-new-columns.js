@@ -17,6 +17,28 @@ module.exports = {
 			type: Sequelize.STRING,
 			allowNull: false,
 		})
+
+		let isDistributed = false
+		try {
+			// 0. Check if table is distributed and remove distribution
+			const distributionCheckResult = await queryInterface.sequelize.query(`
+          SELECT 1 FROM pg_dist_partition WHERE logicalrelid = '${tableName}'::regclass
+        `)
+			isDistributed = distributionCheckResult[0].length > 0
+		} catch (error) {
+			isDistributed = false
+		}
+
+		if (isDistributed) {
+			console.log(`Removing distribution for table: ${tableName}`)
+			await queryInterface.sequelize.query(`
+		        SELECT master_remove_distributed_table('${tableName}');
+		      `)
+			console.log(`Redistributing table: ${tableName} on tenant_code`)
+			await queryInterface.sequelize.query(`
+		      		  SELECT create_distributed_table('${tableName}', 'tenant_code');
+		      		`)
+		}
 		// drop existing PK from entities
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
@@ -27,9 +49,9 @@ module.exports = {
     `)
 		// add unique constrain
 		await queryInterface.addConstraint(tableName, {
-			fields: ['value', 'entity_type_id', 'organization_id', 'tenant_code'],
+			fields: ['value', 'entity_type_id', 'tenant_code'],
 			type: 'unique',
-			name: 'unique_value_entity_type_id_org_id_tenant_code',
+			name: 'unique_value_entity_type_id_tenant_code',
 		})
 	},
 
@@ -38,7 +60,7 @@ module.exports = {
 		await queryInterface.sequelize.query(`
         ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
       `)
-		await queryInterface.removeConstraint(tableName, 'unique_value_entity_type_id_org_id_tenant_code')
+		await queryInterface.removeConstraint(tableName, 'unique_value_entity_type_id_tenant_code')
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
 }

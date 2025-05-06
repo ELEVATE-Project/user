@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
 		{
 			sequelize,
 			modelName: 'OrganizationDomain',
-			tableName: 'organization_domains',
+			tableName: 'organization_email_domains',
 			indexes: [
 				{
 					unique: true,

@@ -37,7 +37,7 @@ module.exports = {
 		}
 
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
+      ALTER TABLE "${tableName}" DROP CONSTRAINT "org_domains_pkey"
     `)
 
 		await queryInterface.sequelize.query(`
