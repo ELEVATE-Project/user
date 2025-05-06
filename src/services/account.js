@@ -449,7 +449,7 @@ module.exports = class AccountHelper {
 				{ id: user.roles, status: common.ACTIVE_STATUS },
 				{
 					attributes: {
-						exclude: ['created_at', 'updated_at', 'deleted_at'],
+						exclude: ['created_at', 'updated_at', 'deleted_at', 'translations'],
 					},
 				}
 			)
