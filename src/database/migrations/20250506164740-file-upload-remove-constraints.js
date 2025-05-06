@@ -15,7 +15,24 @@ module.exports = {
 		}
 
 		console.log('IS CITUS ENABLED: ----->>>>> ', isCitusEnabled)
-
+		// Drop existing primary key
+		try {
+			console.log(`Dropping existing primary key on ${tableName}`)
+			const [constraints] = await queryInterface.sequelize.query(`
+	SELECT conname 
+	FROM pg_constraint 
+	WHERE conrelid = '${tableName}'::regclass AND contype = 'p';
+`)
+			if (constraints.length > 0) {
+				const constraintName = constraints[0].conname
+				await queryInterface.sequelize.query(`
+		ALTER TABLE "${tableName}" DROP CONSTRAINT "${constraintName}";
+	`)
+				console.log('Primary key dropped successfully:', constraintName)
+			}
+		} catch (error) {
+			console.error('Error dropping primary key:', error)
+		}
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code" , "organization_id" , "input_path")
     `)
