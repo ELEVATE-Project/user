@@ -16,7 +16,7 @@ module.exports = {
 		if (isDistributed) {
 			try {
 				// Drop foreign keys
-				console.log('Dropping foreign key constraints for table:', tableName)
+
 				const [foreignKeys] = await queryInterface.sequelize.query(`
                     SELECT conname 
                     FROM pg_constraint 
@@ -29,7 +29,7 @@ module.exports = {
 				}
 
 				// Undistribute the table
-				console.log(`Removing distribution for table: ${tableName}`)
+
 				await queryInterface.sequelize.query(`
                     SELECT undistribute_table('${queryInterface.quoteIdentifier(tableName)}');
                 `)
@@ -39,20 +39,16 @@ module.exports = {
 			}
 		}
 
-		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
-
 		// Add tenant_code column as nullable
 		await queryInterface.addColumn(tableName, 'tenant_code', {
 			type: Sequelize.STRING,
 			allowNull: true,
 		})
-		console.log('TENANT CODE ADDED ')
+
 		// Set default value for existing records
 		await queryInterface.sequelize.query(`
             UPDATE ${tableName} SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
         `)
-
-		console.log('TENANT DEFAULT ADDED ')
 
 		await queryInterface.changeColumn(tableName, 'tenant_code', {
 			type: Sequelize.STRING,
@@ -61,7 +57,6 @@ module.exports = {
 
 		// Drop existing primary key
 		try {
-			console.log(`Dropping existing primary key on ${tableName}`)
 			const [constraints] = await queryInterface.sequelize.query(`
         SELECT conname 
         FROM pg_constraint 
@@ -72,7 +67,6 @@ module.exports = {
 				await queryInterface.sequelize.query(`
             ALTER TABLE "${tableName}" DROP CONSTRAINT "${constraintName}";
         `)
-				console.log('Primary key dropped successfully:', constraintName)
 			}
 		} catch (error) {
 			console.error('Error dropping primary key:', error)
@@ -80,11 +74,9 @@ module.exports = {
 
 		// Add composite primary key
 		try {
-			console.log(`Adding composite primary key on ${tableName}`)
 			await queryInterface.sequelize.query(`
         ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code", "id");
     `)
-			console.log('Composite primary key added successfully')
 		} catch (error) {
 			console.error('Error adding composite primary key:', error)
 			throw error
@@ -97,14 +89,11 @@ module.exports = {
 				ON "${tableName}" (tenant_code, organization_id, value)
 				WHERE deleted_at IS NULL;
 			`)
-			console.log('Unique index added successfully')
 		} catch (error) {
 			console.error('Failed to add unique index:', error)
 			throw error
 		}
 
-		console.log('TENANT UPDATED ')
-		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
 		// add unique constrain
 		await queryInterface.addConstraint(tableName, {
 			fields: ['value', 'entity_type_id', 'tenant_code'],
@@ -115,8 +104,6 @@ module.exports = {
 		await queryInterface.removeConstraint(tableName, 'unique_entities_value')
 		// Redistribute table if it was distributed
 		if (isDistributed) {
-			console.log(' ----->>>>> ')
-			console.log(`Redistributing table: ${tableName} on tenant_code`)
 			await queryInterface.sequelize.query(`
                 SELECT create_distributed_table('${tableName}', 'tenant_code');
             `)

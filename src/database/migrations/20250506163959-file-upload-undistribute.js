@@ -13,12 +13,8 @@ module.exports = {
 			isDistributed = false
 		}
 
-		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
-
 		if (isDistributed) {
 			try {
-				// Drop foreign keys
-				console.log('Dropping foreign key constraints for table:', tableName)
 				const [foreignKeys] = await queryInterface.sequelize.query(`
                     SELECT conname 
                     FROM pg_constraint 
@@ -30,8 +26,6 @@ module.exports = {
                     `)
 				}
 
-				// Undistribute the table
-				console.log(`Removing distribution for table: ${tableName}`)
 				await queryInterface.sequelize.query(`
                     SELECT undistribute_table('${queryInterface.quoteIdentifier(tableName)}');
                 `)
@@ -47,7 +41,6 @@ module.exports = {
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "${tableName}_pkey"
     `)
-
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 	},
 }

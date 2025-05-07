@@ -14,7 +14,6 @@ module.exports = {
 			isCitusEnabled = false // Assume Citus is not enabled if the query fails
 		}
 
-		console.log('IS CITUS ENABLED: ----->>>>> ', isCitusEnabled)
 		// 1. Drop composite primary key
 		await queryInterface.sequelize.query(`
       ALTER TABLE "${tableName}" DROP CONSTRAINT "org_domains_pkey"
@@ -24,7 +23,6 @@ module.exports = {
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("domain", "organization_id" , "tenant_code")
     `)
 		if (isCitusEnabled) {
-			console.log(`Redistributing table: ${tableName} on tenant_code`)
 			await queryInterface.sequelize.query(`
         SELECT create_distributed_table('${tableName}', 'tenant_code');
       `)
@@ -43,12 +41,8 @@ module.exports = {
 			isDistributed = false
 		}
 
-		console.log('IS DISTRIBUTED : : :  : ----->>>>> ', isDistributed)
-
 		if (isDistributed) {
 			try {
-				// Drop foreign keys
-				console.log('Dropping foreign key constraints for table:', tableName)
 				const [foreignKeys] = await queryInterface.sequelize.query(`
                     SELECT conname 
                     FROM pg_constraint 
@@ -60,8 +54,6 @@ module.exports = {
                     `)
 				}
 
-				// Undistribute the table
-				console.log(`Removing distribution for table: ${tableName}`)
 				await queryInterface.sequelize.query(`
                     SELECT undistribute_table('${queryInterface.quoteIdentifier(tableName)}');
                 `)
