@@ -58,13 +58,23 @@ module.exports = {
 				{ transaction }
 			)
 
+			await queryInterface.addColumn(
+				'organizations',
+				'meta',
+				{
+					type: Sequelize.JSON,
+					allowNull: true,
+				},
+				{ transaction }
+			)
+
 			// Populate tenant_code in organizations
 			// Assuming we'll use a default tenant code for existing data
 			// You might want to adjust this based on your data
 			await queryInterface.sequelize.query(
 				`
         UPDATE organizations 
-        SET tenant_code = 'default-tenant'
+        SET tenant_code = 'default'
         WHERE tenant_code IS NULL
       `,
 				{ transaction }

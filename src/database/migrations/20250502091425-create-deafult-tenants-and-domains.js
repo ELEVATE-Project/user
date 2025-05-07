@@ -7,7 +7,7 @@ module.exports = {
 		// Insert into tenants
 		await queryInterface.bulkInsert('tenants', [
 			{
-				code: 'default-tenant',
+				code: 'default',
 				name: 'Default Tenant',
 				status: 'active',
 				description: 'This is the default tenant.',
@@ -29,7 +29,7 @@ module.exports = {
 		await queryInterface.bulkInsert('tenant_domains', [
 			{
 				id: 1,
-				tenant_code: 'default-tenant',
+				tenant_code: 'default',
 				domain: '*',
 				verified: true,
 				created_at: now,
