@@ -20,7 +20,7 @@ module.exports = {
     `)
 
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("domain", "organization_id" , "tenant_code")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("domain" , "tenant_code")
     `)
 		if (isCitusEnabled) {
 			await queryInterface.sequelize.query(`

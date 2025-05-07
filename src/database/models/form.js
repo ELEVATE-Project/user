@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: process.env.DEFAULT_TENANT_CODE,
+				defaultValue: '',
 			},
 		},
 		{ sequelize, modelName: 'Form', tableName: 'forms', freezeTableName: true, paranoid: true }

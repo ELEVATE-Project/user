@@ -100,6 +100,12 @@ module.exports = {
       ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code", "id");
     `)
 
+		await queryInterface.addConstraint(tableName, {
+			fields: ['title', 'organization_id', 'tenant_code'],
+			type: 'unique',
+			name: 'unique_title_org_id_tenant_code',
+		})
+
 		if (isCitusEnabled && isDistributed) {
 			await queryInterface.sequelize.query(`
         SELECT create_distributed_table('${tableName}', 'tenant_code');
@@ -127,6 +133,7 @@ module.exports = {
 			throw error
 		}
 
+		await queryInterface.removeConstraint(tableName, 'unique_title_org_id_tenant_code')
 		// 2. Remove tenant_code column
 		await queryInterface.removeColumn(tableName, 'tenant_code')
 

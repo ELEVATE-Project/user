@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: process.env.DEFAULT_TENANT_CODE,
+				defaultValue: '',
 			},
 		},
 		{ sequelize, modelName: 'Organization', tableName: 'organizations', freezeTableName: true, paranoid: true }

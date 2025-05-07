@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: process.env.DEFAULT_TENANT_CODE,
+				defaultValue: '',
 			},
 		},
 		{ sequelize, modelName: 'FileUpload', tableName: 'file_uploads', freezeTableName: true, paranoid: true }

@@ -30,7 +30,7 @@ module.exports = {
 			console.error('Error dropping primary key:', error)
 		}
 		await queryInterface.sequelize.query(`
-      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code" , "organization_id" , "input_path")
+      ALTER TABLE "${tableName}" ADD PRIMARY KEY ("tenant_code" , "id")
     `)
 		if (isCitusEnabled) {
 			await queryInterface.sequelize.query(`
