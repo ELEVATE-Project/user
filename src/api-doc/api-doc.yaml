@@ -483,8 +483,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/user/userList200Response'
-
-  /user/v1/user/read/{userId}:
+  /user/v1/user/read/{userId}?language={language_code}:
     get:
       summary: User Details
       tags:
@@ -1347,7 +1346,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/organization/requestOrgRole200Response'
-  /user/v1/userRole/list:
+  /user/v1/userRole/list?language={language_code}:
     get:
       summary: Get User Roles
       tags:
@@ -2624,7 +2623,8 @@ paths:
         `required`.
 
         - Mandatory parameters cannot be empty or null.
-      tags: []
+      tags:
+        - User Roles APIs
       parameters:
         - name: X-auth-token
           in: header
@@ -2636,36 +2636,132 @@ paths:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
+                id:
+                  type: string
                 title:
+                  type: string
+                label:
                   type: string
                 user_type:
                   type: number
+                meta:
+                  type: object
+                  properties:
+                    entityTypes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          entityTypeId:
+                            type: string
+                          entityType:
+                            type: string
                 status:
                   type: string
                 visibility:
                   type: string
-              required:
-                - user_type
-                - status
-                - title
-                - visibility
+                translations:
+                  type: object
+                  properties:
+                    hi:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    kn:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    te:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    bn:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    gu:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    ta:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    pa:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    ml:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    mr:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    ur:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    or:
+                      type: object
+                      properties:
+                        title:
+                          type: string
             examples:
               example1:
                 value:
-                  title: system_admin
+                  id: '12'
+                  title: head_master
+                  label: Head Master
                   user_type: 1
+                  meta:
+                    entityTypes:
+                      - entityTypeId: 5f32d8228e0dc8312404056e
+                        entityType: state
                   status: ACTIVE
                   visibility: PUBLIC
+                  translations:
+                    hi:
+                      title: हेड मास्टर
+                    kn:
+                      title: ಹೆಡ್ ಮಾಸ್ಟರ್
+                    te:
+                      title: హెడ్ ​​మాస్టర్
+                    bn:
+                      title: হেড মাস্টার
+                    gu:
+                      title: હેડ માસ્તર
+                    ta:
+                      title: தலைமை ஆசிரியர்
+                    pa:
+                      title: ਹੈੱਡ ਮਾਸਟਰ
+                    ml:
+                      title: ഹെഡ് മാസ്റ്റർ
+                    mr:
+                      title: मुख्याध्यापक
+                    ur:
+                      title: ہیڈ ماسٹر
+                    or:
+                      title: ହେଡ୍ ମାଷ୍ଟର |
       responses:
         '201':
           description: OK
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -2685,6 +2781,64 @@ paths:
                         type: string
                       organization_id:
                         type: number
+                      translations:
+                        type: object
+                        properties:
+                          hi:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          kn:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          te:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          bn:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          gu:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          ta:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          pa:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          ml:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          mr:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          ur:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          or:
+                            type: object
+                            properties:
+                              title:
+                                type: string
                   meta:
                     type: object
                     properties:
@@ -2700,14 +2854,37 @@ paths:
                     responseCode: OK
                     message: Roles added successfully
                     result:
-                      title: system_admin
+                      title: head_master
                       user_type: 1
                       status: ACTIVE
                       visibility: PUBLIC
                       organization_id: 1
+                      translations:
+                        hi:
+                          title: हेड मास्टर
+                        kn:
+                          title: ಹೆಡ್ ಮಾಸ್ಟರ್
+                        te:
+                          title: హెడ్ ​​మాస్టర్
+                        bn:
+                          title: হেড মাস্টার
+                        gu:
+                          title: હેડ માસ્તર
+                        ta:
+                          title: தலைமை ஆசிரியர்
+                        pa:
+                          title: ਹੈੱਡ ਮਾਸਟਰ
+                        ml:
+                          title: ഹെഡ് മാസ്റ്റർ
+                        mr:
+                          title: मुख्याध्यापक
+                        ur:
+                          title: ہیڈ ماسٹر
+                        or:
+                          title: ହେଡ୍ ମାଷ୍ଟର |
                     meta:
                       formsVersion: []
-                      correlation: 483b441a-c4c2-4c71-9aae-8dcf2d7ee5e8
+                      correlation: 9bf9e3f3-8f97-416a-b9a3-9ae5fe39018a
   /user/v1/userRole/update/{id}:
     post:
       summary: Update User Roles
@@ -2724,27 +2901,121 @@ paths:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 title:
                   type: string
                 user_type:
                   type: number
+                label:
+                  type: string
+                meta:
+                  type: object
+                  properties:
+                    entityTypes:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          entityTypeId:
+                            type: string
+                          entityType:
+                            type: string
+                translations:
+                  type: object
+                  properties:
+                    hi:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    kn:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    te:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    bn:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    gu:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    ta:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    pa:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    ml:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    mr:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    ur:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                    or:
+                      type: object
+                      properties:
+                        title:
+                          type: string
                 status:
                   type: string
                 visibility:
                   type: string
-              required:
-                - title
-                - user_type
-                - status
-                - visibility
             examples:
               example1:
                 value:
-                  title: system_
+                  title: headmaster_state
                   user_type: 1
+                  label: Head Master
+                  meta:
+                    entityTypes:
+                      - entityTypeId: 5f32d8228e0dc83124040567
+                        entityType: school
+                  translations:
+                    hi:
+                      title: हेड मास्टर
+                    kn:
+                      title: ಹೆಡ್ ಮಾಸ್ಟರ್
+                    te:
+                      title: హెడ్ ​​మాస్టర్
+                    bn:
+                      title: হেড মাস্টার
+                    gu:
+                      title: હેડ માસ્તર
+                    ta:
+                      title: தலைமை ஆசிரியர்
+                    pa:
+                      title: ਹੈੱਡ ਮਾਸਟਰ
+                    ml:
+                      title: ഹെഡ് മാസ്റ്റർ
+                    mr:
+                      title: मुख्याध्यापक
+                    ur:
+                      title: ہیڈ ماسٹر
+                    or:
+                      title: ହେଡ୍ ମାଷ୍ଟର |
                   status: ACTIVE
                   visibility: PUBLIC
       responses:
@@ -2753,7 +3024,6 @@ paths:
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -2773,6 +3043,64 @@ paths:
                         type: string
                       organization_id:
                         type: number
+                      translations:
+                        type: object
+                        properties:
+                          hi:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          kn:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          te:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          bn:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          gu:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          ta:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          pa:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          ml:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          mr:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          ur:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                          or:
+                            type: object
+                            properties:
+                              title:
+                                type: string
                   meta:
                     type: object
                     properties:
@@ -2788,14 +3116,37 @@ paths:
                     responseCode: OK
                     message: Roles updated successfully
                     result:
-                      title: system_
+                      title: head_master
                       user_type: 1
                       status: ACTIVE
                       visibility: PUBLIC
-                      organization_id: 3
+                      organization_id: 1
+                      translations:
+                        hi:
+                          title: हेड मास्टर
+                        kn:
+                          title: ಹೆಡ್ ಮಾಸ್ಟರ್
+                        te:
+                          title: హెడ్ ​​మాస్టర్
+                        bn:
+                          title: হেড মাস্টার
+                        gu:
+                          title: હેડ માસ્તર
+                        ta:
+                          title: தலைமை ஆசிரியர்
+                        pa:
+                          title: ਹੈੱਡ ਮਾਸਟਰ
+                        ml:
+                          title: ഹെഡ് മാസ്റ്റർ
+                        mr:
+                          title: मुख्याध्यापक
+                        ur:
+                          title: ہیڈ ماسٹر
+                        or:
+                          title: ହେଡ୍ ମାଷ୍ଟର |
                     meta:
                       formsVersion: []
-                      correlation: 7672e4b5-2fa7-4022-a18b-cd574898e590
+                      correlation: 219aa424-7df2-43b1-b822-721195a53eec
   /user/v1/userRole/delete/{id}:
     delete:
       summary: Delete User Role
