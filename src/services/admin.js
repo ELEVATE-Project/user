@@ -220,11 +220,13 @@ module.exports = class AdminHelper {
 
 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 
 			const tenant_id =
-				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
+				tenantDetails && tenantDetails.related_orgs && tenantDetails.related_orgs.length > 0
+					? tenantDetails.related_orgs[0]
+					: user.organization_id
 
 			const tokenDetail = {
 				data: {
@@ -234,6 +236,7 @@ module.exports = class AdminHelper {
 					organization_id: user.organization_id,
 					roles: roles,
 					tenant_id: tenant_id,
+					organization_ids: [String(user.organization_id)],
 				},
 			}
 
