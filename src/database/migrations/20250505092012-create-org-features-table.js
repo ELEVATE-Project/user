@@ -38,7 +38,7 @@ module.exports = {
 				allowNull: true,
 			},
 			translations: {
-				type: DataTypes.JSON,
+				type: Sequelize.JSON,
 				allowNull: true,
 			},
 			meta: {

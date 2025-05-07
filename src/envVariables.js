@@ -349,6 +349,7 @@ let enviromentVariables = {
 	DEFAULT_TENANT_CODE: {
 		message: 'Require default tenant code',
 		optional: true,
+		default: 'default',
 	},
 }
 
