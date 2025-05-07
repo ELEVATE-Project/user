@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				autoIncrement: true,
 			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				primaryKey: true,
+			},
 			email: {
 				type: DataTypes.STRING,
 				allowNull: false,
@@ -26,6 +31,18 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
+			username: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			phone: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			phone_code: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 			location: DataTypes.STRING,
 			about: DataTypes.TEXT,
 			share_link: DataTypes.STRING,
@@ -42,11 +59,6 @@ module.exports = (sequelize, DataTypes) => {
 			preferred_language: {
 				type: DataTypes.STRING,
 				defaultValue: 'en',
-			},
-			organization_id: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-				primaryKey: true,
 			},
 			roles: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
@@ -73,10 +85,28 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: '',
 			},
 		},
-		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'User',
+			tableName: 'users',
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
+
 	User.associate = (models) => {
-		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
+		User.hasMany(models.UserOrganization, {
+			foreignKey: 'user_id',
+			as: 'user_organizations',
+		})
+
+		User.belongsToMany(models.Organization, {
+			through: models.UserOrganization,
+			foreignKey: 'user_id',
+			otherKey: 'organization_code',
+			as: 'organizations',
+		})
 	}
+
 	return User
 }
