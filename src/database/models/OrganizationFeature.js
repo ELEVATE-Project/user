@@ -35,6 +35,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
+			translations: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
 			meta: {
 				type: DataTypes.JSON,
 				allowNull: true,

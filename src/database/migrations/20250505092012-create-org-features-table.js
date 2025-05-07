@@ -37,6 +37,10 @@ module.exports = {
 				type: Sequelize.STRING,
 				allowNull: true,
 			},
+			translations: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
 			meta: {
 				type: Sequelize.JSON,
 				allowNull: true,
