@@ -36,6 +36,15 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'PUBLIC',
 			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: '',
+			},
+			translations: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }
 	)
