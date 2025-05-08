@@ -50,6 +50,17 @@ module.exports = (sequelize, DataTypes) => {
 			onDelete: 'CASCADE',
 			onUpdate: 'CASCADE',
 		})
+		UserOrganizationRole.belongsTo(models.UserOrganization, {
+			foreignKey: 'organization_code',
+			targetKey: 'organization_code',
+			as: 'roles',
+		})
+
+		UserOrganizationRole.belongsTo(models.UserRole, {
+			foreignKey: 'role_id',
+			targetKey: 'id',
+			as: 'role',
+		})
 	}
 
 	return UserOrganizationRole

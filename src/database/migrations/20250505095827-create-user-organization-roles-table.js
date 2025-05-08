@@ -32,6 +32,10 @@ module.exports = {
 				type: Sequelize.DATE,
 				allowNull: false,
 			},
+			deleted_at: {
+				type: Sequelize.DATE,
+				allowNull: false,
+			},
 		})
 
 		await queryInterface.addConstraint('user_organization_roles', {

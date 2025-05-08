@@ -29,6 +29,14 @@ const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const userSessionsService = require('@services/user-sessions')
+
+const tenantDomainQueries = require('@database/queries/tenantDomain')
+const tenantQueries = require('@database/queries/tenants')
+const userOrganizationQueries = require('@database/queries/userOrganization')
+const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
+const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
+const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
+
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -44,12 +52,34 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns account creation details.
 	 */
 
-	static async create(bodyData, deviceInfo) {
+	static async create(bodyData, deviceInfo, domain) {
 		const projection = ['password']
 
 		try {
+			const notFoundResponse = (message) =>
+				responses.failureResponse({
+					message,
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			if (!tenantDomain) {
+				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+			}
+
+			const tenantDetail = await tenantQueries.findOne({
+				code: tenantDomain.tenant_code,
+			})
+			if (!tenantDetail) {
+				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+			}
+
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+
+			const plaintextPhoneNumber = bodyData.phone
+			const encryptedPhoneNumber = emailEncryption.encrypt(plaintextEmailId)
 			let user = await UserCredentialQueries.findOne({
 				email: encryptedEmailId,
 				password: {
@@ -77,6 +107,7 @@ module.exports = class AccountHelper {
 			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
+			bodyData.username = await generateUniqueUsername(bodyData.name)
 
 			//check user exist in invitee list
 			let role,
@@ -153,20 +184,8 @@ module.exports = class AccountHelper {
 				bodyData.roles = roles
 			} else {
 				//find organization from email domain
-				let emailDomain = utilsHelper.extractDomainFromEmail(plaintextEmailId)
-				let domainDetails = await orgDomainQueries.findOne({
-					domain: emailDomain,
-				})
-				bodyData.organization_id = domainDetails
-					? domainDetails.organization_id
-					: (
-							await organizationQueries.findOne(
-								{
-									code: process.env.DEFAULT_ORGANISATION_CODE,
-								},
-								{ attributes: ['id'] }
-							)
-					  ).id
+
+				bodyData.tenant_code = tenantDetail.code
 
 				//add default role as mentee
 				role = await roleQueries.findAll(
@@ -174,6 +193,7 @@ module.exports = class AccountHelper {
 						title: {
 							[Op.in]: process.env.DEFAULT_ROLE.split(','),
 						},
+						tenant_code: tenantDetail.code,
 					},
 					{
 						attributes: {
@@ -198,13 +218,40 @@ module.exports = class AccountHelper {
 
 			delete bodyData.role
 			bodyData.email = encryptedEmailId
+			bodyData.phone = encryptedPhoneNumber
 
 			const insertedUser = await userQueries.create(bodyData)
+
+			const emailDomain = utilsHelper.extractDomainFromEmail(plaintextEmailId)
+
+			const domainDetails = await orgDomainQueries.findOne({
+				domain: emailDomain,
+				tenant_code: tenantDetail.code,
+			})
+
+			const organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
+
+			const userOrg = await userOrganizationQueries.create({
+				user_id: insertedUser.id,
+				organization_code: organizationCode,
+				tenant_code: tenantDetail.code,
+			})
+
+			const insertedUserRoles = await Promise.all(
+				bodyData.roles.map((roleId) =>
+					userOrganizationRoleQueries.create({
+						tenant_code: tenantDetail.code,
+						user_id: insertedUser.id,
+						organization_code: organizationCode,
+						role_id: roleId,
+					})
+				)
+			)
 
 			const userCredentialsBody = {
 				email: encryptedEmailId,
 				password: bodyData.password,
-				organization_id: insertedUser.organization_id,
+				organization_id: 1,
 				user_id: insertedUser.id,
 			}
 			let userCredentials
@@ -223,7 +270,7 @@ module.exports = class AccountHelper {
 			}
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findUserWithOrganization(
-				{ id: insertedUser.id, organization_id: insertedUser.organization_id },
+				{ id: insertedUser.id, tenant_code: tenantDetail.code },
 				{
 					attributes: {
 						exclude: projection,
@@ -231,18 +278,7 @@ module.exports = class AccountHelper {
 				}
 			)
 
-			const roleData = await roleQueries.findAll(
-				{
-					id: {
-						[Op.in]: bodyData.roles,
-					},
-				},
-				{
-					attributes: {
-						exclude: ['created_at', 'updated_at', 'deleted_at'],
-					},
-				}
-			)
+			const roleData = user.organizations[0].roles
 
 			/**
 			 * create user session entry and add session_id to token data
@@ -261,13 +297,13 @@ module.exports = class AccountHelper {
 			 * if not then set user organisation id to tenant
 			 */
 
-			let tenantDetails = await organizationQueries.findOne(
+			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
 				{ attributes: ['parent_id'] }
 			)
 
 			const tenant_id =
-				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
+				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id */
 
 			const tokenDetail = {
 				data: {
@@ -275,12 +311,14 @@ module.exports = class AccountHelper {
 					name: user.name,
 					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
-					roles: roleData,
-					tenant_id: tenant_id,
+					//roles: roleData,
+					//tenant_id: tenant_id,
+					tenant_code: tenantDetail.code,
+					organizations: user.organizations,
 				},
 			}
 
-			user.user_roles = roleData
+			//	user.user_roles = roleData
 
 			// format the roles for email template
 			let roleArray = []
@@ -330,6 +368,7 @@ module.exports = class AccountHelper {
 				await organizationQueries.update(
 					{
 						id: user.organization_id,
+						tenant_code: tenantDetail.code,
 					},
 					{
 						org_admin: orgAdmins,
@@ -363,7 +402,7 @@ module.exports = class AccountHelper {
 			}
 
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
 				{ attributes: ['id'] }
 			)
 			const defaultOrgId = defaultOrg.id
@@ -375,12 +414,14 @@ module.exports = class AccountHelper {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
 				model_names: { [Op.contains]: [modelName] },
+				tenant_code: tenantDetail.code,
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			result.user = utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
@@ -403,37 +444,71 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns susccess or failure of login details.
 	 */
 
-	static async login(bodyData, deviceInformation) {
+	static async login(bodyData, deviceInformation, domain) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
-				password: {
-					[Op.ne]: null,
-				},
-			})
+			const notFoundResponse = (message) =>
+				responses.failureResponse({
+					message,
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			if (!userCredentials) {
+			// Validate tenant domain
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			if (!tenantDomain) {
+				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+			}
+
+			// Validate tenant
+			const tenantDetail = await tenantQueries.findOne({
+				code: tenantDomain.tenant_code,
+			})
+			if (!tenantDetail) {
+				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+			}
+
+			// Helper functions to detect identifier type
+			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
+			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
+			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+
+			const identifier = bodyData.identifier?.toLowerCase()
+			if (!identifier) {
 				return responses.failureResponse({
-					message: 'EMAIL_ID_NOT_REGISTERED',
+					message: 'IDENTIFIER_REQUIRED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let user = await userQueries.findUserWithOrganization({
-				id: userCredentials.user_id,
-				organization_id: userCredentials.organization_id,
+
+			// Prepare query based on identifier type
+			const query = {
+				[Op.or]: [],
+				password: { [Op.ne]: null },
 				status: common.ACTIVE_STATUS,
-			})
+				tenant_code: tenantDetail.code,
+			}
+
+			if (isEmail(identifier)) {
+				query[Op.or].push({ email: emailEncryption.encrypt(identifier) })
+			} else if (isPhone(identifier)) {
+				query[Op.or].push({ phone: emailEncryption.encrypt(identifier), phone_code: bodyData.phone_code }) // Adjust if phone encryption differs
+			} else {
+				query[Op.or].push({ username: identifier })
+			}
+			// Find user
+			const userInstance = await userQueries.findUserWithOrganization(query, {}, true)
+			let user = userInstance ? userInstance.toJSON() : null
+
 			if (!user) {
 				return responses.failureResponse({
-					message: 'EMAIL_ID_NOT_REGISTERED',
+					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// check if login is allowed or not
+
+			// Check active session limit
 			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
 				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
 				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
@@ -445,65 +520,42 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			let roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.ACTIVE_STATUS },
-				{
-					attributes: {
-						exclude: ['created_at', 'updated_at', 'deleted_at'],
-					},
-				}
-			)
-			if (!roles) {
-				return responses.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			user.user_roles = roles
-
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, userCredentials.password)
+			// Verify password
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return responses.failureResponse({
-					message: 'USERNAME_OR_PASSWORD_IS_INVALID',
+					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInformation
-			)
-			/**
-			 * Based on user organisation id get user org parent Id value
-			 * If parent org id is present then set it to tenant of user
-			 * if not then set user organisation id to tenant
-			 */
+			// Create user session
+			const userSessionDetails = await userSessionsService.createUserSession(user.id, '', '', deviceInformation)
 
+			// Determine tenant ID
 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
 				{ attributes: ['parent_id'] }
 			)
-
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
 
+			// Transform user data
+			user = UserTransformDTO.transform(user)
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
-					roles: roles,
 					tenant_id: tenant_id,
+					tenant_code: tenantDetail.code,
+					organizations: user.organizations,
 				},
 			}
 
+			// Generate tokens
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
@@ -517,7 +569,7 @@ module.exports = class AccountHelper {
 
 			delete user.password
 
-			//Change to
+			// Fetch default organization and validation data
 			let defaultOrg = await organizationQueries.findOne(
 				{ code: process.env.DEFAULT_ORGANISATION_CODE },
 				{ attributes: ['id'] }
@@ -539,14 +591,12 @@ module.exports = class AccountHelper {
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-			user.email = plaintextEmailId
+
+			// Return original identifier (email, phone, or username)
+			user.identifier = identifier
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
+			// Update session and Redis
 			await userSessionsService.updateUserSessionAndsetRedisData(
 				userSessionDetails.result.id,
 				accessToken,

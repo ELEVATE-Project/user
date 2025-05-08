@@ -43,6 +43,17 @@ module.exports = (sequelize, DataTypes) => {
 			onDelete: 'CASCADE',
 			onUpdate: 'CASCADE',
 		})
+
+		UserOrganization.belongsTo(models.Organization, {
+			foreignKey: 'organization_code',
+			targetKey: 'code',
+			as: 'organization',
+		})
+		UserOrganization.hasMany(models.UserOrganizationRole, {
+			as: 'roles',
+			foreignKey: 'user_id',
+			sourceKey: 'user_id',
+		})
 	}
 
 	return UserOrganization

@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: '',
+				primaryKey: true,
 			},
 			translations: {
 				type: DataTypes.JSON,
@@ -48,10 +48,6 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{ sequelize, modelName: 'UserRole', tableName: 'user_roles', freezeTableName: true, paranoid: true }
 	)
-
-	UserRole.associate = (models) => {
-		UserRole.hasMany(models.User, { foreignKey: 'id', as: 'user_role_array' })
-	}
 
 	return UserRole
 }
