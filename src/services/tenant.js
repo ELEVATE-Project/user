@@ -7,7 +7,6 @@
 
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
-const db = require('@database/models/index')
 const common = require('@constants/common')
 const tenantQueries = require('@database/queries/tenants')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
@@ -84,11 +83,15 @@ module.exports = class tenantHelper {
 			})
 
 			try {
+				// create promise for tenant domain promises
 				const tenantDomainCreatePromises = tenantDomainBody.map((doms) => {
 					return tenantDomainQueries.create(doms)
 				})
+
+				// execute tenant domain create promise
 				const domainCreationResponse = await Promise.all(tenantDomainCreatePromises)
 
+				// check if all promises are executed successfully else rollback and return error
 				for (let response of domainCreationResponse) {
 					if (response?.id) {
 						rollbackStack.push(async () => {
@@ -105,6 +108,7 @@ module.exports = class tenantHelper {
 					}
 				}
 			} catch (error) {
+				// rollback in case of any error
 				if (rollbackStack.size() > 0) await rollbackStack.execute()
 
 				return responses.failureResponse({
@@ -115,6 +119,7 @@ module.exports = class tenantHelper {
 			}
 
 			try {
+				// default org create body
 				const defaultOrgCreateBody = {
 					name: process.env.DEFAULT_TENANT_ORG_NAME,
 					code: process.env.DEFAULT_TENANT_ORG_CODE,
@@ -122,14 +127,16 @@ module.exports = class tenantHelper {
 					description: '',
 					domains: [],
 				}
+				// default org creation using org service function
 				const defaultOrgCreateResponse = await organisationService.create(defaultOrgCreateBody, userId)
+				// rollback and throw error in case org creation failed
 				if (!defaultOrgCreateResponse.result.id) {
 					if (rollbackStack.size() > 0) await rollbackStack.execute()
 					throw new Error('Default Org creation Failed')
 				}
 
 				const defaultOrgId = defaultOrgCreateResponse.result.id
-
+				// add rollback code for org
 				rollbackStack.push(async () => {
 					await organisationQueries.hardDelete(defaultOrgId)
 				})
