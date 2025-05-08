@@ -51,3 +51,15 @@ exports.update = async (filter, updatedata) => {
 		throw error
 	}
 }
+
+exports.hardDelete = async (code) => {
+	try {
+		await Tenant.destroy({
+			where: { code },
+			force: true,
+		})
+		return true
+	} catch (error) {
+		throw error
+	}
+}

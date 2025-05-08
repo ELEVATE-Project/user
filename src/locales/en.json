@@ -131,5 +131,9 @@
 	"ROLE_ALREADY_EXISTS": "Role already exists",
 	"INVALID_ROLE_ASSIGNMENTS": "Invalid role assignment",
 	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully",
-	"ROLE_CHANGE_PENDING": "You have already requested to be a mentor. Please wait for the org admin's approval"
+	"ROLE_CHANGE_PENDING": "You have already requested to be a mentor. Please wait for the org admin's approval",
+	"TENANT_ALREADY_EXISTS": "Tenant code already exists.",
+	"TENANT_DOMAIN_ALREADY_EXISTS": "Tenant domain already exists.",
+	"TENANT_CREATED_SUCCESSFULLY": "Tenant created successfully.",
+	"DEFAULT_ORG_CREATION_FAILED": "Default Organization creation under tenant failed."
 }

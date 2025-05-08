@@ -25,7 +25,11 @@ module.exports = class Form {
 	async create(req) {
 		const params = req.body
 		try {
-			const createdForm = await formsService.create(params, req.decodedToken.organization_id)
+			const createdForm = await formsService.create(
+				params,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return createdForm
 		} catch (error) {
 			return error

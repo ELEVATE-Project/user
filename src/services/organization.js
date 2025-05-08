@@ -30,7 +30,10 @@ module.exports = class OrganizationsHelper {
 
 	static async create(bodyData, loggedInUserId) {
 		try {
-			const existingOrganization = await organizationQueries.findOne({ code: bodyData.code })
+			const existingOrganization = await organizationQueries.findOne({
+				code: bodyData.code,
+				tenant_code: bodyData.tenant_code,
+			})
 
 			if (existingOrganization) {
 				return responses.failureResponse({

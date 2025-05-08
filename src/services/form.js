@@ -16,9 +16,9 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Form creation data.
 	 */
 
-	static async create(bodyData, orgId) {
+	static async create(bodyData, orgId, tenant_code) {
 		try {
-			const form = await formQueries.findOne({ type: bodyData.type, organization_id: orgId })
+			const form = await formQueries.findOne({ type: bodyData.type, organization_id: orgId, tenant_code })
 			if (form) {
 				return responses.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -27,6 +27,7 @@ module.exports = class FormsHelper {
 				})
 			}
 			bodyData['organization_id'] = orgId
+			bodyData['tenant_code'] = tenant_code
 			await formQueries.create(bodyData)
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')

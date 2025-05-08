@@ -160,3 +160,18 @@ module.exports = class UserEntityData {
 		}
 	}
 }
+
+exports.hardDelete = async (id) => {
+	try {
+		await EntityType.destroy({
+			where: {
+				id,
+			},
+			force: true,
+		})
+		return { success: true }
+	} catch (error) {
+		console.error(error)
+		return error
+	}
+}

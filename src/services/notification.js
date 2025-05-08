@@ -19,6 +19,7 @@ module.exports = class NotificationTemplateHelper {
 			const template = await notificationTemplateQueries.findOne({
 				code: bodyData.code,
 				organization_id: tokenInformation.organization_id,
+				tenant_code: tokenInformation.tenant_code,
 			})
 			if (template) {
 				return responses.failureResponse({
@@ -29,6 +30,7 @@ module.exports = class NotificationTemplateHelper {
 			}
 
 			bodyData['organization_id'] = tokenInformation.organization_id
+			bodyData['tenant_code'] = tokenInformation.tenant_code
 			bodyData['created_by'] = tokenInformation.id
 
 			const createdNotification = await notificationTemplateQueries.create(bodyData)
