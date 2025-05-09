@@ -43,7 +43,6 @@ module.exports = class AccountHelper {
 	 * @method
 	 * @name create
 	 * @param {Object} bodyData -request body contains user creation deatils.
-	 * @param {String} bodyData.secretCode - secrate code to create mentor.
 	 * @param {String} bodyData.name - name of the user.
 	 * @param {Boolean} bodyData.isAMentor - is a mentor or not .
 	 * @param {String} bodyData.email - user email.
@@ -83,27 +82,60 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// Encrypt email if provided
-			let plaintextEmailId, encryptedEmailId
+			let domainDetails = null
+
+			if (bodyData.secret_code) {
+				domainDetails = await organizationQueries.findOne({
+					tenant_code: tenantDetail.code,
+					secret_code: bodyData.secret_code,
+				})
+
+				if (!domainDetails) {
+					return responses.failureResponse({
+						message: 'INVALID_ORG_SECRET_CODE',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+
+			// Handle email encryption if provided
+			let encryptedEmailId = null
+			let plaintextEmailId = null
 			if (bodyData.email) {
 				plaintextEmailId = bodyData.email.toLowerCase()
 				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 				bodyData.email = encryptedEmailId
 			}
 
-			// Encrypt phone if provided
-			let plaintextPhoneNumber, encryptedPhoneNumber
-			if (bodyData.phone) {
+			// Handle phone encryption if provided
+			let encryptedPhoneNumber = null
+			let plaintextPhoneNumber = null
+			if (bodyData.phone && bodyData.phone_code) {
 				plaintextPhoneNumber = bodyData.phone
 				encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
 				bodyData.phone = encryptedPhoneNumber
+				bodyData.phone_code = bodyData.phone_code // Store phone_code separately
 			}
-			let user = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
-				password: {
-					[Op.ne]: null,
-				},
-			})
+
+			// Check if user already exists with email or phone
+			let user = null
+			if (encryptedEmailId) {
+				user = await userQueries.findOne({
+					email: encryptedEmailId,
+					password: {
+						[Op.ne]: null,
+					},
+				})
+			}
+			if (!user && encryptedPhoneNumber) {
+				user = await userQueries.findOne({
+					phone: encryptedPhoneNumber,
+					password: {
+						[Op.ne]: null,
+					},
+				})
+			}
 
 			if (user) {
 				return responses.failureResponse({
@@ -113,9 +145,28 @@ module.exports = class AccountHelper {
 				})
 			}
 
+			// OTP validation
 			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
-				const redisData = await utilsHelper.redisGet(encryptedEmailId)
-				if (!redisData || redisData.otp != bodyData.otp) {
+				let isOtpValid = false
+				const providedOtp = bodyData.otp
+
+				// Check email OTP if email is provided
+				if (encryptedEmailId) {
+					const emailRedisData = await utilsHelper.redisGet(encryptedEmailId)
+					if (emailRedisData && emailRedisData.otp === providedOtp) {
+						isOtpValid = true
+					}
+				}
+
+				// Check phone OTP if phone is provided
+				if (encryptedPhoneNumber) {
+					const phoneRedisData = await utilsHelper.redisGet(bodyData.phone_code + encryptedPhoneNumber)
+					if (phoneRedisData && phoneRedisData.otp === providedOtp) {
+						isOtpValid = true
+					}
+				}
+
+				if (!isOtpValid) {
 					return responses.failureResponse({
 						message: 'OTP_INVALID',
 						statusCode: httpStatusCode.bad_request,
@@ -127,29 +178,46 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 			bodyData.username = await generateUniqueUsername(bodyData.name)
 
-			//check user exist in invitee list
+			// Check user in invitee list
 			let role,
 				roles = []
-
 			let invitedUserMatch = false
-			const invitedUserId = await UserCredentialQueries.findOne(
-				{
-					email: encryptedEmailId,
-					organization_user_invite_id: {
-						[Op.ne]: null,
+			let invitedUserId = null
+
+			if (encryptedEmailId) {
+				invitedUserId = await UserCredentialQueries.findOne(
+					{
+						email: encryptedEmailId,
+						organization_user_invite_id: {
+							[Op.ne]: null,
+						},
+						password: {
+							[Op.eq]: null,
+						},
 					},
-					password: {
-						[Op.eq]: null,
+					{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
+				)
+			}
+			/* 			if (!invitedUserId && encryptedPhoneNumber) {
+				invitedUserId = await UserCredentialQueries.findOne(
+					{
+						phone: encryptedPhoneNumber,
+						organization_user_invite_id: {
+							[Op.ne]: null,
+						},
+						password: {
+							[Op.eq]: null,
+						},
 					},
-				},
-				{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
-			)
+					{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
+				)
+			} */
 
 			if (invitedUserId) {
 				invitedUserMatch = await userInviteQueries.findOne({
 					id: invitedUserId.organization_user_invite_id,
 					organization_id: invitedUserId.organization_id,
-				}) //add org id here to optimize the query
+				})
 			}
 
 			let isOrgAdmin = false
@@ -235,17 +303,21 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-			//bodyData.email = encryptedEmailId
-			//bodyData.phone = encryptedPhoneNumber
+			if (encryptedEmailId) bodyData.email = encryptedEmailId
+			if (encryptedPhoneNumber) bodyData.phone = encryptedPhoneNumber
 
 			const insertedUser = await userQueries.create(bodyData)
 
-			const emailDomain = utilsHelper.extractDomainFromEmail(plaintextEmailId)
+			if (!domainDetails) {
+				const emailDomain = plaintextEmailId ? utilsHelper.extractDomainFromEmail(plaintextEmailId) : null
 
-			const domainDetails = await orgDomainQueries.findOne({
-				domain: emailDomain,
-				tenant_code: tenantDetail.code,
-			})
+				domainDetails = emailDomain
+					? await orgDomainQueries.findOne({
+							domain: emailDomain,
+							tenant_code: tenantDetail.code,
+					  })
+					: null
+			}
 
 			const organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
 
@@ -268,6 +340,8 @@ module.exports = class AccountHelper {
 
 			const userCredentialsBody = {
 				email: encryptedEmailId,
+				//phone: encryptedPhoneNumber,
+				//phone_code: bodyData.phone_code,
 				password: bodyData.password,
 				organization_id: 1,
 				user_id: insertedUser.id,
@@ -329,8 +403,6 @@ module.exports = class AccountHelper {
 					name: user.name,
 					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
-					//roles: roleData,
-					//tenant_id: tenant_id,
 					tenant_code: tenantDetail.code,
 					organizations: user.organizations,
 				},
@@ -377,9 +449,11 @@ module.exports = class AccountHelper {
 				accessToken,
 				refreshToken
 			)
-			await utilsHelper.redisDel(encryptedEmailId)
 
-			//make the user as org admin
+			// Delete Redis OTP entries
+			if (encryptedEmailId) await utilsHelper.redisDel(encryptedEmailId)
+			if (encryptedPhoneNumber) await utilsHelper.redisDel(encryptedPhoneNumber)
+
 			if (isOrgAdmin) {
 				let organization = await organizationQueries.findByPk(user.organization_id)
 				const orgAdmins = _.uniq([...(organization.org_admin || []), user.id])
@@ -400,8 +474,7 @@ module.exports = class AccountHelper {
 				user.organization_id
 			)
 
-			if (templateData) {
-				// Push successful registration email to kafka
+			if (templateData && plaintextEmailId) {
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
@@ -439,6 +512,8 @@ module.exports = class AccountHelper {
 			result.user = utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
+			result.user.phone = plaintextPhoneNumber
+			result.user.phone_code = bodyData.phone_code
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,

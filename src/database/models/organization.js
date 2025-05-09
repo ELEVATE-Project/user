@@ -43,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				primaryKey: true,
 			},
+			secret_code: {
+				type: DataTypes.STRING(32),
+				allowNull: true,
+			},
 			meta: {
 				type: DataTypes.JSON,
 				allowNull: true,
@@ -56,7 +60,6 @@ module.exports = (sequelize, DataTypes) => {
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				defaultValue: '',
 			},
 		},
 		{

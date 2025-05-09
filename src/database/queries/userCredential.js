@@ -16,7 +16,7 @@ exports.create = async (data) => {
 			})
 			return message
 		} else {
-			return error.message
+			throw error.message
 		}
 	}
 }
@@ -30,7 +30,7 @@ exports.findOne = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 
@@ -43,7 +43,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 		})
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 

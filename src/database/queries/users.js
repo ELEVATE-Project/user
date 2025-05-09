@@ -11,14 +11,14 @@ exports.getColumns = async () => {
 	try {
 		return await Object.keys(database.User.rawAttributes)
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 exports.getModelName = async () => {
 	try {
 		return await database.User.name
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 exports.create = async (data) => {
@@ -26,7 +26,7 @@ exports.create = async (data) => {
 		return await database.User.create(data)
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 
@@ -38,7 +38,7 @@ exports.findOne = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -58,7 +58,7 @@ exports.findByPk = async (id) => {
 	try {
 		return await database.User.findByPk(id, { raw: true })
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -70,7 +70,7 @@ exports.findAll = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -140,7 +140,7 @@ exports.findAllUserWithOrganization = async (filter, options = {}) => {
 			nest: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 

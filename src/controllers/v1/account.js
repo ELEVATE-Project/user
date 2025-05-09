@@ -25,15 +25,15 @@ module.exports = class Account {
 	async create(req) {
 		const params = req.body
 
-		const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
+		const host = req.headers.origin || ''
 		let domain = ''
 
 		if (host) {
 			try {
 				const url = new URL(host)
-				domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
+				domain = url.hostname
 			} catch (error) {
-				domain = host.split(':')[0] // Fallback: remove port if present
+				domain = host.split(':')[0]
 			}
 		}
 
