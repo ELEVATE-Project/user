@@ -79,7 +79,7 @@ module.exports = class AccountHelper {
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 
 			const plaintextPhoneNumber = bodyData.phone
-			const encryptedPhoneNumber = emailEncryption.encrypt(plaintextEmailId)
+			const encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
 			let user = await UserCredentialQueries.findOne({
 				email: encryptedEmailId,
 				password: {
