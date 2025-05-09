@@ -16,8 +16,6 @@ module.exports = {
 				.trim()
 				.notEmpty()
 				.withMessage('code param is empty')
-				.isNumeric()
-				.withMessage('Code param is invalid, must be an integer')
 				.matches(/^[a-zA-Z0-9_]+$/)
 				.withMessage('Code must contain only letters, numbers, and underscores')
 		} else {
