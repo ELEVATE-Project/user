@@ -25,7 +25,7 @@ module.exports = class Account {
 	async create(req) {
 		const params = req.body
 
-		const host = req.headers.host // e.g., 'tenant1.example.com'
+		const host = req.headers.origin // e.g., 'tenant1.example.com'
 		const domain = host.split(':')[0] // in case there's a port
 
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
@@ -51,7 +51,7 @@ module.exports = class Account {
 	async login(req) {
 		const params = req.body
 
-		const host = req.headers.host // e.g., 'tenant1.example.com'
+		const host = req.headers.origin // e.g., 'tenant1.example.com'
 		const domain = host.split(':')[0] // in case there's a port
 
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
