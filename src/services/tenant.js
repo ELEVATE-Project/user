@@ -19,7 +19,7 @@ const formsQueries = require('@database/queries/form')
 const formService = require('@services/form')
 const notificationTemplateQueries = require('@database/queries/notificationTemplate')
 const notificationTemplateService = require('@services/notification')
-const RollbackStack = require('@generics/rollBackStack')
+const RollbackStack = require('@generics/RollbackStack')
 const organisationQueries = require('@database/queries/organization')
 const utils = require('@generics/utils')
 const _ = require('lodash')
@@ -299,6 +299,259 @@ module.exports = class tenantHelper {
 			})
 		} catch (error) {
 			if (rollbackStack.size() > 0) await rollbackStack.execute()
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+
+	/**
+	 * Update Tenant
+	 * @method
+	 * @name update
+	 * @param {string} tenantCode - code of the tenant
+	 * @param {Object} bodyData - it contains tenant infomration to update
+	 * @param {string} userId - Logged in User Id
+	 * @returns {JSON} - Update tenant response
+	 */
+	static async update(tenantCode, bodyData, userId) {
+		try {
+			// fetch tenant details
+			const tenantDetails = await tenantQueries.findOne({
+				code: tenantCode,
+			})
+
+			if (!tenantDetails?.code) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'TENANT_NOT_FOUND',
+				})
+			}
+			// list of updatable keys for a tenant
+			const tenantUpdatableKeys = ['name', 'description', 'logo', 'theming', 'meta']
+			// pick relevant data from body data for tenant updation
+			bodyData = _.pick(bodyData, tenantUpdatableKeys)
+
+			let tenantUpdateBody = {}
+			// prepare the update body based on comparing with the current data to make sure the change
+			for (let key of tenantUpdatableKeys) {
+				if (!_.isEqual(bodyData[key], tenantDetails[key])) {
+					tenantUpdateBody[key] = bodyData[key]
+				}
+			}
+			// update only if the data is changed
+			if (Object.keys(tenantUpdateBody).length > 0) {
+				tenantUpdateBody.updated_by = userId
+				await tenantQueries.update(
+					{
+						code: tenantCode,
+					},
+					tenantUpdateBody
+				)
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'TENANT_UPDATED_SUCCESSFULLY',
+				result: bodyData,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+
+	/**
+	 * add Tenant domains
+	 * @method
+	 * @name addDomain
+	 * @param {string} tenantCode - code of the tenant
+	 * @param {Object} domains - list of domains
+	 * @returns {JSON} - add tenant domain response
+	 */
+	static async addDomain(tenantCode, domains) {
+		try {
+			// fetch tenant details
+			const tenantDetails = await tenantQueries.findOne({
+				code: tenantCode,
+			})
+
+			if (!tenantDetails?.code) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'TENANT_NOT_FOUND',
+				})
+			}
+			domains = Array.isArray(domains) ? domains : domains.split(',')
+			domains = domains
+				.filter((dom) => typeof dom === 'string' && dom !== '')
+				.map((doms) => {
+					return utils.parseDomain(doms)
+				})
+
+			if (domains.length <= 0) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'INVALID_TENANT_DOMAINS',
+					result: {},
+				})
+			}
+			let existingDomains = await tenantDomainQueries.findAll(
+				{
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['domain'],
+				}
+			)
+
+			if (existingDomains.length > 0) {
+				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
+			} else {
+				existingDomains = []
+			}
+
+			const domainsToCreate = _.difference(domains, existingDomains)
+
+			if (domainsToCreate.length > 0) {
+				const domainCreationPromise = domainsToCreate.map((doms) => {
+					return tenantDomainQueries.create({
+						tenant_code: tenantCode,
+						domain: doms,
+						verified: true,
+					})
+				})
+				await Promise.all(domainCreationPromise)
+			} else {
+				return responses.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'TENANT_DOMAINS_ALREADY_PRESENT',
+					result: {},
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'TENANT_DOMAINS_ADDED_SUCCESSFULLY',
+				result: {
+					new_domains_added: domainsToCreate,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+
+	/**
+	 * remove Tenant domains
+	 * @method
+	 * @name addDomain
+	 * @param {string} tenantCode - code of the tenant
+	 * @param {Object} domains - list of domains
+	 * @returns {JSON} - add tenant domain response
+	 */
+	static async removeDomain(tenantCode, domains) {
+		try {
+			// fetch tenant details
+			const tenantDetails = await tenantQueries.findOne({
+				code: tenantCode,
+			})
+
+			if (!tenantDetails?.code) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'TENANT_NOT_FOUND',
+				})
+			}
+			// make sure the domains is in array format
+			domains = Array.isArray(domains) ? domains : domains.split(',')
+			// parse domains and filter out empty values from array
+			domains = domains
+				.filter((dom) => typeof dom === 'string' && dom !== '')
+				.map((doms) => {
+					return utils.parseDomain(doms)
+				})
+
+			if (domains.length <= 0) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'INVALID_TENANT_DOMAINS',
+					result: {},
+				})
+			}
+
+			// fetch existing domains for the tenant
+			let existingDomains = await tenantDomainQueries.findAll(
+				{
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['domain', 'id'],
+				}
+			)
+
+			let domainIdMapping
+
+			if (existingDomains.length > 0) {
+				// create domain code id mapping
+				domainIdMapping = existingDomains.reduce((mapping, eachTenantDomain) => {
+					mapping[eachTenantDomain.domain] = eachTenantDomain.id
+					return mapping
+				}, {})
+				// make an array of existing domains
+				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
+			} else {
+				existingDomains = []
+			}
+
+			// prepare domains to remove
+			const domainsToRemove = domains
+				.map((doms) => {
+					if (existingDomains.includes(doms)) {
+						return doms
+					} else {
+						return false
+					}
+				})
+				.filter((doms) => doms !== false)
+
+			// if no given domains matches with the existing domains return
+			if (domainsToRemove.length == 0) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'NO_MATCHING_TENANT_DOMAINS_TO_REMOVE',
+				})
+			}
+			// make sure user is not removing all the domains from the existing domain
+			if (
+				domainsToRemove.length == existingDomains.length &&
+				_.isEqual(_.sortBy(domainsToRemove, String), _.sortBy(existingDomains, String))
+			) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'TENANT_DOMAINS_ATLEAST_ONE_MANDATORY',
+				})
+			}
+
+			const domainRemovePromise = domainsToRemove.map((domainRemove) => {
+				return tenantDomainQueries.hardDelete(domainIdMapping[domainRemove])
+			})
+
+			await Promise.all(domainRemovePromise)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'TENANT_DOMAINS_ADDED_SUCCESSFULLY',
+				result: {
+					removed_domains: domainsToRemove,
+				},
+			})
+		} catch (error) {
 			console.log(error)
 			throw error // Re-throw other errors
 		}

@@ -12,6 +12,14 @@ module.exports = {
 	update: (req) => {
 		if (req.params.id) {
 			req.body = filterRequestBody(req.body, tenant.update)
+			req.checkParams('id')
+				.trim()
+				.notEmpty()
+				.withMessage('code param is empty')
+				.isNumeric()
+				.withMessage('Code param is invalid, must be an integer')
+				.matches(/^[a-zA-Z0-9_]+$/)
+				.withMessage('Code must contain only letters, numbers, and underscores')
 		} else {
 			req.body = filterRequestBody(req.body, tenant.create)
 
@@ -64,5 +72,61 @@ module.exports = {
 
 			req.checkBody('domains').trim().notEmpty().withMessage('domains field is empty')
 		}
+	},
+
+	addDomain: (req) => {
+		req.body = filterRequestBody(req.body, tenant.addDomain)
+		req.checkParams('id')
+			.trim()
+			.notEmpty()
+			.withMessage('code param is empty')
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Code must contain only letters, numbers, and underscores')
+		req.checkBody('domains')
+			.custom((value) => {
+				// Allow arrays directly
+				if (Array.isArray(value)) {
+					if (value.length <= 0) return false
+					return true
+				}
+				// Allow strings, optionally parsing JSON
+				if (typeof value === 'string') {
+					if (value == '') return false
+					return true
+				}
+				// Reject all other types (e.g., objects, numbers, null)
+				return false
+			})
+			.withMessage(
+				'Domains must be a non-empty array or a non-empty string (multiple domains can be added comma separated)'
+			)
+	},
+
+	removeDomain: (req) => {
+		req.body = filterRequestBody(req.body, tenant.removeDomain)
+		req.checkParams('id')
+			.trim()
+			.notEmpty()
+			.withMessage('code param is empty')
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Code must contain only letters, numbers, and underscores')
+		req.checkBody('domains')
+			.custom((value) => {
+				// Allow arrays directly
+				if (Array.isArray(value)) {
+					if (value.length <= 0) return false
+					return true
+				}
+				// Allow strings, optionally parsing JSON
+				if (typeof value === 'string') {
+					if (value == '') return false
+					return true
+				}
+				// Reject all other types (e.g., objects, numbers, null)
+				return false
+			})
+			.withMessage(
+				'Domains must be a non-empty array or a non-empty string (multiple domains can be added comma separated)'
+			)
 	},
 }
