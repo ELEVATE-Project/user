@@ -5,6 +5,7 @@ const { Op, QueryTypes } = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const emailEncryption = require('@utils/emailEncryption')
 const _ = require('lodash')
+const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
 
 exports.getColumns = async () => {
 	try {
@@ -49,7 +50,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 			individualHooks: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -143,29 +144,67 @@ exports.findAllUserWithOrganization = async (filter, options = {}) => {
 	}
 }
 
-exports.findUserWithOrganization = async (filter, options = {}) => {
+exports.findUserWithOrganization = async (filter, options = {}, raw = false) => {
 	try {
-		return await database.User.findOne({
-			where: filter,
+		let user = await database.User.findOne({
+			where: filter, // e.g., { id: 19, tenant_code: 'default' }
 			...options,
 			include: [
 				{
-					model: Organization,
+					model: database.UserOrganization,
+					as: 'user_organizations',
 					required: false,
+					//attributes: ['organization_code', 'tenant_code'],
 					where: {
-						status: 'ACTIVE',
+						tenant_code: filter.tenant_code,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code: filter.tenant_code,
+							},
+							//attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							attributes: ['role_id'],
+							where: {
+								tenant_code: filter.tenant_code,
+							},
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									//attributes: ['id', 'title', 'label'],
+									where: {
+										tenant_code: filter.tenant_code, // manually enforce composite FK
+									},
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
 		})
+
+		if (!raw) {
+			user = user ? user.toJSON() : null
+			user = UserTransformDTO.transform(user) // Transform the data
+		}
+
+		return user
 	} catch (error) {
-		return error
+		console.error('Error in findUserWithOrganization:', error)
+		throw error
 	}
 }
+
 exports.listUsersFromView = async (
 	roleId,
 	organization_id,

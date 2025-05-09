@@ -5,6 +5,7 @@ exports.findOne = async (filter, options = {}) => {
 	try {
 		return await Tenant.findOne({
 			where: filter,
+			attributes: options.attributes || undefined,
 			...options,
 			raw: true,
 		})

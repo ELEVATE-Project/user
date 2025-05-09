@@ -116,6 +116,19 @@ module.exports = async function (req, res, next) {
 		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+
+			const org = decodedToken.data.organizations?.[0]
+
+			const organization_id = org?.id
+
+			decodedToken.data = {
+				id: decodedToken.data.id,
+				name: decodedToken.data.name,
+				session_id: decodedToken.data.session_id,
+				tenant_code: decodedToken.data.tenant_code,
+				organization_id,
+				roles: org.roles,
+			}
 			// Get redis key for session
 			const sessionId = decodedToken.data.session_id.toString()
 			// Get data from redis
@@ -166,14 +179,11 @@ module.exports = async function (req, res, next) {
 				})
 			}
 
-			const roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.ACTIVE_STATUS },
-				{ attributes: ['id', 'title', 'user_type', 'status'] }
-			)
+			const roles = org.roles
 
 			//update the token role as same as current user role
-			decodedToken.data.roles = roles
-			decodedToken.data.organization_id = user.organization_id
+			decodedToken.data.roles = roles //TODO: Update this to get roles from the user org roles table
+			//decodedToken.data.organization_id = user.organization_id
 		}
 
 		const isPermissionValid = await checkPermissions(

@@ -64,15 +64,38 @@ module.exports = {
 
 	login: (req) => {
 		req.body = filterRequestBody(req.body, account.login)
-		req.checkBody('email')
+
+		// Validate identifier
+		req.checkBody('identifier')
 			.trim()
 			.notEmpty()
-			.withMessage('email field is empty')
-			.isEmail()
-			.withMessage('email is invalid')
-			.normalizeEmail({ gmail_remove_dots: false })
+			.withMessage('Identifier field is empty')
+			.custom((value) => {
+				// Check if the identifier is a valid email, phone, or username
+				const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
+				const isPhone = /^\d{6,15}$/.test(value) // Phone: 6-15 digits
+				const isUsername = /^[a-zA-Z0-9-_]{3,30}$/.test(value)
 
-		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
+				if (!isEmail && !isPhone && !isUsername) {
+					throw new Error('Identifier must be a valid email, phone number, or username')
+				}
+				return true
+			})
+			.if(body('identifier').custom((value) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)))
+			.normalizeEmail({ gmail_remove_dots: false }) // Normalize email only if identifier is an email
+
+		// Validate phone_code (required only if identifier is a phone number)
+		req.checkBody('phone_code')
+			.if(body('identifier').custom((value) => /^\d{6,15}$/.test(value))) // Apply only for phone identifiers
+			.notEmpty()
+			.withMessage('Phone code is required for phone number login')
+			.matches(/^\+[1-9]\d{0,3}$/)
+			.withMessage('Phone code must be a valid country code (e.g., +1, +91)')
+
+		// Validate password
+		req.checkBody('password').trim().notEmpty().withMessage('Password field is empty')
+
+		return req
 	},
 
 	logout: (req) => {

@@ -52,7 +52,12 @@ module.exports = class Form {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedForm = await formsService.update(req.params.id, params, req.decodedToken.organization_id)
+			const updatedForm = await formsService.update(
+				req.params.id,
+				params,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return updatedForm
 		} catch (error) {
 			return error
@@ -79,7 +84,12 @@ module.exports = class Form {
 				const form = await formsService.readAllFormsVersion()
 				return form
 			} else {
-				const form = await formsService.read(req.params.id, params, req.decodedToken.organization_id)
+				const form = await formsService.read(
+					req.params.id,
+					params,
+					req.decodedToken.organization_id,
+					req.decodedToken.tenant_code
+				)
 				return form
 			}
 		} catch (error) {

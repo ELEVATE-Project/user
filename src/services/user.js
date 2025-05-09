@@ -11,7 +11,7 @@ const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
 const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/user-role')
-const entitiesQueries = require('@database/queries/entities')
+//const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
@@ -21,6 +21,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
+const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
 
 module.exports = class UserHelper {
 	/**
@@ -32,7 +33,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, id, orgId) {
+	static async update(bodyData, id, orgId, tenantCode) {
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -44,7 +45,7 @@ module.exports = class UserHelper {
 
 			const user = await userQueries.findOne({
 				id: id,
-				organization_id: orgId,
+				tenant_code: tenantCode,
 			})
 
 			if (!user) {
@@ -56,7 +57,7 @@ module.exports = class UserHelper {
 			}
 
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -66,6 +67,7 @@ module.exports = class UserHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				tenant_code: tenantCode,
 				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
@@ -110,7 +112,7 @@ module.exports = class UserHelper {
 				delete bodyData.roles
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: id, organization_id: orgId },
+				{ id: id, tenant_code: tenantCode },
 				bodyData
 			)
 
@@ -230,12 +232,12 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - user information
 	 */
-	static async read(id, internal_access_token = null, language) {
+	static async read(id, internal_access_token = null, language, tenantCode) {
 		try {
 			let filter = {}
-
+			console.log(tenantCode)
 			if (utils.isNumeric(id)) {
-				filter = { id: id }
+				filter = { id: id, tenant_code: tenantCode }
 			} else {
 				filter = { share_link: id }
 			}
@@ -251,7 +253,8 @@ module.exports = class UserHelper {
 				if (internal_access_token) {
 					options.paranoid = false
 				}
-				const user = await userQueries.findUserWithOrganization(filter, options)
+				let user = await userQueries.findUserWithOrganization(filter, options)
+
 				if (!user) {
 					return responses.failureResponse({
 						message: 'USER_NOT_FOUND',
@@ -260,14 +263,7 @@ module.exports = class UserHelper {
 					})
 				}
 
-				let roles = await roleQueries.findAll(
-					{ id: user.roles, status: common.ACTIVE_STATUS },
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
-					}
-				)
+				let roles = user.organizations[0].roles
 
 				if (!roles) {
 					return responses.failureResponse({
@@ -285,7 +281,7 @@ module.exports = class UserHelper {
 					})
 				}
 
-				user.user_roles = roles
+				//user.user_roles = roles
 
 				let defaultOrg = await organizationQueries.findOne(
 					{ code: process.env.DEFAULT_ORGANISATION_CODE },
@@ -301,11 +297,12 @@ module.exports = class UserHelper {
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-				const permissionsByModule = await this.getPermissions(user.user_roles)
+				const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
 				user.permissions = permissionsByModule
 
 				const processDbResponse = utils.processDbResponse(user, prunedEntities)
 
+				console.log(processDbResponse, '------------------')
 				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
 
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {

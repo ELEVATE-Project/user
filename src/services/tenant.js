@@ -30,7 +30,7 @@ module.exports = class tenantHelper {
 	 * Create Tenant
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData - it contains user infomration
+	 * @param {Object} bodyData - it contains tenant infomration
 	 * @param {string} userId - Logged in User Id
 	 * @returns {JSON} - Create tenant response
 	 */

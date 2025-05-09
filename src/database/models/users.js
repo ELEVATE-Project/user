@@ -9,11 +9,6 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				autoIncrement: true,
 			},
-			tenant_code: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				primaryKey: true,
-			},
 			email: {
 				type: DataTypes.STRING,
 				allowNull: false,
@@ -60,6 +55,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'en',
 			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				primaryKey: true,
+			},
 			roles: {
 				type: DataTypes.ARRAY(DataTypes.INTEGER),
 				allowNull: false,
@@ -70,19 +70,6 @@ module.exports = (sequelize, DataTypes) => {
 			meta: {
 				type: DataTypes.JSONB,
 				allowNull: true,
-			},
-			phone: {
-				type: DataTypes.STRING,
-				allowNull: true,
-			},
-			username: {
-				type: DataTypes.STRING,
-				allowNull: true,
-			},
-			tenant_code: {
-				type: DataTypes.STRING,
-				allowNull: false,
-				defaultValue: '',
 			},
 		},
 		{
@@ -104,7 +91,7 @@ module.exports = (sequelize, DataTypes) => {
 			through: models.UserOrganization,
 			foreignKey: 'user_id',
 			otherKey: 'organization_code',
-			as: 'organizations',
+			as: 'organization',
 		})
 	}
 

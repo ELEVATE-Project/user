@@ -19,18 +19,18 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options) => {
 	try {
-		// if (filter.code) {
-		// 	const organization = await organizationCode.findOne({
-		// 		where: { code: filter.code },
-		// 		attributes: ['organization_id'],
-		// 		raw: true,
-		// 	})
-		// 	if (!organization) {
-		// 		return null
-		// 	}
-		// 	delete filter.code
-		// 	filter.id = organization.organization_id
-		// }
+		/* if (filter.code) {
+			const organization = await organizationCode.findOne({
+				where: { code: filter.code },
+				attributes: ['organization_id'],
+				raw: true,
+			})
+			if (!organization) {
+				return null
+			}
+			delete filter.code
+			filter.id = organization.organization_id
+		} */
 		return await Organization.findOne({
 			where: filter,
 			...options,
