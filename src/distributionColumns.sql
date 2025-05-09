@@ -19,3 +19,4 @@ SELECT create_distributed_table('tenant_domains','domain');
 SELECT create_distributed_table('user_organizations', 'tenant_code');
 SELECT create_distributed_table('user_organization_roles', 'tenant_code');
 SELECT create_distributed_table('organization_features', 'tenant_code');
+SELECT create_distributed_table('user_roles', 'tenant_code');

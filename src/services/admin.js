@@ -110,21 +110,23 @@ module.exports = class AdminHelper {
 			}
 
 			bodyData.roles = [role.id]
+			bodyData.organization_id = process.env.DEFAULT_ORG_ID
+			bodyData.tenant_code = process.env.DEFAULT_TENANT_CODE
 
-			if (!bodyData.organization_id) {
-				let organization = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
-					{ attributes: ['id'] }
-				)
-				bodyData.organization_id = organization.id
-			}
+			// if (!bodyData.organization_id) {
+			// 	let organization = await organizationQueries.findOne(
+			// 		{ code: process.env.DEFAULT_ORGANISATION_CODE },
+			// 		{ attributes: ['id'] }
+			// 	)
+			// 	bodyData.organization_id = organization.id
+			// }
 			bodyData.password = utils.hashPassword(bodyData.password)
 			bodyData.email = encryptedEmailId
 			const createdUser = await userQueries.create(bodyData)
 			const userCredentialsBody = {
 				email: bodyData.email,
 				password: bodyData.password,
-				organization_id: createdUser.organization_id,
+				organization_id: process.env.DEFAULT_ORG_ID,
 				user_id: createdUser.id,
 			}
 			const userData = await UserCredentialQueries.create(userCredentialsBody)
@@ -170,9 +172,9 @@ module.exports = class AdminHelper {
 
 			let user = await userQueries.findOne({
 				id: userCredentials.user_id,
-				organization_id: userCredentials.organization_id,
+				// organization_id: userCredentials.organization_id,
 			})
-			if (!user) {
+			if (!user.id) {
 				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -218,22 +220,26 @@ module.exports = class AdminHelper {
 			 * if not then set user organisation id to tenant
 			 */
 
-			let tenantDetails = await organizationQueries.findOne(
-				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
-			)
+			// let tenantDetails = await organizationQueries.findOne(
+			// 	{ id: user.organization_id },
+			// 	{ attributes: ['parent_id'] }
+			// )
 
-			const tenant_id =
-				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
+			// const tenant_id =
+			// 	tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organization_id: user.organization_id,
-					roles: roles,
-					tenant_id: tenant_id,
+					organizations: [
+						{
+							id: process.env.DEFAULT_ORG_ID,
+							roles: roles,
+						},
+					],
+					tenant_code: process.env.DEFAULT_TENANT_CODE,
 				},
 			}
 
