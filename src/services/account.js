@@ -75,11 +75,29 @@ module.exports = class AccountHelper {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			if (!bodyData.email && !bodyData.phone) {
+				return responses.failureResponse({
+					message: 'EMAIL_OR_PHONE_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 
-			const plaintextPhoneNumber = bodyData.phone
-			const encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
+			// Encrypt email if provided
+			let plaintextEmailId, encryptedEmailId
+			if (bodyData.email) {
+				plaintextEmailId = bodyData.email.toLowerCase()
+				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+				bodyData.email = encryptedEmailId
+			}
+
+			// Encrypt phone if provided
+			let plaintextPhoneNumber, encryptedPhoneNumber
+			if (bodyData.phone) {
+				plaintextPhoneNumber = bodyData.phone
+				encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
+				bodyData.phone = encryptedPhoneNumber
+			}
 			let user = await UserCredentialQueries.findOne({
 				email: encryptedEmailId,
 				password: {
@@ -217,8 +235,8 @@ module.exports = class AccountHelper {
 			}
 
 			delete bodyData.role
-			bodyData.email = encryptedEmailId
-			bodyData.phone = encryptedPhoneNumber
+			//bodyData.email = encryptedEmailId
+			//bodyData.phone = encryptedPhoneNumber
 
 			const insertedUser = await userQueries.create(bodyData)
 
