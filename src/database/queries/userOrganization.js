@@ -1,11 +1,12 @@
 'use strict'
-const { TenantDomain, sequelize } = require('@database/models/index')
+
+const { UserOrganization, sequelize } = require('@database/models/index')
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		const createdDomain = await TenantDomain.create(data)
-		return createdDomain.get({ plain: true })
+		const createdUserOrg = await UserOrganization.create(data)
+		return createdUserOrg.get({ plain: true })
 	} catch (error) {
 		console.error(error)
 		return error
@@ -14,9 +15,8 @@ exports.create = async (data) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await TenantDomain.findOne({
+		return await UserOrganization.findOne({
 			where: filter,
-			attributes: options.attributes || undefined,
 			...options,
 			raw: true,
 		})
@@ -28,7 +28,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findAll = async (filter = {}, options = {}) => {
 	try {
-		return await TenantDomain.findAll({
+		return await UserOrganization.findAll({
 			where: filter,
 			...options,
 			raw: true,
@@ -40,24 +40,32 @@ exports.findAll = async (filter = {}, options = {}) => {
 }
 
 exports.update = async (filter, updates) => {
+	const transaction = await sequelize.transaction()
 	try {
-		await TenantDomain.update(updates, {
+		await UserOrganization.update(updates, {
 			where: filter,
+			transaction,
 		})
+		await transaction.commit()
 		return { success: true }
 	} catch (error) {
+		await transaction.rollback()
 		console.error(error)
 		return error
 	}
 }
 
 exports.delete = async (filter) => {
+	const transaction = await sequelize.transaction()
 	try {
-		await TenantDomain.destroy({
+		await UserOrganization.destroy({
 			where: filter,
+			transaction,
 		})
+		await transaction.commit()
 		return { success: true }
 	} catch (error) {
+		await transaction.rollback()
 		console.error(error)
 		return error
 	}

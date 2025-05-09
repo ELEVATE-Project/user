@@ -24,9 +24,13 @@ module.exports = class Account {
 
 	async create(req) {
 		const params = req.body
+
+		const host = req.headers.host // e.g., 'tenant1.example.com'
+		const domain = host.split(':')[0] // in case there's a port
+
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
-			const createdAccount = await accountService.create(params, device_info)
+			const createdAccount = await accountService.create(params, device_info, domain)
 			return createdAccount
 		} catch (error) {
 			return error
@@ -46,9 +50,13 @@ module.exports = class Account {
 
 	async login(req) {
 		const params = req.body
+
+		const host = req.headers.host // e.g., 'tenant1.example.com'
+		const domain = host.split(':')[0] // in case there's a port
+
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
-			const loggedInAccount = await accountService.login(params, device_info)
+			const loggedInAccount = await accountService.login(params, device_info, domain)
 			return loggedInAccount
 		} catch (error) {
 			return error

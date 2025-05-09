@@ -28,6 +28,10 @@ module.exports = {
 				type: Sequelize.DATE,
 				allowNull: false,
 			},
+			delete_at: {
+				type: Sequelize.DATE,
+				allowNull: false,
+			},
 		})
 
 		// Add composite primary key after table creation

@@ -21,7 +21,12 @@ module.exports = class User {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedUser = await userService.update(params, req.decodedToken.id, req.decodedToken.organization_id)
+			const updatedUser = await userService.update(
+				params,
+				req.decodedToken.id,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return updatedUser
 		} catch (error) {
 			return error
@@ -43,7 +48,8 @@ module.exports = class User {
 			const userDetails = await userService.read(
 				req.params.id ? req.params.id : req.decodedToken.id,
 				req.headers,
-				req.query.language ? req.query.language : ''
+				req.query.language ? req.query.language : '',
+				req.decodedToken.tenant_code
 			)
 			return userDetails
 		} catch (error) {

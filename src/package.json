@@ -63,6 +63,7 @@
 		"module-alias": "^2.2.3",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",
+		"nanoid": "^5.1.5",
 		"p-each-series": "^2.1.0",
 		"p-limit": "^6.2.0",
 		"path-to-regexp": "^6.2.1",
