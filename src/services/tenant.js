@@ -556,4 +556,62 @@ module.exports = class tenantHelper {
 			throw error // Re-throw other errors
 		}
 	}
+
+	/**
+	 * read Tenant details
+	 * @method
+	 * @name read
+	 * @param {string} tenantCode - code of the tenant
+	 * @returns {JSON} - Tenant details
+	 */
+	static async read(tenantCode) {
+		try {
+			// fetch tenant details
+			const tenantDetails = await tenantQueries.findOne({
+				code: tenantCode,
+			})
+
+			if (!tenantDetails?.code) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'TENANT_NOT_FOUND',
+				})
+			}
+
+			// fetch existing domains for the tenant
+			let existingDomains = await tenantDomainQueries.findAll(
+				{
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['domain'],
+				}
+			)
+
+			if (existingDomains.length > 0) {
+				// create domain code id mapping
+				domainIdMapping = existingDomains.reduce((mapping, eachTenantDomain) => {
+					mapping[eachTenantDomain.domain] = eachTenantDomain.id
+					return mapping
+				}, {})
+				// make an array of existing domains
+				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
+			} else {
+				existingDomains = []
+			}
+
+			tenantDetails.domains = existingDomains
+			delete tenantDetails.deleted_at
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'TENANT_DETAILS_FETCHED',
+				result: tenantDetails,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
 }

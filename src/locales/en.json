@@ -142,5 +142,6 @@
 	"TENANT_DOMAINS_ADDED_SUCCESSFULLY": "Tenant domains added successfully",
 	"TENANT_DOMAINS_ATLEAST_ONE_MANDATORY": "Cannot delete all the domains from tenant. Atleast one domain is mandatory!",
 	"NO_MATCHING_TENANT_DOMAINS_TO_REMOVE": "No Matching domains found to remove.",
-	"INVALID_TENANT_DOMAINS": "Invalid tenant domain."
+	"INVALID_TENANT_DOMAINS": "Invalid tenant domain.",
+	"TENANT_DETAILS_FETCHED": "Tenant details fetched."
 }

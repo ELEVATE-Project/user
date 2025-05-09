@@ -65,7 +65,23 @@ module.exports = class Tenant {
 		try {
 			const domains = req?.body?.domains
 			const tenant = await tenantService.removeDomain(req.params.id, domains, req.decodedToken.id)
+			return tenant
+		} catch (error) {
+			return error
+		}
+	}
 
+	/**
+	 * Read domain details
+	 * @method GET
+	 * @name read
+	 * @param {Object} req -request data.
+	 * @returns {JSON} - success or error message
+	 */
+
+	async read(req) {
+		try {
+			const tenant = await tenantService.read(req.params.id)
 			return tenant
 		} catch (error) {
 			return error
