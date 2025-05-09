@@ -72,7 +72,7 @@ module.exports = class Tenant {
 	}
 
 	/**
-	 * Read domain details
+	 * Read tenant details
 	 * @method GET
 	 * @name read
 	 * @param {Object} req -request data.
@@ -82,6 +82,23 @@ module.exports = class Tenant {
 	async read(req) {
 		try {
 			const tenant = await tenantService.read(req.params.id)
+			return tenant
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * List tenants
+	 * @method GET
+	 * @name read
+	 * @param {Object} req -request data.
+	 * @returns {JSON} - success or error message
+	 */
+
+	async list(req) {
+		try {
+			const tenant = await tenantService.list(req.pageNo, req.pageSize, req.searchText)
 			return tenant
 		} catch (error) {
 			return error

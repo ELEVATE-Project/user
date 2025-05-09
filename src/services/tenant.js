@@ -24,6 +24,7 @@ const organisationQueries = require('@database/queries/organization')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
+const { Op } = require('sequelize')
 
 module.exports = class tenantHelper {
 	/**
@@ -567,9 +568,12 @@ module.exports = class tenantHelper {
 	static async read(tenantCode) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne(
+				{
+					code: tenantCode,
+				},
+				{ organizationAttributes: ['id', 'name', 'code'] }
+			)
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -590,11 +594,6 @@ module.exports = class tenantHelper {
 			)
 
 			if (existingDomains.length > 0) {
-				// create domain code id mapping
-				domainIdMapping = existingDomains.reduce((mapping, eachTenantDomain) => {
-					mapping[eachTenantDomain.domain] = eachTenantDomain.id
-					return mapping
-				}, {})
 				// make an array of existing domains
 				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
 			} else {
@@ -602,12 +601,50 @@ module.exports = class tenantHelper {
 			}
 
 			tenantDetails.domains = existingDomains
+
 			delete tenantDetails.deleted_at
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'TENANT_DETAILS_FETCHED',
 				result: tenantDetails,
+			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+	/**
+	 * get Tenant list
+	 * @method
+	 * @name read
+	 * @returns {JSON} - Tenant list
+	 */
+	static async list(pageNo, pageSize, search = false) {
+		try {
+			let result = []
+			let filter = {}
+			if (pageSize) filter.limit = pageSize
+			if (pageNo) filter.offset = pageSize * (pageNo - 1)
+
+			if (search) {
+				filter[Op.or] = [{ code: { [Op.iLike]: `%${search}%` } }, { name: { [Op.iLike]: `%${search}%` } }]
+			}
+
+			// fetch tenant details
+			const tenantDetails = await tenantQueries.findAll(filter)
+			result = tenantDetails.map((tenant) => {
+				return {
+					code: tenant.code,
+					name: tenant.name,
+					description: tenant.description,
+				}
+			})
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'TENANT_LIST_FETCHED',
+				result: result,
 			})
 		} catch (error) {
 			console.log(error)

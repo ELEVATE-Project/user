@@ -28,6 +28,8 @@ module.exports = {
 		'/user/v1/user-role/default',
 		'/user/v1/account/validateUserSession',
 		'/user/v1/account/validatingEmailIds',
+		'/user/v1/tenant/list',
+		'/user/v1/tenant/read/',
 		'/v1/cloud-services/file/getDownloadableUrl',
 	],
 	notificationEmailType: 'email',
