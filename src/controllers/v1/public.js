@@ -2,7 +2,7 @@ const publicService = require('@services/public')
 
 module.exports = class Public {
 	async branding(req) {
-		const host = req.headers.host // e.g., 'tenant1.example.com'
+		const host = req.headers.origin // e.g., 'tenant1.example.com'
 		const domain = host.split(':')[0] // in case there's a port
 
 		try {
