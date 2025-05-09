@@ -114,10 +114,11 @@ module.exports = async function (req, res, next) {
 		// }
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+		let org
 		try {
 			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
 
-			const org = decodedToken.data.organizations?.[0]
+			org = decodedToken.data.organizations?.[0]
 
 			const organization_id = org?.id
 

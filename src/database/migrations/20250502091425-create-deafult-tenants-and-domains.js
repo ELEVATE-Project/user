@@ -30,7 +30,7 @@ module.exports = {
 			{
 				id: 1,
 				tenant_code: 'default',
-				domain: '*',
+				domain: 'localhost',
 				verified: true,
 				created_at: now,
 				updated_at: now,
