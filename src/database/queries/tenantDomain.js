@@ -62,3 +62,18 @@ exports.delete = async (filter) => {
 		return error
 	}
 }
+
+exports.hardDelete = async (id) => {
+	try {
+		await TenantDomain.destroy({
+			where: {
+				id,
+			},
+			force: true,
+		})
+		return { success: true }
+	} catch (error) {
+		console.error(error)
+		return error
+	}
+}

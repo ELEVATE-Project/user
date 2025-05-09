@@ -328,6 +328,22 @@ const user = {
 	],
 }
 
+const tenant = {
+	update: ['id', 'status', 'code', 'domains', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	create: ['id', 'status', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	addDomain: ['id', 'tenant_code', 'verified', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	removeDomain: [
+		'id',
+		'tenant_code',
+		'verified',
+		'created_by',
+		'updated_by',
+		'created_at',
+		'updated_at',
+		'deleted_at',
+	],
+}
+
 module.exports = {
 	account,
 	admin,
@@ -342,4 +358,5 @@ module.exports = {
 	rolePermissionMapping,
 	userRole,
 	user,
+	tenant,
 }

@@ -351,6 +351,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'default',
 	},
+	DEFAULT_TENANT_ORG_CODE: {
+		message: 'Require default org code under tenant',
+		optional: true,
+		default: 'DEFAULT',
+	},
 }
 
 let success = true

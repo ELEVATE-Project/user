@@ -131,5 +131,16 @@
 	"ROLE_ALREADY_EXISTS": "Role already exists",
 	"INVALID_ROLE_ASSIGNMENTS": "Invalid role assignment",
 	"UPDATED_PREFERED_LANGUAGE_SUCCESSFULLY": "Your language is changed successfully",
-	"ROLE_CHANGE_PENDING": "You have already requested to be a mentor. Please wait for the org admin's approval"
+	"ROLE_CHANGE_PENDING": "You have already requested to be a mentor. Please wait for the org admin's approval",
+	"TENANT_ALREADY_EXISTS": "Tenant code already exists.",
+	"TENANT_DOMAIN_ALREADY_EXISTS": "Tenant domain already exists.",
+	"TENANT_CREATED_SUCCESSFULLY": "Tenant created successfully.",
+	"DEFAULT_ORG_CREATION_FAILED": "Default Organization creation under tenant failed.",
+	"TENANT_NOT_FOUND": "Tenant not found.",
+	"TENANT_UPDATED_SUCCESSFULLY": "Tenant updated successfully.",
+	"TENANT_DOMAINS_ALREADY_PRESENT": "All the domains are already added for the tenant",
+	"TENANT_DOMAINS_ADDED_SUCCESSFULLY": "Tenant domains added successfully",
+	"TENANT_DOMAINS_ATLEAST_ONE_MANDATORY": "Cannot delete all the domains from tenant. Atleast one domain is mandatory!",
+	"NO_MATCHING_TENANT_DOMAINS_TO_REMOVE": "No Matching domains found to remove.",
+	"INVALID_TENANT_DOMAINS": "Invalid tenant domain."
 }

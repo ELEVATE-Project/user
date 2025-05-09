@@ -155,3 +155,16 @@ exports.findAllNotificationTemplates = async (filter, options = {}) => {
 		return error
 	}
 }
+
+exports.hardDelete = async (id) => {
+	try {
+		return await NotificationTemplate.destroy({
+			where: {
+				id: id,
+			},
+			force: true,
+		})
+	} catch (error) {
+		throw error
+	}
+}

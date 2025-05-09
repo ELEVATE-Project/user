@@ -536,6 +536,28 @@ function setRoleLabelsByLanguage(roles, language) {
 	})
 }
 
+/**
+ * parse domain
+ * @method
+ * @name parseDomain
+ * @param {string} domain - complete Domain / sub-domain
+ * @returns {string} - cleaned up domain / sub-domain without any trailing forward slashes and protocols mentioned
+ */
+function parseDomain(domain) {
+	// Ensure the input is a string and not empty
+	if (typeof domain !== 'string' || domain.trim() === '') {
+		return ''
+	}
+
+	// Remove protocol (http://, https://, etc.) using regex
+	let cleanedDomain = domain.replace(/^https?:\/\//i, '')
+
+	// Remove trailing slashes
+	cleanedDomain = cleanedDomain.replace(/\/+$/, '')
+
+	return cleanedDomain
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -573,4 +595,5 @@ module.exports = {
 	generateRandomPassword,
 	isValidPassword,
 	setRoleLabelsByLanguage,
+	parseDomain,
 }
