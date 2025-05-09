@@ -25,8 +25,17 @@ module.exports = class Account {
 	async create(req) {
 		const params = req.body
 
-		const host = req.headers.origin // e.g., 'tenant1.example.com'
-		const domain = host.split(':')[0] // in case there's a port
+		const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
+		let domain = ''
+
+		if (host) {
+			try {
+				const url = new URL(host)
+				domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
+			} catch (error) {
+				domain = host.split(':')[0] // Fallback: remove port if present
+			}
+		}
 
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
@@ -51,8 +60,17 @@ module.exports = class Account {
 	async login(req) {
 		const params = req.body
 
-		const host = req.headers.origin // e.g., 'tenant1.example.com'
-		const domain = host.split(':')[0] // in case there's a port
+		const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
+		let domain = ''
+
+		if (host) {
+			try {
+				const url = new URL(host)
+				domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
+			} catch (error) {
+				domain = host.split(':')[0] // Fallback: remove port if present
+			}
+		}
 
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
