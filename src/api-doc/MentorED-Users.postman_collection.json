@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "fe9b5f5d-2fff-47ae-87fd-bdb4bec30b9d",
+		"_postman_id": "372fb1dd-162b-4318-90c3-b67dfbf9e5a0",
 		"name": "MentorED-Users",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "21498549"
+		"_exporter_id": "40647259"
 	},
 	"item": [
 		{
@@ -2418,6 +2418,181 @@
 									"disabled": true
 								}
 							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tenant",
+			"item": [
+				{
+					"name": "Tenant Create or Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test\",\n    \"code\": \"test\",\n    \"description\": \"Test domain\",\n    \"logo\": \"\",\n    \"theming\": {},\n    \"meta\": {},\n    \"domains\": \"https://test.123.domain.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/update",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "update"]
+						},
+						"description": "Generated from cURL: curl --location 'https://saas-qa.tekdinext.com/user/v1/tenant/update' \\\n--header 'Content-Type: application/json' \\\n--header 'origin: https://dev.elevate-mentoring.shikshalokam.org' \\\n--header 'X-auth-token: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwgTWF0aGV3Iiwic2Vzc2lvbl9pZCI6MjMsInRlbmFudF9jb2RlIjoiZGVmYXVsdCIsIm9yZ2FuaXphdGlvbnMiOlt7ImlkIjoxLCJuYW1lIjoiRGVmYXVsdCBPcmdhbml6YXRpb24iLCJjb2RlIjoiZGVmYXVsdF9jb2RlIiwiZGVzY3JpcHRpb24iOiJEZWZhdWx0ICBTTCBPcmdhbmlzYXRpb24iLCJzdGF0dXMiOiJBQ1RJVkUiLCJyZWxhdGVkX29yZ3MiOm51bGwsInRlbmFudF9jb2RlIjoiZGVmYXVsdCIsIm1ldGEiOm51bGwsImNyZWF0ZWRfYnkiOm51bGwsInVwZGF0ZWRfYnkiOm51bGwsInJvbGVzIjpbeyJpZCI6NSwidGl0bGUiOiJtZW50ZWUiLCJsYWJlbCI6bnVsbCwidXNlcl90eXBlIjowLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMiLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJ0cmFuc2xhdGlvbnMiOm51bGx9LHsiaWQiOjYsInRpdGxlIjoiYWRtaW4iLCJsYWJlbCI6bnVsbCwidXNlcl90eXBlIjoxLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMiLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJ0cmFuc2xhdGlvbnMiOm51bGx9LHsiaWQiOjcsInRpdGxlIjoib3JnX2FkbWluIiwibGFiZWwiOm51bGwsInVzZXJfdHlwZSI6MSwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIiwidGVuYW50X2NvZGUiOiJkZWZhdWx0IiwidHJhbnNsYXRpb25zIjpudWxsfV19XX0sImlhdCI6MTc0Njg2OTgwOSwiZXhwIjoxNzQ2OTU2MjA5fQ.ObyGXzs--MvxzPnn4imcNZZQSkdL1YtheXXox3nDiug' \\\n--data '{\n    \"name\": \"Test\",\n    \"code\": \"test\",\n    \"description\": \"Test domain\",\n    \"logo\": \"\",\n    \"theming\": {},\n    \"meta\": {},\n    \"domains\": \"https://test.123.domain.com\"\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant add domain",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"domains\" : [\"https://test.2.domain.com\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/addDomain/test",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "addDomain", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant remove Domain",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"domains\" : [\"https://test.2.domain.com\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/removeDomain/test",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "removeDomain", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant Read",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/read/test",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "read", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant List",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/list",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "list"]
 						}
 					},
 					"response": []
