@@ -6,10 +6,10 @@ const common = require('@constants/common')
 exports.create = async (data) => {
 	try {
 		const createdOrg = await Organization.create(data)
-		await organizationCode.create({
-			code: data.code,
-			organization_id: createdOrg.toJSON().id,
-		})
+		// await organizationCode.create({
+		// 	code: data.code,
+		// 	organization_id: createdOrg.toJSON().id,
+		// })
 		return createdOrg.get({ plain: true })
 	} catch (error) {
 		console.error(error)
@@ -160,6 +160,21 @@ exports.findByPk = async (id) => {
 	try {
 		return await Organization.findByPk(id, { raw: true })
 	} catch (error) {
+		return error
+	}
+}
+
+exports.hardDelete = async (id) => {
+	try {
+		await Organization.destroy({
+			where: {
+				id,
+			},
+			force: true,
+		})
+		return { success: true }
+	} catch (error) {
+		console.error(error)
 		return error
 	}
 }

@@ -41,7 +41,6 @@ module.exports = (sequelize, DataTypes) => {
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				primaryKey: true,
 			},
 			secret_code: {
 				type: DataTypes.STRING(32),
@@ -57,10 +56,6 @@ module.exports = (sequelize, DataTypes) => {
 			updated_by: {
 				type: DataTypes.INTEGER,
 			},
-			tenant_code: {
-				type: DataTypes.STRING,
-				allowNull: false,
-			},
 		},
 		{
 			sequelize,
@@ -72,10 +67,18 @@ module.exports = (sequelize, DataTypes) => {
 	)
 
 	Organization.associate = function (models) {
+		// Existing association with UserOrganization
 		Organization.hasMany(models.UserOrganization, {
 			foreignKey: 'organization_code',
 			sourceKey: 'code',
 			as: 'user_organizations',
+		})
+
+		// New association with Tenant
+		Organization.belongsTo(models.Tenant, {
+			foreignKey: 'tenant_code',
+			targetKey: 'code',
+			as: 'tenant',
 		})
 	}
 

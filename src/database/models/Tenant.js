@@ -62,5 +62,13 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
+	Tenant.associate = function (models) {
+		Tenant.hasMany(models.Organization, {
+			foreignKey: 'tenant_code',
+			sourceKey: 'code',
+			as: 'organizations',
+		})
+	}
+
 	return Tenant
 }
