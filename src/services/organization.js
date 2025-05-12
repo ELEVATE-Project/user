@@ -226,8 +226,33 @@ module.exports = class OrganizationsHelper {
 
 	static async list(params) {
 		try {
+			// fetch orgs under tenants
+			if (params?.query?.tenantCode) {
+				let options = {
+					attributes: ['id', 'name', 'code', 'description'],
+				}
+
+				let organizations = await organizationQueries.findAll(
+					{
+						tenant_code: params?.query?.tenantCode,
+						status: common.ACTIVE_STATUS,
+					},
+					options
+				)
+
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+					result: organizations,
+				})
+			}
 			if (params.body && params.body.organizationIds) {
-				const organizationIds = params.body.organizationIds
+				const organizationIds =
+					typeof params.body.organizationIds == 'string' &&
+					params.body.organizationIds.startsWith('[') &&
+					params.body.organizationIds.endsWith(']')
+						? JSON.parse(params.body.organizationIds)
+						: params.body.organizationIds
 				const orgIdsNotFoundInRedis = []
 				const orgDetailsFoundInRedis = []
 				for (let i = 0; i < organizationIds.length; i++) {
