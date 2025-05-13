@@ -356,6 +356,10 @@ let enviromentVariables = {
 		optional: true,
 		default: 'DEFAULT',
 	},
+	ENTITY_MANAGEMENT_SERVICE_BASE_URL: {
+		message: 'Require entity management base url',
+		optional: false,
+	},
 }
 
 let success = true

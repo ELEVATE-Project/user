@@ -509,7 +509,7 @@ module.exports = class AccountHelper {
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			result.user = utils.processDbResponse(result.user, prunedEntities)
+			result.user = await utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
@@ -680,7 +680,7 @@ module.exports = class AccountHelper {
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
+			user = await utils.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
@@ -1136,7 +1136,7 @@ module.exports = class AccountHelper {
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
+			user = await utils.processDbResponse(user, prunedEntities)
 
 			// Check if user and user.image exist, then fetch a downloadable URL for the image
 			if (user && user.image) {

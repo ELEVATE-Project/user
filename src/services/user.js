@@ -133,7 +133,7 @@ module.exports = class UserHelper {
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
-			const processDbResponse = utils.processDbResponse(
+			const processDbResponse = await utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				validationData
 			)
@@ -288,11 +288,12 @@ module.exports = class UserHelper {
 					{ attributes: ['id'] }
 				)
 				let defaultOrgId = defaultOrg.id
+				let userOrg = user.organizations[0].id
 
 				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 					status: 'ACTIVE',
 					organization_id: {
-						[Op.in]: [user.organization_id, defaultOrgId],
+						[Op.in]: [userOrg, defaultOrgId],
 					},
 					tenant_code: tenantCode,
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
@@ -301,7 +302,7 @@ module.exports = class UserHelper {
 				const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
 				user.permissions = permissionsByModule
 
-				const processDbResponse = utils.processDbResponse(user, prunedEntities)
+				const processDbResponse = await utils.processDbResponse(user, prunedEntities)
 
 				console.log(processDbResponse, '------------------')
 				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
@@ -423,7 +424,7 @@ module.exports = class UserHelper {
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
-			const processDbResponse = utils.processDbResponse(
+			const processDbResponse = await utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				dataValidation
 			)

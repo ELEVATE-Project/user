@@ -19,6 +19,7 @@ const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
 const common = require('@constants/common')
 const { cloudClient } = require('@configs/cloud-service')
+const requests = require('@generics/requests')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -365,9 +366,25 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
-function processDbResponse(responseBody, entityType) {
+// Construct a new URL by joining base url and end point
+const constructUrl = (externalBaseUrl, endPoint) => {
+	// Handle null, undefined, or empty inputs
+	if (!externalBaseUrl || !endPoint) {
+		return externalBaseUrl || endPoint || ''
+	}
+
+	// Remove trailing slashes from base URL and leading slashes from endpoint
+	const normalizedBase = externalBaseUrl.replace(/\/+$/, '')
+	const normalizedEndPoint = endPoint.replace(/^\/+/, '')
+
+	// Join with a single slash
+	return `${normalizedBase}/${normalizedEndPoint}`
+}
+
+async function processDbResponse(responseBody, entityType) {
 	if (responseBody.meta) {
-		entityType.forEach((entity) => {
+		let externalFetchPromise = []
+		entityType.forEach(async (entity) => {
 			const entityTypeValue = entity.value
 			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
 				// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
@@ -376,9 +393,68 @@ function processDbResponse(responseBody, entityType) {
 					responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
 					// Delete the key from responseBody.meta
 					delete responseBody.meta[entityTypeValue]
+				} else {
+					const externalBaseUrl =
+						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
+						process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+					const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
+					const filterData = {
+						_id: responseBody.meta[entityTypeValue],
+						tenantId: responseBody.tenant_code,
+					}
+
+					externalFetchPromise.push(
+						requests.post(
+							url,
+							{
+								query: filterData,
+								projection: projection,
+							},
+							null,
+							true,
+							'internal-access-token'
+						)
+					)
 				}
 			}
 		})
+
+		if (externalFetchPromise.length > 0) {
+			const externalFetchResponse = await Promise.all(externalFetchPromise)
+			const parseResponse = externalFetchResponse.map((response) => {
+				return response.data.result[0]
+			})
+
+			entityType.forEach(async (entity) => {
+				const entityTypeValue = entity.value
+				if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+					entityType.forEach((entity) => {
+						const entityTypeValue = entity.value
+						if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+							// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+							if (entity.external_entity_type) {
+								const findEntity =
+									parseResponse.find(
+										(fetched) => fetched._id == responseBody.meta[entityTypeValue]
+									) || {}
+								if (findEntity) {
+									responseBody[entityTypeValue] = {
+										value: findEntity['_id'],
+										label: findEntity.metaInformation.name,
+										externalId: findEntity.metaInformation.externalId,
+									}
+								} else {
+									responseBody[entityTypeValue] = {}
+								}
+
+								delete responseBody.meta[entityTypeValue]
+							}
+						}
+					})
+				}
+			})
+		}
 	}
 
 	const output = { ...responseBody } // Create a copy of the responseBody object
