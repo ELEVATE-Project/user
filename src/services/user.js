@@ -232,7 +232,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - user information
 	 */
-	static async read(id, internal_access_token = null, language, tenantCode) {
+	static async read(id, header = null, language, tenantCode) {
 		try {
 			let filter = {}
 			console.log(tenantCode)
@@ -250,7 +250,7 @@ module.exports = class UserHelper {
 						exclude: ['password', 'refresh_tokens'],
 					},
 				}
-				if (internal_access_token) {
+				if (header.internal_access_token) {
 					options.paranoid = false
 				}
 				let user = await userQueries.findUserWithOrganization(filter, options)
