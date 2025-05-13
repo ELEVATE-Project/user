@@ -112,11 +112,19 @@ module.exports = async function (req, res, next) {
 		//         throw responses.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
 		//     }
 		// }
-		const authHeaderArray = authHeader.split(' ')
-		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+		// const authHeaderArray = authHeader.split(' ')
+		// if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+
+		let token
+		if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+			const [authType, extractedToken] = authHeader.split(' ')
+			if (authType.toLowerCase() !== 'bearer') throw createUnauthorizedResponse()
+			token = extractedToken.trim()
+		} else token = authHeader.trim()
+
 		let org
 		try {
-			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
 			org = decodedToken.data.organizations?.[0]
 
@@ -136,7 +144,7 @@ module.exports = async function (req, res, next) {
 			const redisData = await utilsHelper.redisGet(sessionId)
 
 			// If data is not in redis, token is invalid
-			if (!redisData || redisData.accessToken !== authHeaderArray[1]) {
+			if (!redisData || redisData.accessToken !== token) {
 				throw responses.failureResponse({
 					message: 'USER_SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,

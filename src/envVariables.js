@@ -360,6 +360,11 @@ let enviromentVariables = {
 		message: 'Require entity management base url',
 		optional: false,
 	},
+	IS_AUTH_TOKEN_BEARER: {
+		message: 'Required specification: If auth token is bearer or not',
+		optional: true,
+		default: true,
+	},
 }
 
 let success = true

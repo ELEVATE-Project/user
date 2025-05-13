@@ -98,7 +98,8 @@ module.exports = class Account {
 				req.body,
 				req.decodedToken.id,
 				req.decodedToken.organization_id,
-				req.decodedToken.session_id
+				req.decodedToken.session_id,
+				req.decodedToken.tenant_code
 			)
 			return loggedOutAccount
 		} catch (error) {
@@ -290,7 +291,11 @@ module.exports = class Account {
 
 	async changePassword(req) {
 		try {
-			const result = await accountService.changePassword(req.body, req.decodedToken.id)
+			const result = await accountService.changePassword(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.tenant_code
+			)
 			return result
 		} catch (error) {
 			return error

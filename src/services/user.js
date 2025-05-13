@@ -304,8 +304,14 @@ module.exports = class UserHelper {
 
 				const processDbResponse = await utils.processDbResponse(user, prunedEntities)
 
-				console.log(processDbResponse, '------------------')
-				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+				if (processDbResponse) {
+					;['email', 'phone'].forEach((field) => {
+						const value = processDbResponse[field]
+						if (typeof value === 'string' && value.trim() !== '') {
+							processDbResponse[field] = emailEncryption.decrypt(value)
+						}
+					})
+				}
 
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)

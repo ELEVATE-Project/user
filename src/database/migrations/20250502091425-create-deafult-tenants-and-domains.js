@@ -9,7 +9,7 @@ module.exports = {
 			{
 				code: 'default',
 				name: 'Default Tenant',
-				status: 'active',
+				status: 'ACTIVE',
 				description: 'This is the default tenant.',
 				logo: 'https://example.com/logo.png',
 				theming: JSON.stringify({
