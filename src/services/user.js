@@ -284,7 +284,7 @@ module.exports = class UserHelper {
 				//user.user_roles = roles
 
 				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 					{ attributes: ['id'] }
 				)
 				let defaultOrgId = defaultOrg.id
@@ -294,6 +294,7 @@ module.exports = class UserHelper {
 					organization_id: {
 						[Op.in]: [user.organization_id, defaultOrgId],
 					},
+					tenant_code: tenantCode,
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
