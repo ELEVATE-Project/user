@@ -20,6 +20,7 @@ const moment = require('moment-timezone')
 const common = require('@constants/common')
 const { cloudClient } = require('@configs/cloud-service')
 const axios = require('axios')
+const _ = require('lodash')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -383,7 +384,6 @@ const constructUrl = (externalBaseUrl, endPoint) => {
 
 async function processDbResponse(responseBody, entityType) {
 	if (responseBody.meta) {
-		console.log('-=-=-=-=-=-=-=-=-=->> responseBody.meta : ', responseBody.meta)
 		let externalFetchPromise = []
 		entityType.forEach(async (entity) => {
 			const entityTypeValue = entity.value
@@ -399,29 +399,51 @@ async function processDbResponse(responseBody, entityType) {
 						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
 						process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
 					const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
-					console.log('-=-=-=-=-=-=-=-=-=->> url : ', url)
 					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
-					const filterData = {
-						_id: responseBody.meta[entityTypeValue],
-						tenantId: responseBody.tenant_code,
-					}
-					console.log('-=-=-=-=-=-=-=-=-=->> filterData : ', filterData)
-
-					externalFetchPromise.push(
-						axios.post(
-							url,
-							{
-								query: filterData,
-								projection: projection,
-							},
-							{
-								headers: {
-									'Content-Type': 'application/json',
-									'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-								},
+					if (_.isArray(responseBody.meta[entityTypeValue])) {
+						for (entity of responseBody.meta[entityTypeValue]) {
+							const filterData = {
+								_id: entity,
+								tenantId: responseBody.tenant_code,
 							}
+							externalFetchPromise.push(
+								axios.post(
+									url,
+									{
+										query: filterData,
+										projection: projection,
+									},
+									{
+										headers: {
+											'Content-Type': 'application/json',
+											'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+										},
+									}
+								)
+							)
+						}
+					} else {
+						const filterData = {
+							_id: responseBody.meta[entityTypeValue],
+							tenantId: responseBody.tenant_code,
+						}
+
+						externalFetchPromise.push(
+							axios.post(
+								url,
+								{
+									query: filterData,
+									projection: projection,
+								},
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+									},
+								}
+							)
 						)
-					)
+					}
 				}
 			}
 		})
@@ -461,7 +483,6 @@ async function processDbResponse(responseBody, entityType) {
 
 				return response.data.result[0]
 			})
-			console.log('-=-=-=-=-=-=-=-=-=->> parseResponse : ', parseResponse)
 			entityType.forEach(async (entity) => {
 				const entityTypeValue = entity.value
 				if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
@@ -470,32 +491,48 @@ async function processDbResponse(responseBody, entityType) {
 						if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
 							// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
 							if (entity.external_entity_type) {
-								const findEntity =
-									parseResponse.find(
-										(fetched) => fetched._id == responseBody.meta[entityTypeValue]
-									) || {}
-
-								console.log('-=-=-=-=-=-=-=-=-=->> findEntity : ', findEntity)
-
-								if (findEntity && Object.keys(findEntity).length > 0) {
-									console.log(
-										'-=-=-=-=-=-=-=-=-=->> IF CONDITION : ',
-										findEntity && Object.keys(findEntity).length > 0,
-										findEntity,
-										Object.keys(findEntity).length > 0
-									)
-
-									responseBody[entityTypeValue] = {
-										value: findEntity['_id'],
-										label: findEntity.metaInformation.name,
-										externalId: findEntity.metaInformation.externalId,
+								if (_.isArray(responseBody.meta[entityTypeValue])) {
+									for (entity of responseBody.meta[entityTypeValue]) {
+										const findEntity = parseResponse.find((fetched) => fetched._id == entity) || {}
+										if (findEntity && Object.keys(findEntity).length > 0) {
+											if (
+												responseBody[entityTypeValue] &&
+												Array.isArray(responseBody[entityTypeValue])
+											) {
+												// Push to existing array
+												responseBody[entityTypeValue].push({
+													value: findEntity['_id'],
+													label: findEntity.metaInformation.name,
+													externalId: findEntity.metaInformation.externalId,
+												})
+											} else {
+												// Create new array with the value
+												responseBody[entityTypeValue] = [
+													{
+														value: findEntity['_id'],
+														label: findEntity.metaInformation.name,
+														externalId: findEntity.metaInformation.externalId,
+													},
+												]
+											}
+										}
 									}
-									console.log('-=-=-=-=-=-=-=-=-=->> IFFFFF : ', responseBody[entityTypeValue])
 								} else {
-									responseBody[entityTypeValue] = {}
-									console.log('-=-=-=-=-=-=-=-=-=->> ELSE : ', responseBody[entityTypeValue])
-								}
+									const findEntity =
+										parseResponse.find(
+											(fetched) => fetched._id == responseBody.meta[entityTypeValue]
+										) || {}
 
+									if (findEntity && Object.keys(findEntity).length > 0) {
+										responseBody[entityTypeValue] = {
+											value: findEntity['_id'],
+											label: findEntity.metaInformation.name,
+											externalId: findEntity.metaInformation.externalId,
+										}
+									} else {
+										responseBody[entityTypeValue] = {}
+									}
+								}
 								delete responseBody.meta[entityTypeValue]
 							}
 						}
