@@ -118,7 +118,7 @@ module.exports = async function (req, res, next) {
 		let token
 		if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
 			const [authType, extractedToken] = authHeader.split(' ')
-			if (authType.toLowerCase() !== 'bearer') throw createUnauthorizedResponse()
+			if (authType.toLowerCase() !== 'bearer') throw unAuthorizedResponse
 			token = extractedToken.trim()
 		} else token = authHeader.trim()
 
