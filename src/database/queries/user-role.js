@@ -85,3 +85,16 @@ exports.deleteRole = async (filter) => {
 		throw error
 	}
 }
+exports.hardDelete = async (id) => {
+	try {
+		return await UserRole.destroy({
+			where: {
+				id,
+			},
+			force: true,
+			individualHooks: true,
+		})
+	} catch (error) {
+		throw error
+	}
+}
