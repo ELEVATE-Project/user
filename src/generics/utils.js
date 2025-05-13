@@ -19,6 +19,7 @@ const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
 const common = require('@constants/common')
 const { cloudClient } = require('@configs/cloud-service')
+const axios = require('axios')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -365,9 +366,26 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
-function processDbResponse(responseBody, entityType) {
+// Construct a new URL by joining base url and end point
+const constructUrl = (externalBaseUrl, endPoint) => {
+	// Handle null, undefined, or empty inputs
+	if (!externalBaseUrl || !endPoint) {
+		return externalBaseUrl || endPoint || ''
+	}
+
+	// Remove trailing slashes from base URL and leading slashes from endpoint
+	const normalizedBase = externalBaseUrl.replace(/\/+$/, '')
+	const normalizedEndPoint = endPoint.replace(/^\/+/, '')
+
+	// Join with a single slash
+	return `${normalizedBase}/${normalizedEndPoint}`
+}
+
+async function processDbResponse(responseBody, entityType) {
 	if (responseBody.meta) {
-		entityType.forEach((entity) => {
+		console.log('-=-=-=-=-=-=-=-=-=->> responseBody.meta : ', responseBody.meta)
+		let externalFetchPromise = []
+		entityType.forEach(async (entity) => {
 			const entityTypeValue = entity.value
 			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
 				// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
@@ -376,9 +394,115 @@ function processDbResponse(responseBody, entityType) {
 					responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
 					// Delete the key from responseBody.meta
 					delete responseBody.meta[entityTypeValue]
+				} else {
+					const externalBaseUrl =
+						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
+						process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+					const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+					console.log('-=-=-=-=-=-=-=-=-=->> url : ', url)
+					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
+					const filterData = {
+						_id: responseBody.meta[entityTypeValue],
+						tenantId: responseBody.tenant_code,
+					}
+					console.log('-=-=-=-=-=-=-=-=-=->> filterData : ', filterData)
+
+					externalFetchPromise.push(
+						axios.post(
+							url,
+							{
+								query: filterData,
+								projection: projection,
+							},
+							{
+								headers: {
+									'Content-Type': 'application/json',
+									'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+								},
+							}
+						)
+					)
 				}
 			}
 		})
+
+		if (externalFetchPromise.length > 0) {
+			const externalFetchResponse = await Promise.all(
+				externalFetchPromise.map((promise) =>
+					promise.catch((err) => {
+						console.error('Entity fetch API request failed:', err.message)
+						return {} // Return empty object on error
+					})
+				)
+			)
+
+			const parseResponse = externalFetchResponse.map((response, index) => {
+				// Check if response is empty object (from failed request)
+				if (!response || Object.keys(response).length === 0) {
+					console.warn(`Empty or no response at index ${index}`)
+					return {}
+				}
+
+				// Check if response.data exists
+				if (!response.data) {
+					console.warn(`No data in response at index ${index}`)
+					return {}
+				}
+
+				// Check if result array exists and has data
+				if (
+					!response.data.result ||
+					!Array.isArray(response.data.result) ||
+					response.data.result.length === 0
+				) {
+					console.warn(`No result array or empty result at index ${index}`)
+					return {}
+				}
+
+				return response.data.result[0]
+			})
+			console.log('-=-=-=-=-=-=-=-=-=->> parseResponse : ', parseResponse)
+			entityType.forEach(async (entity) => {
+				const entityTypeValue = entity.value
+				if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+					entityType.forEach((entity) => {
+						const entityTypeValue = entity.value
+						if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+							// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+							if (entity.external_entity_type) {
+								const findEntity =
+									parseResponse.find(
+										(fetched) => fetched._id == responseBody.meta[entityTypeValue]
+									) || {}
+
+								console.log('-=-=-=-=-=-=-=-=-=->> findEntity : ', findEntity)
+
+								if (findEntity && Object.keys(findEntity).length > 0) {
+									console.log(
+										'-=-=-=-=-=-=-=-=-=->> IF CONDITION : ',
+										findEntity && Object.keys(findEntity).length > 0,
+										findEntity,
+										Object.keys(findEntity).length > 0
+									)
+
+									responseBody[entityTypeValue] = {
+										value: findEntity['_id'],
+										label: findEntity.metaInformation.name,
+										externalId: findEntity.metaInformation.externalId,
+									}
+									console.log('-=-=-=-=-=-=-=-=-=->> IFFFFF : ', responseBody[entityTypeValue])
+								} else {
+									responseBody[entityTypeValue] = {}
+									console.log('-=-=-=-=-=-=-=-=-=->> ELSE : ', responseBody[entityTypeValue])
+								}
+
+								delete responseBody.meta[entityTypeValue]
+							}
+						}
+					})
+				}
+			})
+		}
 	}
 
 	const output = { ...responseBody } // Create a copy of the responseBody object

@@ -699,7 +699,7 @@ module.exports = class AccountHelper {
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
+			user = await utils.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
@@ -1251,7 +1251,7 @@ module.exports = class AccountHelper {
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-			user = utils.processDbResponse(user, prunedEntities)
+			user = await utils.processDbResponse(user, prunedEntities)
 
 			// Handle user image
 			if (user && user.image) {
