@@ -866,52 +866,89 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns otp success response
 	 */
 
-	static async generateOtp(bodyData) {
+	static async generateOtp(bodyData, domain) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
-				password: {
-					[Op.ne]: null,
-				},
-			})
-			if (!userCredentials)
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'OTP_SENT_SUCCESSFULLY',
+			const notFoundResponse = (message) =>
+				responses.failureResponse({
+					message,
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
 				})
 
-			const user = await userQueries.findOne({
-				id: userCredentials.user_id,
-				organization_id: userCredentials.organization_id,
+			// Validate tenant domain
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			if (!tenantDomain) {
+				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+			}
+
+			// Validate tenant
+			const tenantDetail = await tenantQueries.findOne({
+				code: tenantDomain.tenant_code,
 			})
+			if (!tenantDetail) {
+				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+			}
+			const identifier = bodyData.identifier?.toLowerCase()
+			if (!identifier) {
+				return responses.failureResponse({
+					message: 'IDENTIFIER_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Helper functions to detect identifier type
+			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
+			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
+			const isUsername = (str) => /^[a-zA-Z0-9_-]{3,30}$/.test(str)
+
+			// Prepare query based on identifier type
+			const query = {
+				[Op.or]: [],
+				password: { [Op.ne]: null },
+				status: common.ACTIVE_STATUS,
+				tenant_code: tenantDetail.code,
+			}
+
+			let encryptedIdentifier
+			if (isEmail(identifier)) {
+				encryptedIdentifier = emailEncryption.encrypt(identifier)
+				query[Op.or].push({ email: encryptedIdentifier })
+			} else if (isPhone(identifier)) {
+				encryptedIdentifier = emailEncryption.encrypt(identifier) // Adjust if phone encryption differs
+				query[Op.or].push({ phone: encryptedIdentifier, phone_code: bodyData.phone_code })
+			} else if (isUsername(identifier)) {
+				encryptedIdentifier = identifier // Username is not encrypted
+				query[Op.or].push({ username: identifier })
+			} else {
+				return responses.failureResponse({
+					message: 'INVALID_IDENTIFIER_FORMAT',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const user = await userQueries.findOne(query)
+
 			if (!user)
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'OTP_SENT_SUCCESSFULLY',
 				})
 
-			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
-			if (isPasswordSame)
-				return responses.failureResponse({
-					message: 'RESET_PREVIOUS_PASSWORD',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+			const userData = await utilsHelper.redisGet(user.username)
 
-			const userData = await utilsHelper.redisGet(encryptedEmailId)
 			const [otp, isNew] =
 				userData && userData.action === 'forgetpassword'
 					? [userData.otp, false]
 					: [Math.floor(Math.random() * 900000 + 100000), true]
 			if (isNew) {
 				const redisData = {
-					verify: encryptedEmailId,
+					verify: user.username,
 					action: 'forgetpassword',
 					otp,
 				}
-				const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
+				const res = await utilsHelper.redisSet(user.username, redisData, common.otpExpirationTime)
 				if (res !== 'OK')
 					return responses.failureResponse({
 						message: 'UNABLE_TO_SEND_OTP',
@@ -924,11 +961,11 @@ module.exports = class AccountHelper {
 				process.env.OTP_EMAIL_TEMPLATE_CODE,
 				user.organization_id
 			)
-			if (templateData) {
+			if (templateData && user.email) {
 				const payload = {
 					type: common.notificationEmailType,
 					email: {
-						to: plaintextEmailId,
+						to: emailEncryption.decrypt(user.email),
 						subject: templateData.subject,
 						body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
 					},
@@ -1023,13 +1060,90 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns password reset response
 	 */
 
-	static async resetPassword(bodyData, deviceInfo) {
+	static async resetPassword(bodyData, deviceInfo, domain) {
 		const projection = ['location']
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const notFoundResponse = (message) =>
+				responses.failureResponse({
+					message,
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
 
-			const redisData = await utilsHelper.redisGet(encryptedEmailId)
+			// Validate tenant domain
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			if (!tenantDomain) {
+				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+			}
+
+			// Validate tenant
+			const tenantDetail = await tenantQueries.findOne({
+				code: tenantDomain.tenant_code,
+			})
+			if (!tenantDetail) {
+				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+			}
+			const identifier = bodyData.identifier?.toLowerCase()
+			if (!identifier) {
+				return responses.failureResponse({
+					message: 'IDENTIFIER_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Helper functions to detect identifier type
+			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
+			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
+			const isUsername = (str) => /^[a-zA-Z0-9_-]{3,30}$/.test(str)
+
+			// Prepare query based on identifier type
+			const query = {
+				[Op.or]: [],
+				password: { [Op.ne]: null },
+				status: common.ACTIVE_STATUS,
+				tenant_code: tenantDetail.code,
+			}
+
+			let encryptedIdentifier
+			if (isEmail(identifier)) {
+				encryptedIdentifier = emailEncryption.encrypt(identifier)
+				query[Op.or].push({ email: encryptedIdentifier })
+			} else if (isPhone(identifier)) {
+				encryptedIdentifier = emailEncryption.encrypt(identifier) // Adjust if phone encryption differs
+				query[Op.or].push({ phone: encryptedIdentifier, phone_code: bodyData.phone_code })
+			} else if (isUsername(identifier)) {
+				encryptedIdentifier = identifier // Username is not encrypted
+				query[Op.or].push({ username: identifier })
+			} else {
+				return responses.failureResponse({
+					message: 'INVALID_IDENTIFIER_FORMAT',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Validate OTP in Redis
+
+			// Find user details
+			let user = await userQueries.findUserWithOrganization(
+				query,
+				{
+					attributes: {
+						exclude: projection,
+					},
+				},
+				true
+			)
+			if (!user) {
+				return responses.failureResponse({
+					message: 'RESET_OTP_INVALID',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const redisData = await utilsHelper.redisGet(user.username)
 			if (!redisData || redisData.otp != bodyData.otp) {
 				return responses.failureResponse({
 					message: 'RESET_OTP_INVALID',
@@ -1037,35 +1151,13 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const userCredentials = await UserCredentialQueries.findOne({
-				email: encryptedEmailId,
-				password: {
-					[Op.ne]: null,
-				},
+
+			// Validate user roles
+			/* 			let roles = await roleQueries.findAll({
+				id: user.roles,
+				status: common.ACTIVE_STATUS,
+				tenant_code: tenantDetail.code,
 			})
-			if (!userCredentials) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			let user = await userQueries.findOne(
-				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
-				{
-					attributes: {
-						exclude: projection,
-					},
-				}
-			)
-			if (!user) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			let roles = await roleQueries.findAll({ id: user.roles, status: common.ACTIVE_STATUS })
 			if (!roles) {
 				return responses.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -1073,9 +1165,10 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			user.user_roles = roles
+			user.user_roles = roles */
 
-			const isPasswordSame = bcryptJs.compareSync(bodyData.password, userCredentials.password)
+			// Check if new password is same as old
+			const isPasswordSame = bcryptJs.compareSync(bodyData.password, user.password)
 			if (isPasswordSame) {
 				return responses.failureResponse({
 					message: 'RESET_PREVIOUS_PASSWORD',
@@ -1083,25 +1176,26 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			// Hash new password
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
-			// create user session entry and add session_id to token data
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInfo
-			)
+			// Create user session
+			const userSessionDetails = await userSessionsService.createUserSession(user.id, '', '', deviceInfo)
+			user = UserTransformDTO.transform(user) // Transform the data
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organization_id: user.organization_id,
-					roles,
+					organization_ids: user.organizations.map((org) => String(org.id)), // Convert to string
+					organization_codes: user.organizations.map((org) => String(org.code)), // Convert to string					// tenant_id: tenant_id,
+					tenant_code: tenantDetail.code,
+					organizations: user.organizations,
 				},
 			}
 
+			// Generate tokens
 			const accessToken = utilsHelper.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
@@ -1113,19 +1207,20 @@ module.exports = class AccountHelper {
 				common.refreshTokenExpiry
 			)
 
-			await UserCredentialQueries.updateUser(
-				{
-					email: encryptedEmailId,
-				},
+			// Update user credentials
+			await userQueries.updateUser(
+				{ id: user.id, tenant_code: tenantDetail.code },
 				{ password: bodyData.password }
 			)
-			await utilsHelper.redisDel(encryptedEmailId)
+			await utilsHelper.redisDel(encryptedIdentifier)
 
+			// Clean up user data
 			delete user.password
 			delete user.otpInfo
 
+			// Fetch default organization and validation data
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -1137,16 +1232,19 @@ module.exports = class AccountHelper {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
 				model_names: { [Op.contains]: [modelName] },
+				tenant_code: tenantDetail.code,
 			})
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			user = await utils.processDbResponse(user, prunedEntities)
 
-			// Check if user and user.image exist, then fetch a downloadable URL for the image
+			// Handle user image
 			if (user && user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-			user.email = plaintextEmailId
+
+			// Return original identifier
+			user.identifier = identifier
 
 			/**update a new session entry with redis insert */
 			/**
