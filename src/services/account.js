@@ -528,7 +528,7 @@ module.exports = class AccountHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
-			result.user = utils.processDbResponse(result.user, prunedEntities)
+			result.user = await utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
