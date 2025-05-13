@@ -1525,32 +1525,21 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - password changed response
 	 */
 
-	static async changePassword(bodyData, userId) {
-		const projection = ['location']
+	static async changePassword(bodyData, userId, tenantCode) {
 		try {
-			const userCredentials = await UserCredentialQueries.findOne({ user_id: userId })
-			if (!userCredentials) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			const plaintextEmailId = emailEncryption.decrypt(userCredentials.email)
-
-			let user = await userQueries.findOne(
-				{ id: userCredentials.user_id, organization_id: userCredentials.organization_id },
-				{ attributes: { exclude: projection } }
+			const user = await userQueries.findOne(
+				{ id: userId, tenant_code: tenantCode },
+				{ attributes: ['id', 'password', 'email', 'name'] }
 			)
 			if (!user) {
 				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
+					message: ERROR_MESSAGES.USER_DOESNOT_EXISTS,
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			const verifyOldPassword = utilsHelper.comparePassword(bodyData.oldPassword, userCredentials.password)
+			const verifyOldPassword = utilsHelper.comparePassword(bodyData.oldPassword, user.password)
 			if (!verifyOldPassword) {
 				return responses.failureResponse({
 					message: 'INCORRECT_OLD_PASSWORD',
@@ -1559,7 +1548,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			const isPasswordSame = bcryptJs.compareSync(bodyData.newPassword, userCredentials.password)
+			const isPasswordSame = utilsHelper.comparePassword(bodyData.newPassword, user.password)
 			if (isPasswordSame) {
 				return responses.failureResponse({
 					message: 'SAME_PASSWORD_ERROR',
@@ -1571,12 +1560,9 @@ module.exports = class AccountHelper {
 
 			const updateParams = { password: bodyData.newPassword, refresh_tokens: [] }
 
-			await userQueries.updateUser(
-				{ id: user.id, organization_id: userCredentials.organization_id },
-				updateParams
-			)
-			await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
-			await utilsHelper.redisDel(userCredentials.email)
+			await userQueries.updateUser({ id: user.id, tenant_code: tenantCode }, updateParams)
+			//await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
+			await utilsHelper.redisDel(user.email)
 
 			// Find active sessions of user and remove them
 			const userSessionData = await userSessionsService.findUserSession(
@@ -1600,6 +1586,8 @@ module.exports = class AccountHelper {
 			)
 
 			if (templateData) {
+				const plaintextEmailId = emailEncryption.decrypt(user.email)
+
 				// Push successful registration email to kafka
 				const payload = {
 					type: common.notificationEmailType,
