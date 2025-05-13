@@ -627,13 +627,13 @@ module.exports = class AccountHelper {
 			const userSessionDetails = await userSessionsService.createUserSession(user.id, '', '', deviceInformation)
 
 			// Determine tenant ID
-			let tenantDetails = await organizationQueries.findOne(
+			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
 				{ attributes: ['parent_id'] }
 			)
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
-
+ */
 			// Transform user data
 			user = UserTransformDTO.transform(user)
 			const tokenDetail = {
@@ -642,7 +642,7 @@ module.exports = class AccountHelper {
 					name: user.name,
 					session_id: userSessionDetails.result.id,
 					organization_id: user.organization_id,
-					tenant_id: tenant_id,
+					//tenant_id: tenant_id,
 					tenant_code: tenantDetail.code,
 					organizations: user.organizations,
 				},
@@ -664,7 +664,7 @@ module.exports = class AccountHelper {
 
 			// Fetch default organization and validation data
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -675,6 +675,7 @@ module.exports = class AccountHelper {
 				organization_id: {
 					[Op.in]: [user.organization_id, defaultOrgId],
 				},
+				tenant_code: tenantDetail.code,
 				model_names: { [Op.contains]: [modelName] },
 			})
 
