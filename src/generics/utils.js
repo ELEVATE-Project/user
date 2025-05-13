@@ -383,6 +383,7 @@ const constructUrl = (externalBaseUrl, endPoint) => {
 
 async function processDbResponse(responseBody, entityType) {
 	if (responseBody.meta) {
+		console.log('-=-=-=-=-=-=-=-=-=->> responseBody.meta : ', responseBody.meta)
 		let externalFetchPromise = []
 		entityType.forEach(async (entity) => {
 			const entityTypeValue = entity.value
@@ -398,11 +399,13 @@ async function processDbResponse(responseBody, entityType) {
 						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
 						process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
 					const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+					console.log('-=-=-=-=-=-=-=-=-=->> url : ', url)
 					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
 					const filterData = {
 						_id: responseBody.meta[entityTypeValue],
 						tenantId: responseBody.tenant_code,
 					}
+					console.log('-=-=-=-=-=-=-=-=-=->> filterData : ', filterData)
 
 					externalFetchPromise.push(
 						axios.post(
@@ -458,7 +461,7 @@ async function processDbResponse(responseBody, entityType) {
 
 				return response.data.result[0]
 			})
-
+			console.log('-=-=-=-=-=-=-=-=-=->> parseResponse : ', parseResponse)
 			entityType.forEach(async (entity) => {
 				const entityTypeValue = entity.value
 				if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
@@ -471,14 +474,26 @@ async function processDbResponse(responseBody, entityType) {
 									parseResponse.find(
 										(fetched) => fetched._id == responseBody.meta[entityTypeValue]
 									) || {}
+
+								console.log('-=-=-=-=-=-=-=-=-=->> findEntity : ', findEntity)
+
 								if (findEntity && Object.keys(findEntity).length > 0) {
+									console.log(
+										'-=-=-=-=-=-=-=-=-=->> IF CONDITION : ',
+										findEntity && Object.keys(findEntity).length > 0,
+										findEntity,
+										Object.keys(findEntity).length > 0
+									)
+
 									responseBody[entityTypeValue] = {
 										value: findEntity['_id'],
 										label: findEntity.metaInformation.name,
 										externalId: findEntity.metaInformation.externalId,
 									}
+									console.log('-=-=-=-=-=-=-=-=-=->> IFFFFF : ', responseBody[entityTypeValue])
 								} else {
 									responseBody[entityTypeValue] = {}
+									console.log('-=-=-=-=-=-=-=-=-=->> ELSE : ', responseBody[entityTypeValue])
 								}
 
 								delete responseBody.meta[entityTypeValue]
