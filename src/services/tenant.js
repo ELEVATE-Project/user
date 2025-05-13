@@ -154,7 +154,8 @@ module.exports = class tenantHelper {
 							value: allDefaultEntityTypeValues,
 						},
 						userId,
-						process.env.DEFAULT_ORG_ID
+						process.env.DEFAULT_ORG_ID,
+						process.env.DEFAULT_TENANT_CODE
 					)
 
 					const entitiyTypeAndEntities = entityTypeResponse?.result?.entity_types || []
