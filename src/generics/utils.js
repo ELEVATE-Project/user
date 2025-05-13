@@ -19,7 +19,7 @@ const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
 const common = require('@constants/common')
 const { cloudClient } = require('@configs/cloud-service')
-const requests = require('@generics/requests')
+const axios = require('axios')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -405,15 +405,18 @@ async function processDbResponse(responseBody, entityType) {
 					}
 
 					externalFetchPromise.push(
-						requests.post(
+						axios.post(
 							url,
 							{
 								query: filterData,
 								projection: projection,
 							},
-							null,
-							true,
-							'internal-access-token'
+							{
+								headers: {
+									'Content-Type': 'application/json',
+									'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+								},
+							}
 						)
 					)
 				}
@@ -421,8 +424,38 @@ async function processDbResponse(responseBody, entityType) {
 		})
 
 		if (externalFetchPromise.length > 0) {
-			const externalFetchResponse = await Promise.all(externalFetchPromise)
-			const parseResponse = externalFetchResponse.map((response) => {
+			const externalFetchResponse = await Promise.all(
+				externalFetchPromise.map((promise) =>
+					promise.catch((err) => {
+						console.error('Entity fetch API request failed:', err.message)
+						return {} // Return empty object on error
+					})
+				)
+			)
+
+			const parseResponse = externalFetchResponse.map((response, index) => {
+				// Check if response is empty object (from failed request)
+				if (!response || Object.keys(response).length === 0) {
+					console.warn(`Empty or no response at index ${index}`)
+					return {}
+				}
+
+				// Check if response.data exists
+				if (!response.data) {
+					console.warn(`No data in response at index ${index}`)
+					return {}
+				}
+
+				// Check if result array exists and has data
+				if (
+					!response.data.result ||
+					!Array.isArray(response.data.result) ||
+					response.data.result.length === 0
+				) {
+					console.warn(`No result array or empty result at index ${index}`)
+					return {}
+				}
+
 				return response.data.result[0]
 			})
 
@@ -438,7 +471,7 @@ async function processDbResponse(responseBody, entityType) {
 									parseResponse.find(
 										(fetched) => fetched._id == responseBody.meta[entityTypeValue]
 									) || {}
-								if (findEntity) {
+								if (findEntity && Object.keys(findEntity).length > 0) {
 									responseBody[entityTypeValue] = {
 										value: findEntity['_id'],
 										label: findEntity.metaInformation.name,
