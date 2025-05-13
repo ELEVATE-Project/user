@@ -1,5 +1,4 @@
 const request = require('request')
-const parser = require('xml2json')
 const common = require('@constants/common')
 var get = function (url, token = '', internal_access_token = false, internalAccessTokenKey = 'internal_access_token') {
 	return new Promise((resolve, reject) => {
@@ -29,7 +28,7 @@ var get = function (url, token = '', internal_access_token = false, internalAcce
 				} else {
 					let response = data.body
 					if (data.headers['content-type'].split(';')[0] !== 'application/json') {
-						response = parser.toJson(data.body)
+						response = data.body
 					}
 
 					response = JSON.parse(response)
@@ -83,7 +82,7 @@ var post = function (
 				} else {
 					let response = data.body
 					if (data.headers['content-type'].split(';')[0] !== 'application/json') {
-						response = parser.toJson(data.body)
+						response = data.body
 					}
 
 					response = JSON.parse(response)
