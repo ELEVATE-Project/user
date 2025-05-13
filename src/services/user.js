@@ -301,14 +301,16 @@ module.exports = class UserHelper {
 				const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
 				user.permissions = permissionsByModule
 
-				const processDbResponse = utils
-					.processDbResponse(user, prunedEntities)
+				const processDbResponse = utils.processDbResponse(user, prunedEntities)
 
-					[('email', 'phone')].forEach((field) => {
-						if (processDbResponse[field]) {
-							processDbResponse[field] = emailEncryption.decrypt(processDbResponse[field])
+				if (processDbResponse) {
+					;['email', 'phone'].forEach((field) => {
+						const value = processDbResponse[field]
+						if (typeof value === 'string' && value.trim() !== '') {
+							processDbResponse[field] = emailEncryption.decrypt(value)
 						}
 					})
+				}
 
 				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
 					await utils.redisSet(redisUserKey, processDbResponse)
