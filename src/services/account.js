@@ -69,6 +69,7 @@ module.exports = class AccountHelper {
 
 			const tenantDetail = await tenantQueries.findOne({
 				code: tenantDomain.tenant_code,
+				status: common.ACTIVE_STATUS,
 			})
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
@@ -126,6 +127,7 @@ module.exports = class AccountHelper {
 					password: {
 						[Op.ne]: null,
 					},
+					tenant_code: tenantDetail.code,
 				})
 			}
 			if (!user && encryptedPhoneNumber) {
@@ -134,6 +136,7 @@ module.exports = class AccountHelper {
 					password: {
 						[Op.ne]: null,
 					},
+					tenant_code: tenantDetail.code,
 				})
 			}
 
