@@ -249,7 +249,7 @@ module.exports = class UserSessionsHelper {
 		let tokenExtracted
 		if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
 			const [authType, extractedToken] = token.split(' ')
-			if (authType.toLowerCase() !== 'bearer') throw createUnauthorizedResponse()
+			if (authType.toLowerCase() !== 'bearer') throw unAuthorizedResponse()
 			tokenExtracted = extractedToken.trim()
 		} else tokenExtracted = token.trim()
 
