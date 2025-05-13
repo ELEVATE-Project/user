@@ -21,6 +21,8 @@ const notificationTemplateQueries = require('@database/queries/notificationTempl
 const notificationTemplateService = require('@services/notification')
 const RollbackStack = require('@generics/RollbackStack')
 const organisationQueries = require('@database/queries/organization')
+const userRolesQueries = require('@database/queries/user-role')
+const userRolesService = require('@services/user-role')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
@@ -285,6 +287,35 @@ module.exports = class tenantHelper {
 				}
 
 				// ******* adding default Notification Template to Default Org CODE ENDS HERE *******
+
+				// ******* adding default user roles to Default Org CODE BEGINS HERE *******
+				const fetchAllDefaultUserRoles = await userRolesQueries.findAll({
+					organization_id: process.env.DEFAULT_ORG_ID,
+				})
+				if (fetchAllDefaultUserRoles.length > 0) {
+					const roleCreationPromises = fetchAllDefaultUserRoles.map((userRole) => {
+						return userRolesService.create(
+							{
+								title: userRole.title,
+								label: userRole.label || userRole.title,
+								user_type: userRole.user_type,
+								status: userRole.status,
+								visibility: userRole.visibility,
+								tenant_code: tenantCreateResponse.code,
+							},
+							defaultOrgId
+						)
+					})
+
+					const roleCreationPromiseResponse = await Promise.all(roleCreationPromises)
+					roleCreationPromiseResponse.map((role) => {
+						rollbackStack.push(async () => {
+							await userRolesQueries.hardDelete(role.result.id)
+						})
+					})
+				}
+
+				// ******* adding default user roles to Default Org CODE ENDS HERE *******
 			} catch (error) {
 				if (rollbackStack.size() > 0) await rollbackStack.execute()
 				return responses.failureResponse({
