@@ -282,7 +282,16 @@ const organization = {
 		'created_by',
 		'updated_by',
 	],
-	update: ['id', 'org_admin', 'parent_id', 'related_orgs', 'in_domain_visibility', 'created_by', 'updated_by'],
+	update: [
+		'id',
+		'org_admin',
+		'tenant_code',
+		'parent_id',
+		'related_orgs',
+		'in_domain_visibility',
+		'created_by',
+		'updated_by',
+	],
 	requestOrgRole: [
 		'id',
 		'description',
