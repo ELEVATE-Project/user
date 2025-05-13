@@ -405,7 +405,8 @@ module.exports = class AccountHelper {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organization_id: user.organization_id,
+					organization_ids: user.organizations.map((org) => String(org.id)), // Convert to string
+					organization_codes: user.organizations.map((org) => String(org.code)), // Convert to string
 					tenant_code: tenantDetail.code,
 					organizations: user.organizations,
 				},
@@ -644,8 +645,8 @@ module.exports = class AccountHelper {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organization_id: user.organization_id,
-					//tenant_id: tenant_id,
+					organization_ids: user.organizations.map((org) => String(org.id)), // Convert to string
+					organization_codes: user.organizations.map((org) => String(org.code)), // Convert to string					// tenant_id: tenant_id,
 					tenant_code: tenantDetail.code,
 					organizations: user.organizations,
 				},
