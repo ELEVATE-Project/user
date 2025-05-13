@@ -98,7 +98,8 @@ module.exports = class Account {
 				req.body,
 				req.decodedToken.id,
 				req.decodedToken.organization_id,
-				req.decodedToken.session_id
+				req.decodedToken.session_id,
+				req.decodedToken.tenant_code
 			)
 			return loggedOutAccount
 		} catch (error) {

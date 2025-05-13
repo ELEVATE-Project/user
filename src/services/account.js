@@ -722,9 +722,9 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns accounts loggedout information.
 	 */
 
-	static async logout(bodyData, user_id, organization_id, userSessionId) {
+	static async logout(bodyData, user_id, organization_id, userSessionId, tenantCode) {
 		try {
-			const user = await userQueries.findOne({ id: user_id, organization_id })
+			const user = await userQueries.findOne({ id: user_id, tenant_code: tenantCode })
 			if (!user) {
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
