@@ -8,8 +8,8 @@ const CONFIG = {
 	LOGIN_PATH: '/user/v1/account/login',
 	ENTITY_CREATE_PATH: '/user/v1/entity-type/create',
 	CREDENTIALS: {
-		identifier: 'nevil@tunerlabs.com',
-		password: 'PASSword###11',
+		identifier: '',
+		password: '',
 	},
 	ENTITY_TYPES_FILE: path.join(__dirname, 'entity-types.json'),
 }
