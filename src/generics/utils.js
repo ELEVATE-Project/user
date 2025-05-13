@@ -404,7 +404,7 @@ async function processDbResponse(responseBody, entityType) {
 						for (entity of responseBody.meta[entityTypeValue]) {
 							const filterData = {
 								_id: entity,
-								tenantId: 'shikshagraha', //responseBody.tenant_code,
+								tenantId: responseBody.tenant_code,
 							}
 							externalFetchPromise.push(
 								axios.post(
@@ -425,7 +425,7 @@ async function processDbResponse(responseBody, entityType) {
 					} else {
 						const filterData = {
 							_id: responseBody.meta[entityTypeValue],
-							tenantId: 'shikshagraha', //responseBody.tenant_code,
+							tenantId: responseBody.tenant_code,
 						}
 
 						externalFetchPromise.push(
