@@ -16,7 +16,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
@@ -39,7 +39,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
@@ -62,7 +62,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
@@ -85,7 +85,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
@@ -108,7 +108,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
@@ -131,7 +131,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
@@ -154,7 +154,7 @@
 		"deleted_at": null,
 		"meta": {
 			"service": "entity-management-service",
-			"endPoint": "v1/subEntityList"
+			"endPoint": "v1/entities/find"
 		},
 		"external_entity_type": true,
 		"required": false,
