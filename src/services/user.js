@@ -306,7 +306,7 @@ module.exports = class UserHelper {
 				if (processDbResponse) {
 					;['email', 'phone'].forEach((field) => {
 						const value = processDbResponse[field]
-						if (value) {
+						if (typeof value === 'string' && value.trim() !== '') {
 							processDbResponse[field] = emailEncryption.decrypt(value)
 						}
 					})
