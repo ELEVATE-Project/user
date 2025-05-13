@@ -148,7 +148,7 @@ module.exports = {
 
 	generateOtp: (req) => {
 		req.body = filterRequestBody(req.body, account.generateOtp)
-		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
+		req.checkBody('identifier').notEmpty().withMessage('identifier field is empty')
 		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
 	},
 
@@ -160,7 +160,7 @@ module.exports = {
 
 	resetPassword: (req) => {
 		req.body = filterRequestBody(req.body, account.resetPassword)
-		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
+		req.checkBody('identifier').notEmpty().withMessage('identifier field is empty')
 		req.checkBody('password')
 			.notEmpty()
 			.withMessage('Password field is empty')
