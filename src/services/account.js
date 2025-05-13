@@ -309,8 +309,6 @@ module.exports = class AccountHelper {
 			if (encryptedEmailId) bodyData.email = encryptedEmailId
 			if (encryptedPhoneNumber) bodyData.phone = encryptedPhoneNumber
 
-			const insertedUser = await userQueries.create(bodyData)
-
 			if (!domainDetails) {
 				const emailDomain = plaintextEmailId ? utilsHelper.extractDomainFromEmail(plaintextEmailId) : null
 
@@ -323,6 +321,40 @@ module.exports = class AccountHelper {
 			}
 
 			const organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
+
+			const [defaultOrg, userOrgDetails, modelName] = await Promise.all([
+				organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
+					{ attributes: ['id'] }
+				),
+				organizationQueries.findOne(
+					{ code: organizationCode, tenant_code: tenantDetail.code },
+					{ attributes: ['id'] }
+				),
+				userQueries.getModelName(),
+			])
+
+			if (!defaultOrg || !userOrgDetails) {
+				throw new Error('Default or user organization not found.')
+			}
+
+			const defaultOrgId = defaultOrg.id
+			const userOrgId = userOrgDetails.id
+
+			const [validationData, userModel] = await Promise.all([
+				entityTypeQueries.findUserEntityTypesAndEntities({
+					status: 'ACTIVE',
+					organization_id: { [Op.in]: [userOrgId, defaultOrgId] },
+					model_names: { [Op.contains]: [modelName] },
+					tenant_code: tenantDetail.code,
+				}),
+				userQueries.getColumns(),
+			])
+
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, userOrgId)
+			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
+
+			const insertedUser = await userQueries.create(restructuredData)
 
 			const userOrg = await userOrganizationQueries.create({
 				user_id: insertedUser.id,
@@ -496,23 +528,6 @@ module.exports = class AccountHelper {
 				await kafkaCommunication.pushEmailToKafka(payload)
 			}
 
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-				{ attributes: ['id'] }
-			)
-			const defaultOrgId = defaultOrg.id
-			const modelName = await userQueries.getModelName()
-
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
-				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
-				},
-				model_names: { [Op.contains]: [modelName] },
-				tenant_code: tenantDetail.code,
-			})
-
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
 			result.user = utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
