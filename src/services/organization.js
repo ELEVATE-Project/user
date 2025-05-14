@@ -15,9 +15,9 @@ const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBodyDTO } = require('@dtos/eventBody')
+const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
-const organization = require('@database/models/organization')
-const sequelize = require('@database/models/index').sequelize
+const userOrgQueries = require('@database/queries/userOrganization')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -398,6 +398,76 @@ module.exports = class OrganizationsHelper {
 				statusCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				result: organisationDetails,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Read organisation details
+	 * @method
+	 * @name details
+	 * @param {Integer/String} organisationId 	- organisation id/code
+	 * @param {Integer/String} tenantCode 	- tenant code
+	 * @returns {JSON} 									- Organization details.
+	 */
+
+	static async details(organisationId, userId, tenantCode) {
+		try {
+			if (!userId || !tenantCode) {
+				throw responses.failureResponse({
+					message: 'PERMISSION_DENIED',
+					statusCode: httpStatusCode.unauthorized,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+			const userOrgs = await userOrgQueries.findAll(
+				{
+					user_id: userId,
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['organization_code'],
+					organizationAttributes: ['id', 'name'],
+				}
+			)
+			if (userOrgs.length <= 0) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const userOrgsIds = userOrgs.map((orgs) => {
+				return orgs['organization.id']
+			})
+
+			if (!userOrgsIds.includes(parseInt(organisationId))) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_NOT_ACCESSIBLE',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let filter = {
+				id: parseInt(organisationId),
+			}
+
+			const organisationDetails = await organizationQueries.findOne(filter)
+			if (!organisationDetails) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+				result: organizationDTO.transform(organisationDetails),
 			})
 		} catch (error) {
 			throw error
