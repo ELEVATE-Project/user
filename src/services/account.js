@@ -516,9 +516,9 @@ module.exports = class AccountHelper {
 					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: bodyData.name,
-						appName: process.env.APP_NAME,
+						appName: tenantDetail.name,
 						roles: roleToString || '',
-						portalURL: process.env.PORTAL_URL,
+						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
 				})
@@ -531,9 +531,9 @@ module.exports = class AccountHelper {
 					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: bodyData.name,
-						appName: process.env.APP_NAME,
+						appName: tenantDetail.name,
 						roles: roleToString || '',
-						portalURL: process.env.PORTAL_URL,
+						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
 				})
@@ -995,7 +995,7 @@ module.exports = class AccountHelper {
 				notificationUtils.sendSMSNotification({
 					phoneNumber: emailEncryption.decrypt(user.phone),
 					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
-					variables: { app_name: process.env.APP_NAME, otp },
+					variables: { app_name: tenantDetail.name, otp },
 					tenantCode: tenantDetail.code,
 				})
 			}
@@ -1187,7 +1187,7 @@ module.exports = class AccountHelper {
 			notificationUtils.sendSMSNotification({
 				phoneNumber: plaintextPhoneNumber,
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
-				variables: { app_name: process.env.APP_NAME, otp },
+				variables: { app_name: tenantDetail.name, otp },
 				tenantCode: tenantDetail.code,
 			})
 		}
