@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			secret_code: {
+			registration_code: {
 				type: DataTypes.STRING(32),
 				allowNull: true,
 			},
