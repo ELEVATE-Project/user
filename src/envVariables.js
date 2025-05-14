@@ -332,9 +332,9 @@ let enviromentVariables = {
 		default: 'emailotp',
 	},
 	OTP_EXP_TIME: {
-		message: 'Require otp expire time',
+		message: 'Require otp expire time in seconds',
 		optional: true,
-		default: 86400,
+		default: 300,
 	},
 	RATING_KAFKA_TOPIC: {
 		message: 'Require kafka topic for rating',
@@ -365,8 +365,17 @@ let enviromentVariables = {
 		optional: true,
 		default: true,
 	},
+	NOTIFICATION_MODE: {
+		message: 'If its kafka or API',
+		optional: true,
+		default: 'kafka',
+	},
+	NOTIFICATION_API_URL: {
+		message: 'URL for notification service',
+		optional: true,
+		default: '',
+	},
 }
-
 let success = true
 
 module.exports = function () {

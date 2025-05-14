@@ -154,7 +154,47 @@ module.exports = {
 
 	registrationOtp: (req) => {
 		req.body = filterRequestBody(req.body, account.registrationOtp)
-		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')
+		// Validate email (optional)
+		req.checkBody('email')
+			.optional()
+			.trim()
+			.isEmail()
+			.matches(
+				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+			)
+			.withMessage('email is invalid')
+			.normalizeEmail({ gmail_remove_dots: false })
+
+		// Validate phone (optional)
+		req.checkBody('phone')
+			.optional()
+			.trim()
+			.matches(/^[0-9]{7,15}$/)
+			.withMessage('phone must be a valid number between 7 and 15 digits')
+
+		// Validate phone_code (required if phone is provided)
+		req.checkBody('phone_code')
+			.optional()
+			.trim()
+			.matches(/^\+[1-9][0-9]{0,3}$/)
+			.withMessage('phone_code must be a valid country code (e.g., +1, +91)')
+
+		req.checkBody(['email', 'phone', 'phone_code']).custom(() => {
+			const phone = req.body.phone
+			const phone_code = req.body.phone_code
+			const email = req.body.email
+
+			if (!email && !phone) {
+				throw new Error('At least one of email or phone must be provided')
+			}
+
+			if (phone && !phone_code) {
+				throw new Error('phone_code is required when phone is provided')
+			}
+
+			return true
+		})
+
 		req.checkBody('name').notEmpty().withMessage('name field is empty')
 	},
 

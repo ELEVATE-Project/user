@@ -36,7 +36,7 @@ const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
-
+const notificationUtils = require('@utils/notification')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -488,7 +488,7 @@ module.exports = class AccountHelper {
 
 			// Delete Redis OTP entries
 			if (encryptedEmailId) await utilsHelper.redisDel(encryptedEmailId)
-			if (encryptedPhoneNumber) await utilsHelper.redisDel(encryptedPhoneNumber)
+			if (encryptedPhoneNumber) await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
 
 			if (isOrgAdmin) {
 				let organization = await organizationQueries.findByPk(user.organization_id)
@@ -510,24 +510,34 @@ module.exports = class AccountHelper {
 				user.organization_id
 			)
 
-			if (templateData && plaintextEmailId) {
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: plaintextEmailId,
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: bodyData.name,
-							appName: process.env.APP_NAME,
-							roles: roleToString || '',
-							portalURL: process.env.PORTAL_URL,
-						}),
+			if (plaintextEmailId) {
+				notificationUtils.sendEmailNotification({
+					emailId: plaintextEmailId,
+					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+					variables: {
+						name: bodyData.name,
+						appName: process.env.APP_NAME,
+						roles: roleToString || '',
+						portalURL: process.env.PORTAL_URL,
 					},
-				}
-
-				await kafkaCommunication.pushEmailToKafka(payload)
+					tenantCode: tenantDetail.code,
+				})
 			}
 
+			// Send SMS notification with OTP if phone is provided
+			if (plaintextPhoneNumber) {
+				notificationUtils.sendSMSNotification({
+					phoneNumber: plaintextPhoneNumber,
+					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+					variables: {
+						name: bodyData.name,
+						appName: process.env.APP_NAME,
+						roles: roleToString || '',
+						portalURL: process.env.PORTAL_URL,
+					},
+					tenantCode: tenantDetail.code,
+				})
+			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
 
 			result.user.email = plaintextEmailId
@@ -956,7 +966,7 @@ module.exports = class AccountHelper {
 			const [otp, isNew] =
 				userData && userData.action === 'forgetpassword'
 					? [userData.otp, false]
-					: [Math.floor(Math.random() * 900000 + 100000), true]
+					: [utils.generateSecureOTP(), true]
 			if (isNew) {
 				const redisData = {
 					verify: user.username,
@@ -971,23 +981,26 @@ module.exports = class AccountHelper {
 						responseCode: 'SERVER_ERROR',
 					})
 			}
-
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.OTP_EMAIL_TEMPLATE_CODE,
-				user.organization_id
-			)
-			if (templateData && user.email) {
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: emailEncryption.decrypt(user.email),
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, { name: user.name, otp }),
-					},
-				}
-				await kafkaCommunication.pushEmailToKafka(payload)
+			if (user.email) {
+				notificationUtils.sendEmailNotification({
+					emailId: emailEncryption.decrypt(user.email),
+					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
+					variables: { name: user.name, otp },
+					tenantCode: tenantDetail.code,
+				})
 			}
-			if (process.env.APPLICATION_ENV === 'development') console.log({ otp, isNew })
+
+			// Send SMS notification with OTP if phone is provided
+			if (user.phone) {
+				notificationUtils.sendSMSNotification({
+					phoneNumber: emailEncryption.decrypt(user.phone),
+					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
+					variables: { app_name: process.env.APP_NAME, otp },
+					tenantCode: tenantDetail.code,
+				})
+			}
+
+			if (process.env.APPLICATION_ENV === 'development') console.log('DEV OTP->', { otp, isNew })
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'OTP_SENT_SUCCESSFULLY',
@@ -1007,35 +1020,150 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns otp success response
 	 */
 
-	static async registrationOtp(bodyData) {
-		const plaintextEmailId = bodyData.email.toLowerCase()
-		const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-		const userCredentials = await UserCredentialQueries.findOne({
-			email: encryptedEmailId,
-			password: {
-				[Op.ne]: null,
-			},
-		})
-		if (userCredentials)
+	static async registrationOtp(bodyData, domain) {
+		// Helper function for consistent not found responses
+		const notFoundResponse = (message) => {
 			return responses.failureResponse({
-				message: 'USER_ALREADY_EXISTS',
+				message,
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		// Validate tenant and domain
+		const tenantDomain = await tenantDomainQueries.findOne({ domain })
+		if (!tenantDomain) {
+			return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+		}
+
+		const tenantDetail = await tenantQueries.findOne({
+			code: tenantDomain.tenant_code,
+			status: common.ACTIVE_STATUS,
+		})
+		if (!tenantDetail) {
+			return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+		}
+
+		// Validate that at least one contact method is provided
+		if (!bodyData.email && !bodyData.phone) {
+			return responses.failureResponse({
+				message: 'EMAIL_OR_PHONE_REQUIRED',
 				statusCode: httpStatusCode.bad_request,
 				responseCode: 'CLIENT_ERROR',
 			})
+		}
 
-		const userData = await utilsHelper.redisGet(encryptedEmailId)
+		// Validate organization registration code if provided
+		let domainDetails = null
+		if (bodyData.registration_code) {
+			domainDetails = await organizationQueries.findOne({
+				tenant_code: tenantDetail.code,
+				registration_code: bodyData.registration_code,
+			})
+
+			if (!domainDetails) {
+				return responses.failureResponse({
+					message: 'INVALID_ORG_registration_code',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+		}
+
+		// Process email information
+		let encryptedEmailId = null
+		let plaintextEmailId = null
+		if (bodyData.email) {
+			plaintextEmailId = bodyData.email.toLowerCase()
+			encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			bodyData.email = encryptedEmailId
+		}
+
+		// Process phone information
+		let encryptedPhoneNumber = null
+		let plaintextPhoneNumber = null
+		if (bodyData.phone && bodyData.phone_code) {
+			plaintextPhoneNumber = bodyData.phone
+			encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
+			bodyData.phone = encryptedPhoneNumber
+		}
+
+		// Check if user already exists with email or phone
+		const userQuery = {
+			password: {
+				[Op.ne]: null,
+			},
+			tenant_code: tenantDetail.code,
+		}
+
+		let user = null
+		// Check by email if provided
+		if (encryptedEmailId) {
+			user = await userQueries.findOne({
+				...userQuery,
+				email: encryptedEmailId,
+			})
+		}
+
+		// If not found by email, check by phone if provided
+		if (!user && encryptedPhoneNumber) {
+			user = await userQueries.findOne({
+				...userQuery,
+				phone: encryptedPhoneNumber,
+			})
+		}
+
+		// Return error if user already exists
+		if (user) {
+			return responses.failureResponse({
+				message: 'USER_ALREADY_EXISTS',
+				statusCode: httpStatusCode.not_acceptable,
+				responseCode: 'CLIENT_ERROR',
+			})
+		}
+
+		// Generate or retrieve OTP
+		let emailUserData = encryptedEmailId ? await utilsHelper.redisGet(encryptedEmailId) : null
+		let phoneUserData =
+			encryptedPhoneNumber && bodyData.phone_code
+				? await utilsHelper.redisGet(bodyData.phone_code + encryptedPhoneNumber)
+				: null
+
+		// Use existing OTP if already in progress, otherwise generate a new one
+		const userData = emailUserData || phoneUserData
+		// Usage: [generateSecureOTP(), true]
+
 		const [otp, isNew] =
-			userData && userData.action === 'signup'
-				? [userData.otp, false]
-				: [Math.floor(Math.random() * 900000 + 100000), true]
+			userData && userData.action === 'signup' ? [userData.otp, false] : [utils.generateSecureOTP(), true]
+
+		// Store OTP data in redis if it's new
 		if (isNew) {
 			const redisData = {
-				verify: encryptedEmailId,
+				verify: encryptedEmailId || encryptedPhoneNumber,
 				action: 'signup',
 				otp,
 			}
-			const res = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
-			if (res !== 'OK') {
+
+			let redisSetResults = []
+
+			// Store OTP for email if provided
+			if (encryptedEmailId) {
+				const emailResult = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
+				redisSetResults.push(emailResult)
+			}
+
+			// Store OTP for phone if provided
+			if (encryptedPhoneNumber && bodyData.phone_code) {
+				const phoneResult = await utilsHelper.redisSet(
+					bodyData.phone_code + encryptedPhoneNumber,
+					redisData,
+					common.otpExpirationTime
+				)
+				redisSetResults.push(phoneResult)
+			}
+
+			// Check if storing in Redis was successful
+			if (!redisSetResults.includes('OK')) {
 				return responses.failureResponse({
 					message: 'UNABLE_TO_SEND_OTP',
 					statusCode: httpStatusCode.internal_server_error,
@@ -1043,21 +1171,33 @@ module.exports = class AccountHelper {
 				})
 			}
 		}
-		const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-			process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE
-		)
-		if (templateData) {
-			const payload = {
-				type: common.notificationEmailType,
-				email: {
-					to: plaintextEmailId,
-					subject: templateData.subject,
-					body: utilsHelper.composeEmailBody(templateData.body, { name: bodyData.name, otp }),
-				},
-			}
-			await kafkaCommunication.pushEmailToKafka(payload)
+
+		// Send email notification with OTP if email is provided
+		if (plaintextEmailId) {
+			notificationUtils.sendEmailNotification({
+				emailId: plaintextEmailId,
+				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
+				variables: { name: bodyData.name || plaintextEmailId, otp },
+				tenantCode: tenantDetail.code,
+			})
 		}
-		if (process.env.APPLICATION_ENV === 'development') console.log(otp)
+
+		// Send SMS notification with OTP if phone is provided
+		if (plaintextPhoneNumber && bodyData.phone_code) {
+			notificationUtils.sendSMSNotification({
+				phoneNumber: plaintextPhoneNumber,
+				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
+				variables: { app_name: process.env.APP_NAME, otp },
+				tenantCode: tenantDetail.code,
+			})
+		}
+
+		// Log OTP in development environment for testing
+		if (process.env.APPLICATION_ENV === 'development') {
+			console.log('DEV OTP:', otp)
+		}
+
+		// Return success response
 		return responses.successResponse({
 			statusCode: httpStatusCode.ok,
 			message: 'REGISTRATION_OTP_SENT_SUCCESSFULLY',
