@@ -5,6 +5,7 @@ const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const form = require('@generics/form')
 const organizationQueries = require('@database/queries/organization')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 const responses = require('@helpers/responses')
 
 module.exports = class FormsHelper {
@@ -95,8 +96,34 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Read form data.
 	 */
 
-	static async read(id, bodyData, orgId, tenantCode) {
+	static async read(id, bodyData, orgId, tenantCode, domain) {
 		try {
+			if (!tenantCode && domain) {
+				const tenantDomain = await tenantDomainQueries.findOne(
+					{
+						domain,
+					},
+					{
+						attributes: ['tenant_code'],
+					}
+				)
+				tenantCode = tenantDomain.tenant_code
+			}
+
+			if (!tenantCode) {
+				return responses.failureResponse({
+					message: 'TENANT_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (!orgId) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+					{ attributes: ['id'] }
+				)
+				orgId = defaultOrg.id
+			}
 			let filter = id
 				? { id: id, organization_id: orgId, tenant_code: tenantCode }
 				: { ...bodyData, organization_id: orgId, tenant_code: tenantCode }
