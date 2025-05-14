@@ -5,6 +5,8 @@ const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
 const httpStatusCode = require('@generics/http-status')
 
+const tenantTransformDTO = require('@dtos/tenantDTO') // Path to your DTO file
+
 module.exports = class AccountHelper {
 	static async tenantBranding(domain, organizationCode) {
 		try {
@@ -35,10 +37,10 @@ module.exports = class AccountHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'TENANT_DETAILS',
-				result: {
+				result: tenantTransformDTO.publicTransform({
 					tenant: tenantDetail,
 					...(orgDetails && { organization: orgDetails }),
-				},
+				}),
 			})
 		} catch (error) {
 			console.log(error)
