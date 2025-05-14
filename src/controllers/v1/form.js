@@ -87,8 +87,8 @@ module.exports = class Form {
 				const form = await formsService.read(
 					req.params.id,
 					params,
-					req.decodedToken.organization_id,
-					req.decodedToken.tenant_code
+					req?.decodedToken?.organization_id || null,
+					req?.decodedToken?.tenant_code || req?.headers?.tenant_code || null
 				)
 				return form
 			}

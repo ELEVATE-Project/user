@@ -97,6 +97,20 @@ module.exports = class FormsHelper {
 
 	static async read(id, bodyData, orgId, tenantCode) {
 		try {
+			if (!tenantCode) {
+				return responses.failureResponse({
+					message: 'TENANT_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (!orgId) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+					{ attributes: ['id'] }
+				)
+				orgId = defaultOrg.id
+			}
 			let filter = id
 				? { id: id, organization_id: orgId, tenant_code: tenantCode }
 				: { ...bodyData, organization_id: orgId, tenant_code: tenantCode }
