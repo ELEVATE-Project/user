@@ -1,7 +1,6 @@
 const axios = require('axios')
 
-const DEFAULT_NOTIFICATION_URL =
-	process.env.NOTIFICATION_API_URL || 'https://saas-qa-interface.tekdinext.com/interface/v1/notification/send-raw'
+const DEFAULT_NOTIFICATION_URL = process.env.NOTIFICATION_API_URL
 
 /**
  * Sends email and/or SMS using the notification API.

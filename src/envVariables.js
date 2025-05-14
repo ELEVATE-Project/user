@@ -372,8 +372,7 @@ let enviromentVariables = {
 	},
 	NOTIFICATION_API_URL: {
 		message: 'URL for notification service',
-		optional: true,
-		default: '',
+		optional: process.env.NOTIFICATION_MODE === 'API' ? false : true,
 	},
 }
 let success = true
