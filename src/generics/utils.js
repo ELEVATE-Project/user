@@ -719,6 +719,25 @@ function parseDomain(domain) {
 	return cleanedDomain
 }
 
+function generateSecureOTP(length = 6) {
+	// Generate cryptographically strong random bytes
+	const randomBytes = crypto.randomBytes(length)
+
+	// Convert to a number string of specified length
+	let otp = ''
+	for (let i = 0; i < length; i++) {
+		// Use modulo 10 to get a digit (0-9) from each byte
+		otp += (randomBytes[i] % 10).toString()
+	}
+
+	// Ensure first digit isn't 0 for consistent length
+	if (otp[0] === '0') {
+		otp = ((parseInt(otp[0]) + 1) % 10).toString() + otp.substring(1)
+	}
+
+	return parseInt(otp)
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -757,4 +776,5 @@ module.exports = {
 	isValidPassword,
 	setRoleLabelsByLanguage,
 	parseDomain,
+	generateSecureOTP,
 }

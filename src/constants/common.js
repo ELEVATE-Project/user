@@ -33,6 +33,7 @@ module.exports = {
 		'/v1/cloud-services/file/getDownloadableUrl',
 	],
 	notificationEmailType: 'email',
+	notificationSMSType: 'sms',
 	accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY,
 	refreshTokenExpiry: `${process.env.REFRESH_TOKEN_EXPIRY}d`,
 	refreshTokenExpiryInMs: Number(process.env.REFRESH_TOKEN_EXPIRY) * 24 * 60 * 60 * 1000,

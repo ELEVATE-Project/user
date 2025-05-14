@@ -8,6 +8,8 @@
 // Dependencies
 const accountService = require('@services/account')
 const userSessionsService = require('@services/user-sessions')
+const { getDomainFromRequest } = require('@utils/domain')
+
 module.exports = class Account {
 	/**
 	 * create mentee account
@@ -137,17 +139,7 @@ module.exports = class Account {
 	async generateOtp(req) {
 		const params = req.body
 		try {
-			const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
-			let domain = ''
-
-			if (host) {
-				try {
-					const url = new URL(host)
-					domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
-				} catch (error) {
-					domain = host.split(':')[0] // Fallback: remove port if present
-				}
-			}
+			const domain = getDomainFromRequest(req)
 			const result = await accountService.generateOtp(params, domain)
 			return result
 		} catch (error) {
@@ -171,17 +163,7 @@ module.exports = class Account {
 		try {
 			const deviceInfo = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 
-			const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
-			let domain = ''
-
-			if (host) {
-				try {
-					const url = new URL(host)
-					domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
-				} catch (error) {
-					domain = host.split(':')[0] // Fallback: remove port if present
-				}
-			}
+			const domain = getDomainFromRequest(req)
 
 			const result = await accountService.resetPassword(params, deviceInfo, domain)
 			return result
@@ -268,7 +250,9 @@ module.exports = class Account {
 	async registrationOtp(req) {
 		const params = req.body
 		try {
-			const result = await accountService.registrationOtp(params)
+			const domain = getDomainFromRequest(req)
+
+			const result = await accountService.registrationOtp(params, domain)
 			return result
 		} catch (error) {
 			return error
