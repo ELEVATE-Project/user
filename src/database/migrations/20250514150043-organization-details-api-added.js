@@ -41,7 +41,7 @@ module.exports = {
 			//create role permission mapping
 			const rolePermissionsData = [
 				{
-					role_title: common.PUBLIC_ROLE,
+					role_title: common.USER_ROLE,
 					permission_id: await getPermissionId('organization', ['GET'], '/user/v1/organization/details*'),
 					module: 'organization',
 					request_type: ['GET'],

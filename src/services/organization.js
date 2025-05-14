@@ -414,13 +414,6 @@ module.exports = class OrganizationsHelper {
 
 	static async details(organisationId, userId, tenantCode) {
 		try {
-			if (!userId || !tenantCode) {
-				throw responses.failureResponse({
-					message: 'PERMISSION_DENIED',
-					statusCode: httpStatusCode.unauthorized,
-					responseCode: 'UNAUTHORIZED',
-				})
-			}
 			const userOrgs = await userOrgQueries.findAll(
 				{
 					user_id: userId,
