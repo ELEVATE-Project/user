@@ -35,7 +35,7 @@ const tenantQueries = require('@database/queries/tenants')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
-const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
+const UserTransformDTO = require('@dtos/userDTO')
 
 module.exports = class AccountHelper {
 	/**
@@ -85,15 +85,15 @@ module.exports = class AccountHelper {
 
 			let domainDetails = null
 
-			if (bodyData.secret_code) {
+			if (bodyData.registration_code) {
 				domainDetails = await organizationQueries.findOne({
 					tenant_code: tenantDetail.code,
-					secret_code: bodyData.secret_code,
+					registration_code: bodyData.registration_code,
 				})
 
 				if (!domainDetails) {
 					return responses.failureResponse({
-						message: 'INVALID_ORG_SECRET_CODE',
+						message: 'INVALID_ORG_registration_code',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
