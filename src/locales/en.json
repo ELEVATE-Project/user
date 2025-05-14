@@ -144,5 +144,6 @@
 	"NO_MATCHING_TENANT_DOMAINS_TO_REMOVE": "No Matching domains found to remove.",
 	"INVALID_TENANT_DOMAINS": "Invalid tenant domain.",
 	"TENANT_DETAILS_FETCHED": "Tenant details fetched.",
-	"TENANT_LIST_FETCHED": "Tenant list fetched successfully."
+	"TENANT_LIST_FETCHED": "Tenant list fetched successfully.",
+	"ORGANIZATION_NOT_ACCESSIBLE": "You cannot access this Organization details."
 }

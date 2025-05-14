@@ -818,6 +818,32 @@
 			}
 		},
 		{
+			"sourceRoute": "/user/v1/organization/details",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "user",
+					"packageName": "elevate-user"
+				}
+			]
+		},
+		{
+			"sourceRoute": "/user/v1/organization/details/:id",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "user",
+					"packageName": "elevate-user"
+				}
+			]
+		},
+		{
 			"sourceRoute": "/user/v1/admin/addOrgAdmin",
 			"type": "POST",
 			"priority": "MUST_HAVE",
