@@ -36,6 +36,7 @@ exports.findAll = async (filter = {}, options = {}) => {
 					as: 'organization',
 				},
 			]
+			delete options.organizationAttributes
 		}
 		return await UserOrganization.findAll({
 			where: filter,
