@@ -580,6 +580,154 @@ async function processDbResponse(responseBody, entityType) {
 	return data
 }
 
+async function processMetaWithNames(meta, entityType, tenantCode) {
+	let responseBody = {}
+	let externalFetchPromise = []
+	entityType.forEach(async (entity) => {
+		const entityTypeValue = entity.value
+		meta[entityTypeValue] =
+			meta?.hasOwnProperty(entityTypeValue) && entity.data_type == 'ARRAY'
+				? meta[entityTypeValue].split(',').map((val) => val.trim())
+				: meta[entityTypeValue]
+
+		if (meta?.hasOwnProperty(entityTypeValue)) {
+			// Move the key from meta to root level -> should happen only if entity type is not external
+			if (!entity.external_entity_type) {
+				// Move the key from meta to responseBody root level
+				responseBody[entityTypeValue] = meta[entityTypeValue]
+			} else {
+				const externalBaseUrl =
+					process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
+					process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+				const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+				const projection = ['_id', 'metaInformation.name']
+				if (_.isArray(meta[entityTypeValue])) {
+					for (entity of meta[entityTypeValue]) {
+						let filterData = {}
+						filterData['metaInformation.name'] = entity
+						filterData['tenantId'] = tenantCode
+
+						externalFetchPromise.push(
+							axios.post(
+								url,
+								{
+									query: filterData,
+									projection: projection,
+								},
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+									},
+								}
+							)
+						)
+					}
+				} else {
+					let filterData = {}
+					filterData['metaInformation.name'] = meta[entityTypeValue]
+					filterData['tenantId'] = tenantCode
+
+					externalFetchPromise.push(
+						axios.post(
+							url,
+							{
+								query: filterData,
+								projection: projection,
+							},
+							{
+								headers: {
+									'Content-Type': 'application/json',
+									'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+								},
+							}
+						)
+					)
+				}
+			}
+		}
+	})
+
+	if (externalFetchPromise.length > 0) {
+		const externalFetchResponse = await Promise.all(
+			externalFetchPromise.map((promise) =>
+				promise.catch((err) => {
+					console.error('Entity fetch API request failed:', err.message)
+					return {} // Return empty object on error
+				})
+			)
+		)
+
+		const parseResponse = externalFetchResponse.map((response, index) => {
+			// Check if response is empty object (from failed request)
+			if (!response || Object.keys(response).length === 0) {
+				console.warn(`Empty or no response at index ${index}`)
+				return {}
+			}
+
+			// Check if response.data exists
+			if (!response.data) {
+				console.warn(`No data in response at index ${index}`)
+				return {}
+			}
+
+			// Check if result array exists and has data
+			if (!response.data.result || !Array.isArray(response.data.result) || response.data.result.length === 0) {
+				console.warn(`No result array or empty result at index ${index}`)
+				return {}
+			}
+
+			return response.data.result[0]
+		})
+		entityType.forEach(async (entity) => {
+			const entityTypeValue = entity.value
+			if (meta?.hasOwnProperty(entityTypeValue)) {
+				entityType.forEach((entity) => {
+					const entityTypeValue = entity.value
+					if (meta?.hasOwnProperty(entityTypeValue)) {
+						// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+						if (entity.external_entity_type) {
+							if (_.isArray(meta[entityTypeValue])) {
+								for (entity of meta[entityTypeValue]) {
+									const findEntity =
+										parseResponse.find((fetched) => fetched.metaInformation.name == entity) || {}
+									if (findEntity && Object.keys(findEntity).length > 0) {
+										if (
+											responseBody[entityTypeValue] &&
+											Array.isArray(responseBody[entityTypeValue])
+										) {
+											// Push to existing array
+											if (!responseBody[entityTypeValue].includes(findEntity['_id'])) {
+												responseBody[entityTypeValue].push(findEntity['_id'])
+											}
+										} else {
+											// Create new array with the value
+											responseBody[entityTypeValue] = [findEntity['_id']]
+										}
+									}
+								}
+							} else {
+								const findEntity =
+									parseResponse.find(
+										(fetched) => fetched.metaInformation.name == meta[entityTypeValue]
+									) || {}
+
+								if (findEntity && Object.keys(findEntity).length > 0) {
+									responseBody[entityTypeValue] = findEntity['_id']
+								} else {
+									responseBody[entityTypeValue] = ''
+								}
+							}
+						}
+					}
+				})
+			}
+		})
+	}
+
+	return responseBody
+}
+
 function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
@@ -777,4 +925,6 @@ module.exports = {
 	setRoleLabelsByLanguage,
 	parseDomain,
 	generateSecureOTP,
+	constructUrl,
+	processMetaWithNames,
 }

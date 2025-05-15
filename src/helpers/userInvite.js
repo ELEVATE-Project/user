@@ -18,10 +18,12 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
-
+const entityTypeQueries = require('@database/queries/entityType')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
+const userOrganizationQueries = require('@database/queries/userOrganization')
+const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -33,7 +35,7 @@ module.exports = class UserInviteHelper {
 				if (!response.success) throw new Error('FAILED_TO_DOWNLOAD')
 
 				// extract data from csv
-				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
+				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath, data.user)
 				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
 				const invitees = parsedFileData.result.data
 
@@ -71,10 +73,11 @@ module.exports = class UserInviteHelper {
 				if (templateCode) {
 					const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 						templateCode,
-						data.user.organization_id
+						data.user.organization_id,
+						data.user.tenant_code
 					)
 
-					if (templateData) {
+					if (Object.keys(templateData).length > 0) {
 						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
 						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL) //Rename this to function to generic name since this function is used for both Invitee & Org-admin.
 					}
@@ -137,41 +140,77 @@ module.exports = class UserInviteHelper {
 			}
 		}
 	}
-
-	static async extractDataFromCSV(csvFilePath) {
+	static async extractDataFromCSV(csvFilePath, userData) {
 		try {
 			const parsedCSVData = []
 			const csvToJsonData = await csv().fromFile(csvFilePath)
-			if (csvToJsonData.length > 0) {
-				const header = Object.keys(csvToJsonData[0])
-				const isRoleExist = header.map((column) => column.toLowerCase()).includes('roles')
-				csvToJsonData.forEach((row) => {
-					if (row.name || row.email || row.roles) {
-						if (isRoleExist) {
-							const roles = row.roles.replace(/"/g, '').split(',')
-							row.roles = roles.map((role) => role.trim()) // Trim each role
-						}
 
-						// Extract and prepare meta fields
-						const metaFields = {
-							block: row.block?.trim() || null,
-							state: row.state?.trim() || null,
-							school: row.school?.trim() || null,
-							cluster: row.cluster?.trim() || null,
-							district: row.district?.trim() || null,
-						}
-
-						// Add meta fields to row object
-						row.meta = metaFields
-
-						// Handle password field if exists
-						if (row.password) {
-							row.password = row.password.trim()
-						}
-						parsedCSVData.push(row)
-					}
-				})
+			if (csvToJsonData.length === 0) {
+				return {
+					success: true,
+					result: {
+						data: parsedCSVData,
+					},
+				}
 			}
+
+			// Fetch default organization and validation data
+			const defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: userData.tenant_code },
+				{ attributes: ['id'] }
+			)
+			const modelName = await userQueries.getModelName()
+			const validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [userData.organization_id, defaultOrg.id],
+				},
+				tenant_code: userData.tenant_code,
+				model_names: { [Op.contains]: [modelName] },
+			})
+			const prunedEntities = utils.removeDefaultOrgEntityTypes(validationData, userData.organization_id)
+
+			// Check if 'roles' column exists
+			const header = Object.keys(csvToJsonData[0])
+			const isRoleExist = header.some((column) => column.toLowerCase() === 'roles')
+
+			// Process rows concurrently
+			await Promise.all(
+				csvToJsonData.map(async (row) => {
+					if (!row.name && !row.email && !row.roles) {
+						return // Skip rows without name, email, or roles
+					}
+
+					// Process roles if the column exists
+					if (isRoleExist && row.roles) {
+						row.roles = row.roles
+							.replace(/"/g, '')
+							.split(',')
+							.map((role) => role.trim())
+					}
+
+					// Extract and prepare meta fields
+					const metaFields = {
+						block: row.block?.trim() || null,
+						state: row.state?.trim() || null,
+						school: row.school?.trim() || null,
+						cluster: row.cluster?.trim() || null,
+						district: row.district?.trim() || null,
+						professional_roles: row.professional_roles?.trim() || null,
+						professional_subroles: row.professional_subroles?.trim() || null,
+					}
+
+					// Process meta fields
+					row.meta = await utils.processMetaWithNames(metaFields, prunedEntities, userData.tenant_code)
+
+					// Handle password field if exists
+					if (row.password) {
+						row.password = row.password.trim()
+					}
+
+					parsedCSVData.push(row)
+				})
+			)
 
 			return {
 				success: true,
@@ -216,11 +255,10 @@ module.exports = class UserInviteHelper {
 			const userCredentials = await userQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
 				{
-					attributes: ['id', 'email', 'organization_id', 'roles', 'meta'],
+					attributes: ['id', 'email', 'roles', 'meta'],
 				}
 			)
 
-			const userIds = _.map(userCredentials, 'id')
 			const existingUsers = userCredentials.map((user) => {
 				return {
 					id: user.id,
@@ -248,7 +286,8 @@ module.exports = class UserInviteHelper {
 			//fetch generic email template
 			const emailTemplate = await notificationTemplateQueries.findOneEmailTemplate(
 				process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
-				user.organization_id
+				user.organization_id,
+				user.tenant_code
 			)
 
 			//find already invited users
@@ -478,24 +517,38 @@ module.exports = class UserInviteHelper {
 							password: hashedPassword,
 							meta: inviteeData.meta,
 							organization_id: inviteeData.organization_id,
-							tenant_code: tenant_code,
+							tenant_code: user.tenant_code,
 						})
-						//create user credentials entry
-						const credentialData = {
-							email: newInvitee.email,
-							organization_id: newInvitee.organization_id,
-							organization_user_invite_id: newInvitee.id,
-							user_id: insertedUser.id,
+						const orgCode = await organizationQueries.findOne(
+							{
+								id: inviteeData.organization_id,
+								tenant_code: user.tenant_code,
+							},
+							{
+								attributes: ['code'],
+							}
+						)
+						const userOrgBody = {
+							user_id: insertedUser?.id,
+							organization_code: orgCode.code,
+							tenant_code: user.tenant_code,
+							created_at: new Date(),
+							updated_at: new Date(),
 						}
 
-						// Add password if provided
-						if (invitee.password) {
-							credentialData.password = hashedPassword
-						}
+						const userOrgResponse = await userOrganizationQueries.create(userOrgBody)
 
-						const newUserCred = await UserCredentialQueries.create(credentialData)
+						const userOrganizationRolePromise = newInvitee.roles.map((role) => {
+							return userOrganizationRoleQueries.create({
+								tenant_code: user.tenant_code,
+								user_id: insertedUser?.id,
+								organization_code: orgCode.code,
+								role_id: role,
+							})
+						})
+						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
 
-						if (newUserCred?.id) {
+						if (insertedUser?.id) {
 							const { name, email } = invitee
 							const roles = utils.getRoleTitlesFromId(newInvitee.roles, roleList)
 							const roleToString =
@@ -515,7 +568,7 @@ module.exports = class UserInviteHelper {
 							}
 
 							//send email invitation for new user
-							if (emailTemplate) {
+							if (emailTemplate?.id) {
 								await this.sendInviteeEmail(emailTemplate, userData, null, { roles: roleToString })
 							}
 						} else {

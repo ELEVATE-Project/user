@@ -687,16 +687,17 @@ module.exports = class tenantHelper {
 
 	static async userBulkUpload(filePath, userId, orgCode, tenantCode) {
 		try {
-			const orgDetails = await organisationQueries.findOne(
-				{
-					where: {
-						[Op.or]: [{ id: orgCode }, { code: orgCode }],
-					},
-				},
-				{
-					attributes: ['id', 'tenant_code'],
-				}
-			)
+			let orgFilter = {
+				tenant_code: tenantCode,
+			}
+			if (isNaN(orgCode)) {
+				orgFilter.code = orgCode
+			} else {
+				orgFilter.id = orgCode
+			}
+			const orgDetails = await organisationQueries.findOne(orgFilter, {
+				attributes: ['id', 'tenant_code'],
+			})
 
 			if (!orgDetails.id) {
 				return responses.failureResponse({

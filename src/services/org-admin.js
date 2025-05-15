@@ -104,10 +104,7 @@ module.exports = class OrgAdminHelper {
 	static async bulkCreate(filePath, tokenInformation) {
 		try {
 			const { id, organization_id, tenant_code } = tokenInformation
-			const { name, email } = await userQueries.findOne(
-				{ id, organization_id, tenant_code },
-				{ attributes: ['name', 'email'] }
-			)
+			const { name, email } = await userQueries.findOne({ id, tenant_code }, { attributes: ['name', 'email'] })
 			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
 			const organization = await organizationQueries.findOne(
@@ -147,6 +144,7 @@ module.exports = class OrgAdminHelper {
 						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
+						tenant_code,
 					},
 				},
 				{
