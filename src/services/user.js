@@ -129,7 +129,7 @@ module.exports = class UserHelper {
 					},
 				})
 			}
-			const redisUserKey = common.redisUserPrefix + id.toString()
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
@@ -242,7 +242,7 @@ module.exports = class UserHelper {
 				filter = { share_link: id }
 			}
 
-			const redisUserKey = common.redisUserPrefix + id.toString()
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
 			const userDetails = (await utils.redisGet(redisUserKey)) || false
 			if (!userDetails) {
 				let options = {
@@ -313,8 +313,8 @@ module.exports = class UserHelper {
 					})
 				}
 
-				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
-					await utils.redisSet(redisUserKey, processDbResponse)
+				if (utils.validateRoleAccess(roles, [common.MENTOR_ROLE, common.MENTEE_ROLE])) {
+					await utils.redisSet(redisUserKey, processDbResponse, common.redisUserCacheTTL)
 				}
 
 				processDbResponse['image_cloud_path'] = processDbResponse.image
@@ -426,7 +426,7 @@ module.exports = class UserHelper {
 				{ id: id, organization_id: orgId },
 				bodyData
 			)
-			const redisUserKey = common.redisUserPrefix + id.toString()
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
