@@ -28,7 +28,7 @@
 	"ENTITY_UPDATED_SUCCESSFULLY": "Entity updated successfully",
 	"ENTITY_DELETED_SUCCESSFULLY": "Entity deleted successfully",
 	"ENTITY_FETCHED_SUCCESSFULLY": "Entity fetched successfully",
-	"OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
+	"OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email or phone number. Please enter the OTP to update your password.",
 	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your provided email or phone number. Please enter the OTP to complete your registration.",
 	"PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully.",
 	"OTP_INVALID": "The OTP you entered is wrong.",
@@ -144,5 +144,12 @@
 	"NO_MATCHING_TENANT_DOMAINS_TO_REMOVE": "No Matching domains found to remove.",
 	"INVALID_TENANT_DOMAINS": "Invalid tenant domain.",
 	"TENANT_DETAILS_FETCHED": "Tenant details fetched.",
-	"TENANT_LIST_FETCHED": "Tenant list fetched successfully."
+	"TENANT_LIST_FETCHED": "Tenant list fetched successfully.",
+	"TENANT_DOMAIN_NOT_FOUND_PING_ADMIN": "Tenant domain not found. Please contact your administrator for assistance.",
+	"TENANT_NOT_FOUND_PING_ADMIN": "Tenant not found. Please contact your administrator for assistance.",
+	"EMAIL_OR_PHONE_REQUIRED": "Either an email address or phone number is required.",
+	"INVALID_ORG_REGISTRATION_CODE": "The organization registration code you entered is invalid. Please check and try again.",
+	"IDENTIFIER_OR_PASSWORD_INVALID": "Invalid identifier or password. Please check your login credentials.",
+	"IDENTIFIER_REQUIRED": "An identifier (email or phone) is required to proceed.",
+	"INVALID_IDENTIFIER_FORMAT": "The identifier format is invalid. Please enter a valid email or phone number."
 }
