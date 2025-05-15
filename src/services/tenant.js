@@ -23,6 +23,7 @@ const RollbackStack = require('@generics/RollbackStack')
 const organisationQueries = require('@database/queries/organization')
 const userRolesQueries = require('@database/queries/user-role')
 const userRolesService = require('@services/user-role')
+const orgAdminService = require('@services/org-admin')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
@@ -678,6 +679,50 @@ module.exports = class tenantHelper {
 				message: 'TENANT_LIST_FETCHED',
 				result: result,
 			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+
+	static async userBulkUpload(filePath, userId, orgCode, tenantCode) {
+		try {
+			const orgDetails = await organisationQueries.findOne(
+				{
+					where: {
+						[Op.or]: [{ id: orgCode }, { code: orgCode }],
+					},
+				},
+				{
+					attributes: ['id', 'tenant_code'],
+				}
+			)
+
+			if (!orgDetails.id) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
+
+			if (orgDetails.tenant_code != tenantCode) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'INVALID_ORG_TENANT_MAPPING',
+				})
+			}
+
+			const tokenInformation = {
+				id: userId,
+				organization_id: orgDetails.id,
+				tenant_code: tenantCode,
+			}
+
+			const bulkUpload = await orgAdminService.bulkCreate(filePath, tokenInformation)
+
+			return bulkUpload
 		} catch (error) {
 			console.log(error)
 			throw error // Re-throw other errors

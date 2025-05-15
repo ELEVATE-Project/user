@@ -145,5 +145,6 @@
 	"INVALID_TENANT_DOMAINS": "Invalid tenant domain.",
 	"TENANT_DETAILS_FETCHED": "Tenant details fetched.",
 	"TENANT_LIST_FETCHED": "Tenant list fetched successfully.",
-	"ORGANIZATION_NOT_ACCESSIBLE": "You cannot access this Organization details."
+	"ORGANIZATION_NOT_ACCESSIBLE": "You cannot access this Organization details.",
+	"INVALID_ORG_TENANT_MAPPING": "Organization and Tenant does not match."
 }

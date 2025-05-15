@@ -213,27 +213,32 @@ module.exports = class UserInviteHelper {
 				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
 
-			const userCredentials = await UserCredentialQueries.findAll(
+			const userCredentials = await userQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
-				{
-					attributes: ['user_id', 'email'],
-				}
-			)
-
-			//This is valid since UserCredentials Already Store The Encrypted Email ID
-			const userIds = _.map(userCredentials, 'user_id')
-			const existingUsers = await userQueries.findAll(
-				{ id: userIds },
 				{
 					attributes: ['id', 'email', 'organization_id', 'roles', 'meta'],
 				}
 			)
 
+			const userIds = _.map(userCredentials, 'id')
+			const existingUsers = userCredentials.map((user) => {
+				return {
+					id: user.id,
+					email: user.email,
+					organization_id: user.organization_id,
+					roles: user.roles,
+					meta: user.meta,
+				}
+			})
+
 			//Get All The Users From Database based on UserIds From UserCredentials
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
 
 			//find default org id
-			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
+			const defaultOrg = await organizationQueries.findOne({
+				code: process.env.DEFAULT_ORGANISATION_CODE,
+				tenant_code: process.env.DEFAULT_TENANT_CODE,
+			})
 			const defaultOrgId = defaultOrg?.id || null
 
 			let input = []
@@ -473,6 +478,7 @@ module.exports = class UserInviteHelper {
 							password: hashedPassword,
 							meta: inviteeData.meta,
 							organization_id: inviteeData.organization_id,
+							tenant_code: tenant_code,
 						})
 						//create user credentials entry
 						const credentialData = {
