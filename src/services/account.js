@@ -1835,25 +1835,14 @@ module.exports = class AccountHelper {
 			 */
 			await userSessionsService.removeUserSessions(userSessionIds)
 
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
-			)
-
-			if (templateData) {
-				const plaintextEmailId = emailEncryption.decrypt(user.email)
-
-				// Push successful registration email to kafka
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: plaintextEmailId,
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: user.name,
-						}),
-					},
-				}
-				await kafkaCommunication.pushEmailToKafka(payload)
+			// Send email notification with OTP if email is provided
+			if (user.email) {
+				notificationUtils.sendEmailNotification({
+					emailId: emailEncryption.decrypt(user.email),
+					templateCode: process.env.CHANGE_PASSWORD_TEMPLATE_CODE,
+					variables: { name: user.name },
+					tenantCode: tenantCode,
+				})
 			}
 
 			const result = {}

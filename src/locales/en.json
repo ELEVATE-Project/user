@@ -29,7 +29,7 @@
 	"ENTITY_DELETED_SUCCESSFULLY": "Entity deleted successfully",
 	"ENTITY_FETCHED_SUCCESSFULLY": "Entity fetched successfully",
 	"OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the number to update your password.",
-	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your registered email ID. Please enter the otp to complete the registration process.",
+	"REGISTRATION_OTP_SENT_SUCCESSFULLY": "OTP has been sent to your provided email or phone number. Please enter the OTP to complete your registration.",
 	"PASSWORD_RESET_SUCCESSFULLY": "Password reset successfully.",
 	"OTP_INVALID": "The OTP you entered is wrong.",
 	"RESET_OTP_INVALID": "Please enter the correct OTP.",
