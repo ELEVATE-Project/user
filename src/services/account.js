@@ -353,7 +353,7 @@ module.exports = class AccountHelper {
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, userOrgId)
 
-			let res = utils.validateInput(bodyData, prunedEntities, userModel)
+			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'SESSION_CREATION_FAILED',
