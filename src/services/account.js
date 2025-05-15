@@ -179,7 +179,9 @@ module.exports = class AccountHelper {
 			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
-
+			if (!bodyData.username) {
+				bodyData.username = await generateUniqueUsername(bodyData.name)
+			}
 			// Check user in invitee list
 			let role,
 				roles = []
@@ -1097,30 +1099,27 @@ module.exports = class AccountHelper {
 			bodyData.phone = encryptedPhoneNumber
 		}
 
-		// Check if user already exists with email or phone
-		const userQuery = {
-			password: {
-				[Op.ne]: null,
+		// Check if user already exists with email or phone or username
+		const criteria = []
+		if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
+		if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
+		if (bodyData.username) criteria.push({ username: bodyData.username })
+
+		if (criteria.length === 0) {
+			return // Skip if no criteria
+		}
+
+		// Check if user already exists with email or phone or username
+		let user = await userQueries.findOne(
+			{
+				[Op.or]: criteria,
+				password: { [Op.ne]: null },
+				tenant_code: tenantDetail.code,
 			},
-			tenant_code: tenantDetail.code,
-		}
-
-		let user = null
-		// Check by email if provided
-		if (encryptedEmailId) {
-			user = await userQueries.findOne({
-				...userQuery,
-				email: encryptedEmailId,
-			})
-		}
-
-		// If not found by email, check by phone if provided
-		if (!user && encryptedPhoneNumber) {
-			user = await userQueries.findOne({
-				...userQuery,
-				phone: encryptedPhoneNumber,
-			})
-		}
+			{
+				attributes: ['id'],
+			}
+		)
 
 		// Return error if user already exists
 		if (user) {
