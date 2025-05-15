@@ -1,6 +1,6 @@
 'use strict'
 
-const { UserOrganization, sequelize } = require('@database/models/index')
+const { UserOrganization, Organization, sequelize } = require('@database/models/index')
 const { Op } = require('sequelize')
 
 exports.create = async (data) => {
@@ -28,6 +28,16 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findAll = async (filter = {}, options = {}) => {
 	try {
+		if (options.organizationAttributes.length > 0) {
+			options.include = [
+				{
+					model: Organization,
+					attributes: options.organizationAttributes,
+					as: 'organization',
+				},
+			]
+			delete options.organizationAttributes
+		}
 		return await UserOrganization.findAll({
 			where: filter,
 			...options,
