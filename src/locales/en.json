@@ -151,5 +151,6 @@
 	"INVALID_ORG_REGISTRATION_CODE": "The organization registration code you entered is invalid. Please check and try again.",
 	"IDENTIFIER_OR_PASSWORD_INVALID": "Invalid identifier or password. Please check your login credentials.",
 	"IDENTIFIER_REQUIRED": "An identifier (email or phone) is required to proceed.",
-	"INVALID_IDENTIFIER_FORMAT": "The identifier format is invalid. Please enter a valid email or phone number."
+	"INVALID_IDENTIFIER_FORMAT": "The identifier format is invalid. Please enter a valid email or phone number.",
+	"ORGANIZATION_NOT_ACCESSIBLE": "You cannot access this Organization details."
 }

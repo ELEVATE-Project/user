@@ -84,11 +84,24 @@ module.exports = class Form {
 				const form = await formsService.readAllFormsVersion()
 				return form
 			} else {
+				const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
+				let domain = ''
+
+				if (host) {
+					try {
+						const url = new URL(host)
+						domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
+					} catch (error) {
+						domain = host.split(':')[0] // Fallback: remove port if present
+					}
+				}
+
 				const form = await formsService.read(
 					req.params.id,
 					params,
-					req.decodedToken.organization_id,
-					req.decodedToken.tenant_code
+					req?.decodedToken?.organization_id || null,
+					req?.decodedToken?.tenant_code || req?.headers?.tenant_code || null,
+					domain
 				)
 				return form
 			}
