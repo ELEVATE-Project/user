@@ -313,7 +313,7 @@ module.exports = class UserHelper {
 					})
 				}
 
-				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
+				if (utils.validateRoleAccess(roles, [common.MENTOR_ROLE, common.MENTEE_ROLE])) {
 					await utils.redisSet(redisUserKey, processDbResponse)
 				}
 
