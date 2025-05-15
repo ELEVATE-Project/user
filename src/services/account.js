@@ -352,6 +352,16 @@ module.exports = class AccountHelper {
 			])
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, userOrgId)
+
+			let res = utils.validateInput(bodyData, prunedEntities, userModel)
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
 
 			const insertedUser = await userQueries.create(restructuredData)
