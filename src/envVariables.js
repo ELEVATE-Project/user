@@ -180,6 +180,16 @@ let enviromentVariables = {
 		message: 'Required List Of Org Event Listener Urls',
 		optional: false,
 	},
+	EVENT_USER_LISTENER_URLS: {
+		message: 'Required List Of user Event Listener Urls',
+		optional: false,
+	},
+	EVENT_ENABLE_USER_EVENTS: {
+		message: 'Required Enable user Events Flag',
+		optional: true,
+		default: 'true',
+	},
+
 	EVENT_ENABLE_ORG_EVENTS: {
 		message: 'Required Enable Org Events Flag',
 		optional: true,

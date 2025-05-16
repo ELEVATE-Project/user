@@ -7,6 +7,9 @@ const getEndpoints = (eventGroup) => {
 			if (process.env.EVENT_ORG_LISTENER_URLS)
 				return process.env.EVENT_ORG_LISTENER_URLS.split(',').filter((url) => url.trim())
 			return []
+		case 'userEvents':
+			if (process.env.EVENT_USER_LISTENER_URLS)
+				return process.env.EVENT_USER_LISTENER_URLS.split(',').filter((url) => url.trim())
 		default:
 			return []
 	}
@@ -16,6 +19,9 @@ const isEventEnabled = (eventGroup) => {
 	switch (eventGroup) {
 		case 'organizationEvents':
 			return process.env.EVENT_ENABLE_ORG_EVENTS !== 'false'
+
+		case 'userEvents':
+			return process.env.EVENT_ENABLE_USER_EVENTS !== 'false'
 		default:
 			return true
 	}

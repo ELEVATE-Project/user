@@ -24,6 +24,8 @@ const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
+const { eventBodyDTO } = require('@dtos/eventBody')
+const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -546,7 +548,18 @@ module.exports = class UserInviteHelper {
 								role_id: role,
 							})
 						})
+
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
+
+						const eventBody = eventBodyDTO({
+							entity: 'user',
+							eventType: 'create',
+							entityId: insertedUser?.id,
+							args: {
+								created_by: user.id,
+							},
+						})
+						eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
 
 						if (insertedUser?.id) {
 							const { name, email } = invitee
