@@ -23,6 +23,8 @@ const RollbackStack = require('@generics/RollbackStack')
 const organisationQueries = require('@database/queries/organization')
 const userRolesQueries = require('@database/queries/user-role')
 const userRolesService = require('@services/user-role')
+const organizationFetureService = require('@services/organization-feature')
+const organizationFeatureQueries = require('@database/queries/organization-feature')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
@@ -288,10 +290,55 @@ module.exports = class tenantHelper {
 
 				// ******* adding default Notification Template to Default Org CODE ENDS HERE *******
 
+				// ******* adding default org features under new tenant STARTS HERE *******
+
+				// fetch default org features
+
+				const fetchAllDefaultOrgFeatures = await organizationFeatureQueries.findAllOrganizationFeature({
+					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+					tenant_code: process.env.DEFAULT_TENANT_CODE,
+				})
+
+				if (fetchAllDefaultOrgFeatures.length > 0) {
+					const orgFeatureCreationPromise = fetchAllDefaultOrgFeatures.map((feature) => {
+						return organizationFetureService.create(
+							{
+								feature_code: feature.feature_code,
+								enabled: feature.enabled,
+								feature_name: feature.feature_name,
+								icon: feature.icon,
+								redirect_code: feature.redirect_code,
+								translation: feature.translation,
+								meta: feature.meta,
+							},
+							{
+								organization_id: defaultOrgId,
+								organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+								tenant_code: tenantCreateResponse.code,
+								id: userId,
+							}
+						)
+					})
+					const orgFeatureCreateResponse = await Promise.all(orgFeatureCreationPromise)
+
+					orgFeatureCreateResponse.map((feature) => {
+						rollbackStack.push(async () => {
+							await organizationFeatureQueries.hardDelete(
+								feature.result.feature_code,
+								feature.result.organization_code,
+								eature.result.tenant_code
+							)
+						})
+					})
+				}
+
+				// ******* adding default org features under new tenant ENDS HERE *******
+
 				// ******* adding default user roles to Default Org CODE BEGINS HERE *******
 				const fetchAllDefaultUserRoles = await userRolesQueries.findAll({
 					organization_id: process.env.DEFAULT_ORG_ID,
 				})
+
 				if (fetchAllDefaultUserRoles.length > 0) {
 					const roleCreationPromises = fetchAllDefaultUserRoles.map((userRole) => {
 						return userRolesService.create(
@@ -314,7 +361,6 @@ module.exports = class tenantHelper {
 						})
 					})
 				}
-
 				// ******* adding default user roles to Default Org CODE ENDS HERE *******
 			} catch (error) {
 				if (rollbackStack.size() > 0) await rollbackStack.execute()

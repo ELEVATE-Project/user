@@ -55,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
 	)
 	Feature.associate = (models) => {
 		Feature.hasMany(models.OrganizationFeature, {
-			foreignKey: 'feature_id',
+			foreignKey: 'feature_code',
 			as: 'organization_features',
 		})
 	}

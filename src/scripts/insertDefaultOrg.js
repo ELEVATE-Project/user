@@ -34,7 +34,7 @@ const checkQuery = `
 // Raw SQL query for insertion
 const insertQuery = `
     INSERT INTO organizations (name, code, description, status, updated_at, created_at , tenant_code)
-    VALUES (?, ?, ?, ?, NOW(), NOW(), '${process.env.DEFAULT_TENANT_ORG_CODE}')
+    VALUES (?, ?, ?, ?, NOW(), NOW(), '${process.env.DEFAULT_TENANT_CODE}')
     RETURNING id;
 `
 
