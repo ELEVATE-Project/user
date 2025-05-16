@@ -24,7 +24,7 @@ const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
-const { eventBodyDTO } = require('@dtos/eventBody')
+const { eventBodyDTO } = require('@dtos/userDTO')
 const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserInviteHelper {
@@ -303,7 +303,8 @@ module.exports = class UserInviteHelper {
 			for (const invitee of csvData) {
 				invitee.email = invitee.email.trim().toLowerCase()
 				invitee.roles = invitee.roles.map((role) => role.trim())
-				const encryptedEmail = emailEncryption.encrypt(invitee.email.toLowerCase())
+				const raw_email = invitee.email.toLowerCase()
+				const encryptedEmail = emailEncryption.encrypt(raw_email)
 				const hashedPassword = utils.hashPassword(invitee.password)
 
 				//find the invalid fields and generate error message
@@ -514,7 +515,10 @@ module.exports = class UserInviteHelper {
 						invitee.statusOrUserId = newInvitee.id
 						const insertedUser = await userQueries.create({
 							name: inviteeData.name,
-							email: inviteeData.email,
+							email: inviteeData?.email,
+							phone_code: inviteeData?.phone_code,
+							phone: inviteeData?.phone,
+							username: inviteeData?.username,
 							roles: newInvitee.roles,
 							password: hashedPassword,
 							meta: inviteeData.meta,
@@ -557,6 +561,19 @@ module.exports = class UserInviteHelper {
 							entityId: insertedUser?.id,
 							args: {
 								created_by: user.id,
+								name: inviteeData.name,
+								email: raw_email,
+								phone: inviteeData?.phone,
+								organization_id: inviteeData?.organization_id,
+								tenant_code: user?.tenant_code,
+								id: insertedUser?.id,
+								user_roles: newInvitee.roles.map((role) => ({
+									title:
+										Object.keys(roleTitlesToIds).find((key) =>
+											roleTitlesToIds[key].includes(role)
+										) || 'unknown',
+									id: role,
+								})),
 							},
 						})
 						eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
