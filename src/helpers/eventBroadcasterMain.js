@@ -33,6 +33,7 @@ const isEventEnabled = (eventGroup) => {
 
 exports.eventBroadcasterMain = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
+		console.log('API Event ')
 		if (!requestBody) throw new Error('Event Body Generation Failed')
 		if (!isEventEnabled(eventGroup)) throw new Error(`Events Not Enabled For The Group "${eventGroup}"`)
 		if (isInternal) headers.internal_access_token = process.env.INTERNAL_ACCESS_TOKEN
@@ -41,6 +42,7 @@ exports.eventBroadcasterMain = async (eventGroup, { requestBody, headers = {}, i
 			return requester.post(endPoint, '', headers, requestBody)
 		})
 		const results = await Promise.allSettled(requestPromises)
+		console.log('PROMISE ------->>> ', results)
 		results.forEach((result, index) => {
 			if (result.status === 'rejected')
 				console.error(`Error for endpoint ${endPoints[index].url}:`, result.reason)
