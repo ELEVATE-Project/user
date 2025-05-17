@@ -581,16 +581,16 @@ module.exports = class AccountHelper {
 				},
 			})
 
-			try {
-				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-			} catch (error) {
-				console.warn('User creation Event Kafka WARNING : ', error)
-			}
-			try {
-				eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-			} catch (error) {
-				console.warn('User creation Event API WARNING : ', error)
-			}
+			// try {
+			// 	eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+			// } catch (error) {
+			// 	console.warn('User creation Event Kafka WARNING : ', error)
+			// }
+			// try {
+			// 	eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+			// } catch (error) {
+			// 	console.warn('User creation Event API WARNING : ', error)
+			// }
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
