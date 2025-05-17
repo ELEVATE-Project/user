@@ -119,26 +119,26 @@ module.exports = class AccountHelper {
 				bodyData.phone_code = bodyData.phone_code // Store phone_code separately
 			}
 
-			// Check if user already exists with email or phone
-			let user = null
-			if (encryptedEmailId) {
-				user = await userQueries.findOne({
-					email: encryptedEmailId,
-					password: {
-						[Op.ne]: null,
-					},
-					tenant_code: tenantDetail.code,
-				})
+			const criteria = []
+			if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
+			if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
+			if (bodyData.username) criteria.push({ username: bodyData.username })
+
+			if (criteria.length === 0) {
+				return // Skip if no criteria
 			}
-			if (!user && encryptedPhoneNumber) {
-				user = await userQueries.findOne({
-					phone: encryptedPhoneNumber,
-					password: {
-						[Op.ne]: null,
-					},
+
+			// Check if user already exists with email or phone or username
+			let user = await userQueries.findOne(
+				{
+					[Op.or]: criteria,
+					password: { [Op.ne]: null },
 					tenant_code: tenantDetail.code,
-				})
-			}
+				},
+				{
+					attributes: ['id'],
+				}
+			)
 
 			if (user) {
 				return responses.failureResponse({
@@ -179,8 +179,9 @@ module.exports = class AccountHelper {
 			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
-			bodyData.username = await generateUniqueUsername(bodyData.name)
-
+			if (!bodyData.username) {
+				bodyData.username = await generateUniqueUsername(bodyData.name)
+			}
 			// Check user in invitee list
 			let role,
 				roles = []
@@ -352,6 +353,16 @@ module.exports = class AccountHelper {
 			])
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, userOrgId)
+
+			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
+			if (!res.success) {
+				return responses.failureResponse({
+					message: 'SESSION_CREATION_FAILED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+					result: res.errors,
+				})
+			}
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
 
 			const insertedUser = await userQueries.create(restructuredData)
@@ -1088,30 +1099,27 @@ module.exports = class AccountHelper {
 			bodyData.phone = encryptedPhoneNumber
 		}
 
-		// Check if user already exists with email or phone
-		const userQuery = {
-			password: {
-				[Op.ne]: null,
+		// Check if user already exists with email or phone or username
+		const criteria = []
+		if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
+		if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
+		if (bodyData.username) criteria.push({ username: bodyData.username })
+
+		if (criteria.length === 0) {
+			return // Skip if no criteria
+		}
+
+		// Check if user already exists with email or phone or username
+		let user = await userQueries.findOne(
+			{
+				[Op.or]: criteria,
+				password: { [Op.ne]: null },
+				tenant_code: tenantDetail.code,
 			},
-			tenant_code: tenantDetail.code,
-		}
-
-		let user = null
-		// Check by email if provided
-		if (encryptedEmailId) {
-			user = await userQueries.findOne({
-				...userQuery,
-				email: encryptedEmailId,
-			})
-		}
-
-		// If not found by email, check by phone if provided
-		if (!user && encryptedPhoneNumber) {
-			user = await userQueries.findOne({
-				...userQuery,
-				phone: encryptedPhoneNumber,
-			})
-		}
+			{
+				attributes: ['id'],
+			}
+		)
 
 		// Return error if user already exists
 		if (user) {
@@ -1835,25 +1843,14 @@ module.exports = class AccountHelper {
 			 */
 			await userSessionsService.removeUserSessions(userSessionIds)
 
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.CHANGE_PASSWORD_TEMPLATE_CODE
-			)
-
-			if (templateData) {
-				const plaintextEmailId = emailEncryption.decrypt(user.email)
-
-				// Push successful registration email to kafka
-				const payload = {
-					type: common.notificationEmailType,
-					email: {
-						to: plaintextEmailId,
-						subject: templateData.subject,
-						body: utilsHelper.composeEmailBody(templateData.body, {
-							name: user.name,
-						}),
-					},
-				}
-				await kafkaCommunication.pushEmailToKafka(payload)
+			// Send email notification with OTP if email is provided
+			if (user.email) {
+				notificationUtils.sendEmailNotification({
+					emailId: emailEncryption.decrypt(user.email),
+					templateCode: process.env.CHANGE_PASSWORD_TEMPLATE_CODE,
+					variables: { name: user.name },
+					tenantCode: tenantCode,
+				})
 			}
 
 			const result = {}
