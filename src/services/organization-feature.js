@@ -1,7 +1,7 @@
 const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
-
-module.exports = class NotificationTemplateHelper {
+const responses = require('@helpers/responses')
+module.exports = class organizationFeatureHelper {
 	/**
 	 * Create organization features.
 	 * @method
