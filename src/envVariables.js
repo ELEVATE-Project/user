@@ -384,6 +384,22 @@ let enviromentVariables = {
 		message: 'URL for notification service',
 		optional: process.env.NOTIFICATION_MODE === 'API' ? false : true,
 	},
+	EVENT_ENABLE_USER_EVENTS: {
+		message: 'Key to toggle user creation API event',
+		optional: false,
+	},
+	EVENT_USER_LISTENER_URLS: {
+		message: 'URL for User creation Event',
+		optional: process.env.EVENT_ENABLE_USER_EVENTS === 'true' ? false : true,
+	},
+	EVENT_ENABLE_KAFKA_PUSH: {
+		message: 'Key to toggle user creation kafka event',
+		optional: false,
+	},
+	EVENT_USER_KAFKA_TOPIC: {
+		message: 'Kafka topic for User creation Event',
+		optional: process.env.EVENT_ENABLE_KAFKA_PUSH === 'true' ? false : true,
+	},
 }
 let success = true
 

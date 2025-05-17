@@ -115,14 +115,6 @@ module.exports = class Tenant {
 
 	async userBulkUpload(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
-				throw responses.failureResponse({
-					message: 'USER_IS_NOT_A_ADMIN',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const tenant = await tenantService.userBulkUpload(
 				req.body.file_path,
 				req.decodedToken.id,

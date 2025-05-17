@@ -61,11 +61,13 @@ class UserDTO {
 				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
 			const allowedArgs = [
 				'name',
+				'username',
 				'email',
 				'phone',
 				'organization_id',
 				'tenant_code',
 				'id',
+				'meta',
 				'user_roles',
 				'created_at',
 				'created_by',

@@ -25,7 +25,8 @@ const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBodyDTO } = require('@dtos/userDTO')
-const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
+const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
+const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -230,13 +231,27 @@ module.exports = class UserInviteHelper {
 
 	static async createUserInvites(csvData, user, fileUploadId) {
 		try {
+			console.log(
+				'******************************** User bulk Upload STARTS Here ********************************'
+			)
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 			let menteeRoleId, mentorRoleId
+
+			//find default org id
+			const defaultOrg = await organizationQueries.findOne({
+				code: process.env.DEFAULT_ORGANISATION_CODE,
+				tenant_code: process.env.DEFAULT_TENANT_CODE,
+			})
+			const defaultOrgId = defaultOrg?.id || null
 
 			//get all the roles and map title and id
 			const roleList = await roleQueries.findAll({
 				user_type: common.ROLE_TYPE_NON_SYSTEM,
 				status: common.ACTIVE_STATUS,
+				organization_id: {
+					[Op.in]: [defaultOrgId, user.organization_id],
+				},
+				tenant_code: user.tenant_code,
 			})
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
@@ -254,12 +269,26 @@ module.exports = class UserInviteHelper {
 				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
 
+			//get all user names
+			const userNameArray = _.uniq(_.map(csvData, 'username'))
+				.filter((username) => _.isString(username) && username.trim() !== '')
+				.map((username) => username)
+
 			const userCredentials = await userQueries.findAll(
 				{ email: { [Op.in]: emailArray } },
 				{
 					attributes: ['id', 'email', 'roles', 'meta'],
 				}
 			)
+
+			const userPresentWithUsername = await userQueries.findAll(
+				{ username: { [Op.in]: userNameArray } },
+				{
+					attributes: ['username'],
+				}
+			)
+
+			const alreadyTakenUserNames = userPresentWithUsername.map((user) => user.username)
 
 			const existingUsers = userCredentials.map((user) => {
 				return {
@@ -273,13 +302,6 @@ module.exports = class UserInviteHelper {
 
 			//Get All The Users From Database based on UserIds From UserCredentials
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
-
-			//find default org id
-			const defaultOrg = await organizationQueries.findOne({
-				code: process.env.DEFAULT_ORGANISATION_CODE,
-				tenant_code: process.env.DEFAULT_TENANT_CODE,
-			})
-			const defaultOrgId = defaultOrg?.id || null
 
 			let input = []
 			let isErrorOccured = false
@@ -306,6 +328,7 @@ module.exports = class UserInviteHelper {
 				const raw_email = invitee.email.toLowerCase()
 				const encryptedEmail = emailEncryption.encrypt(raw_email)
 				const hashedPassword = utils.hashPassword(invitee.password)
+				invitee.name = invitee.name.trim()
 
 				//find the invalid fields and generate error message
 				let invalidFields = []
@@ -511,8 +534,29 @@ module.exports = class UserInviteHelper {
 					inviteeData.email = encryptedEmail
 					const newInvitee = await userInviteQueries.create(inviteeData)
 
+					// if the username is taken generate random username and inform user
+					let userNameMessage = ''
+					if (
+						alreadyTakenUserNames.includes(inviteeData?.username) ||
+						inviteeData?.username.toString() == ''
+					) {
+						inviteeData.username = await generateUniqueUsername(
+							inviteeData?.name.trim().replace(/\s+/g, '_')
+						)
+						userNameMessage = `Username ${
+							alreadyTakenUserNames.includes(inviteeData?.username)
+								? 'you provided was already taken, '
+								: inviteeData?.username
+								? 'field empty,'
+								: ''
+						} Hence system generated a unique username.`
+					}
+
 					if (newInvitee?.id) {
 						invitee.statusOrUserId = newInvitee.id
+						if (userNameMessage.toString() != '') {
+							invitee.statusOrUserId = `User Id :  ${invitee.statusOrUserId} and ${userNameMessage}`
+						}
 						const insertedUser = await userQueries.create({
 							name: inviteeData.name,
 							email: inviteeData?.email,
@@ -555,17 +599,28 @@ module.exports = class UserInviteHelper {
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
 
+						const metaData = Object.keys(inviteeData.meta).map((key) => {
+							let acc = {}
+							acc[key] = {
+								name: invitee[key],
+								id: inviteeData.meta[key],
+							}
+							return acc
+						})
+
 						const eventBody = eventBodyDTO({
 							entity: 'user',
 							eventType: 'create',
 							entityId: insertedUser?.id,
 							args: {
 								created_by: user.id,
-								name: inviteeData.name,
+								name: inviteeData?.name,
+								username: inviteeData?.username,
 								email: raw_email,
 								phone: inviteeData?.phone,
 								organization_id: inviteeData?.organization_id,
 								tenant_code: user?.tenant_code,
+								meta: metaData,
 								id: insertedUser?.id,
 								user_roles: newInvitee.roles.map((role) => ({
 									title:
@@ -576,7 +631,16 @@ module.exports = class UserInviteHelper {
 								})),
 							},
 						})
-						eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+						try {
+							eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+						} catch (error) {
+							console.warn('User creation Event Kafka WARNING : ', error)
+						}
+						try {
+							eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+						} catch (error) {
+							console.warn('User creation Event API WARNING : ', error)
+						}
 
 						if (insertedUser?.id) {
 							const { name, email } = invitee
@@ -597,10 +661,10 @@ module.exports = class UserInviteHelper {
 								org_name: user.org_name,
 							}
 
-							//send email invitation for new user
-							if (emailTemplate?.id) {
-								await this.sendInviteeEmail(emailTemplate, userData, null, { roles: roleToString })
-							}
+							// //send email invitation for new user
+							// if (emailTemplate?.id) {
+							// 	await this.sendInviteeEmail(emailTemplate, userData, null, { roles: roleToString })
+							// }
 						} else {
 							//delete invitation entry
 							isErrorOccured = true
@@ -615,6 +679,9 @@ module.exports = class UserInviteHelper {
 
 				//convert roles array to string
 				invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+				if (invitee.statusOrUserId == 'Success' && userNameMessage.toString() != '') {
+					invitee.statusOrUserId = `${invitee.statusOrUserId} and ${userNameMessage}`
+				}
 				input.push(invitee)
 			}
 
@@ -622,7 +689,7 @@ module.exports = class UserInviteHelper {
 			const csvContent = utils.generateCSVContent(input)
 			const outputFilePath = path.join(inviteeFileDir, outputFileName)
 			fs.writeFileSync(outputFilePath, csvContent)
-
+			console.log('******************************** User bulk Upload ENDS Here ********************************')
 			return {
 				success: true,
 				result: {

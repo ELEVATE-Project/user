@@ -15,6 +15,16 @@ const pushEmailToKafka = async (message) => {
 	}
 }
 
+const pushNewUsersToKafka = async (message) => {
+	try {
+		const payload = { topic: process.env.EVENT_USER_KAFKA_TOPIC, messages: [{ value: JSON.stringify(message) }] }
+		return await pushPayloadToKafka(payload)
+	} catch (error) {
+		console.log(error)
+		return error
+	}
+}
+
 const pushPayloadToKafka = async (payload) => {
 	try {
 		let response = await kafkaProducer.send(payload)
@@ -40,4 +50,5 @@ const clearInternalCache = async (key) => {
 module.exports = {
 	pushEmailToKafka,
 	clearInternalCache,
+	pushNewUsersToKafka,
 }
