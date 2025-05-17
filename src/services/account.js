@@ -1451,67 +1451,58 @@ module.exports = class AccountHelper {
 	 * @param {String} search - search field.
 	 * @returns {JSON} - List of users
 	 */
-	static async list(params) {
+	static async list(params, tenantCode) {
 		try {
-			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
+			if (params?.body?.userIds) {
 				const userIds = params.body.userIds
 
 				const userIdsNotFoundInRedis = []
 				const userDetailsFoundInRedis = []
-				for (let i = 0; i < userIds.length; i++) {
-					let userDetails =
-						(await utilsHelper.redisGet(common.redisUserPrefix + userIds[i].toString())) || false
 
-					if (!userDetails) {
-						userIdsNotFoundInRedis.push(userIds[i])
-					} else {
-						if (userDetails.image) {
-							userDetails['image_cloud_path'] = userDetails.image
-							userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+				// Fetch user details from Redis in parallel
+				await Promise.all(
+					userIds.map(async (userId) => {
+						const redisKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
+						let userDetails = await utilsHelper.redisGet(redisKey)
+
+						if (!userDetails) {
+							userIdsNotFoundInRedis.push(userId)
+						} else {
+							if (userDetails.image) {
+								userDetails.image_cloud_path = userDetails.image
+								userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+							}
+							userDetailsFoundInRedis.push(userDetails)
 						}
-						userDetailsFoundInRedis.push(userDetails)
-					}
-				}
-
-				let filterQuery = {
-					id: userIdsNotFoundInRedis,
-				}
-
-				let options = {
-					attributes: {
-						exclude: ['password', 'refresh_tokens'],
-					},
-				}
-
-				//returning deleted user if internal token is passing
-				if (params.headers.internal_access_token) {
-					options.paranoid = false
-					if (params.query.exclude_deleted_records)
-						options.paranoid = params.query.exclude_deleted_records === 'true'
-				}
-
-				let users = await userQueries.findAllUserWithOrganization(filterQuery, options)
-				let roles = await roleQueries.findAll(
-					{},
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
-					}
+					})
 				)
 
-				users.forEach(async (user) => {
-					if (user.roles && user.roles.length > 0) {
-						let roleData = roles.filter((role) => user.roles.includes(role.id))
-						user['user_roles'] = roleData
-						// await utilsHelper.redisSet(element._id.toString(), element)
+				let users = []
+				// Only query DB if needed
+				if (userIdsNotFoundInRedis.length > 0) {
+					const filterQuery = { id: userIdsNotFoundInRedis }
+
+					const options = {
+						attributes: { exclude: ['password', 'refresh_tokens'] },
+						// Add paranoid option based on internal access token and query param
+						paranoid: !(
+							params.headers.internal_access_token && params.query?.exclude_deleted_records === 'false'
+						),
 					}
-					user.email = emailEncryption.decrypt(user.email)
-					if (user.image) {
-						user['image_cloud_path'] = user.image
-						user.image = await utils.getDownloadableUrl(user.image)
-					}
-				})
+
+					users = await userQueries.findAllUserWithOrganization(filterQuery, options, tenantCode)
+
+					// Handle decryption and image URL for DB users
+					await Promise.all(
+						users.map(async (user) => {
+							user.email = emailEncryption.decrypt(user.email)
+							if (user.image) {
+								user.image_cloud_path = user.image
+								user.image = await utils.getDownloadableUrl(user.image)
+							}
+						})
+					)
+				}
 
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -1531,7 +1522,8 @@ module.exports = class AccountHelper {
 					params.query.organization_id ? params.query.organization_id : '',
 					params.pageNo,
 					params.pageSize,
-					params.searchText
+					params.searchText,
+					tenantCode
 				)
 				let foundKeys = {}
 				let result = []

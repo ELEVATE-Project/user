@@ -73,14 +73,15 @@ exports.update = async (values, filter) => {
  * Delete UserOrganizationRole records (soft delete with `paranoid: true`)
  * @param {Object} filter - Where condition for deletion
  */
-exports.remove = async (filter) => {
+exports.delete = async (filter, options = {}) => {
 	try {
 		const deletedCount = await UserOrganizationRole.destroy({
 			where: filter,
+			...options,
 		})
 		return deletedCount
 	} catch (error) {
 		console.error('Delete Error:', error)
-		return error
+		throw error
 	}
 }

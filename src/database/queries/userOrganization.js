@@ -65,18 +65,16 @@ exports.update = async (filter, updates) => {
 	}
 }
 
-exports.delete = async (filter) => {
-	const transaction = await sequelize.transaction()
+exports.delete = async (filter, options = {}) => {
 	try {
 		await UserOrganization.destroy({
 			where: filter,
-			transaction,
+			...options,
 		})
-		await transaction.commit()
+
 		return { success: true }
 	} catch (error) {
-		await transaction.rollback()
-		console.error(error)
-		return error
+		console.error('Delete Error:', error)
+		throw error
 	}
 }

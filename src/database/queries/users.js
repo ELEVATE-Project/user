@@ -74,72 +74,147 @@ exports.findAll = async (filter, options = {}) => {
 	}
 }
 
-exports.listUsers = async (roleId, organization_id, page, limit, search) => {
+exports.listUsers = async (roleId, organization_id, page, limit, search, tenant_code, raw = false) => {
 	try {
 		const offset = (page - 1) * limit
-		const whereClause = {}
 
+		// Build the search clause for user name
+		const userWhereClause = {}
 		if (search) {
-			whereClause.name = { [Op.iLike]: search + '%' }
+			userWhereClause.name = { [Op.iLike]: search + '%' }
 		}
 
-		if (roleId) {
-			whereClause.roles = { [Op.contains]: [roleId] }
-		}
+		// Include filters within the nested include
+		const userOrgWhereClause = {}
+		const userOrgRoleWhereClause = {}
 
 		if (organization_id) {
-			whereClause.organization_id = organization_id
+			userOrgWhereClause.organization_id = organization_id
+		}
+		if (roleId) {
+			userOrgRoleWhereClause.role_id = roleId
 		}
 
-		const filterQuery = {
-			where: whereClause,
+		// Final query using the updated schema
+		let { count, rows: users } = await database.User.findAndCountAll({
+			where: userWhereClause,
 			attributes: ['id', 'name', 'about', 'image'],
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			order: [['name', 'ASC']],
 			include: [
 				{
-					model: Organization,
-					required: false,
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
 					where: {
-						status: 'ACTIVE',
+						...userOrgWhereClause,
+						tenant_code,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code,
+							},
+							attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							where: {
+								...userOrgRoleWhereClause,
+								tenant_code,
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									where: {
+										tenant_code,
+									},
+									attributes: ['id', 'title', 'label'],
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
+			raw: false,
+			nested: false,
+		})
+
+		if (!raw) {
+			users = UserTransformDTO.transform(users)
 		}
-
-		const { count, rows: users } = await database.User.findAndCountAll(filterQuery)
-
 		return { count, data: users }
 	} catch (error) {
+		console.error('Error in listUsers:', error)
 		throw error
 	}
 }
 
-exports.findAllUserWithOrganization = async (filter, options = {}) => {
+exports.findAllUserWithOrganization = async (filter, options = {}, tenantCode, raw = false) => {
 	try {
-		return await database.User.findAll({
+		let users = await database.User.findAll({
 			where: filter,
 			...options,
 			include: [
 				{
-					model: Organization,
-					required: false,
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
 					where: {
-						status: 'ACTIVE',
+						tenant_code: tenantCode,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code: tenantCode,
+							},
+							attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							where: {
+								tenant_code: tenantCode,
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									where: {
+										tenant_code: tenantCode,
+									},
+									attributes: ['id', 'title', 'label'],
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
+			raw: false,
+			nested: false,
 		})
+
+		if (!raw) {
+			users = UserTransformDTO.transform(users)
+		}
+		return users
 	} catch (error) {
+		console.error('Error in findAllUserWithOrganization:', error)
 		throw error
 	}
 }

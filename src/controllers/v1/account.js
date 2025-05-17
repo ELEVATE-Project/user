@@ -211,7 +211,7 @@ module.exports = class Account {
 	 */
 	async list(req) {
 		try {
-			const result = await accountService.list(req)
+			const result = await accountService.list(req, req.decodedToken.tenant_code)
 			return result
 		} catch (error) {
 			return error
