@@ -692,6 +692,7 @@ module.exports = class UserInviteHelper {
 							console.warn('User creation Event Kafka WARNING : ', error)
 						}
 						try {
+							console.info('eventBody --------->>', eventBody)
 							eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
 						} catch (error) {
 							console.warn('User creation Event API WARNING : ', error)
