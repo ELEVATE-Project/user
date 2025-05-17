@@ -175,19 +175,27 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 
 			switch (dataType) {
 				case 'ARRAY[STRING]':
-					if (Array.isArray(fieldValue)) {
+					if (!Array.isArray(fieldValue)) {
+						addError(field.value, fieldValue, dataType, 'Must be an array of strings')
+					} else {
+						if (fieldValue.length === 0 && !field.allowEmptyArray) {
+							addError(field.value, fieldValue, dataType, 'Array cannot be empty')
+						}
+						const regex = field.regex ? new RegExp(field.regex) : null
 						fieldValue.forEach((element) => {
 							if (typeof element !== 'string') {
 								addError(field.value, element, dataType, 'It should be a string')
+							} else if (element === '' && !field.allowEmptyString) {
+								addError(field.value, element, dataType, 'Empty strings are not allowed')
 							} else if (field.allow_custom_entities) {
-								if (field.regex && !new RegExp(field.regex).test(element)) {
+								if (regex && !regex.test(element)) {
 									addError(
 										field.value,
 										element,
 										dataType,
 										`Does not match the required pattern: ${field.regex}`
 									)
-								} else if (!field.regex && /[^A-Za-z0-9\s_]/.test(element)) {
+								} else if (!regex && /[^A-Za-z0-9\s_]/.test(element)) {
 									addError(
 										field.value,
 										element,
@@ -197,16 +205,17 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 								}
 							}
 						})
-					} else {
-						addError(field.value, field.value, dataType, '')
 					}
 					break
 
 				case 'STRING':
 					if (typeof fieldValue !== 'string') {
 						addError(field.value, fieldValue, dataType, 'It should be a string')
+					} else if (fieldValue === '' && !field.allowEmptyString) {
+						addError(field.value, fieldValue, dataType, 'Empty strings are not allowed')
 					} else if (field.allow_custom_entities) {
-						if (field.regex && !new RegExp(field.regex).test(fieldValue)) {
+						const regex = field.regex ? new RegExp(field.regex) : null
+						if (regex && !regex.test(fieldValue)) {
 							addError(
 								field.value,
 								fieldValue,
