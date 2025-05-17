@@ -180,16 +180,6 @@ let enviromentVariables = {
 		message: 'Required List Of Org Event Listener Urls',
 		optional: false,
 	},
-	EVENT_USER_LISTENER_URLS: {
-		message: 'Required List Of user Event Listener Urls',
-		optional: false,
-	},
-	EVENT_ENABLE_USER_EVENTS: {
-		message: 'Required Enable user Events Flag',
-		optional: true,
-		default: 'true',
-	},
-
 	EVENT_ENABLE_ORG_EVENTS: {
 		message: 'Required Enable Org Events Flag',
 		optional: true,
@@ -386,19 +376,29 @@ let enviromentVariables = {
 	},
 	EVENT_ENABLE_USER_EVENTS: {
 		message: 'Key to toggle user creation API event',
-		optional: false,
+		optional: true,
 	},
-	EVENT_USER_LISTENER_URLS: {
+	EVENT_USER_LISTENER_API: {
 		message: 'URL for User creation Event',
-		optional: process.env.EVENT_ENABLE_USER_EVENTS === 'true' ? false : true,
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_USER_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
 	},
 	EVENT_ENABLE_KAFKA_PUSH: {
 		message: 'Key to toggle user creation kafka event',
-		optional: false,
+		optional: true,
 	},
 	EVENT_USER_KAFKA_TOPIC: {
 		message: 'Kafka topic for User creation Event',
-		optional: process.env.EVENT_ENABLE_KAFKA_PUSH === 'true' ? false : true,
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_KAFKA_PUSH',
+			operator: 'EQUALS',
+			value: 'true',
+		},
 	},
 }
 let success = true
@@ -410,6 +410,7 @@ module.exports = function () {
 		}
 
 		let keyCheckPass = true
+		let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS']
 
 		if (
 			enviromentVariables[eachEnvironmentVariable].optional === true &&

@@ -621,6 +621,8 @@ module.exports = class UserInviteHelper {
 								organization_id: inviteeData?.organization_id,
 								tenant_code: user?.tenant_code,
 								meta: metaData,
+								status: insertedUser.status,
+								deleted: false,
 								id: insertedUser?.id,
 								user_roles: newInvitee.roles.map((role) => ({
 									title:

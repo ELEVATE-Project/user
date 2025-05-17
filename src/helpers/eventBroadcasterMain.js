@@ -9,8 +9,8 @@ const getEndpoints = (eventGroup) => {
 				return process.env.EVENT_ORG_LISTENER_URLS.split(',').filter((url) => url.trim())
 			return []
 		case 'userEvents':
-			if (process.env.EVENT_USER_LISTENER_URLS)
-				return process.env.EVENT_USER_LISTENER_URLS.split(',').filter((url) => url.trim())
+			if (process.env.EVENT_USER_LISTENER_API)
+				return process.env.EVENT_USER_LISTENER_API.split(',').filter((url) => url.trim())
 		default:
 			return []
 	}
@@ -55,7 +55,7 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 		if (!isEventEnabled(`${eventGroup}-kafka`))
 			throw new Error(`Kafka Events Not Enabled For The Group "${eventGroup}"`)
 
-		kafkaCommunication.pushNewUsersToKafka(requestBody)
+		kafkaCommunication.pushUserEventsToKafka(requestBody)
 	} catch (err) {
 		console.log(err)
 	}

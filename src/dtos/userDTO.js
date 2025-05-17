@@ -66,6 +66,8 @@ class UserDTO {
 				'phone',
 				'organization_id',
 				'tenant_code',
+				'status',
+				'deleted',
 				'id',
 				'meta',
 				'user_roles',
