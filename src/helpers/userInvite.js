@@ -172,7 +172,42 @@ module.exports = class UserInviteHelper {
 				model_names: { [Op.contains]: [modelName] },
 			})
 			const prunedEntities = utils.removeDefaultOrgEntityTypes(validationData, userData.organization_id)
+			const externalEntityTypes = prunedEntities
+				.filter((entity) => entity.external_entity_type === true)
+				.map((entity) => entity.value)
+			// Function to get unique values for externalEntityTypes keys
+			let service = ''
+			let endPoint = ''
+			const getUniqueEntityValues = (data, entityTypes) => {
+				const uniqueValues = new Set()
 
+				data.forEach((item) => {
+					entityTypes.forEach((key) => {
+						if (item[key]) {
+							const findEntityType = prunedEntities.find((prunedEntity) => prunedEntity.value == key)
+							service = findEntityType.meta.service
+							endPoint = findEntityType.meta.endPoint
+							if (findEntityType.data_type === 'ARRAY') {
+								// Split comma-separated values and add each as a unique value
+								item[key].split(',').forEach((subrole) => uniqueValues.add(subrole.trim()))
+							} else {
+								// Add single value
+								uniqueValues.add(item[key])
+							}
+						}
+					})
+				})
+
+				return Array.from(uniqueValues)
+			}
+			// Get unique values
+			const uniqueEntityValues = getUniqueEntityValues(csvToJsonData, externalEntityTypes)
+			const externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
+				uniqueEntityValues,
+				service,
+				endPoint,
+				userData.tenant_code
+			)
 			// Check if 'roles' column exists
 			const header = Object.keys(csvToJsonData[0])
 			const isRoleExist = header.some((column) => column.toLowerCase() === 'roles')
@@ -193,18 +228,36 @@ module.exports = class UserInviteHelper {
 					}
 
 					// Extract and prepare meta fields
-					const metaFields = {
-						block: row.block?.trim() || null,
-						state: row.state?.trim() || null,
-						school: row.school?.trim() || null,
-						cluster: row.cluster?.trim() || null,
-						district: row.district?.trim() || null,
-						professional_roles: row.professional_roles?.trim() || null,
-						professional_subroles: row.professional_subroles?.trim() || null,
+					row.meta = {
+						block: row?.block
+							? externalEntityNameIdMap[row.block?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						state: row?.state
+							? externalEntityNameIdMap[row.state?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						school: row?.school
+							? externalEntityNameIdMap[row.school?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						cluster: row?.cluster
+							? externalEntityNameIdMap[row.cluster?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						district: row?.district
+							? externalEntityNameIdMap[row.district?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						professional_role: row?.professional_role
+							? externalEntityNameIdMap[row.professional_role?.replaceAll(/\s+/g, '').toLowerCase()]
+									._id || ''
+							: '',
+						professional_subroles: row?.professional_subroles
+							? row.professional_subroles
+									.split(',')
+									.map(
+										(prof_subRole) =>
+											externalEntityNameIdMap[prof_subRole?.replaceAll(/\s+/g, '').toLowerCase()]
+												._id
+									) || []
+							: [],
 					}
-
-					// Process meta fields
-					row.meta = await utils.processMetaWithNames(metaFields, prunedEntities, userData.tenant_code)
 
 					// Handle password field if exists
 					if (row.password) {

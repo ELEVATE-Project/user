@@ -366,7 +366,7 @@ module.exports = class AccountHelper {
 				})
 			}
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
-			const metaData = restructuredData?.meta || {}
+			let metaData = restructuredData?.meta || {}
 			const insertedUser = await userQueries.create(restructuredData)
 
 			const userOrg = await userOrganizationQueries.create({
@@ -552,11 +552,12 @@ module.exports = class AccountHelper {
 				})
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
-
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
-
+			metaData = Object.fromEntries(
+				Object.keys(metaData).map((metaKey) => [metaKey, result?.user?.[metaKey] ?? {}])
+			)
 			const eventBody = UserTransformDTO.eventBodyDTO({
 				entity: 'user',
 				eventType: 'create',

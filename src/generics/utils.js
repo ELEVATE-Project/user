@@ -737,6 +737,49 @@ async function processMetaWithNames(meta, entityType, tenantCode) {
 	return responseBody
 }
 
+async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenantCode) {
+	let responseBody = {}
+	const externalBaseUrl =
+		process.env?.[`${service.toUpperCase()}_BASE_URL`] ||
+		process.env?.[`${service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+	const url = constructUrl(externalBaseUrl, endPoint)
+	const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId', 'entityType']
+	let data = []
+
+	await axios({
+		method: 'post',
+		url,
+		headers: {
+			'content-type': 'application/json',
+			'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+		},
+		data: {
+			query: {
+				'metaInformation.name': {
+					$in: entities, // Dynamically pass the array here
+				},
+				tenantId: tenantCode,
+			},
+			projection,
+		},
+	})
+		.then((response) => {
+			data = response?.data?.result || []
+		})
+		.catch((error) => {
+			console.error(error)
+		})
+
+	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
+		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
+		if (key) {
+			acc[key] = { _id, entityType, externalId: metaInformation.externalId }
+		}
+		return acc
+	}, {})
+	return responseBody
+}
+
 function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
@@ -936,4 +979,5 @@ module.exports = {
 	generateSecureOTP,
 	constructUrl,
 	processMetaWithNames,
+	fetchAndMapAllExternalEntities,
 }
