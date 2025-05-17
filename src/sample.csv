@@ -1,4 +1,4 @@
-name,email,roles
-Sarah,sarah@tunerlabs.com,mentee
-John,john@tunerlabs.com,mentor
-Pradeep,pradeep@tunerlabs.com,"mentor,session_manager"
+"name","email","phone_code","phone","username","password","roles","state","district","block","cluster","school","professional_roles","professional_subroles"
+"Sarah","sarah@tunerlabs.com","+91",7012345677,"sarah_tunerlabs","Password@123","mentee","Karnataka","Bengaluru","South4","South4","Delhi Public School, Bangalore East","HT&Officials","Physical Education Teacher ,Special Educators"
+"John","john@tunerlabs.com","+91",7012345678,"john_honai","Password@123","mentor","Karnataka","Bengaluru","South4","South4","Delhi Public School, Bangalore East","HT&Officials","Physical Education Teacher ,Special Educators"
+"Pradeep","pradeep@tunerlabs.com","+91",7012345679,"pradeep_tl","Password@123","mentor,session_manager","Karnataka","Bengaluru","South4","South4","Delhi Public School, Bangalore East","HT&Officials","Physical Education Teacher ,Special Educators"
