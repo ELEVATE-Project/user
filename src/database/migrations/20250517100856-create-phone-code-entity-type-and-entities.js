@@ -246,7 +246,7 @@ module.exports = {
 						{ value: '+263', label: 'Zimbabwe' },
 					],
 					has_entities: true,
-					model: 'user',
+					model: 'User',
 				},
 			]
 
@@ -255,7 +255,7 @@ module.exports = {
 				return {
 					value: entityType,
 					label: convertToWords(entityType),
-					data_type: 'ARRAY[STRING]',
+					data_type: 'STRING',
 					status: 'ACTIVE',
 					updated_at: new Date(),
 					created_at: new Date(),

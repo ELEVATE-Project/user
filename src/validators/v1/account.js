@@ -64,10 +64,8 @@ module.exports = {
 
 		// Validate phone_code (required if phone is provided)
 		req.checkBody('phone_code')
-			.optional()
+			.optional({ checkFalsy: true })
 			.trim()
-			.matches(/^\+\d{1,5}$/)
-			.withMessage('phone_code must be a valid country code (e.g., +1, +91)')
 			.isLength({ min: 2, max: 4 }) // Length between 2 and 4 characters
 			.withMessage('Phone code must be between 2 and 4 characters')
 
