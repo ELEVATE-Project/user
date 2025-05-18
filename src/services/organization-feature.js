@@ -21,7 +21,7 @@ module.exports = class organizationFeatureHelper {
 					tenant_code: tokenInformation.tenant_code,
 					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
 				})
-				console.log('defaultFeature', defaultFeature)
+
 				// check if the default feature is available in tenant's default organization
 				if (!defaultFeature) {
 					return responses.failureResponse({
