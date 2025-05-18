@@ -612,9 +612,9 @@ module.exports = class UserInviteHelper {
 						}
 						const insertedUser = await userQueries.create({
 							name: inviteeData.name,
-							email: inviteeData?.email,
-							phone_code: inviteeData?.phone_code,
-							phone: inviteeData?.phone,
+							email: inviteeData?.email || null,
+							phone_code: inviteeData?.phone_code || null,
+							phone: inviteeData?.phone || null,
 							username: inviteeData?.username,
 							roles: newInvitee.roles,
 							password: hashedPassword,
