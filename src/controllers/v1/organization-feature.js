@@ -30,7 +30,6 @@ module.exports = class OrganizationFeature {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			console.log('req.headers', req.headers)
 			// if user is admin check for organization code & tenant code form header
 			if (req.decodedToken.roles.includes(common.ADMIN_ROLE)) {
 				if (!req.header('organizationcode') || !req.header('tenantcode')) {
