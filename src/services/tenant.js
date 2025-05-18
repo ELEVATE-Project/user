@@ -745,7 +745,7 @@ module.exports = class tenantHelper {
 				attributes: ['id', 'tenant_code'],
 			})
 
-			if (!orgDetails.id) {
+			if (!orgDetails?.id) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -753,7 +753,7 @@ module.exports = class tenantHelper {
 				})
 			}
 
-			if (orgDetails.tenant_code != tenantCode) {
+			if (orgDetails?.tenant_code != tenantCode) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
