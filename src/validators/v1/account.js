@@ -64,10 +64,10 @@ module.exports = {
 
 		// Validate phone_code (required if phone is provided)
 		req.checkBody('phone_code')
-			.optional()
+			.optional({ checkFalsy: true })
 			.trim()
-			.matches(/^\+[1-9][0-9]{0,3}$/)
-			.withMessage('phone_code must be a valid country code (e.g., +1, +91)')
+			.isLength({ min: 2, max: 4 }) // Length between 2 and 4 characters
+			.withMessage('Phone code must be between 2 and 4 characters')
 
 		// Validate password
 		req.checkBody('password')
