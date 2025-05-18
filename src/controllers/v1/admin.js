@@ -105,12 +105,13 @@ module.exports = class Admin {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			const orgAdminCreation = await adminService.addOrgAdmin(
 				req.body?.user_id,
 				req.body.organization_id,
 				req.decodedToken.id,
-				req.body?.email
+				req.body?.identifier,
+				req.headers?.['tenant-id'],
+				req.body?.phone_code
 			)
 			return orgAdminCreation
 		} catch (error) {
