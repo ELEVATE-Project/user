@@ -606,6 +606,7 @@ module.exports = class UserInviteHelper {
 					}
 
 					if (newInvitee?.id) {
+						console.log('CREATEDDD------>>>')
 						invitee.statusOrUserId = newInvitee.id
 						if (userNameMessage.toString() != '') {
 							invitee.statusOrUserId = `User Id :  ${invitee.statusOrUserId} and ${userNameMessage}`
@@ -640,6 +641,7 @@ module.exports = class UserInviteHelper {
 						}
 
 						const userOrgResponse = await userOrganizationQueries.create(userOrgBody)
+						console.log('CREATEDDD------>>>')
 
 						const userOrganizationRolePromise = newInvitee.roles.map((role) => {
 							return userOrganizationRoleQueries.create({
@@ -652,14 +654,16 @@ module.exports = class UserInviteHelper {
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
 
-						const metaData = Object.keys(inviteeData.meta).map((key) => {
-							let acc = {}
-							acc[key] = {
-								name: invitee[key],
-								id: inviteeData.meta[key],
+						const metaData = Object.keys(inviteeData.meta).reduce((acc, key) => {
+							if (invitee[key] !== undefined && inviteeData.meta[key] !== undefined) {
+								acc[key] = {
+									name: invitee[key],
+									id: inviteeData.meta[key],
+								}
 							}
 							return acc
-						})
+						}, {})
+						console.log('---------->>>', metaData)
 
 						const eventBody = eventBodyDTO({
 							entity: 'user',
@@ -673,6 +677,7 @@ module.exports = class UserInviteHelper {
 								phone: inviteeData?.phone,
 								organization_id: inviteeData?.organization_id,
 								tenant_code: user?.tenant_code,
+								designation: [metaData?.professional_role?.name] || ['other'],
 								meta: metaData,
 								status: insertedUser.status,
 								deleted: false,
