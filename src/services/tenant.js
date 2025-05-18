@@ -23,6 +23,9 @@ const RollbackStack = require('@generics/RollbackStack')
 const organisationQueries = require('@database/queries/organization')
 const userRolesQueries = require('@database/queries/user-role')
 const userRolesService = require('@services/user-role')
+const orgAdminService = require('@services/org-admin')
+const organizationFetureService = require('@services/organization-feature')
+const organizationFeatureQueries = require('@database/queries/organization-feature')
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
@@ -288,10 +291,55 @@ module.exports = class tenantHelper {
 
 				// ******* adding default Notification Template to Default Org CODE ENDS HERE *******
 
+				// ******* adding default org features under new tenant STARTS HERE *******
+
+				// fetch default org features
+
+				const fetchAllDefaultOrgFeatures = await organizationFeatureQueries.findAllOrganizationFeature({
+					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+					tenant_code: process.env.DEFAULT_TENANT_CODE,
+				})
+
+				if (fetchAllDefaultOrgFeatures.length > 0) {
+					const orgFeatureCreationPromise = fetchAllDefaultOrgFeatures.map((feature) => {
+						return organizationFetureService.create(
+							{
+								feature_code: feature.feature_code,
+								enabled: feature.enabled,
+								feature_name: feature.feature_name,
+								icon: feature.icon,
+								redirect_code: feature.redirect_code,
+								translation: feature.translation,
+								meta: feature.meta,
+							},
+							{
+								organization_id: defaultOrgId,
+								organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+								tenant_code: tenantCreateResponse.code,
+								id: userId,
+							}
+						)
+					})
+					const orgFeatureCreateResponse = await Promise.all(orgFeatureCreationPromise)
+
+					orgFeatureCreateResponse.map((feature) => {
+						rollbackStack.push(async () => {
+							await organizationFeatureQueries.hardDelete(
+								feature.result.feature_code,
+								feature.result.organization_code,
+								eature.result.tenant_code
+							)
+						})
+					})
+				}
+
+				// ******* adding default org features under new tenant ENDS HERE *******
+
 				// ******* adding default user roles to Default Org CODE BEGINS HERE *******
 				const fetchAllDefaultUserRoles = await userRolesQueries.findAll({
 					organization_id: process.env.DEFAULT_ORG_ID,
 				})
+
 				if (fetchAllDefaultUserRoles.length > 0) {
 					const roleCreationPromises = fetchAllDefaultUserRoles.map((userRole) => {
 						return userRolesService.create(
@@ -314,7 +362,6 @@ module.exports = class tenantHelper {
 						})
 					})
 				}
-
 				// ******* adding default user roles to Default Org CODE ENDS HERE *******
 			} catch (error) {
 				if (rollbackStack.size() > 0) await rollbackStack.execute()
@@ -678,6 +725,51 @@ module.exports = class tenantHelper {
 				message: 'TENANT_LIST_FETCHED',
 				result: result,
 			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+
+	static async userBulkUpload(filePath, userId, orgCode, tenantCode) {
+		try {
+			let orgFilter = {
+				tenant_code: tenantCode,
+			}
+			if (isNaN(orgCode)) {
+				orgFilter.code = orgCode
+			} else {
+				orgFilter.id = orgCode
+			}
+			const orgDetails = await organisationQueries.findOne(orgFilter, {
+				attributes: ['id', 'tenant_code'],
+			})
+
+			if (!orgDetails.id) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
+
+			if (orgDetails.tenant_code != tenantCode) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'INVALID_ORG_TENANT_MAPPING',
+				})
+			}
+
+			const tokenInformation = {
+				id: userId,
+				organization_id: orgDetails.id,
+				tenant_code: tenantCode,
+			}
+
+			const bulkUpload = await orgAdminService.bulkCreate(filePath, tokenInformation)
+
+			return bulkUpload
 		} catch (error) {
 			console.log(error)
 			throw error // Re-throw other errors

@@ -14,8 +14,11 @@ const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/user-role')
 const organizationQueries = require('@database/queries/organization')
+const userOrganization = require('@database/queries/userOrganization')
+const userOrganizationRole = require('@database/queries/userOrganizationRole')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
+const Sequelize = require('@database/models/index').sequelize
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
 const emailEncryption = require('@utils/emailEncryption')
@@ -31,9 +34,15 @@ module.exports = class AdminHelper {
 	 * @returns {JSON} - delete user response
 	 */
 	static async deleteUser(userId) {
+		let transaction
 		try {
-			let user = await userQueries.findByPk(userId)
+			// Start a transaction
+			transaction = await Sequelize.transaction()
+
+			// Find user
+			let user = await userQueries.findByPk(userId, { transaction })
 			if (!user) {
+				await transaction.rollback()
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -41,18 +50,23 @@ module.exports = class AdminHelper {
 				})
 			}
 
+			// Generate update parameters
 			let updateParams = _generateUpdateParams(userId)
 			const removeKeys = _.omit(user, _removeUserKeys())
 			const update = _.merge(removeKeys, updateParams)
-			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, update)
+
+			// Update user
+			await userQueries.updateUser({ id: user.id }, update, { transaction })
+
+			// Delete related records
+			await userOrganization.delete({ user_id: user.id, tenant_code: user.tenant_code }, { transaction })
+			await userOrganizationRole.delete({ user_id: user.id, tenant_code: user.tenant_code }, { transaction })
+
+			// Delete Redis cache
 			delete update.id
-			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
+			await utils.redisDel(`${common.redisUserPrefix}${user.tenant_code}_${userId.toString()}`)
 
-			await utils.redisDel(common.redisUserPrefix + userId.toString())
-
-			/**
-			 * Using userId get his active sessions
-			 */
+			// Remove user sessions
 			const userSessionData = await userSessionsService.findUserSession(
 				{
 					user_id: userId,
@@ -60,19 +74,28 @@ module.exports = class AdminHelper {
 				},
 				{
 					attributes: ['id'],
-				}
+				},
+				{ transaction }
 			)
 			const userSessionIds = userSessionData.map(({ id }) => id)
 			await userSessionsService.removeUserSessions(userSessionIds)
 
-			//code for remove user folder from cloud
+			// Commit the transaction
+			await transaction.commit()
+
+			// Code for removing user folder from cloud (non-transactional, as it’s external)
+			// await removeUserFolderFromCloud(userId);
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_DELETED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
+			// Rollback transaction if it exists
+			if (transaction) {
+				await transaction.rollback()
+			}
+			console.error('Delete User Error:', error)
 			throw error
 		}
 	}
