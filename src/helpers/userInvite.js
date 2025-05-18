@@ -689,13 +689,13 @@ module.exports = class UserInviteHelper {
 						})
 						try {
 							eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-							console.log('Kafka Event executed')
+							console.log('KAFKA EVENT EXECUTED')
 						} catch (error) {
 							console.warn('User creation Event Kafka WARNING : ', error)
 						}
 						try {
 							eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-							console.log('API Event executed')
+							console.log('API EVENT EXECUTED')
 						} catch (error) {
 							console.warn('User creation Event API WARNING : ', error)
 						}
