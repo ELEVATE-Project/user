@@ -231,6 +231,11 @@ const notification = {
 	update: ['id', 'created_by', 'updated_by'],
 }
 
+const organizationFeatures = {
+	create: ['created_by', 'updated_by'],
+	update: ['created_by', 'updated_by'],
+}
+
 const orgAdmin = {
 	bulkUserCreate: [
 		'id',
@@ -368,4 +373,5 @@ module.exports = {
 	userRole,
 	user,
 	tenant,
+	organizationFeatures,
 }

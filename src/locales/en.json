@@ -154,5 +154,9 @@
 	"INVALID_IDENTIFIER_FORMAT": "The identifier format is invalid. Please enter a valid email or phone number.",
 	"ORGANIZATION_NOT_ACCESSIBLE": "You cannot access this Organization details.",
 	"USERNAME_TAKEN": "Username is already taken",
-	"USERNAME_AVAILABLE": "Username is available"
+	"USERNAME_AVAILABLE": "Username is available",
+	"ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND": "Organization code or tenant code not found",
+	"DEFAULT_FEATURE_NOT_FOUND": "Given feature is missing from your tenant's default org features",
+	"ORGANIZATION_FEATURE_EXISTS": "Organization feature already exists",
+	"ORG_FEATURE_CREATED_SUCCESSFULLY": "Organization feature created successfully"
 }

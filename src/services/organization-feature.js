@@ -8,16 +8,34 @@ module.exports = class organizationFeatureHelper {
 	 * @name create
 	 * @param {Object} bodyData
 	 * @param {Object} tokenInformation
+	 * @param {boolean} validateAvailabilityOfdefaultFeature
 	 * @returns {JSON} - Organization feature creation data.
 	 */
 
-	static async create(bodyData, tokenInformation) {
+	static async create(bodyData, tokenInformation, validateAvailabilityOfdefaultFeature = false) {
 		try {
+			// validate availability of default feature in tenants default organization
+			if (validateAvailabilityOfdefaultFeature) {
+				const defaultFeature = await organizationFeatureQueries.findOne({
+					feature_code: bodyData.feature_code,
+					tenant_code: tokenInformation.tenant_code,
+					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+				})
+				console.log('defaultFeature', defaultFeature)
+				// check if the default feature is available in tenant's default organization
+				if (!defaultFeature) {
+					return responses.failureResponse({
+						message: 'DEFAULT_FEATURE_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+
 			const organizationFeature = await organizationFeatureQueries.findOne({
 				feature_code: bodyData.feature_code,
 				organization_code: tokenInformation.organization_code,
 				tenant_code: tokenInformation.tenant_code,
-				enabled: true,
 			})
 			// check if the feature already exists
 			if (organizationFeature) {
@@ -27,7 +45,7 @@ module.exports = class organizationFeatureHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			// Updating body data with organization code and tenant code
 			bodyData['organization_code'] = tokenInformation.organization_code
 			bodyData['tenant_code'] = tokenInformation.tenant_code
 			bodyData['created_by'] = tokenInformation.id
