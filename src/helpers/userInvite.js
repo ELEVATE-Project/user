@@ -606,7 +606,6 @@ module.exports = class UserInviteHelper {
 					}
 
 					if (newInvitee?.id) {
-						console.log('CREATEDDD------>>>')
 						invitee.statusOrUserId = newInvitee.id
 						if (userNameMessage.toString() != '') {
 							invitee.statusOrUserId = `User Id :  ${invitee.statusOrUserId} and ${userNameMessage}`
@@ -641,7 +640,6 @@ module.exports = class UserInviteHelper {
 						}
 
 						const userOrgResponse = await userOrganizationQueries.create(userOrgBody)
-						console.log('CREATEDDD------>>>')
 
 						const userOrganizationRolePromise = newInvitee.roles.map((role) => {
 							return userOrganizationRoleQueries.create({
@@ -663,7 +661,6 @@ module.exports = class UserInviteHelper {
 							}
 							return acc
 						}, {})
-						console.log('---------->>>', metaData)
 
 						const eventBody = eventBodyDTO({
 							entity: 'user',
@@ -677,7 +674,6 @@ module.exports = class UserInviteHelper {
 								phone: inviteeData?.phone,
 								organization_id: inviteeData?.organization_id,
 								tenant_code: user?.tenant_code,
-								designation: [metaData?.professional_role?.name] || ['other'],
 								meta: metaData,
 								status: insertedUser.status,
 								deleted: false,
@@ -693,12 +689,13 @@ module.exports = class UserInviteHelper {
 						})
 						try {
 							eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+							console.log('KAFKA EVENT EXECUTED')
 						} catch (error) {
 							console.warn('User creation Event Kafka WARNING : ', error)
 						}
 						try {
-							console.info('eventBody --------->>', eventBody)
 							eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+							console.log('API EVENT EXECUTED')
 						} catch (error) {
 							console.warn('User creation Event API WARNING : ', error)
 						}

@@ -76,7 +76,6 @@ class UserDTO {
 				'status',
 				'deleted',
 				'id',
-				'designation',
 				'meta',
 				'user_roles',
 				'created_at',
