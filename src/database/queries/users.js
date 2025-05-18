@@ -267,7 +267,7 @@ exports.findUserWithOrganization = async (filter, options = {}, raw = false) => 
 				},
 			],
 		})
-
+		if (!user) return null
 		if (!raw) {
 			user = user ? user.toJSON() : null
 			user = UserTransformDTO.transform(user) // Transform the data
