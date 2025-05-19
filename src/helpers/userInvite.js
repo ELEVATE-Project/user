@@ -27,7 +27,6 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { eventBodyDTO } = require('@dtos/userDTO')
 const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
-const { ConfigurationServicePlaceholders } = require('aws-sdk/lib/config_service_placeholders')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
