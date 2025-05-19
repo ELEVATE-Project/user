@@ -318,21 +318,28 @@ module.exports = class UserInviteHelper {
 			})
 
 			//get all existing user
-			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) =>
+			const emailArray = _.uniq(_.map(csvData, 'email').filter((email) => email && email.trim())).map((email) =>
 				emailEncryption.encrypt(email.trim().toLowerCase())
+			)
+
+			//get all existing user with phone
+			const phoneArray = _.uniq(_.map(csvData, 'phone').filter((phone) => phone && phone.trim())).map((phone) =>
+				emailEncryption.encrypt(phone.trim().toLowerCase())
 			)
 
 			//get all user names
 			const userNameArray = _.uniq(_.map(csvData, 'username'))
 				.filter((username) => _.isString(username) && username.trim() !== '')
 				.map((username) => username)
-
-			const userCredentials = await userQueries.findAll(
-				{ email: { [Op.in]: emailArray } },
-				{
-					attributes: ['id', 'email', 'roles', 'meta'],
-				}
-			)
+			const userCredQuery = {
+				[Op.or]: [
+					emailArray && emailArray.length ? { email: { [Op.in]: emailArray } } : null,
+					phoneArray && phoneArray.length ? { phone: { [Op.in]: phoneArray } } : null,
+				].filter((condition) => condition !== null),
+			}
+			const userCredentials = await userQueries.findAll(userCredQuery, {
+				attributes: ['id', 'email', 'phone', 'roles', 'meta'],
+			})
 
 			const userPresentWithUsername = await userQueries.findAll(
 				{ username: { [Op.in]: userNameArray } },
@@ -347,6 +354,7 @@ module.exports = class UserInviteHelper {
 				return {
 					id: user.id,
 					email: user.email,
+					phone: user.phone,
 					organization_id: user.organization_id,
 					roles: user.roles,
 					meta: user.meta,
@@ -355,6 +363,7 @@ module.exports = class UserInviteHelper {
 
 			//Get All The Users From Database based on UserIds From UserCredentials
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
+			const existingPhoneMap = new Map(existingUsers.map((eachUser) => [eachUser.phone, eachUser])) //Figure Out Who Are The Existing Users with phone
 
 			let input = []
 			let isErrorOccured = false
@@ -389,11 +398,26 @@ module.exports = class UserInviteHelper {
 					invalidFields.push('name')
 				}
 
-				if (!utils.isValidEmail(invitee.email)) {
+				if (invitee.email && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
 				if (!utils.isValidPassword(invitee.password)) {
 					invalidFields.push('password')
+				}
+				let emailAndPhoneMissing = false
+				if (!invitee.email && !invitee.phone) {
+					invalidFields.push('phone')
+					invalidFields.push('email')
+					emailAndPhoneMissing = true
+				}
+
+				if (invitee.phone && !invitee.phone_code) {
+					invalidFields.push('phone_code')
+				}
+				let encryptedPhoneNumber = ''
+				if (invitee?.phone) {
+					encryptedPhoneNumber = emailEncryption.encrypt(invitee?.phone)
+					invitee.phone = encryptedPhoneNumber
 				}
 
 				const invalidRoles = invitee.roles.filter((role) => !roleTitlesToIds.hasOwnProperty(role.toLowerCase()))
@@ -403,11 +427,12 @@ module.exports = class UserInviteHelper {
 
 				//merge all error message
 				if (invalidFields.length > 0) {
-					const errorMessage = `${
+					let errorMessage = `${
 						invalidFields.length > 2
 							? invalidFields.slice(0, -1).join(', ') + ', and ' + invalidFields.slice(-1)
 							: invalidFields.join(' and ')
 					} ${invalidFields.length > 1 ? 'are' : 'is'} invalid.`
+					if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
 
 					invitee.statusOrUserId = errorMessage
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
@@ -415,7 +440,8 @@ module.exports = class UserInviteHelper {
 					continue
 				}
 
-				const existingUser = existingEmailsMap.get(encryptedEmail)
+				const existingUser =
+					existingEmailsMap.get(encryptedEmail) || existingPhoneMap.get(encryptedPhoneNumber) || null
 				//return error for already invited user
 				if (!existingUser && existingInvitees.hasOwnProperty(encryptedEmail)) {
 					console.log('aaaaa')
