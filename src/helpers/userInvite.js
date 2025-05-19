@@ -696,7 +696,7 @@ module.exports = class UserInviteHelper {
 
 						const eventBody = eventBodyDTO({
 							entity: 'user',
-							eventType: 'create',
+							eventType: 'bulk-create',
 							entityId: insertedUser?.id,
 							args: {
 								created_by: user.id,
