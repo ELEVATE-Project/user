@@ -21,7 +21,8 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
-const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
+const { eventBodyDTO } = require('@dtos/userDTO')
+const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
 	/**
@@ -72,6 +73,7 @@ module.exports = class UserHelper {
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+			const metaDataKeys = validationData.map((meta) => meta.value)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
@@ -139,7 +141,64 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+
+			if (processDbResponse?.email) {
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse?.email)
+			}
+
+			if (processDbResponse?.phone) {
+				processDbResponse.phone = emailEncryption.decrypt(processDbResponse?.phone)
+			}
+
+			const metaData = metaDataKeys.reduce((acc, key) => {
+				acc[key] = processDbResponse[key]
+				return acc
+			}, {})
+
+			let userRoles = await roleQueries.findAll(
+				{
+					id: {
+						[Op.in]: processDbResponse.roles,
+					},
+					tenant_code: processDbResponse?.tenant_code,
+				},
+				{
+					attributes: ['id', 'title', 'label'],
+				}
+			)
+			userRoles = userRoles.map((role) => {
+				return {
+					id: role.id,
+					title: role.title,
+				}
+			})
+			const eventBody = eventBodyDTO({
+				entity: 'user',
+				eventType: 'update',
+				entityId: processDbResponse?.id,
+				args: {
+					created_by: processDbResponse?.id,
+					name: processDbResponse?.name,
+					username: processDbResponse?.username,
+					email: processDbResponse?.email || '',
+					phone: processDbResponse?.phone || '',
+					organization_id: processDbResponse?.organization_id,
+					tenant_code: processDbResponse?.tenant_code,
+					meta: metaData,
+					status: processDbResponse?.status,
+					deleted: false,
+					id: processDbResponse?.id,
+					user_roles: userRoles,
+				},
+			})
+
+			try {
+				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+				console.log('KAFKA EVENT EXECUTED')
+			} catch (error) {
+				console.warn('User creation Event Kafka WARNING : ', error)
+			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
