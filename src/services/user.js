@@ -384,10 +384,10 @@ module.exports = class UserHelper {
 	 * @param {Object} bodyData - it contains user preferred language
 	 * @returns {JSON} - updated user preferred languages response
 	 */
-	static async setLanguagePreference(bodyData, id, orgId) {
+	static async setLanguagePreference(bodyData, id, orgId, tenantCode) {
 		try {
 			let skipRequiredValidation = true
-			const user = await userQueries.findOne({ id: id, organization_id: orgId })
+			const user = await userQueries.findOne({ id: id, tenant_code: tenantCode })
 			if (!user) {
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -396,7 +396,7 @@ module.exports = class UserHelper {
 				})
 			}
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -406,6 +406,7 @@ module.exports = class UserHelper {
 				organization_id: { [Op.in]: [orgId, defaultOrgId] },
 				model_names: { [Op.contains]: [userModel] },
 				value: 'preferred_language',
+				tenant_code: tenantCode,
 			}
 			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
@@ -423,7 +424,7 @@ module.exports = class UserHelper {
 			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: id, organization_id: orgId },
+				{ id: id, tenant_code: tenantCode },
 				bodyData
 			)
 			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
