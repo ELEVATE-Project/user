@@ -129,7 +129,7 @@ module.exports = async function (req, res, next) {
 			org = decodedToken.data.organizations?.[0]
 
 			const organization_id = org?.id
-
+			const organization_code = org?.code
 			decodedToken.data = {
 				id: decodedToken.data.id,
 				name: decodedToken.data.name,
@@ -137,6 +137,7 @@ module.exports = async function (req, res, next) {
 				tenant_code: decodedToken.data.tenant_code,
 				organization_id,
 				roles: org.roles,
+				organization_code,
 			}
 			// Get redis key for session
 			const sessionId = decodedToken.data.session_id.toString()
