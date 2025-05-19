@@ -27,6 +27,7 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { eventBodyDTO } = require('@dtos/userDTO')
 const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
+const { ConfigurationServicePlaceholders } = require('aws-sdk/lib/config_service_placeholders')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -397,8 +398,7 @@ module.exports = class UserInviteHelper {
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
-
-				if (invitee.email && !utils.isValidEmail(invitee.email)) {
+				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
 				if (!utils.isValidPassword(invitee.password)) {
@@ -417,7 +417,6 @@ module.exports = class UserInviteHelper {
 				let encryptedPhoneNumber = ''
 				if (invitee?.phone) {
 					encryptedPhoneNumber = emailEncryption.encrypt(invitee?.phone)
-					invitee.phone = encryptedPhoneNumber
 				}
 
 				const invalidRoles = invitee.roles.filter((role) => !roleTitlesToIds.hasOwnProperty(role.toLowerCase()))
@@ -640,7 +639,7 @@ module.exports = class UserInviteHelper {
 							name: inviteeData.name,
 							email: inviteeData?.email || null,
 							phone_code: inviteeData?.phone_code || null,
-							phone: inviteeData?.phone || null,
+							phone: inviteeData?.phone ? encryptedPhoneNumber : null,
 							username: inviteeData?.username,
 							roles: newInvitee.roles,
 							password: hashedPassword,
@@ -697,7 +696,7 @@ module.exports = class UserInviteHelper {
 								name: inviteeData?.name,
 								username: inviteeData?.username,
 								email: raw_email,
-								phone: inviteeData?.phone,
+								phone: inviteeData?.phone ? encryptedPhoneNumber : null,
 								organization_id: inviteeData?.organization_id,
 								tenant_code: user?.tenant_code,
 								meta: metaData,
