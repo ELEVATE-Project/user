@@ -93,6 +93,7 @@ module.exports = class userRole {
 				req.pageSize,
 				req.searchText,
 				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code,
 				req.query.language ? req.query.language : ''
 			)
 			return roleList
