@@ -336,9 +336,10 @@ module.exports = class UserInviteHelper {
 					emailArray && emailArray.length ? { email: { [Op.in]: emailArray } } : null,
 					phoneArray && phoneArray.length ? { phone: { [Op.in]: phoneArray } } : null,
 				].filter((condition) => condition !== null),
+				tenant_code: user.tenant_code,
 			}
 			const userCredentials = await userQueries.findAll(userCredQuery, {
-				attributes: ['id', 'email', 'phone', 'roles', 'meta'],
+				attributes: ['id', 'email', 'phone_code', 'phone', 'roles', 'meta'],
 			})
 
 			const userPresentWithUsername = await userQueries.findAll(
@@ -355,15 +356,20 @@ module.exports = class UserInviteHelper {
 					id: user.id,
 					email: user.email,
 					phone: user.phone,
+					phone_code: user.phone_code,
 					organization_id: user.organization_id,
 					roles: user.roles,
 					meta: user.meta,
 				}
 			})
-
+			{
+				a: ''
+			}
 			//Get All The Users From Database based on UserIds From UserCredentials
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
-			const existingPhoneMap = new Map(existingUsers.map((eachUser) => [eachUser.phone, eachUser])) //Figure Out Who Are The Existing Users with phone
+			const existingPhoneMap = new Map(
+				existingUsers.map((eachUser) => [`${eachUser.phone_code}${eachUser.phone}`, eachUser])
+			)
 
 			let input = []
 			let isErrorOccured = false
@@ -439,7 +445,9 @@ module.exports = class UserInviteHelper {
 				}
 
 				const existingUser =
-					existingEmailsMap.get(encryptedEmail) || existingPhoneMap.get(encryptedPhoneNumber) || null
+					existingEmailsMap.get(encryptedEmail) ||
+					existingPhoneMap.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+					null
 				//return error for already invited user
 				if (!existingUser && existingInvitees.hasOwnProperty(encryptedEmail)) {
 					console.log('aaaaa')
