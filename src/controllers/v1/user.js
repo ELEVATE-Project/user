@@ -87,7 +87,8 @@ module.exports = class User {
 			const updateUsersLanguagePreference = await userService.setLanguagePreference(
 				params,
 				req.decodedToken.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
 			)
 			return updateUsersLanguagePreference
 		} catch (error) {
