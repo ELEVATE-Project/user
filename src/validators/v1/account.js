@@ -217,7 +217,9 @@ module.exports = {
 			.isLength({ min: 6, max: 6 })
 			.withMessage('otp is invalid')
 	},
-
+	delete: (req) => {
+		req.checkBody('password').notEmpty().withMessage('password field is empty')
+	},
 	changeRole: (req) => {
 		req.body = filterRequestBody(req.body, account.changeRole)
 		req.checkBody('email').notEmpty().withMessage('email field is empty').isEmail().withMessage('email is invalid')

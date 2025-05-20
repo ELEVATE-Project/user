@@ -193,6 +193,20 @@ module.exports = class Account {
 	}
 
 	/**
+	 * Delete own account
+	 * @method
+	 * @name delete
+	 * @param {Object} req - request object
+	 * @returns {JSON} - delete user response
+	 */
+	async delete(req) {
+		try {
+			return await accountService.deleteOwnAccount(req.decodedToken.id, req.body, req.decodedToken.tenant_code)
+		} catch (error) {
+			return error
+		}
+	}
+	/**
 	 * Account List
 	 * @method
 	 * @name list
