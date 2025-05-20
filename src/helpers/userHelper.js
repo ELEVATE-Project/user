@@ -38,7 +38,7 @@ async function executeInTransaction(userId, user, operations, transactionOptions
 	try {
 		await operations(transaction)
 		await transaction.commit()
-		return { success: true, message: 'User deleted successfully' }
+		return { success: true, message: 'USER_DELETED_SUCCESSFULLY' }
 	} catch (error) {
 		await transaction.rollback()
 		console.error(`Failed to delete user ${userId}: ${error.message}`)
