@@ -1684,7 +1684,34 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			const result = await userHelper.deleteUser(userId, user)
+
+			const eventBody = UserTransformDTO.eventBodyDTO({
+				entity: 'user',
+				eventType: 'delete',
+				entityId: userId,
+				args: {
+					created_by: userId,
+					username: result.user?.username,
+					tenant_code: user?.tenant_code,
+					status: 'DELETED',
+					deleted: true,
+					id: userId,
+				},
+			})
+
+			try {
+				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+			} catch (error) {
+				console.warn('User creation Event Kafka WARNING : ', error)
+			}
+			try {
+				eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+			} catch (error) {
+				console.warn('User creation Event API WARNING : ', error)
+			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: result.message,
