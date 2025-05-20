@@ -644,14 +644,21 @@ module.exports = class tenantHelper {
 	 * @param {string} tenantCode - code of the tenant
 	 * @returns {JSON} - Tenant details
 	 */
-	static async read(tenantCode) {
+	static async read(tenantCode, isAdmin = false) {
 		try {
+			let options = {}
+			if (isAdmin) {
+				options.organizationAttributes = ['id', 'name', 'code']
+			} else {
+				options.attributes = ['code', 'name', 'description', 'meta']
+			}
+
 			// fetch tenant details
 			const tenantDetails = await tenantQueries.findOne(
 				{
 					code: tenantCode,
 				},
-				{ organizationAttributes: ['id', 'name', 'code'] }
+				options
 			)
 
 			if (!tenantDetails?.code) {
