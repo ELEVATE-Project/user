@@ -153,6 +153,7 @@
 	"IDENTIFIER_REQUIRED": "An identifier (email or phone) is required to proceed.",
 	"INVALID_IDENTIFIER_FORMAT": "The identifier format is invalid. Please enter a valid email or phone number.",
 	"ORGANIZATION_NOT_ACCESSIBLE": "You cannot access this Organization details.",
+	"INVALID_ORG_TENANT_MAPPING": "Organization and Tenant does not match.",
 	"USERNAME_TAKEN": "Username is already taken",
 	"USERNAME_AVAILABLE": "Username is available"
 }

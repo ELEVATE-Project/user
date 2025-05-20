@@ -38,6 +38,7 @@ const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
+const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class AccountHelper {
 	/**
@@ -366,7 +367,7 @@ module.exports = class AccountHelper {
 				})
 			}
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
-
+			let metaData = restructuredData?.meta || {}
 			const insertedUser = await userQueries.create(restructuredData)
 
 			const userOrg = await userOrganizationQueries.create({
@@ -552,10 +553,45 @@ module.exports = class AccountHelper {
 				})
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
-
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
+			metaData = Object.fromEntries(
+				Object.keys(metaData).map((metaKey) => [metaKey, result?.user?.[metaKey] ?? {}])
+			)
+			const eventBody = UserTransformDTO.eventBodyDTO({
+				entity: 'user',
+				eventType: 'create',
+				entityId: result.user?.id,
+				args: {
+					created_by: result.user.id,
+					name: result.user?.name,
+					username: result.user?.username,
+					email: result.user.email,
+					phone: result.user?.phone,
+					organization_id: result.user?.organizations?.[0]?.id,
+					tenant_code: result.user?.tenant_code,
+					meta: metaData,
+					status: insertedUser?.status || common.ACTIVE_STATUS,
+					deleted: false,
+					id: result.user.id,
+					user_roles: result.user?.organizations?.[0]?.roles.map((role) => ({
+						title: role.title,
+						id: role.id,
+					})),
+				},
+			})
+
+			try {
+				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+			} catch (error) {
+				console.warn('User creation Event Kafka WARNING : ', error)
+			}
+			try {
+				eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+			} catch (error) {
+				console.warn('User creation Event API WARNING : ', error)
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
