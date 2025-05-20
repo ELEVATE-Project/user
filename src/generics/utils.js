@@ -408,6 +408,7 @@ async function processDbResponse(responseBody, entityType) {
 						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
 						process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
 					const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+					console.log('URL : ', url)
 					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
 					if (_.isArray(responseBody.meta[entityTypeValue])) {
 						for (entity of responseBody.meta[entityTypeValue]) {
@@ -415,6 +416,20 @@ async function processDbResponse(responseBody, entityType) {
 								_id: entity,
 								tenantId: responseBody.tenant_code,
 							}
+							console.log(
+								'Options : ',
+								{
+									query: filterData,
+									projection: projection,
+								},
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+									},
+								}
+							)
+
 							externalFetchPromise.push(
 								axios.post(
 									url,
@@ -436,7 +451,19 @@ async function processDbResponse(responseBody, entityType) {
 							_id: responseBody.meta[entityTypeValue],
 							tenantId: responseBody.tenant_code,
 						}
-
+						console.log(
+							'Options : ',
+							{
+								query: filterData,
+								projection: projection,
+							},
+							{
+								headers: {
+									'Content-Type': 'application/json',
+									'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+								},
+							}
+						)
 						externalFetchPromise.push(
 							axios.post(
 								url,
