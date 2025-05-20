@@ -37,6 +37,8 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
+const userHelper = require('@helpers/userHelper')
+
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -1619,6 +1621,42 @@ module.exports = class AccountHelper {
 		}
 	}
 
+	/**
+	 * Delete own account
+	 * @method
+	 * @name deleteOwnAccount
+	 * @param {Object} req - request object
+	 * @returns {JSON} - delete user response
+	 */
+	static async deleteOwnAccount(userId, bodyData, tenantCode) {
+		try {
+			const user = await userQueries.findOne({ id: userId, tenant_code: tenantCode })
+
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+
+			if (!isPasswordCorrect) {
+				return responses.failureResponse({
+					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const result = await userHelper.deleteUser(userId, user)
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: result.message,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 	/**
 	 * Update role of user
 	 * @method

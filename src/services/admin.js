@@ -24,6 +24,7 @@ const adminService = require('../generics/materializedViews')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const userSessionsService = require('@services/user-sessions')
+const userHelper = require('@helpers/userHelper')
 
 module.exports = class AdminHelper {
 	/**
@@ -34,71 +35,21 @@ module.exports = class AdminHelper {
 	 * @returns {JSON} - delete user response
 	 */
 	static async deleteUser(userId) {
-		let transaction
 		try {
-			// Start a transaction
-			transaction = await Sequelize.transaction()
-
-			// Find user
-			let user = await userQueries.findByPk(userId, { transaction })
+			let user = await userQueries.findByPk(userId)
 			if (!user) {
-				await transaction.rollback()
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			// Generate update parameters
-			let updateParams = _generateUpdateParams(userId)
-			const removeKeys = _.omit(user, _removeUserKeys())
-			const update = _.merge(removeKeys, updateParams)
-
-			// Update user
-			await userQueries.updateUser({ id: user.id }, update, { transaction })
-
-			// Delete related records
-			await userOrganizationQueries.delete({ user_id: user.id, tenant_code: user.tenant_code }, { transaction })
-			await userOrganizationRoleQueries.delete(
-				{ user_id: user.id, tenant_code: user.tenant_code },
-				{ transaction }
-			)
-
-			// Delete Redis cache
-			delete update.id
-			await utils.redisDel(`${common.redisUserPrefix}${user.tenant_code}_${userId.toString()}`)
-
-			// Remove user sessions
-			const userSessionData = await userSessionsService.findUserSession(
-				{
-					user_id: userId,
-					ended_at: null,
-				},
-				{
-					attributes: ['id'],
-				},
-				{ transaction }
-			)
-			const userSessionIds = userSessionData.map(({ id }) => id)
-			await userSessionsService.removeUserSessions(userSessionIds)
-
-			// Commit the transaction
-			await transaction.commit()
-
-			// Code for removing user folder from cloud (non-transactional, as it’s external)
-			// await removeUserFolderFromCloud(userId);
-
+			const result = await userHelper.deleteUser(userId, user)
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'USER_DELETED_SUCCESSFULLY',
+				message: result.message,
 			})
 		} catch (error) {
-			// Rollback transaction if it exists
-			if (transaction) {
-				await transaction.rollback()
-			}
-			console.error('Delete User Error:', error)
 			throw error
 		}
 	}
