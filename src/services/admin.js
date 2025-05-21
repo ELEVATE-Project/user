@@ -631,23 +631,3 @@ module.exports = class AdminHelper {
 		}
 	}
 }
-
-function _removeUserKeys() {
-	let removedFields = ['about', 'share_link', 'preferred_language', 'location', 'languages', 'image', 'roles']
-	return removedFields
-}
-
-function _generateUpdateParams(userId) {
-	const updateUser = {
-		deleted_at: new Date(),
-		name: 'Anonymous User',
-		email: utils.md5Hash(userId) + '@' + 'deletedUser',
-		refresh_tokens: [],
-		preferred_language: 'en',
-		location: '',
-		languages: [],
-		roles: [],
-		status: common.DELETED_STATUS,
-	}
-	return updateUser
-}
