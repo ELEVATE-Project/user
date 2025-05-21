@@ -647,7 +647,7 @@ module.exports = class tenantHelper {
 	static async read(tenantCode) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne(
+			let tenantDetails = await tenantQueries.findOne(
 				{
 					code: tenantCode,
 				},
@@ -662,26 +662,17 @@ module.exports = class tenantHelper {
 				})
 			}
 
-			// fetch existing domains for the tenant
-			let existingDomains = await tenantDomainQueries.findAll(
+			const domains = await tenantDomainQueries.findAll(
 				{
 					tenant_code: tenantCode,
 				},
 				{
-					attributes: ['domain'],
+					attributes: ['domain', 'verified'],
 				}
 			)
 
-			if (existingDomains.length > 0) {
-				// make an array of existing domains
-				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
-			} else {
-				existingDomains = []
-			}
-
-			tenantDetails.domains = existingDomains
-
 			delete tenantDetails.deleted_at
+			tenantDetails.dataValues.domains = domains || []
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
