@@ -22,6 +22,7 @@ const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { eventBodyDTO } = require('@dtos/userDTO')
+
 const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
@@ -115,7 +116,9 @@ module.exports = class UserHelper {
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, tenant_code: tenantCode },
-				bodyData
+				bodyData,
+				{},
+				true
 			)
 
 			const currentUser = updatedData[0]
@@ -172,6 +175,16 @@ module.exports = class UserHelper {
 					title: role.title,
 				}
 			})
+			let userWithOrg = await userQueries.findUserWithOrganization(
+				{
+					id,
+					tenant_code: tenantCode,
+				},
+				{}
+			)
+
+			const organizations = userWithOrg.organizations
+
 			const eventBody = eventBodyDTO({
 				entity: 'user',
 				eventType: 'update',
@@ -180,15 +193,14 @@ module.exports = class UserHelper {
 					created_by: processDbResponse?.id,
 					name: processDbResponse?.name,
 					username: processDbResponse?.username,
+					organizations,
 					email: processDbResponse?.email || '',
 					phone: processDbResponse?.phone || '',
-					organization_id: processDbResponse?.organization_id,
 					tenant_code: processDbResponse?.tenant_code,
 					meta: metaData,
 					status: processDbResponse?.status,
 					deleted: false,
 					id: processDbResponse?.id,
-					user_roles: userRoles,
 				},
 			})
 
