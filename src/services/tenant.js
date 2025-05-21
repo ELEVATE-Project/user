@@ -647,11 +647,11 @@ module.exports = class tenantHelper {
 	static async read(tenantCode) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne(
+			let tenantDetails = await tenantQueries.findOne(
 				{
 					code: tenantCode,
 				},
-				{ organizationAttributes: ['id', 'name', 'code'], domainAttributes: ['domain', 'verified'] }
+				{ organizationAttributes: ['id', 'name', 'code'] }
 			)
 
 			if (!tenantDetails?.code) {
@@ -662,7 +662,17 @@ module.exports = class tenantHelper {
 				})
 			}
 
+			const domains = await tenantDomainQueries.findAll(
+				{
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['domain', 'verified'],
+				}
+			)
+
 			delete tenantDetails.deleted_at
+			tenantDetails.dataValues.domains = domains || []
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

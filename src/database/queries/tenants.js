@@ -1,7 +1,6 @@
 'use strict'
 const Tenant = require('@database/models/index').Tenant
 const Organization = require('@database/models/index').Organization
-const TenantDomain = require('@database/models/index').TenantDomain
 
 exports.findOne = async (filter, options = {}) => {
 	try {
@@ -13,17 +12,6 @@ exports.findOne = async (filter, options = {}) => {
 						model: Organization,
 						as: 'organizations', // Corrected alias to match Tenant.hasMany
 						attributes: options.organizationAttributes,
-					},
-				],
-			}
-		}
-		if (options.domainAttributes?.length > 0) {
-			joiningFilter = {
-				include: [
-					{
-						model: TenantDomain,
-						as: 'domains', // Corrected alias to match Tenant.hasMany
-						attributes: options.domainAttributes,
 					},
 				],
 			}
