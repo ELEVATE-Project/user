@@ -68,6 +68,11 @@ module.exports = (sequelize, DataTypes) => {
 			sourceKey: 'code',
 			as: 'organizations',
 		})
+		Tenant.hasMany(models.TenantDomain, {
+			foreignKey: 'tenant_code',
+			sourceKey: 'code',
+			as: 'domains',
+		})
 	}
 
 	return Tenant

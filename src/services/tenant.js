@@ -651,7 +651,7 @@ module.exports = class tenantHelper {
 				{
 					code: tenantCode,
 				},
-				{ organizationAttributes: ['id', 'name', 'code'] }
+				{ organizationAttributes: ['id', 'name', 'code'], domainAttributes: ['domain', 'verified'] }
 			)
 
 			if (!tenantDetails?.code) {
@@ -661,25 +661,6 @@ module.exports = class tenantHelper {
 					message: 'TENANT_NOT_FOUND',
 				})
 			}
-
-			// fetch existing domains for the tenant
-			let existingDomains = await tenantDomainQueries.findAll(
-				{
-					tenant_code: tenantCode,
-				},
-				{
-					attributes: ['domain'],
-				}
-			)
-
-			if (existingDomains.length > 0) {
-				// make an array of existing domains
-				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
-			} else {
-				existingDomains = []
-			}
-
-			tenantDetails.domains = existingDomains
 
 			delete tenantDetails.deleted_at
 
