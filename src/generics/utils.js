@@ -415,6 +415,7 @@ async function processDbResponse(responseBody, entityType) {
 								_id: entity,
 								tenantId: responseBody.tenant_code,
 							}
+
 							externalFetchPromise.push(
 								axios.post(
 									url,
@@ -436,7 +437,6 @@ async function processDbResponse(responseBody, entityType) {
 							_id: responseBody.meta[entityTypeValue],
 							tenantId: responseBody.tenant_code,
 						}
-
 						externalFetchPromise.push(
 							axios.post(
 								url,

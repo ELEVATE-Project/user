@@ -136,7 +136,7 @@ module.exports = class userRoleHelper {
 	 * @returns {JSON} - Role list.
 	 */
 
-	static async list(filters, page, limit, search, userOrganizationId, language) {
+	static async list(filters, page, limit, search, userOrganizationId, tenantCode, language) {
 		try {
 			delete filters.search
 			delete filters.language
@@ -146,7 +146,7 @@ module.exports = class userRoleHelper {
 				limit,
 			}
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -154,6 +154,7 @@ module.exports = class userRoleHelper {
 				[Op.or]: [{ organization_id: userOrganizationId }, { organization_id: defaultOrgId }],
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
+				tenant_code: tenantCode,
 			}
 			const attributes = [
 				'id',

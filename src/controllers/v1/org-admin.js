@@ -82,7 +82,8 @@ module.exports = class OrgAdmin {
 
 			const requestDetails = await orgAdminService.getRequestDetails(
 				req.params.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
 			)
 			return requestDetails
 		} catch (error) {

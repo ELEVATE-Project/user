@@ -326,6 +326,7 @@ module.exports = class OrganizationsHelper {
 					requester_id: tokenInformation.id,
 					role: bodyData.role,
 					organization_id: tokenInformation.organization_id,
+					tenant_code: tokenInformation.tenant_code,
 				},
 				{
 					order: [['created_at', 'DESC']],
@@ -599,6 +600,7 @@ async function createRoleRequest(bodyData, tokenInformation) {
 		requester_id: tokenInformation.id,
 		role: bodyData.role,
 		organization_id: tokenInformation.organization_id,
+		tenant_code: tokenInformation.tenant_code,
 		meta: bodyData.form_data,
 	}
 
