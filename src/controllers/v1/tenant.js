@@ -9,6 +9,8 @@
 const tenantService = require('@services/tenant')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
+const httpStatusCode = require('@generics/http-status')
+const responses = require('@helpers/responses')
 module.exports = class Tenant {
 	/**
 	 * Updates tenant data
@@ -82,7 +84,33 @@ module.exports = class Tenant {
 
 	async read(req) {
 		try {
-			const tenant = await tenantService.read(req.params.id)
+			let code = req?.decodedToken?.tenant_code
+			let isAdmin = true
+
+			if (!req?.decodedToken?.roles) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'PERMISSION_DENIED',
+					result: {},
+				})
+			}
+			// only admin can query any tenants in the system
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				// normal user can query only tenant details of their own tenant
+				if (req?.params?.id && req.decodedToken.tenant_code != req.params.id) {
+					return responses.failureResponse({
+						statusCode: httpStatusCode.bad_request,
+						message: 'PERMISSION_DENIED',
+						result: {},
+					})
+				}
+
+				code = req.decodedToken.tenant_code
+				isAdmin = false
+			} else {
+				code = req?.params?.id
+			}
+			const tenant = await tenantService.read(code, isAdmin)
 			return tenant
 		} catch (error) {
 			return error
