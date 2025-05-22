@@ -669,17 +669,19 @@ module.exports = class tenantHelper {
 				})
 			}
 
-			const domains = await tenantDomainQueries.findAll(
-				{
-					tenant_code: tenantCode,
-				},
-				{
-					attributes: ['domain', 'verified'],
-				}
-			)
+			if (isAdmin) {
+				const domains = await tenantDomainQueries.findAll(
+					{
+						tenant_code: tenantCode,
+					},
+					{
+						attributes: ['domain', 'verified'],
+					}
+				)
+				tenantDetails.dataValues.domains = domains || []
+			}
 
 			delete tenantDetails.deleted_at
-			tenantDetails.dataValues.domains = domains || []
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
