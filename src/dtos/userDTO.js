@@ -72,6 +72,7 @@ class UserDTO {
 				'email',
 				'phone',
 				'organization_id',
+				'organizations',
 				'tenant_code',
 				'status',
 				'deleted',

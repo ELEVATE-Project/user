@@ -110,7 +110,7 @@ module.exports = class OrgAdminHelper {
 
 			const organization = await organizationQueries.findOne(
 				{ id: organization_id, tenant_code },
-				{ attributes: ['name'] }
+				{ attributes: ['name', 'code'] }
 			)
 
 			const creationData = {
@@ -145,6 +145,7 @@ module.exports = class OrgAdminHelper {
 						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
+						organization_code: organization.code,
 						tenant_code,
 					},
 				},

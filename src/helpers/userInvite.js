@@ -27,6 +27,7 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { eventBodyDTO } = require('@dtos/userDTO')
 const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
+const userRolesQueries = require('@database/queries/userOrganizationRole')
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -338,9 +339,7 @@ module.exports = class UserInviteHelper {
 				].filter((condition) => condition !== null),
 				tenant_code: user.tenant_code,
 			}
-			const userCredentials = await userQueries.findAll(userCredQuery, {
-				attributes: ['id', 'email', 'phone_code', 'phone', 'roles', 'meta'],
-			})
+			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
 
 			const userPresentWithUsername = await userQueries.findAll(
 				{ username: { [Op.in]: userNameArray } },
@@ -357,14 +356,14 @@ module.exports = class UserInviteHelper {
 					email: user.email,
 					phone: user.phone,
 					phone_code: user.phone_code,
-					organization_id: user.organization_id,
-					roles: user.roles,
+					organizations: user.organizations.map((org) => org.id),
+					roles: user?.organizations?.[0]?.roles.map((role) => ({
+						title: role.title,
+						id: role.id,
+					})),
 					meta: user.meta,
 				}
 			})
-			{
-				a: ''
-			}
 			//Get All The Users From Database based on UserIds From UserCredentials
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
 			const existingPhoneMap = new Map(
@@ -463,51 +462,57 @@ module.exports = class UserInviteHelper {
 					isErrorOccured = true
 
 					const isOrganizationMatch =
-						existingUser.organization_id === defaultOrgId ||
-						existingUser.organization_id === user.organization_id
+						existingUser.organizations.includes(defaultOrgId) ||
+						existingUser.organizations.includes(user.organization_id)
 
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
 
 						//update user organization
-						if (existingUser.organization_id != user.organization_id) {
-							await userQueries.changeOrganization(
-								existingUser.id,
-								existingUser.organization_id,
-								user.organization_id,
+						if (!existingUser.organizations.includes(user.organization_id)) {
+							const currentOrgs = await userOrganizationQueries.findAll(
 								{
-									organization_id: user.organization_id,
+									user_id: existingUser.id,
+									tenant_code: user.tenant_code,
+								},
+								{
+									attributes: ['organization_code', 'tenant_code'],
 								}
 							)
+							if (currentOrgs.length <= 0) {
+								invitee.statusOrUserId = `User not found in tenant : ${user.tenant_code} `
+								continue
+							}
+							await organizationQueries.create({
+								user_id: existingUser.id,
+								organization_code: user.organization_code,
+								tenant_code: user.tenant_code,
+								created_at: new Date(),
+								updated_at: new Date(),
+							})
 
 							isOrgUpdate = true
-							userUpdateData.refresh_tokens = []
 						}
-
 						//find the new roles
 						const elementsNotInArray = _.difference(
 							_.map(invitee.roles, (role) => roleTitlesToIds[role.toLowerCase()]).flat(),
-							existingUser.roles
+							existingUser.roles.map((role) => role.id)
 						)
-
+						let rolesPromises = []
 						//update the user roles and handle downgrade of role
 						if (elementsNotInArray.length > 0) {
-							userUpdateData.roles = []
-							if (existingUser.roles.includes(menteeRoleId)) {
-								if (existingUser.roles.length === 1) {
-									userUpdateData.roles.push(...elementsNotInArray, menteeRoleId)
-								} else {
-									userUpdateData.roles.push(...elementsNotInArray, ...existingUser.roles)
-								}
-							} else {
-								userUpdateData.roles.push(...elementsNotInArray, ...existingUser.roles)
-							}
+							rolesPromises = elementsNotInArray.map((roleId) => {
+								return userRolesQueries.create({
+									tenant_code: user.tenant_code,
+									user_id: existingUser.id,
+									organization_code: user.organization_id,
+									role_id: roleId,
+									created_at: new Date(),
+									updated_at: new Date(),
+								})
+							})
 
-							if (userUpdateData.roles.includes(mentorRoleId)) {
-								userUpdateData.roles = _.pull(userUpdateData.roles, menteeRoleId)
-							}
-
-							userUpdateData.refresh_tokens = []
+							await Promise.all(rolesPromises)
 						}
 
 						// Update user meta data if any meta field is provided
@@ -535,35 +540,81 @@ module.exports = class UserInviteHelper {
 
 						//update user and user credentials table with new role organization
 						if (isOrgUpdate || userUpdateData.roles || userUpdateData.meta || invitee.password) {
-							const userCred = await UserCredentialQueries.findOne({
-								email: encryptedEmail,
-							})
+							// const userCred = await UserCredentialQueries.findOne({
+							// 	email: encryptedEmail,
+							// })
 
-							await userQueries.updateUser({ id: userCred.user_id }, userUpdateData)
-
-							// Update UserCredential with organization_id and potentially password
-							const credentialUpdateData = { organization_id: user.organization_id }
-
-							// Add password to update data if provided
-							if (invitee.password) {
-								// Assuming you have a password hashing utility
-								// You might need to adjust this based on your password handling
-								credentialUpdateData.password = invitee.password // Consider hashing
-							}
-
-							await UserCredentialQueries.updateUser(
-								{
-									email: encryptedEmail,
-								},
-								credentialUpdateData
+							const userUpdate = await userQueries.updateUser({ id: existingUser.id }, userUpdateData)
+							const userFetch = await userQueries.findAllUserWithOrganization(
+								{ id: existingUser.id },
+								{},
+								user.tenant_code
 							)
 
-							const currentRoles = utils.getRoleTitlesFromId(existingUser.roles, roleList)
+							const metaData = Object.keys(userFetch[0].meta).reduce((acc, key) => {
+								if (invitee[key] !== undefined && userFetch[0].meta[key] !== undefined) {
+									acc[key] = {
+										name: invitee[key],
+										id: userFetch[0].meta[key],
+									}
+								}
+								return acc
+							}, {})
+							const organizations = userFetch[0].organizations
+							const eventBody = eventBodyDTO({
+								entity: 'user',
+								eventType: 'bulk-update',
+								entityId: userFetch[0].id,
+								args: {
+									created_by: userFetch[0].id,
+									name: userFetch[0]?.name,
+									username: userFetch[0]?.username,
+									organizations,
+									email: userFetch[0]?.email || '',
+									phone: userFetch[0]?.phone || '',
+									tenant_code: userFetch[0]?.tenant_code,
+									meta: metaData,
+									status: userFetch[0]?.status,
+									deleted: false,
+									id: userFetch[0].id,
+								},
+							})
+
+							try {
+								eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+								console.log('KAFKA EVENT EXECUTED')
+							} catch (error) {
+								console.warn('User creation Event Kafka WARNING : ', error)
+							}
+							try {
+								eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+								console.log('API EVENT EXECUTED')
+							} catch (error) {
+								console.warn('User creation Event API WARNING : ', error)
+							}
+
+							// Update UserCredential with organization_id and potentially password
+							// const credentialUpdateData = { organization_id: user.organization_id }
+
+							// // Add password to update data if provided
+							// if (invitee.password) {
+							// 	// Assuming you have a password hashing utility
+							// 	// You might need to adjust this based on your password handling
+							// 	credentialUpdateData.password = invitee.password // Consider hashing
+							// }
+
+							// await UserCredentialQueries.updateUser(
+							// 	{
+							// 		email: encryptedEmail,
+							// 	},
+							// 	credentialUpdateData
+							// )
+
+							const currentRoles = existingUser.roles.map((role) => role.title)
 							let newRoles = []
-							if (userUpdateData.roles) {
-								newRoles = utils.getRoleTitlesFromId(
-									_.difference(userUpdateData.roles, existingUser.roles),
-									roleList
+							if (userUpdateData?.roles) {
+								newRoles = _.difference(userUpdateData.roles, existingUser.roles).map(
+									(role) => role.title
 								)
 								//remove session_manager role because the mentee role is enough to change role in mentoring side
 								newRoles = newRoles.filter((role) => role !== common.SESSION_MANAGER_ROLE)
@@ -693,6 +744,15 @@ module.exports = class UserInviteHelper {
 							}
 							return acc
 						}, {})
+						let userWithOrg = await userQueries.findUserWithOrganization(
+							{
+								id: insertedUser?.id,
+								tenant_code: user?.tenant_code,
+							},
+							{}
+						)
+
+						const organizations = userWithOrg.organizations
 
 						const eventBody = eventBodyDTO({
 							entity: 'user',
@@ -704,19 +764,12 @@ module.exports = class UserInviteHelper {
 								username: inviteeData?.username,
 								email: raw_email,
 								phone: inviteeData?.phone ? encryptedPhoneNumber : null,
-								organization_id: inviteeData?.organization_id,
+								organizations,
 								tenant_code: user?.tenant_code,
 								meta: metaData,
 								status: insertedUser.status,
 								deleted: false,
 								id: insertedUser?.id,
-								user_roles: newInvitee.roles.map((role) => ({
-									title:
-										Object.keys(roleTitlesToIds).find((key) =>
-											roleTitlesToIds[key].includes(role)
-										) || 'unknown',
-									id: role,
-								})),
 							},
 						})
 						try {
