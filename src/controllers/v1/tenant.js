@@ -84,8 +84,16 @@ module.exports = class Tenant {
 
 	async read(req) {
 		try {
-			let code = req.decodedToken.tenant_code
+			let code = req?.decodedToken?.tenant_code
 			let isAdmin = true
+
+			if (!req?.decodedToken?.roles) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'PERMISSION_DENIED',
+					result: {},
+				})
+			}
 			// only admin can query any tenants in the system
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				// normal user can query only tenant details of their own tenant
