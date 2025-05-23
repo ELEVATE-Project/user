@@ -4,7 +4,7 @@ const { getDomainFromRequest } = require('@utils/domain')
 module.exports = class Public {
 	async branding(req) {
 		let domain = ''
-		let tenantCode = req?.headers?.tenant || null
+		let tenantCode = req?.headers?.['tenant-id'] || null
 		if (!tenantCode) {
 			domain = getDomainFromRequest(req)
 		}
