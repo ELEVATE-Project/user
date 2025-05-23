@@ -3,10 +3,18 @@ const { getDomainFromRequest } = require('@utils/domain')
 
 module.exports = class Public {
 	async branding(req) {
-		const domain = getDomainFromRequest(req)
+		let domain = ''
+		let tenantCode = req?.headers?.tenantid || null
+		if (!tenantCode) {
+			domain = getDomainFromRequest(req)
+		}
 
 		try {
-			return await publicService.tenantBranding(domain, req.query.org_code ? req.query.org_code : null)
+			return await publicService.tenantBranding(
+				domain,
+				req.query.org_code ? req.query.org_code : null,
+				tenantCode ? tenantCode : null
+			)
 		} catch (error) {
 			return error
 		}
