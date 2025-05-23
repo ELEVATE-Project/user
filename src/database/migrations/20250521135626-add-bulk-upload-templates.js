@@ -14,7 +14,7 @@ module.exports = {
 		let notificationTemplateData = [
 			{
 				code: 'bulk_user_create',
-				body: `Hi {name}, you’ve been onboarded as a {roles} at {orgName}. Login at {portalURL} Username: {username} Password: {password}. Please change your password after logging in.`,
+				body: `Hi {name}, you’ve been onboarded as a {roles} at {orgName}. Login at {portalURL} Username: {username} and update your password after the first login for security. Please reach out to your company administrator for your password.`,
 				status: 'ACTIVE',
 				type: 'sms',
 				created_at: now,
@@ -24,7 +24,7 @@ module.exports = {
 			},
 			{
 				code: 'bulk_user_create',
-				body: `<p>Dear {name},</p><p>We are pleased to inform you that you have been successfully onboarded as a <strong>{roles}</strong> for <strong>{orgName}</strong>.</p><p>Your login credentials for the Mentoring Platform are as follows:</p><ul><li><strong>Username:</strong> {username}</li><li><strong>Password:</strong> {password}</li></ul><p>To get started, please log in using the following link:</p><p><a href="{portalURL}">{portalURL}</a></p><p>We recommend updating your password after the first login to ensure the security of your account.</p>`,
+				body: `<p>Dear {name}, You have been successfully onboarded as a <strong>{roles}</strong> for <strong>{orgName}</strong>. Your username is <strong>{username}</strong>. Please reach out to your company administrator for your password. Login at <a href="{portalURL}">{portalURL}</a> and update your password after the first login for security.</p>`,
 				status: 'ACTIVE',
 				type: 'email',
 				email_header: 'email_header',

@@ -764,7 +764,6 @@ module.exports = class UserInviteHelper {
 										roles: roleToString || '',
 										portalURL: tenantDomains.domain,
 										username: inviteeData.username,
-										password: invitee.password,
 									},
 									tenantCode: tenantDetails.code,
 								})
@@ -776,10 +775,12 @@ module.exports = class UserInviteHelper {
 									phoneNumber: userData.phone,
 									templateCode: process.env.BULK_CREATE_TEMPLATE_CODE,
 									variables: {
-										name: userData.name,
+										name: user.name,
+										orgName: userData.org_name,
 										appName: tenantDetails.name,
 										roles: roleToString || '',
-										portalURL: tenantDetails.domain,
+										portalURL: tenantDomains.domain,
+										username: inviteeData.username,
 									},
 									tenantCode: tenantDetails.code,
 								})
