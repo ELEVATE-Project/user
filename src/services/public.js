@@ -9,7 +9,7 @@ const httpStatusCode = require('@generics/http-status')
 const tenantTransformDTO = require('@dtos/tenantDTO') // Path to your DTO file
 
 module.exports = class AccountHelper {
-	static async tenantBranding(domain, organizationCode, tenantCode = null) {
+	static async tenantBranding(domain = null, organizationCode, tenantCode = null) {
 		try {
 			const notFoundResponse = (message) =>
 				responses.failureResponse({
@@ -18,13 +18,15 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			const tenantDomain = await tenantDomainQueries.findOne({ domain })
-			if (!tenantDomain && !tenantCode) {
+			if (!tenantCode && !domain) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
-
-			const code = tenantDomain?.tenant_code || tenantCode
-
+			let code = tenantCode
+			if (!code) {
+				const tenantDomain = await tenantDomainQueries.findOne({ domain })
+				code = tenantDomain?.tenant_code
+			}
+			if (!code) return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			const tenantDetail = await tenantQueries.findOne({ code }, {})
 
 			if (!tenantDetail) {

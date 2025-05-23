@@ -3,10 +3,10 @@ const { getDomainFromRequest } = require('@utils/domain')
 
 module.exports = class Public {
 	async branding(req) {
-		const domain = getDomainFromRequest(req)
-		let tenantCode = ''
-		if (domain == '') {
-			tenantCode = req?.headers?.tenant
+		let domain = ''
+		let tenantCode = req?.headers?.tenant || null
+		if (!tenantCode) {
+			domain = getDomainFromRequest(req)
 		}
 
 		try {
