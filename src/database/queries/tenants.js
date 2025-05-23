@@ -4,28 +4,27 @@ const Organization = require('@database/models/index').Organization
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		let joiningFilter = {}
-		if (options.organizationAttributes?.length > 0) {
-			joiningFilter = {
-				include: [
-					{
-						model: Organization,
-						as: 'organizations', // Corrected alias to match Tenant.hasMany
-						attributes: options.organizationAttributes,
-					},
-				],
-			}
-		}
-
-		return await Tenant.findOne({
+		const queryOptions = {
 			where: filter,
 			attributes: options.attributes || undefined,
-			...options,
-			...joiningFilter,
-			separate: true,
-		})
+			raw: options.raw || false, // Make `raw: true` optional
+			separate: true, // Only relevant when using includes
+		}
+
+		// If organization attributes are specified, add join
+		if (options.organizationAttributes?.length > 0) {
+			queryOptions.include = [
+				{
+					model: Organization,
+					as: 'organizations',
+					attributes: options.organizationAttributes,
+				},
+			]
+		}
+
+		return await Tenant.findOne(queryOptions)
 	} catch (error) {
-		throw error // Throw error for better error handling
+		throw error
 	}
 }
 

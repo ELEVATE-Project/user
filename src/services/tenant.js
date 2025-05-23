@@ -644,14 +644,21 @@ module.exports = class tenantHelper {
 	 * @param {string} tenantCode - code of the tenant
 	 * @returns {JSON} - Tenant details
 	 */
-	static async read(tenantCode) {
+	static async read(tenantCode, isAdmin = false) {
 		try {
+			let options = {}
+			if (isAdmin) {
+				options.organizationAttributes = ['id', 'name', 'code']
+			} else {
+				options.attributes = ['code', 'name', 'description', 'meta']
+			}
+
 			// fetch tenant details
 			let tenantDetails = await tenantQueries.findOne(
 				{
 					code: tenantCode,
 				},
-				{ organizationAttributes: ['id', 'name', 'code'] }
+				options
 			)
 
 			if (!tenantDetails?.code) {
@@ -662,17 +669,19 @@ module.exports = class tenantHelper {
 				})
 			}
 
-			const domains = await tenantDomainQueries.findAll(
-				{
-					tenant_code: tenantCode,
-				},
-				{
-					attributes: ['domain', 'verified'],
-				}
-			)
+			if (isAdmin) {
+				const domains = await tenantDomainQueries.findAll(
+					{
+						tenant_code: tenantCode,
+					},
+					{
+						attributes: ['domain', 'verified'],
+					}
+				)
+				tenantDetails.dataValues.domains = domains || []
+			}
 
 			delete tenantDetails.deleted_at
-			tenantDetails.dataValues.domains = domains || []
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

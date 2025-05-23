@@ -221,6 +221,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'change_password',
 	},
+	BULK_CREATE_TEMPLATE_CODE: {
+		message: 'Required bulk create email template code',
+		optional: true,
+		default: 'bulk_user_create',
+	},
 	CAPTCHA_ENABLE: {
 		message: 'Required CAPTCHA ENABLE true or false',
 		optional: false,

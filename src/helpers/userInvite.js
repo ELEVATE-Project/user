@@ -29,6 +29,10 @@ const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventB
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
 
+const notificationUtils = require('@utils/notification')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
+const tenantQueries = require('@database/queries/tenants')
+
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
@@ -375,11 +379,6 @@ module.exports = class UserInviteHelper {
 			let isOrgUpdate = false
 
 			//fetch generic email template
-			const emailTemplate = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
-				user.organization_id,
-				user.tenant_code
-			)
 
 			//find already invited users
 			const emailList = await userInviteQueries.findAll({ email: emailArray })
@@ -387,6 +386,9 @@ module.exports = class UserInviteHelper {
 			emailList.forEach((userInvitee) => {
 				existingInvitees[userInvitee.email] = [userInvitee.id]
 			})
+
+			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
+			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
 			console.log(existingInvitees)
 			// process csv data
 			for (const invitee of csvData) {
@@ -804,10 +806,38 @@ module.exports = class UserInviteHelper {
 								org_name: user.org_name,
 							}
 
-							// //send email invitation for new user
-							// if (emailTemplate?.id) {
-							// 	await this.sendInviteeEmail(emailTemplate, userData, null, { roles: roleToString })
-							// }
+							if (userData?.email) {
+								notificationUtils.sendEmailNotification({
+									emailId: userData.email,
+									templateCode: process.env.BULK_CREATE_TEMPLATE_CODE,
+									variables: {
+										name: user.name,
+										orgName: userData.org_name,
+										appName: tenantDetails.name,
+										roles: roleToString || '',
+										portalURL: tenantDomains.domain,
+										username: inviteeData.username,
+									},
+									tenantCode: tenantDetails.code,
+								})
+							}
+
+							// Send SMS notification with OTP if phone is provided
+							if (userData?.phone) {
+								notificationUtils.sendSMSNotification({
+									phoneNumber: userData.phone,
+									templateCode: process.env.BULK_CREATE_TEMPLATE_CODE,
+									variables: {
+										name: user.name,
+										orgName: userData.org_name,
+										appName: tenantDetails.name,
+										roles: roleToString || '',
+										portalURL: tenantDomains.domain,
+										username: inviteeData.username,
+									},
+									tenantCode: tenantDetails.code,
+								})
+							}
 						} else {
 							//delete invitation entry
 							isErrorOccured = true
