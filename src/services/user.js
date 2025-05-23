@@ -139,7 +139,9 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+			if (processDbResponse.email) {
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+			}
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
