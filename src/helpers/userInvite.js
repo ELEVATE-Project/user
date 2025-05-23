@@ -24,7 +24,7 @@ const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
-const { eventBodyDTO } = require('@dtos/userDTO')
+const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
@@ -360,7 +360,8 @@ module.exports = class UserInviteHelper {
 					email: user.email,
 					phone: user.phone,
 					phone_code: user.phone_code,
-					organizations: user.organizations.map((org) => org.id),
+					organizationIds: user.organizations.map((org) => org.id),
+					organizations: user.organizations,
 					roles: user?.organizations?.[0]?.roles.map((role) => ({
 						title: role.title,
 						id: role.id,
@@ -464,14 +465,14 @@ module.exports = class UserInviteHelper {
 					isErrorOccured = true
 
 					const isOrganizationMatch =
-						existingUser.organizations.includes(defaultOrgId) ||
-						existingUser.organizations.includes(user.organization_id)
+						existingUser.organizationIds.includes(defaultOrgId) ||
+						existingUser.organizationIds.includes(user.organization_id)
 
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
 
 						//update user organization
-						if (!existingUser.organizations.includes(user.organization_id)) {
+						if (!existingUser.organizationIds.includes(user.organization_id)) {
 							const currentOrgs = await userOrganizationQueries.findAll(
 								{
 									user_id: existingUser.id,
@@ -547,52 +548,79 @@ module.exports = class UserInviteHelper {
 							// })
 
 							const userUpdate = await userQueries.updateUser({ id: existingUser.id }, userUpdateData)
-							const userFetch = await userQueries.findAllUserWithOrganization(
-								{ id: existingUser.id },
-								{},
-								user.tenant_code
+							const modifiedKeys = keysFilter(
+								_.keys(userUpdate[0].dataValues).filter((key) => {
+									return !_.isEqual(
+										userUpdate[0].dataValues[key],
+										userUpdate[0]._previousDataValues[key]
+									)
+								})
 							)
 
-							const metaData = Object.keys(userFetch[0].meta).reduce((acc, key) => {
-								if (invitee[key] !== undefined && userFetch[0].meta[key] !== undefined) {
-									acc[key] = {
-										name: invitee[key],
-										id: userFetch[0].meta[key],
-									}
-								}
-								return acc
-							}, {})
-							const organizations = userFetch[0].organizations
-							const eventBody = eventBodyDTO({
-								entity: 'user',
-								eventType: 'bulk-update',
-								entityId: userFetch[0].id,
-								args: {
-									created_by: userFetch[0].id,
-									name: userFetch[0]?.name,
-									username: userFetch[0]?.username,
-									organizations,
-									email: userFetch[0]?.email || '',
-									phone: userFetch[0]?.phone || '',
-									tenant_code: userFetch[0]?.tenant_code,
-									meta: metaData,
-									status: userFetch[0]?.status,
-									deleted: false,
-									id: userFetch[0].id,
-								},
-							})
+							let oldValues = {},
+								newValues = {}
+							if (isOrgUpdate) {
+								oldValues.organizations = existingUser.organizations
+								const userFetch = await userQueries.findAllUserWithOrganization(
+									{ id: existingUser.id },
+									{},
+									user.tenant_code
+								)
 
-							try {
-								eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-								console.log('KAFKA EVENT EXECUTED')
-							} catch (error) {
-								console.warn('User creation Event Kafka WARNING : ', error)
+								newValues.organizations = userFetch.organizations
 							}
-							try {
-								eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-								console.log('API EVENT EXECUTED')
-							} catch (error) {
-								console.warn('User creation Event API WARNING : ', error)
+
+							if (modifiedKeys.length > 0) {
+								modifiedKeys.forEach((modifiedKey) => {
+									if (modifiedKey == 'meta') {
+										const metaData = Object.keys(userUpdate[0].dataValues.meta).reduce(
+											(acc, key) => {
+												if (
+													invitee[key] !== undefined &&
+													userUpdate[0].dataValues.meta[key] !== undefined
+												) {
+													acc[key] = {
+														name: invitee[key],
+														id: userUpdate[0].dataValues.meta[key],
+													}
+												}
+												return acc
+											},
+											{}
+										)
+
+										oldValues = userUpdate[0]._previousDataValues[modifiedKey]
+										newValues = metaData
+									} else {
+										oldValues = userUpdate[0]._previousDataValues[modifiedKey]
+										newValues = userUpdate[0].dataValues[modifiedKey]
+									}
+								})
+							}
+
+							if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
+								const eventBody = eventBodyDTO({
+									entity: 'user',
+									eventType: 'bulk-update',
+									entityId: userUpdate[0].dataValues.id,
+									args: {
+										oldValues,
+										newValues,
+									},
+								})
+
+								try {
+									eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+									console.log('KAFKA EVENT EXECUTED')
+								} catch (error) {
+									console.warn('User creation Event Kafka WARNING : ', error)
+								}
+								try {
+									eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
+									console.log('API EVENT EXECUTED')
+								} catch (error) {
+									console.warn('User creation Event API WARNING : ', error)
+								}
 							}
 
 							// Update UserCredential with organization_id and potentially password

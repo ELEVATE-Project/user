@@ -21,7 +21,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
-const { eventBodyDTO } = require('@dtos/userDTO')
+const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 
 const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
 
@@ -126,6 +126,12 @@ module.exports = class UserHelper {
 			const currentName = currentUser.dataValues.name
 			const previousName = currentUser._previousDataValues?.name || null
 
+			const modifiedKeys = keysFilter(
+				_.keys(currentUser.dataValues).filter((key) => {
+					return !_.isEqual(currentUser.dataValues[key], currentUser._previousDataValues[key])
+				})
+			)
+
 			if (currentName !== previousName) {
 				eventBroadcaster('updateName', {
 					requestBody: {
@@ -153,62 +159,41 @@ module.exports = class UserHelper {
 				processDbResponse.phone = emailEncryption.decrypt(processDbResponse?.phone)
 			}
 
-			const metaData = metaDataKeys.reduce((acc, key) => {
-				acc[key] = processDbResponse[key]
-				return acc
-			}, {})
+			if (modifiedKeys.length > 0) {
+				let oldValues = {},
+					newValues = {}
 
-			let userRoles = await roleQueries.findAll(
-				{
-					id: {
-						[Op.in]: processDbResponse.roles,
+				modifiedKeys.forEach((key) => {
+					if (key == 'meta') {
+						const metaData = metaDataKeys.reduce((acc, key) => {
+							acc[key] = processDbResponse[key]
+							return acc
+						}, {})
+
+						oldValues = currentUser._previousDataValues[key]
+						newValues = metaData
+					} else {
+						oldValues = currentUser._previousDataValues[key]
+						newValues = currentUser.dataValues[key]
+					}
+				})
+
+				const eventBody = eventBodyDTO({
+					entity: 'user',
+					eventType: 'update',
+					entityId: processDbResponse?.id,
+					args: {
+						oldValues,
+						newValues,
 					},
-					tenant_code: processDbResponse?.tenant_code,
-				},
-				{
-					attributes: ['id', 'title', 'label'],
+				})
+
+				try {
+					eventBroadcasterKafka('userEvents', { requestBody: eventBody })
+					console.log('KAFKA EVENT EXECUTED')
+				} catch (error) {
+					console.warn('User creation Event Kafka WARNING : ', error)
 				}
-			)
-			userRoles = userRoles.map((role) => {
-				return {
-					id: role.id,
-					title: role.title,
-				}
-			})
-			let userWithOrg = await userQueries.findUserWithOrganization(
-				{
-					id,
-					tenant_code: tenantCode,
-				},
-				{}
-			)
-
-			const organizations = userWithOrg.organizations
-
-			const eventBody = eventBodyDTO({
-				entity: 'user',
-				eventType: 'update',
-				entityId: processDbResponse?.id,
-				args: {
-					created_by: processDbResponse?.id,
-					name: processDbResponse?.name,
-					username: processDbResponse?.username,
-					organizations,
-					email: processDbResponse?.email || '',
-					phone: processDbResponse?.phone || '',
-					tenant_code: processDbResponse?.tenant_code,
-					meta: metaData,
-					status: processDbResponse?.status,
-					deleted: false,
-					id: processDbResponse?.id,
-				},
-			})
-
-			try {
-				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-				console.log('KAFKA EVENT EXECUTED')
-			} catch (error) {
-				console.warn('User creation Event Kafka WARNING : ', error)
 			}
 
 			return responses.successResponse({

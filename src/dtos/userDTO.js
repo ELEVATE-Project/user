@@ -62,6 +62,10 @@ class UserDTO {
 			}),
 		}
 	}
+	static keysFilter(input) {
+		const restrictedKeys = ['password', 'updated_at']
+		return input.filter((key) => !restrictedKeys.includes(key))
+	}
 	static eventBodyDTO({ entity, eventType, entityId, changedValues = [], args = {} }) {
 		try {
 			if (!entity || !eventType || !entityId)
@@ -71,6 +75,8 @@ class UserDTO {
 				'username',
 				'email',
 				'phone',
+				'oldValues',
+				'newValues',
 				'organization_id',
 				'organizations',
 				'tenant_code',
