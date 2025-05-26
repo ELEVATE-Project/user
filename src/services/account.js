@@ -182,9 +182,10 @@ module.exports = class AccountHelper {
 			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
-			if (!bodyData.username) {
-				bodyData.username = await generateUniqueUsername(bodyData.name)
-			}
+			bodyData.username = bodyData.username
+				? bodyData.username.toLowerCase()
+				: (await generateUniqueUsername(bodyData.name)).toLowerCase()
+
 			// Check user in invitee list
 			let role,
 				roles = []
