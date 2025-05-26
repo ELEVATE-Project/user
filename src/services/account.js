@@ -569,16 +569,12 @@ module.exports = class AccountHelper {
 					username: result.user?.username,
 					email: result.user.email,
 					phone: result.user?.phone,
-					organization_id: result.user?.organizations?.[0]?.id,
+					organizations: result.user?.organizations,
 					tenant_code: result.user?.tenant_code,
-					meta: metaData,
+					...metaData,
 					status: insertedUser?.status || common.ACTIVE_STATUS,
 					deleted: false,
 					id: result.user.id,
-					user_roles: result.user?.organizations?.[0]?.roles.map((role) => ({
-						title: role.title,
-						id: role.id,
-					})),
 				},
 			})
 

@@ -32,6 +32,8 @@ const userRolesQueries = require('@database/queries/userOrganizationRole')
 const notificationUtils = require('@utils/notification')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
 const tenantQueries = require('@database/queries/tenants')
+let defaultOrg = {}
+let modelName = ''
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -46,9 +48,15 @@ module.exports = class UserInviteHelper {
 				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath, data.user)
 				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
 				const invitees = parsedFileData.result.data
+				const additionalCsvHeaders = parsedFileData.result.additionalCsvHeaders
 
 				// create outPut file and create invites
-				const createResponse = await this.createUserInvites(invitees, data.user, data.fileDetails.id)
+				const createResponse = await this.createUserInvites(
+					invitees,
+					data.user,
+					data.fileDetails.id,
+					additionalCsvHeaders
+				)
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
 				// upload output file to cloud
@@ -163,11 +171,11 @@ module.exports = class UserInviteHelper {
 			}
 
 			// Fetch default organization and validation data
-			const defaultOrg = await organizationQueries.findOne(
+			defaultOrg = await organizationQueries.findOne(
 				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: userData.tenant_code },
 				{ attributes: ['id'] }
 			)
-			const modelName = await userQueries.getModelName()
+			modelName = await userQueries.getModelName()
 			const validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
 				organization_id: {
@@ -215,6 +223,9 @@ module.exports = class UserInviteHelper {
 			)
 			// Check if 'roles' column exists
 			const header = Object.keys(csvToJsonData[0])
+			const userTableFields = await userQueries.getColumns()
+			const entityFields = validationData.map((key) => key.value)
+			const additionalCsvHeaders = keysFilter(_.difference(header, [...userTableFields, ...entityFields]))
 			const isRoleExist = header.some((column) => column.toLowerCase() === 'roles')
 
 			// Process rows concurrently
@@ -277,6 +288,7 @@ module.exports = class UserInviteHelper {
 				success: true,
 				result: {
 					data: parsedCSVData,
+					additionalCsvHeaders,
 				},
 			}
 		} catch (error) {
@@ -287,7 +299,7 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async createUserInvites(csvData, user, fileUploadId) {
+	static async createUserInvites(csvData, user, fileUploadId, additionalCsvHeaders = []) {
 		try {
 			console.log(
 				'******************************** User bulk Upload STARTS Here ********************************'
@@ -379,6 +391,17 @@ module.exports = class UserInviteHelper {
 			let isErrorOccured = false
 			let isOrgUpdate = false
 
+			const validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [user.organization_id, defaultOrg.id],
+				},
+				external_entity_type: false,
+				tenant_code: user.tenant_code,
+				model_names: { [Op.contains]: [modelName] },
+			})
+			const prunedEntities = utils.removeDefaultOrgEntityTypes(validationData, user.organization_id)
+
 			//fetch generic email template
 
 			//find already invited users
@@ -391,8 +414,10 @@ module.exports = class UserInviteHelper {
 			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
 			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
 			console.log(existingInvitees)
+
 			// process csv data
 			for (const invitee of csvData) {
+				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
 				invitee.roles = invitee.roles.map((role) => role.trim())
 				const raw_email = invitee.email.toLowerCase()
@@ -508,7 +533,7 @@ module.exports = class UserInviteHelper {
 								return userRolesQueries.create({
 									tenant_code: user.tenant_code,
 									user_id: existingUser.id,
-									organization_code: user.organization_id,
+									organization_code: user.organization_code,
 									role_id: roleId,
 									created_at: new Date(),
 									updated_at: new Date(),
@@ -539,23 +564,35 @@ module.exports = class UserInviteHelper {
 						if (invitee.password) {
 							// Add flag to include password update in UserCredential
 							userUpdateData.password_update = true
+							userUpdateData.password = hashedPassword
+						}
+
+						if (invitee.name) {
+							userUpdateData.name = invitee.name
 						}
 
 						//update user and user credentials table with new role organization
-						if (isOrgUpdate || userUpdateData.roles || userUpdateData.meta || invitee.password) {
+						if (
+							isOrgUpdate ||
+							userUpdateData.roles ||
+							userUpdateData.meta ||
+							userUpdateData.password_update
+						) {
 							// const userCred = await UserCredentialQueries.findOne({
 							// 	email: encryptedEmail,
 							// })
 
-							const userUpdate = await userQueries.updateUser({ id: existingUser.id }, userUpdateData)
-							const modifiedKeys = keysFilter(
-								_.keys(userUpdate[0].dataValues).filter((key) => {
-									return !_.isEqual(
-										userUpdate[0].dataValues[key],
-										userUpdate[0]._previousDataValues[key]
-									)
-								})
+							const [count, userUpdate] = await userQueries.updateUser(
+								{ id: existingUser.id },
+								userUpdateData
 							)
+
+							let modifiedKeys = Object.keys(userUpdate[0].dataValues).filter((key) => {
+								const current = userUpdate[0].dataValues[key]
+								const previous = userUpdate[0]._previousDataValues[key]
+								return current !== previous && !_.isEqual(current, previous)
+							})
+							modifiedKeys = keysFilter(modifiedKeys)
 
 							let oldValues = {},
 								newValues = {}
@@ -571,7 +608,8 @@ module.exports = class UserInviteHelper {
 							}
 
 							if (modifiedKeys.length > 0) {
-								modifiedKeys.forEach((modifiedKey) => {
+								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
+								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
 										const metaData = Object.keys(userUpdate[0].dataValues.meta).reduce(
 											(acc, key) => {
@@ -589,11 +627,20 @@ module.exports = class UserInviteHelper {
 											{}
 										)
 
-										oldValues = userUpdate[0]._previousDataValues[modifiedKey]
-										newValues = metaData
+										oldValues = {
+											...oldValues,
+											...userUpdate[0]._previousDataValues[modifiedKey],
+										}
+										newValues = {
+											...newValues,
+											...metaData,
+										}
+									} else if (additionalCsvHeaders.includes(modifiedKey)) {
+										oldValues[modifiedKey] = invitee[modifiedKey]
+										newValues[modifiedKey] = invitee[modifiedKey]
 									} else {
-										oldValues = userUpdate[0]._previousDataValues[modifiedKey]
-										newValues = userUpdate[0].dataValues[modifiedKey]
+										oldValues[modifiedKey] = userUpdate[0]._previousDataValues[modifiedKey]
+										newValues[modifiedKey] = userUpdate[0].dataValues[modifiedKey]
 									}
 								})
 							}
@@ -604,6 +651,10 @@ module.exports = class UserInviteHelper {
 									eventType: 'bulk-update',
 									entityId: userUpdate[0].dataValues.id,
 									args: {
+										userId: userUpdate[0].dataValues.id,
+										username: userUpdate[0].dataValues.username,
+										status: userUpdate[0].dataValues.status,
+										deleted: userUpdate[0].dataValues.deleted,
 										oldValues,
 										newValues,
 									},
@@ -701,7 +752,7 @@ module.exports = class UserInviteHelper {
 					const newInvitee = await userInviteQueries.create(inviteeData)
 
 					// if the username is taken generate random username and inform user
-					let userNameMessage = ''
+
 					if (
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
 						inviteeData?.username.toString() == ''
@@ -781,26 +832,38 @@ module.exports = class UserInviteHelper {
 							},
 							{}
 						)
-
+						prunedEntities.forEach((entity) => {
+							if (entity.data_type == 'ARRAY' || entity.data_type == 'ARRAY[STRING]') {
+								inviteeData[entity.value] = inviteeData[entity.value]
+									? inviteeData[entity.value].split(',')
+									: ''
+							}
+						})
+						const parsedData = await utils.processDbResponse(inviteeData, prunedEntities)
 						const organizations = userWithOrg.organizations
+						let args = {
+							created_by: user.id,
+							name: parsedData?.name,
+							username: parsedData?.username,
+							email: raw_email,
+							phone: parsedData?.phone ? encryptedPhoneNumber : null,
+							organizations,
+							tenant_code: user?.tenant_code,
+							...metaData,
+							status: insertedUser.status,
+							deleted: false,
+							id: insertedUser?.id,
+						}
+
+						additionalCsvHeaders.forEach((additionalKeys) => {
+							args[additionalKeys] = inviteeData[additionalKeys]
+						})
 
 						const eventBody = eventBodyDTO({
 							entity: 'user',
 							eventType: 'bulk-create',
 							entityId: insertedUser?.id,
-							args: {
-								created_by: user.id,
-								name: inviteeData?.name,
-								username: inviteeData?.username,
-								email: raw_email,
-								phone: inviteeData?.phone ? encryptedPhoneNumber : null,
-								organizations,
-								tenant_code: user?.tenant_code,
-								meta: metaData,
-								status: insertedUser.status,
-								deleted: false,
-								id: insertedUser?.id,
-							},
+							args,
 						})
 						try {
 							eventBroadcasterKafka('userEvents', { requestBody: eventBody })
