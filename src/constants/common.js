@@ -16,6 +16,7 @@ module.exports = {
 	getPaginationOffset,
 	internalAccessUrls: [
 		'/user/v1/profile/details',
+		'/user/v1/user/profileById',
 		'/user/v1/account/list',
 		'/user/v1/user/read',
 		'/user/v1/admin/create',

@@ -175,9 +175,9 @@ module.exports = class tenantHelper {
 									value: entityType.value,
 									label: entityType.label,
 									status: common.ACTIVE_STATUS,
-									tenant_code: tenantCreateResponse.code,
 									type: 'SYSTEM',
 									allow_filtering: entityType.allow_filtering,
+									model_names: entityType.model_names,
 									data_type: entityType.data_type,
 									has_entities: entityType?.has_entities,
 									required: entityType?.required || false,
@@ -186,7 +186,8 @@ module.exports = class tenantHelper {
 									external_entity_type: entityType?.external_entity_type || false,
 								},
 								userId,
-								defaultOrgId
+								defaultOrgId,
+								tenantCreateResponse.code
 							)
 						})
 
@@ -644,14 +645,21 @@ module.exports = class tenantHelper {
 	 * @param {string} tenantCode - code of the tenant
 	 * @returns {JSON} - Tenant details
 	 */
-	static async read(tenantCode) {
+	static async read(tenantCode, isAdmin = false) {
 		try {
+			let options = {}
+			if (isAdmin) {
+				options.organizationAttributes = ['id', 'name', 'code']
+			} else {
+				options.attributes = ['code', 'name', 'description', 'meta']
+			}
+
 			// fetch tenant details
 			let tenantDetails = await tenantQueries.findOne(
 				{
 					code: tenantCode,
 				},
-				{ organizationAttributes: ['id', 'name', 'code'] }
+				options
 			)
 
 			if (!tenantDetails?.code) {
@@ -662,17 +670,19 @@ module.exports = class tenantHelper {
 				})
 			}
 
-			const domains = await tenantDomainQueries.findAll(
-				{
-					tenant_code: tenantCode,
-				},
-				{
-					attributes: ['domain', 'verified'],
-				}
-			)
+			if (isAdmin) {
+				const domains = await tenantDomainQueries.findAll(
+					{
+						tenant_code: tenantCode,
+					},
+					{
+						attributes: ['domain', 'verified'],
+					}
+				)
+				tenantDetails.dataValues.domains = domains || []
+			}
 
 			delete tenantDetails.deleted_at
-			tenantDetails.dataValues.domains = domains || []
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

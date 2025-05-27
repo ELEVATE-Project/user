@@ -139,7 +139,9 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+			if (processDbResponse.email) {
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+			}
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -338,6 +340,64 @@ module.exports = class UserHelper {
 			}
 		} catch (error) {
 			console.log(error)
+			throw error
+		}
+	}
+
+	static async profileById(id, tenantCode = null) {
+		try {
+			const filter = { id }
+			if (tenantCode) {
+				filter.tenant_code = tenantCode
+			}
+
+			let options = {
+				attributes: {
+					exclude: ['password', 'refresh_tokens', 'email', 'phone', 'phone_code'],
+				},
+			}
+
+			options.paranoid = true
+
+			const user = await userQueries.findUserWithOrganization(filter, options)
+
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user.image_cloud_path = user.image
+			if (user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			let userOrg = user.organizations[0].id
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [userOrg, defaultOrgId],
+				},
+				tenant_code: tenantCode,
+				model_names: { [Op.contains]: [await userQueries.getModelName()] },
+			})
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+
+			const processDbResponse = await utils.processDbResponse(user, prunedEntities)
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_PROFILE_FETCHED_SUCCESSFULLY',
+				result: processDbResponse,
+			})
+		} catch (error) {
+			console.log('Error in profileById:', error)
 			throw error
 		}
 	}
