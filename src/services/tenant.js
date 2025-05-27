@@ -175,9 +175,9 @@ module.exports = class tenantHelper {
 									value: entityType.value,
 									label: entityType.label,
 									status: common.ACTIVE_STATUS,
-									tenant_code: tenantCreateResponse.code,
 									type: 'SYSTEM',
 									allow_filtering: entityType.allow_filtering,
+									model_names: entityType.model_names,
 									data_type: entityType.data_type,
 									has_entities: entityType?.has_entities,
 									required: entityType?.required || false,
@@ -186,7 +186,8 @@ module.exports = class tenantHelper {
 									external_entity_type: entityType?.external_entity_type || false,
 								},
 								userId,
-								defaultOrgId
+								defaultOrgId,
+								tenantCreateResponse.code
 							)
 						})
 
