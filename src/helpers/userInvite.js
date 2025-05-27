@@ -889,6 +889,7 @@ module.exports = class UserInviteHelper {
 						appName: process.env.APP_NAME,
 						portalURL: process.env.PORTAL_URL,
 						roles: userData.roles || '',
+						downloadLink: inviteeUploadURL,
 					}),
 				},
 			}
