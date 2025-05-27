@@ -622,9 +622,7 @@ async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 					templateCode: process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: userDetails.name,
-						appName: process.env.APP_NAME,
-						orgName: _.find(user.organizations, { orgCode: code })?.name || '',
-						portalURL: process.env.PORTAL_URL,
+						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
 					},
 					tenantCode: userDetails.tenant_code,
 				})

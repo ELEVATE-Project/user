@@ -310,7 +310,7 @@ module.exports = class UserInviteHelper {
 			//find default org id
 			const defaultOrg = await organizationQueries.findOne({
 				code: process.env.DEFAULT_ORGANISATION_CODE,
-				tenant_code: process.env.DEFAULT_TENANT_CODE,
+				tenant_code: user.tenant_code,
 			})
 			const defaultOrgId = defaultOrg?.id || null
 
@@ -1033,6 +1033,7 @@ module.exports = class UserInviteHelper {
 						appName: process.env.APP_NAME,
 						portalURL: process.env.PORTAL_URL,
 						roles: userData.roles || '',
+						downloadLink: inviteeUploadURL,
 					}),
 				},
 			}
