@@ -23,7 +23,7 @@ const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 
-const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
 	/**
@@ -168,11 +168,17 @@ module.exports = class UserHelper {
 							return acc
 						}, {})
 
-						oldValues = currentUser._previousDataValues[key]
-						newValues = metaData
+						oldValues = {
+							...oldValues,
+							...currentUser._previousDataValues[key],
+						}
+						newValues = {
+							...newValues,
+							...metaData,
+						}
 					} else {
-						oldValues = currentUser._previousDataValues[key]
-						newValues = currentUser.dataValues[key]
+						oldValues[key] = currentUser._previousDataValues[key]
+						newValues[key] = currentUser.dataValues[key]
 					}
 				})
 
@@ -186,12 +192,7 @@ module.exports = class UserHelper {
 					},
 				})
 
-				try {
-					eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-					console.log('KAFKA EVENT EXECUTED')
-				} catch (error) {
-					console.warn('User creation Event Kafka WARNING : ', error)
-				}
+				broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 			}
 
 			return responses.successResponse({

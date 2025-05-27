@@ -25,7 +25,7 @@ const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
-const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
 
@@ -607,7 +607,7 @@ module.exports = class UserInviteHelper {
 								newValues.organizations = userFetch.organizations
 							}
 
-							if (modifiedKeys.length > 0) {
+							if (modifiedKeys.length > 0 || additionalCsvHeaders.length > 0) {
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
@@ -660,18 +660,7 @@ module.exports = class UserInviteHelper {
 									},
 								})
 
-								try {
-									eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-									console.log('KAFKA EVENT EXECUTED')
-								} catch (error) {
-									console.warn('User creation Event Kafka WARNING : ', error)
-								}
-								try {
-									eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-									console.log('API EVENT EXECUTED')
-								} catch (error) {
-									console.warn('User creation Event API WARNING : ', error)
-								}
+								broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 							}
 
 							// Update UserCredential with organization_id and potentially password
@@ -865,18 +854,8 @@ module.exports = class UserInviteHelper {
 							entityId: insertedUser?.id,
 							args,
 						})
-						try {
-							eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-							console.log('KAFKA EVENT EXECUTED')
-						} catch (error) {
-							console.warn('User creation Event Kafka WARNING : ', error)
-						}
-						try {
-							eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-							console.log('API EVENT EXECUTED')
-						} catch (error) {
-							console.warn('User creation Event API WARNING : ', error)
-						}
+
+						broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 						if (insertedUser?.id) {
 							const { name, email } = invitee

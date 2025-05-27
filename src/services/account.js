@@ -38,7 +38,7 @@ const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
-const { eventBroadcasterMain, eventBroadcasterKafka, broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class AccountHelper {
 	/**
@@ -578,16 +578,7 @@ module.exports = class AccountHelper {
 				},
 			})
 
-			try {
-				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-			} catch (error) {
-				console.warn('User creation Event Kafka WARNING : ', error)
-			}
-			try {
-				eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-			} catch (error) {
-				console.warn('User creation Event API WARNING : ', error)
-			}
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
