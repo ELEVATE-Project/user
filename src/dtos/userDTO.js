@@ -62,30 +62,40 @@ class UserDTO {
 			}),
 		}
 	}
+	static keysFilter(input) {
+		const restrictedKeys = [
+			'password',
+			'created_at',
+			'updated_at',
+			'deleted_at',
+			'email_verified',
+			'share_link',
+			'has_accepted_terms_and_conditions',
+			'custom_entity_text',
+			'tenant_code',
+		]
+		return input.filter((key) => !restrictedKeys.includes(key))
+	}
 	static eventBodyDTO({ entity, eventType, entityId, changedValues = [], args = {} }) {
 		try {
 			if (!entity || !eventType || !entityId)
 				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
-			const allowedArgs = [
-				'name',
-				'username',
-				'email',
-				'phone',
-				'organization_id',
-				'tenant_code',
-				'status',
-				'deleted',
-				'id',
-				'meta',
-				'user_roles',
+
+			const disallowedArgs = [
+				'password',
 				'created_at',
-				'created_by',
 				'updated_at',
-				'updated_by',
+				'deleted_at',
+				'email_verified',
+				'share_link',
+				'has_accepted_terms_and_conditions',
+				'custom_entity_text',
 			]
-			const disallowedArgs = Object.keys(args).filter((arg) => !allowedArgs.includes(arg))
-			if (disallowedArgs.length > 0)
-				throw new Error(`Event Args contain disallowed keys: ${disallowedArgs.join(', ')}`)
+
+			disallowedArgs.forEach((key) => {
+				delete args[key]
+			})
+
 			const changes = changedValues.reduce((result, obj) => {
 				const { fieldName, oldValue, newValue } = obj
 				if (!result[fieldName]) result[fieldName] = {}
