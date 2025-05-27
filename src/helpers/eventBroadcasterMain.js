@@ -62,3 +62,26 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 		console.log(err)
 	}
 }
+exports.broadcastUserEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
+	try {
+		// Fire both broadcaster functions concurrently
+		const broadcastPromises = [
+			exports.eventBroadcasterMain(eventGroup, { requestBody, headers, isInternal }),
+			exports.eventBroadcasterKafka(eventGroup, { requestBody }),
+		]
+
+		// Execute both functions and get their results
+		const results = await Promise.allSettled(broadcastPromises)
+
+		// Check for failed promises and throw warnings
+		results.forEach((result, index) => {
+			if (result.status === 'rejected') {
+				const broadcaster = index === 0 ? 'eventBroadcasterMain' : 'eventBroadcasterKafka'
+				console.warn(`Warning: ${broadcaster} failed for eventGroup "${eventGroup}": ${result.reason}`)
+			}
+		})
+	} catch (err) {
+		// Log any unexpected errors from the promise settlement
+		console.error('Error in broadcastUserEvent:', err)
+	}
+}

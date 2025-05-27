@@ -38,7 +38,7 @@ const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
-const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
+const { eventBroadcasterMain, eventBroadcasterKafka, broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class AccountHelper {
 	/**
@@ -1684,7 +1684,25 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			const result = await userHelper.deleteUser(userId, user)
+
+			const eventBody = UserTransformDTO.deleteEventBodyDTO({
+				entity: 'user',
+				eventType: 'delete',
+				entityId: userId,
+				args: {
+					created_by: userId,
+					username: result.user?.username,
+					tenant_code: user?.tenant_code,
+					status: 'DELETED',
+					deleted: true,
+					id: userId,
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: result.message,

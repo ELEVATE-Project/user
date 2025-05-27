@@ -105,6 +105,31 @@ class UserDTO {
 			return false
 		}
 	}
+
+	static deleteEventBodyDTO({ entity, eventType, entityId, args = {} }) {
+		try {
+			if (!entity || !eventType || !entityId)
+				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
+			args = {
+				id: args.id,
+				username: args.username,
+				status: args.status,
+				tenant_code: args.tenant_code,
+				status: 'DELETED',
+				deleted: true,
+				created_by: args.created_by,
+			}
+			return {
+				entity,
+				eventType,
+				entityId,
+				...args,
+			}
+		} catch (error) {
+			console.error(error)
+			return false
+		}
+	}
 }
 
 module.exports = UserDTO
