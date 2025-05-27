@@ -116,9 +116,7 @@ module.exports = class UserHelper {
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
 				{ id: id, tenant_code: tenantCode },
-				bodyData,
-				{},
-				true
+				bodyData
 			)
 
 			const currentUser = updatedData[0]
