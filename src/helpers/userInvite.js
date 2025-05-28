@@ -925,6 +925,7 @@ module.exports = class UserInviteHelper {
 				if (invitee.statusOrUserId == 'Success' && userNameMessage.toString() != '') {
 					invitee.statusOrUserId = `${invitee.statusOrUserId} and ${userNameMessage}`
 				}
+				delete input.meta
 				input.push(invitee)
 			}
 
