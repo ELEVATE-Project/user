@@ -178,14 +178,14 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 					if (!Array.isArray(fieldValue)) {
 						addError(field.value, fieldValue, dataType, 'Must be an array of strings')
 					} else {
-						if (fieldValue.length === 0 && !field.allowEmptyArray) {
+						if (fieldValue.length === 0 && field.required) {
 							addError(field.value, fieldValue, dataType, 'Array cannot be empty')
 						}
 						const regex = field.regex ? new RegExp(field.regex) : null
 						fieldValue.forEach((element) => {
 							if (typeof element !== 'string') {
 								addError(field.value, element, dataType, 'It should be a string')
-							} else if (element === '' && !field.allowEmptyString) {
+							} else if (element === '' && field.required) {
 								addError(field.value, element, dataType, 'Empty strings are not allowed')
 							} else if (field.allow_custom_entities) {
 								if (regex && !regex.test(element)) {
@@ -211,7 +211,7 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 				case 'STRING':
 					if (typeof fieldValue !== 'string') {
 						addError(field.value, fieldValue, dataType, 'It should be a string')
-					} else if (fieldValue === '' && !field.allowEmptyString) {
+					} else if (fieldValue === '' && field.required) {
 						addError(field.value, fieldValue, dataType, 'Empty strings are not allowed')
 					} else if (field.allow_custom_entities) {
 						const regex = field.regex ? new RegExp(field.regex) : null
