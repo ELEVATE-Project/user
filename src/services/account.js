@@ -991,11 +991,13 @@ module.exports = class AccountHelper {
 
 			const user = await userQueries.findOne(query)
 
-			if (!user)
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'OTP_SENT_SUCCESSFULLY',
+			if (!user) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'ACCOUNT_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
 				})
+			}
 
 			const userData = await utilsHelper.redisGet(user.username)
 
