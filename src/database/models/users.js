@@ -30,7 +30,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 				set(value) {
-					this.setDataValue('username', value.toLowerCase())
+					if (value) {
+						this.setDataValue('username', value.toLowerCase())
+					} else {
+						this.setDataValue('username', null)
+					}
 				},
 			},
 			phone: {
