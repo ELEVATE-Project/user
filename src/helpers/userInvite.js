@@ -481,6 +481,7 @@ module.exports = class UserInviteHelper {
 					console.log('aaaaa')
 					invitee.statusOrUserId = 'User already exist'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+					delete invitee.meta
 					input.push(invitee)
 					continue
 				}
