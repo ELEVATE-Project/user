@@ -1005,9 +1005,10 @@ module.exports = class AccountHelper {
 			const user = await userQueries.findOne(query)
 
 			if (!user) {
-				return responses.errorResponse({
+				return responses.failureResponse({
 					statusCode: httpStatusCode.not_found,
 					message: 'ACCOUNT_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
