@@ -467,6 +467,7 @@ module.exports = class UserInviteHelper {
 
 					invitee.statusOrUserId = errorMessage
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+					delete invitee.meta
 					input.push(invitee)
 					continue
 				}
@@ -480,6 +481,7 @@ module.exports = class UserInviteHelper {
 					console.log('aaaaa')
 					invitee.statusOrUserId = 'User already exist'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+					delete invitee.meta
 					input.push(invitee)
 					continue
 				}
@@ -925,7 +927,7 @@ module.exports = class UserInviteHelper {
 				if (invitee.statusOrUserId == 'Success' && userNameMessage.toString() != '') {
 					invitee.statusOrUserId = `${invitee.statusOrUserId} and ${userNameMessage}`
 				}
-				delete input.meta
+				delete invitee.meta
 				input.push(invitee)
 			}
 
