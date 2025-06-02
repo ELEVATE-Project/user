@@ -246,7 +246,7 @@ module.exports = {
 						{ value: '+263', label: 'Zimbabwe' },
 					],
 					has_entities: true,
-					model: 'User',
+					model: ['User'],
 				},
 			]
 
@@ -261,6 +261,7 @@ module.exports = {
 					created_at: new Date(),
 					created_by: 0,
 					updated_by: 0,
+					model_names: model,
 					allow_filtering: false,
 					organization_id: defaultOrgId,
 					tenant_code: tenantCode,
