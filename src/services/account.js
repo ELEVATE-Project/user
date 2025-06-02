@@ -440,7 +440,7 @@ module.exports = class AccountHelper {
 
 			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 
 			const tenant_id =
@@ -694,7 +694,7 @@ module.exports = class AccountHelper {
 			// Determine tenant ID
 			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
