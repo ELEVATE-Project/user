@@ -1,3 +1,10 @@
+/**
+ * name : organization-feature.js
+ * author : Priyanka Pradeep
+ * created-date : 02-Jun-2025
+ * Description : organization-feature helper.
+ */
+
 const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
 const responses = require('@helpers/responses')

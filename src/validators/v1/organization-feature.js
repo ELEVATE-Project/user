@@ -12,4 +12,19 @@ module.exports = {
 		req.checkBody('feature_code').trim().notEmpty().withMessage('feature_code field is empty')
 		req.checkBody('feature_name').trim().notEmpty().withMessage('feature_name field is empty')
 	},
+	update: (req) => {
+		if (req.method === 'DELETE') {
+			req.checkParams('id').notEmpty().withMessage('id param is empty')
+		} else {
+			req.body = filterRequestBody(req.body, organizationFeatures.create)
+			req.checkBody('feature_code').trim().notEmpty().withMessage('feature_code field is empty')
+			req.checkBody('feature_name').trim().notEmpty().withMessage('feature_name field is empty')
+		}
+	},
+
+	read: (req) => {
+		if (req.params.id) {
+			req.checkParams('id').notEmpty().withMessage('id param is empty')
+		}
+	},
 }
