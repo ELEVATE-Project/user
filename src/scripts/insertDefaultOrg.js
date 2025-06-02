@@ -1,8 +1,15 @@
+require('module-alias/register')
 const { Sequelize } = require('sequelize')
 require('dotenv').config({ path: '../.env' })
+let environmentData = require('../envVariables')()
 
 const nodeEnv = process.env.NODE_ENV || 'development'
-
+if (!environmentData.success) {
+	console.error('Server could not start . Not all environment variable is provided', {
+		triggerNotification: true,
+	})
+	process.exit()
+}
 let databaseUrl
 
 switch (nodeEnv) {
@@ -25,16 +32,16 @@ const sequelize = new Sequelize(databaseUrl, {
 	dialect: 'postgres',
 	logging: process.env.NODE_ENV === 'development' ? console.log : false,
 })
-
+console.log(process.env.DEFAULT_ORGANISATION_CODE)
 // Raw SQL query to check if a row with 'default_code' already exists
 const checkQuery = `
-    SELECT id FROM organizations WHERE code = 'default_code' LIMIT 1;
+    SELECT id FROM organizations WHERE code = '${process.env.DEFAULT_ORGANISATION_CODE}' LIMIT 1;
 `
 
 // Raw SQL query for insertion
 const insertQuery = `
     INSERT INTO organizations (name, code, description, status, updated_at, created_at , tenant_code)
-    VALUES (?, ?, ?, ?, NOW(), NOW(), '${process.env.DEFAULT_TENANT_CODE}')
+    VALUES (?, '${process.env.DEFAULT_ORGANISATION_CODE}', ?, ?, NOW(), NOW(), '${process.env.DEFAULT_TENANT_CODE}')
     RETURNING id;
 `
 
@@ -55,7 +62,7 @@ const insertOrgFeatureQuery = `
 		updated_at
 	) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW());
 `
-const defaultValues = ['Default Organization', 'default_code', 'Default Organisation', 'ACTIVE']
+const defaultValues = ['Default Organization', process.env.DEFAULT_ORGANISATION_CODE, 'Default Organisation', 'ACTIVE']
 const queryParams = defaultValues.map((value, index) => (value === 'default' ? null : value))
 
 ;(async () => {
@@ -66,7 +73,7 @@ const queryParams = defaultValues.map((value, index) => (value === 'default' ? n
 		if (existingRow.length > 0) {
 			const existingRowId = existingRow[0].id
 			console.log(
-				`A row with code 'default_code' already exists. Existing row ID: ${existingRowId}. Aborting insertion.`
+				`A row with code '${process.env.DEFAULT_ORGANISATION_CODE}' already exists. Existing row ID: ${existingRowId}. Aborting insertion.`
 			)
 			return
 		}
@@ -84,7 +91,7 @@ const queryParams = defaultValues.map((value, index) => (value === 'default' ? n
 		//for each feature, insert a row into the organization_features table
 		for (const feature of features) {
 			const values = [
-				process.env.DEFAULT_TENANT_ORG_CODE, // organization_code
+				process.env.DEFAULT_ORGANISATION_CODE, // organization_code
 				feature.code, // feature_code
 				true, // enabled
 				feature.label, // feature_name
@@ -100,7 +107,7 @@ const queryParams = defaultValues.map((value, index) => (value === 'default' ? n
 			console.log(`Inserted feature: ${feature.code}`)
 		}
 	} catch (error) {
-		console.error(`Error creating function: ${error.message}`)
+		console.error(`Error creating function: ${error}`)
 	} finally {
 		sequelize.close()
 	}

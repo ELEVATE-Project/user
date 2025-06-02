@@ -128,7 +128,7 @@ module.exports = class tenantHelper {
 				// default org create body
 				const defaultOrgCreateBody = {
 					name: process.env.DEFAULT_TENANT_ORG_NAME,
-					code: process.env.DEFAULT_TENANT_ORG_CODE,
+					code: process.env.DEFAULT_ORGANISATION_CODE,
 					tenant_code: tenantCreateResponse.code,
 					description: '',
 					domains: [],
@@ -297,7 +297,7 @@ module.exports = class tenantHelper {
 				// fetch default org features
 
 				const fetchAllDefaultOrgFeatures = await organizationFeatureQueries.findAllOrganizationFeature({
-					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+					organization_code: process.env.DEFAULT_ORGANISATION_CODE,
 					tenant_code: process.env.DEFAULT_TENANT_CODE,
 				})
 
@@ -315,7 +315,7 @@ module.exports = class tenantHelper {
 							},
 							{
 								organization_id: defaultOrgId,
-								organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+								organization_code: process.env.DEFAULT_ORGANISATION_CODE,
 								tenant_code: tenantCreateResponse.code,
 								id: userId,
 							}
