@@ -11,7 +11,7 @@ module.exports = {
 				name: 'Default Tenant',
 				status: 'ACTIVE',
 				description: 'This is the default tenant.',
-				logo: null,
+				logo: 'https://www.logo.dev',
 				theming: JSON.stringify({
 					primaryColor: '#4F46E5',
 					secondaryColor: '#F97316',
