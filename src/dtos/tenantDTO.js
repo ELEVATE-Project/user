@@ -7,6 +7,7 @@ class TenantResponseDTO {
 			description: input.tenant.description,
 			logo: input.tenant.logo,
 			theming: input.tenant.theming,
+			meta: input.tenant.meta,
 
 			...(input.organization && {
 				organization: {

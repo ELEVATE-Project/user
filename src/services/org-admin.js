@@ -18,13 +18,14 @@ const fileUploadQueries = require('@database/queries/fileUpload')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
-const notificationTemplateQueries = require('@database/queries/notificationTemplate')
+const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
+const notificationUtils = require('@utils/notification')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -103,14 +104,14 @@ module.exports = class OrgAdminHelper {
 
 	static async bulkCreate(filePath, tokenInformation) {
 		try {
-			const { id, organization_id } = tokenInformation
-			const { name, email } = await userQueries.findOne(
-				{ id, organization_id },
-				{ attributes: ['name', 'email'] }
-			)
+			const { id, organization_id, tenant_code } = tokenInformation
+			const { name, email } = await userQueries.findOne({ id }, { attributes: ['name', 'email'] })
 			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
-			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
+			const organization = await organizationQueries.findOne(
+				{ id: organization_id, tenant_code },
+				{ attributes: ['name', 'code'] }
+			)
 
 			const creationData = {
 				name: utils.extractFilename(filePath),
@@ -118,6 +119,7 @@ module.exports = class OrgAdminHelper {
 				type: common.fileTypeCSV,
 				organization_id,
 				created_by: id,
+				tenant_code,
 			}
 
 			const result = await fileUploadQueries.create(creationData)
@@ -143,6 +145,8 @@ module.exports = class OrgAdminHelper {
 						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
+						organization_code: organization.code,
+						tenant_code,
 					},
 				},
 				{
@@ -213,12 +217,13 @@ module.exports = class OrgAdminHelper {
 	 * @param {Number} id - request id
 	 * @returns {JSON} - Details of role request
 	 */
-	static async getRequestDetails(requestId, organization_id) {
+	static async getRequestDetails(requestId, organization_id, tenantCode) {
 		try {
 			let requestDetails = await orgRoleReqQueries.requestDetails(
 				{
 					id: requestId,
 					organization_id,
+					tenant_code: tenantCode,
 				},
 				{
 					attributes: {
@@ -256,6 +261,7 @@ module.exports = class OrgAdminHelper {
 		try {
 			let filterQuery = {
 				organization_id: params.decodedToken.organization_id,
+				tenant_code: params.decodedToken.tenant_code,
 			}
 
 			if (params.body?.filters) {
@@ -304,6 +310,7 @@ module.exports = class OrgAdminHelper {
 			const requestDetail = await orgRoleReqQueries.requestDetails({
 				id: requestId,
 				organization_id: tokenInformation.organization_id,
+				tenant_code: tokenInformation.tenant_code,
 			})
 
 			if (requestDetail.status !== common.REQUESTED_STATUS) {
@@ -316,7 +323,11 @@ module.exports = class OrgAdminHelper {
 
 			bodyData.handled_by = tokenInformation.id
 			const rowsAffected = await orgRoleReqQueries.update(
-				{ id: requestId, organization_id: tokenInformation.organization_id },
+				{
+					id: requestId,
+					organization_id: tokenInformation.organization_id,
+					tenant_code: tokenInformation.tenant_code,
+				},
 				bodyData
 			)
 
@@ -331,6 +342,7 @@ module.exports = class OrgAdminHelper {
 			const requestDetails = await orgRoleReqQueries.requestDetails({
 				id: requestId,
 				organization_id: tokenInformation.organization_id,
+				tenant_code: tokenInformation.tenant_code,
 			})
 
 			const isApproved = bodyData.status === common.ACCEPTED_STATUS
@@ -339,19 +351,24 @@ module.exports = class OrgAdminHelper {
 			const shouldSendEmail = isApproved || isRejected
 			const message = isApproved ? 'ORG_ROLE_REQ_APPROVED' : 'ORG_ROLE_REQ_UPDATED'
 
-			const user = await userQueries.findOne({
+			const user = await userQueries.findUserWithOrganization({
 				id: requestDetails.requester_id,
-				organization_id: tokenInformation.organization_id,
+				tenant_code: tokenInformation.tenant_code,
 			})
 
 			console.log(isApproved, 'isApproved')
 			if (isApproved) {
-				await updateRoleForApprovedRequest(requestDetails, user)
+				await updateRoleForApprovedRequest(
+					requestDetails,
+					user,
+					tokenInformation.tenant_code,
+					tokenInformation.organization_code
+				)
 			}
 
 			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (shouldSendEmail) {
-				await sendRoleRequestStatusEmail(user, bodyData.status)
+				await sendRoleRequestStatusEmail(user, bodyData.status, tokenInformation.organization_code)
 			}
 
 			return responses.successResponse({
@@ -544,52 +561,30 @@ module.exports = class OrgAdminHelper {
 	}
 }
 
-function updateRoleForApprovedRequest(requestDetails, user) {
+function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode) {
 	return new Promise(async (resolve, reject) => {
 		try {
-			const userRoles = await roleQueries.findAll(
-				{ id: user.roles, status: common.ACTIVE_STATUS },
+			const newRole = await roleQueries.findOne(
+				{ id: requestDetails.role, status: common.ACTIVE_STATUS, tenant_code: tenantCode },
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
-			const newRole = await roleQueries.findOne(
-				{ id: requestDetails.role, status: common.ACTIVE_STATUS },
-				{ attributes: ['title', 'id', 'user_type', 'status'] }
-			)
+			await userOrganizationRoleQueries.create({
+				tenant_code: tenantCode,
+				user_id: user.id,
+				organization_code: orgCode,
+				role_id: newRole.id,
+			})
 
 			eventBroadcaster('roleChange', {
 				requestBody: {
 					user_id: requestDetails.requester_id,
 					new_roles: [newRole.title],
-					current_roles: _.map(userRoles, 'title'),
+					current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
 				},
 			})
-
-			let rolesToUpdate = [requestDetails.role]
-
-			let currentUserRoleIds = _.map(userRoles, 'id')
-
-			//remove mentee role from roles array
-			const menteeRoleId = userRoles.find((role) => role.title === common.MENTEE_ROLE)?.id
-			if (menteeRoleId && currentUserRoleIds.includes(menteeRoleId)) {
-				_.pull(currentUserRoleIds, menteeRoleId)
-			}
-			rolesToUpdate.push(...currentUserRoleIds)
-
-			const roles = _.uniq(rolesToUpdate)
-
-			await userQueries.updateUser(
-				{
-					id: requestDetails.requester_id,
-					organization_id: user.organization_id,
-				},
-				{
-					roles,
-				}
-			)
-
 			//delete from cache
-			const redisUserKey = common.redisUserPrefix + requestDetails.requester_id.toString()
+			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${requestDetails.requester_id.toString()}`
 			await utils.redisDel(redisUserKey)
 
 			return resolve({
@@ -602,46 +597,38 @@ function updateRoleForApprovedRequest(requestDetails, user) {
 	})
 }
 
-async function sendRoleRequestStatusEmail(userDetails, status) {
+async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 	try {
-		let templateData
-		if (status === common.ACCEPTED_STATUS) {
-			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
-				userDetails.organization_id
-			)
-		} else if (status === common.REJECTED_STATUS) {
-			templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
-				userDetails.organization_id
-			)
-		}
-		console.log(templateData, 'templateData')
-		if (templateData) {
-			const organization = await organizationQueries.findOne(
-				{ id: userDetails.organization_id },
-				{ attributes: ['name'] }
-			)
+		const plaintextEmailId = emailEncryption.decrypt(userDetails.email)
 
-			const payload = {
-				type: common.notificationEmailType,
-				email: {
-					to: emailEncryption.decrypt(userDetails.email),
-					subject: templateData.subject,
-					body: utils.composeEmailBody(templateData.body, {
+		if (status === common.ACCEPTED_STATUS) {
+			if (plaintextEmailId) {
+				notificationUtils.sendEmailNotification({
+					emailId: plaintextEmailId,
+					templateCode: process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
+					variables: {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
-						orgName: organization.name,
+						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
 						portalURL: process.env.PORTAL_URL,
-					}),
-				},
+					},
+					tenantCode: userDetails.tenant_code,
+				})
 			}
-			console.log(
-				{ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name },
-				'payload'
-			)
-			await kafkaCommunication.pushEmailToKafka(payload)
+		} else if (status === common.REJECTED_STATUS) {
+			if (plaintextEmailId) {
+				notificationUtils.sendEmailNotification({
+					emailId: plaintextEmailId,
+					templateCode: process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
+					variables: {
+						name: userDetails.name,
+						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
+					},
+					tenantCode: userDetails.tenant_code,
+				})
+			}
 		}
+		console.log({ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name }, 'payload')
 
 		return { success: true }
 	} catch (error) {

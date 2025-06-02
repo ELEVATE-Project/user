@@ -21,7 +21,9 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
-const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
+const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
+
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
 	/**
@@ -72,6 +74,7 @@ module.exports = class UserHelper {
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+			const metaDataKeys = validationData.map((meta) => meta.value)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
@@ -121,6 +124,12 @@ module.exports = class UserHelper {
 			const currentName = currentUser.dataValues.name
 			const previousName = currentUser._previousDataValues?.name || null
 
+			const modifiedKeys = keysFilter(
+				_.keys(currentUser.dataValues).filter((key) => {
+					return !_.isEqual(currentUser.dataValues[key], currentUser._previousDataValues[key])
+				})
+			)
+
 			if (currentName !== previousName) {
 				eventBroadcaster('updateName', {
 					requestBody: {
@@ -139,7 +148,53 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+
+			if (processDbResponse?.email) {
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse?.email)
+			}
+
+			if (processDbResponse?.phone) {
+				processDbResponse.phone = emailEncryption.decrypt(processDbResponse?.phone)
+			}
+
+			if (modifiedKeys.length > 0) {
+				let oldValues = {},
+					newValues = {}
+
+				modifiedKeys.forEach((key) => {
+					if (key == 'meta') {
+						const metaData = metaDataKeys.reduce((acc, key) => {
+							acc[key] = processDbResponse[key]
+							return acc
+						}, {})
+
+						oldValues = {
+							...oldValues,
+							...currentUser._previousDataValues[key],
+						}
+						newValues = {
+							...newValues,
+							...metaData,
+						}
+					} else {
+						oldValues[key] = currentUser._previousDataValues[key]
+						newValues[key] = currentUser.dataValues[key]
+					}
+				})
+
+				const eventBody = eventBodyDTO({
+					entity: 'user',
+					eventType: 'update',
+					entityId: processDbResponse?.id,
+					args: {
+						oldValues,
+						newValues,
+					},
+				})
+
+				broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -342,6 +397,64 @@ module.exports = class UserHelper {
 		}
 	}
 
+	static async profileById(id, tenantCode = null) {
+		try {
+			const filter = { id }
+			if (tenantCode) {
+				filter.tenant_code = tenantCode
+			}
+
+			let options = {
+				attributes: {
+					exclude: ['password', 'refresh_tokens', 'email', 'phone', 'phone_code'],
+				},
+			}
+
+			options.paranoid = true
+
+			const user = await userQueries.findUserWithOrganization(filter, options)
+
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user.image_cloud_path = user.image
+			if (user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			let userOrg = user.organizations[0].id
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [userOrg, defaultOrgId],
+				},
+				tenant_code: tenantCode,
+				model_names: { [Op.contains]: [await userQueries.getModelName()] },
+			})
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+
+			const processDbResponse = await utils.processDbResponse(user, prunedEntities)
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_PROFILE_FETCHED_SUCCESSFULLY',
+				result: processDbResponse,
+			})
+		} catch (error) {
+			console.log('Error in profileById:', error)
+			throw error
+		}
+	}
+
 	/**
 	 * Share a mentor Profile.
 	 * @method
@@ -384,10 +497,10 @@ module.exports = class UserHelper {
 	 * @param {Object} bodyData - it contains user preferred language
 	 * @returns {JSON} - updated user preferred languages response
 	 */
-	static async setLanguagePreference(bodyData, id, orgId) {
+	static async setLanguagePreference(bodyData, id, orgId, tenantCode) {
 		try {
 			let skipRequiredValidation = true
-			const user = await userQueries.findOne({ id: id, organization_id: orgId })
+			const user = await userQueries.findOne({ id: id, tenant_code: tenantCode })
 			if (!user) {
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -396,7 +509,7 @@ module.exports = class UserHelper {
 				})
 			}
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -406,6 +519,7 @@ module.exports = class UserHelper {
 				organization_id: { [Op.in]: [orgId, defaultOrgId] },
 				model_names: { [Op.contains]: [userModel] },
 				value: 'preferred_language',
+				tenant_code: tenantCode,
 			}
 			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
@@ -423,7 +537,7 @@ module.exports = class UserHelper {
 			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: id, organization_id: orgId },
+				{ id: id, tenant_code: tenantCode },
 				bodyData
 			)
 			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()

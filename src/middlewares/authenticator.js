@@ -124,20 +124,21 @@ module.exports = async function (req, res, next) {
 
 		let org
 		try {
-			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+			let decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
 			org = decodedToken.data.organizations?.[0]
 
 			const organization_id = org?.id
 			const organization_code = org?.code
+
 			decodedToken.data = {
 				id: decodedToken.data.id,
 				name: decodedToken.data.name,
 				session_id: decodedToken.data.session_id,
 				tenant_code: decodedToken.data.tenant_code,
 				organization_id,
-				roles: org.roles,
 				organization_code,
+				roles: org.roles,
 			}
 			// Get redis key for session
 			const sessionId = decodedToken.data.session_id.toString()

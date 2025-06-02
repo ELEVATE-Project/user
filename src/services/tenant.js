@@ -23,6 +23,7 @@ const RollbackStack = require('@generics/RollbackStack')
 const organisationQueries = require('@database/queries/organization')
 const userRolesQueries = require('@database/queries/user-role')
 const userRolesService = require('@services/user-role')
+const orgAdminService = require('@services/org-admin')
 const organizationFetureService = require('@services/organization-feature')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
 const utils = require('@generics/utils')
@@ -174,9 +175,9 @@ module.exports = class tenantHelper {
 									value: entityType.value,
 									label: entityType.label,
 									status: common.ACTIVE_STATUS,
-									tenant_code: tenantCreateResponse.code,
 									type: 'SYSTEM',
 									allow_filtering: entityType.allow_filtering,
+									model_names: entityType.model_names,
 									data_type: entityType.data_type,
 									has_entities: entityType?.has_entities,
 									required: entityType?.required || false,
@@ -185,7 +186,8 @@ module.exports = class tenantHelper {
 									external_entity_type: entityType?.external_entity_type || false,
 								},
 								userId,
-								defaultOrgId
+								defaultOrgId,
+								tenantCreateResponse.code
 							)
 						})
 
@@ -643,14 +645,21 @@ module.exports = class tenantHelper {
 	 * @param {string} tenantCode - code of the tenant
 	 * @returns {JSON} - Tenant details
 	 */
-	static async read(tenantCode) {
+	static async read(tenantCode, isAdmin = false) {
 		try {
+			let options = {}
+			if (isAdmin) {
+				options.organizationAttributes = ['id', 'name', 'code']
+			} else {
+				options.attributes = ['code', 'name', 'description', 'meta']
+			}
+
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne(
+			let tenantDetails = await tenantQueries.findOne(
 				{
 					code: tenantCode,
 				},
-				{ organizationAttributes: ['id', 'name', 'code'] }
+				options
 			)
 
 			if (!tenantDetails?.code) {
@@ -661,24 +670,17 @@ module.exports = class tenantHelper {
 				})
 			}
 
-			// fetch existing domains for the tenant
-			let existingDomains = await tenantDomainQueries.findAll(
-				{
-					tenant_code: tenantCode,
-				},
-				{
-					attributes: ['domain'],
-				}
-			)
-
-			if (existingDomains.length > 0) {
-				// make an array of existing domains
-				existingDomains = existingDomains.map((tenantDomain) => tenantDomain.domain)
-			} else {
-				existingDomains = []
+			if (isAdmin) {
+				const domains = await tenantDomainQueries.findAll(
+					{
+						tenant_code: tenantCode,
+					},
+					{
+						attributes: ['domain', 'verified'],
+					}
+				)
+				tenantDetails.dataValues.domains = domains || []
 			}
-
-			tenantDetails.domains = existingDomains
 
 			delete tenantDetails.deleted_at
 
@@ -724,6 +726,51 @@ module.exports = class tenantHelper {
 				message: 'TENANT_LIST_FETCHED',
 				result: result,
 			})
+		} catch (error) {
+			console.log(error)
+			throw error // Re-throw other errors
+		}
+	}
+
+	static async userBulkUpload(filePath, userId, orgCode, tenantCode) {
+		try {
+			let orgFilter = {
+				tenant_code: tenantCode,
+			}
+			if (isNaN(orgCode)) {
+				orgFilter.code = orgCode
+			} else {
+				orgFilter.id = orgCode
+			}
+			const orgDetails = await organisationQueries.findOne(orgFilter, {
+				attributes: ['id', 'tenant_code'],
+			})
+
+			if (!orgDetails?.id) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
+
+			if (orgDetails?.tenant_code != tenantCode) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'INVALID_ORG_TENANT_MAPPING',
+				})
+			}
+
+			const tokenInformation = {
+				id: userId,
+				organization_id: orgDetails.id,
+				tenant_code: tenantCode,
+			}
+
+			const bulkUpload = await orgAdminService.bulkCreate(filePath, tokenInformation)
+
+			return bulkUpload
 		} catch (error) {
 			console.log(error)
 			throw error // Re-throw other errors

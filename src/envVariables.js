@@ -221,6 +221,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'change_password',
 	},
+	BULK_CREATE_TEMPLATE_CODE: {
+		message: 'Required bulk create email template code',
+		optional: true,
+		default: 'bulk_user_create',
+	},
 	CAPTCHA_ENABLE: {
 		message: 'Required CAPTCHA ENABLE true or false',
 		optional: false,
@@ -374,6 +379,32 @@ let enviromentVariables = {
 		message: 'URL for notification service',
 		optional: process.env.NOTIFICATION_MODE === 'API' ? false : true,
 	},
+	EVENT_ENABLE_USER_EVENTS: {
+		message: 'Key to toggle user creation API event',
+		optional: true,
+	},
+	EVENT_USER_LISTENER_API: {
+		message: 'URL for User creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_USER_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_ENABLE_KAFKA_PUSH: {
+		message: 'Key to toggle user creation kafka event',
+		optional: true,
+	},
+	EVENT_USER_KAFKA_TOPIC: {
+		message: 'Kafka topic for User creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_KAFKA_PUSH',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
 }
 let success = true
 
@@ -384,6 +415,7 @@ module.exports = function () {
 		}
 
 		let keyCheckPass = true
+		let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS']
 
 		if (
 			enviromentVariables[eachEnvironmentVariable].optional === true &&

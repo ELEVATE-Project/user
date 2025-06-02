@@ -56,6 +56,26 @@ module.exports = class User {
 			return error
 		}
 	}
+
+	/**
+	 * Retrieves user details by ID.
+	 * @async
+	 * @function profileById
+	 * @param {Object} req - Request object containing user data.
+	 * @param {string} req.params.id - The ID of the user to retrieve.
+	 * @param {string} [req.query.language] - Optional language code for localization.
+	 * @param {string} [req.headers.internal_access_token] - Optional token to access deleted user details.
+	 * @returns {Promise<Object>} A promise that resolves to the user details or an error object.
+	 * @throws {Error} If the user details cannot be retrieved.
+	 */
+	async profileById(req) {
+		try {
+			const userDetails = await userService.profileById(req.params.id, req.query.tenant_code)
+			return userDetails
+		} catch (error) {
+			return error
+		}
+	}
 	/**
 	 * Shareable mentor profile link.
 	 * @method
@@ -87,7 +107,8 @@ module.exports = class User {
 			const updateUsersLanguagePreference = await userService.setLanguagePreference(
 				params,
 				req.decodedToken.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
 			)
 			return updateUsersLanguagePreference
 		} catch (error) {

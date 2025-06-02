@@ -37,6 +37,9 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
+const userHelper = require('@helpers/userHelper')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -364,7 +367,7 @@ module.exports = class AccountHelper {
 				})
 			}
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
-
+			let metaData = restructuredData?.meta || {}
 			const insertedUser = await userQueries.create(restructuredData)
 
 			const userOrg = await userOrganizationQueries.create({
@@ -550,10 +553,32 @@ module.exports = class AccountHelper {
 				})
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
-
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
+			metaData = Object.fromEntries(
+				Object.keys(metaData).map((metaKey) => [metaKey, result?.user?.[metaKey] ?? {}])
+			)
+			const eventBody = UserTransformDTO.eventBodyDTO({
+				entity: 'user',
+				eventType: 'create',
+				entityId: result.user?.id,
+				args: {
+					created_by: result.user.id,
+					name: result.user?.name,
+					username: result.user?.username,
+					email: result.user.email,
+					phone: result.user?.phone,
+					organizations: result.user?.organizations,
+					tenant_code: result.user?.tenant_code,
+					...metaData,
+					status: insertedUser?.status || common.ACTIVE_STATUS,
+					deleted: false,
+					id: result.user.id,
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -966,11 +991,13 @@ module.exports = class AccountHelper {
 
 			const user = await userQueries.findOne(query)
 
-			if (!user)
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'OTP_SENT_SUCCESSFULLY',
+			if (!user) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'ACCOUNT_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
 				})
+			}
 
 			const userData = await utilsHelper.redisGet(user.username)
 
@@ -1451,67 +1478,58 @@ module.exports = class AccountHelper {
 	 * @param {String} search - search field.
 	 * @returns {JSON} - List of users
 	 */
-	static async list(params) {
+	static async list(params, tenantCode) {
 		try {
-			if (params.hasOwnProperty('body') && params.body.hasOwnProperty('userIds')) {
+			if (params?.body?.userIds) {
 				const userIds = params.body.userIds
 
 				const userIdsNotFoundInRedis = []
 				const userDetailsFoundInRedis = []
-				for (let i = 0; i < userIds.length; i++) {
-					let userDetails =
-						(await utilsHelper.redisGet(common.redisUserPrefix + userIds[i].toString())) || false
 
-					if (!userDetails) {
-						userIdsNotFoundInRedis.push(userIds[i])
-					} else {
-						if (userDetails.image) {
-							userDetails['image_cloud_path'] = userDetails.image
-							userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+				// Fetch user details from Redis in parallel
+				await Promise.all(
+					userIds.map(async (userId) => {
+						const redisKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
+						let userDetails = await utilsHelper.redisGet(redisKey)
+
+						if (!userDetails) {
+							userIdsNotFoundInRedis.push(userId)
+						} else {
+							if (userDetails.image) {
+								userDetails.image_cloud_path = userDetails.image
+								userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+							}
+							userDetailsFoundInRedis.push(userDetails)
 						}
-						userDetailsFoundInRedis.push(userDetails)
-					}
-				}
-
-				let filterQuery = {
-					id: userIdsNotFoundInRedis,
-				}
-
-				let options = {
-					attributes: {
-						exclude: ['password', 'refresh_tokens'],
-					},
-				}
-
-				//returning deleted user if internal token is passing
-				if (params.headers.internal_access_token) {
-					options.paranoid = false
-					if (params.query.exclude_deleted_records)
-						options.paranoid = params.query.exclude_deleted_records === 'true'
-				}
-
-				let users = await userQueries.findAllUserWithOrganization(filterQuery, options)
-				let roles = await roleQueries.findAll(
-					{},
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
-					}
+					})
 				)
 
-				users.forEach(async (user) => {
-					if (user.roles && user.roles.length > 0) {
-						let roleData = roles.filter((role) => user.roles.includes(role.id))
-						user['user_roles'] = roleData
-						// await utilsHelper.redisSet(element._id.toString(), element)
+				let users = []
+				// Only query DB if needed
+				if (userIdsNotFoundInRedis.length > 0) {
+					const filterQuery = { id: userIdsNotFoundInRedis }
+
+					const options = {
+						attributes: { exclude: ['password', 'refresh_tokens'] },
+						// Add paranoid option based on internal access token and query param
+						paranoid: !(
+							params.headers.internal_access_token && params.query?.exclude_deleted_records === 'false'
+						),
 					}
-					user.email = emailEncryption.decrypt(user.email)
-					if (user.image) {
-						user['image_cloud_path'] = user.image
-						user.image = await utils.getDownloadableUrl(user.image)
-					}
-				})
+
+					users = await userQueries.findAllUserWithOrganization(filterQuery, options, tenantCode)
+
+					// Handle decryption and image URL for DB users
+					await Promise.all(
+						users.map(async (user) => {
+							user.email = emailEncryption.decrypt(user.email)
+							if (user.image) {
+								user.image_cloud_path = user.image
+								user.image = await utils.getDownloadableUrl(user.image)
+							}
+						})
+					)
+				}
 
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -1531,7 +1549,8 @@ module.exports = class AccountHelper {
 					params.query.organization_id ? params.query.organization_id : '',
 					params.pageNo,
 					params.pageSize,
-					params.searchText
+					params.searchText,
+					tenantCode
 				)
 				let foundKeys = {}
 				let result = []
@@ -1627,6 +1646,60 @@ module.exports = class AccountHelper {
 		}
 	}
 
+	/**
+	 * Delete own account
+	 * @method
+	 * @name deleteOwnAccount
+	 * @param {Object} req - request object
+	 * @returns {JSON} - delete user response
+	 */
+	static async deleteOwnAccount(userId, bodyData, tenantCode) {
+		try {
+			const user = await userQueries.findOne({ id: userId, tenant_code: tenantCode })
+
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+
+			if (!isPasswordCorrect) {
+				return responses.failureResponse({
+					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await userHelper.deleteUser(userId, user)
+
+			const eventBody = UserTransformDTO.deleteEventBodyDTO({
+				entity: 'user',
+				eventType: 'delete',
+				entityId: userId,
+				args: {
+					created_by: userId,
+					username: result.user?.username,
+					tenant_code: user?.tenant_code,
+					status: 'DELETED',
+					deleted: true,
+					id: userId,
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: result.message,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
 	/**
 	 * Update role of user
 	 * @method

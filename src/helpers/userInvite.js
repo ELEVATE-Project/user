@@ -18,10 +18,22 @@ const kafkaCommunication = require('@generics/kafka-communication')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const ProjectRootDir = path.join(__dirname, '../')
 const inviteeFileDir = ProjectRootDir + common.tempFolderForBulkUpload
-
+const entityTypeQueries = require('@database/queries/entityType')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
+const userOrganizationQueries = require('@database/queries/userOrganization')
+const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
+const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
+const userRolesQueries = require('@database/queries/userOrganizationRole')
+
+const notificationUtils = require('@utils/notification')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
+const tenantQueries = require('@database/queries/tenants')
+let defaultOrg = {}
+let modelName = ''
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -33,12 +45,18 @@ module.exports = class UserInviteHelper {
 				if (!response.success) throw new Error('FAILED_TO_DOWNLOAD')
 
 				// extract data from csv
-				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath)
+				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath, data.user)
 				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
 				const invitees = parsedFileData.result.data
+				const additionalCsvHeaders = parsedFileData.result.additionalCsvHeaders
 
 				// create outPut file and create invites
-				const createResponse = await this.createUserInvites(invitees, data.user, data.fileDetails.id)
+				const createResponse = await this.createUserInvites(
+					invitees,
+					data.user,
+					data.fileDetails.id,
+					additionalCsvHeaders
+				)
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
 				// upload output file to cloud
@@ -71,10 +89,11 @@ module.exports = class UserInviteHelper {
 				if (templateCode) {
 					const templateData = await notificationTemplateQueries.findOneEmailTemplate(
 						templateCode,
-						data.user.organization_id
+						data.user.organization_id,
+						data.user.tenant_code
 					)
 
-					if (templateData) {
+					if (Object.keys(templateData).length > 0) {
 						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
 						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL) //Rename this to function to generic name since this function is used for both Invitee & Org-admin.
 					}
@@ -137,46 +156,139 @@ module.exports = class UserInviteHelper {
 			}
 		}
 	}
-
-	static async extractDataFromCSV(csvFilePath) {
+	static async extractDataFromCSV(csvFilePath, userData) {
 		try {
 			const parsedCSVData = []
 			const csvToJsonData = await csv().fromFile(csvFilePath)
-			if (csvToJsonData.length > 0) {
-				const header = Object.keys(csvToJsonData[0])
-				const isRoleExist = header.map((column) => column.toLowerCase()).includes('roles')
-				csvToJsonData.forEach((row) => {
-					if (row.name || row.email || row.roles) {
-						if (isRoleExist) {
-							const roles = row.roles.replace(/"/g, '').split(',')
-							row.roles = roles.map((role) => role.trim()) // Trim each role
-						}
 
-						// Extract and prepare meta fields
-						const metaFields = {
-							block: row.block?.trim() || null,
-							state: row.state?.trim() || null,
-							school: row.school?.trim() || null,
-							cluster: row.cluster?.trim() || null,
-							district: row.district?.trim() || null,
-						}
-
-						// Add meta fields to row object
-						row.meta = metaFields
-
-						// Handle password field if exists
-						if (row.password) {
-							row.password = row.password.trim()
-						}
-						parsedCSVData.push(row)
-					}
-				})
+			if (csvToJsonData.length === 0) {
+				return {
+					success: true,
+					result: {
+						data: parsedCSVData,
+					},
+				}
 			}
+
+			// Fetch default organization and validation data
+			defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: userData.tenant_code },
+				{ attributes: ['id'] }
+			)
+			modelName = await userQueries.getModelName()
+			const validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [userData.organization_id, defaultOrg.id],
+				},
+				tenant_code: userData.tenant_code,
+				model_names: { [Op.contains]: [modelName] },
+			})
+			const prunedEntities = utils.removeDefaultOrgEntityTypes(validationData, userData.organization_id)
+			const externalEntityTypes = prunedEntities
+				.filter((entity) => entity.external_entity_type === true)
+				.map((entity) => entity.value)
+			// Function to get unique values for externalEntityTypes keys
+			let service = ''
+			let endPoint = ''
+			const getUniqueEntityValues = (data, entityTypes) => {
+				const uniqueValues = new Set()
+
+				data.forEach((item) => {
+					entityTypes.forEach((key) => {
+						if (item[key]) {
+							const findEntityType = prunedEntities.find((prunedEntity) => prunedEntity.value == key)
+							service = findEntityType.meta.service
+							endPoint = findEntityType.meta.endPoint
+							if (findEntityType.data_type === 'ARRAY') {
+								// Split comma-separated values and add each as a unique value
+								item[key].split(',').forEach((subrole) => uniqueValues.add(subrole.trim()))
+							} else {
+								// Add single value
+								uniqueValues.add(item[key])
+							}
+						}
+					})
+				})
+
+				return Array.from(uniqueValues)
+			}
+			// Get unique values
+			const uniqueEntityValues = getUniqueEntityValues(csvToJsonData, externalEntityTypes)
+			const externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
+				uniqueEntityValues,
+				service,
+				endPoint,
+				userData.tenant_code
+			)
+			// Check if 'roles' column exists
+			const header = Object.keys(csvToJsonData[0])
+			const userTableFields = await userQueries.getColumns()
+			const entityFields = validationData.map((key) => key.value)
+			const additionalCsvHeaders = keysFilter(_.difference(header, [...userTableFields, ...entityFields]))
+			const isRoleExist = header.some((column) => column.toLowerCase() === 'roles')
+
+			// Process rows concurrently
+			await Promise.all(
+				csvToJsonData.map(async (row) => {
+					if (!row.name && !row.email && !row.roles) {
+						return // Skip rows without name, email, or roles
+					}
+
+					// Process roles if the column exists
+					if (isRoleExist && row.roles) {
+						row.roles = row.roles
+							.replace(/"/g, '')
+							.split(',')
+							.map((role) => role.trim())
+					}
+
+					// Extract and prepare meta fields
+					row.meta = {
+						block: row?.block
+							? externalEntityNameIdMap[row.block?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						state: row?.state
+							? externalEntityNameIdMap[row.state?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						school: row?.school
+							? externalEntityNameIdMap[row.school?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						cluster: row?.cluster
+							? externalEntityNameIdMap[row.cluster?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						district: row?.district
+							? externalEntityNameIdMap[row.district?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							: '',
+						professional_role: row?.professional_role
+							? externalEntityNameIdMap[row.professional_role?.replaceAll(/\s+/g, '').toLowerCase()]
+									._id || ''
+							: '',
+						professional_subroles: row?.professional_subroles
+							? row.professional_subroles
+									.split(',')
+									.map(
+										(prof_subRole) =>
+											externalEntityNameIdMap[prof_subRole?.replaceAll(/\s+/g, '').toLowerCase()]
+												._id
+									) || []
+							: [],
+					}
+
+					// Handle password field if exists
+					if (row.password) {
+						row.password = row.password.trim()
+					}
+
+					parsedCSVData.push(row)
+				})
+			)
 
 			return {
 				success: true,
 				result: {
 					data: parsedCSVData,
+					additionalCsvHeaders,
 				},
 			}
 		} catch (error) {
@@ -187,15 +299,29 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async createUserInvites(csvData, user, fileUploadId) {
+	static async createUserInvites(csvData, user, fileUploadId, additionalCsvHeaders = []) {
 		try {
+			console.log(
+				'******************************** User bulk Upload STARTS Here ********************************'
+			)
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 			let menteeRoleId, mentorRoleId
+
+			//find default org id
+			const defaultOrg = await organizationQueries.findOne({
+				code: process.env.DEFAULT_ORGANISATION_CODE,
+				tenant_code: user.tenant_code,
+			})
+			const defaultOrgId = defaultOrg?.id || null
 
 			//get all the roles and map title and id
 			const roleList = await roleQueries.findAll({
 				user_type: common.ROLE_TYPE_NON_SYSTEM,
 				status: common.ACTIVE_STATUS,
+				organization_id: {
+					[Op.in]: [defaultOrgId, user.organization_id],
+				},
+				tenant_code: user.tenant_code,
 			})
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
@@ -209,42 +335,74 @@ module.exports = class UserInviteHelper {
 			})
 
 			//get all existing user
-			const emailArray = _.uniq(_.map(csvData, 'email')).map((email) =>
+			const emailArray = _.uniq(_.map(csvData, 'email').filter((email) => email && email.trim())).map((email) =>
 				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
 
-			const userCredentials = await UserCredentialQueries.findAll(
-				{ email: { [Op.in]: emailArray } },
+			//get all existing user with phone
+			const phoneArray = _.uniq(_.map(csvData, 'phone').filter((phone) => phone && phone.trim())).map((phone) =>
+				emailEncryption.encrypt(phone.trim().toLowerCase())
+			)
+
+			//get all user names
+			const userNameArray = _.uniq(_.map(csvData, 'username'))
+				.filter((username) => _.isString(username) && username.trim() !== '')
+				.map((username) => username)
+			const userCredQuery = {
+				[Op.or]: [
+					emailArray && emailArray.length ? { email: { [Op.in]: emailArray } } : null,
+					phoneArray && phoneArray.length ? { phone: { [Op.in]: phoneArray } } : null,
+				].filter((condition) => condition !== null),
+				tenant_code: user.tenant_code,
+			}
+			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
+
+			const userPresentWithUsername = await userQueries.findAll(
+				{ username: { [Op.in]: userNameArray } },
 				{
-					attributes: ['user_id', 'email'],
+					attributes: ['username'],
 				}
 			)
 
-			//This is valid since UserCredentials Already Store The Encrypted Email ID
-			const userIds = _.map(userCredentials, 'user_id')
-			const existingUsers = await userQueries.findAll(
-				{ id: userIds },
-				{
-					attributes: ['id', 'email', 'organization_id', 'roles', 'meta'],
-				}
-			)
+			const alreadyTakenUserNames = userPresentWithUsername.map((user) => user.username)
 
+			const existingUsers = userCredentials.map((user) => {
+				return {
+					id: user.id,
+					email: user.email,
+					phone: user.phone,
+					phone_code: user.phone_code,
+					organizationIds: user.organizations.map((org) => org.id),
+					organizations: user.organizations,
+					roles: user?.organizations?.[0]?.roles.map((role) => ({
+						title: role.title,
+						id: role.id,
+					})),
+					meta: user.meta,
+				}
+			})
 			//Get All The Users From Database based on UserIds From UserCredentials
 			const existingEmailsMap = new Map(existingUsers.map((eachUser) => [eachUser.email, eachUser])) //Figure Out Who Are The Existing Users
-
-			//find default org id
-			const defaultOrg = await organizationQueries.findOne({ code: process.env.DEFAULT_ORGANISATION_CODE })
-			const defaultOrgId = defaultOrg?.id || null
+			const existingPhoneMap = new Map(
+				existingUsers.map((eachUser) => [`${eachUser.phone_code}${eachUser.phone}`, eachUser])
+			)
 
 			let input = []
 			let isErrorOccured = false
 			let isOrgUpdate = false
 
+			const validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [user.organization_id, defaultOrg.id],
+				},
+				external_entity_type: false,
+				tenant_code: user.tenant_code,
+				model_names: { [Op.contains]: [modelName] },
+			})
+			const prunedEntities = utils.removeDefaultOrgEntityTypes(validationData, user.organization_id)
+
 			//fetch generic email template
-			const emailTemplate = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
-				user.organization_id
-			)
 
 			//find already invited users
 			const emailList = await userInviteQueries.findAll({ email: emailArray })
@@ -252,25 +410,45 @@ module.exports = class UserInviteHelper {
 			emailList.forEach((userInvitee) => {
 				existingInvitees[userInvitee.email] = [userInvitee.id]
 			})
+
+			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
+			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
 			console.log(existingInvitees)
+
 			// process csv data
 			for (const invitee of csvData) {
+				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
 				invitee.roles = invitee.roles.map((role) => role.trim())
-				const encryptedEmail = emailEncryption.encrypt(invitee.email.toLowerCase())
+				const raw_email = invitee.email.toLowerCase()
+				const encryptedEmail = emailEncryption.encrypt(raw_email)
 				const hashedPassword = utils.hashPassword(invitee.password)
+				invitee.name = invitee.name.trim()
 
 				//find the invalid fields and generate error message
 				let invalidFields = []
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
-
-				if (!utils.isValidEmail(invitee.email)) {
+				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
 				if (!utils.isValidPassword(invitee.password)) {
 					invalidFields.push('password')
+				}
+				let emailAndPhoneMissing = false
+				if (!invitee.email && !invitee.phone) {
+					invalidFields.push('phone')
+					invalidFields.push('email')
+					emailAndPhoneMissing = true
+				}
+
+				if (invitee.phone && !invitee.phone_code) {
+					invalidFields.push('phone_code')
+				}
+				let encryptedPhoneNumber = ''
+				if (invitee?.phone) {
+					encryptedPhoneNumber = emailEncryption.encrypt(invitee?.phone)
 				}
 
 				const invalidRoles = invitee.roles.filter((role) => !roleTitlesToIds.hasOwnProperty(role.toLowerCase()))
@@ -280,24 +458,30 @@ module.exports = class UserInviteHelper {
 
 				//merge all error message
 				if (invalidFields.length > 0) {
-					const errorMessage = `${
+					let errorMessage = `${
 						invalidFields.length > 2
 							? invalidFields.slice(0, -1).join(', ') + ', and ' + invalidFields.slice(-1)
 							: invalidFields.join(' and ')
 					} ${invalidFields.length > 1 ? 'are' : 'is'} invalid.`
+					if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
 
 					invitee.statusOrUserId = errorMessage
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+					delete invitee.meta
 					input.push(invitee)
 					continue
 				}
 
-				const existingUser = existingEmailsMap.get(encryptedEmail)
+				const existingUser =
+					existingEmailsMap.get(encryptedEmail) ||
+					existingPhoneMap.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+					null
 				//return error for already invited user
 				if (!existingUser && existingInvitees.hasOwnProperty(encryptedEmail)) {
 					console.log('aaaaa')
 					invitee.statusOrUserId = 'User already exist'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+					delete invitee.meta
 					input.push(invitee)
 					continue
 				}
@@ -308,51 +492,57 @@ module.exports = class UserInviteHelper {
 					isErrorOccured = true
 
 					const isOrganizationMatch =
-						existingUser.organization_id === defaultOrgId ||
-						existingUser.organization_id === user.organization_id
+						existingUser.organizationIds.includes(defaultOrgId) ||
+						existingUser.organizationIds.includes(user.organization_id)
 
 					if (isOrganizationMatch) {
 						let userUpdateData = {}
 
 						//update user organization
-						if (existingUser.organization_id != user.organization_id) {
-							await userQueries.changeOrganization(
-								existingUser.id,
-								existingUser.organization_id,
-								user.organization_id,
+						if (!existingUser.organizationIds.includes(user.organization_id)) {
+							const currentOrgs = await userOrganizationQueries.findAll(
 								{
-									organization_id: user.organization_id,
+									user_id: existingUser.id,
+									tenant_code: user.tenant_code,
+								},
+								{
+									attributes: ['organization_code', 'tenant_code'],
 								}
 							)
+							if (currentOrgs.length <= 0) {
+								invitee.statusOrUserId = `User not found in tenant : ${user.tenant_code} `
+								continue
+							}
+							await organizationQueries.create({
+								user_id: existingUser.id,
+								organization_code: user.organization_code,
+								tenant_code: user.tenant_code,
+								created_at: new Date(),
+								updated_at: new Date(),
+							})
 
 							isOrgUpdate = true
-							userUpdateData.refresh_tokens = []
 						}
-
 						//find the new roles
 						const elementsNotInArray = _.difference(
 							_.map(invitee.roles, (role) => roleTitlesToIds[role.toLowerCase()]).flat(),
-							existingUser.roles
+							existingUser.roles.map((role) => role.id)
 						)
-
+						let rolesPromises = []
 						//update the user roles and handle downgrade of role
 						if (elementsNotInArray.length > 0) {
-							userUpdateData.roles = []
-							if (existingUser.roles.includes(menteeRoleId)) {
-								if (existingUser.roles.length === 1) {
-									userUpdateData.roles.push(...elementsNotInArray, menteeRoleId)
-								} else {
-									userUpdateData.roles.push(...elementsNotInArray, ...existingUser.roles)
-								}
-							} else {
-								userUpdateData.roles.push(...elementsNotInArray, ...existingUser.roles)
-							}
+							rolesPromises = elementsNotInArray.map((roleId) => {
+								return userRolesQueries.create({
+									tenant_code: user.tenant_code,
+									user_id: existingUser.id,
+									organization_code: user.organization_code,
+									role_id: roleId,
+									created_at: new Date(),
+									updated_at: new Date(),
+								})
+							})
 
-							if (userUpdateData.roles.includes(mentorRoleId)) {
-								userUpdateData.roles = _.pull(userUpdateData.roles, menteeRoleId)
-							}
-
-							userUpdateData.refresh_tokens = []
+							await Promise.all(rolesPromises)
 						}
 
 						// Update user meta data if any meta field is provided
@@ -376,39 +566,127 @@ module.exports = class UserInviteHelper {
 						if (invitee.password) {
 							// Add flag to include password update in UserCredential
 							userUpdateData.password_update = true
+							userUpdateData.password = hashedPassword
+						}
+
+						if (invitee.name) {
+							userUpdateData.name = invitee.name
 						}
 
 						//update user and user credentials table with new role organization
-						if (isOrgUpdate || userUpdateData.roles || userUpdateData.meta || invitee.password) {
-							const userCred = await UserCredentialQueries.findOne({
-								email: encryptedEmail,
-							})
+						if (
+							isOrgUpdate ||
+							userUpdateData.roles ||
+							userUpdateData.meta ||
+							userUpdateData.password_update
+						) {
+							// const userCred = await UserCredentialQueries.findOne({
+							// 	email: encryptedEmail,
+							// })
 
-							await userQueries.updateUser({ id: userCred.user_id }, userUpdateData)
-
-							// Update UserCredential with organization_id and potentially password
-							const credentialUpdateData = { organization_id: user.organization_id }
-
-							// Add password to update data if provided
-							if (invitee.password) {
-								// Assuming you have a password hashing utility
-								// You might need to adjust this based on your password handling
-								credentialUpdateData.password = invitee.password // Consider hashing
-							}
-
-							await UserCredentialQueries.updateUser(
-								{
-									email: encryptedEmail,
-								},
-								credentialUpdateData
+							const [count, userUpdate] = await userQueries.updateUser(
+								{ id: existingUser.id },
+								userUpdateData
 							)
 
-							const currentRoles = utils.getRoleTitlesFromId(existingUser.roles, roleList)
+							let modifiedKeys = Object.keys(userUpdate[0].dataValues).filter((key) => {
+								const current = userUpdate[0].dataValues[key]
+								const previous = userUpdate[0]._previousDataValues[key]
+								return current !== previous && !_.isEqual(current, previous)
+							})
+							modifiedKeys = keysFilter(modifiedKeys)
+
+							let oldValues = {},
+								newValues = {}
+							if (isOrgUpdate) {
+								oldValues.organizations = existingUser.organizations
+								const userFetch = await userQueries.findAllUserWithOrganization(
+									{ id: existingUser.id },
+									{},
+									user.tenant_code
+								)
+
+								newValues.organizations = userFetch.organizations
+							}
+
+							if (modifiedKeys.length > 0 || additionalCsvHeaders.length > 0) {
+								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
+								comparisonKeys.forEach((modifiedKey) => {
+									if (modifiedKey == 'meta') {
+										const metaData = Object.keys(userUpdate[0].dataValues.meta).reduce(
+											(acc, key) => {
+												if (
+													invitee[key] !== undefined &&
+													userUpdate[0].dataValues.meta[key] !== undefined
+												) {
+													acc[key] = {
+														name: invitee[key],
+														id: userUpdate[0].dataValues.meta[key],
+													}
+												}
+												return acc
+											},
+											{}
+										)
+
+										oldValues = {
+											...oldValues,
+											...userUpdate[0]._previousDataValues[modifiedKey],
+										}
+										newValues = {
+											...newValues,
+											...metaData,
+										}
+									} else if (additionalCsvHeaders.includes(modifiedKey)) {
+										oldValues[modifiedKey] = invitee[modifiedKey]
+										newValues[modifiedKey] = invitee[modifiedKey]
+									} else {
+										oldValues[modifiedKey] = userUpdate[0]._previousDataValues[modifiedKey]
+										newValues[modifiedKey] = userUpdate[0].dataValues[modifiedKey]
+									}
+								})
+							}
+
+							if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
+								const eventBody = eventBodyDTO({
+									entity: 'user',
+									eventType: 'bulk-update',
+									entityId: userUpdate[0].dataValues.id,
+									args: {
+										userId: userUpdate[0].dataValues.id,
+										username: userUpdate[0].dataValues.username,
+										status: userUpdate[0].dataValues.status,
+										deleted: userUpdate[0].dataValues.deleted,
+										oldValues,
+										newValues,
+									},
+								})
+
+								broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+							}
+
+							// Update UserCredential with organization_id and potentially password
+							// const credentialUpdateData = { organization_id: user.organization_id }
+
+							// // Add password to update data if provided
+							// if (invitee.password) {
+							// 	// Assuming you have a password hashing utility
+							// 	// You might need to adjust this based on your password handling
+							// 	credentialUpdateData.password = invitee.password // Consider hashing
+							// }
+
+							// await UserCredentialQueries.updateUser(
+							// 	{
+							// 		email: encryptedEmail,
+							// 	},
+							// 	credentialUpdateData
+							// )
+
+							const currentRoles = existingUser.roles.map((role) => role.title)
 							let newRoles = []
-							if (userUpdateData.roles) {
-								newRoles = utils.getRoleTitlesFromId(
-									_.difference(userUpdateData.roles, existingUser.roles),
-									roleList
+							if (userUpdateData?.roles) {
+								newRoles = _.difference(userUpdateData.roles, existingUser.roles).map(
+									(role) => role.title
 								)
 								//remove session_manager role because the mentee role is enough to change role in mentoring side
 								newRoles = newRoles.filter((role) => role !== common.SESSION_MANAGER_ROLE)
@@ -464,32 +742,124 @@ module.exports = class UserInviteHelper {
 					inviteeData.email = encryptedEmail
 					const newInvitee = await userInviteQueries.create(inviteeData)
 
+					// if the username is taken generate random username and inform user
+
+					if (
+						alreadyTakenUserNames.includes(inviteeData?.username) ||
+						inviteeData?.username.toString() == ''
+					) {
+						inviteeData.username = await generateUniqueUsername(
+							inviteeData?.name.trim().replace(/\s+/g, '_')
+						)
+						userNameMessage = `Username ${
+							alreadyTakenUserNames.includes(inviteeData?.username)
+								? 'you provided was already taken, '
+								: inviteeData?.username
+								? 'field empty,'
+								: ''
+						} Hence system generated a unique username.`
+					}
+
 					if (newInvitee?.id) {
 						invitee.statusOrUserId = newInvitee.id
+						if (userNameMessage.toString() != '') {
+							invitee.statusOrUserId = `User Id :  ${invitee.statusOrUserId} and ${userNameMessage}`
+						}
 						const insertedUser = await userQueries.create({
 							name: inviteeData.name,
-							email: inviteeData.email,
+							email: inviteeData?.email || null,
+							phone_code: inviteeData?.phone_code || null,
+							phone: inviteeData?.phone ? encryptedPhoneNumber : null,
+							username: inviteeData?.username,
 							roles: newInvitee.roles,
 							password: hashedPassword,
 							meta: inviteeData.meta,
 							organization_id: inviteeData.organization_id,
+							tenant_code: user.tenant_code,
 						})
-						//create user credentials entry
-						const credentialData = {
-							email: newInvitee.email,
-							organization_id: newInvitee.organization_id,
-							organization_user_invite_id: newInvitee.id,
-							user_id: insertedUser.id,
+						const orgCode = await organizationQueries.findOne(
+							{
+								id: inviteeData.organization_id,
+								tenant_code: user.tenant_code,
+							},
+							{
+								attributes: ['code'],
+							}
+						)
+						const userOrgBody = {
+							user_id: insertedUser?.id,
+							organization_code: orgCode.code,
+							tenant_code: user.tenant_code,
+							created_at: new Date(),
+							updated_at: new Date(),
 						}
 
-						// Add password if provided
-						if (invitee.password) {
-							credentialData.password = hashedPassword
+						const userOrgResponse = await userOrganizationQueries.create(userOrgBody)
+
+						const userOrganizationRolePromise = newInvitee.roles.map((role) => {
+							return userOrganizationRoleQueries.create({
+								tenant_code: user.tenant_code,
+								user_id: insertedUser?.id,
+								organization_code: orgCode.code,
+								role_id: role,
+							})
+						})
+
+						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
+
+						const metaData = Object.keys(inviteeData.meta).reduce((acc, key) => {
+							if (invitee[key] !== undefined && inviteeData.meta[key] !== undefined) {
+								acc[key] = {
+									name: invitee[key],
+									id: inviteeData.meta[key],
+								}
+							}
+							return acc
+						}, {})
+						let userWithOrg = await userQueries.findUserWithOrganization(
+							{
+								id: insertedUser?.id,
+								tenant_code: user?.tenant_code,
+							},
+							{}
+						)
+						prunedEntities.forEach((entity) => {
+							if (entity.data_type == 'ARRAY' || entity.data_type == 'ARRAY[STRING]') {
+								inviteeData[entity.value] = inviteeData[entity.value]
+									? inviteeData[entity.value].split(',')
+									: ''
+							}
+						})
+						const parsedData = await utils.processDbResponse(inviteeData, prunedEntities)
+						const organizations = userWithOrg.organizations
+						let args = {
+							created_by: user.id,
+							name: parsedData?.name,
+							username: parsedData?.username,
+							email: raw_email,
+							phone: parsedData?.phone ? encryptedPhoneNumber : null,
+							organizations,
+							tenant_code: user?.tenant_code,
+							...metaData,
+							status: insertedUser.status,
+							deleted: false,
+							id: insertedUser?.id,
 						}
 
-						const newUserCred = await UserCredentialQueries.create(credentialData)
+						additionalCsvHeaders.forEach((additionalKeys) => {
+							args[additionalKeys] = inviteeData[additionalKeys]
+						})
 
-						if (newUserCred?.id) {
+						const eventBody = eventBodyDTO({
+							entity: 'user',
+							eventType: 'bulk-create',
+							entityId: insertedUser?.id,
+							args,
+						})
+
+						broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
+						if (insertedUser?.id) {
 							const { name, email } = invitee
 							const roles = utils.getRoleTitlesFromId(newInvitee.roles, roleList)
 							const roleToString =
@@ -508,9 +878,37 @@ module.exports = class UserInviteHelper {
 								org_name: user.org_name,
 							}
 
-							//send email invitation for new user
-							if (emailTemplate) {
-								await this.sendInviteeEmail(emailTemplate, userData, null, { roles: roleToString })
+							if (userData?.email) {
+								notificationUtils.sendEmailNotification({
+									emailId: userData.email,
+									templateCode: process.env.BULK_CREATE_TEMPLATE_CODE,
+									variables: {
+										name: user.name,
+										orgName: userData.org_name,
+										appName: tenantDetails.name,
+										roles: roleToString || '',
+										portalURL: tenantDomains.domain,
+										username: inviteeData.username,
+									},
+									tenantCode: tenantDetails.code,
+								})
+							}
+
+							// Send SMS notification with OTP if phone is provided
+							if (userData?.phone) {
+								notificationUtils.sendSMSNotification({
+									phoneNumber: userData.phone,
+									templateCode: process.env.BULK_CREATE_TEMPLATE_CODE,
+									variables: {
+										name: user.name,
+										orgName: userData.org_name,
+										appName: tenantDetails.name,
+										roles: roleToString || '',
+										portalURL: tenantDomains.domain,
+										username: inviteeData.username,
+									},
+									tenantCode: tenantDetails.code,
+								})
 							}
 						} else {
 							//delete invitation entry
@@ -526,6 +924,10 @@ module.exports = class UserInviteHelper {
 
 				//convert roles array to string
 				invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+				if (invitee.statusOrUserId == 'Success' && userNameMessage.toString() != '') {
+					invitee.statusOrUserId = `${invitee.statusOrUserId} and ${userNameMessage}`
+				}
+				delete invitee.meta
 				input.push(invitee)
 			}
 
@@ -533,7 +935,7 @@ module.exports = class UserInviteHelper {
 			const csvContent = utils.generateCSVContent(input)
 			const outputFilePath = path.join(inviteeFileDir, outputFileName)
 			fs.writeFileSync(outputFilePath, csvContent)
-
+			console.log('******************************** User bulk Upload ENDS Here ********************************')
 			return {
 				success: true,
 				result: {
@@ -613,6 +1015,7 @@ module.exports = class UserInviteHelper {
 						appName: process.env.APP_NAME,
 						portalURL: process.env.PORTAL_URL,
 						roles: userData.roles || '',
+						downloadLink: inviteeUploadURL,
 					}),
 				},
 			}
