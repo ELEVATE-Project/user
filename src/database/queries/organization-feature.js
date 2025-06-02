@@ -3,7 +3,7 @@ const OrganizationFeature = require('@database/models/index').OrganizationFeatur
 
 exports.create = async (data) => {
 	try {
-		return await OrganizationFeature.create(data)
+		return await OrganizationFeature.create(data, { returning: true })
 	} catch (error) {
 		return error
 	}
@@ -27,6 +27,8 @@ exports.updateOrganizationFeature = async (filter, update, options = {}) => {
 			where: filter,
 			...options,
 			individualHooks: true,
+			returning: true,
+			raw: true,
 		})
 
 		return organizationFeature
@@ -57,6 +59,21 @@ exports.hardDelete = async (feature_code, organization_code, tenant_code) => {
 				tenant_code: tenant_code,
 			},
 			force: true,
+		})
+	} catch (error) {
+		throw error
+	}
+}
+
+exports.delete = async (feature_code, organization_code, tenant_code) => {
+	try {
+		return await OrganizationFeature.destroy({
+			where: {
+				feature_code: feature_code,
+				organization_code: organization_code,
+				tenant_code: tenant_code,
+			},
+			individualHooks: true,
 		})
 	} catch (error) {
 		throw error

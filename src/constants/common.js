@@ -102,4 +102,7 @@ module.exports = {
 	READ_ACCESS: 'r',
 	TYPE_ALL: 'all',
 	ENGLISH_LANGUGE_CODE: 'en',
+	ORGANIZATION_CODE: 'organizationcode',
+	TENANT_CODE: 'tenantcode',
+	DELETE_METHOD: 'DELETE',
 }

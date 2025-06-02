@@ -123,8 +123,9 @@ module.exports = async function (req, res, next) {
 		} else token = authHeader.trim()
 
 		let org
+		let decodedToken
 		try {
-			let decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
 			org = decodedToken.data.organizations?.[0]
 

@@ -45,7 +45,7 @@ module.exports = {
 					code: 'organization_feature_public',
 					module: 'organization-feature',
 					request_type: ['GET'],
-					api_path: '/user/v1/organization-feature/read/*',
+					api_path: '/user/v1/organization-feature/read*',
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -89,11 +89,11 @@ module.exports = {
 					permission_id: await getPermissionId(
 						'organization-feature',
 						['GET'],
-						'/user/v1/organization-feature/read/*'
+						'/user/v1/organization-feature/read*'
 					),
 					module: 'organization-feature',
 					request_type: ['GET'],
-					api_path: '/user/v1/organization-feature/read/*',
+					api_path: '/user/v1/organization-feature/read*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -132,9 +132,9 @@ module.exports = {
 			permission_id: await getPermissionId(
 				'organization-feature',
 				['GET'],
-				'/user/v1/organization-feature/read/*'
+				'/user/v1/organization-feature/read*'
 			),
-			api_path: '/user/v1/organization-feature/read/*',
+			api_path: '/user/v1/organization-feature/read*',
 		})
 
 		await queryInterface.bulkDelete('permissions', {

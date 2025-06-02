@@ -160,5 +160,10 @@
 	"DEFAULT_FEATURE_NOT_FOUND": "Given feature is missing from your tenant's default org features",
 	"ORGANIZATION_FEATURE_EXISTS": "Organization feature already exists",
 	"ORG_FEATURE_CREATED_SUCCESSFULLY": "Organization feature created successfully",
-	"ACCOUNT_NOT_FOUND": "Invalid Login ID"
+	"ACCOUNT_NOT_FOUND": "Invalid Login ID",
+	"ORG_FEATURE_FETCHED": "Organization Feature fetched successfully.",
+	"ORG_FEATURE_NOT_FOUND": "Organization Feature not found",
+	"ORG_FEATURE_DELETED_SUCCESSFULLY": "Organization Feature deleted successfully",
+	"ORG_FEATURE_UPDATED_SUCCESSFULLY": "Organization Feature updated successfully",
+	"FAILED_TO_UPDATE_ORG_FEATURE": "Organization Feature update failed."
 }
