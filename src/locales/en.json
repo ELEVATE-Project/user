@@ -157,5 +157,5 @@
 	"USERNAME_TAKEN": "Username is already taken",
 	"USERNAME_AVAILABLE": "Username is available",
 	"ACCOUNT_NOT_FOUND": "Invalid Login ID",
-	"VALIDATION_FAILED": "Some information seems incorrect. Please review and try again."
+	"VALIDATION_FAILED": "Validation failed. Please check your input."
 }
