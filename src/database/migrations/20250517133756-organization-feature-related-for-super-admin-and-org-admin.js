@@ -142,7 +142,7 @@ module.exports = {
 		})
 
 		await queryInterface.bulkDelete('permissions', {
-			id: await getPermissionId('organization-feature', ['GET'], '/user/v1/organization-feature/read/*'),
+			id: await getPermissionId('organization-feature', ['GET'], '/user/v1/organization-feature/read*'),
 		})
 
 		await queryInterface.bulkDelete('modules', {
