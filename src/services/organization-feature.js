@@ -58,14 +58,13 @@ module.exports = class organizationFeatureHelper {
 			bodyData.created_by = tokenInformation.id
 
 			const createdOrgFeature = await organizationFeatureQueries.create(bodyData)
-			console.log(createdOrgFeature, 'createdOrgFeature')
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORG_FEATURE_CREATED_SUCCESSFULLY',
 				result: createdOrgFeature,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -150,7 +149,6 @@ module.exports = class organizationFeatureHelper {
 			const { organization_code, tenant_code } = tokenInformation
 
 			const deleteResult = await organizationFeatureQueries.delete(featureCode, organization_code, tenant_code)
-
 			if (!deleteResult || deleteResult === 0) {
 				return responses.failureResponse({
 					message: 'ORG_FEATURE_NOT_FOUND',
