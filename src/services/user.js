@@ -78,7 +78,7 @@ module.exports = class UserHelper {
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
+					message: 'VALIDATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
