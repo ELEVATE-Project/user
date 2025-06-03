@@ -8,6 +8,7 @@
 const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
 const responses = require('@helpers/responses')
+const utils = require('@generics/utils')
 module.exports = class organizationFeatureHelper {
 	/**
 	 * Create organization features.
@@ -93,6 +94,16 @@ module.exports = class organizationFeatureHelper {
 				}
 			)
 
+			await Promise.all(
+				organizationFeatures.map(async (feature) => {
+					/* Assigned image url from the stored location */
+					if (feature?.icon) {
+						feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
+					}
+					return feature
+				})
+			)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_FETCHED',
@@ -128,6 +139,10 @@ module.exports = class organizationFeatureHelper {
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
+
+			if (organizationFeature?.icon) {
+				organizationFeature.icon = await utils.getDownloadableUrl(organizationFeature.icon)
 			}
 
 			return responses.successResponse({
