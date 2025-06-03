@@ -1687,6 +1687,9 @@ module.exports = class AccountHelper {
 					status: 'DELETED',
 					deleted: true,
 					id: userId,
+					username: user?.username || null,
+					email: user?.email ? emailEncryption.decrypt(user?.email) : user?.email || null,
+					phone: user?.phone ? emailEncryption.decrypt(user?.phone) : user?.phone || null,
 				},
 			})
 

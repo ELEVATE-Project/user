@@ -158,8 +158,10 @@ module.exports = class UserHelper {
 			}
 
 			if (modifiedKeys.length > 0) {
-				let oldValues = {},
+				let oldValues = await utils.processDbResponse(user, prunedEntities),
 					newValues = {}
+				oldValues.email = oldValues?.email ? emailEncryption.decrypt(oldValues.email) : oldValues.email
+				oldValues.phone = oldValues?.phone ? emailEncryption.decrypt(oldValues.phone) : oldValues.phone
 
 				modifiedKeys.forEach((key) => {
 					if (key == 'meta') {
@@ -167,17 +169,11 @@ module.exports = class UserHelper {
 							acc[key] = processDbResponse[key]
 							return acc
 						}, {})
-
-						oldValues = {
-							...oldValues,
-							...currentUser._previousDataValues[key],
-						}
 						newValues = {
 							...newValues,
 							...metaData,
 						}
 					} else {
-						oldValues[key] = currentUser._previousDataValues[key]
 						newValues[key] = currentUser.dataValues[key]
 					}
 				})

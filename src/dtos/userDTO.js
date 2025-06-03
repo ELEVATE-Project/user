@@ -122,12 +122,14 @@ class UserDTO {
 				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
 			args = {
 				id: args.id,
-				username: args.username,
-				status: args.status,
-				tenant_code: args.tenant_code,
+				username: args?.username || null,
+				status: args?.status,
+				tenant_code: args?.tenant_code,
 				status: 'DELETED',
 				deleted: true,
 				created_by: args.created_by,
+				email: args?.email || null,
+				phone: args?.phone || null,
 			}
 			return {
 				entity,
