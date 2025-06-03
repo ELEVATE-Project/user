@@ -21,7 +21,7 @@ module.exports = class organizationFeatureHelper {
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
 		try {
-			// validate availability of default feature in tenants default organization
+			// validate that the feature exists in the default organization
 			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
 				const defaultFeature = await organizationFeatureQueries.findOne({
 					feature_code: bodyData.feature_code,
@@ -29,7 +29,7 @@ module.exports = class organizationFeatureHelper {
 					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
 				})
 
-				// check if the default feature is available in tenant's default organization
+				// If the feature is not available in the default organization, return an error
 				if (!defaultFeature) {
 					return responses.failureResponse({
 						message: 'DEFAULT_FEATURE_NOT_FOUND',
@@ -39,12 +39,13 @@ module.exports = class organizationFeatureHelper {
 				}
 			}
 
+			// Check if the feature already exists for the given organization and tenant
 			const organizationFeature = await organizationFeatureQueries.findOne({
 				feature_code: bodyData.feature_code,
 				organization_code: tokenInformation.organization_code,
 				tenant_code: tokenInformation.tenant_code,
 			})
-			// check if the feature already exists
+
 			if (organizationFeature) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_FEATURE_EXISTS',
@@ -52,13 +53,13 @@ module.exports = class organizationFeatureHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// Updating body data with organization code and tenant code
+			// Add organization and tenant details to the payload before creation
 			bodyData.organization_code = tokenInformation.organization_code
 			bodyData.tenant_code = tokenInformation.tenant_code
 			bodyData.created_by = tokenInformation.id
 
+			// Create the new organization feature
 			const createdOrgFeature = await organizationFeatureQueries.create(bodyData)
-
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORG_FEATURE_CREATED_SUCCESSFULLY',
@@ -79,6 +80,7 @@ module.exports = class organizationFeatureHelper {
 
 	static async list(tokenInformation) {
 		try {
+			// Fetch all organization features for the given tenant and organization
 			const organizationFeatures = await organizationFeatureQueries.findAllOrganizationFeature(
 				{
 					organization_code: tokenInformation.organization_code,
@@ -112,12 +114,14 @@ module.exports = class organizationFeatureHelper {
 
 	static async read(featureCode, tokenInformation) {
 		try {
+			// Fetch a specific organization feature by feature code, organization, and tenant
 			const organizationFeature = await organizationFeatureQueries.findOne({
 				feature_code: featureCode,
 				organization_code: tokenInformation.organization_code,
 				tenant_code: tokenInformation.tenant_code,
 			})
 
+			// Return error if the organization feature is not found
 			if (!organizationFeature?.tenant_code) {
 				return responses.failureResponse({
 					message: 'ORG_FEATURE_NOT_FOUND',
@@ -149,6 +153,8 @@ module.exports = class organizationFeatureHelper {
 			const { organization_code, tenant_code } = tokenInformation
 
 			const deleteResult = await organizationFeatureQueries.delete(featureCode, organization_code, tenant_code)
+
+			// If no feature was deleted, return a not found error
 			if (!deleteResult || deleteResult === 0) {
 				return responses.failureResponse({
 					message: 'ORG_FEATURE_NOT_FOUND',
@@ -177,6 +183,7 @@ module.exports = class organizationFeatureHelper {
 	 */
 	static async update(bodyData, tokenInformation) {
 		try {
+			// Prepare filter query to identify the organization feature to update
 			let filterQuery = {
 				feature_code: bodyData.feature_code,
 				organization_code: tokenInformation.organization_code,
@@ -190,6 +197,7 @@ module.exports = class organizationFeatureHelper {
 				bodyData
 			)
 
+			// Return error if no record was updated
 			if (updatedCount === 0) {
 				return responses.failureResponse({
 					message: 'FAILED_TO_UPDATE_ORG_FEATURE',
