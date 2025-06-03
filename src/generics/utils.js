@@ -415,6 +415,7 @@ async function processDbResponse(responseBody, entityType) {
 								_id: entity,
 								tenantId: responseBody.tenant_code,
 							}
+
 							externalFetchPromise.push(
 								axios.post(
 									url,
@@ -436,7 +437,6 @@ async function processDbResponse(responseBody, entityType) {
 							_id: responseBody.meta[entityTypeValue],
 							tenantId: responseBody.tenant_code,
 						}
-
 						externalFetchPromise.push(
 							axios.post(
 								url,
@@ -554,8 +554,8 @@ async function processDbResponse(responseBody, entityType) {
 	const output = { ...responseBody } // Create a copy of the responseBody object
 
 	for (const key in output) {
-		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
-			const matchingEntity = entityType.find((entity) => entity.value === key)
+		if (entityType.some((entity) => entity.value.toLowerCase() === key.toLowerCase()) && output[key] !== null) {
+			const matchingEntity = entityType.find((entity) => entity.value.toLowerCase() === key.toLocaleLowerCase())
 			const matchingValues = matchingEntity.entities
 				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : true))
 				.map((entity) => ({

@@ -38,7 +38,7 @@ const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
-const { eventBroadcasterMain, eventBroadcasterKafka } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class AccountHelper {
 	/**
@@ -440,7 +440,7 @@ module.exports = class AccountHelper {
 
 			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 
 			const tenant_id =
@@ -569,29 +569,16 @@ module.exports = class AccountHelper {
 					username: result.user?.username,
 					email: result.user.email,
 					phone: result.user?.phone,
-					organization_id: result.user?.organizations?.[0]?.id,
+					organizations: result.user?.organizations,
 					tenant_code: result.user?.tenant_code,
-					meta: metaData,
+					...metaData,
 					status: insertedUser?.status || common.ACTIVE_STATUS,
 					deleted: false,
 					id: result.user.id,
-					user_roles: result.user?.organizations?.[0]?.roles.map((role) => ({
-						title: role.title,
-						id: role.id,
-					})),
 				},
 			})
 
-			try {
-				eventBroadcasterKafka('userEvents', { requestBody: eventBody })
-			} catch (error) {
-				console.warn('User creation Event Kafka WARNING : ', error)
-			}
-			try {
-				eventBroadcasterMain('userEvents', { requestBody: eventBody, isInternal: true })
-			} catch (error) {
-				console.warn('User creation Event API WARNING : ', error)
-			}
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -707,7 +694,7 @@ module.exports = class AccountHelper {
 			// Determine tenant ID
 			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
@@ -1686,7 +1673,28 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			const result = await userHelper.deleteUser(userId, user)
+
+			const eventBody = UserTransformDTO.deleteEventBodyDTO({
+				entity: 'user',
+				eventType: 'delete',
+				entityId: userId,
+				args: {
+					created_by: userId,
+					username: result.user?.username,
+					tenant_code: user?.tenant_code,
+					status: 'DELETED',
+					deleted: true,
+					id: userId,
+					username: user?.username || null,
+					email: user?.email ? emailEncryption.decrypt(user?.email) : user?.email || null,
+					phone: user?.phone ? emailEncryption.decrypt(user?.phone) : user?.phone || null,
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: result.message,

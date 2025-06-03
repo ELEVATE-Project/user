@@ -1,4 +1,4 @@
-"name","email","phone_code","phone","username","password","roles","state","district","block","cluster","school","professional_roles","professional_subroles"
-"Sarah","sarah@tunerlabs.com","+91",7012345677,"sarah_tunerlabs","Password@123","mentee","Karnataka","Bengaluru","South4","South4","Delhi Public School, Bangalore East","HT&Officials","Physical Education Teacher ,Special Educators"
-"John","john@tunerlabs.com","+91",7012345678,"john_honai","Password@123","mentor","Karnataka","Bengaluru","South4","South4","Delhi Public School, Bangalore East","HT&Officials","Physical Education Teacher ,Special Educators"
-"Pradeep","pradeep@tunerlabs.com","+91",7012345679,"pradeep_tl","Password@123","mentor,session_manager","Karnataka","Bengaluru","South4","South4","Delhi Public School, Bangalore East","HT&Officials","Physical Education Teacher ,Special Educators"
+"name","email","phone_code","phone","username","password","roles","state","district","block","cluster","school","professional_role","professional_subroles"
+"SarahB","sarahB@tunerlabs.com","+91","7012345499","sarahB_tunerlabs","Password@123","mentee","Karnataka","BENGALURU RURAL","NELAMANGALA","BASAVANAHALLI","SHARADA HPS","Teacher","Teacher (Class 1-5)"
+"JohnB","johnB@tunerlabs.com","+91","7012345599","johnB_honai","Password@123","mentor","Karnataka","BENGALURU RURAL","NELAMANGALA","BASAVANAHALLI","SHARADA HPS","Teacher","Teacher (Class 1-5)"
+"PradeepB","pradeepB@tunerlabs.com","+91","7012345699","pradeepB_tl","Password@123","mentor,session_manager","Karnataka","BENGALURU RURAL","NELAMANGALA","BASAVANAHALLI","SHARADA HPS","Teacher","Teacher (Class 1-5)"

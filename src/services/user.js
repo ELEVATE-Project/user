@@ -21,7 +21,9 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
-const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
+const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
+
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
 	/**
@@ -72,6 +74,7 @@ module.exports = class UserHelper {
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+			const metaDataKeys = validationData.map((meta) => meta.value)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
@@ -121,6 +124,12 @@ module.exports = class UserHelper {
 			const currentName = currentUser.dataValues.name
 			const previousName = currentUser._previousDataValues?.name || null
 
+			const modifiedKeys = keysFilter(
+				_.keys(currentUser.dataValues).filter((key) => {
+					return !_.isEqual(currentUser.dataValues[key], currentUser._previousDataValues[key])
+				})
+			)
+
 			if (currentName !== previousName) {
 				eventBroadcaster('updateName', {
 					requestBody: {
@@ -139,9 +148,49 @@ module.exports = class UserHelper {
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			if (processDbResponse.email) {
-				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+
+			if (processDbResponse?.email) {
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse?.email)
 			}
+
+			if (processDbResponse?.phone) {
+				processDbResponse.phone = emailEncryption.decrypt(processDbResponse?.phone)
+			}
+
+			if (modifiedKeys.length > 0) {
+				let oldValues = await utils.processDbResponse(user, prunedEntities),
+					newValues = {}
+				oldValues.email = oldValues?.email ? emailEncryption.decrypt(oldValues.email) : oldValues.email
+				oldValues.phone = oldValues?.phone ? emailEncryption.decrypt(oldValues.phone) : oldValues.phone
+
+				modifiedKeys.forEach((key) => {
+					if (key == 'meta') {
+						const metaData = metaDataKeys.reduce((acc, key) => {
+							acc[key] = processDbResponse[key]
+							return acc
+						}, {})
+						newValues = {
+							...newValues,
+							...metaData,
+						}
+					} else {
+						newValues[key] = currentUser.dataValues[key]
+					}
+				})
+
+				const eventBody = eventBodyDTO({
+					entity: 'user',
+					eventType: 'update',
+					entityId: processDbResponse?.id,
+					args: {
+						oldValues,
+						newValues,
+					},
+				})
+
+				broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
