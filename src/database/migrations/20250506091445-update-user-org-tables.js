@@ -151,10 +151,11 @@ module.exports = {
           NOW() as updated_at
         FROM users u
         JOIN organizations o ON u.organization_id = o.id
-        WHERE u.organization_id IS NOT NULL AND u.tenant_code IS NOT NULL
+        WHERE u.organization_id IS NOT NULL AND u.tenant_code IS NOT NULL AND u.deleted_at IS NULL
         `,
 				{ transaction }
 			)
+
 			await queryInterface.sequelize.query(
 				`
 				INSERT INTO user_organization_roles (
@@ -173,6 +174,8 @@ module.exports = {
 				WHERE u.organization_id IS NOT NULL
 				  AND u.tenant_code IS NOT NULL
 				  AND u.roles IS NOT NULL
+				  AND u.deleted_at IS NULL
+				  AND role_id IS NOT NULL
 				`,
 				{ transaction }
 			)
