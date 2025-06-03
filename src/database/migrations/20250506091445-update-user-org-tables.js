@@ -74,7 +74,7 @@ module.exports = {
 			await queryInterface.sequelize.query(
 				`
         UPDATE organizations 
-        SET tenant_code = 'default'
+        SET tenant_code = '${process.env.DEFAULT_TENANT_CODE}'
         WHERE tenant_code IS NULL
       `,
 				{ transaction }
@@ -153,6 +153,27 @@ module.exports = {
         JOIN organizations o ON u.organization_id = o.id
         WHERE u.organization_id IS NOT NULL AND u.tenant_code IS NOT NULL
         `,
+				{ transaction }
+			)
+			await queryInterface.sequelize.query(
+				`
+				INSERT INTO user_organization_roles (
+				  tenant_code, user_id, organization_code, role_id, created_at, updated_at
+				)
+				SELECT
+				  u.tenant_code,
+				  u.id AS user_id,
+				  o.code AS organization_code,
+				  role_id,
+				  NOW() AS created_at,
+				  NOW() AS updated_at
+				FROM users u
+				JOIN organizations o ON u.organization_id = o.id
+				CROSS JOIN LATERAL unnest(u.roles) AS role_id
+				WHERE u.organization_id IS NOT NULL
+				  AND u.tenant_code IS NOT NULL
+				  AND u.roles IS NOT NULL
+				`,
 				{ transaction }
 			)
 
