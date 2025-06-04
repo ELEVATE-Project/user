@@ -55,6 +55,12 @@ module.exports = {
 			.withMessage('email is invalid')
 			.normalizeEmail({ gmail_remove_dots: false })
 
+		req.checkBody('username')
+			.optional()
+			.trim()
+			.matches(/^[a-z0-9_-]{3,40}$/)
+			.withMessage('username is invalid')
+
 		// Validate phone (optional)
 		req.checkBody('phone')
 			.optional()
