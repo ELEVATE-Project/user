@@ -106,7 +106,6 @@ module.exports = class AccountHelper {
 			// Handle email encryption if provided
 			let encryptedEmailId = null
 			let plaintextEmailId = null
-			bodyData.username = bodyData?.username ? bodyData.username.toLowerCase() : bodyData.username
 			if (bodyData.email) {
 				plaintextEmailId = bodyData.email.toLowerCase()
 				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
@@ -361,7 +360,7 @@ module.exports = class AccountHelper {
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
-					message: 'VALIDATION_FAILED',
+					message: 'SESSION_CREATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
@@ -555,7 +554,6 @@ module.exports = class AccountHelper {
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
 			result.user.email = plaintextEmailId
-			result.user.username = result.user.username.toLowerCase()
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
 			metaData = Object.fromEntries(
@@ -568,7 +566,7 @@ module.exports = class AccountHelper {
 				args: {
 					created_by: result.user.id,
 					name: result.user?.name,
-					username: result.user?.username.toLowerCase(),
+					username: result.user?.username,
 					email: result.user.email,
 					phone: result.user?.phone,
 					organizations: result.user?.organizations,
@@ -1689,9 +1687,6 @@ module.exports = class AccountHelper {
 					status: 'DELETED',
 					deleted: true,
 					id: userId,
-					username: user?.username || null,
-					email: user?.email ? emailEncryption.decrypt(user?.email) : user?.email || null,
-					phone: user?.phone ? emailEncryption.decrypt(user?.phone) : user?.phone || null,
 				},
 			})
 
