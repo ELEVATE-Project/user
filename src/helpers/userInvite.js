@@ -28,12 +28,13 @@ const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
-
+const invitationQueries = require('@database/queries/invitation')
 const notificationUtils = require('@utils/notification')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
 const tenantQueries = require('@database/queries/tenants')
 let defaultOrg = {}
 let modelName = ''
+let externalEntityNameIdMap = {}
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -49,13 +50,39 @@ module.exports = class UserInviteHelper {
 				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
 				const invitees = parsedFileData.result.data
 				const additionalCsvHeaders = parsedFileData.result.additionalCsvHeaders
+				const editable_fields = [
+					...new Set(invitees.flatMap((eachInvite) => eachInvite.editable_fields.split(','))),
+				]
+
+				const tenantDetails = await tenantQueries.findOne(
+					{
+						code: data.user.tenant_code,
+					},
+					{
+						attributes: ['meta'],
+					}
+				)
+				const validity = tenantDetails?.meta?.bulkInvitationValidity || common.BULKINVITATIONVVALIDITY
+				const now = new Date()
+				const valid_till = new Date(now.getTime() + Number(validity))
+
+				const invitation = await invitationQueries.create({
+					file_id: data.fileDetails.id,
+					editable_fields,
+					valid_till,
+					created_by: data.user.id,
+					organization_id: data.user.organization_id,
+					tenant_code: data.user.tenant_code,
+				})
 
 				// create outPut file and create invites
 				const createResponse = await this.createUserInvites(
 					invitees,
 					data.user,
 					data.fileDetails.id,
-					additionalCsvHeaders
+					additionalCsvHeaders,
+					invitation?.id,
+					tenantDetails?.meta
 				)
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
@@ -215,7 +242,7 @@ module.exports = class UserInviteHelper {
 			}
 			// Get unique values
 			const uniqueEntityValues = getUniqueEntityValues(csvToJsonData, externalEntityTypes)
-			const externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
+			externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
 				uniqueEntityValues,
 				service,
 				endPoint,
@@ -299,7 +326,7 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async createUserInvites(csvData, user, fileUploadId, additionalCsvHeaders = []) {
+	static async createUserInvites(csvData, user, fileUploadId, additionalCsvHeaders = [], invitationId, tenantMeta) {
 		try {
 			console.log(
 				'******************************** User bulk Upload STARTS Here ********************************'
@@ -428,6 +455,10 @@ module.exports = class UserInviteHelper {
 				let invalidFields = []
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
+				}
+
+				if (!utils.isValidAction(invitee.action)) {
+					invalidFields.push('action')
 				}
 				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
@@ -737,7 +768,8 @@ module.exports = class UserInviteHelper {
 						//user doesn't have access to update user data
 						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
 					}
-				} else {
+				}
+				if (!existingUser && invitee.action == common.TYPE_UPLOAD) {
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,
@@ -930,6 +962,78 @@ module.exports = class UserInviteHelper {
 						isErrorOccured = true
 						invitee.statusOrUserId = newInvitee
 					}
+				} else {
+					invitee.meta = prunedEntities.reduce((acc, index) => {
+						if (index.data_type == 'ARRAY' || index.data_type == 'ARRAY[STRING]') {
+							acc[index.value] = invitee[index.value].split(',').map((entity) => {
+								return {
+									name: entity,
+									...externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()],
+								}
+							})
+						} else {
+							acc[index.value] = {
+								name: invitee[index.value],
+								...externalEntityNameIdMap[invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()],
+							}
+						}
+						return acc
+					}, {})
+					const raw_phone = invitee?.phone
+					const inviteeData = {
+						...invitee,
+						type: common.INVITED_STATUS,
+						status: common.INVITED_STATUS,
+						organization_id: user.organization_id,
+						file_id: fileUploadId,
+						roles: (invitee.roles || []).map((roleTitle) => roleTitlesToIds[roleTitle.toLowerCase()] || []),
+						meta: invitee.meta || {},
+						invitation_id: invitationId,
+						invitation_key: utils.generateUUID(),
+						tenant_code: user.tenant_code,
+					}
+					inviteeData.email = encryptedEmail
+					inviteeData.username = inviteeData?.username
+						? inviteeData?.username
+						: await generateUniqueUsername(inviteeData?.name)
+					const newInvitee = await userInviteQueries.create(inviteeData)
+					invitee.statusOrUserId = 'User Invited successfully'
+
+					if (raw_email) {
+						notificationUtils.sendEmailNotification({
+							emailId: raw_email,
+							templateCode: process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
+							variables: {
+								name: inviteeData?.name,
+								orgName: user?.org_name,
+								appName: user?.name,
+								roles: roleToString || '',
+								portalURL: utils.appendParamsToUrl(tenantMeta.portalSignInUrl, {
+									invitation_key: inviteeData.invitation_key,
+								}),
+								username: inviteeData.username,
+							},
+							tenantCode: user?.code,
+						})
+					}
+
+					// Send SMS notification with OTP if phone is provided
+					if (raw_phone) {
+						notificationUtils.sendSMSNotification({
+							phoneNumber: raw_phone,
+							templateCode: process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
+							variables: {
+								name: user.name,
+								orgName: userData.org_name,
+								appName: tenantDetails.name,
+								roles: roleToString || '',
+								portalURL: tenantDomains.domain,
+								username: inviteeData.username,
+							},
+							tenantCode: tenantDetails.code,
+						})
+					}
+					console.log('------>>>> ', newInvitee)
 				}
 
 				//convert roles array to string

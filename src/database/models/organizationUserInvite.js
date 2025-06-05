@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			email: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			status: {
 				type: DataTypes.STRING,
@@ -29,6 +29,38 @@ module.exports = (sequelize, DataTypes) => {
 			file_id: {
 				type: DataTypes.INTEGER,
 				allowNull: true,
+			},
+			username: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			phone: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			phone_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			meta: {
+				type: DataTypes.JSONB,
+				allowNull: true,
+			},
+			type: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			invitation_key: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			invitation_id: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
+			tenant_code: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
