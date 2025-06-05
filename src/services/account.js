@@ -360,7 +360,7 @@ module.exports = class AccountHelper {
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
+					message: 'VALIDATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
@@ -1687,6 +1687,9 @@ module.exports = class AccountHelper {
 					status: 'DELETED',
 					deleted: true,
 					id: userId,
+					username: user?.username || null,
+					email: user?.email ? emailEncryption.decrypt(user?.email) : user?.email || null,
+					phone: user?.phone ? emailEncryption.decrypt(user?.phone) : user?.phone || null,
 				},
 			})
 

@@ -15,7 +15,7 @@ class UserDTO {
 			email: user.email,
 			email_verified: user.email_verified,
 			name: user.name,
-			username: user.username.toLowerCase(),
+			username: user.username,
 			phone: user.phone,
 			phone_code: user.phone_code,
 			location: user.location,
