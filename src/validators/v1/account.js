@@ -35,6 +35,7 @@ module.exports = {
 		}
 		console.log(req.body)
 		req.body = filterRequestBody(req.body, account.create)
+		req.body.username = req?.body?.username ? req?.body?.username.toLowerCase() : req?.body?.username
 
 		// Validate name
 		req.checkBody('name')
@@ -58,7 +59,7 @@ module.exports = {
 		req.checkBody('username')
 			.optional()
 			.trim()
-			.matches(/^[a-z0-9_-]{3,40}$/)
+			.matches(/^(?:[a-z0-9_-]{3,40}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})$/) //accept random string (min 3 max 40) of smaller case letters _ - and numbers OR email in lowercase as username
 			.withMessage('username is invalid')
 
 		// Validate phone (optional)
