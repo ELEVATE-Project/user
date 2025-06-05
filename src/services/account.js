@@ -106,6 +106,7 @@ module.exports = class AccountHelper {
 			// Handle email encryption if provided
 			let encryptedEmailId = null
 			let plaintextEmailId = null
+			bodyData.username = bodyData?.username ? bodyData.username.toLowerCase() : bodyData.username
 			if (bodyData.email) {
 				plaintextEmailId = bodyData.email.toLowerCase()
 				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
@@ -554,6 +555,7 @@ module.exports = class AccountHelper {
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
 			result.user.email = plaintextEmailId
+			result.user.username = result.user.username.toLowerCase()
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
 			metaData = Object.fromEntries(
@@ -566,7 +568,7 @@ module.exports = class AccountHelper {
 				args: {
 					created_by: result.user.id,
 					name: result.user?.name,
-					username: result.user?.username,
+					username: result.user?.username.toLowerCase(),
 					email: result.user.email,
 					phone: result.user?.phone,
 					organizations: result.user?.organizations,
