@@ -48,23 +48,22 @@ module.exports = async function (req, res, next) {
 		statusCode: httpStatusCode.unauthorized,
 		responseCode: 'UNAUTHORIZED',
 	})
+	
 	try {
+		let decodedToken
 		let roleValidation = false
 
 		const authHeader = req.get('X-auth-token')
-		const internalAccess = common.internalAccessUrls.some((path) => {
-			if (req.path.includes(path)) {
-				if (req.headers.internal_access_token === process.env.INTERNAL_ACCESS_TOKEN) return true
-				else if (!authHeader) {
-					throw unAuthorizedResponse
-				}
-			}
-			return false
-		})
+		
+		// Validate request path
+		if (!req.path) {
+			throw new Error('Invalid request path')
+		}
+
+		// Default CAPTCHA_ENABLE to false if not set
+		const isCaptchaEnabled = process.env.CAPTCHA_ENABLE ? process.env.CAPTCHA_ENABLE.toLowerCase() === 'true' : false
 
 		// check if captcha check is enabled in the env
-		const isCaptchaEnabled = process.env.CAPTCHA_ENABLE.toLowerCase() == 'true'
-
 		if (isCaptchaEnabled) {
 			// check if captcha is enabled for the route
 			const isCaptchaEnabledForRoute = common.captchaEnabledAPIs.includes(req.path)
@@ -88,8 +87,6 @@ module.exports = async function (req, res, next) {
 			}
 		})
 
-		if (internalAccess && !authHeader) return next()
-
 		if (!authHeader) {
 			try {
 				const isPermissionValid = await checkPermissions(common.PUBLIC_ROLE, req.path, req.method)
@@ -106,12 +103,11 @@ module.exports = async function (req, res, next) {
 			}
 		}
 
-		// let splittedUrl = req.url.split('/');
-		// if (common.uploadUrls.includes(splittedUrl[splittedUrl.length - 1])) {
-		//     if (!req.headers.internal_access_token || process.env.INTERNAL_ACCESS_TOKEN !== req.headers.internal_access_token) {
-		//         throw responses.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
-		//     }
-		// }
+		// Validate auth header format
+		if (authHeader && (!authHeader.includes(' ') || authHeader.split(' ').length !== 2)) {
+			throw unAuthorizedResponse
+		}
+
 		const authHeaderArray = authHeader.split(' ')
 		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
 		try {
@@ -192,6 +188,13 @@ module.exports = async function (req, res, next) {
 		req.decodedToken = decodedToken.data
 		return next()
 	} catch (err) {
+		if (err.name === 'TokenExpiredError') {
+			return next(responses.failureResponse({
+				message: 'ACCESS_TOKEN_EXPIRED',
+				statusCode: httpStatusCode.unauthorized,
+				responseCode: 'UNAUTHORIZED',
+			}))
+		}
 		next(err)
 	}
 }
