@@ -30,6 +30,8 @@ const sequelize = new Sequelize(databaseUrl, {
 		const allowed_tenants = ['shikshagraha', 'shikshalokam', 'default']
 		console.info('ALLOWED TENANTS: ', allowed_tenants)
 
+		const DISABLE_FK_QUERY = 'SET CONSTRAINTS ALL DEFERRED' // temporarily remove constrain checks till the transaction is completed. It won't remove it completely
+
 		const ORG_FETCH_QUERY =
 			'SELECT id , name , code FROM organizations WHERE tenant_code IN (:allowedTenants) AND code NOT IN (:defaultOrgCode) OR tenant_code NOT IN (:allowedTenants)'
 
@@ -44,8 +46,12 @@ const sequelize = new Sequelize(databaseUrl, {
 			raw: true,
 		})
 
-		const orgsToRemove = fetchOrgs.map((orgs) => orgs.id)
-		const orgsCodesToRemove = fetchOrgs.map((orgs) => orgs.code)
+		const orgsToRemove = fetchOrgs
+			.filter((orgs) => orgs.code !== process.env.DEFAULT_ORGANISATION_CODE)
+			.map((orgs) => orgs.id)
+		const orgsCodesToRemove = fetchOrgs
+			.map((orgs) => orgs.code)
+			.filter((code) => code !== process.env.DEFAULT_ORGANISATION_CODE)
 		console.info('Organizations to remove : ', fetchOrgs)
 
 		//fetch system admin and org admin roles
@@ -62,20 +68,32 @@ const sequelize = new Sequelize(databaseUrl, {
 		const systemRoles = fetchRoles.map((role) => role.id)
 		console.log('System Role ids : ', systemRoles)
 
-		const FETCH_USERID_QUERY =
-			'SELECT user_id FROM user_organization_roles WHERE organization_code IN (:orgsCodesToRemove) AND role_id NOT IN (:systemRoles)  OR tenant_code NOT IN (:allowedTenants)'
+		const FETCH_USERID_QUERY = 'SELECT user_id FROM user_organization_roles WHERE role_id IN (:systemRoles)'
 		// Execute the query with replacements
 		const fetchUserIds = await sequelize.query(FETCH_USERID_QUERY, {
 			replacements: { orgsCodesToRemove, systemRoles, allowedTenants: allowed_tenants },
 			type: Sequelize.QueryTypes.SELECT,
 			raw: true,
 		})
-		const userIdsToDelete = fetchUserIds.map((user) => user.user_id)
+
+		const adminRoles = fetchUserIds.map((user) => user.user_id)
+
+		const REFETCH_USERID_QUERY =
+			'SELECT user_id FROM user_organization_roles WHERE user_id NOT IN (:adminRoles) OR organization_code IN (:orgsCodesToRemove)'
+		// Execute the query with replacements
+		const reFetchUserIds = await sequelize.query(REFETCH_USERID_QUERY, {
+			replacements: { adminRoles, orgsCodesToRemove },
+			type: Sequelize.QueryTypes.SELECT,
+			raw: true,
+		})
+
+		const userIdsToDelete = reFetchUserIds.map((user) => user.user_id)
 
 		console.log('User ids to delete : ', userIdsToDelete)
 
 		// fetch user org roles to delete
 		const DELETE_USER_ORG_ROLES_QUERY = 'DELETE FROM user_organization_roles WHERE user_id IN (:userIdsToDelete)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteOrgUserRoles = await sequelize.query(DELETE_USER_ORG_ROLES_QUERY, {
 			replacements: { userIdsToDelete },
 			type: Sequelize.QueryTypes.DELETE,
@@ -84,6 +102,7 @@ const sequelize = new Sequelize(databaseUrl, {
 
 		// fetch user org roles to delete
 		const DELETE_USER_ORGS_QUERY = 'DELETE FROM user_organizations WHERE user_id IN (:userIdsToDelete)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteOrgUsers = await sequelize.query(DELETE_USER_ORGS_QUERY, {
 			replacements: { userIdsToDelete },
 			type: Sequelize.QueryTypes.DELETE,
@@ -92,6 +111,7 @@ const sequelize = new Sequelize(databaseUrl, {
 
 		// fetch user org roles to delete
 		const DELETE_USERS_QUERY = 'DELETE FROM users WHERE id IN (:userIdsToDelete)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteUsers = await sequelize.query(DELETE_USERS_QUERY, {
 			replacements: { userIdsToDelete },
 			type: Sequelize.QueryTypes.DELETE,
@@ -112,6 +132,7 @@ const sequelize = new Sequelize(databaseUrl, {
 
 		const DELETE_ORG_FEATURES_QUERY =
 			'DELETE FROM organization_features WHERE organization_code IN (:orgsCodesToRemove)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteOrganizationFeatures = await sequelize.query(DELETE_ORG_FEATURES_QUERY, {
 			replacements: { orgsCodesToRemove },
 			type: Sequelize.QueryTypes.DELETE,
@@ -120,6 +141,7 @@ const sequelize = new Sequelize(databaseUrl, {
 
 		const DELETE_ORG_DOMAINS_QUERY =
 			'DELETE FROM organization_email_domains WHERE organization_id IN (:orgsToRemove)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteOrganizationDomains = await sequelize.query(DELETE_ORG_DOMAINS_QUERY, {
 			replacements: { orgsToRemove },
 			type: Sequelize.QueryTypes.DELETE,
@@ -135,6 +157,7 @@ const sequelize = new Sequelize(databaseUrl, {
 		})
 
 		const DELETE_ORGS_QUERY = 'DELETE FROM organizations WHERE id IN (:orgsToRemove)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteOrganizations = await sequelize.query(DELETE_ORGS_QUERY, {
 			replacements: { orgsToRemove },
 			type: Sequelize.QueryTypes.DELETE,
@@ -148,6 +171,7 @@ const sequelize = new Sequelize(databaseUrl, {
 			raw: true,
 		})
 		const DELETE_TENANTS_QUERY = 'DELETE FROM tenants WHERE code NOT IN (:allowed_tenants)'
+		await sequelize.query(DISABLE_FK_QUERY, { type: Sequelize.QueryTypes.RAW, raw: true })
 		const deleteTenants = await sequelize.query(DELETE_TENANTS_QUERY, {
 			replacements: { allowed_tenants },
 			type: Sequelize.QueryTypes.DELETE,
