@@ -6,6 +6,7 @@
  */
 const filterRequestBody = require('../common')
 const { organizationFeatures } = require('@constants/blacklistConfig')
+const common = require('@constants/common')
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, organizationFeatures.create)
@@ -13,11 +14,9 @@ module.exports = {
 		req.checkBody('feature_name').trim().notEmpty().withMessage('feature_name field is empty')
 	},
 	update: (req) => {
-		if (req.method === 'DELETE') {
-			req.checkParams('id').notEmpty().withMessage('id param is empty')
-		} else {
-			req.body = filterRequestBody(req.body, organizationFeatures.create)
-			req.checkBody('feature_code').trim().notEmpty().withMessage('feature_code field is empty')
+		req.checkParams('id').notEmpty().withMessage('id param is empty')
+		if (req.method != common.DELETE_METHOD) {
+			req.body = filterRequestBody(req.body, organizationFeatures.update)
 			req.checkBody('feature_name').trim().notEmpty().withMessage('feature_name field is empty')
 		}
 	},
