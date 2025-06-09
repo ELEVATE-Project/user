@@ -166,5 +166,11 @@
 	"ORG_FEATURE_DELETED_SUCCESSFULLY": "Organization Feature deleted successfully",
 	"ORG_FEATURE_UPDATED_SUCCESSFULLY": "Organization Feature updated successfully",
 	"FAILED_TO_UPDATE_ORG_FEATURE": "Organization Feature update failed.",
-	"VALIDATION_FAILED": "Validation failed. Please check your input."
+	"VALIDATION_FAILED": "Validation failed. Please check your input.",
+	"FEATURE_CREATED_SUCCESSFULLY": "Feature created successfully",
+	"FEATURE_ALREADY_EXISTS": "Feature already exist",
+	"FEATURE_NOT_FOUND": "Feature not found",
+	"FEATURE_UPDATED_SUCCESSFULLY": "Feature updated successfully.",
+	"FEATURES_FETCHED_SUCCESSFULLY": "Feature fetched successfully.",
+	"FEATURE_NOT_DELETED": "Feature delete failed"
 }

@@ -358,6 +358,11 @@ const tenant = {
 	],
 }
 
+const feature = {
+	update: ['code', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+}
+
 module.exports = {
 	account,
 	admin,
@@ -374,4 +379,5 @@ module.exports = {
 	user,
 	tenant,
 	organizationFeatures,
+	feature,
 }
