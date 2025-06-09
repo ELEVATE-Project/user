@@ -56,6 +56,7 @@ module.exports = class AccountHelper {
 
 	static async create(bodyData, deviceInfo, domain) {
 		const projection = ['password']
+		let isInvitedUserId = false
 
 		try {
 			const notFoundResponse = (message) =>
@@ -203,10 +204,9 @@ module.exports = class AccountHelper {
 				}
 
 				filterCondition.tenant_code = tenantDomain.tenant_code
+				filterCondition.status = common.INVITED_STATUS
 
-				invitedUserMatch = await userInviteQueries.findOne({
-					filterCondition,
-				})
+				invitedUserMatch = await userInviteQueries.findOne(filterCondition)
 			}
 
 			let isOrgAdmin = false
@@ -232,6 +232,7 @@ module.exports = class AccountHelper {
 					...bodyData,
 					...newBody,
 				}
+				isInvitedUserId = invitedUserMatch.id
 				bodyData.organization_id = invitedUserMatch.organization_id
 				roles = invitedUserMatch?.roles || []
 				if (roles.length > 0) {
@@ -378,6 +379,16 @@ module.exports = class AccountHelper {
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
 			let metaData = restructuredData?.meta || {}
 			const insertedUser = await userQueries.create(restructuredData)
+			if (isInvitedUserId) {
+				await userInviteQueries.update(
+					{
+						id: isInvitedUserId,
+					},
+					{
+						status: common.SIGNEDUP_STATUS,
+					}
+				)
+			}
 
 			const userOrg = await userOrganizationQueries.create({
 				user_id: insertedUser.id,

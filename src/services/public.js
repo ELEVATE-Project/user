@@ -11,6 +11,7 @@ const utils = require('@generics/utils')
 const { Op } = require('sequelize')
 const UserTransformDTO = require('@dtos/userDTO')
 const emailEncryption = require('@utils/emailEncryption')
+const common = require('@constants/common')
 
 module.exports = class AccountHelper {
 	static async tenantBranding(domain = null, organizationCode, tenantCode = null) {
@@ -138,6 +139,7 @@ module.exports = class AccountHelper {
 			const userInvite = await organizationUserInviteQueries.findOne({
 				invitation_key: invitationKey,
 				tenant_code: tenantDetail.code,
+				status: common.INVITED_STATUS,
 			})
 
 			if (!userInvite?.id || !userInvite['invitation.id']) {
@@ -171,7 +173,10 @@ module.exports = class AccountHelper {
 			let response = UserTransformDTO.userInviteDTO(processedDbResponse, prunedEntities)
 			response.email = response?.email ? emailEncryption.decrypt(response?.email) : response?.email
 			response.phone = response?.phone ? emailEncryption.decrypt(response.phone) : response.phone
-			response.editable_fields = userInvite['invitation.editable_fields'] || []
+			response.editable_fields =
+				userInvite['invitation.editable_fields'].filter(
+					(field) => field !== '' && field !== null && field !== undefined
+				) || []
 			delete response.organizations
 			delete response.id
 

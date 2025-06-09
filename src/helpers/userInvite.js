@@ -448,7 +448,7 @@ module.exports = class UserInviteHelper {
 				invitee.roles = invitee.roles.map((role) => role.trim())
 				const raw_email = invitee.email.toLowerCase()
 				const encryptedEmail = emailEncryption.encrypt(raw_email)
-				const hashedPassword = utils.hashPassword(invitee.password)
+				const hashedPassword = invitee.action != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
 				invitee.name = invitee.name.trim()
 
 				//find the invalid fields and generate error message
@@ -463,7 +463,10 @@ module.exports = class UserInviteHelper {
 				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
-				if (!utils.isValidPassword(invitee.password)) {
+				if (
+					!utils.isValidPassword(invitee.password) &&
+					invitee.action.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()
+				) {
 					invalidFields.push('password')
 				}
 				let emailAndPhoneMissing = false
@@ -769,16 +772,20 @@ module.exports = class UserInviteHelper {
 						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
 					}
 				}
-				if (!existingUser && invitee.action == common.TYPE_UPLOAD) {
+				if (!existingUser && invitee.action.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()) {
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,
 						status: common.UPLOADED_STATUS,
+						type: common.TYPE_UPLOAD,
 						organization_id: user.organization_id,
+						tenant_code: user.tenant_code,
 						file_id: fileUploadId,
 						roles: (invitee.roles || []).map((roleTitle) => roleTitlesToIds[roleTitle.toLowerCase()] || []),
 						email: encryptedEmail,
 						meta: invitee.meta || {},
+						invitation_id: invitationId,
+						invitation_key: utils.generateUUID(),
 					}
 
 					inviteeData.email = encryptedEmail
@@ -1002,13 +1009,14 @@ module.exports = class UserInviteHelper {
 								name: inviteeData?.name,
 								orgName: user?.org_name,
 								appName: user?.name,
-								roles: roleToString || '',
+								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '',
 								portalURL: utils.appendParamsToUrl(tenantMeta.portalSignInUrl, {
 									invitation_key: inviteeData.invitation_key,
 								}),
 								username: inviteeData.username,
 							},
-							tenantCode: user?.code,
+							tenantCode: user.tenant_code,
+							organization_id: user.organization_id,
 						})
 					}
 
@@ -1021,14 +1029,14 @@ module.exports = class UserInviteHelper {
 								name: user.name,
 								orgName: userData.org_name,
 								appName: tenantDetails.name,
-								roles: roleToString || '',
+								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '' || '',
 								portalURL: tenantDomains.domain,
 								username: inviteeData.username,
 							},
-							tenantCode: tenantDetails.code,
+							tenantCode: user.tenant_code,
+							organization_id: user.organization_id,
 						})
 					}
-					console.log('------>>>> ', newInvitee)
 				}
 
 				//convert roles array to string
