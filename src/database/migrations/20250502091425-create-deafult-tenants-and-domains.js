@@ -7,16 +7,16 @@ module.exports = {
 		// Insert into tenants
 		await queryInterface.bulkInsert('tenants', [
 			{
-				code: 'default',
+				code: process.env.DEFAULT_TENANT_CODE,
 				name: 'Default Tenant',
 				status: 'ACTIVE',
 				description: 'This is the default tenant.',
-				logo: 'https://example.com/logo.png',
+				logo: 'https://www.logo.dev',
 				theming: JSON.stringify({
 					primaryColor: '#4F46E5',
 					secondaryColor: '#F97316',
 				}),
-				meta: JSON.stringify({ plan: 'free' }),
+				meta: null,
 				created_by: null,
 				updated_by: null,
 				created_at: now,
@@ -29,7 +29,7 @@ module.exports = {
 		await queryInterface.bulkInsert('tenant_domains', [
 			{
 				id: 1,
-				tenant_code: 'default',
+				tenant_code: process.env.DEFAULT_TENANT_CODE,
 				domain: 'localhost',
 				verified: true,
 				created_at: now,

@@ -396,7 +396,6 @@ module.exports = class UserInviteHelper {
 				organization_id: {
 					[Op.in]: [user.organization_id, defaultOrg.id],
 				},
-				external_entity_type: false,
 				tenant_code: user.tenant_code,
 				model_names: { [Op.contains]: [modelName] },
 			})
@@ -597,10 +596,11 @@ module.exports = class UserInviteHelper {
 							modifiedKeys = keysFilter(modifiedKeys)
 
 							let oldValues = {},
-								newValues = {}
+								newValues = {},
+								userFetch = {}
 							if (isOrgUpdate) {
 								oldValues.organizations = existingUser.organizations
-								const userFetch = await userQueries.findAllUserWithOrganization(
+								userFetch = await userQueries.findAllUserWithOrganization(
 									{ id: existingUser.id },
 									{},
 									user.tenant_code
@@ -610,6 +610,16 @@ module.exports = class UserInviteHelper {
 							}
 
 							if (modifiedKeys.length > 0 || additionalCsvHeaders.length > 0) {
+								if (Object.keys(userFetch).length == 0) {
+									userFetch = await userQueries.findAllUserWithOrganization(
+										{ id: existingUser.id },
+										{},
+										user.tenant_code
+									)
+								}
+
+								userFetch = userCredentials.find((user) => user.id == existingUser.id)
+								userFetch = await utils.processDbResponse(userFetch, prunedEntities)
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
@@ -628,23 +638,23 @@ module.exports = class UserInviteHelper {
 											},
 											{}
 										)
-
-										oldValues = {
-											...oldValues,
-											...userUpdate[0]._previousDataValues[modifiedKey],
-										}
 										newValues = {
 											...newValues,
 											...metaData,
 										}
 									} else if (additionalCsvHeaders.includes(modifiedKey)) {
-										oldValues[modifiedKey] = invitee[modifiedKey]
 										newValues[modifiedKey] = invitee[modifiedKey]
 									} else {
-										oldValues[modifiedKey] = userUpdate[0]._previousDataValues[modifiedKey]
 										newValues[modifiedKey] = userUpdate[0].dataValues[modifiedKey]
 									}
 								})
+								oldValues = userFetch
+								oldValues.email = oldValues.email
+									? emailEncryption.decrypt(oldValues.email)
+									: oldValues.email
+								oldValues.phone = oldValues.phone
+									? emailEncryption.decrypt(oldValues.phone)
+									: oldValues.phone
 							}
 
 							if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
@@ -656,7 +666,7 @@ module.exports = class UserInviteHelper {
 										userId: userUpdate[0].dataValues.id,
 										username: userUpdate[0].dataValues.username,
 										status: userUpdate[0].dataValues.status,
-										deleted: userUpdate[0].dataValues.deleted,
+										deleted: userUpdate[0].dataValues.deleted_at ? true : false,
 										oldValues,
 										newValues,
 									},

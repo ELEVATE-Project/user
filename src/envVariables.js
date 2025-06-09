@@ -99,7 +99,7 @@ let enviromentVariables = {
 	DEFAULT_ORGANISATION_CODE: {
 		message: 'Required default organisation code',
 		optional: true,
-		default: 'default_code',
+		default: 'default',
 	},
 	MENTORING_SERVICE_URL: {
 		message: 'Required Mentoring Service Url',
@@ -355,11 +355,6 @@ let enviromentVariables = {
 		message: 'Require default tenant code',
 		optional: true,
 		default: 'default',
-	},
-	DEFAULT_TENANT_ORG_CODE: {
-		message: 'Require default org code under tenant',
-		optional: true,
-		default: 'DEFAULT',
 	},
 	ENTITY_MANAGEMENT_SERVICE_BASE_URL: {
 		message: 'Require entity management base url',

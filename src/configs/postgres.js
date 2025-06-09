@@ -4,7 +4,7 @@ require('dotenv').config()
 let environmentData = require('../envVariables')()
 
 if (!environmentData.success) {
-	logger.error('Server could not start . Not all environment variable is provided', {
+	console.error('Server could not start . Not all environment variable is provided', {
 		triggerNotification: true,
 	})
 	process.exit()

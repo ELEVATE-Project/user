@@ -34,7 +34,6 @@ module.exports = {
 					api_path: '/user/v1/form/read*',
 				},
 			])
-			console.log('============>>>> ', rolePermissionsData)
 			await queryInterface.bulkInsert(
 				'role_permission_mapping',
 				rolePermissionsData.map((data) => ({

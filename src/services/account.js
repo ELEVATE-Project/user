@@ -360,7 +360,7 @@ module.exports = class AccountHelper {
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
+					message: 'VALIDATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
@@ -440,7 +440,7 @@ module.exports = class AccountHelper {
 
 			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 
 			const tenant_id =
@@ -694,7 +694,7 @@ module.exports = class AccountHelper {
 			// Determine tenant ID
 			/* 			let tenantDetails = await organizationQueries.findOne(
 				{ id: user.organization_id },
-				{ attributes: ['parent_id'] }
+				{ attributes: ['related_orgs'] }
 			)
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
@@ -1687,6 +1687,9 @@ module.exports = class AccountHelper {
 					status: 'DELETED',
 					deleted: true,
 					id: userId,
+					username: user?.username || null,
+					email: user?.email ? emailEncryption.decrypt(user?.email) : user?.email || null,
+					phone: user?.phone ? emailEncryption.decrypt(user?.phone) : user?.phone || null,
 				},
 			})
 

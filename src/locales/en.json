@@ -165,5 +165,6 @@
 	"ORG_FEATURE_NOT_FOUND": "Organization Feature not found",
 	"ORG_FEATURE_DELETED_SUCCESSFULLY": "Organization Feature deleted successfully",
 	"ORG_FEATURE_UPDATED_SUCCESSFULLY": "Organization Feature updated successfully",
-	"FAILED_TO_UPDATE_ORG_FEATURE": "Organization Feature update failed."
+	"FAILED_TO_UPDATE_ORG_FEATURE": "Organization Feature update failed.",
+	"VALIDATION_FAILED": "Validation failed. Please check your input."
 }
