@@ -56,7 +56,7 @@ module.exports = class OrganizationFeature {
 				})
 			}
 
-			const organizationFeature = await organizationFeatureService.create(req.body, req.decodedToken, isAdmin)
+			const organizationFeature = await organizationFeatureService.create(req.body, req.decodedToken)
 			return organizationFeature
 		} catch (error) {
 			return error
@@ -94,6 +94,7 @@ module.exports = class OrganizationFeature {
 				? await organizationFeatureService.read(req.params.id, req.decodedToken)
 				: await organizationFeatureService.list(req.decodedToken)
 		} catch (error) {
+			console.log(error, 'error')
 			return error
 		}
 	}

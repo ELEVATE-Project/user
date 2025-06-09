@@ -16,28 +16,24 @@ module.exports = class organizationFeatureHelper {
 	 * @name create
 	 * @param {Object} bodyData - Req Body
 	 * @param {Object} tokenInformation - Token Information
-	 * @param {boolean} isAdmin
 	 * @returns {JSON} - Organization feature creation data.
 	 */
 
-	static async create(bodyData, tokenInformation, isAdmin = false) {
+	static async create(bodyData, tokenInformation) {
 		try {
-			// validate that the feature exists in the default organization
-			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
-				const defaultFeature = await organizationFeatureQueries.findOne({
-					feature_code: bodyData.feature_code,
-					tenant_code: tokenInformation.tenant_code,
-					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
-				})
+			const defaultFeature = await organizationFeatureQueries.findOne({
+				feature_code: bodyData.feature_code,
+				tenant_code: tokenInformation.tenant_code,
+				organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+			})
 
-				// If the feature is not available in the default organization, return an error
-				if (!defaultFeature) {
-					return responses.failureResponse({
-						message: 'DEFAULT_FEATURE_NOT_FOUND',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+			// If the feature is not available in the default organization, return an error
+			if (!defaultFeature) {
+				return responses.failureResponse({
+					message: 'DEFAULT_FEATURE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			// Check if the feature already exists for the given organization and tenant
