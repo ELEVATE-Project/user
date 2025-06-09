@@ -1,6 +1,7 @@
 'use strict'
 const organizationUserInvite = require('../models/index').OrganizationUserInvite
 const { ValidationError } = require('sequelize')
+const Invitation = require('../models/index').Invitation
 
 exports.create = async (data) => {
 	try {
@@ -38,6 +39,7 @@ exports.findOne = async (filter, options = {}) => {
 		return await organizationUserInvite.findOne({
 			where: filter,
 			...options,
+			include: [{ model: Invitation, as: 'invitation' }],
 			raw: true,
 		})
 	} catch (error) {

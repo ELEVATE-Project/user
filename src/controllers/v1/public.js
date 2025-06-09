@@ -29,4 +29,14 @@ module.exports = class Public {
 			return error
 		}
 	}
+
+	async userInvites(req) {
+		const domain = getDomainFromRequest(req)
+
+		try {
+			return await publicService.userInvites(req.query.invitation_key, domain)
+		} catch (error) {
+			return error
+		}
+	}
 }

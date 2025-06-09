@@ -38,8 +38,12 @@ module.exports = {
 				orgCodeMap = new Map(orgs.map((org) => [org.code, org.id]))
 			}
 
-			// Make non-nullable columns NOT NULL
 			await queryInterface.addColumn('organization_user_invites', 'username', {
+				type: Sequelize.STRING(255),
+				allowNull: true,
+			})
+
+			await queryInterface.addColumn('organization_user_invites', 'name', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
@@ -123,25 +127,6 @@ module.exports = {
 						}
 					)
 				}
-			})
-
-			await queryInterface.changeColumn('organization_user_invites', 'tenant_code', {
-				allowNull: false,
-			})
-			await queryInterface.changeColumn('organization_user_invites', 'invitation_id', {
-				allowNull: false,
-			})
-			await queryInterface.changeColumn('organization_user_invites', 'invitation_key', {
-				allowNull: false,
-			})
-			await queryInterface.changeColumn('organization_user_invites', 'type', {
-				allowNull: false,
-			})
-			await queryInterface.changeColumn('organization_user_invites', 'username', {
-				allowNull: false,
-			})
-			await queryInterface.changeColumn('organization_user_invites', 'email', {
-				allowNull: true,
 			})
 
 			// Add new composite primary key (id, organization_id, tenant_code)

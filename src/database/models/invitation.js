@@ -58,5 +58,13 @@ module.exports = (sequelize, DataTypes) => {
 		}
 	)
 
+	// One-to-many: One Invitation has many OrganizationUserInvites
+	Invitation.associate = (models) => {
+		Invitation.hasMany(models.OrganizationUserInvite, {
+			foreignKey: 'invitation_id',
+			sourceKey: 'id',
+			as: 'organizationUserInvites',
+		})
+	}
 	return Invitation
 }

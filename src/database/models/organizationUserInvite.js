@@ -13,6 +13,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
+			name: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: 'ACTIVE',
@@ -57,6 +61,10 @@ module.exports = (sequelize, DataTypes) => {
 			invitation_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				references: {
+					model: 'Invitation',
+					key: 'id',
+				},
 			},
 			tenant_code: {
 				type: DataTypes.INTEGER,
@@ -74,6 +82,14 @@ module.exports = (sequelize, DataTypes) => {
 			paranoid: true,
 		}
 	)
+	// Many-to-one: Many OrganizationUserInvites belong to one Invitation
+	OrganizationUserInvite.associate = (models) => {
+		OrganizationUserInvite.belongsTo(models.Invitation, {
+			foreignKey: 'invitation_id',
+			targetKey: 'id',
+			as: 'invitation',
+		})
+	}
 
 	return OrganizationUserInvite
 }

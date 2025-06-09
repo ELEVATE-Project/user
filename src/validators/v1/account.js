@@ -178,6 +178,8 @@ module.exports = {
 			.trim()
 			.matches(/^[0-9]{7,15}$/)
 			.withMessage('phone must be a valid number between 7 and 15 digits')
+		// Validate registration_code
+		req.checkBody('registration_code').trim().withMessage('registration_code cannot be empty.')
 
 		// Validate phone_code (required if phone is provided)
 		req.checkBody('phone_code')

@@ -191,54 +191,63 @@ module.exports = class AccountHelper {
 			let invitedUserMatch = false
 			let invitedUserId = null
 
-			if (encryptedEmailId) {
-				invitedUserId = await UserCredentialQueries.findOne(
-					{
-						email: encryptedEmailId,
-						organization_user_invite_id: {
-							[Op.ne]: null,
-						},
-						password: {
-							[Op.eq]: null,
-						},
-					},
-					{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
-				)
-			}
-			/* 			if (!invitedUserId && encryptedPhoneNumber) {
-				invitedUserId = await UserCredentialQueries.findOne(
-					{
-						phone: encryptedPhoneNumber,
-						organization_user_invite_id: {
-							[Op.ne]: null,
-						},
-						password: {
-							[Op.eq]: null,
-						},
-					},
-					{ attributes: ['organization_user_invite_id', 'organization_id'], raw: true }
-				)
-			} */
+			if (encryptedEmailId || encryptedPhoneNumber || bodyData?.invitation_key) {
+				let filterCondition = {}
+				if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
 
-			if (invitedUserId) {
+				if (encryptedEmailId && !bodyData?.invitation_key) filterCondition.email = encryptedEmailId
+
+				if (encryptedPhoneNumber && !bodyData?.invitation_key) {
+					filterCondition.phone = encryptedPhoneNumber
+					filterCondition.phone = bodyData.phone_code
+				}
+
+				filterCondition.tenant_code = tenantDomain.tenant_code
+
 				invitedUserMatch = await userInviteQueries.findOne({
-					id: invitedUserId.organization_user_invite_id,
-					organization_id: invitedUserId.organization_id,
+					filterCondition,
 				})
 			}
 
 			let isOrgAdmin = false
 			if (invitedUserMatch) {
-				bodyData.organization_id = invitedUserMatch.organization_id
-				roles = invitedUserMatch.roles
-				role = await roleQueries.findAll(
-					{ id: invitedUserMatch.roles },
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
+				const editable_fields = invitedUserMatch?.['invitation.editable_fields'] || []
+
+				let newBody = {}
+				Object.keys(bodyData).forEach((bodyKey) => {
+					if (editable_fields.includes(bodyKey)) {
+						newBody[bodyKey] = bodyData[bodyKey]
+					} else {
+						if (bodyData[bodyKey] != invitedUserMatch[bodyKey]) {
+							return responses.failureResponse({
+								message: `${bodyKey} is not editable.`,
+								statusCode: httpStatusCode.not_acceptable,
+								responseCode: 'CLIENT_ERROR',
+							})
+						}
+						newBody[bodyKey] = invitedUserMatch[bodyKey]
 					}
-				)
+				})
+				bodyData = {
+					...bodyData,
+					...newBody,
+				}
+				bodyData.organization_id = invitedUserMatch.organization_id
+				roles = invitedUserMatch?.roles || []
+				if (roles.length > 0) {
+					role = await roleQueries.findAll(
+						{
+							id: {
+								[Op.in]: invitedUserMatch.roles,
+							},
+						},
+						{
+							attributes: {
+								exclude: ['created_at', 'updated_at', 'deleted_at'],
+							},
+						}
+					)
+				}
 
 				if (!role.length > 0) {
 					return responses.failureResponse({

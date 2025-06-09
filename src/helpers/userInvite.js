@@ -966,16 +966,11 @@ module.exports = class UserInviteHelper {
 					invitee.meta = prunedEntities.reduce((acc, index) => {
 						if (index.data_type == 'ARRAY' || index.data_type == 'ARRAY[STRING]') {
 							acc[index.value] = invitee[index.value].split(',').map((entity) => {
-								return {
-									name: entity,
-									...externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()],
-								}
+								return externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()]._id
 							})
 						} else {
-							acc[index.value] = {
-								name: invitee[index.value],
-								...externalEntityNameIdMap[invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()],
-							}
+							acc[index.value] =
+								externalEntityNameIdMap[invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()]._id
 						}
 						return acc
 					}, {})
