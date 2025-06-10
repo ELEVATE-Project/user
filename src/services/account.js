@@ -1867,7 +1867,7 @@ module.exports = class AccountHelper {
 		try {
 			const user = await userQueries.findOne(
 				{ id: userId, tenant_code: tenantCode },
-				{ attributes: ['id', 'password', 'email', 'name'] }
+				{ attributes: ['id', 'password', 'email', 'phone', 'name'] }
 			)
 			if (!user) {
 				return responses.failureResponse({
@@ -1900,7 +1900,10 @@ module.exports = class AccountHelper {
 
 			await userQueries.updateUser({ id: user.id, tenant_code: tenantCode }, updateParams)
 			//await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
-			await utilsHelper.redisDel(user.email)
+
+			const redisKey = user?.email || user?.phone
+
+			await utilsHelper.redisDel(redisKey)
 
 			// Find active sessions of user and remove them
 			const userSessionData = await userSessionsService.findUserSession(
