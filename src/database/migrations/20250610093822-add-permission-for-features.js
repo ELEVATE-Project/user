@@ -24,28 +24,26 @@ module.exports = {
 	up: async (queryInterface, Sequelize) => {
 		try {
 			//create module
-			const modulesData = [
-				{ code: 'organization-feature', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() },
-			]
+			const modulesData = [{ code: 'feature', status: 'ACTIVE', created_at: new Date(), updated_at: new Date() }]
 
 			// Insert the data into the 'modules' table
 			await queryInterface.bulkInsert('modules', modulesData)
 
 			const permissionsData = [
 				{
-					code: 'organization_feature_crud',
-					module: 'organization-feature',
-					request_type: ['POST', 'GET', 'PATCH', 'DELETE'],
-					api_path: '/user/v1/organization-feature/*',
+					code: 'feature_crud',
+					module: 'feature',
+					request_type: ['POST', 'GET', 'DELETE', 'PATCH'],
+					api_path: '/user/v1/feature/*',
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
 				},
 				{
-					code: 'organization_feature_public',
-					module: 'organization-feature',
+					code: 'feature_read',
+					module: 'feature',
 					request_type: ['GET'],
-					api_path: '/user/v1/organization-feature/read*',
+					api_path: '/user/v1/feature/list*',
 					status: 'ACTIVE',
 					created_at: new Date(),
 					updated_at: new Date(),
@@ -59,13 +57,13 @@ module.exports = {
 				{
 					role_title: common.ADMIN_ROLE,
 					permission_id: await getPermissionId(
-						'organization-feature',
-						['POST', 'GET', 'PATCH', 'DELETE'],
-						'/user/v1/organization-feature/*'
+						'feature',
+						['POST', 'GET', 'DELETE', 'PATCH'],
+						'/user/v1/feature/*'
 					),
-					module: 'organization-feature',
-					request_type: ['POST', 'GET', 'PATCH', 'DELETE'],
-					api_path: '/user/v1/organization-feature/*',
+					module: 'feature',
+					request_type: ['POST', 'GET', 'DELETE', 'PATCH'],
+					api_path: '/user/v1/feature/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -73,27 +71,23 @@ module.exports = {
 				{
 					role_title: common.ORG_ADMIN_ROLE,
 					permission_id: await getPermissionId(
-						'organization-feature',
-						['POST', 'GET', 'PATCH', 'DELETE'],
-						'/user/v1/organization-feature/*'
+						'feature',
+						['POST', 'GET', 'DELETE', 'PATCH'],
+						'/user/v1/feature/*'
 					),
-					module: 'organization-feature',
-					request_type: ['POST', 'GET', 'PATCH', 'DELETE'],
-					api_path: '/user/v1/organization-feature/*',
+					module: 'feature',
+					request_type: ['POST', 'GET', 'DELETE', 'PATCH'],
+					api_path: '/user/v1/feature/*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
 				},
 				{
 					role_title: common.PUBLIC_ROLE,
-					permission_id: await getPermissionId(
-						'organization-feature',
-						['GET'],
-						'/user/v1/organization-feature/read*'
-					),
-					module: 'organization-feature',
+					permission_id: await getPermissionId('feature', ['GET'], '/user/v1/feature/list*'),
+					module: 'feature',
 					request_type: ['GET'],
-					api_path: '/user/v1/organization-feature/read*',
+					api_path: '/user/v1/feature/list*',
 					created_at: new Date(),
 					updated_at: new Date(),
 					created_by: 0,
@@ -108,49 +102,33 @@ module.exports = {
 
 	down: async (queryInterface, Sequelize) => {
 		await queryInterface.bulkDelete('role_permission_mapping', {
-			api_path: '/user/v1/organization-feature/*',
+			api_path: '/user/v1/feature/*',
 			role_title: common.ADMIN_ROLE,
-			permission_id: await getPermissionId(
-				'organization-feature',
-				['POST', 'GET', 'PATCH', 'DELETE'],
-				'/user/v1/organization-feature/*'
-			),
+			permission_id: await getPermissionId('feature', ['POST', 'GET', 'DELETE', 'PATCH'], '/user/v1/feature/*'),
 		})
 
 		await queryInterface.bulkDelete('role_permission_mapping', {
-			api_path: '/user/v1/organization-feature/*',
+			api_path: '/user/v1/feature/*',
 			role_title: common.ORG_ADMIN_ROLE,
-			permission_id: await getPermissionId(
-				'organization-feature',
-				['POST', 'GET', 'PATCH', 'DELETE'],
-				'/user/v1/organization-feature/*'
-			),
+			permission_id: await getPermissionId('feature', ['POST', 'GET', 'DELETE', 'PATCH'], '/user/v1/feature/*'),
 		})
 
 		await queryInterface.bulkDelete('role_permission_mapping', {
 			role_title: common.PUBLIC_ROLE,
-			permission_id: await getPermissionId(
-				'organization-feature',
-				['GET'],
-				'/user/v1/organization-feature/read*'
-			),
-			api_path: '/user/v1/organization-feature/read*',
+			permission_id: await getPermissionId('feature', ['GET'], '/user/v1/feature/list*'),
+			api_path: '/user/v1/feature/list*',
 		})
 
 		await queryInterface.bulkDelete('permissions', {
-			id: await getPermissionId(
-				'organization-feature',
-				['POST', 'GET', 'PATCH', 'DELETE'],
-				'/user/v1/organization-feature/*'
-			),
+			id: await getPermissionId('feature', ['POST', 'GET', 'DELETE', 'PATCH'], '/user/v1/feature/*'),
 		})
 
 		await queryInterface.bulkDelete('permissions', {
-			id: await getPermissionId('organization-feature', ['GET'], '/user/v1/organization-feature/read*'),
+			id: await getPermissionId('feature', ['GET'], '/user/v1/feature/list*'),
 		})
 
 		await queryInterface.bulkDelete('modules', {
-			code: 'organization-feature',
+			code: 'feature',
 		})
 	},
 }
