@@ -406,6 +406,7 @@ module.exports = class UserHelper {
 				param.email = emailEncryption.encrypt(param.email)
 			} else if (Object.keys(param).includes('phone')) {
 				param.phone = emailEncryption.encrypt(param.phone)
+				param.phone_code = param?.phone_code || process.env.DEFAULT_PHONE_CODE || null
 				if (!param?.phone_code) {
 					return responses.failureResponse({
 						message: 'VALIDATION_FAILED',
