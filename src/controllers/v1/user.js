@@ -70,7 +70,17 @@ module.exports = class User {
 	 */
 	async profileById(req) {
 		try {
-			const userDetails = await userService.profileById(req.params.id, req.query.tenant_code)
+			let param = {}
+			if (req?.params?.id) {
+				param.id = req?.params?.id
+			} else if (req.query.username) {
+				param.username = req.query.username
+			} else if (req.query.email) {
+				param.email = req.query.email
+			} else if (req.query.phone) {
+				param.phone = req.query.phone
+			}
+			const userDetails = await userService.profileById(param, req.query.tenant_code)
 			return userDetails
 		} catch (error) {
 			return error
