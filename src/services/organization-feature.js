@@ -59,7 +59,7 @@ module.exports = class organizationFeatureHelper {
 	 * @param {Object} bodyData - Req Body
 	 * @param {Object} tokenInformation - Token Information
 	 * @param {boolean} isAdmin
-	 * @returns {JSON} - Organization feature creation data.
+	 * @returns {JSON} - Organization feature creation response.
 	 */
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
@@ -129,7 +129,7 @@ module.exports = class organizationFeatureHelper {
 	 * @name update
 	 * @param {String} bodyData - req body.
 	 * @param {String} tokenInformation - Token information
-	 * @returns {JSON} - feature deleted response.
+	 * @returns {JSON} - Org feature update response.
 	 */
 	static async update(feature_code, bodyData, tokenInformation) {
 		try {
@@ -238,7 +238,7 @@ module.exports = class organizationFeatureHelper {
 	 * @name read
 	 * @param {String} featureCode - Feature code
 	 * @param {Object} tokenInformation - Token Information
-	 * @returns {JSON} - Organization feature list.
+	 * @returns {JSON} - Organization feature detail response.
 	 */
 
 	static async read(featureCode, tenantCode, orgCode) {

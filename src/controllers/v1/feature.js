@@ -10,10 +10,10 @@ const featureService = require('@services/feature')
 module.exports = class feature {
 	/**
 	 * create or update feature
-	 * @method
+	 * @method POST
 	 * @name update
 	 * @param {Object} req - request data.
-	 * @returns {JSON} - modules creation/updation object.
+	 * @returns {JSON} - feature creation/updation object.
 	 */
 
 	async update(req) {
@@ -33,7 +33,7 @@ module.exports = class feature {
 
 	/**
 	 * Get all available features
-	 * @method
+	 * @method GET
 	 * @name list
 	 * @param {String} req.pageNo - Page No.
 	 * @param {String} req.pageSize - Page size limit.
@@ -52,7 +52,7 @@ module.exports = class feature {
 
 	/**
 	 * deletes features
-	 * @method
+	 * @method DELETE
 	 * @name delete
 	 * @param {Object} req - request data.
 	 * @returns {JSON} - features deletion response.

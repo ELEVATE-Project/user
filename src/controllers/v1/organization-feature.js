@@ -14,7 +14,7 @@ const httpStatusCode = require('@generics/http-status')
 module.exports = class OrganizationFeature {
 	/**
 	 * create organization feature
-	 * @method
+	 * @method POST
 	 * @name create
 	 * @param {Object} req -request data.
 	 * @param {string} req.body - feature creation data.
@@ -33,7 +33,7 @@ module.exports = class OrganizationFeature {
 
 	/**
 	 * update/delete organization feature
-	 * @method
+	 * @method PATCH/DELETE
 	 * @name update
 	 * @param {Object} req -request data.
 	 * @param {string} req.body - feature updation data.
@@ -55,7 +55,7 @@ module.exports = class OrganizationFeature {
 
 	/**
 	 * read organization feature
-	 * @method
+	 * @method GET
 	 * @name read
 	 * @param {Object} req -request data.
 	 * @returns {JSON} - returns the organization feature data
@@ -91,7 +91,6 @@ module.exports = class OrganizationFeature {
 						req.decodedToken.organization_code
 				  )
 		} catch (error) {
-			console.log(error, 'error')
 			return error
 		}
 	}

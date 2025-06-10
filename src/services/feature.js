@@ -138,7 +138,7 @@ module.exports = class featureHelper {
 
 			const features = await featureQueries.findAndCountAll(filter, attributes, options)
 
-			if (features.rows.length === 0 || features.count === 0) {
+			if (features?.rows?.length === 0 || features?.count === 0) {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'FEATURES_FETCHED_SUCCESSFULLY',
