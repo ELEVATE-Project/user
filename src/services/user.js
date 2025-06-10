@@ -406,6 +406,13 @@ module.exports = class UserHelper {
 				param.email = emailEncryption.encrypt(param.email)
 			} else if (Object.keys(param).includes('phone')) {
 				param.phone = emailEncryption.encrypt(param.phone)
+				if (!param?.phone_code) {
+					return responses.failureResponse({
+						message: 'VALIDATION_FAILED',
+						statusCode: httpStatusCode.unprocessable_entity,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
 			let filter = param
 			if (tenantCode) {

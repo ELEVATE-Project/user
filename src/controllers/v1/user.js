@@ -79,6 +79,7 @@ module.exports = class User {
 				param.email = req.query.email
 			} else if (req.query.phone) {
 				param.phone = req.query.phone
+				param.phone_code = req?.query?.phone_code
 			}
 			const userDetails = await userService.profileById(param, req.query.tenant_code)
 			return userDetails
