@@ -8,9 +8,11 @@
 const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
 const featureQueries = require('@database/queries/feature')
+const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
 const utils = require('@generics/utils')
 const common = require('@constants/common')
+
 module.exports = class organizationFeatureHelper {
 	/**
 	 * Validate organization features Req.
@@ -226,14 +228,25 @@ module.exports = class organizationFeatureHelper {
 	 * @returns {JSON} - Organization feature list.
 	 */
 
-	static async read(featureCode, tokenInformation) {
+	static async read(featureCode, tenantCode, orgCode) {
 		try {
-			// Fetch a specific organization feature by feature code, organization, and tenant
-			const organizationFeature = await organizationFeatureQueries.findOne({
+			let filter = {
 				feature_code: featureCode,
-				organization_code: tokenInformation.organization_code,
-				tenant_code: tokenInformation.tenant_code,
-			})
+				organization_code: orgCode,
+				tenant_code: tenantCode,
+			}
+
+			// Fetch a specific organization feature by feature code, organization, and tenant
+			let organizationFeature = await organizationFeatureQueries.findOne(filter)
+			if (!organizationFeature?.tenant_code) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+					{ attributes: ['id', 'code'] }
+				)
+
+				filter.organization_code = defaultOrg.code
+				organizationFeature = await organizationFeatureQueries.findOne(filter)
+			}
 
 			// Return error if the organization feature is not found
 			if (!organizationFeature?.tenant_code) {

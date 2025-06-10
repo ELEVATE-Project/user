@@ -81,7 +81,11 @@ module.exports = class OrganizationFeature {
 			}
 
 			return req.params.id
-				? await organizationFeatureService.read(req.params.id, req.decodedToken)
+				? await organizationFeatureService.read(
+						req.params.id,
+						req.decodedToken.tenant_code,
+						req.decodedToken.organization_code
+				  )
 				: await organizationFeatureService.list(req.decodedToken)
 		} catch (error) {
 			console.log(error, 'error')
