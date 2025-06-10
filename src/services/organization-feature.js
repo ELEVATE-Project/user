@@ -184,35 +184,48 @@ module.exports = class organizationFeatureHelper {
 	 * @returns {JSON} - Organization feature list.
 	 */
 
-	static async list(tokenInformation) {
+	static async list(tenantCode, orgCode) {
 		try {
-			// Fetch all organization features for the given tenant and organization
-			const organizationFeatures = await organizationFeatureQueries.findAllOrganizationFeature(
-				{
-					organization_code: tokenInformation.organization_code,
-					tenant_code: tokenInformation.tenant_code,
-				},
-				{
-					attributes: {
-						exclude: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
-					},
-				}
-			)
+			let filter = {
+				organization_code: orgCode,
+				tenant_code: tenantCode,
+			}
 
-			await Promise.all(
-				organizationFeatures.map(async (feature) => {
-					/* Assigned image url from the stored location */
-					if (feature?.icon) {
-						feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
-					}
-					return feature
-				})
-			)
+			const queryOptions = {
+				attributes: {
+					exclude: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+				},
+			}
+
+			// Fetch organization features
+			let organizationFeatures = await organizationFeatureQueries.findAllOrganizationFeature(filter, queryOptions)
+
+			// Fallback to default organization if no features found
+			if (!organizationFeatures?.length) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+					{ attributes: ['id', 'code'] }
+				)
+
+				filter.organization_code = defaultOrg.code
+				organizationFeatures = await organizationFeatureQueries.findAllOrganizationFeature(filter, queryOptions)
+			}
+
+			// Process icons in parallel
+			if (organizationFeatures?.length) {
+				await Promise.all(
+					organizationFeatures.map(async (feature) => {
+						if (feature.icon) {
+							feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
+						}
+					})
+				)
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_FETCHED',
-				result: !organizationFeatures?.length > 0 ? [] : organizationFeatures,
+				result: organizationFeatures ?? [],
 			})
 		} catch (error) {
 			throw error

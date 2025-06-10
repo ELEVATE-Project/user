@@ -86,7 +86,10 @@ module.exports = class OrganizationFeature {
 						req.decodedToken.tenant_code,
 						req.decodedToken.organization_code
 				  )
-				: await organizationFeatureService.list(req.decodedToken)
+				: await organizationFeatureService.list(
+						req.decodedToken.tenant_code,
+						req.decodedToken.organization_code
+				  )
 		} catch (error) {
 			console.log(error, 'error')
 			return error
