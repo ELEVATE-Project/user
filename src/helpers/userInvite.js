@@ -489,6 +489,7 @@ module.exports = class UserInviteHelper {
 				if (existingUser) {
 					invitee.statusOrUserId = 'User already exist'
 					isErrorOccured = true
+					let isRoleUpdated = false
 
 					const isOrganizationMatch =
 						existingUser.organizationIds.includes(defaultOrgId) ||
@@ -530,6 +531,7 @@ module.exports = class UserInviteHelper {
 						let rolesPromises = []
 						//update the user roles and handle downgrade of role
 						if (elementsNotInArray.length > 0) {
+							isRoleUpdated = true
 							rolesPromises = elementsNotInArray.map((roleId) => {
 								return userRolesQueries.create({
 									tenant_code: user.tenant_code,
@@ -598,7 +600,7 @@ module.exports = class UserInviteHelper {
 							let oldValues = {},
 								newValues = {},
 								userFetch = {}
-							if (isOrgUpdate) {
+							if (isOrgUpdate || isRoleUpdated) {
 								oldValues.organizations = existingUser.organizations
 								userFetch = await userQueries.findAllUserWithOrganization(
 									{ id: existingUser.id },
@@ -606,7 +608,7 @@ module.exports = class UserInviteHelper {
 									user.tenant_code
 								)
 
-								newValues.organizations = userFetch.organizations
+								newValues.organizations = userFetch[0].organizations
 							}
 
 							if (modifiedKeys.length > 0 || additionalCsvHeaders.length > 0) {
@@ -847,7 +849,7 @@ module.exports = class UserInviteHelper {
 							name: parsedData?.name,
 							username: parsedData?.username,
 							email: raw_email,
-							phone: parsedData?.phone ? encryptedPhoneNumber : null,
+							phone: parsedData?.phone ? parsedData?.phone : null,
 							organizations,
 							tenant_code: user?.tenant_code,
 							...metaData,

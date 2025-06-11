@@ -400,6 +400,11 @@ let enviromentVariables = {
 			value: 'true',
 		},
 	},
+	DEFAULT_PHONE_CODE: {
+		message: 'Set Default Phone Code',
+		optional: true,
+		default: '+91',
+	},
 }
 let success = true
 
