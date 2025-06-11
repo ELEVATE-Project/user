@@ -1904,14 +1904,10 @@ module.exports = class AccountHelper {
 			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + user.id.toString()
 
 			// remove profile caching
-			if (await utils.redisGet(redisUserKey)) {
-				await utils.redisDel(redisUserKey)
-			}
+			await utils.redisDel(redisUserKey)
 
 			// remove reset otp caching
-			if (await utils.redisGet(user.username)) {
-				await utils.redisDel(user.username)
-			}
+			await utils.redisDel(user?.username)
 
 			// Find active sessions of user and remove them
 			const userSessionData = await userSessionsService.findUserSession(
