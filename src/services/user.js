@@ -165,10 +165,22 @@ module.exports = class UserHelper {
 
 				modifiedKeys.forEach((key) => {
 					if (key == 'meta') {
-						const metaData = metaDataKeys.reduce((acc, key) => {
-							acc[key] = processDbResponse[key]
-							return acc
-						}, {})
+						let metaData = {}
+						Object.keys(bodyData[key]).forEach((metaKey) => {
+							const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+							if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+								metaData[metaKey] = processDbResponse?.[metaKey].map((entity) => {
+									return { name: entity?.label, id: entity?.value, externalId: entity?.externalId }
+								})
+							} else {
+								metaData[metaKey] = {
+									name: processDbResponse?.[metaKey]?.label,
+									id: processDbResponse?.[metaKey]?.value,
+									externalId: processDbResponse?.[metaKey]?.externalId,
+								}
+							}
+						})
+
 						newValues = {
 							...newValues,
 							...metaData,

@@ -556,9 +556,22 @@ module.exports = class AccountHelper {
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
-			metaData = Object.fromEntries(
-				Object.keys(metaData).map((metaKey) => [metaKey, result?.user?.[metaKey] ?? {}])
-			)
+
+			Object.keys(metaData).forEach((metaKey) => {
+				const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+				if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+					metaData[metaKey] = result?.user?.[metaKey].map((entity) => {
+						return { name: entity?.label, id: entity?.value, externalId: entity?.externalId }
+					})
+				} else {
+					metaData[metaKey] = {
+						name: result?.user?.[metaKey]?.label,
+						id: result?.user?.[metaKey]?.value,
+						externalId: result?.user?.[metaKey]?.externalId,
+					}
+				}
+			})
+
 			const eventBody = UserTransformDTO.eventBodyDTO({
 				entity: 'user',
 				eventType: 'create',

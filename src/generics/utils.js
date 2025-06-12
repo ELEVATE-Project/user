@@ -773,7 +773,7 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
 		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
 		if (key) {
-			acc[key] = { _id, entityType, externalId: metaInformation.externalId }
+			acc[key] = { _id, name: metaInformation?.name, entityType, externalId: metaInformation.externalId }
 		}
 		return acc
 	}, {})

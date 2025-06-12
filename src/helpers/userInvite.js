@@ -34,6 +34,7 @@ const tenantDomainQueries = require('@database/queries/tenantDomain')
 const tenantQueries = require('@database/queries/tenants')
 let defaultOrg = {}
 let modelName = ''
+let externalEntityNameIdMap = {}
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -215,7 +216,7 @@ module.exports = class UserInviteHelper {
 			}
 			// Get unique values
 			const uniqueEntityValues = getUniqueEntityValues(csvToJsonData, externalEntityTypes)
-			const externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
+			externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
 				uniqueEntityValues,
 				service,
 				endPoint,
@@ -625,21 +626,36 @@ module.exports = class UserInviteHelper {
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
-										const metaData = Object.keys(userUpdate[0].dataValues.meta).reduce(
-											(acc, key) => {
-												if (
-													invitee[key] !== undefined &&
-													userUpdate[0].dataValues.meta[key] !== undefined
-												) {
-													acc[key] = {
-														name: invitee[key],
-														id: userUpdate[0].dataValues.meta[key],
+										let metaData = {}
+										Object.keys(userUpdate[0].dataValues.meta).forEach((metaKey) => {
+											const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+											if (
+												findEntity.data_type == 'ARRAY' ||
+												findEntity.data_type == 'ARRAY[STRING]'
+											) {
+												metaData[metaKey] = userUpdate[0].dataValues.meta?.[metaKey].map(
+													(entity) => {
+														const find = Object.values(externalEntityNameIdMap).find(
+															(obj) => obj._id === entity
+														)
+														return {
+															name: find?.name,
+															id: find?._id,
+															externalId: find?.externalId,
+														}
 													}
+												)
+											} else {
+												const find = Object.values(externalEntityNameIdMap).find(
+													(obj) => obj._id === userUpdate[0].dataValues.meta?.[metaKey]
+												)
+												metaData[metaKey] = {
+													name: find?.name,
+													id: find?._id,
+													externalId: find?.externalId,
 												}
-												return acc
-											},
-											{}
-										)
+											}
+										})
 										newValues = {
 											...newValues,
 											...metaData,
@@ -818,16 +834,32 @@ module.exports = class UserInviteHelper {
 						})
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
-
-						const metaData = Object.keys(inviteeData.meta).reduce((acc, key) => {
-							if (invitee[key] !== undefined && inviteeData.meta[key] !== undefined) {
-								acc[key] = {
-									name: invitee[key],
-									id: inviteeData.meta[key],
+						let metaData = {}
+						Object.keys(inviteeData.meta).forEach((metaKey) => {
+							const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+							if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+								metaData[metaKey] = inviteeData.meta?.[metaKey].map((entity) => {
+									const find = Object.values(externalEntityNameIdMap).find(
+										(obj) => obj._id === entity
+									)
+									return {
+										name: find?.name,
+										id: find?._id,
+										externalId: find?.externalId,
+									}
+								})
+							} else {
+								const find = Object.values(externalEntityNameIdMap).find(
+									(obj) => obj._id === inviteeData.meta?.[metaKey]
+								)
+								metaData[metaKey] = {
+									name: find?.name,
+									id: find?._id,
+									externalId: find?.externalId,
 								}
 							}
-							return acc
-						}, {})
+						})
+
 						let userWithOrg = await userQueries.findUserWithOrganization(
 							{
 								id: insertedUser?.id,
