@@ -393,9 +393,29 @@ module.exports = class UserHelper {
 		}
 	}
 
-	static async profileById(id, tenantCode = null) {
+	static async profileById(param, tenantCode = null) {
 		try {
-			const filter = { id }
+			if (Object.keys(param).length == 0) {
+				return responses.failureResponse({
+					message: 'VALIDATION_FAILED',
+					statusCode: httpStatusCode.unprocessable_entity,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (Object.keys(param).includes('email')) {
+				param.email = emailEncryption.encrypt(param.email)
+			} else if (Object.keys(param).includes('phone')) {
+				param.phone = emailEncryption.encrypt(param.phone)
+				param.phone_code = param?.phone_code || process.env.DEFAULT_PHONE_CODE || null
+				if (!param?.phone_code) {
+					return responses.failureResponse({
+						message: 'VALIDATION_FAILED',
+						statusCode: httpStatusCode.unprocessable_entity,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+			let filter = param
 			if (tenantCode) {
 				filter.tenant_code = tenantCode
 			}

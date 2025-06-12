@@ -1887,7 +1887,7 @@ module.exports = class AccountHelper {
 		try {
 			const user = await userQueries.findOne(
 				{ id: userId, tenant_code: tenantCode },
-				{ attributes: ['id', 'password', 'email', 'name'] }
+				{ attributes: ['id', 'password', 'email', 'username', 'name'] }
 			)
 			if (!user) {
 				return responses.failureResponse({
@@ -1920,7 +1920,14 @@ module.exports = class AccountHelper {
 
 			await userQueries.updateUser({ id: user.id, tenant_code: tenantCode }, updateParams)
 			//await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
-			await utilsHelper.redisDel(user.email)
+
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + user.id.toString()
+
+			// remove profile caching
+			await utils.redisDel(redisUserKey)
+
+			// remove reset otp caching
+			await utils.redisDel(user?.username)
 
 			// Find active sessions of user and remove them
 			const userSessionData = await userSessionsService.findUserSession(
@@ -1940,7 +1947,7 @@ module.exports = class AccountHelper {
 			await userSessionsService.removeUserSessions(userSessionIds)
 
 			// Send email notification with OTP if email is provided
-			if (user.email) {
+			if (user?.email) {
 				notificationUtils.sendEmailNotification({
 					emailId: emailEncryption.decrypt(user.email),
 					templateCode: process.env.CHANGE_PASSWORD_TEMPLATE_CODE,
