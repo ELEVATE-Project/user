@@ -64,8 +64,8 @@ module.exports = class OrganizationFeature {
 		try {
 			// Admin header handling
 			if (req.decodedToken.roles.includes(common.ADMIN_ROLE)) {
-				const orgCode = req.header(common.ORGANIZATION_CODE)
-				const tenantCode = req.header(common.TENANT_CODE)
+				const orgCode = req.header(common.ORG_CODE_HEADER)
+				const tenantCode = req.header(common.TENANT_CODE_HEADER)
 
 				// assign correct values to correct properties
 				if (orgCode) req.decodedToken.organization_code = orgCode

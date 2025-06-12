@@ -11,6 +11,7 @@ const featureQueries = require('@database/queries/feature')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
 const utils = require('@generics/utils')
+const { UniqueConstraintError } = require('sequelize')
 const common = require('@constants/common')
 
 module.exports = class organizationFeatureHelper {
@@ -35,8 +36,8 @@ module.exports = class organizationFeatureHelper {
 		// if user is admin replace organization code & tenant code form header
 		const isAdmin = utils.validateRoleAccess(roles, [common.ADMIN_ROLE])
 		if (isAdmin) {
-			const orgCode = req.header(common.ORGANIZATION_CODE)
-			const tenantCode = req.header(common.TENANT_CODE)
+			const orgCode = req.header(common.ORG_CODE_HEADER)
+			const tenantCode = req.header(common.TENANT_CODE_HEADER)
 			if (orgCode) req.decodedToken.organization_code = orgCode
 			if (tenantCode) req.decodedToken.tenant_code = tenantCode
 		}
@@ -85,27 +86,13 @@ module.exports = class organizationFeatureHelper {
 				// If the feature is not available in the default organization, return an error
 				if (!defaultFeature) {
 					return responses.failureResponse({
-						message: 'DEFAULT_FEATURE_NOT_FOUND',
+						message: 'FEATURE_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
 			}
 
-			// Check if the feature already exists for the given organization and tenant
-			const organizationFeature = await organizationFeatureQueries.findOne({
-				feature_code: bodyData.feature_code,
-				organization_code: tokenInformation.organization_code,
-				tenant_code: tokenInformation.tenant_code,
-			})
-
-			if (organizationFeature) {
-				return responses.failureResponse({
-					message: 'ORGANIZATION_FEATURE_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
 			// Add organization and tenant details to the payload before creation
 			bodyData.organization_code = tokenInformation.organization_code
 			bodyData.tenant_code = tokenInformation.tenant_code
@@ -119,6 +106,13 @@ module.exports = class organizationFeatureHelper {
 				result: createdOrgFeature,
 			})
 		} catch (error) {
+			if (error instanceof UniqueConstraintError) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_FEATURE_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
