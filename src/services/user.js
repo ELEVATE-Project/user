@@ -158,28 +158,20 @@ module.exports = class UserHelper {
 			}
 
 			if (modifiedKeys.length > 0) {
+				let userMeta = { ...user?.meta }
 				let oldValues = await utils.processDbResponse(user, prunedEntities),
 					newValues = {}
+				userMeta = utils.parseMetaData(userMeta, prunedEntities, oldValues)
 				oldValues.email = oldValues?.email ? emailEncryption.decrypt(oldValues.email) : oldValues.email
 				oldValues.phone = oldValues?.phone ? emailEncryption.decrypt(oldValues.phone) : oldValues.phone
+				oldValues = {
+					...oldValues,
+					...userMeta,
+				}
 
 				modifiedKeys.forEach((key) => {
 					if (key == 'meta') {
-						let metaData = {}
-						Object.keys(bodyData[key]).forEach((metaKey) => {
-							const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
-							if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
-								metaData[metaKey] = processDbResponse?.[metaKey].map((entity) => {
-									return { name: entity?.label, id: entity?.value, externalId: entity?.externalId }
-								})
-							} else {
-								metaData[metaKey] = {
-									name: processDbResponse?.[metaKey]?.label,
-									id: processDbResponse?.[metaKey]?.value,
-									externalId: processDbResponse?.[metaKey]?.externalId,
-								}
-							}
-						})
+						const metaData = utils.parseMetaData(bodyData[key], prunedEntities, processDbResponse)
 
 						newValues = {
 							...newValues,

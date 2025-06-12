@@ -622,40 +622,16 @@ module.exports = class UserInviteHelper {
 								}
 
 								userFetch = userCredentials.find((user) => user.id == existingUser.id)
+								let userMeta = { ...userFetch?.meta }
 								userFetch = await utils.processDbResponse(userFetch, prunedEntities)
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
-										let metaData = {}
-										Object.keys(userUpdate[0].dataValues.meta).forEach((metaKey) => {
-											const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
-											if (
-												findEntity.data_type == 'ARRAY' ||
-												findEntity.data_type == 'ARRAY[STRING]'
-											) {
-												metaData[metaKey] = userUpdate[0].dataValues.meta?.[metaKey].map(
-													(entity) => {
-														const find = Object.values(externalEntityNameIdMap).find(
-															(obj) => obj._id === entity
-														)
-														return {
-															name: find?.name,
-															id: find?._id,
-															externalId: find?.externalId,
-														}
-													}
-												)
-											} else {
-												const find = Object.values(externalEntityNameIdMap).find(
-													(obj) => obj._id === userUpdate[0].dataValues.meta?.[metaKey]
-												)
-												metaData[metaKey] = {
-													name: find?.name,
-													id: find?._id,
-													externalId: find?.externalId,
-												}
-											}
-										})
+										const metaData = utils.parseMetaData(
+											userUpdate[0].dataValues.meta,
+											prunedEntities,
+											externalEntityNameIdMap
+										)
 										newValues = {
 											...newValues,
 											...metaData,
@@ -666,10 +642,17 @@ module.exports = class UserInviteHelper {
 										newValues[modifiedKey] = userUpdate[0].dataValues[modifiedKey]
 									}
 								})
+
 								oldValues = userFetch
 								oldValues.email = oldValues.email
 									? emailEncryption.decrypt(oldValues.email)
 									: oldValues.email
+
+								userMeta = utils.parseMetaData(userMeta, prunedEntities, externalEntityNameIdMap)
+								oldValues = {
+									...oldValues,
+									...userMeta,
+								}
 								oldValues.phone = oldValues.phone
 									? emailEncryption.decrypt(oldValues.phone)
 									: oldValues.phone
@@ -834,31 +817,7 @@ module.exports = class UserInviteHelper {
 						})
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
-						let metaData = {}
-						Object.keys(inviteeData.meta).forEach((metaKey) => {
-							const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
-							if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
-								metaData[metaKey] = inviteeData.meta?.[metaKey].map((entity) => {
-									const find = Object.values(externalEntityNameIdMap).find(
-										(obj) => obj._id === entity
-									)
-									return {
-										name: find?.name,
-										id: find?._id,
-										externalId: find?.externalId,
-									}
-								})
-							} else {
-								const find = Object.values(externalEntityNameIdMap).find(
-									(obj) => obj._id === inviteeData.meta?.[metaKey]
-								)
-								metaData[metaKey] = {
-									name: find?.name,
-									id: find?._id,
-									externalId: find?.externalId,
-								}
-							}
-						})
+						const metaData = utils.parseMetaData(inviteeData.meta, prunedEntities, externalEntityNameIdMap)
 
 						let userWithOrg = await userQueries.findUserWithOrganization(
 							{

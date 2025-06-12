@@ -938,6 +938,41 @@ function generateSecureOTP(length = 6) {
 	return parseInt(otp)
 }
 
+function parseMetaData(meta = {}, prunedEntities, feederData) {
+	let metaData = {}
+
+	if (Object.keys(meta).length > 0) {
+		const getId = (value) => value?.id ?? value?._id ?? value
+		const parseFind = (value) => {
+			return {
+				name: value?.name || value?.label,
+				id: value?._id || value?.id || value?.value,
+				externalId: value?.externalId,
+			}
+		}
+
+		Object.keys(meta).forEach((metaKey) => {
+			const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+			if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+				metaData[metaKey] = meta?.[metaKey].map((entity) => {
+					const id = getId(entity)
+					const find = Object.values(feederData).find(
+						(obj) => obj?._id === id || obj?.id === id || obj?.value === id
+					)
+					return parseFind(find)
+				})
+			} else {
+				const id = getId(meta?.[metaKey])
+				const find = Object.values(feederData).find(
+					(obj) => obj?._id === id || obj?.id === id || obj?.value === id
+				)
+				metaData[metaKey] = parseFind(find)
+			}
+		})
+	}
+	return metaData
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -980,4 +1015,5 @@ module.exports = {
 	constructUrl,
 	processMetaWithNames,
 	fetchAndMapAllExternalEntities,
+	parseMetaData,
 }
