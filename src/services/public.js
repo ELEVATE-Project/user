@@ -136,22 +136,19 @@ module.exports = class AccountHelper {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
-			const userInvite = await organizationUserInviteQueries.findOne({
-				invitation_key: invitationKey,
-				tenant_code: tenantDetail.code,
-				status: common.INVITED_STATUS,
-			})
+			const userInvite = await organizationUserInviteQueries.findOne(
+				{
+					invitation_key: invitationKey,
+					tenant_code: tenantDetail.code,
+					status: common.INVITED_STATUS,
+				},
+				{
+					isValid: true,
+				}
+			)
 
 			if (!userInvite?.id || !userInvite['invitation.id']) {
 				notFoundResponse('INVALID_INVITATION')
-			}
-
-			if (!utils.isInvitationValid(userInvite['invitation.valid_till'])) {
-				return responses.failureResponse({
-					message: 'INVALID_INVITATION',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
 			}
 
 			const modelName = await userQueries.getModelName()

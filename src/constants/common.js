@@ -102,7 +102,7 @@ module.exports = {
 	READ_ACCESS: 'r',
 	TYPE_ALL: 'all',
 	ENGLISH_LANGUGE_CODE: 'en',
-	BULKINVITATIONVVALIDITY: '604800000', //SET to one week by default if not set by tenant (In Sec),
+	BULK_INVITATION_VALIDITY: '604800000', //SET to one week by default if not set by tenant (In Sec),
 	TYPE_UPLOAD: 'UPLOAD',
 	TYPE_INVITE: 'INVITE',
 	INVITED_STATUS: 'INVITED',

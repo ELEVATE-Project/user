@@ -62,7 +62,7 @@ module.exports = class UserInviteHelper {
 						attributes: ['meta'],
 					}
 				)
-				const validity = tenantDetails?.meta?.bulkInvitationValidity || common.BULKINVITATIONVVALIDITY
+				const validity = tenantDetails?.meta?.bulkInvitationValidity || common.BULK_INVITATION_VALIDITY
 				const now = new Date()
 				const valid_till = new Date(now.getTime() + Number(validity))
 

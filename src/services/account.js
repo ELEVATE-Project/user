@@ -206,7 +206,9 @@ module.exports = class AccountHelper {
 				filterCondition.tenant_code = tenantDomain.tenant_code
 				filterCondition.status = common.INVITED_STATUS
 
-				invitedUserMatch = await userInviteQueries.findOne(filterCondition)
+				invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
+					isValid: true,
+				})
 			}
 
 			let isOrgAdmin = false

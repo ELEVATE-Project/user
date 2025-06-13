@@ -8,7 +8,7 @@ exports.create = async (data) => {
 		return createdInvitation.get({ plain: true })
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
@@ -22,7 +22,7 @@ exports.findOne = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
@@ -35,30 +35,17 @@ exports.findAll = async (filter = {}, options = {}) => {
 		})
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
 exports.update = async (filter, updates) => {
 	try {
-		await Invitation.update(updates, {
+		return await Invitation.update(updates, {
 			where: filter,
 		})
-		return { success: true }
 	} catch (error) {
 		console.error(error)
-		return error
-	}
-}
-
-exports.delete = async (filter) => {
-	try {
-		await Invitation.destroy({
-			where: filter,
-		})
-		return { success: true }
-	} catch (error) {
-		console.error(error)
-		return error
+		throw error
 	}
 }

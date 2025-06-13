@@ -1,11 +1,11 @@
 'use strict'
-const organizationUserInvite = require('../models/index').OrganizationUserInvite
+const OrganizationUserInvite = require('../models/index').OrganizationUserInvite
 const { ValidationError } = require('sequelize')
 const Invitation = require('../models/index').Invitation
 
 exports.create = async (data) => {
 	try {
-		const createData = await organizationUserInvite.create(data)
+		const createData = await OrganizationUserInvite.create(data)
 		const result = createData.get({ plain: true })
 		return result
 	} catch (error) {
@@ -23,7 +23,7 @@ exports.create = async (data) => {
 
 exports.update = async (filter, update, options) => {
 	try {
-		const [res] = await organizationUserInvite.update(update, {
+		const [res] = await OrganizationUserInvite.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -36,10 +36,27 @@ exports.update = async (filter, update, options) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await organizationUserInvite.findOne({
+		const include = [
+			{
+				model: Invitation,
+				as: 'invitation',
+				...(options.isValid && {
+					where: {
+						valid_till: {
+							[Op.gte]: new Date(),
+						},
+					},
+					required: true,
+				}),
+			},
+		]
+
+		delete options.isValid
+
+		return await OrganizationUserInvite.findOne({
 			where: filter,
 			...options,
-			include: [{ model: Invitation, as: 'invitation' }],
+			include,
 			raw: true,
 		})
 	} catch (error) {
@@ -49,7 +66,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.deleteOne = async (id, options = {}) => {
 	try {
-		const result = await organizationUserInvite.destroy({
+		const result = await OrganizationUserInvite.destroy({
 			where: { id: id },
 			...options,
 		})
@@ -61,7 +78,7 @@ exports.deleteOne = async (id, options = {}) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		return await organizationUserInvite.findAll({
+		return await OrganizationUserInvite.findAll({
 			where: filter,
 			...options,
 			raw: true,

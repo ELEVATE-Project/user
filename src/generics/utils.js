@@ -968,15 +968,6 @@ function appendParamsToUrl(host, params) {
 
 	return url.toString()
 }
-
-function isInvitationValid(valid_till) {
-	// Get the valid_till date and current date
-	const validTill = new Date(valid_till)
-	const currentDate = new Date()
-
-	// Check if current date is before or equal to valid_till
-	return currentDate <= validTill
-}
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1022,5 +1013,4 @@ module.exports = {
 	generateUUID,
 	isValidAction,
 	appendParamsToUrl,
-	isInvitationValid,
 }
