@@ -938,6 +938,32 @@ function generateSecureOTP(length = 6) {
 	return parseInt(otp)
 }
 
+/**
+ * parse Meta Data
+ * @method
+ * @name parseMetaData
+ * @param {Object} meta - Meta Data with ids from external source
+ * {
+ * "state" : "mongoId",
+ * "district" : "mongoId",
+ * }
+ * @param {Object} prunedEntities - pruned entities to identify entities
+ * @param {Object} feederData - data to replace value
+ * @returns {string} - return meta data.
+ * {
+ * "state" : {
+ * 			"id" :	"mongoId",
+ * 			"name" : "name",
+ * 			"externalId" : "externalId"
+ * 			},
+ * "district" : {
+ * 			"id" :	"mongoId",
+ * 			"name" : "name",
+ * 			"externalId" : "externalId"
+ * 			},
+ * }
+ */
+
 function parseMetaData(meta = {}, prunedEntities, feederData) {
 	let metaData = {}
 
