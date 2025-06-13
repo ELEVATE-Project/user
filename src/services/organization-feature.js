@@ -9,7 +9,7 @@ const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
-const utils = require('@generics/utils')
+const utilsHelper = require('@generics/utils')
 const { UniqueConstraintError } = require('sequelize')
 const common = require('@constants/common')
 
@@ -24,7 +24,7 @@ module.exports = class organizationFeatureHelper {
 	static async validateAndUpdateToken(req) {
 		const roles = req.decodedToken.roles
 		// check if user roles are admin or org admin
-		if (!utils.validateRoleAccess(roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
+		if (!utilsHelper.validateRoleAccess(roles, [common.ADMIN_ROLE, common.ORG_ADMIN_ROLE])) {
 			throw responses.failureResponse({
 				message: 'USER_IS_NOT_ADMIN',
 				statusCode: httpStatusCode.bad_request,
@@ -33,7 +33,7 @@ module.exports = class organizationFeatureHelper {
 		}
 
 		// if user is admin replace organization code & tenant code form header
-		const isAdmin = utils.validateRoleAccess(roles, [common.ADMIN_ROLE])
+		const isAdmin = utilsHelper.validateRoleAccess(roles, [common.ADMIN_ROLE])
 		if (isAdmin) {
 			const orgCode = req.header(common.ORG_CODE_HEADER)
 			const tenantCode = req.header(common.TENANT_CODE_HEADER)
@@ -258,7 +258,7 @@ module.exports = class organizationFeatureHelper {
 			}
 
 			if (organizationFeature?.icon) {
-				organizationFeature.icon = await utils.getDownloadableUrl(organizationFeature.icon)
+				organizationFeature.icon = await utilsHelper.getDownloadableUrl(organizationFeature.icon)
 			}
 
 			return responses.successResponse({

@@ -12,6 +12,7 @@ const featureQueries = require('@database/queries/feature')
 const { UniqueConstraintError } = require('sequelize')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
+const utilsHelper = require('@generics/utils')
 
 module.exports = class featureHelper {
 	/**
@@ -146,8 +147,18 @@ module.exports = class featureHelper {
 				})
 			}
 
+			let data = features.rows
+
+			await Promise.all(
+				data.map(async (feature) => {
+					if (feature.icon) {
+						feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
+					}
+				})
+			)
+
 			const results = {
-				data: features.rows,
+				data,
 				count: features.count,
 			}
 
