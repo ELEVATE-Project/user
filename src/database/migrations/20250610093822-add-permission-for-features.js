@@ -70,20 +70,6 @@ module.exports = {
 				},
 				{
 					role_title: common.ORG_ADMIN_ROLE,
-					permission_id: await getPermissionId(
-						'feature',
-						['POST', 'GET', 'DELETE', 'PATCH'],
-						'/user/v1/feature/*'
-					),
-					module: 'feature',
-					request_type: ['POST', 'GET', 'DELETE', 'PATCH'],
-					api_path: '/user/v1/feature/*',
-					created_at: new Date(),
-					updated_at: new Date(),
-					created_by: 0,
-				},
-				{
-					role_title: common.PUBLIC_ROLE,
 					permission_id: await getPermissionId('feature', ['GET'], '/user/v1/feature/list*'),
 					module: 'feature',
 					request_type: ['GET'],

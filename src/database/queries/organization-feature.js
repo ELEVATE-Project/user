@@ -5,7 +5,7 @@ exports.create = async (data) => {
 	try {
 		return await OrganizationFeature.create(data, { returning: true })
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 

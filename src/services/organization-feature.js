@@ -7,7 +7,6 @@
 
 const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
-const featureQueries = require('@database/queries/feature')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
 const utils = require('@generics/utils')
@@ -65,22 +64,13 @@ module.exports = class organizationFeatureHelper {
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
 		try {
-			//validate that feature exist
-			const feature = await featureQueries.findByCode(bodyData.feature_code)
-			if (!feature?.code) {
-				return responses.failureResponse({
-					message: 'FEATURE_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			// validate that the feature exists in the default organization
 			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
 				const defaultFeature = await organizationFeatureQueries.findOne({
 					feature_code: bodyData.feature_code,
 					tenant_code: tokenInformation.tenant_code,
 					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
+					enabled: true,
 				})
 
 				// If the feature is not available in the default organization, return an error
@@ -106,7 +96,13 @@ module.exports = class organizationFeatureHelper {
 				result: createdOrgFeature,
 			})
 		} catch (error) {
-			if (error instanceof UniqueConstraintError) {
+			if (error.name === common.SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR) {
+				return responses.failureResponse({
+					message: 'FEATURE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			} else if (error instanceof UniqueConstraintError) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_FEATURE_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -127,16 +123,6 @@ module.exports = class organizationFeatureHelper {
 	 */
 	static async update(feature_code, bodyData, tokenInformation) {
 		try {
-			//validate that feature exist
-			const feature = await featureQueries.findByCode(feature_code)
-			if (!feature?.code) {
-				return responses.failureResponse({
-					message: 'FEATURE_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			// Prepare filter query to identify the organization feature to update
 			let filterQuery = {
 				feature_code: feature_code,
@@ -166,6 +152,13 @@ module.exports = class organizationFeatureHelper {
 				result: updatedOrgFeature?.[0],
 			})
 		} catch (error) {
+			if (error.name === common.SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR) {
+				return responses.failureResponse({
+					message: 'FEATURE_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}

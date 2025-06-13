@@ -105,4 +105,5 @@ module.exports = {
 	ORG_CODE_HEADER: 'organizationcode',
 	TENANT_CODE_HEADER: 'tenantcode',
 	DELETE_METHOD: 'DELETE',
+	SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR: 'SequelizeForeignKeyConstraintError',
 }
