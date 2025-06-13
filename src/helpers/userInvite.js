@@ -34,6 +34,7 @@ const tenantDomainQueries = require('@database/queries/tenantDomain')
 const tenantQueries = require('@database/queries/tenants')
 let defaultOrg = {}
 let modelName = ''
+let externalEntityNameIdMap = {}
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -215,7 +216,7 @@ module.exports = class UserInviteHelper {
 			}
 			// Get unique values
 			const uniqueEntityValues = getUniqueEntityValues(csvToJsonData, externalEntityTypes)
-			const externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
+			externalEntityNameIdMap = await utils.fetchAndMapAllExternalEntities(
 				uniqueEntityValues,
 				service,
 				endPoint,
@@ -621,24 +622,19 @@ module.exports = class UserInviteHelper {
 								}
 
 								userFetch = userCredentials.find((user) => user.id == existingUser.id)
+								let userMeta = { ...userFetch?.meta }
 								userFetch = await utils.processDbResponse(userFetch, prunedEntities)
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
-										const metaData = Object.keys(userUpdate[0].dataValues.meta).reduce(
-											(acc, key) => {
-												if (
-													invitee[key] !== undefined &&
-													userUpdate[0].dataValues.meta[key] !== undefined
-												) {
-													acc[key] = {
-														name: invitee[key],
-														id: userUpdate[0].dataValues.meta[key],
-													}
-												}
-												return acc
-											},
-											{}
+										/*
+										user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+										to prarse it to a standard format with data for emitting the event
+										*/
+										const metaData = utils.parseMetaData(
+											userUpdate[0].dataValues.meta,
+											prunedEntities,
+											externalEntityNameIdMap
 										)
 										newValues = {
 											...newValues,
@@ -650,10 +646,20 @@ module.exports = class UserInviteHelper {
 										newValues[modifiedKey] = userUpdate[0].dataValues[modifiedKey]
 									}
 								})
+
 								oldValues = userFetch
 								oldValues.email = oldValues.email
 									? emailEncryption.decrypt(oldValues.email)
 									: oldValues.email
+								/*
+								user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+								to prarse it to a standard format with data for emitting the event
+								*/
+								userMeta = utils.parseMetaData(userMeta, prunedEntities, externalEntityNameIdMap)
+								oldValues = {
+									...oldValues,
+									...userMeta,
+								}
 								oldValues.phone = oldValues.phone
 									? emailEncryption.decrypt(oldValues.phone)
 									: oldValues.phone
@@ -665,10 +671,10 @@ module.exports = class UserInviteHelper {
 									eventType: 'bulk-update',
 									entityId: userUpdate[0].dataValues.id,
 									args: {
-										userId: userUpdate[0].dataValues.id,
-										username: userUpdate[0].dataValues.username,
-										status: userUpdate[0].dataValues.status,
-										deleted: userUpdate[0].dataValues.deleted_at ? true : false,
+										userId: userUpdate[0].dataValues?.id,
+										username: userUpdate[0].dataValues?.username,
+										status: userUpdate[0].dataValues?.status,
+										deleted: userUpdate[0].dataValues?.deleted_at ? true : false,
 										oldValues,
 										newValues,
 									},
@@ -818,16 +824,12 @@ module.exports = class UserInviteHelper {
 						})
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
+						/*
+						user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+						to prarse it to a standard format with data for emitting the event
+						*/
+						const metaData = utils.parseMetaData(inviteeData.meta, prunedEntities, externalEntityNameIdMap)
 
-						const metaData = Object.keys(inviteeData.meta).reduce((acc, key) => {
-							if (invitee[key] !== undefined && inviteeData.meta[key] !== undefined) {
-								acc[key] = {
-									name: invitee[key],
-									id: inviteeData.meta[key],
-								}
-							}
-							return acc
-						}, {})
 						let userWithOrg = await userQueries.findUserWithOrganization(
 							{
 								id: insertedUser?.id,
