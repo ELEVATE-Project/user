@@ -148,6 +148,13 @@ module.exports = class OrganizationsHelper {
 			})
 		} catch (error) {
 			console.log(error)
+			if (error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR) {
+				return responses.failureResponse({
+					message: 'ORG_UNIQUE_CONSTRAIN_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
@@ -213,6 +220,13 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			if (error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR) {
+				return responses.failureResponse({
+					message: 'ORG_UNIQUE_CONSTRAIN_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
