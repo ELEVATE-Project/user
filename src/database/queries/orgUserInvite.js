@@ -2,6 +2,7 @@
 const OrganizationUserInvite = require('../models/index').OrganizationUserInvite
 const { ValidationError } = require('sequelize')
 const Invitation = require('../models/index').Invitation
+const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {

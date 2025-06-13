@@ -148,7 +148,7 @@ module.exports = class AccountHelper {
 			)
 
 			if (!userInvite?.id || !userInvite['invitation.id']) {
-				notFoundResponse('INVALID_INVITATION')
+				return notFoundResponse('INVALID_INVITATION')
 			}
 
 			const modelName = await userQueries.getModelName()
