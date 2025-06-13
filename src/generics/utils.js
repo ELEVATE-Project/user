@@ -773,7 +773,7 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
 		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
 		if (key) {
-			acc[key] = { _id, entityType, externalId: metaInformation.externalId }
+			acc[key] = { _id, name: metaInformation?.name, entityType, externalId: metaInformation.externalId }
 		}
 		return acc
 	}, {})
@@ -942,12 +942,78 @@ function generateSecureOTP(length = 6) {
 	return parseInt(otp)
 }
 
+/**
+ * parse Meta Data
+ * @method
+ * @name parseMetaData
+ * @param {Object} meta - Meta Data with ids from external source
+ * {
+ * "state" : "mongoId",
+ * "district" : "mongoId",
+ * }
+ * @param {Object} prunedEntities - pruned entities to identify entities
+ * @param {Object} feederData - data to replace value
+ * @returns {string} - return meta data.
+ * {
+ * "state" : {
+ * 			"id" :	"mongoId",
+ * 			"name" : "name",
+ * 			"externalId" : "externalId"
+ * 			},
+ * "district" : {
+ * 			"id" :	"mongoId",
+ * 			"name" : "name",
+ * 			"externalId" : "externalId"
+ * 			},
+ * }
+ */
+
+function parseMetaData(meta = {}, prunedEntities, feederData) {
+	let metaData = {}
+
+	if (Object.keys(meta).length > 0) {
+		// get id function identifies id from the input data
+		const getId = (value) => value?.id ?? value?._id ?? value
+		// parse the input to name , id , external id format
+		const parseFind = (value) => {
+			return {
+				name: value?.name || value?.label,
+				id: value?._id || value?.id || value?.value,
+				externalId: value?.externalId,
+			}
+		}
+
+		Object.keys(meta).forEach((metaKey) => {
+			// find the entity type from the entities array with the value of the entity
+			const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+			// check the data type of the entity to loop in Array type entities
+			if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+				metaData[metaKey] = meta?.[metaKey].map((entity) => {
+					const id = getId(entity) // get the id from the input
+					const find = Object.values(feederData).find(
+						(obj) => obj?._id === id || obj?.id === id || obj?.value === id
+					) // find the object from with given id the feeder data.
+					return parseFind(find) // parse the response in desired format
+				})
+			} else {
+				const id = getId(meta?.[metaKey]) // get the id from the input
+				const find = Object.values(feederData).find(
+					(obj) => obj?._id === id || obj?.id === id || obj?.value === id
+				) // find the object from with given id the feeder data.
+				metaData[metaKey] = parseFind(find) // parse the response in desired format
+			}
+		})
+	}
+	return metaData
+}
+
+//Generate a random UUID
 function generateUUID() {
 	return uuidv4()
 }
 
 /**
- * parse domain
+ * Construct URL
  * @method
  * @name appendParamsToUrl
  * @param {string} host - host api url
@@ -1013,4 +1079,5 @@ module.exports = {
 	generateUUID,
 	isValidAction,
 	appendParamsToUrl,
+	parseMetaData,
 }
