@@ -243,6 +243,7 @@ module.exports = class AccountHelper {
 							id: {
 								[Op.in]: invitedUserMatch.roles,
 							},
+							tenant_code: tenantDetail.code,
 						},
 						{
 							attributes: {

@@ -147,7 +147,8 @@ module.exports = class Tenant {
 				req.body.file_path,
 				req.decodedToken.id,
 				req.headers.organization,
-				req.headers.tenant
+				req.headers.tenant,
+				req?.body?.editable_fields
 			)
 			return tenant
 		} catch (error) {

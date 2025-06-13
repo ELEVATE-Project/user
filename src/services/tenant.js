@@ -732,7 +732,7 @@ module.exports = class tenantHelper {
 		}
 	}
 
-	static async userBulkUpload(filePath, userId, orgCode, tenantCode) {
+	static async userBulkUpload(filePath, userId, orgCode, tenantCode, editableFields = []) {
 		try {
 			let orgFilter = {
 				tenant_code: tenantCode,
@@ -768,7 +768,7 @@ module.exports = class tenantHelper {
 				tenant_code: tenantCode,
 			}
 
-			const bulkUpload = await orgAdminService.bulkCreate(filePath, tokenInformation)
+			const bulkUpload = await orgAdminService.bulkCreate(filePath, tokenInformation, editableFields)
 
 			return bulkUpload
 		} catch (error) {

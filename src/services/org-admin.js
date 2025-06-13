@@ -102,9 +102,12 @@ module.exports = class OrgAdminHelper {
 		}
 	}
 
-	static async bulkCreate(filePath, tokenInformation) {
+	static async bulkCreate(filePath, tokenInformation, editableFields = []) {
 		try {
 			const { id, organization_id, tenant_code } = tokenInformation
+			editableFields = Array.isArray(editableFields)
+				? [...new Set(editableFields)]
+				: [...new Set(editableFields.split(','))] // unique editable field array
 			const { name, email } = await userQueries.findOne({ id }, { attributes: ['name', 'email'] })
 			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
@@ -147,6 +150,7 @@ module.exports = class OrgAdminHelper {
 						org_name: organization.name,
 						organization_code: organization.code,
 						tenant_code,
+						editableFields,
 					},
 				},
 				{

@@ -4,8 +4,51 @@ const common = require('@constants/common')
 const utils = require('@generics/utils')
 module.exports = {
 	up: async (queryInterface, Sequelize) => {
+		let isDistributed = false
+		const tableName = 'organization_user_invites'
+		let isCitusEnabled = false
+
 		try {
-			const existingData = await queryInterface.sequelize.query('SELECT * FROM organization_user_invites')
+			// Check if table is distributed
+			const distributionCheckResult = await queryInterface.sequelize.query(`
+                SELECT 1 FROM pg_dist_partition WHERE logicalrelid = '${tableName}'::regclass
+            `)
+			isDistributed = distributionCheckResult[0].length > 0
+		} catch (error) {
+			isDistributed = false
+		}
+		try {
+			const [extensionCheckResult] = await queryInterface.sequelize.query(`
+        SELECT 1 FROM pg_extension WHERE extname = 'citus';
+      `)
+			isCitusEnabled = extensionCheckResult.length > 0
+		} catch (error) {
+			console.error('Error checking Citus extension:', error.message)
+			isCitusEnabled = false // Assume Citus is not enabled if the query fails
+		}
+		if (isDistributed) {
+			try {
+				const [foreignKeys] = await queryInterface.sequelize.query(`
+                    SELECT conname 
+                    FROM pg_constraint 
+                    WHERE conrelid = '${tableName}'::regclass AND contype = 'f';
+                `)
+				for (const fk of foreignKeys) {
+					await queryInterface.sequelize.query(`
+                        ALTER TABLE "${tableName}" DROP CONSTRAINT "${fk.conname}";
+                    `)
+				}
+
+				await queryInterface.sequelize.query(`
+                    SELECT undistribute_table('${queryInterface.quoteIdentifier(tableName)}');
+                `)
+			} catch (error) {
+				console.error('Error in undistribution:', error.message)
+				throw error
+			}
+		}
+		try {
+			const existingData = await queryInterface.sequelize.query(`SELECT * FROM ${tableName}`)
 			const encEmails = [
 				...new Set(
 					existingData[0].map((data) => {
@@ -38,52 +81,52 @@ module.exports = {
 				orgCodeMap = new Map(orgs.map((org) => [org.code, org.id]))
 			}
 
-			await queryInterface.addColumn('organization_user_invites', 'username', {
+			await queryInterface.addColumn(tableName, 'username', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
 
-			await queryInterface.addColumn('organization_user_invites', 'name', {
+			await queryInterface.addColumn(tableName, 'name', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
 
-			await queryInterface.addColumn('organization_user_invites', 'phone', {
+			await queryInterface.addColumn(tableName, 'phone', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
-			await queryInterface.addColumn('organization_user_invites', 'phone_code', {
+			await queryInterface.addColumn(tableName, 'phone_code', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
-			await queryInterface.addColumn('organization_user_invites', 'meta', {
+			await queryInterface.addColumn(tableName, 'meta', {
 				type: Sequelize.JSON,
 				allowNull: false,
 				defaultValue: {},
 			})
 
-			await queryInterface.addColumn('organization_user_invites', 'type', {
+			await queryInterface.addColumn(tableName, 'type', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
 
-			await queryInterface.addColumn('organization_user_invites', 'invitation_key', {
+			await queryInterface.addColumn(tableName, 'invitation_key', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
 
-			await queryInterface.addColumn('organization_user_invites', 'invitation_id', {
+			await queryInterface.addColumn(tableName, 'invitation_id', {
 				type: Sequelize.INTEGER,
 				allowNull: true,
 			})
 
-			await queryInterface.addColumn('organization_user_invites', 'tenant_code', {
+			await queryInterface.addColumn(tableName, 'tenant_code', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
 
 			// Modify existing email column to allow NULL
-			await queryInterface.changeColumn('organization_user_invites', 'email', {
+			await queryInterface.changeColumn(tableName, 'email', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
 			})
@@ -91,14 +134,14 @@ module.exports = {
 			const [results] = await queryInterface.sequelize.query(
 				`SELECT constraint_name 
          FROM information_schema.table_constraints 
-         WHERE table_name = 'organization_user_invites' 
+         WHERE table_name = '${tableName}' 
          AND constraint_name = 'org_user_invites_pkey' 
          AND constraint_type = 'PRIMARY KEY'`
 			)
 
 			// Remove the constraint if it exists
 			if (results.length > 0) {
-				await queryInterface.removeConstraint('organization_user_invites', 'org_user_invites_pkey')
+				await queryInterface.removeConstraint(tableName, 'org_user_invites_pkey')
 				console.log('Primary key constraint org_user_invites_pkey removed.')
 			} else {
 				console.log('Primary key constraint org_user_invites_pkey not found.')
@@ -109,13 +152,13 @@ module.exports = {
 				if (fetchUser?.id) {
 					// Update query for organization_user_invites
 					const updatedRows = await queryInterface.bulkUpdate(
-						'organization_user_invites',
+						tableName,
 						{
 							username: fetchUser.username,
 							type: common.TYPE_UPLOAD,
 							invitation_key: utils.generateUUID(),
 							invitation_id: 0,
-							tenant_code: fetchUser.tenant_code,
+							tenant_code: fetchUser?.tenant_code,
 							status: fetchUser.status,
 							meta: fetchUser.meta,
 							updated_at: new Date(),
@@ -126,38 +169,64 @@ module.exports = {
 							email: fetchUser.email,
 						}
 					)
+				} else {
+					const updatedRows = await queryInterface.bulkUpdate(
+						tableName,
+						{
+							username: '',
+							type: common.TYPE_UPLOAD,
+							invitation_key: utils.generateUUID(),
+							invitation_id: 0,
+							tenant_code: process.env.DEFAULT_TENANT_CODE || 'default',
+							status: common.UPLOADED_STATUS,
+							meta: {},
+							updated_at: new Date(),
+							phone: null,
+							phone_code: null,
+						},
+						{
+							email,
+						}
+					)
 				}
 			})
 
 			// Add new composite primary key (id, organization_id, tenant_code)
-			await queryInterface.addConstraint('organization_user_invites', {
+			await queryInterface.addConstraint(tableName, {
 				fields: ['id', 'organization_id', 'tenant_code'],
 				type: 'primary key',
 				name: 'org_user_invites_pkey',
 			})
 
 			// Add unique constraint on invitation_key
-			await queryInterface.addConstraint('organization_user_invites', {
-				fields: ['invitation_key'],
+			await queryInterface.addConstraint(tableName, {
+				fields: ['invitation_key', 'tenant_code'],
 				type: 'unique',
 				name: 'org_user_invites_invitation_key_unique',
 			})
+			if (isCitusEnabled) {
+				await queryInterface.sequelize.query(`
+			SELECT create_distributed_table('${tableName}', 'tenant_code');
+		  `)
+			}
 		} catch (error) {
 			console.error('Error : ', error)
 		}
 	},
 
 	down: async (queryInterface, Sequelize) => {
+		const tableName = 'organization_user_invites'
 		await queryInterface.sequelize.transaction(async (t) => {
 			// Remove new columns
-			await queryInterface.removeColumn('organization_user_invites', 'phone', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'phone_code', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'username', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'type', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'invitation_key', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'invitation_id', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'meta', { transaction: t })
-			await queryInterface.removeColumn('organization_user_invites', 'tenant_code', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'phone', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'name', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'phone_code', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'username', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'type', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'invitation_key', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'invitation_id', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'meta', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'tenant_code', { transaction: t })
 		})
 	},
 }

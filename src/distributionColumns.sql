@@ -10,7 +10,7 @@ SELECT create_distributed_table('organizations', 'tenant_code');
 
 SELECT create_distributed_table('organization_email_domains', 'tenant_code');
 SELECT create_distributed_table('organization_role_requests','tenant_code');
-SELECT create_distributed_table('organization_user_invites','organization_id');
+SELECT create_distributed_table('organization_user_invites','tenant_code');
 SELECT create_distributed_table('users_credentials','email');
 SELECT create_distributed_table('users', 'tenant_code');
 

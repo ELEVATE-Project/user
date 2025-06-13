@@ -50,10 +50,7 @@ module.exports = class UserInviteHelper {
 				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
 				const invitees = parsedFileData.result.data
 				const additionalCsvHeaders = parsedFileData.result.additionalCsvHeaders
-				const editable_fields = [
-					...new Set(invitees.flatMap((eachInvite) => eachInvite.editable_fields.split(','))),
-				]
-
+				const editable_fields = data?.user?.editableFields || []
 				const tenantDetails = await tenantQueries.findOne(
 					{
 						code: data.user.tenant_code,
@@ -62,7 +59,7 @@ module.exports = class UserInviteHelper {
 						attributes: ['meta'],
 					}
 				)
-				const validity = tenantDetails?.meta?.bulkInvitationValidity || common.BULK_INVITATION_VALIDITY
+				const validity = tenantDetails?.meta?.bulk_invitation_validity || common.BULK_INVITATION_VALIDITY
 				const now = new Date()
 				const valid_till = new Date(now.getTime() + Number(validity))
 
