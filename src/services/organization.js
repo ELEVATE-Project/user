@@ -136,6 +136,7 @@ module.exports = class OrganizationsHelper {
 				eventType: 'create',
 				entityId: createdOrganization.id,
 				args: {
+					name: bodyData.name,
 					created_by: loggedInUserId,
 				},
 			})
