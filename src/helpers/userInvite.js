@@ -509,7 +509,7 @@ module.exports = class UserInviteHelper {
 				//return error for already invited user
 				if (!existingUser && existingInvitees.hasOwnProperty(encryptedEmail)) {
 					console.log('aaaaa')
-					invitee.statusOrUserId = 'User already exist'
+					invitee.statusOrUserId = 'User already exist or invited'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
 					input.push(invitee)
@@ -971,12 +971,22 @@ module.exports = class UserInviteHelper {
 				} else {
 					invitee.meta = prunedEntities.reduce((acc, index) => {
 						if (index.data_type == 'ARRAY' || index.data_type == 'ARRAY[STRING]') {
-							acc[index.value] = invitee[index.value].split(',').map((entity) => {
-								return externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()]._id
-							})
+							if (invitee[index.value]) {
+								acc[index.value] = invitee[index.value].split(',').map((entity) => {
+									return externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()]._id
+								})
+							} else {
+								acc[index.value] = []
+							}
 						} else {
-							acc[index.value] =
-								externalEntityNameIdMap[invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()]._id
+							if (invitee[index.value]) {
+								acc[index.value] =
+									externalEntityNameIdMap[
+										invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()
+									]._id
+							} else {
+								acc[index.value] = ''
+							}
 						}
 						return acc
 					}, {})

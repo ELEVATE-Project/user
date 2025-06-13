@@ -24,7 +24,7 @@ async function sendEmailNotification({ emailId, templateCode, variables, tenantC
 		const emailPayload = {
 			email: {
 				to: Array.isArray(emailId) ? emailId : [emailId],
-				subject: templateData.subject,
+				subject: utilsHelper.composeEmailBody(templateData.subject, variables),
 				body: utilsHelper.composeEmailBody(templateData.body, variables),
 			},
 		}
