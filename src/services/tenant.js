@@ -328,7 +328,7 @@ module.exports = class tenantHelper {
 							await organizationFeatureQueries.hardDelete(
 								feature.result.feature_code,
 								feature.result.organization_code,
-								eature.result.tenant_code
+								feature.result.tenant_code
 							)
 						})
 					})

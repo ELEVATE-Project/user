@@ -231,6 +231,11 @@ const notification = {
 	update: ['id', 'created_by', 'updated_by'],
 }
 
+const organizationFeatures = {
+	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	update: ['feature_code', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+}
+
 const orgAdmin = {
 	bulkUserCreate: [
 		'id',
@@ -353,6 +358,11 @@ const tenant = {
 	],
 }
 
+const feature = {
+	update: ['code', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+}
+
 module.exports = {
 	account,
 	admin,
@@ -368,4 +378,6 @@ module.exports = {
 	userRole,
 	user,
 	tenant,
+	organizationFeatures,
+	feature,
 }

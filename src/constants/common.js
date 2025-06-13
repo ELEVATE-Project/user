@@ -102,4 +102,8 @@ module.exports = {
 	READ_ACCESS: 'r',
 	TYPE_ALL: 'all',
 	ENGLISH_LANGUGE_CODE: 'en',
+	ORG_CODE_HEADER: 'organizationcode',
+	TENANT_CODE_HEADER: 'tenantcode',
+	DELETE_METHOD: 'DELETE',
+	SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR: 'SequelizeForeignKeyConstraintError',
 }
