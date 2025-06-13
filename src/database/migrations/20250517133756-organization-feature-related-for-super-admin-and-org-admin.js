@@ -2,15 +2,21 @@
 
 require('module-alias/register')
 const common = require('@constants/common')
-const Permission = require('@database/models/index')
+const Permissions = require('@database/models/index').Permission
 
 const getPermissionId = async (module, request_type, api_path) => {
 	try {
-		const permission = await Permission.findOne({ where: { module, request_type, api_path } })
-		if (!permission) throw new Error('Permission not found')
+		const permission = await Permissions.findOne({
+			where: { module, request_type, api_path },
+		})
+		if (!permission) {
+			throw new Error(
+				`Permission not found for module: ${module}, request_type: ${request_type}, api_path: ${api_path}`
+			)
+		}
 		return permission.id
 	} catch (error) {
-		throw error
+		throw new Error(`Error while fetching permission: ${error.message}`)
 	}
 }
 
