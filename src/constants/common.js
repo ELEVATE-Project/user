@@ -106,4 +106,5 @@ module.exports = {
 	TENANT_CODE_HEADER: 'tenantcode',
 	DELETE_METHOD: 'DELETE',
 	SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR: 'SequelizeForeignKeyConstraintError',
+	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR: 'SequelizeUniqueConstraintError',
 }
