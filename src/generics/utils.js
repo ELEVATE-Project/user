@@ -968,7 +968,9 @@ function parseMetaData(meta = {}, prunedEntities, feederData) {
 	let metaData = {}
 
 	if (Object.keys(meta).length > 0) {
+		// get id function identifies id from the input data
 		const getId = (value) => value?.id ?? value?._id ?? value
+		// parse the input to name , id , external id format
 		const parseFind = (value) => {
 			return {
 				name: value?.name || value?.label,
@@ -978,21 +980,23 @@ function parseMetaData(meta = {}, prunedEntities, feederData) {
 		}
 
 		Object.keys(meta).forEach((metaKey) => {
+			// find the entity type from the entities array with the value of the entity
 			const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+			// check the data type of the entity to loop in Array type entities
 			if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
 				metaData[metaKey] = meta?.[metaKey].map((entity) => {
-					const id = getId(entity)
+					const id = getId(entity) // get the id from the input
 					const find = Object.values(feederData).find(
 						(obj) => obj?._id === id || obj?.id === id || obj?.value === id
-					)
-					return parseFind(find)
+					) // find the object from with given id the feeder data.
+					return parseFind(find) // parse the response in desired format
 				})
 			} else {
-				const id = getId(meta?.[metaKey])
+				const id = getId(meta?.[metaKey]) // get the id from the input
 				const find = Object.values(feederData).find(
 					(obj) => obj?._id === id || obj?.id === id || obj?.value === id
-				)
-				metaData[metaKey] = parseFind(find)
+				) // find the object from with given id the feeder data.
+				metaData[metaKey] = parseFind(find) // parse the response in desired format
 			}
 		})
 	}

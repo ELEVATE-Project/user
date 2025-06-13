@@ -556,7 +556,10 @@ module.exports = class AccountHelper {
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
 			result.user.phone_code = bodyData.phone_code
-
+			/*
+			user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+			to prarse it to a standard format with data for emitting the event
+			*/
 			metaData = utils.parseMetaData(metaData, prunedEntities, result?.user)
 
 			const eventBody = UserTransformDTO.eventBodyDTO({

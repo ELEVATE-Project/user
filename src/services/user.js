@@ -171,6 +171,10 @@ module.exports = class UserHelper {
 
 				modifiedKeys.forEach((key) => {
 					if (key == 'meta') {
+						/*
+						user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+						to prarse it to a standard format with data for emitting the event
+						*/
 						const metaData = utils.parseMetaData(bodyData[key], prunedEntities, processDbResponse)
 
 						newValues = {

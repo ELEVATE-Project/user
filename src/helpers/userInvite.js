@@ -627,6 +627,10 @@ module.exports = class UserInviteHelper {
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
+										/*
+										user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+										to prarse it to a standard format with data for emitting the event
+										*/
 										const metaData = utils.parseMetaData(
 											userUpdate[0].dataValues.meta,
 											prunedEntities,
@@ -647,7 +651,10 @@ module.exports = class UserInviteHelper {
 								oldValues.email = oldValues.email
 									? emailEncryption.decrypt(oldValues.email)
 									: oldValues.email
-
+								/*
+								user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+								to prarse it to a standard format with data for emitting the event
+								*/
 								userMeta = utils.parseMetaData(userMeta, prunedEntities, externalEntityNameIdMap)
 								oldValues = {
 									...oldValues,
@@ -817,6 +824,10 @@ module.exports = class UserInviteHelper {
 						})
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
+						/*
+						user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+						to prarse it to a standard format with data for emitting the event
+						*/
 						const metaData = utils.parseMetaData(inviteeData.meta, prunedEntities, externalEntityNameIdMap)
 
 						let userWithOrg = await userQueries.findUserWithOrganization(
