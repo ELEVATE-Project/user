@@ -10,35 +10,7 @@
 			"name": "Account",
 			"item": [
 				{
-					"name": "Create Account Mentee",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "origin",
-								"value": "localhost",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nevil Mathew\",\n    \"email\": \"nevil@tunerlabs.com\",\n    \"password\": \"PASSword###11\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
-							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "account", "create"]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Account Mentor",
+					"name": "Create Account",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -2421,6 +2393,31 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Public userInvites",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "origin",
+								"value": "{{origin}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/public/userInvites?invitation_key=bfbaad67-a63a-44a2-804c-09c685233207",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "public", "userInvites"],
+							"query": [
+								{
+									"key": "invitation_key",
+									"value": "bfbaad67-a63a-44a2-804c-09c685233207"
+								}
+							]
+						},
+						"description": "Generated from cURL: curl --location 'http://localhost:3001/user/v1/public/userInvites?invitation_key=bfbaad67-a63a-44a2-804c-09c685233207' \\\n--header 'origin: shikshagraha-qa.tekdinext.com'"
+					},
+					"response": []
 				}
 			]
 		},
@@ -2459,7 +2456,7 @@
 							"host": ["{{UserDevBaseUrl}}"],
 							"path": ["user", "v1", "tenant", "update"]
 						},
-						"description": "Generated from cURL: curl --location 'https://saas-qa.tekdinext.com/user/v1/tenant/update' \\\n--header 'Content-Type: application/json' \\\n--header 'origin: https://dev.elevate-mentoring.shikshalokam.org' \\\n--header 'X-auth-token: bearer {{token}}' \\\n--data '{\n    \"name\": \"Test\",\n    \"code\": \"test\",\n    \"description\": \"Test domain\",\n    \"logo\": \"\",\n    \"theming\": {},\n    \"meta\": {},\n    \"domains\": \"https://test.123.domain.com\"\n}'"
+						"description": "Generated from cURL: curl --location 'https://saas-qa.tekdinext.com/user/v1/tenant/update' \\\n--header 'Content-Type: application/json' \\\n--header 'origin: https://dev.elevate-mentoring.shikshalokam.org' \\\n--header 'X-auth-token: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJuYW1lIjoiTmV2aWwgTWF0aGV3Iiwic2Vzc2lvbl9pZCI6MjMsInRlbmFudF9jb2RlIjoiZGVmYXVsdCIsIm9yZ2FuaXphdGlvbnMiOlt7ImlkIjoxLCJuYW1lIjoiRGVmYXVsdCBPcmdhbml6YXRpb24iLCJjb2RlIjoiZGVmYXVsdF9jb2RlIiwiZGVzY3JpcHRpb24iOiJEZWZhdWx0ICBTTCBPcmdhbmlzYXRpb24iLCJzdGF0dXMiOiJBQ1RJVkUiLCJyZWxhdGVkX29yZ3MiOm51bGwsInRlbmFudF9jb2RlIjoiZGVmYXVsdCIsIm1ldGEiOm51bGwsImNyZWF0ZWRfYnkiOm51bGwsInVwZGF0ZWRfYnkiOm51bGwsInJvbGVzIjpbeyJpZCI6NSwidGl0bGUiOiJtZW50ZWUiLCJsYWJlbCI6bnVsbCwidXNlcl90eXBlIjowLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMiLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJ0cmFuc2xhdGlvbnMiOm51bGx9LHsiaWQiOjYsInRpdGxlIjoiYWRtaW4iLCJsYWJlbCI6bnVsbCwidXNlcl90eXBlIjoxLCJzdGF0dXMiOiJBQ1RJVkUiLCJvcmdhbml6YXRpb25faWQiOjEsInZpc2liaWxpdHkiOiJQVUJMSUMiLCJ0ZW5hbnRfY29kZSI6ImRlZmF1bHQiLCJ0cmFuc2xhdGlvbnMiOm51bGx9LHsiaWQiOjcsInRpdGxlIjoib3JnX2FkbWluIiwibGFiZWwiOm51bGwsInVzZXJfdHlwZSI6MSwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjoxLCJ2aXNpYmlsaXR5IjoiUFVCTElDIiwidGVuYW50X2NvZGUiOiJkZWZhdWx0IiwidHJhbnNsYXRpb25zIjpudWxsfV19XX0sImlhdCI6MTc0Njg2OTgwOSwiZXhwIjoxNzQ2OTU2MjA5fQ.ObyGXzs--MvxzPnn4imcNZZQSkdL1YtheXXox3nDiug' \\\n--data '{\n    \"name\": \"Test\",\n    \"code\": \"test\",\n    \"description\": \"Test domain\",\n    \"logo\": \"\",\n    \"theming\": {},\n    \"meta\": {},\n    \"domains\": \"https://test.123.domain.com\"\n}'"
 					},
 					"response": []
 				},
@@ -2536,6 +2533,46 @@
 							"host": ["{{UserDevBaseUrl}}"],
 							"path": ["user", "v1", "tenant", "removeDomain", "test"]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Bulk Upload",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "{{token}}"
+							},
+							{
+								"key": "tenant",
+								"value": "{{tenant_code}}"
+							},
+							{
+								"key": "organization",
+								"value": "{{org_code}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"file_path\" : \"users/1-1749801919492-bulkupload.csv\",\n    \"editable_fields\" : [\"name\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/tenant/userBulkUpload",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "tenant", "userBulkUpload"]
+						},
+						"description": "Generated from cURL: curl --location 'http://localhost:3001/user/v1/tenant/userBulkUpload' \\\n--header 'Content-Type: application/json' \\\n--header 'X-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjozODIsIm5hbWUiOiJOZXZpbCIsInNlc3Npb25faWQiOjU3MDgsIm9yZ2FuaXphdGlvbl9pZHMiOlsiOCJdLCJvcmdhbml6YXRpb25fY29kZXMiOlsiYmxyIl0sInRlbmFudF9jb2RlIjoic2hpa3NoYWdyYWhhIiwib3JnYW5pemF0aW9ucyI6W3siaWQiOjgsIm5hbWUiOiJCZW5nYWx1cnUiLCJjb2RlIjoiYmxyIiwiZGVzY3JpcHRpb24iOiJCZW5nYWx1cnUgaXMgdGhlIGNhcGl0YWwgb2YgSW5kaWFzIHNvdXRoZXJuIEthcm5hdGFrYSBzdGF0ZS4iLCJzdGF0dXMiOiJBQ1RJVkUiLCJyZWxhdGVkX29yZ3MiOls5XSwidGVuYW50X2NvZGUiOiJzaGlrc2hhZ3JhaGEiLCJtZXRhIjp7InRlcm1zIjpbeyJpZGVudGlmaWVyIjoibWlncmF0aW9uLWZyYW1ld29ya19ib2FyZF9jYnNlIiwibm9kZV9pZCI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfYm9hcmRfY2JzZSJ9LHsiaWRlbnRpZmllciI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfbWVkaXVtX2VuZ2xpc2giLCJub2RlX2lkIjoibWlncmF0aW9uLWZyYW1ld29ya19tZWRpdW1fZW5nbGlzaCJ9LHsiaWRlbnRpZmllciI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfZ3JhZGVsZXZlbF9ncmFkZTEwIiwibm9kZV9pZCI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfZ3JhZGVsZXZlbF9ncmFkZTEwIn0seyJpZGVudGlmaWVyIjoibWlncmF0aW9uLWZyYW1ld29ya19zdWJqZWN0X2hpbmRpIiwibm9kZV9pZCI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfc3ViamVjdF9oaW5kaSJ9LHsiaWRlbnRpZmllciI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfc3ViamVjdF9lbmdsaXNoIiwibm9kZV9pZCI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfc3ViamVjdF9lbmdsaXNoIn0seyJpZGVudGlmaWVyIjoibWlncmF0aW9uLWZyYW1ld29ya19zdWJqZWN0X21hdGhzIiwibm9kZV9pZCI6Im1pZ3JhdGlvbi1mcmFtZXdvcmtfc3ViamVjdF9tYXRocyJ9XSwiZnJhbWV3b3JrIjp7Im5vZGVfaWQiOiJtaWdyYXRpb24tZnJhbWV3b3JrIiwidmVyc2lvbktleSI6IjE3NDI4ODU3Njc4NDEifX0sImNyZWF0ZWRfYnkiOjEsInVwZGF0ZWRfYnkiOm51bGwsInJvbGVzIjpbeyJpZCI6MTUsInRpdGxlIjoibWVudGVlIiwibGFiZWwiOm51bGwsInVzZXJfdHlwZSI6MCwic3RhdHVzIjoiQUNUSVZFIiwib3JnYW5pemF0aW9uX2lkIjo3LCJ2aXNpYmlsaXR5IjoiUFVCTElDIiwidGVuYW50X2NvZGUiOiJzaGlrc2hhZ3JhaGEiLCJ0cmFuc2xhdGlvbnMiOm51bGx9XX1dfSwiaWF0IjoxNzQ5ODAzNTYwLCJleHAiOjM1NDk4MDM1NjB9.IVE1PHDrkJ6w5kfL5DJ9yAb5P362DKqdxdkCOrdnRNs' \\\n--header 'tenant: shikshagraha' \\\n--header 'organization: blr' \\\n--data '{\n    \"file_path\" : \"users/1-1749801919492-bulkupload.csv\",\n    \"editable_fields\" : [\"name\"]\n}'"
 					},
 					"response": []
 				},
