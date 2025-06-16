@@ -13,7 +13,7 @@ exports.create = async (data) => {
 		return createdOrg.get({ plain: true })
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
@@ -54,7 +54,7 @@ exports.update = async (filter, update, options = {}) => {
 	} catch (error) {
 		console.log(error)
 
-		return error
+		throw error
 	}
 }
 
@@ -91,7 +91,7 @@ exports.appendRelatedOrg = async (relatedOrg, ids, options = {}) => {
 		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 
@@ -112,7 +112,7 @@ exports.removeRelatedOrg = async (removedOrgIds, ids, options = {}) => {
 		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 exports.listOrganizations = async (page, limit, search) => {
@@ -140,7 +140,7 @@ exports.listOrganizations = async (page, limit, search) => {
 		}
 		return transformedResult
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -152,7 +152,7 @@ exports.findAll = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -160,7 +160,7 @@ exports.findByPk = async (id) => {
 	try {
 		return await Organization.findByPk(id, { raw: true })
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -175,6 +175,6 @@ exports.hardDelete = async (id) => {
 		return { success: true }
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
