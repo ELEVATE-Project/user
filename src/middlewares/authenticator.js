@@ -16,6 +16,8 @@ const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 const utilsHelper = require('@generics/utils')
 const { verifyCaptchaToken } = require('@utils/captcha')
+const { getDomainFromRequest } = require('@utils/domain')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -41,6 +43,13 @@ async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	})
 	return isPermissionValid
 }
+
+const notFoundResponse = (message) =>
+	responses.failureResponse({
+		message,
+		statusCode: httpStatusCode.not_acceptable,
+		responseCode: 'CLIENT_ERROR',
+	})
 
 module.exports = async function (req, res, next) {
 	const unAuthorizedResponse = responses.failureResponse({
@@ -100,6 +109,19 @@ module.exports = async function (req, res, next) {
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
+				const domain = getDomainFromRequest(req)
+				const tenantDomain = await tenantDomainQueries.findOne(
+					{ domain },
+					{
+						attributes: ['tenant_code'],
+					}
+				)
+				if (!tenantDomain) {
+					return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+				}
+
+				req.body.tenant_code = tenantDomain.tenant_code
+
 				return next()
 			} catch (error) {
 				throw unAuthorizedResponse

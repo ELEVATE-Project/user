@@ -234,7 +234,8 @@ module.exports = class OrgAdmin {
 			const userUploadRes = await orgAdminService.bulkCreate(
 				req.body.file_path,
 				req.decodedToken,
-				req?.body?.editable_fields
+				req?.body?.editable_fields,
+				req?.body?.upload_type.toUpperCase()
 			)
 			return userUploadRes
 		} catch (error) {

@@ -148,7 +148,8 @@ module.exports = class Tenant {
 				req.decodedToken.id,
 				req.headers.organization,
 				req.headers.tenant,
-				req?.body?.editable_fields
+				req?.body?.editable_fields,
+				req?.body?.upload_type.toUpperCase()
 			)
 			return tenant
 		} catch (error) {

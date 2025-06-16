@@ -108,7 +108,7 @@ module.exports = class AccountHelper {
 			throw error
 		}
 	}
-	static async userInvites(invitationKey, domain) {
+	static async userInvites(invitationKey, tenantCode) {
 		try {
 			const notFoundResponse = (message) =>
 				responses.failureResponse({
@@ -117,20 +117,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			const tenantDomain = await tenantDomainQueries.findOne(
-				{ domain },
-				{
-					attributes: ['tenant_code'],
-				}
-			)
-			if (!tenantDomain) {
-				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
-			}
-
-			const tenantDetail = await tenantQueries.findOne(
-				{ code: tenantDomain.tenant_code },
-				{ attributes: ['code'] }
-			)
+			const tenantDetail = await tenantQueries.findOne({ code: tenantCode }, { attributes: ['code'] })
 
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')

@@ -219,6 +219,7 @@ module.exports = class AccountHelper {
 				Object.keys(bodyData).forEach((bodyKey) => {
 					if (editable_fields.includes(bodyKey)) {
 						newBody[bodyKey] = bodyData[bodyKey]
+						delete invitedUserMatch[bodyKey]
 					} else {
 						if (bodyData[bodyKey] != invitedUserMatch[bodyKey]) {
 							return responses.failureResponse({
@@ -227,7 +228,6 @@ module.exports = class AccountHelper {
 								responseCode: 'CLIENT_ERROR',
 							})
 						}
-						newBody[bodyKey] = invitedUserMatch[bodyKey]
 					}
 				})
 				bodyData = {
@@ -369,6 +369,18 @@ module.exports = class AccountHelper {
 			])
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, userOrgId)
+
+			if (invitedUserMatch) {
+				const tempBody = utils.restructureBody(invitedUserMatch, prunedEntities, userModel)
+				Object.keys(tempBody).forEach((keys) => {
+					bodyData[keys] = tempBody[keys] == '' ? null : tempBody[keys]
+				})
+				bodyData = {
+					...bodyData,
+					...bodyData.meta,
+				}
+				bodyData.meta = {}
+			}
 
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {

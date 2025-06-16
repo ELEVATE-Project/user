@@ -41,6 +41,7 @@ module.exports = class UserInviteHelper {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const filePath = data.fileDetails.input_path
+				const uploadType = data.user.uploadType
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
 				if (!response.success) throw new Error('FAILED_TO_DOWNLOAD')
@@ -79,7 +80,8 @@ module.exports = class UserInviteHelper {
 					data.fileDetails.id,
 					additionalCsvHeaders,
 					invitation?.id,
-					tenantDetails?.meta
+					tenantDetails?.meta,
+					uploadType
 				)
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
@@ -323,7 +325,15 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async createUserInvites(csvData, user, fileUploadId, additionalCsvHeaders = [], invitationId, tenantMeta) {
+	static async createUserInvites(
+		csvData,
+		user,
+		fileUploadId,
+		additionalCsvHeaders = [],
+		invitationId,
+		tenantMeta,
+		uploadType
+	) {
 		try {
 			console.log(
 				'******************************** User bulk Upload STARTS Here ********************************'
@@ -445,7 +455,7 @@ module.exports = class UserInviteHelper {
 				invitee.roles = invitee.roles.map((role) => role.trim())
 				const raw_email = invitee.email.toLowerCase()
 				const encryptedEmail = emailEncryption.encrypt(raw_email)
-				const hashedPassword = invitee.action != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
+				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
 				invitee.name = invitee.name.trim()
 
 				//find the invalid fields and generate error message
@@ -454,15 +464,12 @@ module.exports = class UserInviteHelper {
 					invalidFields.push('name')
 				}
 
-				if (!utils.isValidAction(invitee.action)) {
-					invalidFields.push('action')
-				}
 				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
 				if (
 					!utils.isValidPassword(invitee.password) &&
-					invitee.action.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()
+					uploadType.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()
 				) {
 					invalidFields.push('password')
 				}
@@ -776,7 +783,7 @@ module.exports = class UserInviteHelper {
 						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
 					}
 				}
-				if (!existingUser && invitee.action.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()) {
+				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,

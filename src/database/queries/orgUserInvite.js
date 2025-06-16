@@ -41,27 +41,34 @@ exports.findOne = async (filter, options = {}) => {
 			{
 				model: Invitation,
 				as: 'invitation',
-				...(options.isValid && {
-					where: {
+				where: {
+					tenant_code: filter.tenant_code, // Ensure JOIN respects distribution key
+					...(options.isValid && {
 						valid_till: {
 							[Op.gte]: new Date(),
 						},
-					},
-					required: true,
-				}),
+					}),
+					deleted_at: null, // Explicitly filter out soft-deleted records
+				},
+				required: true,
 			},
 		]
 
 		delete options.isValid
 
 		return await OrganizationUserInvite.findOne({
-			where: filter,
+			where: {
+				...filter,
+				deleted_at: null, // Ensure soft-deleted records are excluded
+			},
 			...options,
 			include,
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		// Log the error for debugging (use your preferred logging library)
+		console.error('Error in findOne query:', error.message)
+		throw error // Re-throw to let the service handle it
 	}
 }
 

@@ -102,7 +102,7 @@ module.exports = class OrgAdminHelper {
 		}
 	}
 
-	static async bulkCreate(filePath, tokenInformation, editableFields = []) {
+	static async bulkCreate(filePath, tokenInformation, editableFields = [], uploadType) {
 		try {
 			const { id, organization_id, tenant_code } = tokenInformation
 			editableFields = Array.isArray(editableFields)
@@ -123,6 +123,7 @@ module.exports = class OrgAdminHelper {
 				organization_id,
 				created_by: id,
 				tenant_code,
+				uploadType,
 			}
 
 			const result = await fileUploadQueries.create(creationData)
@@ -151,6 +152,7 @@ module.exports = class OrgAdminHelper {
 						organization_code: organization.code,
 						tenant_code,
 						editableFields,
+						uploadType,
 					},
 				},
 				{
