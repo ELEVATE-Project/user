@@ -94,15 +94,9 @@ module.exports = {
 		})
 
 		await queryInterface.bulkDelete('role_permission_mapping', {
-			api_path: '/user/v1/feature/*',
-			role_title: common.ORG_ADMIN_ROLE,
-			permission_id: await getPermissionId('feature', ['POST', 'GET', 'DELETE', 'PATCH'], '/user/v1/feature/*'),
-		})
-
-		await queryInterface.bulkDelete('role_permission_mapping', {
-			role_title: common.PUBLIC_ROLE,
-			permission_id: await getPermissionId('feature', ['GET'], '/user/v1/feature/list*'),
 			api_path: '/user/v1/feature/list*',
+			role_title: common.ORG_ADMIN_ROLE,
+			permission_id: await getPermissionId('feature', ['GET'], '/user/v1/feature/list*'),
 		})
 
 		await queryInterface.bulkDelete('permissions', {
