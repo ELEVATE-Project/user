@@ -21,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'ACTIVE',
 			},
-			organization_id: {
-				type: DataTypes.INTEGER,
+			organization_code: {
+				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
@@ -36,15 +36,15 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			username: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			phone: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			phone_code: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			meta: {
 				type: DataTypes.JSONB,
@@ -57,6 +57,7 @@ module.exports = (sequelize, DataTypes) => {
 			invitation_key: {
 				type: DataTypes.STRING,
 				allowNull: false,
+				unique: true,
 			},
 			invitation_id: {
 				type: DataTypes.INTEGER,
@@ -67,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
 				},
 			},
 			tenant_code: {
-				type: DataTypes.INTEGER,
+				type: DataTypes.STRING,
 				allowNull: false,
 			},
 			created_by: {

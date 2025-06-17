@@ -1003,7 +1003,7 @@ module.exports = class UserInviteHelper {
 						...invitee,
 						type: common.INVITED_STATUS,
 						status: common.INVITED_STATUS,
-						organization_id: user.organization_id,
+						organization_code: user.organization_code,
 						file_id: fileUploadId,
 						roles: (invitee.roles || []).map((roleTitle) => roleTitlesToIds[roleTitle.toLowerCase()] || []),
 						meta: invitee.meta || {},

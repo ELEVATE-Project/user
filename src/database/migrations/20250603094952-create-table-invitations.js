@@ -58,12 +58,10 @@ module.exports = {
 			created_at: {
 				type: Sequelize.DATE,
 				allowNull: false,
-				defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
 			},
 			updated_at: {
 				type: Sequelize.DATE,
 				allowNull: false,
-				defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
 			},
 			deleted_at: {
 				type: Sequelize.DATE,
@@ -76,7 +74,12 @@ module.exports = {
 			type: 'unique',
 			name: 'invitations_file_id_tenant_code_unique',
 		})
-
+		if (isCitusEnabled) {
+			// for foreign key relation to work , make sure related table is distributed in a citus env
+			await queryInterface.sequelize.query(`
+                SELECT create_distributed_table('file_uploads', 'tenant_code');
+            `)
+		}
 		await queryInterface.addConstraint(tableName, {
 			fields: ['file_id', 'tenant_code'],
 			type: 'foreign key',
@@ -123,7 +126,9 @@ module.exports = {
 
 		if (isCitusEnabled) {
 			await queryInterface.sequelize.query(`
-                SELECT undistribute_table('${queryInterface.quoteIdentifier(tableName)}');
+                SELECT undistribute_table('${queryInterface.quoteIdentifier(
+					tableName
+				)}', cascade_via_foreign_keys=>true);
             `)
 		}
 
@@ -132,7 +137,6 @@ module.exports = {
 		} catch (error) {
 			console.log('Unique constraint invitations_file_id_tenant_code_unique not found, skipping.')
 		}
-
 		await queryInterface.dropTable(tableName)
 	},
 }

@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			tenant_code: {
 				type: DataTypes.STRING(255),
-				allowNull: true,
+				allowNull: false,
 			},
 			created_at: {
 				type: DataTypes.DATE,

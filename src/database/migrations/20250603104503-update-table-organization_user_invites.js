@@ -48,7 +48,9 @@ module.exports = {
 				}
 
 				await queryInterface.sequelize.query(`
-                    SELECT undistribute_table('${queryInterface.quoteIdentifier(tableName)}');
+                    SELECT undistribute_table('${queryInterface.quoteIdentifier(
+						tableName
+					)}', cascade_via_foreign_keys=>true);
                 `)
 			} catch (error) {
 				console.error('Error in undistribution:', error.message)
@@ -57,39 +59,13 @@ module.exports = {
 		}
 
 		try {
-			const existingData = await queryInterface.sequelize.query(`SELECT * FROM ${tableName}`)
-			const encEmails = [
-				...new Set(
-					existingData[0].map((data) => {
-						return data.email
-					})
-				),
-			]
-			let existingUsers = {},
-				usersMap = new Map(),
-				orgCodeMap = new Map()
-
-			if (encEmails.length > 0) {
-				existingUsers = await queryInterface.sequelize.query(
-					'SELECT users.*, uo.organization_code AS ORG_CODE FROM users LEFT JOIN ( SELECT user_id, organization_code, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY organization_code ASC) as rn FROM user_organizations) uo ON users.id = uo.user_id AND uo.rn = 1 WHERE users.email IN (:emails) AND users.deleted_at IS NULL',
-					{
-						replacements: { emails: encEmails },
-						type: queryInterface.sequelize.QueryTypes.SELECT,
-					}
-				)
-				usersMap = new Map(existingUsers.map((user) => [user.email, user]))
-
-				const orgCodeArr = [...new Set(existingUsers.map((user) => user.org_code))]
-				const orgs = await queryInterface.sequelize.query(
-					'SELECT * FROM organizations WHERE code IN (:orgCodes) ',
-					{
-						replacements: { orgCodes: orgCodeArr },
-						type: queryInterface.sequelize.QueryTypes.SELECT,
-					}
-				)
-				orgCodeMap = new Map(orgs.map((org) => [org.code, org.id]))
+			try {
+				await queryInterface.sequelize.query(`TRUNCATE TABLE "${tableName}" RESTART IDENTITY CASCADE;`)
+				console.log(`Table ${tableName} truncated successfully.`)
+			} catch (error) {
+				console.error(`Error truncating table ${tableName}:`, error.message)
+				throw error // Re-throw to fail migration on error
 			}
-
 			await queryInterface.addColumn(tableName, 'username', {
 				type: Sequelize.STRING(255),
 				allowNull: true,
@@ -112,8 +88,7 @@ module.exports = {
 
 			await queryInterface.addColumn(tableName, 'meta', {
 				type: Sequelize.JSON,
-				allowNull: false,
-				defaultValue: {},
+				allowNull: true,
 			})
 
 			await queryInterface.addColumn(tableName, 'type', {
@@ -128,20 +103,18 @@ module.exports = {
 
 			await queryInterface.addColumn(tableName, 'invitation_id', {
 				type: Sequelize.INTEGER,
-				allowNull: false,
-				defaultValue: 0,
+				allowNull: true,
 			})
 
-			await queryInterface.addColumn(tableName, 'organization_id', {
-				type: Sequelize.INTEGER,
+			await queryInterface.addColumn(tableName, 'organization_code', {
+				type: Sequelize.STRING(255),
 				primaryKey: true,
-				allowNull: false,
+				allowNull: true,
 			})
 
 			await queryInterface.addColumn(tableName, 'tenant_code', {
 				type: Sequelize.STRING(255),
-				primaryKey: true,
-				allowNull: false,
+				allowNull: true,
 			})
 
 			await queryInterface.changeColumn(tableName, 'email', {
@@ -164,55 +137,26 @@ module.exports = {
 				console.log('Primary key constraint org_user_invites_pkey not found.')
 			}
 
-			for (const email of encEmails) {
-				const fetchUser = usersMap.get(email)
-				if (fetchUser?.id) {
-					await queryInterface.bulkUpdate(
-						tableName,
-						{
-							username: fetchUser.username,
-							type: common.TYPE_UPLOAD,
-							invitation_key: utils.generateUUID(),
-							invitation_id: null, // No foreign key, set to null
-							file_id: null, // No foreign key
-							organization_id: orgCodeMap.get(fetchUser.org_code) || 0,
-							tenant_code: fetchUser?.tenant_code || process.env.DEFAULT_TENANT_CODE || 'default',
-							status: fetchUser.status,
-							meta: fetchUser.meta,
-							updated_at: new Date(),
-							phone: fetchUser?.phone || null,
-							phone_code: fetchUser?.phone_code || null,
-						},
-						{
-							email: fetchUser.email,
-						}
-					)
-				} else {
-					await queryInterface.bulkUpdate(
-						tableName,
-						{
-							username: '',
-							type: common.TYPE_UPLOAD,
-							invitation_key: utils.generateUUID(),
-							invitation_id: null,
-							file_id: null,
-							organization_id: 0,
-							tenant_code: process.env.DEFAULT_TENANT_CODE || 'default',
-							status: common.UPLOADED_STATUS,
-							meta: {},
-							updated_at: new Date(),
-							phone: null,
-							phone_code: null,
-						},
-						{
-							email,
-						}
-					)
-				}
-			}
+			await queryInterface.changeColumn(tableName, 'type', {
+				type: Sequelize.STRING(255),
+				allowNull: false,
+			})
+			await queryInterface.changeColumn(tableName, 'invitation_id', {
+				type: Sequelize.INTEGER,
+				allowNull: false,
+			})
+			await queryInterface.changeColumn(tableName, 'organization_code', {
+				type: Sequelize.STRING(255),
+				allowNull: false,
+			})
+			await queryInterface.changeColumn(tableName, 'tenant_code', {
+				type: Sequelize.STRING(255),
+				allowNull: false,
+				primaryKey: true,
+			})
 
 			await queryInterface.addConstraint(tableName, {
-				fields: ['id', 'organization_id', 'tenant_code'],
+				fields: ['id', 'organization_code', 'tenant_code'],
 				type: 'primary key',
 				name: 'org_user_invites_pkey',
 			})
@@ -221,12 +165,6 @@ module.exports = {
 				fields: ['invitation_key', 'tenant_code'],
 				type: 'unique',
 				name: 'invitations_invitation_key_tenant_code_unique',
-			})
-
-			await queryInterface.addConstraint(tableName, {
-				fields: ['invitation_key', 'tenant_code'],
-				type: 'unique',
-				name: 'org_user_invites_invitation_key_unique',
 			})
 
 			await queryInterface.addConstraint(tableName, {
@@ -304,7 +242,7 @@ module.exports = {
 			await queryInterface.removeColumn(tableName, 'type', { transaction: t })
 			await queryInterface.removeColumn(tableName, 'invitation_key', { transaction: t })
 			await queryInterface.removeColumn(tableName, 'invitation_id', { transaction: t })
-			await queryInterface.removeColumn(tableName, 'organization_id', { transaction: t })
+			await queryInterface.removeColumn(tableName, 'organization_code', { transaction: t })
 			await queryInterface.removeColumn(tableName, 'meta', { transaction: t })
 			await queryInterface.removeColumn(tableName, 'tenant_code', { transaction: t })
 		})
