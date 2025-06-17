@@ -26,6 +26,7 @@ class UserDTO {
 			has_accepted_terms_and_conditions: user.has_accepted_terms_and_conditions,
 			languages: user.languages,
 			preferred_language: user.preferred_language,
+			custom_entity_text: user.custom_entity_text,
 			tenant_code: user.tenant_code,
 			meta: user.meta,
 			created_at: user.created_at,
