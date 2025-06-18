@@ -19,12 +19,12 @@ module.exports = class FeatureData {
 
 	static async findAndCountAll(filter, attributes, options) {
 		try {
-			const permissions = await Feature.findAndCountAll({
+			const data = await Feature.findAndCountAll({
 				where: filter,
 				attributes,
 				options,
 			})
-			return permissions
+			return data
 		} catch (error) {
 			throw error
 		}
@@ -50,6 +50,19 @@ module.exports = class FeatureData {
 				individualHooks: true,
 			})
 			return deletedRows
+		} catch (error) {
+			throw error
+		}
+	}
+
+	static async findAll(filter, attributes, options) {
+		try {
+			const data = await Feature.findAll({
+				where: filter,
+				attributes,
+				options,
+			})
+			return data
 		} catch (error) {
 			throw error
 		}
