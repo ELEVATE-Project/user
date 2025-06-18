@@ -35,6 +35,8 @@ const tenantQueries = require('@database/queries/tenants')
 let defaultOrg = {}
 let modelName = ''
 let externalEntityNameIdMap = {}
+let emailAndPhoneMissing = false
+let loginUrl = ''
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
@@ -339,7 +341,6 @@ module.exports = class UserInviteHelper {
 				'******************************** User bulk Upload STARTS Here ********************************'
 			)
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
-			let menteeRoleId, mentorRoleId
 
 			//find default org id
 			const defaultOrg = await organizationQueries.findOne({
@@ -360,12 +361,6 @@ module.exports = class UserInviteHelper {
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
 				roleTitlesToIds[role.title] = [role.id]
-				if (role.title === common.MENTEE_ROLE) {
-					menteeRoleId = role.id
-				}
-				if (role.title === common.MENTOR_ROLE) {
-					mentorRoleId = role.id
-				}
 			})
 
 			//get all existing user
@@ -392,7 +387,7 @@ module.exports = class UserInviteHelper {
 			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
 
 			const userPresentWithUsername = await userQueries.findAll(
-				{ username: { [Op.in]: userNameArray } },
+				{ username: { [Op.in]: userNameArray }, tenant_code: user.tenant_code },
 				{
 					attributes: ['username'],
 				}
@@ -453,8 +448,8 @@ module.exports = class UserInviteHelper {
 				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
 				invitee.roles = invitee.roles.map((role) => role.trim())
-				const raw_email = invitee.email.toLowerCase()
-				const encryptedEmail = emailEncryption.encrypt(raw_email)
+				const raw_email = invitee.email.toLowerCase() || null
+				const encryptedEmail = raw_email ? emailEncryption.encrypt(raw_email) : null
 				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
 				invitee.name = invitee.name.trim()
 
@@ -473,10 +468,9 @@ module.exports = class UserInviteHelper {
 				) {
 					invalidFields.push('password')
 				}
-				let emailAndPhoneMissing = false
 				if (!invitee.email && !invitee.phone) {
-					invalidFields.push('phone')
-					invalidFields.push('email')
+					// 	invalidFields.push('phone')
+					// 	invalidFields.push('email')
 					emailAndPhoneMissing = true
 				}
 
@@ -500,7 +494,7 @@ module.exports = class UserInviteHelper {
 							? invalidFields.slice(0, -1).join(', ') + ', and ' + invalidFields.slice(-1)
 							: invalidFields.join(' and ')
 					} ${invalidFields.length > 1 ? 'are' : 'is'} invalid.`
-					if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
+					// if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
 
 					invitee.statusOrUserId = errorMessage
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
@@ -789,7 +783,7 @@ module.exports = class UserInviteHelper {
 						...invitee,
 						status: common.UPLOADED_STATUS,
 						type: common.TYPE_UPLOAD,
-						organization_id: user.organization_id,
+						organization_code: user.organization_code,
 						tenant_code: user.tenant_code,
 						file_id: fileUploadId,
 						roles: (invitee.roles || []).map((roleTitle) => roleTitlesToIds[roleTitle.toLowerCase()] || []),
@@ -800,10 +794,6 @@ module.exports = class UserInviteHelper {
 					}
 
 					inviteeData.email = encryptedEmail
-					const newInvitee = await userInviteQueries.create(inviteeData)
-
-					// if the username is taken generate random username and inform user
-
 					if (
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
 						inviteeData?.username.toString() == ''
@@ -819,6 +809,9 @@ module.exports = class UserInviteHelper {
 								: ''
 						} Hence system generated a unique username.`
 					}
+					const newInvitee = await userInviteQueries.create(inviteeData)
+
+					// if the username is taken generate random username and inform user
 
 					if (newInvitee?.id) {
 						invitee.statusOrUserId = newInvitee.id
@@ -839,7 +832,7 @@ module.exports = class UserInviteHelper {
 						})
 						const orgCode = await organizationQueries.findOne(
 							{
-								id: inviteeData.organization_id,
+								id: user.organization_id,
 								tenant_code: user.tenant_code,
 							},
 							{
@@ -866,6 +859,7 @@ module.exports = class UserInviteHelper {
 						})
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
+						invitee.username = inviteeData?.username // keeping the data in sync for the output file. Username can be updated / generated if the username is clashing or not provided respectively.
 						/*
 						user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
 						to prarse it to a standard format with data for emitting the event
@@ -998,7 +992,7 @@ module.exports = class UserInviteHelper {
 						}
 						return acc
 					}, {})
-					const raw_phone = invitee?.phone
+					const raw_phone = invitee?.phone || null
 					const inviteeData = {
 						...invitee,
 						type: common.INVITED_STATUS,
@@ -1015,8 +1009,15 @@ module.exports = class UserInviteHelper {
 					inviteeData.username = inviteeData?.username
 						? inviteeData?.username
 						: await generateUniqueUsername(inviteeData?.name)
+
+					invitee.username = inviteeData.username // keeping the data in sync for the output file. Username can be updated / generated if the username is clashing or not provided respectively.
+
 					const newInvitee = await userInviteQueries.create(inviteeData)
 					invitee.statusOrUserId = 'User Invited successfully'
+
+					loginUrl = utils.appendParamsToUrl(tenantMeta.portalSignInUrl, {
+						invitation_key: inviteeData.invitation_key,
+					})
 
 					if (raw_email) {
 						notificationUtils.sendEmailNotification({
@@ -1027,9 +1028,7 @@ module.exports = class UserInviteHelper {
 								orgName: user?.org_name,
 								appName: user?.name,
 								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '',
-								portalURL: utils.appendParamsToUrl(tenantMeta.portalSignInUrl, {
-									invitation_key: inviteeData.invitation_key,
-								}),
+								portalURL: loginUrl,
 								username: inviteeData.username,
 							},
 							tenantCode: user.tenant_code,
@@ -1047,7 +1046,7 @@ module.exports = class UserInviteHelper {
 								orgName: userData.org_name,
 								appName: tenantDetails.name,
 								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '' || '',
-								portalURL: tenantDomains.domain,
+								portalURL: loginUrl,
 								username: inviteeData.username,
 							},
 							tenantCode: user.tenant_code,
@@ -1060,6 +1059,9 @@ module.exports = class UserInviteHelper {
 				invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 				if (invitee.statusOrUserId == 'Success' && userNameMessage.toString() != '') {
 					invitee.statusOrUserId = `${invitee.statusOrUserId} and ${userNameMessage}`
+				}
+				if (uploadType == common.TYPE_INVITE && emailAndPhoneMissing) {
+					invitee.statusOrUserId = `${invitee.statusOrUserId} , Login URL : ${loginUrl}`
 				}
 				delete invitee.meta
 				input.push(invitee)

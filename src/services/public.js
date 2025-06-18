@@ -117,16 +117,10 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			const tenantDetail = await tenantQueries.findOne({ code: tenantCode }, { attributes: ['code'] })
-
-			if (!tenantDetail) {
-				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
-			}
-
 			const userInvite = await organizationUserInviteQueries.findOne(
 				{
 					invitation_key: invitationKey,
-					tenant_code: tenantDetail.code,
+					tenant_code: tenantCode,
 					status: common.INVITED_STATUS,
 				},
 				{
@@ -141,7 +135,7 @@ module.exports = class AccountHelper {
 			const modelName = await userQueries.getModelName()
 			// Fetch default organization and validation data
 			const defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			const validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
@@ -149,7 +143,7 @@ module.exports = class AccountHelper {
 				organization_id: {
 					[Op.in]: [userInvite.organization_id, defaultOrg.id],
 				},
-				tenant_code: tenantDetail.code,
+				tenant_code: tenantCode,
 				model_names: { [Op.contains]: [modelName] },
 			})
 			const prunedEntities = utils.removeDefaultOrgEntityTypes(validationData, userInvite.organization_id)

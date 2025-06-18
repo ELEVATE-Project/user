@@ -192,11 +192,13 @@ module.exports = class AccountHelper {
 			let invitedUserMatch = false
 			let invitedUserId = null
 
-			if (encryptedEmailId || encryptedPhoneNumber || bodyData?.invitation_key) {
+			if (bodyData?.invitation_key || encryptedEmailId || encryptedPhoneNumber || bodyData?.username) {
 				let filterCondition = {}
 				if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
 
 				if (encryptedEmailId && !bodyData?.invitation_key) filterCondition.email = encryptedEmailId
+
+				if (bodyData?.username && !bodyData?.invitation_key) filterCondition.username = bodyData?.username
 
 				if (encryptedPhoneNumber && !bodyData?.invitation_key) {
 					filterCondition.phone = encryptedPhoneNumber
