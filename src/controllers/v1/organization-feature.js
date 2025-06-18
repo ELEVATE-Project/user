@@ -10,6 +10,7 @@ const organizationFeatureService = require('@services/organization-feature')
 const common = require('@constants/common')
 const responses = require('@helpers/responses')
 const httpStatusCode = require('@generics/http-status')
+const utilsHelper = require('@generics/utils')
 
 module.exports = class OrganizationFeature {
 	/**
@@ -63,7 +64,7 @@ module.exports = class OrganizationFeature {
 	async read(req) {
 		try {
 			// Admin header handling
-			if (req.decodedToken.roles.includes(common.ADMIN_ROLE)) {
+			if (utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
 				const orgCode = req.header(common.ORG_CODE_HEADER)
 				const tenantCode = req.header(common.TENANT_CODE_HEADER)
 
