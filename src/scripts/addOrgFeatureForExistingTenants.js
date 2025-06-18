@@ -16,17 +16,21 @@ const { Tenant, Organization, Feature, OrganizationFeature } = require('../datab
 		const tenants = await Tenant.findAll()
 
 		for (const tenant of tenants) {
+			console.log(`Processing tenant: ${tenant.code}`)
 			const defaultOrg = await Organization.findOne({
-				tenant_code: tenant.code,
-				code: process.env.DEFAULT_TENANT_ORG_CODE,
+				where: {
+					tenant_code: tenant.code,
+					code: process.env.DEFAULT_TENANT_ORG_CODE,
+				},
+				raw: true,
 			})
-
-			console.log(JSON.stringify(tenants, null, 2))
 
 			if (!defaultOrg) {
 				console.warn(`No default organization for tenant ${tenant.code}`)
 				continue
 			}
+
+			console.log(`processing Org ${defaultOrg.code} for tenant ${tenant.code}`)
 
 			const features = await Feature.findAll()
 			console.log(JSON.stringify(features, null, 2))
