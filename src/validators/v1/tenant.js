@@ -127,4 +127,15 @@ module.exports = {
 				'Domains must be a non-empty array or a non-empty string (multiple domains can be added comma separated)'
 			)
 	},
+
+	bulkUserCreate: (req) => {
+		req.body = filterRequestBody(req.body, tenant.bulkUserCreate)
+		const allowedTypes = [common.TYPE_INVITE, common.TYPE_UPLOAD]
+		req.checkBody('file_path').trim().notEmpty().withMessage('file_path key is empty')
+		req.checkBody('upload_type')
+			.notEmpty()
+			.withMessage('upload_type is required')
+			.custom((value) => allowedTypes.includes(value.toUpperCase()))
+			.withMessage(`upload_type must be one of: ${allowedTypes.join(', ')}`)
+	},
 }

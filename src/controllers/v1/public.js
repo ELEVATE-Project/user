@@ -29,4 +29,12 @@ module.exports = class Public {
 			return error
 		}
 	}
+
+	async userInvites(req) {
+		try {
+			return await publicService.userInvites(req.query.invitation_key, req.body.tenant_code)
+		} catch (error) {
+			return error
+		}
+	}
 }

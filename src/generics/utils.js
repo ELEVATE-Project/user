@@ -12,7 +12,7 @@ const path = require('path')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
-
+const { v4: uuidv4 } = require('uuid')
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const algorithm = 'aes-256-cbc'
@@ -803,6 +803,10 @@ function isValidName(name) {
 	const nameRegex = /^[A-Za-z\s'-]+$/
 	return nameRegex.test(name)
 }
+function isValidAction(action) {
+	if (action.toUpperCase() == common.TYPE_INVITE || action.toUpperCase() == common.TYPE_UPLOAD) return true
+	return false
+}
 const generateWhereClause = (tableName) => {
 	let whereClause = ''
 
@@ -1003,6 +1007,33 @@ function parseMetaData(meta = {}, prunedEntities, feederData) {
 	return metaData
 }
 
+//Generate a random UUID
+function generateUUID() {
+	return uuidv4()
+}
+
+/**
+ * Construct URL
+ * @method
+ * @name appendParamsToUrl
+ * @param {string} host - host api url
+ * @param {Object} params - object of params and values
+ * @returns {string} - cleaned up url
+ */
+function appendParamsToUrl(host, params) {
+	// Create URL object from host string
+	const url = new URL(host)
+
+	// Get existing search parameters
+	const searchParams = url.searchParams
+
+	// Append new parameters
+	Object.entries(params).forEach(([key, value]) => {
+		searchParams.append(key, value)
+	})
+
+	return url.toString()
+}
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1045,5 +1076,8 @@ module.exports = {
 	constructUrl,
 	processMetaWithNames,
 	fetchAndMapAllExternalEntities,
+	generateUUID,
+	isValidAction,
+	appendParamsToUrl,
 	parseMetaData,
 }

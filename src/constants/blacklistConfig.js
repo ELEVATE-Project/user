@@ -356,6 +356,25 @@ const tenant = {
 		'updated_at',
 		'deleted_at',
 	],
+	bulkUserCreate: [
+		'id',
+		'email_verified',
+		'name',
+		'location',
+		'about',
+		'share_link',
+		'status',
+		'image',
+		'last_logged_in_at',
+		'has_accepted_terms_and_conditions',
+		'refresh_tokens',
+		'languages',
+		'preferred_language',
+		'organization_id',
+		'roles',
+		'custom_entity_text',
+		'meta',
+	],
 }
 
 const feature = {

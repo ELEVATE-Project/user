@@ -143,6 +143,16 @@ class UserDTO {
 			return false
 		}
 	}
+
+	static userInviteDTO(input, prunedEntities) {
+		let response = {
+			...UserDTO.transformUser(input),
+		}
+		prunedEntities.forEach((entity) => {
+			response[entity.value] = input[entity.value] || ''
+		})
+		return response
+	}
 }
 
 module.exports = UserDTO

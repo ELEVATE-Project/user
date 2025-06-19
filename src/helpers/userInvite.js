@@ -28,19 +28,22 @@ const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
-
+const invitationQueries = require('@database/queries/invitation')
 const notificationUtils = require('@utils/notification')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
 const tenantQueries = require('@database/queries/tenants')
 let defaultOrg = {}
 let modelName = ''
 let externalEntityNameIdMap = {}
+let emailAndPhoneMissing = false
+let loginUrl = ''
 
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const filePath = data.fileDetails.input_path
+				const uploadType = data.user.uploadType
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
 				if (!response.success) throw new Error('FAILED_TO_DOWNLOAD')
@@ -50,13 +53,37 @@ module.exports = class UserInviteHelper {
 				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
 				const invitees = parsedFileData.result.data
 				const additionalCsvHeaders = parsedFileData.result.additionalCsvHeaders
+				const editable_fields = data?.user?.editableFields || []
+				const tenantDetails = await tenantQueries.findOne(
+					{
+						code: data.user.tenant_code,
+					},
+					{
+						attributes: ['meta'],
+					}
+				)
+				const validity = tenantDetails?.meta?.bulk_invitation_validity || common.BULK_INVITATION_VALIDITY
+				const now = new Date()
+				const valid_till = new Date(now.getTime() + Number(validity))
+
+				const invitation = await invitationQueries.create({
+					file_id: data.fileDetails.id,
+					editable_fields,
+					valid_till,
+					created_by: data.user.id,
+					organization_id: data.user.organization_id,
+					tenant_code: data.user.tenant_code,
+				})
 
 				// create outPut file and create invites
 				const createResponse = await this.createUserInvites(
 					invitees,
 					data.user,
 					data.fileDetails.id,
-					additionalCsvHeaders
+					additionalCsvHeaders,
+					invitation?.id,
+					tenantDetails?.meta,
+					uploadType
 				)
 				const outputFilename = path.basename(createResponse.result.outputFilePath)
 
@@ -300,13 +327,20 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async createUserInvites(csvData, user, fileUploadId, additionalCsvHeaders = []) {
+	static async createUserInvites(
+		csvData,
+		user,
+		fileUploadId,
+		additionalCsvHeaders = [],
+		invitationId,
+		tenantMeta,
+		uploadType
+	) {
 		try {
 			console.log(
 				'******************************** User bulk Upload STARTS Here ********************************'
 			)
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
-			let menteeRoleId, mentorRoleId
 
 			//find default org id
 			const defaultOrg = await organizationQueries.findOne({
@@ -327,12 +361,6 @@ module.exports = class UserInviteHelper {
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
 				roleTitlesToIds[role.title] = [role.id]
-				if (role.title === common.MENTEE_ROLE) {
-					menteeRoleId = role.id
-				}
-				if (role.title === common.MENTOR_ROLE) {
-					mentorRoleId = role.id
-				}
 			})
 
 			//get all existing user
@@ -359,7 +387,7 @@ module.exports = class UserInviteHelper {
 			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
 
 			const userPresentWithUsername = await userQueries.findAll(
-				{ username: { [Op.in]: userNameArray } },
+				{ username: { [Op.in]: userNameArray }, tenant_code: user.tenant_code },
 				{
 					attributes: ['username'],
 				}
@@ -420,9 +448,9 @@ module.exports = class UserInviteHelper {
 				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
 				invitee.roles = invitee.roles.map((role) => role.trim())
-				const raw_email = invitee.email.toLowerCase()
-				const encryptedEmail = emailEncryption.encrypt(raw_email)
-				const hashedPassword = utils.hashPassword(invitee.password)
+				const raw_email = invitee.email.toLowerCase() || null
+				const encryptedEmail = raw_email ? emailEncryption.encrypt(raw_email) : null
+				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
 				invitee.name = invitee.name.trim()
 
 				//find the invalid fields and generate error message
@@ -430,16 +458,19 @@ module.exports = class UserInviteHelper {
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
+
 				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
 					invalidFields.push('email')
 				}
-				if (!utils.isValidPassword(invitee.password)) {
+				if (
+					!utils.isValidPassword(invitee.password) &&
+					uploadType.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()
+				) {
 					invalidFields.push('password')
 				}
-				let emailAndPhoneMissing = false
 				if (!invitee.email && !invitee.phone) {
-					invalidFields.push('phone')
-					invalidFields.push('email')
+					// 	invalidFields.push('phone')
+					// 	invalidFields.push('email')
 					emailAndPhoneMissing = true
 				}
 
@@ -463,7 +494,7 @@ module.exports = class UserInviteHelper {
 							? invalidFields.slice(0, -1).join(', ') + ', and ' + invalidFields.slice(-1)
 							: invalidFields.join(' and ')
 					} ${invalidFields.length > 1 ? 'are' : 'is'} invalid.`
-					if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
+					// if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
 
 					invitee.statusOrUserId = errorMessage
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
@@ -479,7 +510,7 @@ module.exports = class UserInviteHelper {
 				//return error for already invited user
 				if (!existingUser && existingInvitees.hasOwnProperty(encryptedEmail)) {
 					console.log('aaaaa')
-					invitee.statusOrUserId = 'User already exist'
+					invitee.statusOrUserId = 'User already exist or invited'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
 					input.push(invitee)
@@ -745,23 +776,24 @@ module.exports = class UserInviteHelper {
 						//user doesn't have access to update user data
 						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
 					}
-				} else {
+				}
+				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,
 						status: common.UPLOADED_STATUS,
-						organization_id: user.organization_id,
+						type: common.TYPE_UPLOAD,
+						organization_code: user.organization_code,
+						tenant_code: user.tenant_code,
 						file_id: fileUploadId,
 						roles: (invitee.roles || []).map((roleTitle) => roleTitlesToIds[roleTitle.toLowerCase()] || []),
 						email: encryptedEmail,
 						meta: invitee.meta || {},
+						invitation_id: invitationId,
+						invitation_key: utils.generateUUID(),
 					}
 
 					inviteeData.email = encryptedEmail
-					const newInvitee = await userInviteQueries.create(inviteeData)
-
-					// if the username is taken generate random username and inform user
-
 					if (
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
 						inviteeData?.username.toString() == ''
@@ -777,6 +809,9 @@ module.exports = class UserInviteHelper {
 								: ''
 						} Hence system generated a unique username.`
 					}
+					const newInvitee = await userInviteQueries.create(inviteeData)
+
+					// if the username is taken generate random username and inform user
 
 					if (newInvitee?.id) {
 						invitee.statusOrUserId = newInvitee.id
@@ -797,7 +832,7 @@ module.exports = class UserInviteHelper {
 						})
 						const orgCode = await organizationQueries.findOne(
 							{
-								id: inviteeData.organization_id,
+								id: user.organization_id,
 								tenant_code: user.tenant_code,
 							},
 							{
@@ -824,6 +859,7 @@ module.exports = class UserInviteHelper {
 						})
 
 						const userOrgRoleRes = await Promise.all(userOrganizationRolePromise)
+						invitee.username = inviteeData?.username // keeping the data in sync for the output file. Username can be updated / generated if the username is clashing or not provided respectively.
 						/*
 						user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
 						to prarse it to a standard format with data for emitting the event
@@ -934,12 +970,98 @@ module.exports = class UserInviteHelper {
 						isErrorOccured = true
 						invitee.statusOrUserId = newInvitee
 					}
+				} else {
+					invitee.meta = prunedEntities.reduce((acc, index) => {
+						if (index.data_type == 'ARRAY' || index.data_type == 'ARRAY[STRING]') {
+							if (invitee[index.value]) {
+								acc[index.value] = invitee[index.value].split(',').map((entity) => {
+									return externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()]._id
+								})
+							} else {
+								acc[index.value] = []
+							}
+						} else {
+							if (invitee[index.value]) {
+								acc[index.value] =
+									externalEntityNameIdMap[
+										invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()
+									]._id
+							} else {
+								acc[index.value] = ''
+							}
+						}
+						return acc
+					}, {})
+					const raw_phone = invitee?.phone || null
+					const inviteeData = {
+						...invitee,
+						type: common.INVITED_STATUS,
+						status: common.INVITED_STATUS,
+						organization_code: user.organization_code,
+						file_id: fileUploadId,
+						roles: (invitee.roles || []).map((roleTitle) => roleTitlesToIds[roleTitle.toLowerCase()] || []),
+						meta: invitee.meta || {},
+						invitation_id: invitationId,
+						invitation_key: utils.generateUUID(),
+						tenant_code: user.tenant_code,
+					}
+					inviteeData.email = encryptedEmail
+					inviteeData.username = inviteeData?.username
+						? inviteeData?.username
+						: await generateUniqueUsername(inviteeData?.name)
+
+					invitee.username = inviteeData.username // keeping the data in sync for the output file. Username can be updated / generated if the username is clashing or not provided respectively.
+
+					const newInvitee = await userInviteQueries.create(inviteeData)
+					invitee.statusOrUserId = 'User Invited successfully'
+
+					loginUrl = utils.appendParamsToUrl(tenantMeta.portalSignInUrl, {
+						invitation_key: inviteeData.invitation_key,
+					})
+
+					if (raw_email) {
+						notificationUtils.sendEmailNotification({
+							emailId: raw_email,
+							templateCode: process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
+							variables: {
+								name: inviteeData?.name,
+								orgName: user?.org_name,
+								appName: user?.name,
+								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '',
+								portalURL: loginUrl,
+								username: inviteeData.username,
+							},
+							tenantCode: user.tenant_code,
+							organization_id: user.organization_id,
+						})
+					}
+
+					// Send SMS notification with OTP if phone is provided
+					if (raw_phone) {
+						notificationUtils.sendSMSNotification({
+							phoneNumber: raw_phone,
+							templateCode: process.env.GENERIC_INVITATION_EMAIL_TEMPLATE_CODE,
+							variables: {
+								name: user.name,
+								orgName: userData.org_name,
+								appName: tenantDetails.name,
+								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '' || '',
+								portalURL: loginUrl,
+								username: inviteeData.username,
+							},
+							tenantCode: user.tenant_code,
+							organization_id: user.organization_id,
+						})
+					}
 				}
 
 				//convert roles array to string
 				invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 				if (invitee.statusOrUserId == 'Success' && userNameMessage.toString() != '') {
 					invitee.statusOrUserId = `${invitee.statusOrUserId} and ${userNameMessage}`
+				}
+				if (uploadType == common.TYPE_INVITE && emailAndPhoneMissing) {
+					invitee.statusOrUserId = `${invitee.statusOrUserId} , Login URL : ${loginUrl}`
 				}
 				delete invitee.meta
 				input.push(invitee)

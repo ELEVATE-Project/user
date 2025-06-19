@@ -106,5 +106,10 @@ module.exports = {
 	TENANT_CODE_HEADER: 'tenantcode',
 	DELETE_METHOD: 'DELETE',
 	SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR: 'SequelizeForeignKeyConstraintError',
+	BULK_INVITATION_VALIDITY: '604800000', //SET to one week by default if not set by tenant (In Sec),
+	TYPE_UPLOAD: 'UPLOAD',
+	TYPE_INVITE: 'INVITE',
+	INVITED_STATUS: 'INVITED',
+	SIGNEDUP_STATUS: 'SIGNEDUP',
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR: 'SequelizeUniqueConstraintError',
 }
