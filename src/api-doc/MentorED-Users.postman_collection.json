@@ -2568,11 +2568,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/tenant/userBulkUpload",
+							"raw": "{{UserDevBaseUrl}}user/v1/tenant/bulkUserCreate",
 							"host": ["{{UserDevBaseUrl}}user"],
-							"path": ["v1", "tenant", "userBulkUpload"]
+							"path": ["v1", "tenant", "bulkUserCreate"]
 						},
-						"description": "Generated from cURL: curl --location 'http://localhost:3001/user/v1/tenant/userBulkUpload' \\\n--header 'Content-Type: application/json' \\\n--header 'X-auth-token: {{token}}' \\\n--header 'tenant: shikshagraha' \\\n--header 'organization: blr' \\\n--data '{\n    \"file_path\" : \"users/1-1749801919492-bulkupload.csv\",\n    \"editable_fields\" : [\"name\"]\n}'"
+						"description": "Generated from cURL: curl --location 'http://localhost:3001/user/v1/tenant/bulkUserCreate' \\\n--header 'Content-Type: application/json' \\\n--header 'X-auth-token: {{token}}' \\\n--header 'tenant: shikshagraha' \\\n--header 'organization: blr' \\\n--data '{\n    \"file_path\" : \"users/1-1749801919492-bulkupload.csv\",\n    \"editable_fields\" : [\"name\"]\n}'"
 					},
 					"response": []
 				},

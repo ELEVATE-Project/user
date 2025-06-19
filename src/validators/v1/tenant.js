@@ -128,8 +128,8 @@ module.exports = {
 			)
 	},
 
-	userBulkUpload: (req) => {
-		req.body = filterRequestBody(req.body, tenant.userBulkUpload)
+	bulkUserCreate: (req) => {
+		req.body = filterRequestBody(req.body, tenant.bulkUserCreate)
 		const allowedTypes = [common.TYPE_INVITE, common.TYPE_UPLOAD]
 		req.checkBody('file_path').trim().notEmpty().withMessage('file_path key is empty')
 		req.checkBody('upload_type')

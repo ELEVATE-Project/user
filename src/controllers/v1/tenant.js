@@ -136,12 +136,12 @@ module.exports = class Tenant {
 	/**
 	 * List tenants
 	 * @method POST
-	 * @name userBulkUpload
+	 * @name bulkUserCreate
 	 * @param {Object} req -request data.
 	 * @returns {JSON} - success or error message
 	 */
 
-	async userBulkUpload(req) {
+	async bulkUserCreate(req) {
 		try {
 			const tenant = await tenantService.userBulkUpload(
 				req.body.file_path,

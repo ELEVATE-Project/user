@@ -356,7 +356,7 @@ const tenant = {
 		'updated_at',
 		'deleted_at',
 	],
-	userBulkUpload: [
+	bulkUserCreate: [
 		'id',
 		'email_verified',
 		'name',

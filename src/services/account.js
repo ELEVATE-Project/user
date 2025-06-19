@@ -400,6 +400,7 @@ module.exports = class AccountHelper {
 				await userInviteQueries.update(
 					{
 						id: isInvitedUserId,
+						tenant_code: tenantDetail.code,
 					},
 					{
 						status: common.SIGNEDUP_STATUS,
