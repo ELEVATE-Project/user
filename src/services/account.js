@@ -201,9 +201,15 @@ module.exports = class AccountHelper {
 				bodyData?.invitation_code
 			) {
 				let filterCondition = {}
-				if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
+				if (bodyData?.invitation_key)
+					filterCondition.invitation_key = {
+						[Op.iLike]: bodyData?.invitation_key,
+					}
 
-				if (bodyData?.invitation_code) filterCondition.invitation_code = bodyData?.invitation_code
+				if (bodyData?.invitation_code)
+					filterCondition.invitation_code = {
+						[Op.iLike]: bodyData?.invitation_code,
+					}
 
 				if (encryptedEmailId && !bodyData?.invitation_key && !bodyData?.invitation_code)
 					filterCondition.email = encryptedEmailId
