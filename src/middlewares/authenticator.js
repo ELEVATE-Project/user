@@ -109,22 +109,37 @@ module.exports = async function (req, res, next) {
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
-				const domain = getDomainFromRequest(req)
-				const tenantDomain = await tenantDomainQueries.findOne(
-					{ domain },
-					{
-						attributes: ['tenant_code'],
-					}
-				)
-				if (!tenantDomain) {
-					return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
-				}
 
-				req.body.tenant_code = tenantDomain.tenant_code
+				const domain = getDomainFromRequest(req) || null
+				const tenant_code =
+					req?.headers?.tenantId ||
+					req?.headers?.tenantid ||
+					req?.headers?.tenant_Id ||
+					req?.headers?.tenant_id ||
+					req?.headers?.tenant ||
+					req?.headers?.tenant_code ||
+					req.headers.tenantCode ||
+					null
+
+				const tenantFilter = domain ? { domain } : tenant_code ? { tenant_code } : null || {}
+
+				if (Object.keys(tenantFilter).length > 0) {
+					const tenantDomain = await tenantDomainQueries.findOne(tenantFilter, {
+						attributes: ['tenant_code'],
+					})
+					if (!tenantDomain) {
+						throw notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+					}
+
+					req.body.tenant_code = tenantDomain.tenant_code
+				} else {
+					throw notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+				}
 
 				return next()
 			} catch (error) {
-				throw unAuthorizedResponse
+				if (error.message == 'UNAUTHORIZED_REQUEST') throw unAuthorizedResponse
+				throw error
 			}
 		}
 
