@@ -26,7 +26,7 @@ const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
-const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
+const { generateUniqueUsername, generateUniqueCodeString } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
 const invitationQueries = require('@database/queries/invitation')
 const notificationUtils = require('@utils/notification')
@@ -778,6 +778,13 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
+					const inviteCodeString = await generateUniqueCodeString(4)
+					// first letter of tenant code + random string of len 4 + random digit of len 4 + firrst letter of org code
+					const invitation_code = `${String(user.tenant_code)
+						.slice(0, 1)
+						.toUpperCase()}${inviteCodeString}${utils.generateSecureOTP(4)}${String(user.organization_code)
+						.slice(0, 1)
+						.toUpperCase()}`
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,
@@ -791,6 +798,7 @@ module.exports = class UserInviteHelper {
 						meta: invitee.meta || {},
 						invitation_id: invitationId,
 						invitation_key: utils.generateUUID(),
+						invitation_code,
 					}
 
 					inviteeData.email = encryptedEmail
@@ -993,6 +1001,13 @@ module.exports = class UserInviteHelper {
 						return acc
 					}, {})
 					const raw_phone = invitee?.phone || null
+					const inviteCodeString = await generateUniqueCodeString(4)
+					// first letter of tenant code + random string of len 4 + random digit of len 4 + firrst letter of org code
+					const invitation_code = `${String(user.tenant_code)
+						.slice(0, 1)
+						.toUpperCase()}${inviteCodeString}${utils.generateSecureOTP(4)}${String(user.organization_code)
+						.slice(0, 1)
+						.toUpperCase()}`
 					const inviteeData = {
 						...invitee,
 						type: common.INVITED_STATUS,
@@ -1004,6 +1019,7 @@ module.exports = class UserInviteHelper {
 						invitation_id: invitationId,
 						invitation_key: utils.generateUUID(),
 						tenant_code: user.tenant_code,
+						invitation_code,
 					}
 					inviteeData.email = encryptedEmail
 					inviteeData.username = inviteeData?.username
@@ -1030,6 +1046,7 @@ module.exports = class UserInviteHelper {
 								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '',
 								portalURL: loginUrl,
 								username: inviteeData.username,
+								registerCode: inviteeData.invitation_code,
 							},
 							tenantCode: user.tenant_code,
 							organization_id: user.organization_id,
@@ -1048,6 +1065,7 @@ module.exports = class UserInviteHelper {
 								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '' || '',
 								portalURL: loginUrl,
 								username: inviteeData.username,
+								registerCode: inviteeData.invitation_code,
 							},
 							tenantCode: user.tenant_code,
 							organization_id: user.organization_id,

@@ -190,17 +190,28 @@ module.exports = class AccountHelper {
 			let role,
 				roles = []
 			let invitedUserMatch = false
-			let invitedUserId = null
+			let userOrgId = null
+			let organizationCode = ''
 
-			if (bodyData?.invitation_key || encryptedEmailId || encryptedPhoneNumber || bodyData?.username) {
+			if (
+				bodyData?.invitation_key ||
+				encryptedEmailId ||
+				encryptedPhoneNumber ||
+				bodyData?.username ||
+				bodyData?.invitation_code
+			) {
 				let filterCondition = {}
 				if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
 
-				if (encryptedEmailId && !bodyData?.invitation_key) filterCondition.email = encryptedEmailId
+				if (bodyData?.invitation_code) filterCondition.invitation_code = bodyData?.invitation_code
 
-				if (bodyData?.username && !bodyData?.invitation_key) filterCondition.username = bodyData?.username
+				if (encryptedEmailId && !bodyData?.invitation_key && !bodyData?.invitation_code)
+					filterCondition.email = encryptedEmailId
 
-				if (encryptedPhoneNumber && !bodyData?.invitation_key) {
+				if (bodyData?.username && !bodyData?.invitation_key && !bodyData?.invitation_code)
+					filterCondition.username = bodyData?.username
+
+				if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
 					filterCondition.phone = encryptedPhoneNumber
 					filterCondition.phone = bodyData.phone_code
 				}
@@ -210,6 +221,16 @@ module.exports = class AccountHelper {
 
 				invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
 					isValid: true,
+					attributes: [
+						'email',
+						'name',
+						'organization_code',
+						'roles',
+						'username',
+						'phone',
+						'phone_code',
+						'meta',
+					],
 				})
 			}
 
@@ -237,7 +258,8 @@ module.exports = class AccountHelper {
 					...newBody,
 				}
 				isInvitedUserId = invitedUserMatch.id
-				bodyData.organization_id = invitedUserMatch.organization_id
+				organizationCode = invitedUserMatch.organization_code
+
 				roles = invitedUserMatch?.roles || []
 				if (roles.length > 0) {
 					role = await roleQueries.findAll(
@@ -322,24 +344,25 @@ module.exports = class AccountHelper {
 					return userRoles.id
 				})
 				bodyData.roles = roles
+
+				if (encryptedEmailId) bodyData.email = encryptedEmailId
+				if (encryptedPhoneNumber) bodyData.phone = encryptedPhoneNumber
+
+				if (!domainDetails) {
+					const emailDomain = plaintextEmailId ? utilsHelper.extractDomainFromEmail(plaintextEmailId) : null
+
+					domainDetails = emailDomain
+						? await orgDomainQueries.findOne({
+								domain: emailDomain,
+								tenant_code: tenantDetail.code,
+						  })
+						: null
+				}
+
+				organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
 			}
 
 			delete bodyData.role
-			if (encryptedEmailId) bodyData.email = encryptedEmailId
-			if (encryptedPhoneNumber) bodyData.phone = encryptedPhoneNumber
-
-			if (!domainDetails) {
-				const emailDomain = plaintextEmailId ? utilsHelper.extractDomainFromEmail(plaintextEmailId) : null
-
-				domainDetails = emailDomain
-					? await orgDomainQueries.findOne({
-							domain: emailDomain,
-							tenant_code: tenantDetail.code,
-					  })
-					: null
-			}
-
-			const organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
 
 			const [defaultOrg, userOrgDetails, modelName] = await Promise.all([
 				organizationQueries.findOne(
@@ -358,7 +381,7 @@ module.exports = class AccountHelper {
 			}
 
 			const defaultOrgId = defaultOrg.id
-			const userOrgId = userOrgDetails.id
+			userOrgId = userOrgDetails.id
 
 			const [validationData, userModel] = await Promise.all([
 				entityTypeQueries.findUserEntityTypesAndEntities({
@@ -393,6 +416,7 @@ module.exports = class AccountHelper {
 					result: res.errors,
 				})
 			}
+			delete bodyData.id
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
 			let metaData = restructuredData?.meta || {}
 			const insertedUser = await userQueries.create(restructuredData)

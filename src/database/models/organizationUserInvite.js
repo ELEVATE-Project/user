@@ -71,6 +71,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
+			invitation_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
 			created_by: {
 				type: DataTypes.INTEGER,
 			},

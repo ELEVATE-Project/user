@@ -27,4 +27,16 @@ async function generateUniqueUsername(name) {
 	return `${sanitizedName}_${randomSuffix}`
 }
 
-module.exports = { generateUniqueUsername }
+async function generateUniqueCodeString(stringLength = 4) {
+	// Load and cache nanoid if not already loaded
+	if (!cachedNanoid) {
+		const { nanoid } = await import('nanoid')
+		cachedNanoid = nanoid
+	}
+
+	// Generate a shorter random suffix (4 characters)
+
+	return cachedNanoid(stringLength).toUpperCase() // Ensure suffix is also Upper case
+}
+
+module.exports = { generateUniqueUsername, generateUniqueCodeString }
