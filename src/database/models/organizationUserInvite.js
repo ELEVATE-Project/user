@@ -85,6 +85,13 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'organization_user_invites',
 			freezeTableName: true,
 			paranoid: true,
+			indexes: [
+				{
+					unique: true,
+					fields: ['invitation_code', 'tenant_code'],
+					name: 'unique_invitation_code_tenant_code',
+				},
+			],
 		}
 	)
 	// Many-to-one: Many OrganizationUserInvites belong to one Invitation
