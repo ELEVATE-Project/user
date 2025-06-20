@@ -99,7 +99,7 @@ let enviromentVariables = {
 	DEFAULT_ORGANISATION_CODE: {
 		message: 'Required default organisation code',
 		optional: true,
-		default: 'default_code',
+		default: 'default',
 	},
 	MENTORING_SERVICE_URL: {
 		message: 'Required Mentoring Service Url',
@@ -221,6 +221,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'change_password',
 	},
+	BULK_CREATE_TEMPLATE_CODE: {
+		message: 'Required bulk create email template code',
+		optional: true,
+		default: 'bulk_user_create',
+	},
 	CAPTCHA_ENABLE: {
 		message: 'Required CAPTCHA ENABLE true or false',
 		optional: false,
@@ -332,9 +337,9 @@ let enviromentVariables = {
 		default: 'emailotp',
 	},
 	OTP_EXP_TIME: {
-		message: 'Require otp expire time',
+		message: 'Require otp expire time in seconds',
 		optional: true,
-		default: 86400,
+		default: 300,
 	},
 	RATING_KAFKA_TOPIC: {
 		message: 'Require kafka topic for rating',
@@ -346,8 +351,61 @@ let enviromentVariables = {
 		optional: true,
 		default: 120000,
 	},
+	DEFAULT_TENANT_CODE: {
+		message: 'Require default tenant code',
+		optional: true,
+		default: 'default',
+	},
+	ENTITY_MANAGEMENT_SERVICE_BASE_URL: {
+		message: 'Require entity management base url',
+		optional: false,
+	},
+	IS_AUTH_TOKEN_BEARER: {
+		message: 'Required specification: If auth token is bearer or not',
+		optional: true,
+		default: true,
+	},
+	NOTIFICATION_MODE: {
+		message: 'If its kafka or API',
+		optional: true,
+		default: 'kafka',
+	},
+	NOTIFICATION_API_URL: {
+		message: 'URL for notification service',
+		optional: process.env.NOTIFICATION_MODE === 'API' ? false : true,
+	},
+	EVENT_ENABLE_USER_EVENTS: {
+		message: 'Key to toggle user creation API event',
+		optional: true,
+	},
+	EVENT_USER_LISTENER_API: {
+		message: 'URL for User creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_USER_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_ENABLE_KAFKA_PUSH: {
+		message: 'Key to toggle user creation kafka event',
+		optional: true,
+	},
+	EVENT_USER_KAFKA_TOPIC: {
+		message: 'Kafka topic for User creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_KAFKA_PUSH',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	DEFAULT_PHONE_CODE: {
+		message: 'Set Default Phone Code',
+		optional: true,
+		default: '+91',
+	},
 }
-
 let success = true
 
 module.exports = function () {
@@ -357,6 +415,7 @@ module.exports = function () {
 		}
 
 		let keyCheckPass = true
+		let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS']
 
 		if (
 			enviromentVariables[eachEnvironmentVariable].optional === true &&

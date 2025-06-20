@@ -24,11 +24,45 @@ exports.findOne = async (filter, options = {}) => {
 	}
 }
 
-exports.findOneEmailTemplate = async (code, orgId) => {
+exports.findOneSMSTemplate = async (code, orgId, tenantCode) => {
+	try {
+		const defaultOrg = await organizationQueries.findOne(
+			{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+			{ attributes: ['id'] }
+		)
+		const defaultOrgId = defaultOrg.id
+
+		const filter = {
+			code,
+			type: common.notificationSMSType,
+			status: common.ACTIVE_STATUS,
+			tenant_code: tenantCode,
+			organization_id: orgId
+				? {
+						[Op.or]: [orgId, defaultOrgId],
+				  }
+				: defaultOrgId,
+		}
+
+		let templateData = await NotificationTemplate.findAll({
+			where: filter,
+			raw: true,
+		})
+
+		const matchedTemplate = templateData.find((template) => template.organization_id === orgId) || templateData[0]
+
+		return matchedTemplate || null // return null if nothing is found
+	} catch (error) {
+		console.error('Error in findOneSMSTemplate:', error)
+		return null
+	}
+}
+
+exports.findOneEmailTemplate = async (code, orgId, tenantCode) => {
 	try {
 		// Get default orgId using code defined in env
 		const defaultOrg = await organizationQueries.findOne(
-			{ code: process.env.DEFAULT_ORGANISATION_CODE },
+			{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 			{ attributes: ['id'] }
 		)
 		const defaultOrgId = defaultOrg.id
@@ -38,6 +72,7 @@ exports.findOneEmailTemplate = async (code, orgId) => {
 		const filter = {
 			code: code,
 			type: 'email',
+			tenant_code: tenantCode,
 			status: common.ACTIVE_STATUS,
 			organization_id: orgId
 				? {
@@ -153,5 +188,18 @@ exports.findAllNotificationTemplates = async (filter, options = {}) => {
 		return templates
 	} catch (error) {
 		return error
+	}
+}
+
+exports.hardDelete = async (id) => {
+	try {
+		return await NotificationTemplate.destroy({
+			where: {
+				id: id,
+			},
+			force: true,
+		})
+	} catch (error) {
+		throw error
 	}
 }

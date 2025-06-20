@@ -11,7 +11,7 @@ const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
 const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/user-role')
-const entitiesQueries = require('@database/queries/entities')
+//const entitiesQueries = require('@database/queries/entities')
 const entityTypeQueries = require('@database/queries/entityType')
 const organizationQueries = require('@database/queries/organization')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
@@ -21,6 +21,9 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
+const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
+
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
 	/**
@@ -32,7 +35,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, id, orgId) {
+	static async update(bodyData, id, orgId, tenantCode) {
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -44,7 +47,7 @@ module.exports = class UserHelper {
 
 			const user = await userQueries.findOne({
 				id: id,
-				organization_id: orgId,
+				tenant_code: tenantCode,
 			})
 
 			if (!user) {
@@ -56,7 +59,7 @@ module.exports = class UserHelper {
 			}
 
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -66,17 +69,19 @@ module.exports = class UserHelper {
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
+				tenant_code: tenantCode,
 				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			}
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData)
+			const metaDataKeys = validationData.map((meta) => meta.value)
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
 			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
 			if (!res.success) {
 				return responses.failureResponse({
-					message: 'SESSION_CREATION_FAILED',
+					message: 'VALIDATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
@@ -110,7 +115,7 @@ module.exports = class UserHelper {
 				delete bodyData.roles
 			}
 			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: id, organization_id: orgId },
+				{ id: id, tenant_code: tenantCode },
 				bodyData
 			)
 
@@ -118,6 +123,12 @@ module.exports = class UserHelper {
 
 			const currentName = currentUser.dataValues.name
 			const previousName = currentUser._previousDataValues?.name || null
+
+			const modifiedKeys = keysFilter(
+				_.keys(currentUser.dataValues).filter((key) => {
+					return !_.isEqual(currentUser.dataValues[key], currentUser._previousDataValues[key])
+				})
+			)
 
 			if (currentName !== previousName) {
 				eventBroadcaster('updateName', {
@@ -127,17 +138,67 @@ module.exports = class UserHelper {
 					},
 				})
 			}
-			const redisUserKey = common.redisUserPrefix + id.toString()
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
-			const processDbResponse = utils.processDbResponse(
+			const processDbResponse = await utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				validationData
 			)
 			delete processDbResponse.refresh_tokens
 			delete processDbResponse.password
-			processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+
+			if (processDbResponse?.email) {
+				processDbResponse.email = emailEncryption.decrypt(processDbResponse?.email)
+			}
+
+			if (processDbResponse?.phone) {
+				processDbResponse.phone = emailEncryption.decrypt(processDbResponse?.phone)
+			}
+
+			if (modifiedKeys.length > 0) {
+				let userMeta = { ...user?.meta }
+				let oldValues = await utils.processDbResponse(user, prunedEntities),
+					newValues = {}
+				userMeta = utils.parseMetaData(userMeta, prunedEntities, oldValues)
+				oldValues.email = oldValues?.email ? emailEncryption.decrypt(oldValues.email) : oldValues.email
+				oldValues.phone = oldValues?.phone ? emailEncryption.decrypt(oldValues.phone) : oldValues.phone
+				oldValues = {
+					...oldValues,
+					...userMeta,
+				}
+
+				modifiedKeys.forEach((key) => {
+					if (key == 'meta') {
+						/*
+						user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
+						to prarse it to a standard format with data for emitting the event
+						*/
+						const metaData = utils.parseMetaData(bodyData[key], prunedEntities, processDbResponse)
+
+						newValues = {
+							...newValues,
+							...metaData,
+						}
+					} else {
+						newValues[key] = currentUser.dataValues[key]
+					}
+				})
+
+				const eventBody = eventBodyDTO({
+					entity: 'user',
+					eventType: 'update',
+					entityId: processDbResponse?.id,
+					args: {
+						oldValues,
+						newValues,
+					},
+				})
+
+				broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'PROFILE_UPDATED_SUCCESSFULLY',
@@ -230,17 +291,17 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - user information
 	 */
-	static async read(id, internal_access_token = null, language) {
+	static async read(id, header = null, language, tenantCode) {
 		try {
 			let filter = {}
-
+			console.log(tenantCode)
 			if (utils.isNumeric(id)) {
-				filter = { id: id }
+				filter = { id: id, tenant_code: tenantCode }
 			} else {
 				filter = { share_link: id }
 			}
 
-			const redisUserKey = common.redisUserPrefix + id.toString()
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
 			const userDetails = (await utils.redisGet(redisUserKey)) || false
 			if (!userDetails) {
 				let options = {
@@ -248,10 +309,11 @@ module.exports = class UserHelper {
 						exclude: ['password', 'refresh_tokens'],
 					},
 				}
-				if (internal_access_token) {
+				if (header.internal_access_token) {
 					options.paranoid = false
 				}
-				const user = await userQueries.findUserWithOrganization(filter, options)
+				let user = await userQueries.findUserWithOrganization(filter, options)
+
 				if (!user) {
 					return responses.failureResponse({
 						message: 'USER_NOT_FOUND',
@@ -260,14 +322,7 @@ module.exports = class UserHelper {
 					})
 				}
 
-				let roles = await roleQueries.findAll(
-					{ id: user.roles, status: common.ACTIVE_STATUS },
-					{
-						attributes: {
-							exclude: ['created_at', 'updated_at', 'deleted_at'],
-						},
-					}
-				)
+				let roles = user.organizations[0].roles
 
 				if (!roles) {
 					return responses.failureResponse({
@@ -285,31 +340,40 @@ module.exports = class UserHelper {
 					})
 				}
 
-				user.user_roles = roles
+				//user.user_roles = roles
 
 				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 					{ attributes: ['id'] }
 				)
 				let defaultOrgId = defaultOrg.id
+				let userOrg = user.organizations[0].id
 
 				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 					status: 'ACTIVE',
 					organization_id: {
-						[Op.in]: [user.organization_id, defaultOrgId],
+						[Op.in]: [userOrg, defaultOrgId],
 					},
+					tenant_code: tenantCode,
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
 				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
-				const permissionsByModule = await this.getPermissions(user.user_roles)
+				const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
 				user.permissions = permissionsByModule
 
-				const processDbResponse = utils.processDbResponse(user, prunedEntities)
+				const processDbResponse = await utils.processDbResponse(user, prunedEntities)
 
-				processDbResponse.email = emailEncryption.decrypt(processDbResponse.email)
+				if (processDbResponse) {
+					;['email', 'phone'].forEach((field) => {
+						const value = processDbResponse[field]
+						if (typeof value === 'string' && value.trim() !== '') {
+							processDbResponse[field] = emailEncryption.decrypt(value)
+						}
+					})
+				}
 
-				if (utils.validateRoleAccess(roles, common.MENTOR_ROLE)) {
-					await utils.redisSet(redisUserKey, processDbResponse)
+				if (utils.validateRoleAccess(roles, [common.MENTOR_ROLE, common.MENTEE_ROLE])) {
+					await utils.redisSet(redisUserKey, processDbResponse, common.redisUserCacheTTL)
 				}
 
 				processDbResponse['image_cloud_path'] = processDbResponse.image
@@ -333,6 +397,84 @@ module.exports = class UserHelper {
 			}
 		} catch (error) {
 			console.log(error)
+			throw error
+		}
+	}
+
+	static async profileById(param, tenantCode = null) {
+		try {
+			if (Object.keys(param).length == 0) {
+				return responses.failureResponse({
+					message: 'VALIDATION_FAILED',
+					statusCode: httpStatusCode.unprocessable_entity,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (Object.keys(param).includes('email')) {
+				param.email = emailEncryption.encrypt(param.email)
+			} else if (Object.keys(param).includes('phone')) {
+				param.phone = emailEncryption.encrypt(param.phone)
+				param.phone_code = param?.phone_code || process.env.DEFAULT_PHONE_CODE || null
+				if (!param?.phone_code) {
+					return responses.failureResponse({
+						message: 'VALIDATION_FAILED',
+						statusCode: httpStatusCode.unprocessable_entity,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+			}
+			let filter = param
+			if (tenantCode) {
+				filter.tenant_code = tenantCode
+			}
+
+			let options = {
+				attributes: {
+					exclude: ['password', 'refresh_tokens', 'email', 'phone', 'phone_code'],
+				},
+			}
+
+			options.paranoid = true
+
+			const user = await userQueries.findUserWithOrganization(filter, options)
+
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			user.image_cloud_path = user.image
+			if (user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+			let defaultOrg = await organizationQueries.findOne(
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+				{ attributes: ['id'] }
+			)
+			let defaultOrgId = defaultOrg.id
+			let userOrg = user.organizations[0].id
+
+			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+				status: 'ACTIVE',
+				organization_id: {
+					[Op.in]: [userOrg, defaultOrgId],
+				},
+				tenant_code: tenantCode,
+				model_names: { [Op.contains]: [await userQueries.getModelName()] },
+			})
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+
+			const processDbResponse = await utils.processDbResponse(user, prunedEntities)
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_PROFILE_FETCHED_SUCCESSFULLY',
+				result: processDbResponse,
+			})
+		} catch (error) {
+			console.log('Error in profileById:', error)
 			throw error
 		}
 	}
@@ -379,10 +521,10 @@ module.exports = class UserHelper {
 	 * @param {Object} bodyData - it contains user preferred language
 	 * @returns {JSON} - updated user preferred languages response
 	 */
-	static async setLanguagePreference(bodyData, id, orgId) {
+	static async setLanguagePreference(bodyData, id, orgId, tenantCode) {
 		try {
 			let skipRequiredValidation = true
-			const user = await userQueries.findOne({ id: id, organization_id: orgId })
+			const user = await userQueries.findOne({ id: id, tenant_code: tenantCode })
 			if (!user) {
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -391,7 +533,7 @@ module.exports = class UserHelper {
 				})
 			}
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -401,6 +543,7 @@ module.exports = class UserHelper {
 				organization_id: { [Op.in]: [orgId, defaultOrgId] },
 				model_names: { [Op.contains]: [userModel] },
 				value: 'preferred_language',
+				tenant_code: tenantCode,
 			}
 			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
@@ -418,14 +561,14 @@ module.exports = class UserHelper {
 			bodyData = utils.restructureBody(bodyData, dataValidation, userModel)
 
 			const [affectedRows, updatedData] = await userQueries.updateUser(
-				{ id: id, organization_id: orgId },
+				{ id: id, tenant_code: tenantCode },
 				bodyData
 			)
-			const redisUserKey = common.redisUserPrefix + id.toString()
+			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
 			if (await utils.redisGet(redisUserKey)) {
 				await utils.redisDel(redisUserKey)
 			}
-			const processDbResponse = utils.processDbResponse(
+			const processDbResponse = await utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				dataValidation
 			)

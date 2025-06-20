@@ -14,13 +14,17 @@ const _ = require('lodash')
 const userQueries = require('@database/queries/users')
 const roleQueries = require('@database/queries/user-role')
 const organizationQueries = require('@database/queries/organization')
+const userOrganizationQueries = require('@database/queries/userOrganization')
+const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Op } = require('sequelize')
+const Sequelize = require('@database/models/index').sequelize
 const UserCredentialQueries = require('@database/queries/userCredential')
 const adminService = require('../generics/materializedViews')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const userSessionsService = require('@services/user-sessions')
+const userHelper = require('@helpers/userHelper')
 
 module.exports = class AdminHelper {
 	/**
@@ -40,39 +44,12 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			let updateParams = _generateUpdateParams(userId)
-			const removeKeys = _.omit(user, _removeUserKeys())
-			const update = _.merge(removeKeys, updateParams)
-			await userQueries.updateUser({ id: user.id, organization_id: user.organization_id }, update)
-			delete update.id
-			await UserCredentialQueries.forceDeleteUserWithEmail(user.email)
-
-			await utils.redisDel(common.redisUserPrefix + userId.toString())
-
-			/**
-			 * Using userId get his active sessions
-			 */
-			const userSessionData = await userSessionsService.findUserSession(
-				{
-					user_id: userId,
-					ended_at: null,
-				},
-				{
-					attributes: ['id'],
-				}
-			)
-			const userSessionIds = userSessionData.map(({ id }) => id)
-			await userSessionsService.removeUserSessions(userSessionIds)
-
-			//code for remove user folder from cloud
-
+			const result = await userHelper.deleteUser(userId, user)
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
-				message: 'USER_DELETED_SUCCESSFULLY',
+				message: result.message,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -110,21 +87,23 @@ module.exports = class AdminHelper {
 			}
 
 			bodyData.roles = [role.id]
+			bodyData.organization_id = process.env.DEFAULT_ORG_ID
+			bodyData.tenant_code = process.env.DEFAULT_TENANT_CODE
 
-			if (!bodyData.organization_id) {
-				let organization = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
-					{ attributes: ['id'] }
-				)
-				bodyData.organization_id = organization.id
-			}
+			// if (!bodyData.organization_id) {
+			// 	let organization = await organizationQueries.findOne(
+			// 		{ code: process.env.DEFAULT_ORGANISATION_CODE },
+			// 		{ attributes: ['id'] }
+			// 	)
+			// 	bodyData.organization_id = organization.id
+			// }
 			bodyData.password = utils.hashPassword(bodyData.password)
 			bodyData.email = encryptedEmailId
 			const createdUser = await userQueries.create(bodyData)
 			const userCredentialsBody = {
 				email: bodyData.email,
 				password: bodyData.password,
-				organization_id: createdUser.organization_id,
+				organization_id: process.env.DEFAULT_ORG_ID,
 				user_id: createdUser.id,
 			}
 			const userData = await UserCredentialQueries.create(userCredentialsBody)
@@ -170,9 +149,9 @@ module.exports = class AdminHelper {
 
 			let user = await userQueries.findOne({
 				id: userCredentials.user_id,
-				organization_id: userCredentials.organization_id,
+				// organization_id: userCredentials.organization_id,
 			})
-			if (!user) {
+			if (!user.id) {
 				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -218,25 +197,26 @@ module.exports = class AdminHelper {
 			 * if not then set user organisation id to tenant
 			 */
 
-			let tenantDetails = await organizationQueries.findOne(
-				{ id: user.organization_id },
-				{ attributes: ['related_orgs'] }
-			)
+			// let tenantDetails = await organizationQueries.findOne(
+			// 	{ id: user.organization_id },
+			// 	{ attributes: ['parent_id'] }
+			// )
 
-			const tenant_id =
-				tenantDetails && tenantDetails.related_orgs && tenantDetails.related_orgs.length > 0
-					? tenantDetails.related_orgs[0]
-					: user.organization_id
+			// const tenant_id =
+			// 	tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organization_id: user.organization_id,
-					roles: roles,
-					tenant_id: tenant_id,
-					organization_ids: [String(user.organization_id)],
+					organizations: [
+						{
+							id: process.env.DEFAULT_ORG_ID,
+							roles: roles,
+						},
+					],
+					tenant_code: process.env.DEFAULT_TENANT_CODE,
 				},
 			}
 
@@ -282,37 +262,72 @@ module.exports = class AdminHelper {
 	 * Add admin to organization
 	 * @method
 	 * @name addOrgAdmin
-	 * @param {string} userId - user Id.
-	 * @param {string} organizationId -organization Id.
-	 * @returns {JSON} - delete user response
+	 * @param {string} userId - User ID.
+	 * @param {string} organizationId - Organization ID.
+	 * @param {string} loggedInUserId - ID of the logged-in user.
+	 * @param {string} identifier - User identifier (email, phone, or username).
+	 * @param {string} tenantCode - Tenant code.
+	 * @param {string} [phoneCode] - Phone code (required for phone identifier).
+	 * @returns {Promise<JSON>} - Response with success or failure details.
 	 */
-	static async addOrgAdmin(userId, organizationId, loggedInUserId, emailId) {
+	static async addOrgAdmin(userId, organizationId, loggedInUserId, identifier, tenantCode, phoneCode) {
 		try {
-			let userCredentials
-			if (emailId) {
-				const plaintextEmailId = emailId.toLowerCase()
-				const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-				userCredentials = await UserCredentialQueries.findOne({
-					email: encryptedEmailId,
-				})
-			} else {
-				userCredentials = await UserCredentialQueries.findOne({
-					user_id: userId,
-				})
+			// Helper functions for identifier validation
+			const isEmail = (str) => /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
+			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str)
+			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+
+			let user
+
+			// Try finding user by userId if provided
+			if (userId) {
+				user = await userQueries.findUserWithOrganization(
+					{
+						id: userId,
+						tenant_code: tenantCode,
+						status: common.ACTIVE_STATUS,
+						password: { [Op.ne]: null },
+					},
+					{},
+					false
+				)
 			}
 
-			if (!userCredentials?.id) {
-				return responses.failureResponse({
-					message: 'USER_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+			// If user not found by userId, try finding by identifier
+			if (!user?.id && identifier?.trim()) {
+				const normalizedIdentifier = identifier.trim().toLowerCase()
+				const query = {
+					[Op.or]: [],
+					tenant_code: tenantCode,
+					status: common.ACTIVE_STATUS,
+					password: { [Op.ne]: null },
+				}
+
+				if (isEmail(normalizedIdentifier)) {
+					query[Op.or].push({ email: emailEncryption.encrypt(normalizedIdentifier) })
+				} else if (isPhone(normalizedIdentifier)) {
+					if (!phoneCode) {
+						return responses.failureResponse({
+							message: 'PHONE_CODE_REQUIRED',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+					query[Op.or].push({ phone: emailEncryption.encrypt(normalizedIdentifier), phone_code: phoneCode })
+				} else if (isUsername(normalizedIdentifier)) {
+					query[Op.or].push({ username: normalizedIdentifier })
+				} else {
+					return responses.failureResponse({
+						message: 'INVALID_IDENTIFIER',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				user = await userQueries.findUserWithOrganization(query, {}, false)
 			}
 
-			const user = await userQueries.findOne({
-				id: userCredentials.user_id,
-				organization_id: userCredentials.organization_id,
-			})
+			// Check if user was found
 			if (!user?.id) {
 				return responses.failureResponse({
 					message: 'USER_NOT_FOUND',
@@ -320,9 +335,9 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			userId = user.id //un-necessary
 
-			let organization = await organizationQueries.findByPk(organizationId)
+			// Fetch organization
+			const organization = await organizationQueries.findByPk(organizationId)
 			if (!organization?.id) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
@@ -331,28 +346,27 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			const userOrg = await organizationQueries.findByPk(user.organization_id)
-			if (!userOrg) {
-				return responses.failureResponse({
-					message: 'ORGANIZATION_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			// Check if user is already an admin
+			const orgAdmins = new Set(organization.org_admin || [])
+			if (orgAdmins.has(user.id)) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'USER_ALREADY_ORG_ADMIN',
+					result: { user_id: user.id, organization_id: organizationId },
 				})
 			}
 
-			// Create a unique array of organization administrators (orgAdmins) by combining the existing
-			// organization admins (organization.org_admin) with the userId. The lodash uniq function ensures
-			// that the resulting array contains only unique values.
-			const orgAdmins = _.uniq([...(organization.org_admin || []), userId])
-
+			// Update organization admins
+			orgAdmins.add(user.id)
 			const orgRowsAffected = await organizationQueries.update(
 				{ id: organizationId },
 				{
-					org_admin: orgAdmins,
+					org_admin: [...orgAdmins],
 					updated_by: loggedInUserId,
 				}
 			)
-			if (orgRowsAffected == 0) {
+
+			if (orgRowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'ORG_ADMIN_MAPPING_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -360,7 +374,12 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ title: common.ORG_ADMIN_ROLE }, { attributes: ['id'] })
+			// Fetch or validate org admin role
+			const role = await roleQueries.findOne(
+				{ title: common.ORG_ADMIN_ROLE, tenant_code: tenantCode },
+				{ attributes: ['id'] }
+			)
+
 			if (!role?.id) {
 				return responses.failureResponse({
 					message: 'ROLE_NOT_FOUND',
@@ -369,9 +388,13 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			const roles = _.uniq([...(user.roles || []), role.id])
+			// Check user organization membership
+			const isUserInDefaultOrg = user.organizations.some(
+				(org) => org.code === process.env.DEFAULT_ORGANISATION_CODE
+			)
+			const isUserInOrg = user.organizations.some((org) => org.id === organizationId)
 
-			if (userOrg.code != process.env.DEFAULT_ORGANISATION_CODE && userOrg.id != organizationId) {
+			if (!isUserInDefaultOrg && !isUserInOrg) {
 				return responses.failureResponse({
 					message: 'FAILED_TO_ASSIGN_AS_ADMIN',
 					statusCode: httpStatusCode.not_acceptable,
@@ -379,49 +402,49 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			//update organization
-			if (userOrg.id != organizationId) {
-				await userQueries.changeOrganization(userId, userOrg.id, organizationId, {
-					//organization_id: organizationId,
-					roles: roles,
+			// Assign role and update organization if needed
+			if (!isUserInOrg) {
+				await userOrganizationQueries.changeUserOrganization({
+					userId: user.id,
+					tenantCode,
+					oldOrgCode: process.env.DEFAULT_ORGANISATION_CODE,
+					newOrgCode: organization.code,
 				})
-			} else {
-				await userQueries.updateUser(
-					{ id: userId, organization_id: userCredentials.organization_id },
-					{ roles: roles }
-				)
 			}
 
-			await UserCredentialQueries.updateUser(
-				{
-					email: userCredentials.email,
-				},
-				{ organization_id: organizationId }
-			)
-			//delete from cache
-			const redisUserKey = common.redisUserPrefix + userId.toString()
-			await utils.redisDel(redisUserKey)
-
-			const roleData = await roleQueries.findAll(
-				{ id: roles, status: common.ACTIVE_STATUS },
-				{
-					attributes: {
-						exclude: ['created_at', 'updated_at', 'deleted_at'],
-					},
-				}
-			)
-
-			// update organization in mentoring
-			eventBroadcaster('updateOrganization', {
-				requestBody: {
-					user_id: userId,
-					organization_id: organizationId,
-					roles: _.map(roleData, 'title'),
-				},
+			await userOrganizationRoleQueries.create({
+				tenant_code: tenantCode,
+				user_id: user.id,
+				organization_code: organization.code,
+				role_id: role.id,
 			})
 
+			// Clear cache
+			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${user.id}`
+			await utils.redisDel(redisUserKey)
+
+			// Fetch updated roles
+			const userRoles = new Set(user.roles || [])
+			userRoles.add(role.id)
+			const roleData = await roleQueries.findAll(
+				{ id: [...userRoles], status: common.ACTIVE_STATUS },
+				{ attributes: { exclude: ['created_at', 'updated_at', 'deleted_at'] } }
+			)
+
+			// Broadcast event asynchronously
+			setImmediate(() =>
+				eventBroadcaster('updateOrganization', {
+					requestBody: {
+						user_id: user.id,
+						organization_id: organizationId,
+						roles: roleData.map((r) => r.title),
+					},
+				})
+			)
+
+			// Prepare response
 			const result = {
-				user_id: userId,
+				user_id: user.id,
 				organization_id: organizationId,
 				user_roles: roleData,
 			}
@@ -432,7 +455,7 @@ module.exports = class AdminHelper {
 				result,
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in addOrgAdmin:', { error, userId, organizationId, tenantCode })
 			throw error
 		}
 	}
@@ -607,24 +630,4 @@ module.exports = class AdminHelper {
 			return error
 		}
 	}
-}
-
-function _removeUserKeys() {
-	let removedFields = ['about', 'share_link', 'preferred_language', 'location', 'languages', 'image', 'roles']
-	return removedFields
-}
-
-function _generateUpdateParams(userId) {
-	const updateUser = {
-		deleted_at: new Date(),
-		name: 'Anonymous User',
-		email: utils.md5Hash(userId) + '@' + 'deletedUser',
-		refresh_tokens: [],
-		preferred_language: 'en',
-		location: '',
-		languages: [],
-		roles: [],
-		status: common.DELETED_STATUS,
-	}
-	return updateUser
 }
