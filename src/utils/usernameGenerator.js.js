@@ -28,15 +28,15 @@ async function generateUniqueUsername(name) {
 }
 
 async function generateUniqueCodeString(stringLength = 4) {
-	// Load and cache nanoid if not already loaded
-	if (!cachedNanoid) {
-		const { nanoid } = await import('nanoid')
-		cachedNanoid = nanoid
+	// Define custom alphabet with only a-z and A-Z
+	const alphabetSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+	let result = ''
+	for (let i = 0; i < stringLength; i++) {
+		const randomIndex = Math.floor(Math.random() * alphabetSet.length)
+		result += alphabetSet[randomIndex]
 	}
 
-	// Generate a shorter random suffix (4 characters)
-
-	return cachedNanoid(stringLength).toUpperCase() // Ensure suffix is also Upper case
+	return result
 }
 
 module.exports = { generateUniqueUsername, generateUniqueCodeString }

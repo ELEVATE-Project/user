@@ -11,12 +11,9 @@ async function sendEmailNotification({ emailId, templateCode, variables, tenantC
 	try {
 		if (!emailId) return
 
-		const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-			templateCode,
-			organization_id,
-			tenantCode
-		)
-		if (!templateData) {
+		const templateData =
+			(await notificationTemplateQueries.findOneEmailTemplate(templateCode, organization_id, tenantCode)) || {}
+		if (Object.keys(templateData).length <= 0) {
 			console.warn(`Email template not found for code: ${templateCode}`)
 			return
 		}
