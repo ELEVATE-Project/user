@@ -232,8 +232,17 @@ const notification = {
 }
 
 const organizationFeatures = {
-	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
-	update: ['feature_code', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at', 'organization_code', 'tenant_code'],
+	update: [
+		'feature_code',
+		'created_by',
+		'updated_by',
+		'created_at',
+		'updated_at',
+		'deleted_at',
+		'organization_code',
+		'tenant_code',
+	],
 }
 
 const orgAdmin = {
