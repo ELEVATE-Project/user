@@ -55,7 +55,7 @@ const { Tenant, Organization, Feature, OrganizationFeature } = require('../datab
 						tenant_code: tenant.code,
 					}
 
-					if (feature.code === 'mitra' && tenant.code === 'shikshagraha') {
+					if (feature.code === 'mitra' && tenant.code != 'shikshagraha') {
 						data.enabled = false
 					}
 
