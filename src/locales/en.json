@@ -174,6 +174,6 @@
 	"FEATURE_NOT_DELETED": "Feature delete failed",
 	"INVALID_INVITATION": "Invitation is Invalid or expired. Please contact your Admin.",
 	"USER_DATA_FETCHED": "User Data fetched successfully",
-	"FEATURE_NOT_DELETED": "Feature delete failed",
-	"ORG_UNIQUE_CONSTRAIN_ERROR": "Organization Creation / Updation Failed. code / registration_code not unique."
+	"ORG_UNIQUE_CONSTRAIN_ERROR": "Organization Creation / Updation Failed. code / registration_code not unique.",
+	"REG_CODE_ERROR": "registration_code is not valid or unique."
 }

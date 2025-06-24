@@ -153,7 +153,8 @@ module.exports = class Organization {
 		try {
 			const result = await orgService.read(
 				req.query.organisation_id ? req.query.organisation_id : '',
-				req.query.organisation_code ? req.query.organisation_code : ''
+				req.query.organisation_code ? req.query.organisation_code : '',
+				req.query.tenant_code ? req.query.tenant_code : ''
 			)
 			return result
 		} catch (error) {
@@ -189,6 +190,96 @@ module.exports = class Organization {
 			const result = await orgService.removeRelatedOrg(
 				req.params.id ? req.params.id : '',
 				req.body.related_orgs ? req.body.related_orgs : []
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+	async addRegistrationCode(req) {
+		try {
+			const roles = req.decodedToken.roles
+			let isAdmin = false
+			let isOrgAdmin = false
+			let tenantCode = null
+
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+			}
+			if (!isAdmin && !isOrgAdmin) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (isOrgAdmin) {
+				tenantCode = req?.decodedToken?.tenant_code || null
+			}
+
+			if (isAdmin) {
+				tenantCode = req?.body?.tenant_code || req?.decodedToken?.tenant_code || null
+			}
+
+			if (!tenantCode) {
+				throw responses.failureResponse({
+					message: 'TENANT_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgService.addRegCode(
+				req.params.id ? req.params.id : '',
+				tenantCode,
+				req?.body?.registration_codes ? req.body.registration_codes : []
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
+	async removeRegistrationCode(req) {
+		try {
+			const roles = req.decodedToken.roles
+			let isAdmin = false
+			let isOrgAdmin = false
+			let tenantCode = null
+
+			if (roles && roles.length > 0) {
+				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+			}
+			if (!isAdmin && !isOrgAdmin) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (isOrgAdmin) {
+				tenantCode = req?.decodedToken?.tenant_code || null
+			}
+
+			if (isAdmin) {
+				tenantCode = req?.body?.tenant_code || req?.decodedToken?.tenant_code || null
+			}
+
+			if (!tenantCode) {
+				throw responses.failureResponse({
+					message: 'TENANT_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const result = await orgService.removeRegCode(
+				req.params.id ? req.params.id : '',
+				tenantCode,
+				req?.body?.registration_codes ? req.body.registration_codes : []
 			)
 			return result
 		} catch (error) {

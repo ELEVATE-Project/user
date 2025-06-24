@@ -90,9 +90,11 @@ module.exports = class AccountHelper {
 			let domainDetails = null
 
 			if (bodyData.registration_code) {
-				domainDetails = await organizationQueries.findOne({
+				domainDetails = await organizationQueries.findOrgWithRegistrationCode({
 					tenant_code: tenantDetail.code,
-					registration_code: bodyData.registration_code,
+					registration_code: {
+						[Op.iLike]: bodyData.registration_code,
+					},
 				})
 
 				if (!domainDetails) {
