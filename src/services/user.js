@@ -78,7 +78,13 @@ module.exports = class UserHelper {
 
 			//validationData = utils.removeParentEntityTypes(JSON.parse(JSON.stringify(validationData)))
 
-			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
+			let res = await utils.validateInput(
+				bodyData,
+				prunedEntities,
+				await userQueries.getModelName(),
+				false,
+				tenantCode
+			)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'VALIDATION_FAILED',
@@ -548,7 +554,13 @@ module.exports = class UserHelper {
 			let dataValidation = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 			const prunedEntities = removeDefaultOrgEntityTypes(dataValidation)
 
-			let validatedData = utils.validateInput(bodyData, prunedEntities, userModel, skipRequiredValidation)
+			let validatedData = await utils.validateInput(
+				bodyData,
+				prunedEntities,
+				userModel,
+				skipRequiredValidation,
+				tenantCode
+			)
 			if (!validatedData.success) {
 				return responses.failureResponse({
 					message: 'PROFILE_UPDATION_FAILED',
