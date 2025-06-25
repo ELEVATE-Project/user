@@ -36,15 +36,32 @@ const { Tenant, Organization, Feature, OrganizationFeature } = require('../datab
 			console.log(JSON.stringify(features, null, 2))
 
 			for (const feature of features) {
-				await OrganizationFeature.create({
-					organization_code: defaultOrg.code,
-					feature_code: feature.code,
-					enabled: true,
-					feature_name: feature.label,
-					icon: feature.icon,
-					tenant_code: tenant.code,
+				const isFeatureExist = await OrganizationFeature.findOne({
+					where: {
+						organization_code: defaultOrg.code,
+						feature_code: feature.code,
+						tenant_code: tenant.code,
+					},
+					raw: true,
 				})
-				console.log(`Inserted feature ${feature.code} for org ${defaultOrg.code}`)
+
+				if (!isFeatureExist) {
+					let data = {
+						organization_code: defaultOrg.code,
+						feature_code: feature.code,
+						enabled: true,
+						feature_name: feature.label,
+						icon: feature.icon,
+						tenant_code: tenant.code,
+					}
+
+					if (feature.code === 'mitra' && tenant.code != 'shikshagraha') {
+						data.enabled = false
+					}
+
+					await OrganizationFeature.create(data)
+					console.log(`Inserted feature ${feature.code} for org ${defaultOrg.code}`)
+				}
 			}
 		}
 
