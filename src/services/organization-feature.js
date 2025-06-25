@@ -184,19 +184,26 @@ module.exports = class organizationFeatureHelper {
 				},
 			}
 
-			// Fetch organization features
-			let organizationFeatures = await organizationFeatureQueries.findAllOrganizationFeature(filter, queryOptions)
+			// Fetch features for default and current org in parallel
+			const [defaultOrgFeatures, currentOrgFeatures] = await Promise.all([
+				organizationFeatureQueries.findAllOrganizationFeature(
+					{ ...filter, organization_code: process.env.DEFAULT_ORGANISATION_CODE },
+					queryOptions
+				),
+				organizationFeatureQueries.findAllOrganizationFeature(filter, queryOptions),
+			])
 
-			// Fallback to default organization if no features found
-			if (!organizationFeatures?.length) {
-				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-					{ attributes: ['id', 'code'] }
-				)
+			// Merge features with Map for efficiency
+			const featureMap = new Map(defaultOrgFeatures.map((feature) => [feature.feature_code, feature]))
 
-				filter.organization_code = defaultOrg.code
-				organizationFeatures = await organizationFeatureQueries.findAllOrganizationFeature(filter, queryOptions)
+			// Override with current org features if they exist
+			if (currentOrgFeatures?.length) {
+				currentOrgFeatures.forEach((feature) => {
+					featureMap.set(feature.feature_code, feature)
+				})
 			}
+
+			const organizationFeatures = Array.from(featureMap.values())
 
 			// Process icons in parallel
 			if (organizationFeatures?.length) {
