@@ -82,7 +82,8 @@ module.exports = class OrgAdmin {
 
 			const requestDetails = await orgAdminService.getRequestDetails(
 				req.params.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
 			)
 			return requestDetails
 		} catch (error) {
@@ -230,7 +231,12 @@ module.exports = class OrgAdmin {
 				})
 			}
  */
-			const userUploadRes = await orgAdminService.bulkCreate(req.body.file_path, req.decodedToken)
+			const userUploadRes = await orgAdminService.bulkCreate(
+				req.body.file_path,
+				req.decodedToken,
+				req?.body?.editable_fields,
+				req?.body?.upload_type.toUpperCase()
+			)
 			return userUploadRes
 		} catch (error) {
 			return error

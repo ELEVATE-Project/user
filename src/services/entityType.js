@@ -17,10 +17,11 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Created entity type response.
 	 */
 
-	static async create(bodyData, id, orgId) {
+	static async create(bodyData, id, orgId, tenantCode) {
 		bodyData.created_by = id
 		bodyData.updated_by = id
 		bodyData.organization_id = orgId
+		bodyData.tenant_code = tenantCode
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
 			return responses.successResponse({
@@ -50,13 +51,19 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Updated Entity Type.
 	 */
 
-	static async update(bodyData, id, loggedInUserId, orgId) {
+	static async update(bodyData, id, loggedInUserId, orgId, tenantCode) {
 		;(bodyData.updated_by = loggedInUserId), (bodyData.organization_id = orgId)
 		try {
-			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(id, orgId, bodyData, {
-				returning: true,
-				raw: true,
-			})
+			const [updateCount, updatedEntityType] = await entityTypeQueries.updateOneEntityType(
+				id,
+				orgId,
+				tenantCode,
+				bodyData,
+				{
+					returning: true,
+					raw: true,
+				}
+			)
 
 			if (updateCount === 0) {
 				return responses.failureResponse({
@@ -83,10 +90,10 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readAllSystemEntityTypes(orgId) {
+	static async readAllSystemEntityTypes(orgId, tenantCode) {
 		try {
 			const defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			const defaultOrgId = defaultOrg.id
@@ -112,10 +119,10 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readUserEntityTypes(body, userId, orgId) {
+	static async readUserEntityTypes(body, userId, orgId, tenantCode) {
 		try {
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id

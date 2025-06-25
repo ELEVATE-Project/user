@@ -5,6 +5,7 @@ const utils = require('@generics/utils')
 const KafkaProducer = require('@generics/kafka-communication')
 const form = require('@generics/form')
 const organizationQueries = require('@database/queries/organization')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 const responses = require('@helpers/responses')
 
 module.exports = class FormsHelper {
@@ -16,9 +17,13 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Form creation data.
 	 */
 
-	static async create(bodyData, orgId) {
+	static async create(bodyData, orgId, tenantCode) {
 		try {
-			const form = await formQueries.findOne({ type: bodyData.type, organization_id: orgId })
+			const form = await formQueries.findOne({
+				type: bodyData.type,
+				organization_id: orgId,
+				tenant_code: tenantCode,
+			})
 			if (form) {
 				return responses.failureResponse({
 					message: 'FORM_ALREADY_EXISTS',
@@ -27,6 +32,7 @@ module.exports = class FormsHelper {
 				})
 			}
 			bodyData['organization_id'] = orgId
+			bodyData['tenant_code'] = tenantCode
 			await formQueries.create(bodyData)
 			await utils.internalDel('formVersion')
 			await KafkaProducer.clearInternalCache('formVersion')
@@ -47,17 +53,18 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Update form data.
 	 */
 
-	static async update(id, bodyData, orgId) {
+	static async update(id, bodyData, orgId, tenantCode) {
 		try {
 			let filter = {}
 
 			if (id) {
-				filter = { id: id, organization_id: orgId }
+				filter = { id: id, organization_id: orgId, tenant_code: tenantCode }
 			} else {
 				filter = {
 					type: bodyData.type,
 					sub_type: bodyData.sub_type,
 					organization_id: orgId,
+					tenant_code: tenantCode,
 				}
 			}
 
@@ -89,18 +96,48 @@ module.exports = class FormsHelper {
 	 * @returns {JSON} - Read form data.
 	 */
 
-	static async read(id, bodyData, orgId) {
+	static async read(id, bodyData, orgId, tenantCode, domain) {
 		try {
-			let filter = id ? { id: id, organization_id: orgId } : { ...bodyData, organization_id: orgId }
+			if (!tenantCode && domain) {
+				const tenantDomain = await tenantDomainQueries.findOne(
+					{
+						domain,
+					},
+					{
+						attributes: ['tenant_code'],
+					}
+				)
+				tenantCode = tenantDomain.tenant_code
+			}
+
+			if (!tenantCode) {
+				return responses.failureResponse({
+					message: 'TENANT_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (!orgId) {
+				let defaultOrg = await organizationQueries.findOne(
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
+					{ attributes: ['id'] }
+				)
+				orgId = defaultOrg.id
+			}
+			let filter = id
+				? { id: id, organization_id: orgId, tenant_code: tenantCode }
+				: { ...bodyData, organization_id: orgId, tenant_code: tenantCode }
 			const form = await formQueries.findOne(filter)
 			let defaultOrgForm
 			if (!form) {
 				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
+					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 					{ attributes: ['id'] }
 				)
 				let defaultOrgId = defaultOrg.id
-				filter = id ? { id: id, organization_id: defaultOrgId } : { ...bodyData, organization_id: defaultOrgId }
+				filter = id
+					? { id: id, organization_id: defaultOrgId, tenant_code: tenantCode }
+					: { ...bodyData, organization_id: defaultOrgId, tenant_code: tenantCode }
 				defaultOrgForm = await formQueries.findOne(filter)
 			}
 			if (!form && !defaultOrgForm) {

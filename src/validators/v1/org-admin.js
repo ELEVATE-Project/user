@@ -5,12 +5,19 @@
  * Description : Validations of admin controller
  */
 const filterRequestBody = require('../common')
+const common = require('@constants/common')
 const { orgAdmin } = require('@constants/blacklistConfig')
 
 module.exports = {
 	bulkUserCreate: (req) => {
+		const upload_type = [common.TYPE_INVITE, common.TYPE_UPLOAD]
 		req.body = filterRequestBody(req.body, orgAdmin.bulkUserCreate)
 		req.checkBody('file_path').notEmpty().withMessage('file_path field is empty')
+		req.checkBody('upload_type')
+			.notEmpty()
+			.withMessage('upload_type is required')
+			.isIn()
+			.withMessage(`upload_type must be from : ${upload_type.join(',')}`)
 	},
 	getRequestDetails: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')

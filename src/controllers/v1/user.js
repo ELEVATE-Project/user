@@ -21,7 +21,12 @@ module.exports = class User {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedUser = await userService.update(params, req.decodedToken.id, req.decodedToken.organization_id)
+			const updatedUser = await userService.update(
+				params,
+				req.decodedToken.id,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return updatedUser
 		} catch (error) {
 			return error
@@ -41,10 +46,42 @@ module.exports = class User {
 	async read(req) {
 		try {
 			const userDetails = await userService.read(
-				req.params.id ? req.params.id : req.decodedToken.id,
+				req.decodedToken.id,
 				req.headers,
-				req.query.language ? req.query.language : ''
+				req.query.language ? req.query.language : '',
+				req.decodedToken.tenant_code
 			)
+			return userDetails
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Retrieves user details by ID.
+	 * @async
+	 * @function profileById
+	 * @param {Object} req - Request object containing user data.
+	 * @param {string} req.params.id - The ID of the user to retrieve.
+	 * @param {string} [req.query.language] - Optional language code for localization.
+	 * @param {string} [req.headers.internal_access_token] - Optional token to access deleted user details.
+	 * @returns {Promise<Object>} A promise that resolves to the user details or an error object.
+	 * @throws {Error} If the user details cannot be retrieved.
+	 */
+	async profileById(req) {
+		try {
+			let param = {}
+			if (req?.params?.id) {
+				param.id = req?.params?.id
+			} else if (req.query.username) {
+				param.username = req.query.username
+			} else if (req.query.email) {
+				param.email = req.query.email
+			} else if (req.query.phone) {
+				param.phone = req.query.phone
+				param.phone_code = req?.query?.phone_code
+			}
+			const userDetails = await userService.profileById(param, req.query.tenant_code)
 			return userDetails
 		} catch (error) {
 			return error
@@ -81,7 +118,8 @@ module.exports = class User {
 			const updateUsersLanguagePreference = await userService.setLanguagePreference(
 				params,
 				req.decodedToken.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
 			)
 			return updateUsersLanguagePreference
 		} catch (error) {

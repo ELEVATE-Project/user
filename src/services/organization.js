@@ -15,9 +15,9 @@ const { eventBroadcasterMain } = require('@helpers/eventBroadcasterMain')
 const UserCredentialQueries = require('@database/queries/userCredential')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBodyDTO } = require('@dtos/eventBody')
+const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
-const organization = require('@database/models/organization')
-const sequelize = require('@database/models/index').sequelize
+const userOrgQueries = require('@database/queries/userOrganization')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -30,7 +30,10 @@ module.exports = class OrganizationsHelper {
 
 	static async create(bodyData, loggedInUserId) {
 		try {
-			const existingOrganization = await organizationQueries.findOne({ code: bodyData.code })
+			const existingOrganization = await organizationQueries.findOne({
+				code: bodyData.code,
+				tenant_code: bodyData.tenant_code,
+			})
 
 			if (existingOrganization) {
 				return responses.failureResponse({
@@ -133,6 +136,7 @@ module.exports = class OrganizationsHelper {
 				eventType: 'create',
 				entityId: createdOrganization.id,
 				args: {
+					name: bodyData.name,
 					created_by: loggedInUserId,
 				},
 			})
@@ -144,6 +148,13 @@ module.exports = class OrganizationsHelper {
 			})
 		} catch (error) {
 			console.log(error)
+			if (error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR) {
+				return responses.failureResponse({
+					message: 'ORG_UNIQUE_CONSTRAIN_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
@@ -209,6 +220,13 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			if (error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR) {
+				return responses.failureResponse({
+					message: 'ORG_UNIQUE_CONSTRAIN_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
 			throw error
 		}
 	}
@@ -223,8 +241,33 @@ module.exports = class OrganizationsHelper {
 
 	static async list(params) {
 		try {
+			// fetch orgs under tenants
+			if (params?.query?.tenantCode) {
+				let options = {
+					attributes: ['id', 'name', 'code', 'description'],
+				}
+
+				let organizations = await organizationQueries.findAll(
+					{
+						tenant_code: params?.query?.tenantCode,
+						status: common.ACTIVE_STATUS,
+					},
+					options
+				)
+
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+					result: organizations,
+				})
+			}
 			if (params.body && params.body.organizationIds) {
-				const organizationIds = params.body.organizationIds
+				const organizationIds =
+					typeof params.body.organizationIds == 'string' &&
+					params.body.organizationIds.startsWith('[') &&
+					params.body.organizationIds.endsWith(']')
+						? JSON.parse(params.body.organizationIds)
+						: params.body.organizationIds
 				const orgIdsNotFoundInRedis = []
 				const orgDetailsFoundInRedis = []
 				for (let i = 0; i < organizationIds.length; i++) {
@@ -298,6 +341,7 @@ module.exports = class OrganizationsHelper {
 					requester_id: tokenInformation.id,
 					role: bodyData.role,
 					organization_id: tokenInformation.organization_id,
+					tenant_code: tokenInformation.tenant_code,
 				},
 				{
 					order: [['created_at', 'DESC']],
@@ -370,6 +414,69 @@ module.exports = class OrganizationsHelper {
 				statusCode: httpStatusCode.ok,
 				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
 				result: organisationDetails,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	/**
+	 * Read organisation details
+	 * @method
+	 * @name details
+	 * @param {Integer/String} organisationId 	- organisation id/code
+	 * @param {Integer/String} tenantCode 	- tenant code
+	 * @returns {JSON} 									- Organization details.
+	 */
+
+	static async details(organisationId, userId, tenantCode) {
+		try {
+			const userOrgs = await userOrgQueries.findAll(
+				{
+					user_id: userId,
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['organization_code'],
+					organizationAttributes: ['id', 'name'],
+				}
+			)
+			if (userOrgs.length <= 0) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const userOrgsIds = userOrgs.map((orgs) => {
+				return orgs['organization.id']
+			})
+
+			if (!userOrgsIds.includes(parseInt(organisationId))) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_NOT_ACCESSIBLE',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let filter = {
+				id: parseInt(organisationId),
+			}
+
+			const organisationDetails = await organizationQueries.findOne(filter)
+			if (!organisationDetails) {
+				return responses.failureResponse({
+					message: 'ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'ORGANIZATION_FETCHED_SUCCESSFULLY',
+				result: organizationDTO.transform(organisationDetails),
 			})
 		} catch (error) {
 			throw error
@@ -508,6 +615,7 @@ async function createRoleRequest(bodyData, tokenInformation) {
 		requester_id: tokenInformation.id,
 		role: bodyData.role,
 		organization_id: tokenInformation.organization_id,
+		tenant_code: tokenInformation.tenant_code,
 		meta: bodyData.form_data,
 	}
 

@@ -160,6 +160,18 @@ module.exports = class Organization {
 			return error
 		}
 	}
+	async details(req) {
+		try {
+			const result = await orgService.details(
+				req.params.id ? req.params.id : '',
+				req?.decodedToken?.id,
+				req?.decodedToken?.tenant_code
+			)
+			return result
+		} catch (error) {
+			return error
+		}
+	}
 
 	async addRelatedOrg(req) {
 		try {

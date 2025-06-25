@@ -24,7 +24,6 @@ module.exports = (sequelize, DataTypes) => {
 			organization_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				primaryKey: true,
 			},
 			handled_by: {
 				type: DataTypes.INTEGER,
@@ -37,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
 			comments: {
 				type: DataTypes.ARRAY(DataTypes.STRING),
 				allowNull: true,
+			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				primaryKey: true,
 			},
 		},
 		{

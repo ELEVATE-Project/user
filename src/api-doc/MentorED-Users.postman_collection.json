@@ -1,48 +1,39 @@
 {
 	"info": {
-		"_postman_id": "a4603eb4-a163-485a-aa40-a696066416a7",
+		"_postman_id": "372fb1dd-162b-4318-90c3-b67dfbf9e5a0",
 		"name": "MentorED-Users",
-		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
-		"_exporter_id": "12011146",
-		"_collection_link": "https://crimson-star-573488.postman.co/workspace/backend~c1daa04f-8872-40f8-9e04-dcefba7434d5/collection/12011146-a4603eb4-a163-485a-aa40-a696066416a7?action=share&source=collection_link&creator=12011146"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40647259"
 	},
 	"item": [
 		{
 			"name": "Account",
 			"item": [
 				{
-					"name": "Create Account Mentee",
+					"name": "Create Account",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "origin",
+								"value": "localhost",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Nevil\",\n    \"email\":\"nevil@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentee\"\n}",
+							"raw": "{\n    \"name\": \"Nevil Mathew\",\n    \"email\": \"nevil@tunerlabs.com\",\n    \"password\": \"PASSword###11\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/create"
-					},
-					"response": []
-				},
-				{
-					"name": "Create Account Mentor",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\":\"priyanka\",\n    \"email\":\"priyanka@tunerlabs.com\",\n    \"password\":\"testing\",\n    \"role\":\"mentor\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "create"]
+						}
 					},
 					"response": []
 				},
@@ -57,119 +48,34 @@
 									"pm.environment.set(\"token\", jsonBody.result.access_token);",
 									"pm.environment.set(\"refresh_token\", jsonBody.result.refresh_token);"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "origin",
+								"value": "localhost",
+								"type": "text"
+							}
+						],
 						"body": {
-							"mode": "urlencoded",
-							"urlencoded": [
-								{
-									"key": "email",
-									"value": "nevil@tunerlabs.com",
-									"description": "dev mentor",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "testing1234",
-									"description": "dev mentor",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "priyanka@tunerlabs.com",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "testing",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "suman.v@pacewisdom.com",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "password",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "suman@shikshalokam.org",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "testing",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "suman@shikshalokam.org",
-									"description": "dev mentee",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "Suman@1234",
-									"description": "mentee dev",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "slmentoredtestaccdeai9iql9q@yopmail.com",
-									"description": "admin dev",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "0KaOe0Ku5X",
-									"description": "admin dev",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "anupama.pujar@qualitrix.com",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "password",
-									"value": "password",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "email",
-									"value": "adminmaster@admin.com",
-									"type": "text"
-								},
-								{
-									"key": "password",
-									"value": "password",
-									"type": "text"
+							"mode": "raw",
+							"raw": "{\n    \"identifier\": \"nevilmathe_ftwpept_4stxhk\",\n    \"password\": \"PASSword###11\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
-							]
+							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/login"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/login",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "login"]
+						}
 					},
 					"response": []
 				},
@@ -180,11 +86,15 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/acceptTermsAndCondition",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "acceptTermsAndCondition"]
+						}
 					},
 					"response": []
 				},
@@ -213,7 +123,11 @@
 								}
 							]
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/resetPassword"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/resetPassword",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "resetPassword"]
+						}
 					},
 					"response": []
 				},
@@ -224,7 +138,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -244,7 +158,11 @@
 								}
 							]
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/generateToken"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/generateToken",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "generateToken"]
+						}
 					},
 					"response": []
 				},
@@ -255,7 +173,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text",
 								"disabled": true
 							}
@@ -275,7 +193,11 @@
 								}
 							]
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/generateOtp",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "generateOtp"]
+						},
 						"description": "To generate and regenerate otp"
 					},
 					"response": []
@@ -287,7 +209,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -307,7 +229,11 @@
 								}
 							]
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/logout"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/logout",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "logout"]
+						}
 					},
 					"response": []
 				},
@@ -318,7 +244,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -355,7 +281,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text",
 								"disabled": true
 							}
@@ -380,7 +306,11 @@
 								}
 							]
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/registrationOtp"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/registrationOtp",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "registrationOtp"]
+						}
 					},
 					"response": []
 				},
@@ -391,7 +321,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -404,7 +334,57 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/account/list"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/list",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "list"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "oldPassword",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "newPassword",
+									"value": "Password@123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "account", "changePassword"],
+							"query": [
+								{
+									"key": "oldPassword",
+									"value": "password",
+									"disabled": true
+								},
+								{
+									"key": "newPassword",
+									"value": "Password@123",
+									"disabled": true
+								}
+							]
+						}
 					},
 					"response": []
 				}
@@ -423,13 +403,14 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
 								"key": "internal_access_token",
 								"value": "{{internal_access_token}}",
-								"type": "text"
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -437,13 +418,14 @@
 							"raw": ""
 						},
 						"url": {
-							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1?language=kn",
+							"raw": "{{UserDevBaseUrl}}user/v1/user/read/1",
 							"host": ["{{UserDevBaseUrl}}user"],
 							"path": ["v1", "user", "read", "1"],
 							"query": [
 								{
 									"key": "language",
-									"value": "kn"
+									"value": "kn",
+									"disabled": true
 								}
 							]
 						}
@@ -457,7 +439,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -470,7 +452,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/update"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/update",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "update"]
+						}
 					},
 					"response": []
 				},
@@ -484,7 +470,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -492,7 +478,11 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/share/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/share/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "share", "1"]
+						}
 					},
 					"response": []
 				},
@@ -503,7 +493,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -516,7 +506,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user/setLanguagePreference"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user/setLanguagePreference",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user", "setLanguagePreference"]
+						}
 					},
 					"response": []
 				}
@@ -535,7 +529,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -549,71 +543,15 @@
 							"mode": "raw",
 							"raw": ""
 						},
-						"url": "{{interfaceBaseUrl}}elevate-user/v1/user-role/list"
+						"url": {
+							"raw": "{{interfaceBaseUrl}}elevate-user/v1/user-role/list",
+							"host": ["{{interfaceBaseUrl}}elevate-user"],
+							"path": ["v1", "user-role", "list"]
+						}
 					},
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "Create User Roles",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create"
-			},
-			"response": []
-		},
-		{
-			"name": "Update User Roles",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete User Roles",
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}"
-					}
-				],
-				"url": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13"
-			},
-			"response": []
 		},
 		{
 			"name": "Form",
@@ -625,7 +563,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -638,7 +576,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/form/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "create"]
+						}
 					},
 					"response": []
 				},
@@ -649,7 +591,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -662,7 +604,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/form/read/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/read/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "read", "1"]
+						}
 					},
 					"response": []
 				},
@@ -673,7 +619,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -686,7 +632,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/form/update"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/form/update",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "form", "update"]
+						}
 					},
 					"response": []
 				}
@@ -702,7 +652,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -733,7 +683,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -764,7 +714,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -774,7 +724,11 @@
 								"disabled": true
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/cloud-services/file/getSampleCSV",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "cloud-services", "file", "getSampleCSV"]
+						}
 					},
 					"response": []
 				}
@@ -790,11 +744,15 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/deleteUser/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "deleteUser", "1"]
+						}
 					},
 					"response": []
 				},
@@ -818,7 +776,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/admin/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "create"]
+						}
 					},
 					"response": []
 				},
@@ -849,7 +811,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/admin/login"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/login",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "login"]
+						}
 					},
 					"response": []
 				},
@@ -860,7 +826,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -873,7 +839,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/admin/addOrgAdmin"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/admin/addOrgAdmin",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "admin", "addOrgAdmin"]
+						}
 					},
 					"response": []
 				},
@@ -884,7 +854,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -970,7 +940,7 @@
 							},
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -983,7 +953,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/organization/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "create"]
+						}
 					},
 					"response": []
 				},
@@ -994,7 +968,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1007,7 +981,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/organization/update/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "update", "1"]
+						}
 					},
 					"response": []
 				},
@@ -1018,7 +996,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1047,7 +1025,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1060,7 +1038,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/organization/requestOrgRole"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/organization/requestOrgRole",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "organization", "requestOrgRole"]
+						}
 					},
 					"response": []
 				}
@@ -1076,7 +1058,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1089,7 +1071,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/entity/create",
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "create"]
+						},
 						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
@@ -1101,7 +1087,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1149,7 +1135,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1162,7 +1148,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/entity/update/1",
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "update", "1"]
+						},
 						"description": "NOET: All body req parameters are optional to update."
 					},
 					"response": []
@@ -1174,11 +1164,15 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/entity/delete/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity", "delete", "1"]
+						}
 					},
 					"response": []
 				}
@@ -1194,7 +1188,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1207,7 +1201,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/entity-type/create",
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "create"]
+						},
 						"description": "NOTE: Pass type as roles/designation/expertise etc. whatever types needs to be created"
 					},
 					"response": []
@@ -1219,11 +1217,15 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/read",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "read"]
+						},
 						"description": "NOTE: Query Parmas\n1). type is mandatory\n2). deleted is optional\n3). status is optional"
 					},
 					"response": []
@@ -1235,7 +1237,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1281,7 +1283,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1294,7 +1296,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/update/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "update", "1"]
+						},
 						"description": "NOET: All body req parameters are optional to update."
 					},
 					"response": []
@@ -1306,11 +1312,15 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/entity-type/delete/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "entity-type", "delete", "1"]
+						}
 					},
 					"response": []
 				}
@@ -1333,7 +1343,11 @@
 							"mode": "raw",
 							"raw": "{\n  \"name\": \"sore\",\n  \"email\": \"sorefa6947@unbiex.com\",\n  \"password\": \"passwordofuser\",\n  \"otp\": \"593398\",\n  \"has_accepted_terms_and_conditions\": true\n}"
 						},
-						"url": "{{UserDevBaseUrl}}interface/v1/account/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/create",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "create"]
+						}
 					},
 					"response": []
 				},
@@ -1344,7 +1358,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}"
+								"value": " {{token}}"
 							},
 							{
 								"key": "",
@@ -1362,7 +1376,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}interface/v1/account/update"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}interface/v1/account/update",
+							"host": ["{{UserDevBaseUrl}}interface"],
+							"path": ["v1", "account", "update"]
+						}
 					},
 					"response": []
 				}
@@ -1387,7 +1405,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1401,7 +1419,11 @@
 								}
 							]
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/org-admin/bulkUserCreate"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/bulkUserCreate",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "bulkUserCreate"]
+						}
 					},
 					"response": []
 				},
@@ -1412,7 +1434,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1445,11 +1467,15 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}user/v1/org-admin/getRequestDetails/1"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequestDetails/1",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getRequestDetails", "1"]
+						}
 					},
 					"response": []
 				},
@@ -1460,7 +1486,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1500,7 +1526,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -1513,7 +1539,11 @@
 							"mode": "raw",
 							"raw": "{\n  \"filters\": {\n    \"role\": [\n      \"3\"\n    ],\n    \"status\": [\n      \"REQUESTED\"\n    ],\n    \"handled_by\": [\n      1\n    ]\n  }\n}"
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/org-admin/getRequests"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/getRequests",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "getRequests"]
+						}
 					},
 					"response": []
 				},
@@ -1529,7 +1559,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							},
 							{
@@ -1542,7 +1572,11 @@
 							"mode": "raw",
 							"raw": "{\n\t\"request_id\": 1,\n\t\"comments\": [\"All uploaded documents verified\", \"Profile information verified\"],\n\t\"status\": \"APPROVED\"\n}\n"
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/org-admin/updateRequestStatus",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "org-admin", "updateRequestStatus"]
+						}
 					},
 					"response": []
 				},
@@ -1553,7 +1587,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}"
+								"value": " {{token}}"
 							},
 							{
 								"key": "Content-Type",
@@ -1564,7 +1598,11 @@
 							"mode": "raw",
 							"raw": "{\n\t\"entity_type_value\": \"categories\",\n\t\"target_entity_type_label\": \"training\"\n}"
 						},
-						"url": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType"
+						"url": {
+							"raw": "{{MentoringBaseUrl}}/mentoring/v1/org-admin/inheritEntityType",
+							"host": ["{{MentoringBaseUrl}}"],
+							"path": ["mentoring", "v1", "org-admin", "inheritEntityType"]
+						}
 					},
 					"response": []
 				},
@@ -1575,7 +1613,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}"
+								"value": " {{token}}"
 							},
 							{
 								"key": "Content-Type",
@@ -1591,7 +1629,11 @@
 								}
 							}
 						},
-						"url": "{{interfaceBaseUrl}}user/v1/org-admin/updateUser/157"
+						"url": {
+							"raw": "{{interfaceBaseUrl}}user/v1/org-admin/updateUser/157",
+							"host": ["{{interfaceBaseUrl}}user"],
+							"path": ["v1", "org-admin", "updateUser", "157"]
+						}
 					},
 					"response": []
 				}
@@ -1607,7 +1649,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1620,7 +1662,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/notification/template"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template"]
+						}
 					},
 					"response": []
 				},
@@ -1634,7 +1680,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1647,7 +1693,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/notification/template/14"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template", "14"]
+						}
 					},
 					"response": []
 				},
@@ -1658,7 +1708,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1671,7 +1721,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/notification/template/14"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/notification/template/14",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "notification", "template", "14"]
+						}
 					},
 					"response": []
 				}
@@ -1687,7 +1741,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1743,7 +1797,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1796,7 +1850,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1809,7 +1863,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}user/v1/user-role/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/user-role/create",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "user-role", "create"]
+						}
 					},
 					"response": []
 				},
@@ -1820,7 +1878,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1854,7 +1912,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1868,6 +1926,78 @@
 									"value": "7"
 								}
 							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User Roles",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"title\": \"test_role\",\n\"user_type\": 1,\n\"status\": \"ACTIVE\",\n\"visibility\": \"PUBLIC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/user-role/create",
+							"host": ["{{UserDevBaseUrl}}elevate-user"],
+							"path": ["v1", "user-role", "create"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Roles",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"test_role_one_updated\",\n    \"user_type\": 1,\n    \"visibility\": \"PUBLIC\",\n    \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/user-role/update/13",
+							"host": ["{{UserDevBaseUrl}}elevate-user"],
+							"path": ["v1", "user-role", "update", "13"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Roles",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}elevate-user/v1/user-role/delete/13",
+							"host": ["{{UserDevBaseUrl}}elevate-user"],
+							"path": ["v1", "user-role", "delete", "13"]
 						}
 					},
 					"response": []
@@ -1887,7 +2017,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1900,7 +2030,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}mentoring/v1/permissions/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/permissions/create",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
+							"path": ["v1", "permissions", "create"]
+						}
 					},
 					"response": []
 				},
@@ -1911,7 +2045,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1950,7 +2084,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -1985,7 +2119,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2016,7 +2150,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2029,7 +2163,11 @@
 								}
 							}
 						},
-						"url": "{{UserDevBaseUrl}}mentoring/v1/modules/create"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/modules/create",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
+							"path": ["v1", "modules", "create"]
+						}
 					},
 					"response": []
 				},
@@ -2040,7 +2178,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2082,7 +2220,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2115,7 +2253,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2146,7 +2284,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2180,7 +2318,7 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
@@ -2214,61 +2352,289 @@
 						"header": [
 							{
 								"key": "X-auth-token",
-								"value": "bearer {{token}}",
+								"value": " {{token}}",
 								"type": "text"
 							}
 						],
-						"url": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/list"
+						"url": {
+							"raw": "{{UserDevBaseUrl}}mentoring/v1/role-permission-mapping/list",
+							"host": ["{{UserDevBaseUrl}}mentoring"],
+							"path": ["v1", "role-permission-mapping", "list"]
+						}
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "Change Password",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "X-auth-token",
-						"value": "bearer {{token}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "urlencoded",
-					"urlencoded": [
-						{
-							"key": "oldPassword",
-							"value": "password",
-							"type": "text"
-						},
-						{
-							"key": "newPassword",
-							"value": "Password@123",
-							"type": "text"
+			"name": "Public",
+			"item": [
+				{
+					"name": "Branding",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/public/branding",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "public", "branding"],
+							"query": [
+								{
+									"key": "org_code",
+									"value": "default_code",
+									"disabled": true
+								}
+							]
 						}
-					]
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{UserDevBaseUrl}}user/v1/account/changePassword",
-					"host": ["{{UserDevBaseUrl}}user"],
-					"path": ["v1", "account", "changePassword"],
-					"query": [
-						{
-							"key": "oldPassword",
-							"value": "password",
-							"disabled": true
+				{
+					"name": "Public userInvites",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "origin",
+								"value": "{{origin}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/public/userInvites?invitation_key=bfbaad67-a63a-44a2-804c-09c685233207",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "public", "userInvites"],
+							"query": [
+								{
+									"key": "invitation_key",
+									"value": "bfbaad67-a63a-44a2-804c-09c685233207"
+								}
+							]
 						},
-						{
-							"key": "newPassword",
-							"value": "Password@123",
-							"disabled": true
-						}
-					]
+						"description": "Generated from cURL: curl --location 'http://localhost:3001/user/v1/public/userInvites?invitation_key=bfbaad67-a63a-44a2-804c-09c685233207' \\\n--header 'origin: shikshagraha-qa.tekdinext.com'"
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "Tenant",
+			"item": [
+				{
+					"name": "Tenant Create or Update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test\",\n    \"code\": \"test\",\n    \"description\": \"Test domain\",\n    \"logo\": \"\",\n    \"theming\": {},\n    \"meta\": {},\n    \"domains\": \"https://test.123.domain.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/update",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "update"]
+						},
+						"description": "Generated from cURL: curl --location 'https://saas-qa.tekdinext.com/user/v1/tenant/update' \\\n--header 'Content-Type: application/json' \\\n--header 'origin: https://dev.elevate-mentoring.shikshalokam.org' \\\n--header 'X-auth-token: {{token}}' \\\n--data '{\n    \"name\": \"Test\",\n    \"code\": \"test\",\n    \"description\": \"Test domain\",\n    \"logo\": \"\",\n    \"theming\": {},\n    \"meta\": {},\n    \"domains\": \"https://test.123.domain.com\"\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant add domain",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"domains\" : [\"https://test.2.domain.com\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/addDomain/test",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "addDomain", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant remove Domain",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"domains\" : [\"https://test.2.domain.com\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/removeDomain/test",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "removeDomain", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Bulk Upload",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-auth-token",
+								"value": "{{token}}"
+							},
+							{
+								"key": "tenant",
+								"value": "{{tenant_code}}"
+							},
+							{
+								"key": "organization",
+								"value": "{{org_code}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"file_path\" : \"users/1-1749801919492-bulkupload.csv\",\n    \"editable_fields\" : [\"name\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{UserDevBaseUrl}}user/v1/tenant/bulkUserCreate",
+							"host": ["{{UserDevBaseUrl}}user"],
+							"path": ["v1", "tenant", "bulkUserCreate"]
+						},
+						"description": "Generated from cURL: curl --location 'http://localhost:3001/user/v1/tenant/bulkUserCreate' \\\n--header 'Content-Type: application/json' \\\n--header 'X-auth-token: {{token}}' \\\n--header 'tenant: shikshagraha' \\\n--header 'organization: blr' \\\n--data '{\n    \"file_path\" : \"users/1-1749801919492-bulkupload.csv\",\n    \"editable_fields\" : [\"name\"]\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant Read",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/read/test",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "read", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tenant List",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "origin",
+								"value": "https://dev.elevate-mentoring.shikshalokam.org"
+							},
+							{
+								"key": "X-auth-token",
+								"value": " {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/v1/tenant/list",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "v1", "tenant", "list"]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

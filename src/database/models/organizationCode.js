@@ -12,6 +12,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: process.env.DEFAULT_TENANT_CODE,
+			},
 		},
 		{
 			sequelize,
