@@ -46,11 +46,27 @@ module.exports = class UserInviteHelper {
 				const uploadType = data.user.uploadType
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
-				if (!response.success) throw new Error('FAILED_TO_DOWNLOAD')
+				if (!response.success) {
+					await this.sendErrorEmail(
+						data.user,
+						response?.error ||
+							`Failed to download the input CSV ${response.message ? '" ' + response.message + ' "' : ''}`
+					)
+					throw new Error('FAILED_TO_DOWNLOAD')
+				}
 
 				// extract data from csv
 				const parsedFileData = await this.extractDataFromCSV(response.result.downloadPath, data.user)
-				if (!parsedFileData.success) throw new Error('FAILED_TO_READ_CSV')
+				if (!parsedFileData.success) {
+					await this.sendErrorEmail(
+						data.user,
+						parsedFileData?.error ||
+							`Failed to parse the input CSV ${
+								parsedFileData.message ? '" ' + parsedFileData.message + ' "' : ''
+							}`
+					)
+					throw new Error('FAILED_TO_READ_CSV')
+				}
 				const invitees = parsedFileData.result.data
 				const additionalCsvHeaders = parsedFileData.result.additionalCsvHeaders
 				const editable_fields = data?.user?.editableFields || []
@@ -112,20 +128,8 @@ module.exports = class UserInviteHelper {
 					throw new Error('FILE_UPLOAD_MODIFY_ERROR')
 				}
 
-				// send email to admin
-				const templateCode = process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE
-				if (templateCode) {
-					const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-						templateCode,
-						data.user.organization_id,
-						data.user.tenant_code
-					)
-
-					if (Object.keys(templateData).length > 0) {
-						const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
-						await this.sendInviteeEmail(templateData, data.user, inviteeUploadURL) //Rename this to function to generic name since this function is used for both Invitee & Org-admin.
-					}
-				}
+				const inviteeUploadURL = await utils.getDownloadableUrl(output_path)
+				if (inviteeUploadURL) await this.sendInviteeEmail(data.user, inviteeUploadURL)
 
 				// delete the downloaded file and output file.
 				//utils.clearFile(response.result.downloadPath)
@@ -274,23 +278,23 @@ module.exports = class UserInviteHelper {
 					// Extract and prepare meta fields
 					row.meta = {
 						block: row?.block
-							? externalEntityNameIdMap[row.block?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							? externalEntityNameIdMap?.[row.block?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
 							: '',
 						state: row?.state
-							? externalEntityNameIdMap[row.state?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							? externalEntityNameIdMap?.[row.state?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
 							: '',
 						school: row?.school
-							? externalEntityNameIdMap[row.school?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							? externalEntityNameIdMap?.[row.school?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
 							: '',
 						cluster: row?.cluster
-							? externalEntityNameIdMap[row.cluster?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							? externalEntityNameIdMap?.[row.cluster?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
 							: '',
 						district: row?.district
-							? externalEntityNameIdMap[row.district?.replaceAll(/\s+/g, '').toLowerCase()]._id || null
+							? externalEntityNameIdMap?.[row.district?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
 							: '',
 						professional_role: row?.professional_role
-							? externalEntityNameIdMap[row.professional_role?.replaceAll(/\s+/g, '').toLowerCase()]
-									._id || ''
+							? externalEntityNameIdMap?.[row.professional_role?.replaceAll(/\s+/g, '').toLowerCase()]
+									?._id || ''
 							: '',
 						professional_subroles: row?.professional_subroles
 							? row.professional_subroles
@@ -298,7 +302,7 @@ module.exports = class UserInviteHelper {
 									.map(
 										(prof_subRole) =>
 											externalEntityNameIdMap[prof_subRole?.replaceAll(/\s+/g, '').toLowerCase()]
-												._id
+												?._id
 									) || []
 							: [],
 					}
@@ -477,10 +481,58 @@ module.exports = class UserInviteHelper {
 				if (invitee.phone && !invitee.phone_code) {
 					invalidFields.push('phone_code')
 				}
+
+				if (invitee?.username) {
+					const regex = /^(?:[a-z0-9_-]{3,40}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})$/
+					!regex.test(invitee?.username) ? invalidFields.push('username') : null
+				}
+
 				let encryptedPhoneNumber = ''
 				if (invitee?.phone) {
 					encryptedPhoneNumber = emailEncryption.encrypt(invitee?.phone)
 				}
+				prunedEntities.forEach((entity) => {
+					/*
+					findField to find the field from the input data.
+					below condition will see if the entity type value is present inside meta of the input data, 
+					if present return the entity type and value as key value 
+					example 
+					invitee.meta = {
+						block : block_id
+					}
+					findField = { block : block_id }
+					*/
+
+					let findField =
+						invitee?.meta && Object.keys(invitee.meta).includes(entity?.value)
+							? { [entity.value]: invitee.meta[entity.value] }
+							: null
+
+					/*
+						if field is not found in meta key , search it in the entire input body
+					*/
+					findField = !findField
+						? invitee && Object.keys(invitee).includes(entity?.value)
+							? { [entity.value]: invitee[entity.value] }
+							: null
+						: findField
+					// if field exists based on entity type data type check if the data is present or push error and if it is required
+					if (
+						findField &&
+						entity.required &&
+						(entity.data_type == 'ARRAY' || entity.data_type == 'ARRAY[STRING]')
+					) {
+						findField[entity.value].forEach((arrayEntity) => {
+							if (!arrayEntity) {
+								invalidFields.push(entity.value)
+							}
+						})
+					} else {
+						if (findField && entity.required && !findField[entity.value]) {
+							invalidFields.push(entity.value)
+						}
+					}
+				})
 
 				const invalidRoles = invitee.roles.filter((role) => !roleTitlesToIds.hasOwnProperty(role.toLowerCase()))
 				if (invalidRoles.length > 0) {
@@ -488,6 +540,8 @@ module.exports = class UserInviteHelper {
 				}
 
 				//merge all error message
+				invalidFields = [...new Set(invalidFields)]
+
 				if (invalidFields.length > 0) {
 					let errorMessage = `${
 						invalidFields.length > 2
@@ -775,6 +829,7 @@ module.exports = class UserInviteHelper {
 					} else {
 						//user doesn't have access to update user data
 						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
+						continue
 					}
 				}
 				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
@@ -970,7 +1025,7 @@ module.exports = class UserInviteHelper {
 						isErrorOccured = true
 						invitee.statusOrUserId = newInvitee
 					}
-				} else {
+				} else if (!existingUser && uploadType == common.TYPE_INVITE.trim().toUpperCase()) {
 					invitee.meta = prunedEntities.reduce((acc, index) => {
 						if (index.data_type == 'ARRAY' || index.data_type == 'ARRAY[STRING]') {
 							if (invitee[index.value]) {
@@ -1134,40 +1189,48 @@ module.exports = class UserInviteHelper {
 		}
 	}
 
-	static async sendInviteeEmail(templateData, userData, inviteeUploadURL = null, subjectComposeData = {}) {
+	static async sendInviteeEmail(userData, inviteeUploadURL = null) {
 		try {
-			const payload = {
-				type: common.notificationEmailType,
-				email: {
-					to: userData.email,
-					subject:
-						subjectComposeData && Object.keys(subjectComposeData).length > 0
-							? utils.composeEmailBody(templateData.subject, subjectComposeData)
-							: templateData.subject,
-					body: utils.composeEmailBody(templateData.body, {
-						name: userData.name,
-						role: userData.role || '',
-						orgName: userData.org_name || '',
-						appName: process.env.APP_NAME,
-						portalURL: process.env.PORTAL_URL,
-						roles: userData.roles || '',
-						downloadLink: inviteeUploadURL,
-					}),
+			if (!userData?.email) {
+				console.warn('Admin email not found!')
+				return { success: false }
+			}
+			await notificationUtils.sendEmailNotification({
+				emailId: userData.email,
+				templateCode: process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE,
+				variables: {
+					name: userData.name,
+					role: userData.role || '',
+					orgName: userData.org_name || '',
+					appName: process.env.APP_NAME,
+					portalURL: process.env.PORTAL_URL,
+					roles: userData.roles || '',
+					downloadLink: inviteeUploadURL,
 				},
+				tenantCode: userData.tenant_code,
+				organization_id: userData.organization_id,
+			})
+			return {
+				success: true,
 			}
-			if (inviteeUploadURL != null) {
-				const currentDate = new Date().toISOString().split('T')[0].replace(/-/g, '')
-
-				payload.email.attachments = [
-					{
-						url: inviteeUploadURL,
-						filename: `user-invite-status_${currentDate}.csv`,
-						type: 'text/csv',
-					},
-				]
-			}
-
-			await kafkaCommunication.pushEmailToKafka(payload)
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
+	static async sendErrorEmail(userData, message) {
+		try {
+			await notificationUtils.sendEmailNotification({
+				emailId: userData.email,
+				templateCode: process.env.ADMIN_INVITEE_UPLOAD_ERROR_EMAIL_TEMPLATE_CODE,
+				variables: {
+					name: userData.name,
+					orgName: userData.org_name,
+					error: message,
+				},
+				tenantCode: userData.tenant_code,
+				organization_id: userData.organization_id,
+			})
 			return {
 				success: true,
 			}

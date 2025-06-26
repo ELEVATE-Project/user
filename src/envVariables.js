@@ -110,6 +110,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'invitee_upload_status',
 	},
+	ADMIN_INVITEE_UPLOAD_ERROR_EMAIL_TEMPLATE_CODE: {
+		message: 'Required admin upload invitee error email template code',
+		optional: true,
+		default: 'invitee_upload_error',
+	},
 	DEFAULT_QUEUE: {
 		message: 'Required default queue',
 		optional: true,
