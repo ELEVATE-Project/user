@@ -47,11 +47,7 @@ module.exports = class UserInviteHelper {
 				// download file to local directory
 				const response = await this.downloadCSV(filePath)
 				if (!response.success) {
-					await this.sendErrorEmail(
-						data.user,
-						response?.error ||
-							`Failed to download the input CSV ${response.message ? '" ' + response.message + ' "' : ''}`
-					)
+					await this.sendErrorEmail(data.user, `Failed to download the input CSV.`)
 					throw new Error('FAILED_TO_DOWNLOAD')
 				}
 
@@ -60,10 +56,7 @@ module.exports = class UserInviteHelper {
 				if (!parsedFileData.success) {
 					await this.sendErrorEmail(
 						data.user,
-						parsedFileData?.error ||
-							`Failed to parse the input CSV ${
-								parsedFileData.message ? '" ' + parsedFileData.message + ' "' : ''
-							}`
+						parsedFileData?.error || `Failed to parse the input CSV. Please recheck the data-file.`
 					)
 					throw new Error('FAILED_TO_READ_CSV')
 				}
@@ -307,6 +300,14 @@ module.exports = class UserInviteHelper {
 							: [],
 					}
 
+					delete row.block
+					delete row.state
+					delete row.school
+					delete row.cluster
+					delete row.district
+					delete row.professional_role
+					delete row.professional_subroles
+
 					// Handle password field if exists
 					if (row.password) {
 						row.password = row.password.trim()
@@ -503,32 +504,17 @@ module.exports = class UserInviteHelper {
 					findField = { block : block_id }
 					*/
 
-					let findField =
-						invitee?.meta && Object.keys(invitee.meta).includes(entity?.value)
-							? { [entity.value]: invitee.meta[entity.value] }
-							: null
-
 					/*
 						if field is not found in meta key , search it in the entire input body
 					*/
-					findField = !findField
-						? invitee && Object.keys(invitee).includes(entity?.value)
-							? { [entity.value]: invitee[entity.value] }
-							: null
-						: findField
-					// if field exists based on entity type data type check if the data is present or push error and if it is required
-					if (
-						findField &&
-						entity.required &&
-						(entity.data_type == 'ARRAY' || entity.data_type == 'ARRAY[STRING]')
-					) {
-						findField[entity.value].forEach((arrayEntity) => {
-							if (!arrayEntity) {
+					const fieldValue = invitee?.meta?.[entity.value] ?? invitee?.[entity.value]
+
+					if (entity.required) {
+						if (entity.data_type === 'ARRAY' || entity.data_type === 'ARRAY[STRING]') {
+							if (!fieldValue?.length || fieldValue.some((item) => !item)) {
 								invalidFields.push(entity.value)
 							}
-						})
-					} else {
-						if (findField && entity.required && !findField[entity.value]) {
+						} else if (!fieldValue) {
 							invalidFields.push(entity.value)
 						}
 					}
@@ -1200,11 +1186,6 @@ module.exports = class UserInviteHelper {
 				templateCode: process.env.ADMIN_INVITEE_UPLOAD_EMAIL_TEMPLATE_CODE,
 				variables: {
 					name: userData.name,
-					role: userData.role || '',
-					orgName: userData.org_name || '',
-					appName: process.env.APP_NAME,
-					portalURL: process.env.PORTAL_URL,
-					roles: userData.roles || '',
 					downloadLink: inviteeUploadURL,
 				},
 				tenantCode: userData.tenant_code,
