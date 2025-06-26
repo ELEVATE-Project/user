@@ -11,7 +11,18 @@ exports.create = async (data) => {
 		throw error
 	}
 }
-
+exports.bulkCreate = async (dataArray) => {
+	try {
+		const createdOrgRegCodes = await OrganizationRegistrationCode.bulkCreate(dataArray, {
+			validate: true,
+			individualHooks: true,
+		})
+		return createdOrgRegCodes.map((code) => code.get({ plain: true }))
+	} catch (error) {
+		console.error(error)
+		throw error
+	}
+}
 exports.findOne = async (filter, options = {}) => {
 	try {
 		return await OrganizationRegistrationCode.findOne({
@@ -55,6 +66,21 @@ exports.delete = async (registrationCode, organizationCode, tenantCode) => {
 		return await OrganizationRegistrationCode.destroy({
 			where: {
 				registration_code: registrationCode,
+				organization_code: organizationCode,
+				tenant_code: tenantCode,
+			},
+		})
+	} catch (error) {
+		throw error
+	}
+}
+exports.bulkDelete = async (registrationCodes, organizationCode, tenantCode) => {
+	try {
+		return await OrganizationRegistrationCode.destroy({
+			where: {
+				registration_code: {
+					[Op.in]: registrationCodes,
+				},
 				organization_code: organizationCode,
 				tenant_code: tenantCode,
 			},

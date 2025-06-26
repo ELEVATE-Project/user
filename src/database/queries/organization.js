@@ -20,7 +20,7 @@ exports.create = async (data) => {
 				(registration_code) =>
 					OrganizationRegistrationCode.create(
 						{
-							registration_code: registration_code,
+							registration_code: registration_code.toLowerCase().trim(),
 							organization_code: createdOrg.toJSON().code,
 							status: common.ACTIVE_STATUS,
 							tenant_code: createdOrg.toJSON().tenant_code,

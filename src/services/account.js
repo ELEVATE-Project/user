@@ -92,9 +92,7 @@ module.exports = class AccountHelper {
 			if (bodyData.registration_code) {
 				domainDetails = await organizationQueries.findOrgWithRegistrationCode({
 					tenant_code: tenantDetail.code,
-					registration_code: {
-						[Op.iLike]: bodyData.registration_code,
-					},
+					registration_code: bodyData.registration_code.toLowerCase(),
 				})
 
 				if (!domainDetails) {
@@ -1139,7 +1137,7 @@ module.exports = class AccountHelper {
 		if (bodyData.registration_code) {
 			domainDetails = await organizationQueries.findOne({
 				tenant_code: tenantDetail.code,
-				registration_code: bodyData.registration_code,
+				registration_code: bodyData.registration_code.toLowerCase(),
 			})
 
 			if (!domainDetails) {

@@ -638,17 +638,17 @@ module.exports = class OrganizationsHelper {
 			const codeToAppend = [...new Set(_.difference(registrationCodes, existingRegCodes))]
 
 			if (codeToAppend.length > 0) {
-				const registrationCodePromises = codeToAppend.map((registration_code) =>
-					organizationRegCodeQueries.create({
-						registration_code,
+				const registrationCodeBody = codeToAppend.map((registration_code) => {
+					return {
+						registration_code: registration_code.toLowerCase().trim(),
 						organization_code: orgDetailsBeforeUpdate.code,
 						status: common.ACTIVE_STATUS,
 						tenant_code: orgDetailsBeforeUpdate?.tenant_code,
 						created_by: orgDetailsBeforeUpdate?.created_by || null,
 						deleted_at: null,
-					})
-				)
-				await Promise.all(registrationCodePromises)
+					}
+				})
+				await organizationRegCodeQueries.bulkCreate(registrationCodeBody)
 			}
 
 			return responses.successResponse({
@@ -669,17 +669,16 @@ module.exports = class OrganizationsHelper {
 				: registrationCodes.split(',') || []
 			registrationCodes = registrationCodes.map((code) => code.toString())
 			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
-			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))]
+			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))].map((code) =>
+				code.trim().toLowerCase()
+			)
 
 			if (codeToRemove.length > 0) {
-				const registrationCodePromises = codeToRemove.map((registration_code) =>
-					organizationRegCodeQueries.delete(
-						registration_code,
-						orgDetailsBeforeUpdate?.code,
-						orgDetailsBeforeUpdate?.tenant_code
-					)
+				await organizationRegCodeQueries.bulkDelete(
+					codeToRemove,
+					orgDetailsBeforeUpdate?.code,
+					orgDetailsBeforeUpdate?.tenant_code
 				)
-				await Promise.all(registrationCodePromises)
 			}
 
 			return responses.successResponse({

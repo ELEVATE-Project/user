@@ -102,7 +102,7 @@ module.exports = {
 
 			// Prepare data for bulk insert
 			const regCodeFinalArray = organizations.map((index) => ({
-				registration_code: index.registration_code,
+				registration_code: index.registration_code.toLowerCase(),
 				organization_code: index.code,
 				status: index.status,
 				created_by: index.created_by,
@@ -115,15 +115,11 @@ module.exports = {
 				// Perform bulk insert
 				await queryInterface.bulkInsert({ tableName, schema: 'public' }, regCodeFinalArray, { transaction })
 			}
-			await queryInterface.addIndex(
-				{ tableName, schema: 'public' },
-				['registration_code', 'organization_code', 'tenant_code'],
-				{
-					name: 'index_registration_code_organization_code_tenant_code',
-					unique: true,
-					transaction,
-				}
-			)
+			await queryInterface.addIndex({ tableName, schema: 'public' }, ['registration_code', 'tenant_code'], {
+				name: 'index_registration_code_tenant_code',
+				unique: true,
+				transaction,
+			})
 
 			await queryInterface.addIndex({ tableName, schema: 'public' }, ['organization_code', 'tenant_code'], {
 				name: 'index_organization_code_tenant_code',
@@ -145,12 +141,6 @@ module.exports = {
 				}
 			)
 			const isDistributedCheck = await isDistributed(queryInterface, tableName)
-			console.log(
-				'isDistributedCheck ',
-				isCitusEnabled,
-				isDistributedCheck,
-				isCitusEnabled && !isDistributedCheck
-			)
 			// Distribute table if Citus is enabled
 			if (isCitusEnabled && !isDistributedCheck) {
 				try {
