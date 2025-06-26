@@ -47,13 +47,6 @@ module.exports = {
 				created_at: moment().format(),
 				updated_at: moment().format(),
 			},
-			{
-				code: 'mitra',
-				label: 'MITRA',
-				description: 'mitra capability',
-				created_at: moment().format(),
-				updated_at: moment().format(),
-			},
 		]
 
 		await queryInterface.bulkInsert('features', masterFeatureData, {})
