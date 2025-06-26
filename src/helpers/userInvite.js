@@ -446,20 +446,19 @@ module.exports = class UserInviteHelper {
 					isValid: true,
 				}
 			)
-			const existingInvitees = {}
+			const existingInvitees = new Map()
 			invitedUserList.forEach((userInvitee) => {
 				if (userInvitee?.email) {
-					existingInvitees[userInvitee.email] = [userInvitee.id]
+					existingInvitees.set(userInvitee.email, userInvitee)
 				} else if (userInvitee?.phone) {
-					existingInvitees[`${userInvitee.phone_code}${userInvitee.phone}`] = [userInvitee.id]
+					existingInvitees.set(`${userInvitee.phone_code}${userInvitee.phone}`, userInvitee)
 				} else if (userInvitee?.username) {
-					existingInvitees[userInvitee.username] = [userInvitee.id]
+					existingInvitees.set(userInvitee.username, userInvitee)
 				}
 			})
 
 			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
 			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
-			console.log(existingInvitees)
 
 			// process csv data
 			for (const invitee of csvData) {
@@ -528,16 +527,16 @@ module.exports = class UserInviteHelper {
 				//return error for already invited user
 				if (
 					!existingUser &&
-					(existingInvitees.hasOwnProperty(encryptedEmail) ||
-						existingInvitees.hasOwnProperty(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
-						existingInvitees.hasOwnProperty(invitee.username)) &&
+					(existingInvitees.has(encryptedEmail) ||
+						existingInvitees.has(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+						existingInvitees.has(invitee.username)) &&
 					uploadType == common.TYPE_INVITE
 				) {
 					console.log('aaaaa')
 					const user =
-						existingInvitees?.[encryptedEmail] ||
-						existingInvitees?.[`${invitee.phone_code}${encryptedPhoneNumber}`] ||
-						existingInvitees?.[invitee.username] ||
+						existingInvitees.get(encryptedEmail) ||
+						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+						existingInvitees.get(invitee.username) ||
 						null
 					invitee.statusOrUserId = user
 						? user.status == common.INVITED_STATUS
@@ -812,17 +811,22 @@ module.exports = class UserInviteHelper {
 				}
 				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
 					const validInvitation =
-						existingInvitees?.[encryptedEmail] ||
-						existingInvitees?.[`${invitee.phone_code}${encryptedPhoneNumber}`] ||
-						existingInvitees?.[invitee.username] ||
+						existingInvitees.get(encryptedEmail) ||
+						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+						existingInvitees.get(invitee.username) ||
 						null
-					const inviteCodeString = await generateUniqueCodeString(4)
-					// first letter of tenant code + random string of len 4 + random digit of len 4 + firrst letter of org code
-					const invitation_code = `${String(user.tenant_code)
-						.slice(0, 1)
-						.toUpperCase()}${inviteCodeString}${utils.generateSecureOTP(4)}${String(user.organization_code)
-						.slice(0, 1)
-						.toUpperCase()}`
+					// if the user is already invited , update the status to uploaded
+					if (validInvitation) {
+						await userInviteQueries.update(
+							{
+								id: validInvitation.id,
+							},
+							{
+								status: common.UPLOADED_STATUS,
+								type: common.TYPE_UPLOAD,
+							}
+						)
+					}
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,
@@ -835,8 +839,8 @@ module.exports = class UserInviteHelper {
 						email: encryptedEmail,
 						meta: invitee.meta || {},
 						invitation_id: invitationId,
-						invitation_key: utils.generateUUID(),
-						invitation_code,
+						invitation_key: null,
+						invitation_code: null,
 					}
 
 					inviteeData.email = encryptedEmail
@@ -855,9 +859,7 @@ module.exports = class UserInviteHelper {
 								: ''
 						} Hence system generated a unique username.`
 					}
-					const newInvitee = validInvitation
-						? { id: validInvitation[0] }
-						: await userInviteQueries.create(inviteeData)
+					const newInvitee = validInvitation ? validInvitation : await userInviteQueries.create(inviteeData)
 
 					// if the username is taken generate random username and inform user
 
@@ -1015,19 +1017,6 @@ module.exports = class UserInviteHelper {
 									},
 									tenantCode: tenantDetails.code,
 								})
-							}
-
-							// if the user is already invited , update the status to uploaded
-							if (validInvitation) {
-								await userInviteQueries.update(
-									{
-										id: newInvitee.id,
-									},
-									{
-										status: common.UPLOADED_STATUS,
-										type: common.TYPE_UPLOAD,
-									}
-								)
 							}
 						} else {
 							//delete invitation entry

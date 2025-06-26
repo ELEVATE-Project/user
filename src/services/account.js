@@ -92,7 +92,7 @@ module.exports = class AccountHelper {
 			if (bodyData.registration_code) {
 				domainDetails = await organizationQueries.findOne({
 					tenant_code: tenantDetail.code,
-					registration_code: { [Op.iLike]: bodyData.registration_code },
+					registration_code: bodyData.registration_code.toLowerCase(),
 				})
 
 				if (!domainDetails) {
@@ -193,77 +193,53 @@ module.exports = class AccountHelper {
 			let userOrgId = null
 			let organizationCode = ''
 
-			if (
-				bodyData?.invitation_key ||
-				encryptedEmailId ||
-				encryptedPhoneNumber ||
-				bodyData?.username ||
-				bodyData?.invitation_code
-			) {
-				let filterCondition = {}
-				if (bodyData?.invitation_key)
-					filterCondition.invitation_key = {
-						[Op.iLike]: bodyData?.invitation_key,
-					}
+			let filterCondition = {}
+			if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
 
-				if (bodyData?.invitation_code)
-					filterCondition.invitation_code = {
-						[Op.iLike]: bodyData?.invitation_code,
-					}
+			if (bodyData?.invitation_code) filterCondition.invitation_code = bodyData?.invitation_code.toUpperCase()
 
-				if (encryptedEmailId && !bodyData?.invitation_key && !bodyData?.invitation_code)
-					filterCondition.email = encryptedEmailId
+			if (encryptedEmailId && !bodyData?.invitation_key && !bodyData?.invitation_code)
+				filterCondition.email = encryptedEmailId
 
-				if (bodyData?.username && !bodyData?.invitation_key && !bodyData?.invitation_code)
-					filterCondition.username = bodyData?.username
+			if (bodyData?.username && !bodyData?.invitation_key && !bodyData?.invitation_code)
+				filterCondition.username = bodyData?.username
 
-				if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
-					filterCondition.phone = encryptedPhoneNumber
-					filterCondition.phone = bodyData.phone_code
-				}
-
-				filterCondition.tenant_code = tenantDomain.tenant_code
-				filterCondition.status = common.INVITED_STATUS
-
-				invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
-					isValid: true,
-					attributes: [
-						'email',
-						'name',
-						'organization_code',
-						'roles',
-						'username',
-						'phone',
-						'phone_code',
-						'meta',
-					],
-				})
+			if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
+				filterCondition.phone = encryptedPhoneNumber
+				filterCondition.phone = bodyData.phone_code
 			}
+
+			filterCondition.tenant_code = tenantDomain.tenant_code
+			filterCondition.status = common.INVITED_STATUS
+
+			invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
+				isValid: true,
+				attributes: [
+					'email',
+					'name',
+					'organization_code',
+					'roles',
+					'username',
+					'phone',
+					'phone_code',
+					'meta',
+					'id',
+				],
+			})
 
 			let isOrgAdmin = false
 			if (invitedUserMatch) {
 				const editable_fields = invitedUserMatch?.['invitation.editable_fields'] || []
+				isInvitedUserId = invitedUserMatch.id
 
-				let newBody = {}
-				Object.keys(bodyData).forEach((bodyKey) => {
-					if (editable_fields.includes(bodyKey)) {
-						newBody[bodyKey] = bodyData[bodyKey]
+				Object.keys(invitedUserMatch).forEach((bodyKey) => {
+					if (editable_fields.includes(bodyKey) && Object.keys(bodyData).includes(bodyKey)) {
 						delete invitedUserMatch[bodyKey]
-					} else {
-						if (bodyData[bodyKey] != invitedUserMatch[bodyKey]) {
-							return responses.failureResponse({
-								message: `${bodyKey} is not editable.`,
-								statusCode: httpStatusCode.not_acceptable,
-								responseCode: 'CLIENT_ERROR',
-							})
-						}
+					} else if (Object.keys(bodyData).includes(bodyKey)) {
+						bodyData[bodyKey] = invitedUserMatch[bodyKey]
 					}
 				})
-				bodyData = {
-					...bodyData,
-					...newBody,
-				}
-				isInvitedUserId = invitedUserMatch.id
+
 				organizationCode = invitedUserMatch.organization_code
 
 				roles = invitedUserMatch?.roles || []
@@ -1167,7 +1143,7 @@ module.exports = class AccountHelper {
 		if (bodyData.registration_code) {
 			domainDetails = await organizationQueries.findOne({
 				tenant_code: tenantDetail.code,
-				registration_code: { [Op.iLike]: bodyData.registration_code },
+				registration_code: bodyData.registration_code.toLowerCase(),
 			})
 
 			if (!domainDetails) {

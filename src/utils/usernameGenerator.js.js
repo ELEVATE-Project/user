@@ -1,6 +1,6 @@
 // Use a local cache to avoid global variable issues
 let cachedNanoid = null
-
+const { customAlphabet } = require('nanoid')
 /**
  * Generates a unique, lowercase username with the user's name as a prefix and a random suffix.
  * Note: Uniqueness should be verified by checking against a database.
@@ -28,15 +28,10 @@ async function generateUniqueUsername(name) {
 }
 
 async function generateUniqueCodeString(stringLength = 4) {
-	// Define custom alphabet with only a-z and A-Z
+	// Define custom alphabet with only A-Z
 	const alphabetSet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-	let result = ''
-	for (let i = 0; i < stringLength; i++) {
-		const randomIndex = Math.floor(Math.random() * alphabetSet.length)
-		result += alphabetSet[randomIndex]
-	}
-
-	return result
+	const nanoid = customAlphabet(alphabetSet, stringLength)
+	return nanoid()
 }
 
 module.exports = { generateUniqueUsername, generateUniqueCodeString }
