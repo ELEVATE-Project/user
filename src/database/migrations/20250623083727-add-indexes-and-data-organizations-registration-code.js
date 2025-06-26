@@ -40,16 +40,11 @@ const tableName = 'organization_registration_codes'
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		return await queryInterface.sequelize.transaction(async (transaction) => {
-			// Step 2: Remove any index on 'registration_code' (if exists)
-			try {
-				await queryInterface.removeIndex('organizations', 'registration_code')
-			} catch (error) {
-				console.log('No index found for registration_code, proceeding...')
-			}
-			// Step 3: Remove the column
 			await queryInterface.removeColumn('organizations', 'registration_code')
 		})
 	},
 
-	down: async (queryInterface, Sequelize) => {},
+	down: async (queryInterface, Sequelize) => {
+		await queryInterface.addColumn('organizations', 'registration_code')
+	},
 }

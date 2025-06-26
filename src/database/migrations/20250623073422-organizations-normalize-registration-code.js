@@ -124,15 +124,7 @@ module.exports = {
 					transaction,
 				}
 			)
-			await queryInterface.addConstraint(
-				{ tableName, schema: 'public' },
-				{
-					fields: ['registration_code', 'organization_code', 'tenant_code'],
-					type: 'unique',
-					name: 'unique_registration_code_organization_code_tenant_code',
-					transaction,
-				}
-			)
+
 			await queryInterface.addIndex({ tableName, schema: 'public' }, ['organization_code', 'tenant_code'], {
 				name: 'index_organization_code_tenant_code',
 				transaction,
