@@ -1135,10 +1135,13 @@ module.exports = class AccountHelper {
 		// Validate organization registration code if provided
 		let domainDetails = null
 		if (bodyData.registration_code) {
-			domainDetails = await organizationQueries.findOne({
-				tenant_code: tenantDetail.code,
-				registration_code: bodyData.registration_code.toLowerCase(),
-			})
+			domainDetails = await organizationQueries.findOrgWithRegistrationCode(
+				{
+					tenant_code: tenantDetail.code,
+					registration_code: bodyData.registration_code.toLowerCase(),
+				},
+				{ isAdmin: true }
+			)
 
 			if (!domainDetails) {
 				return responses.failureResponse({

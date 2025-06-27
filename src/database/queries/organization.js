@@ -16,31 +16,23 @@ exports.create = async (data) => {
 				? data.registration_codes
 				: data.registration_codes.split(',') || []
 
-			const registrationCodePromises = registrationCodes.map(
-				(registration_code) =>
-					OrganizationRegistrationCode.create(
-						{
-							registration_code: registration_code.toLowerCase().trim(),
-							organization_code: createdOrg.toJSON().code,
-							status: common.ACTIVE_STATUS,
-							tenant_code: createdOrg.toJSON().tenant_code,
-							created_by: createdOrg.toJSON().created_by || null,
-							deleted_at: null,
-						},
-						{ transaction: t }
-					).catch((error) => ({ error, registration_code })) // Catch errors for each promise
-			)
+			const registrationCodesBody = registrationCodes.map((registration_code) => {
+				return {
+					registration_code: registration_code.toLowerCase().trim(),
+					organization_code: createdOrg.toJSON().code,
+					status: common.ACTIVE_STATUS,
+					tenant_code: createdOrg.toJSON().tenant_code,
+					created_by: createdOrg.toJSON().created_by || null,
+					deleted_at: null,
+				}
+			})
 
-			// Wait for all promises to settle
-			const results = await Promise.all(registrationCodePromises)
+			const results = await OrganizationRegistrationCode.bulkCreate(registrationCodesBody, { transaction: t })
 
-			successfulCodes = results.filter((result) => !result.error).map((result) => result.registration_code)
+			// // Wait for all promises to settle
+			// const results = await Promise.all(registrationCodePromises)
 
-			// Check for errors in the results
-			const errors = results.filter((result) => result.error)
-			if (errors.length > 0) {
-				throw new Error('registration_code')
-			}
+			successfulCodes = results.map((result) => result.registration_code) || []
 		}
 
 		// Commit the transaction
@@ -60,34 +52,41 @@ exports.create = async (data) => {
 }
 exports.findOne = async (filter, options) => {
 	try {
+		if (options?.isAdmin) {
+			options = {
+				...options,
+				include: [
+					{
+						model: OrganizationRegistrationCode,
+						as: 'organizationRegistrationCodes',
+						attributes: ['registration_code'],
+						where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
+						required: false,
+					},
+				],
+			}
+		}
+		delete options.isAdmin
 		let organization = await Organization.findOne({
 			where: filter,
 			...options,
-			include: [
-				{
-					model: OrganizationRegistrationCode,
-					as: 'organizationRegistrationCodes',
-					attributes: ['registration_code'],
-					where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
-					required: false,
-				},
-			],
 			nest: true,
 		})
-		if (!organization) {
-			return null
-		}
+		if (!organization) return null
+
 		// Convert Sequelize instance to plain object
 		organization = organization.toJSON()
 
-		const registrationCodes = organization.organizationRegistrationCodes
-			? Array.isArray(organization.organizationRegistrationCodes)
-				? organization.organizationRegistrationCodes.map((code) => code.registration_code).filter(Boolean)
-				: [organization.organizationRegistrationCodes.registration_code].filter(Boolean)
-			: []
+		if (organization && organization?.organizationRegistrationCodes) {
+			const registrationCodes = organization.organizationRegistrationCodes
+				? Array.isArray(organization.organizationRegistrationCodes)
+					? organization.organizationRegistrationCodes.map((code) => code.registration_code).filter(Boolean)
+					: [organization.organizationRegistrationCodes.registration_code].filter(Boolean)
+				: []
 
-		delete organization.organizationRegistrationCodes
-		organization.registration_codes = registrationCodes
+			delete organization.organizationRegistrationCodes
+			organization.registration_codes = registrationCodes
+		}
 
 		return organization
 	} catch (error) {
@@ -233,7 +232,7 @@ exports.findOrgWithRegistrationCode = async (filter, options = {}) => {
 			],
 			nest: true,
 		})
-		const organization = organizationReg.toJSON().organization
+		const organization = organizationReg ? organizationReg.toJSON().organization : null
 		return organization
 	} catch (error) {
 		throw error

@@ -163,10 +163,20 @@ module.exports = class Organization {
 	}
 	async details(req) {
 		try {
+			const roles = req.decodedToken.roles
+			let isAdmin = false
+
+			if (roles && roles.length > 0) {
+				isAdmin =
+					utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE) ||
+					utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE) ||
+					false
+			}
 			const result = await orgService.details(
 				req.params.id ? req.params.id : '',
 				req?.decodedToken?.id,
-				req?.decodedToken?.tenant_code
+				req?.decodedToken?.tenant_code,
+				isAdmin
 			)
 			return result
 		} catch (error) {
@@ -232,7 +242,7 @@ module.exports = class Organization {
 			}
 
 			const result = await orgService.addRegCode(
-				req.params.id ? req.params.id : '',
+				req.params.id ? req.params.id : '', // org code
 				tenantCode,
 				req?.body?.registration_codes ? req.body.registration_codes : []
 			)

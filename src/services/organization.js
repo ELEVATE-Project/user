@@ -438,7 +438,7 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} 									- Organization details.
 	 */
 
-	static async details(organisationId, userId, tenantCode) {
+	static async details(organisationId, userId, tenantCode, isAdmin) {
 		try {
 			const userOrgs = await userOrgQueries.findAll(
 				{
@@ -475,7 +475,7 @@ module.exports = class OrganizationsHelper {
 				tenant_code: tenantCode,
 			}
 
-			const organisationDetails = await organizationQueries.findOne(filter)
+			const organisationDetails = await organizationQueries.findOne(filter, { isAdmin })
 			if (!organisationDetails) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
@@ -620,11 +620,11 @@ module.exports = class OrganizationsHelper {
 		}
 	}
 
-	static async addRegCode(id, tenantCode, registrationCodes) {
+	static async addRegCode(code, tenantCode, registrationCodes) {
 		try {
 			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await verifyOrg(id, tenantCode)
-			if (!orgDetailsBeforeUpdate) {
+			const orgDetailsBeforeUpdate = await verifyOrg(code, tenantCode)
+			if (Object.keys(orgDetailsBeforeUpdate).length <= 0) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -632,8 +632,7 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 			// append registration codes
-			registrationCodes = Array.isArray(registrationCodes) ? registrationCodes : registrationCodes.split(',')
-			registrationCodes = registrationCodes.map((code) => code.toString())
+			registrationCodes = registrationCodes.map((code) => code.trim().toString())
 			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
 			const codeToAppend = [...new Set(_.difference(registrationCodes, existingRegCodes))]
 
@@ -691,9 +690,12 @@ module.exports = class OrganizationsHelper {
 	}
 }
 
-async function verifyOrg(id, tenantCode) {
+async function verifyOrg(code, tenantCode) {
 	// fetch organization details before update
-	const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id, tenant_code: tenantCode })
+	const orgDetailsBeforeUpdate = await organizationQueries.findOne(
+		{ code, tenant_code: tenantCode },
+		{ isAdmin: true }
+	)
 	if (!orgDetailsBeforeUpdate) {
 		throw responses.failureResponse({
 			statusCode: httpStatusCode.not_acceptable,

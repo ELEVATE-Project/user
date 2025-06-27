@@ -54,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
 			indexes: [
 				{
 					name: 'index_registration_code_organization_code_tenant_code',
-					fields: ['registration_code', 'organization_code', 'tenant_code'],
+					fields: ['registration_code', 'tenant_code'],
 					unique: true,
 				},
 				{
@@ -76,11 +76,6 @@ module.exports = (sequelize, DataTypes) => {
 
 	// // Constraints for the table
 	OrganizationRegistrationCode.constraints = [
-		{
-			name: 'unique_registration_code_organization_code_tenant_code',
-			type: 'unique',
-			fields: ['registration_code', 'organization_code', 'tenant_code'],
-		},
 		{
 			name: 'fk_organization_code_tenant_code_in_org_reg_code',
 			type: 'foreign key',

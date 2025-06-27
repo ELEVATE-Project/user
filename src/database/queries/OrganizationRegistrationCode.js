@@ -14,7 +14,6 @@ exports.create = async (data) => {
 exports.bulkCreate = async (dataArray) => {
 	try {
 		const createdOrgRegCodes = await OrganizationRegistrationCode.bulkCreate(dataArray, {
-			validate: true,
 			individualHooks: true,
 		})
 		return createdOrgRegCodes.map((code) => code.get({ plain: true }))
