@@ -456,15 +456,6 @@ module.exports = class UserInviteHelper {
 					})
 					.filter(Boolean)
 			)
-			// invitedUserList.forEach((userInvitee) => {
-			// 	if (userInvitee?.email) {
-			// 		existingInvitees.set(userInvitee.email, userInvitee)
-			// 	} else if (userInvitee?.phone) {
-			// 		existingInvitees.set(`${userInvitee.phone_code}${userInvitee.phone}`, userInvitee)
-			// 	} else if (userInvitee?.username) {
-			// 		existingInvitees.set(userInvitee.username, userInvitee)
-			// 	}
-			// })
 
 			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
 			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
