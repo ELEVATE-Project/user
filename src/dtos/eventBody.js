@@ -3,6 +3,7 @@ exports.eventBodyDTO = ({ entity, eventType, entityId, changedValues = [], args 
 	try {
 		if (!entity || !eventType || !entityId)
 			throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
+
 		const allowedArgs = ['created_at', 'created_by', 'updated_at', 'updated_by','name']
 		const disallowedArgs = Object.keys(args).filter((arg) => !allowedArgs.includes(arg))
 		if (disallowedArgs.length > 0)
