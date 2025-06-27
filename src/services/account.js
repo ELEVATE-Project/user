@@ -384,7 +384,13 @@ module.exports = class AccountHelper {
 				bodyData.meta = {}
 			}
 
-			let res = utils.validateInput(bodyData, prunedEntities, await userQueries.getModelName())
+			let res = await utils.validateInput(
+				bodyData,
+				prunedEntities,
+				await userQueries.getModelName(),
+				false,
+				bodyData.tenant_code
+			)
 			if (!res.success) {
 				return responses.failureResponse({
 					message: 'VALIDATION_FAILED',
