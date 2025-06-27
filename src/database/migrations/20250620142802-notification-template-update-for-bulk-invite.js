@@ -19,7 +19,7 @@ module.exports = {
 				'notification_templates',
 				[
 					{
-						body: 'Dear {name}, Congrats on joining {orgName} as a {roles}! Please register on our platform using code {registerCode} OR {portalURL}',
+						body: 'Dear {name}, You’ve been invited to join {orgName} as a {roles}! Please register on our platform using code {registerCode} OR {portalURL}',
 						type: 'sms',
 						created_by: 0,
 						updated_by: 0,
