@@ -5,19 +5,20 @@ const { Op, QueryTypes } = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const emailEncryption = require('@utils/emailEncryption')
 const _ = require('lodash')
+const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
 
 exports.getColumns = async () => {
 	try {
 		return await Object.keys(database.User.rawAttributes)
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 exports.getModelName = async () => {
 	try {
 		return await database.User.name
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 exports.create = async (data) => {
@@ -25,7 +26,7 @@ exports.create = async (data) => {
 		return await database.User.create(data)
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 
@@ -37,7 +38,7 @@ exports.findOne = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -49,7 +50,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 			individualHooks: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -57,7 +58,7 @@ exports.findByPk = async (id) => {
 	try {
 		return await database.User.findByPk(id, { raw: true })
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -69,103 +70,216 @@ exports.findAll = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
-exports.listUsers = async (roleId, organization_id, page, limit, search) => {
+exports.listUsers = async (roleId, organization_id, page, limit, search, tenant_code, raw = false) => {
 	try {
 		const offset = (page - 1) * limit
-		const whereClause = {}
 
+		// Build the search clause for user name
+		const userWhereClause = {}
 		if (search) {
-			whereClause.name = { [Op.iLike]: search + '%' }
+			userWhereClause.name = { [Op.iLike]: search + '%' }
 		}
 
-		if (roleId) {
-			whereClause.roles = { [Op.contains]: [roleId] }
-		}
+		// Include filters within the nested include
+		const userOrgWhereClause = {}
+		const userOrgRoleWhereClause = {}
 
 		if (organization_id) {
-			whereClause.organization_id = organization_id
+			userOrgWhereClause.organization_id = organization_id
+		}
+		if (roleId) {
+			userOrgRoleWhereClause.role_id = roleId
 		}
 
-		const filterQuery = {
-			where: whereClause,
+		// Final query using the updated schema
+		let { count, rows: users } = await database.User.findAndCountAll({
+			where: userWhereClause,
 			attributes: ['id', 'name', 'about', 'image'],
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			order: [['name', 'ASC']],
 			include: [
 				{
-					model: Organization,
-					required: false,
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
 					where: {
-						status: 'ACTIVE',
+						...userOrgWhereClause,
+						tenant_code,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code,
+							},
+							attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							where: {
+								...userOrgRoleWhereClause,
+								tenant_code,
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									where: {
+										tenant_code,
+									},
+									attributes: ['id', 'title', 'label'],
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
+			raw: false,
+			nested: false,
+		})
+
+		if (!raw) {
+			users = UserTransformDTO.transform(users)
 		}
-
-		const { count, rows: users } = await database.User.findAndCountAll(filterQuery)
-
 		return { count, data: users }
 	} catch (error) {
+		console.error('Error in listUsers:', error)
 		throw error
 	}
 }
 
-exports.findAllUserWithOrganization = async (filter, options = {}) => {
+exports.findAllUserWithOrganization = async (filter, options = {}, tenantCode, raw = false) => {
 	try {
-		return await database.User.findAll({
+		let users = await database.User.findAll({
 			where: filter,
 			...options,
 			include: [
 				{
-					model: Organization,
-					required: false,
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
 					where: {
-						status: 'ACTIVE',
+						tenant_code: tenantCode,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code: tenantCode,
+							},
+							attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							where: {
+								tenant_code: tenantCode,
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									where: {
+										tenant_code: tenantCode,
+									},
+									attributes: ['id', 'title', 'label'],
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
+			raw: false,
+			nested: false,
 		})
+
+		if (!raw) {
+			users = UserTransformDTO.transform(users)
+		}
+		return users
 	} catch (error) {
-		return error
+		console.error('Error in findAllUserWithOrganization:', error)
+		throw error
 	}
 }
 
-exports.findUserWithOrganization = async (filter, options = {}) => {
+exports.findUserWithOrganization = async (filter, options = {}, raw = false) => {
 	try {
-		return await database.User.findOne({
-			where: filter,
+		let user = await database.User.findOne({
+			where: filter, // e.g., { id: 19, tenant_code: 'default' }
 			...options,
 			include: [
 				{
-					model: Organization,
+					model: database.UserOrganization,
+					as: 'user_organizations',
 					required: false,
+					//attributes: ['organization_code', 'tenant_code'],
 					where: {
-						status: 'ACTIVE',
+						tenant_code: filter.tenant_code,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code: filter.tenant_code,
+							},
+							//attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							attributes: ['role_id'],
+							where: {
+								tenant_code: filter.tenant_code,
+							},
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									//attributes: ['id', 'title', 'label'],
+									where: {
+										tenant_code: filter.tenant_code, // manually enforce composite FK
+									},
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
 		})
+		if (!user) return null
+		if (!raw) {
+			user = user ? user.toJSON() : null
+			user = UserTransformDTO.transform(user) // Transform the data
+		}
+
+		return user
 	} catch (error) {
-		return error
+		console.error('Error in findUserWithOrganization:', error)
+		throw error
 	}
 }
+
 exports.listUsersFromView = async (
 	roleId,
 	organization_id,

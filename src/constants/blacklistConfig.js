@@ -231,6 +231,20 @@ const notification = {
 	update: ['id', 'created_by', 'updated_by'],
 }
 
+const organizationFeatures = {
+	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at', 'organization_code', 'tenant_code'],
+	update: [
+		'feature_code',
+		'created_by',
+		'updated_by',
+		'created_at',
+		'updated_at',
+		'deleted_at',
+		'organization_code',
+		'tenant_code',
+	],
+}
+
 const orgAdmin = {
 	bulkUserCreate: [
 		'id',
@@ -282,7 +296,16 @@ const organization = {
 		'created_by',
 		'updated_by',
 	],
-	update: ['id', 'org_admin', 'parent_id', 'related_orgs', 'in_domain_visibility', 'created_by', 'updated_by'],
+	update: [
+		'id',
+		'org_admin',
+		'tenant_code',
+		'parent_id',
+		'related_orgs',
+		'in_domain_visibility',
+		'created_by',
+		'updated_by',
+	],
 	requestOrgRole: [
 		'id',
 		'description',
@@ -328,6 +351,46 @@ const user = {
 	],
 }
 
+const tenant = {
+	update: ['id', 'status', 'code', 'domains', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	create: ['id', 'status', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	addDomain: ['id', 'tenant_code', 'verified', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	removeDomain: [
+		'id',
+		'tenant_code',
+		'verified',
+		'created_by',
+		'updated_by',
+		'created_at',
+		'updated_at',
+		'deleted_at',
+	],
+	bulkUserCreate: [
+		'id',
+		'email_verified',
+		'name',
+		'location',
+		'about',
+		'share_link',
+		'status',
+		'image',
+		'last_logged_in_at',
+		'has_accepted_terms_and_conditions',
+		'refresh_tokens',
+		'languages',
+		'preferred_language',
+		'organization_id',
+		'roles',
+		'custom_entity_text',
+		'meta',
+	],
+}
+
+const feature = {
+	update: ['code', 'created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+	create: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
+}
+
 module.exports = {
 	account,
 	admin,
@@ -342,4 +405,7 @@ module.exports = {
 	rolePermissionMapping,
 	userRole,
 	user,
+	tenant,
+	organizationFeatures,
+	feature,
 }

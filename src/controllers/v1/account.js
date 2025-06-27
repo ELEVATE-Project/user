@@ -8,6 +8,8 @@
 // Dependencies
 const accountService = require('@services/account')
 const userSessionsService = require('@services/user-sessions')
+const { getDomainFromRequest } = require('@utils/domain')
+
 module.exports = class Account {
 	/**
 	 * create mentee account
@@ -24,9 +26,22 @@ module.exports = class Account {
 
 	async create(req) {
 		const params = req.body
+
+		const host = req.headers.origin || ''
+		let domain = ''
+
+		if (host) {
+			try {
+				const url = new URL(host)
+				domain = url.hostname
+			} catch (error) {
+				domain = host.split(':')[0]
+			}
+		}
+
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
-			const createdAccount = await accountService.create(params, device_info)
+			const createdAccount = await accountService.create(params, device_info, domain)
 			return createdAccount
 		} catch (error) {
 			return error
@@ -46,9 +61,22 @@ module.exports = class Account {
 
 	async login(req) {
 		const params = req.body
+
+		const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
+		let domain = ''
+
+		if (host) {
+			try {
+				const url = new URL(host)
+				domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
+			} catch (error) {
+				domain = host.split(':')[0] // Fallback: remove port if present
+			}
+		}
+
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
 		try {
-			const loggedInAccount = await accountService.login(params, device_info)
+			const loggedInAccount = await accountService.login(params, device_info, domain)
 			return loggedInAccount
 		} catch (error) {
 			return error
@@ -72,7 +100,8 @@ module.exports = class Account {
 				req.body,
 				req.decodedToken.id,
 				req.decodedToken.organization_id,
-				req.decodedToken.session_id
+				req.decodedToken.session_id,
+				req.decodedToken.tenant_code
 			)
 			return loggedOutAccount
 		} catch (error) {
@@ -110,7 +139,8 @@ module.exports = class Account {
 	async generateOtp(req) {
 		const params = req.body
 		try {
-			const result = await accountService.generateOtp(params)
+			const domain = getDomainFromRequest(req)
+			const result = await accountService.generateOtp(params, domain)
 			return result
 		} catch (error) {
 			return error
@@ -132,7 +162,10 @@ module.exports = class Account {
 		const params = req.body
 		try {
 			const deviceInfo = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
-			const result = await accountService.resetPassword(params, deviceInfo)
+
+			const domain = getDomainFromRequest(req)
+
+			const result = await accountService.resetPassword(params, deviceInfo, domain)
 			return result
 		} catch (error) {
 			return error
@@ -160,6 +193,20 @@ module.exports = class Account {
 	}
 
 	/**
+	 * Delete own account
+	 * @method
+	 * @name delete
+	 * @param {Object} req - request object
+	 * @returns {JSON} - delete user response
+	 */
+	async delete(req) {
+		try {
+			return await accountService.deleteOwnAccount(req.decodedToken.id, req.body, req.decodedToken.tenant_code)
+		} catch (error) {
+			return error
+		}
+	}
+	/**
 	 * Account List
 	 * @method
 	 * @name list
@@ -178,7 +225,7 @@ module.exports = class Account {
 	 */
 	async list(req) {
 		try {
-			const result = await accountService.list(req)
+			const result = await accountService.list(req, req.decodedToken.tenant_code)
 			return result
 		} catch (error) {
 			return error
@@ -217,7 +264,9 @@ module.exports = class Account {
 	async registrationOtp(req) {
 		const params = req.body
 		try {
-			const result = await accountService.registrationOtp(params)
+			const domain = getDomainFromRequest(req)
+
+			const result = await accountService.registrationOtp(params, domain)
 			return result
 		} catch (error) {
 			return error
@@ -264,7 +313,11 @@ module.exports = class Account {
 
 	async changePassword(req) {
 		try {
-			const result = await accountService.changePassword(req.body, req.decodedToken.id)
+			const result = await accountService.changePassword(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.tenant_code
+			)
 			return result
 		} catch (error) {
 			return error

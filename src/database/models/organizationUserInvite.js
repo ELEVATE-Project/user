@@ -11,14 +11,18 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			email: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
+			},
+			name: {
+				type: DataTypes.STRING,
+				allowNull: true,
 			},
 			status: {
 				type: DataTypes.STRING,
 				defaultValue: 'ACTIVE',
 			},
-			organization_id: {
-				type: DataTypes.INTEGER,
+			organization_code: {
+				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
@@ -29,6 +33,43 @@ module.exports = (sequelize, DataTypes) => {
 			file_id: {
 				type: DataTypes.INTEGER,
 				allowNull: true,
+			},
+			username: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			phone: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			phone_code: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			meta: {
+				type: DataTypes.JSONB,
+				allowNull: true,
+			},
+			type: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			invitation_key: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				unique: true,
+			},
+			invitation_id: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				references: {
+					model: 'Invitation',
+					key: 'id',
+				},
+			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
@@ -42,6 +83,14 @@ module.exports = (sequelize, DataTypes) => {
 			paranoid: true,
 		}
 	)
+	// Many-to-one: Many OrganizationUserInvites belong to one Invitation
+	OrganizationUserInvite.associate = (models) => {
+		OrganizationUserInvite.belongsTo(models.Invitation, {
+			foreignKey: 'invitation_id',
+			targetKey: 'id',
+			as: 'invitation',
+		})
+	}
 
 	return OrganizationUserInvite
 }

@@ -16,6 +16,8 @@ const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 const utilsHelper = require('@generics/utils')
 const { verifyCaptchaToken } = require('@utils/captcha')
+const { getDomainFromRequest } = require('@utils/domain')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -41,6 +43,13 @@ async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	})
 	return isPermissionValid
 }
+
+const notFoundResponse = (message) =>
+	responses.failureResponse({
+		message,
+		statusCode: httpStatusCode.not_acceptable,
+		responseCode: 'CLIENT_ERROR',
+	})
 
 module.exports = async function (req, res, next) {
 	const unAuthorizedResponse = responses.failureResponse({
@@ -100,9 +109,37 @@ module.exports = async function (req, res, next) {
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
+
+				const domain = getDomainFromRequest(req) || null
+				const tenant_code =
+					req?.headers?.tenantId ||
+					req?.headers?.tenantid ||
+					req?.headers?.tenant_Id ||
+					req?.headers?.tenant_id ||
+					req?.headers?.tenant ||
+					req?.headers?.tenant_code ||
+					req.headers.tenantCode ||
+					null
+
+				const tenantFilter = domain ? { domain } : tenant_code ? { tenant_code } : null || {}
+
+				if (Object.keys(tenantFilter).length > 0) {
+					const tenantDomain = await tenantDomainQueries.findOne(tenantFilter, {
+						attributes: ['tenant_code'],
+					})
+					if (!tenantDomain) {
+						throw notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+					}
+
+					req.body.tenant_code = tenantDomain.tenant_code
+				} else {
+					throw notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+				}
+
 				return next()
 			} catch (error) {
-				throw unAuthorizedResponse
+				if (error.message == 'UNAUTHORIZED_REQUEST') throw unAuthorizedResponse
+				throw error
 			}
 		}
 
@@ -112,17 +149,41 @@ module.exports = async function (req, res, next) {
 		//         throw responses.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
 		//     }
 		// }
-		const authHeaderArray = authHeader.split(' ')
-		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+		// const authHeaderArray = authHeader.split(' ')
+		// if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+
+		let token
+		if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+			const [authType, extractedToken] = authHeader.split(' ')
+			if (authType.toLowerCase() !== 'bearer') throw unAuthorizedResponse
+			token = extractedToken.trim()
+		} else token = authHeader.trim()
+
+		let org
 		try {
-			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+
+			org = decodedToken.data.organizations?.[0]
+
+			const organization_id = org?.id
+			const organization_code = org?.code
+
+			decodedToken.data = {
+				id: decodedToken.data.id,
+				name: decodedToken.data.name,
+				session_id: decodedToken.data.session_id,
+				tenant_code: decodedToken.data.tenant_code,
+				organization_id,
+				organization_code,
+				roles: org.roles,
+			}
 			// Get redis key for session
 			const sessionId = decodedToken.data.session_id.toString()
 			// Get data from redis
 			const redisData = await utilsHelper.redisGet(sessionId)
 
 			// If data is not in redis, token is invalid
-			if (!redisData || redisData.accessToken !== authHeaderArray[1]) {
+			if (!redisData || redisData.accessToken !== token) {
 				throw responses.failureResponse({
 					message: 'USER_SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
@@ -166,14 +227,11 @@ module.exports = async function (req, res, next) {
 				})
 			}
 
-			const roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.ACTIVE_STATUS },
-				{ attributes: ['id', 'title', 'user_type', 'status'] }
-			)
+			const roles = org.roles
 
 			//update the token role as same as current user role
-			decodedToken.data.roles = roles
-			decodedToken.data.organization_id = user.organization_id
+			decodedToken.data.roles = roles //TODO: Update this to get roles from the user org roles table
+			//decodedToken.data.organization_id = user.organization_id
 		}
 
 		const isPermissionValid = await checkPermissions(

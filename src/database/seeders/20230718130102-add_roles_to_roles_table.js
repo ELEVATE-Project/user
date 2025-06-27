@@ -13,6 +13,8 @@ module.exports = {
 				user_type: user_type,
 				updated_at: new Date(),
 				created_at: new Date(),
+				organization_id: process.env.DEFAULT_ORG_ID,
+				tenant_code: process.env.DEFAULT_TENANT_CODE,
 			}
 
 			rolesData.push(eachRow)

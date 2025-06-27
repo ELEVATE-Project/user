@@ -12,13 +12,15 @@ const path = require('path')
 const { RedisCache, InternalCache } = require('elevate-node-cache')
 const md5 = require('md5')
 const crypto = require('crypto')
-
+const { v4: uuidv4 } = require('uuid')
 const { elevateLog } = require('elevate-logger')
 const logger = elevateLog.init()
 const algorithm = 'aes-256-cbc'
 const moment = require('moment-timezone')
 const common = require('@constants/common')
 const { cloudClient } = require('@configs/cloud-service')
+const axios = require('axios')
+const _ = require('lodash')
 
 const generateToken = (tokenData, secretKey, expiresIn) => {
 	return jwt.sign(tokenData, secretKey, { expiresIn })
@@ -139,7 +141,7 @@ function generateCSVContent(data) {
 	].join('\n')
 }
 
-function validateInput(input, validationData, modelName, skipValidation = false) {
+async function validateInput(input, validationData, modelName, skipValidation = false, tenantCode) {
 	const errors = []
 	for (const field of validationData) {
 		if (!skipValidation) {
@@ -163,7 +165,7 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 		function addError(field, value, dataType, message) {
 			errors.push({
 				param: field.value,
-				msg: `${value} is invalid for data type ${dataType}. ${message}`,
+				msg: dataType ? `${value} is invalid for data type ${dataType}. ${message}` : message,
 			})
 		}
 
@@ -173,19 +175,27 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 
 			switch (dataType) {
 				case 'ARRAY[STRING]':
-					if (Array.isArray(fieldValue)) {
+					if (!Array.isArray(fieldValue)) {
+						addError(field.value, fieldValue, dataType, 'Must be an array of strings')
+					} else {
+						if (fieldValue.length === 0 && field.required) {
+							addError(field.value, fieldValue, dataType, 'Array cannot be empty')
+						}
+						const regex = field.regex ? new RegExp(field.regex) : null
 						fieldValue.forEach((element) => {
 							if (typeof element !== 'string') {
 								addError(field.value, element, dataType, 'It should be a string')
+							} else if (element === '' && field.required) {
+								addError(field.value, element, dataType, 'Empty strings are not allowed')
 							} else if (field.allow_custom_entities) {
-								if (field.regex && !new RegExp(field.regex).test(element)) {
+								if (regex && !regex.test(element)) {
 									addError(
 										field.value,
 										element,
 										dataType,
 										`Does not match the required pattern: ${field.regex}`
 									)
-								} else if (!field.regex && /[^A-Za-z0-9\s_]/.test(element)) {
+								} else if (!regex && /[^A-Za-z0-9\s_]/.test(element)) {
 									addError(
 										field.value,
 										element,
@@ -195,16 +205,17 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 								}
 							}
 						})
-					} else {
-						addError(field.value, field.value, dataType, '')
 					}
 					break
 
 				case 'STRING':
 					if (typeof fieldValue !== 'string') {
 						addError(field.value, fieldValue, dataType, 'It should be a string')
+					} else if (fieldValue === '' && field.required) {
+						addError(field.value, fieldValue, dataType, 'Empty strings are not allowed')
 					} else if (field.allow_custom_entities) {
-						if (field.regex && !new RegExp(field.regex).test(fieldValue)) {
+						const regex = field.regex ? new RegExp(field.regex) : null
+						if (regex && !regex.test(fieldValue)) {
 							addError(
 								field.value,
 								fieldValue,
@@ -241,6 +252,11 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 			field.has_entities === false ||
 			field.external_entity_type === true
 		) {
+			if (field.external_entity_type) {
+				const verifyExternalEntityFlag = await verifyExternalEntity(fieldValue, field, tenantCode)
+				if (!verifyExternalEntityFlag)
+					addError(field, fieldValue, false, `'${fieldValue}' is an invalid ${field.value} entity!`)
+			}
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -365,9 +381,55 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 	}
 }
 
-function processDbResponse(responseBody, entityType) {
+const verifyExternalEntity = async (fieldValue, matchedEntity, tenantCode) => {
+	let filterData = {}
+	const externalBaseUrl =
+		process.env?.[`${matchedEntity.meta.service.toUpperCase()}_BASE_URL`] ||
+		process.env?.[`${matchedEntity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+	const url = constructUrl(externalBaseUrl, matchedEntity.meta.endPoint)
+	const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
+	filterData['_id'] = fieldValue
+	filterData['tenantId'] = tenantCode
+	let result = {}
+	try {
+		result = await axios.post(
+			url,
+			{
+				query: filterData,
+				projection: projection,
+			},
+			{
+				headers: {
+					'Content-Type': 'application/json',
+					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+				},
+			}
+		)
+		return result?.data?.result?.[0]?._id === fieldValue
+	} catch {
+		return false
+	}
+}
+
+// Construct a new URL by joining base url and end point
+const constructUrl = (externalBaseUrl, endPoint) => {
+	// Handle null, undefined, or empty inputs
+	if (!externalBaseUrl || !endPoint) {
+		return externalBaseUrl || endPoint || ''
+	}
+
+	// Remove trailing slashes from base URL and leading slashes from endpoint
+	const normalizedBase = externalBaseUrl.replace(/\/+$/, '')
+	const normalizedEndPoint = endPoint.replace(/^\/+/, '')
+
+	// Join with a single slash
+	return `${normalizedBase}/${normalizedEndPoint}`
+}
+
+async function processDbResponse(responseBody, entityType) {
 	if (responseBody.meta) {
-		entityType.forEach((entity) => {
+		let externalFetchPromise = []
+		entityType.forEach(async (entity) => {
 			const entityTypeValue = entity.value
 			if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
 				// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
@@ -376,16 +438,159 @@ function processDbResponse(responseBody, entityType) {
 					responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
 					// Delete the key from responseBody.meta
 					delete responseBody.meta[entityTypeValue]
+				} else {
+					const externalBaseUrl =
+						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
+						process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+					const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+					const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
+					if (_.isArray(responseBody.meta[entityTypeValue])) {
+						for (entity of responseBody.meta[entityTypeValue]) {
+							const filterData = {
+								_id: entity,
+								tenantId: responseBody.tenant_code,
+							}
+
+							externalFetchPromise.push(
+								axios.post(
+									url,
+									{
+										query: filterData,
+										projection: projection,
+									},
+									{
+										headers: {
+											'Content-Type': 'application/json',
+											'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+										},
+									}
+								)
+							)
+						}
+					} else {
+						const filterData = {
+							_id: responseBody.meta[entityTypeValue],
+							tenantId: responseBody.tenant_code,
+						}
+						externalFetchPromise.push(
+							axios.post(
+								url,
+								{
+									query: filterData,
+									projection: projection,
+								},
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+									},
+								}
+							)
+						)
+					}
 				}
 			}
 		})
+
+		if (externalFetchPromise.length > 0) {
+			const externalFetchResponse = await Promise.all(
+				externalFetchPromise.map((promise) =>
+					promise.catch((err) => {
+						console.error('Entity fetch API request failed:', err.message)
+						return {} // Return empty object on error
+					})
+				)
+			)
+
+			const parseResponse = externalFetchResponse.map((response, index) => {
+				// Check if response is empty object (from failed request)
+				if (!response || Object.keys(response).length === 0) {
+					console.warn(`Empty or no response at index ${index}`)
+					return {}
+				}
+
+				// Check if response.data exists
+				if (!response.data) {
+					console.warn(`No data in response at index ${index}`)
+					return {}
+				}
+
+				// Check if result array exists and has data
+				if (
+					!response.data.result ||
+					!Array.isArray(response.data.result) ||
+					response.data.result.length === 0
+				) {
+					console.warn(`No result array or empty result at index ${index}`)
+					return {}
+				}
+
+				return response.data.result[0]
+			})
+			entityType.forEach(async (entity) => {
+				const entityTypeValue = entity.value
+				if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+					entityType.forEach((entity) => {
+						const entityTypeValue = entity.value
+						if (responseBody?.meta?.hasOwnProperty(entityTypeValue)) {
+							// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+							if (entity.external_entity_type) {
+								if (_.isArray(responseBody.meta[entityTypeValue])) {
+									for (entity of responseBody.meta[entityTypeValue]) {
+										const findEntity = parseResponse.find((fetched) => fetched._id == entity) || {}
+										if (findEntity && Object.keys(findEntity).length > 0) {
+											if (
+												responseBody[entityTypeValue] &&
+												Array.isArray(responseBody[entityTypeValue])
+											) {
+												// Push to existing array
+												responseBody[entityTypeValue].push({
+													value: findEntity['_id'],
+													label: findEntity.metaInformation.name,
+													externalId: findEntity.metaInformation.externalId,
+												})
+											} else {
+												// Create new array with the value
+												responseBody[entityTypeValue] = [
+													{
+														value: findEntity['_id'],
+														label: findEntity.metaInformation.name,
+														externalId: findEntity.metaInformation.externalId,
+													},
+												]
+											}
+										}
+									}
+								} else {
+									const findEntity =
+										parseResponse.find(
+											(fetched) => fetched._id == responseBody.meta[entityTypeValue]
+										) || {}
+
+									if (findEntity && Object.keys(findEntity).length > 0) {
+										responseBody[entityTypeValue] = {
+											value: findEntity['_id'],
+											label: findEntity.metaInformation.name,
+											externalId: findEntity.metaInformation.externalId,
+										}
+									} else {
+										responseBody[entityTypeValue] = {}
+									}
+								}
+								delete responseBody.meta[entityTypeValue]
+							}
+						}
+					})
+				}
+			})
+		}
 	}
 
 	const output = { ...responseBody } // Create a copy of the responseBody object
 
 	for (const key in output) {
-		if (entityType.some((entity) => entity.value === key) && output[key] !== null) {
-			const matchingEntity = entityType.find((entity) => entity.value === key)
+		if (entityType.some((entity) => entity.value.toLowerCase() === key.toLowerCase()) && output[key] !== null) {
+			const matchingEntity = entityType.find((entity) => entity.value.toLowerCase() === key.toLocaleLowerCase())
 			const matchingValues = matchingEntity.entities
 				.filter((entity) => (Array.isArray(output[key]) ? output[key].includes(entity.value) : true))
 				.map((entity) => ({
@@ -419,6 +624,197 @@ function processDbResponse(responseBody, entityType) {
 	return data
 }
 
+async function processMetaWithNames(meta, entityType, tenantCode) {
+	let responseBody = {}
+	let externalFetchPromise = []
+	entityType.forEach(async (entity) => {
+		const entityTypeValue = entity.value
+		meta[entityTypeValue] =
+			meta?.hasOwnProperty(entityTypeValue) && entity.data_type == 'ARRAY'
+				? meta[entityTypeValue].split(',').map((val) => val.trim())
+				: meta[entityTypeValue]
+
+		if (meta?.hasOwnProperty(entityTypeValue)) {
+			// Move the key from meta to root level -> should happen only if entity type is not external
+			if (!entity.external_entity_type) {
+				// Move the key from meta to responseBody root level
+				responseBody[entityTypeValue] = meta[entityTypeValue]
+			} else {
+				const externalBaseUrl =
+					process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
+					process.env?.[`${entity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+				const url = constructUrl(externalBaseUrl, entity.meta.endPoint)
+				const projection = ['_id', 'metaInformation.name']
+				if (_.isArray(meta[entityTypeValue])) {
+					for (entity of meta[entityTypeValue]) {
+						let filterData = {}
+						filterData['metaInformation.name'] = entity
+						filterData['tenantId'] = tenantCode
+
+						externalFetchPromise.push(
+							axios.post(
+								url,
+								{
+									query: filterData,
+									projection: projection,
+								},
+								{
+									headers: {
+										'Content-Type': 'application/json',
+										'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+									},
+								}
+							)
+						)
+					}
+				} else {
+					let filterData = {}
+					filterData['metaInformation.name'] = meta[entityTypeValue]
+					filterData['tenantId'] = tenantCode
+
+					externalFetchPromise.push(
+						axios.post(
+							url,
+							{
+								query: filterData,
+								projection: projection,
+							},
+							{
+								headers: {
+									'Content-Type': 'application/json',
+									'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+								},
+							}
+						)
+					)
+				}
+			}
+		}
+	})
+
+	if (externalFetchPromise.length > 0) {
+		const externalFetchResponse = await Promise.all(
+			externalFetchPromise.map((promise) =>
+				promise.catch((err) => {
+					console.error('Entity fetch API request failed:', err.message)
+					return {} // Return empty object on error
+				})
+			)
+		)
+
+		const parseResponse = externalFetchResponse.map((response, index) => {
+			// Check if response is empty object (from failed request)
+			if (!response || Object.keys(response).length === 0) {
+				console.warn(`Empty or no response at index ${index}`)
+				return {}
+			}
+
+			// Check if response.data exists
+			if (!response.data) {
+				console.warn(`No data in response at index ${index}`)
+				return {}
+			}
+
+			// Check if result array exists and has data
+			if (!response.data.result || !Array.isArray(response.data.result) || response.data.result.length === 0) {
+				console.warn(`No result array or empty result at index ${index}`)
+				return {}
+			}
+
+			return response.data.result[0]
+		})
+		entityType.forEach(async (entity) => {
+			const entityTypeValue = entity.value
+			if (meta?.hasOwnProperty(entityTypeValue)) {
+				entityType.forEach((entity) => {
+					const entityTypeValue = entity.value
+					if (meta?.hasOwnProperty(entityTypeValue)) {
+						// Move the key from responseBody.meta to responseBody root level -> should happen only if entity type is not external
+						if (entity.external_entity_type) {
+							if (_.isArray(meta[entityTypeValue])) {
+								for (entity of meta[entityTypeValue]) {
+									const findEntity =
+										parseResponse.find((fetched) => fetched.metaInformation.name == entity) || {}
+									if (findEntity && Object.keys(findEntity).length > 0) {
+										if (
+											responseBody[entityTypeValue] &&
+											Array.isArray(responseBody[entityTypeValue])
+										) {
+											// Push to existing array
+											if (!responseBody[entityTypeValue].includes(findEntity['_id'])) {
+												responseBody[entityTypeValue].push(findEntity['_id'])
+											}
+										} else {
+											// Create new array with the value
+											responseBody[entityTypeValue] = [findEntity['_id']]
+										}
+									}
+								}
+							} else {
+								const findEntity =
+									parseResponse.find(
+										(fetched) => fetched.metaInformation.name == meta[entityTypeValue]
+									) || {}
+
+								if (findEntity && Object.keys(findEntity).length > 0) {
+									responseBody[entityTypeValue] = findEntity['_id']
+								} else {
+									responseBody[entityTypeValue] = ''
+								}
+							}
+						}
+					}
+				})
+			}
+		})
+	}
+
+	return responseBody
+}
+
+async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenantCode) {
+	let responseBody = {}
+	const externalBaseUrl =
+		process.env?.[`${service.toUpperCase()}_BASE_URL`] ||
+		process.env?.[`${service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+	const url = constructUrl(externalBaseUrl, endPoint)
+	const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId', 'entityType']
+	let data = []
+
+	await axios({
+		method: 'post',
+		url,
+		headers: {
+			'content-type': 'application/json',
+			'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+		},
+		data: {
+			query: {
+				'metaInformation.name': {
+					$in: entities, // Dynamically pass the array here
+				},
+				tenantId: tenantCode,
+			},
+			projection,
+		},
+	})
+		.then((response) => {
+			data = response?.data?.result || []
+		})
+		.catch((error) => {
+			console.error(error)
+		})
+
+	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
+		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
+		if (key) {
+			acc[key] = { _id, name: metaInformation?.name, entityType, externalId: metaInformation.externalId }
+		}
+		return acc
+	}, {})
+	return responseBody
+}
+
 function removeParentEntityTypes(data) {
 	const parentIds = data.filter((item) => item.parent_id !== null).map((item) => item.parent_id)
 	return data.filter((item) => !parentIds.includes(item.id))
@@ -441,6 +837,10 @@ function isValidEmail(email) {
 function isValidName(name) {
 	const nameRegex = /^[A-Za-z\s'-]+$/
 	return nameRegex.test(name)
+}
+function isValidAction(action) {
+	if (action.toUpperCase() == common.TYPE_INVITE || action.toUpperCase() == common.TYPE_UPLOAD) return true
+	return false
 }
 const generateWhereClause = (tableName) => {
 	let whereClause = ''
@@ -536,6 +936,139 @@ function setRoleLabelsByLanguage(roles, language) {
 	})
 }
 
+/**
+ * parse domain
+ * @method
+ * @name parseDomain
+ * @param {string} domain - complete Domain / sub-domain
+ * @returns {string} - cleaned up domain / sub-domain without any trailing forward slashes and protocols mentioned
+ */
+function parseDomain(domain) {
+	// Ensure the input is a string and not empty
+	if (typeof domain !== 'string' || domain.trim() === '') {
+		return ''
+	}
+
+	// Remove protocol (http://, https://, etc.) using regex
+	let cleanedDomain = domain.replace(/^https?:\/\//i, '')
+
+	// Remove trailing slashes
+	cleanedDomain = cleanedDomain.replace(/\/+$/, '')
+
+	return cleanedDomain
+}
+
+function generateSecureOTP(length = 6) {
+	// Generate cryptographically strong random bytes
+	const randomBytes = crypto.randomBytes(length)
+
+	// Convert to a number string of specified length
+	let otp = ''
+	for (let i = 0; i < length; i++) {
+		// Use modulo 10 to get a digit (0-9) from each byte
+		otp += (randomBytes[i] % 10).toString()
+	}
+
+	// Ensure first digit isn't 0 for consistent length
+	if (otp[0] === '0') {
+		otp = ((parseInt(otp[0]) + 1) % 10).toString() + otp.substring(1)
+	}
+
+	return parseInt(otp)
+}
+
+/**
+ * parse Meta Data
+ * @method
+ * @name parseMetaData
+ * @param {Object} meta - Meta Data with ids from external source
+ * {
+ * "state" : "mongoId",
+ * "district" : "mongoId",
+ * }
+ * @param {Object} prunedEntities - pruned entities to identify entities
+ * @param {Object} feederData - data to replace value
+ * @returns {string} - return meta data.
+ * {
+ * "state" : {
+ * 			"id" :	"mongoId",
+ * 			"name" : "name",
+ * 			"externalId" : "externalId"
+ * 			},
+ * "district" : {
+ * 			"id" :	"mongoId",
+ * 			"name" : "name",
+ * 			"externalId" : "externalId"
+ * 			},
+ * }
+ */
+
+function parseMetaData(meta = {}, prunedEntities, feederData) {
+	let metaData = {}
+
+	if (Object.keys(meta).length > 0) {
+		// get id function identifies id from the input data
+		const getId = (value) => value?.id ?? value?._id ?? value
+		// parse the input to name , id , external id format
+		const parseFind = (value) => {
+			return {
+				name: value?.name || value?.label,
+				id: value?._id || value?.id || value?.value,
+				externalId: value?.externalId,
+			}
+		}
+
+		Object.keys(meta).forEach((metaKey) => {
+			// find the entity type from the entities array with the value of the entity
+			const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
+			// check the data type of the entity to loop in Array type entities
+			if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+				metaData[metaKey] = meta?.[metaKey].map((entity) => {
+					const id = getId(entity) // get the id from the input
+					const find = Object.values(feederData).find(
+						(obj) => obj?._id === id || obj?.id === id || obj?.value === id
+					) // find the object from with given id the feeder data.
+					return parseFind(find) // parse the response in desired format
+				})
+			} else {
+				const id = getId(meta?.[metaKey]) // get the id from the input
+				const find = Object.values(feederData).find(
+					(obj) => obj?._id === id || obj?.id === id || obj?.value === id
+				) // find the object from with given id the feeder data.
+				metaData[metaKey] = parseFind(find) // parse the response in desired format
+			}
+		})
+	}
+	return metaData
+}
+
+//Generate a random UUID
+function generateUUID() {
+	return uuidv4()
+}
+
+/**
+ * Construct URL
+ * @method
+ * @name appendParamsToUrl
+ * @param {string} host - host api url
+ * @param {Object} params - object of params and values
+ * @returns {string} - cleaned up url
+ */
+function appendParamsToUrl(host, params) {
+	// Create URL object from host string
+	const url = new URL(host)
+
+	// Get existing search parameters
+	const searchParams = url.searchParams
+
+	// Append new parameters
+	Object.entries(params).forEach(([key, value]) => {
+		searchParams.append(key, value)
+	})
+
+	return url.toString()
+}
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -573,4 +1106,13 @@ module.exports = {
 	generateRandomPassword,
 	isValidPassword,
 	setRoleLabelsByLanguage,
+	parseDomain,
+	generateSecureOTP,
+	constructUrl,
+	processMetaWithNames,
+	fetchAndMapAllExternalEntities,
+	generateUUID,
+	isValidAction,
+	appendParamsToUrl,
+	parseMetaData,
 }
