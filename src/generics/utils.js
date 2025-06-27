@@ -253,9 +253,18 @@ async function validateInput(input, validationData, modelName, skipValidation = 
 			field.external_entity_type === true
 		) {
 			if (field.external_entity_type) {
-				const verifyExternalEntityFlag = await verifyExternalEntity(fieldValue, field, tenantCode)
-				if (!verifyExternalEntityFlag)
-					addError(field, fieldValue, false, `'${fieldValue}' is an invalid ${field.value} entity!`)
+				let verifyExternalEntityFlag = false
+				if (field.data_type == 'ARRAY' || field.data_type == 'ARRAY[STRING]') {
+					fieldValue.forEach(async (key) => {
+						verifyExternalEntityFlag = await verifyExternalEntity(key, field, tenantCode)
+						if (!verifyExternalEntityFlag)
+							addError(field, fieldValue, false, `'${key}' is an invalid ${field.value} entity!`)
+					})
+				} else {
+					verifyExternalEntityFlag = await verifyExternalEntity(fieldValue, field, tenantCode)
+					if (!verifyExternalEntityFlag)
+						addError(field, fieldValue, false, `'${fieldValue}' is an invalid ${field.value} entity!`)
+				}
 			}
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
@@ -387,7 +396,7 @@ const verifyExternalEntity = async (fieldValue, matchedEntity, tenantCode) => {
 		process.env?.[`${matchedEntity.meta.service.toUpperCase()}_BASE_URL`] ||
 		process.env?.[`${matchedEntity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
 	const url = constructUrl(externalBaseUrl, matchedEntity.meta.endPoint)
-	const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId']
+	const projection = ['_id', 'entityType']
 	filterData['_id'] = fieldValue
 	filterData['tenantId'] = tenantCode
 	let result = {}
@@ -405,7 +414,10 @@ const verifyExternalEntity = async (fieldValue, matchedEntity, tenantCode) => {
 				},
 			}
 		)
-		return result?.data?.result?.[0]?._id === fieldValue
+		return (
+			result?.data?.result?.[0]?._id === fieldValue &&
+			result?.data?.result?.[0]?.entityType == matchedEntity.value
+		)
 	} catch {
 		return false
 	}
