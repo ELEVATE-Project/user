@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
-				allowNull: false,
+				allowNull: true,
 			},
 			tenant_code: {
 				type: DataTypes.STRING,

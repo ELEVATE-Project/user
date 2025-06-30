@@ -65,7 +65,7 @@ module.exports = {
 					},
 					created_by: {
 						type: Sequelize.INTEGER,
-						allowNull: false,
+						allowNull: true,
 					},
 					tenant_code: {
 						type: Sequelize.STRING,
