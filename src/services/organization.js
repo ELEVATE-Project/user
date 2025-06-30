@@ -632,7 +632,7 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 			// append registration codes
-			registrationCodes = registrationCodes.map((code) => code.trim().toString())
+			registrationCodes = registrationCodes.map((code) => code.toString().trim())
 			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
 			const codeToAppend = [...new Set(_.difference(registrationCodes, existingRegCodes))]
 
@@ -666,7 +666,7 @@ module.exports = class OrganizationsHelper {
 			registrationCodes = Array.isArray(registrationCodes)
 				? registrationCodes
 				: registrationCodes.split(',') || []
-			registrationCodes = registrationCodes.map((code) => code.toString())
+			registrationCodes = registrationCodes.map((code) => code.toString().trim())
 			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
 			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))].map((code) =>
 				code.trim().toLowerCase()
