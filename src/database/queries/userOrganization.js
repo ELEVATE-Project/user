@@ -112,6 +112,7 @@ exports.findAll = async (filter = {}, options = {}) => {
 					model: Organization,
 					attributes: options.organizationAttributes,
 					as: 'organization',
+					where: { tenant_code: filter.tenant_code },
 				},
 			]
 			delete options.organizationAttributes
