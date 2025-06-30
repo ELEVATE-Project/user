@@ -92,7 +92,7 @@ module.exports = class AccountHelper {
 			if (bodyData.registration_code) {
 				domainDetails = await organizationQueries.findOne({
 					tenant_code: tenantDetail.code,
-					registration_code: bodyData.registration_code,
+					registration_code: bodyData.registration_code.toLowerCase(),
 				})
 
 				if (!domainDetails) {
@@ -190,54 +190,58 @@ module.exports = class AccountHelper {
 			let role,
 				roles = []
 			let invitedUserMatch = false
-			let invitedUserId = null
+			let userOrgId = null
+			let organizationCode = ''
 
-			if (bodyData?.invitation_key || encryptedEmailId || encryptedPhoneNumber || bodyData?.username) {
-				let filterCondition = {}
-				if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
+			let filterCondition = {}
+			if (bodyData?.invitation_key) filterCondition.invitation_key = bodyData?.invitation_key
 
-				if (encryptedEmailId && !bodyData?.invitation_key) filterCondition.email = encryptedEmailId
+			if (bodyData?.invitation_code) filterCondition.invitation_code = bodyData?.invitation_code.toUpperCase()
 
-				if (bodyData?.username && !bodyData?.invitation_key) filterCondition.username = bodyData?.username
+			if (encryptedEmailId && !bodyData?.invitation_key && !bodyData?.invitation_code)
+				filterCondition.email = encryptedEmailId
 
-				if (encryptedPhoneNumber && !bodyData?.invitation_key) {
-					filterCondition.phone = encryptedPhoneNumber
-					filterCondition.phone = bodyData.phone_code
-				}
+			if (bodyData?.username && !bodyData?.invitation_key && !bodyData?.invitation_code)
+				filterCondition.username = bodyData?.username
 
-				filterCondition.tenant_code = tenantDomain.tenant_code
-				filterCondition.status = common.INVITED_STATUS
-
-				invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
-					isValid: true,
-				})
+			if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
+				filterCondition.phone = encryptedPhoneNumber
+				filterCondition.phone = bodyData.phone_code
 			}
+
+			filterCondition.tenant_code = tenantDomain.tenant_code
+			filterCondition.status = common.INVITED_STATUS
+
+			invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
+				isValid: true,
+				attributes: [
+					'email',
+					'name',
+					'organization_code',
+					'roles',
+					'username',
+					'phone',
+					'phone_code',
+					'meta',
+					'id',
+				],
+			})
 
 			let isOrgAdmin = false
 			if (invitedUserMatch) {
 				const editable_fields = invitedUserMatch?.['invitation.editable_fields'] || []
+				isInvitedUserId = invitedUserMatch.id
 
-				let newBody = {}
-				Object.keys(bodyData).forEach((bodyKey) => {
-					if (editable_fields.includes(bodyKey)) {
-						newBody[bodyKey] = bodyData[bodyKey]
+				Object.keys(invitedUserMatch).forEach((bodyKey) => {
+					if (editable_fields.includes(bodyKey) && Object.keys(bodyData).includes(bodyKey)) {
 						delete invitedUserMatch[bodyKey]
-					} else {
-						if (bodyData[bodyKey] != invitedUserMatch[bodyKey]) {
-							return responses.failureResponse({
-								message: `${bodyKey} is not editable.`,
-								statusCode: httpStatusCode.not_acceptable,
-								responseCode: 'CLIENT_ERROR',
-							})
-						}
+					} else if (Object.keys(bodyData).includes(bodyKey)) {
+						bodyData[bodyKey] = invitedUserMatch[bodyKey]
 					}
 				})
-				bodyData = {
-					...bodyData,
-					...newBody,
-				}
-				isInvitedUserId = invitedUserMatch.id
-				bodyData.organization_id = invitedUserMatch.organization_id
+
+				organizationCode = invitedUserMatch.organization_code
+
 				roles = invitedUserMatch?.roles || []
 				if (roles.length > 0) {
 					role = await roleQueries.findAll(
@@ -322,24 +326,25 @@ module.exports = class AccountHelper {
 					return userRoles.id
 				})
 				bodyData.roles = roles
+
+				if (encryptedEmailId) bodyData.email = encryptedEmailId
+				if (encryptedPhoneNumber) bodyData.phone = encryptedPhoneNumber
+
+				if (!domainDetails) {
+					const emailDomain = plaintextEmailId ? utilsHelper.extractDomainFromEmail(plaintextEmailId) : null
+
+					domainDetails = emailDomain
+						? await orgDomainQueries.findOne({
+								domain: emailDomain,
+								tenant_code: tenantDetail.code,
+						  })
+						: null
+				}
+
+				organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
 			}
 
 			delete bodyData.role
-			if (encryptedEmailId) bodyData.email = encryptedEmailId
-			if (encryptedPhoneNumber) bodyData.phone = encryptedPhoneNumber
-
-			if (!domainDetails) {
-				const emailDomain = plaintextEmailId ? utilsHelper.extractDomainFromEmail(plaintextEmailId) : null
-
-				domainDetails = emailDomain
-					? await orgDomainQueries.findOne({
-							domain: emailDomain,
-							tenant_code: tenantDetail.code,
-					  })
-					: null
-			}
-
-			const organizationCode = domainDetails?.code || process.env.DEFAULT_ORGANISATION_CODE
 
 			const [defaultOrg, userOrgDetails, modelName] = await Promise.all([
 				organizationQueries.findOne(
@@ -358,7 +363,7 @@ module.exports = class AccountHelper {
 			}
 
 			const defaultOrgId = defaultOrg.id
-			const userOrgId = userOrgDetails.id
+			userOrgId = userOrgDetails.id
 
 			const [validationData, userModel] = await Promise.all([
 				entityTypeQueries.findUserEntityTypesAndEntities({
@@ -399,6 +404,7 @@ module.exports = class AccountHelper {
 					result: res.errors,
 				})
 			}
+			delete bodyData.id
 			const restructuredData = utils.restructureBody(bodyData, prunedEntities, userModel)
 			let metaData = restructuredData?.meta || {}
 			const insertedUser = await userQueries.create(restructuredData)
@@ -1143,7 +1149,7 @@ module.exports = class AccountHelper {
 		if (bodyData.registration_code) {
 			domainDetails = await organizationQueries.findOne({
 				tenant_code: tenantDetail.code,
-				registration_code: bodyData.registration_code,
+				registration_code: bodyData.registration_code.toLowerCase(),
 			})
 
 			if (!domainDetails) {

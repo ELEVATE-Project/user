@@ -26,7 +26,7 @@ const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
-const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
+const { generateUniqueUsername, generateUniqueCodeString } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
 const invitationQueries = require('@database/queries/invitation')
 const notificationUtils = require('@utils/notification')
@@ -438,15 +438,32 @@ module.exports = class UserInviteHelper {
 			//fetch generic email template
 
 			//find already invited users
-			const emailList = await userInviteQueries.findAll({ email: emailArray })
-			const existingInvitees = {}
-			emailList.forEach((userInvitee) => {
-				existingInvitees[userInvitee.email] = [userInvitee.id]
-			})
+			const invitedUserList = await userInviteQueries.findAll(
+				{
+					[Op.or]: [
+						emailArray && emailArray.length ? { email: { [Op.in]: emailArray } } : null,
+						phoneArray && phoneArray.length ? { phone: { [Op.in]: phoneArray } } : null,
+						userNameArray && userNameArray.length ? { username: { [Op.in]: userNameArray } } : null,
+					].filter((condition) => condition !== null),
+					tenant_code: user.tenant_code,
+				},
+				{
+					isValid: true,
+				}
+			)
+			const existingInvitees = new Map(
+				invitedUserList
+					.map((user) => {
+						const key =
+							user?.email ?? (user?.phone ? `${user.phone_code}${user.phone}` : null) ?? user?.username
+
+						return key ? [key, user] : null
+					})
+					.filter(Boolean)
+			)
 
 			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
 			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
-			console.log(existingInvitees)
 
 			// process csv data
 			for (const invitee of csvData) {
@@ -548,9 +565,24 @@ module.exports = class UserInviteHelper {
 					existingPhoneMap.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
 					null
 				//return error for already invited user
-				if (!existingUser && existingInvitees.hasOwnProperty(encryptedEmail)) {
+				if (
+					!existingUser &&
+					(existingInvitees.has(encryptedEmail) ||
+						existingInvitees.has(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+						existingInvitees.has(invitee.username)) &&
+					uploadType == common.TYPE_INVITE
+				) {
 					console.log('aaaaa')
-					invitee.statusOrUserId = 'User already exist or invited'
+					const user =
+						existingInvitees.get(encryptedEmail) ||
+						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+						existingInvitees.get(invitee.username) ||
+						null
+					invitee.statusOrUserId = user
+						? user.status == common.INVITED_STATUS
+							? `User already ${common.INVITED_STATUS}`
+							: `User already  ${common.SIGNEDUP_STATUS}`
+						: 'User already exist or invited'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
 					input.push(invitee)
@@ -819,6 +851,23 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
+					const validInvitation =
+						existingInvitees.get(encryptedEmail) ||
+						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
+						existingInvitees.get(invitee.username) ||
+						null
+					// if the user is already invited , update the status to uploaded
+					if (validInvitation) {
+						await userInviteQueries.update(
+							{
+								id: validInvitation.id,
+							},
+							{
+								status: common.UPLOADED_STATUS,
+								type: common.TYPE_UPLOAD,
+							}
+						)
+					}
 					//new user invitee creation
 					const inviteeData = {
 						...invitee,
@@ -831,7 +880,8 @@ module.exports = class UserInviteHelper {
 						email: encryptedEmail,
 						meta: invitee.meta || {},
 						invitation_id: invitationId,
-						invitation_key: utils.generateUUID(),
+						invitation_key: null,
+						invitation_code: null,
 					}
 
 					inviteeData.email = encryptedEmail
@@ -850,14 +900,14 @@ module.exports = class UserInviteHelper {
 								: ''
 						} Hence system generated a unique username.`
 					}
-					const newInvitee = await userInviteQueries.create(inviteeData)
+					const newInvitee = validInvitation ? validInvitation : await userInviteQueries.create(inviteeData)
 
 					// if the username is taken generate random username and inform user
 
 					if (newInvitee?.id) {
 						invitee.statusOrUserId = newInvitee.id
 						if (userNameMessage.toString() != '') {
-							invitee.statusOrUserId = `User Id :  ${invitee.statusOrUserId} and ${userNameMessage}`
+							invitee.statusOrUserId = `User Invite Id :  ${invitee.statusOrUserId} and ${userNameMessage}`
 						}
 						const insertedUser = await userQueries.create({
 							name: inviteeData.name,
@@ -865,7 +915,7 @@ module.exports = class UserInviteHelper {
 							phone_code: inviteeData?.phone_code || null,
 							phone: inviteeData?.phone ? encryptedPhoneNumber : null,
 							username: inviteeData?.username,
-							roles: newInvitee.roles,
+							roles: inviteeData?.roles || [],
 							password: hashedPassword,
 							meta: inviteeData.meta,
 							organization_id: inviteeData.organization_id,
@@ -890,7 +940,7 @@ module.exports = class UserInviteHelper {
 
 						const userOrgResponse = await userOrganizationQueries.create(userOrgBody)
 
-						const userOrganizationRolePromise = newInvitee.roles.map((role) => {
+						const userOrganizationRolePromise = inviteeData.roles.map((role) => {
 							return userOrganizationRoleQueries.create({
 								tenant_code: user.tenant_code,
 								user_id: insertedUser?.id,
@@ -952,7 +1002,15 @@ module.exports = class UserInviteHelper {
 
 						if (insertedUser?.id) {
 							const { name, email } = invitee
-							const roles = utils.getRoleTitlesFromId(newInvitee.roles, roleList)
+
+							const roles =
+								organizations.length > 0
+									? organizations.flatMap((org) =>
+											org.roles && Array.isArray(org.roles)
+												? org.roles.map((role) => role.title)
+												: []
+									  )
+									: []
 							const roleToString =
 								roles.length > 0
 									? roles
@@ -1034,6 +1092,13 @@ module.exports = class UserInviteHelper {
 						return acc
 					}, {})
 					const raw_phone = invitee?.phone || null
+					const inviteCodeString = await generateUniqueCodeString(4)
+					// first letter of tenant code + random string of len 4 + random digit of len 4 + firrst letter of org code
+					const invitation_code = `${String(user.tenant_code)
+						.slice(0, 1)
+						.toUpperCase()}${inviteCodeString}${utils.generateSecureOTP(4)}${String(user.organization_code)
+						.slice(0, 1)
+						.toUpperCase()}`
 					const inviteeData = {
 						...invitee,
 						type: common.INVITED_STATUS,
@@ -1045,6 +1110,7 @@ module.exports = class UserInviteHelper {
 						invitation_id: invitationId,
 						invitation_key: utils.generateUUID(),
 						tenant_code: user.tenant_code,
+						invitation_code,
 					}
 					inviteeData.email = encryptedEmail
 					inviteeData.username = inviteeData?.username
@@ -1071,6 +1137,7 @@ module.exports = class UserInviteHelper {
 								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '',
 								portalURL: loginUrl,
 								username: inviteeData.username,
+								registerCode: inviteeData.invitation_code,
 							},
 							tenantCode: user.tenant_code,
 							organization_id: user.organization_id,
@@ -1089,6 +1156,7 @@ module.exports = class UserInviteHelper {
 								roles: invitee.roles.length > 0 ? invitee.roles.join(',') : '' || '',
 								portalURL: loginUrl,
 								username: inviteeData.username,
+								registerCode: inviteeData.invitation_code,
 							},
 							tenantCode: user.tenant_code,
 							organization_id: user.organization_id,
