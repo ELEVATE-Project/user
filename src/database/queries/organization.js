@@ -50,7 +50,7 @@ exports.create = async (data) => {
 		throw error
 	}
 }
-exports.findOne = async (filter, options) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
 		if (options?.isAdmin) {
 			options = {
