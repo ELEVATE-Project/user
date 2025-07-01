@@ -78,8 +78,6 @@ module.exports = {
 
 		req.checkQuery('organisation_code').optional().notEmpty().withMessage('organisation_code field is empty')
 
-		req.checkQuery('tenant_code').notEmpty().withMessage('tenant_code field is empty')
-
 		// Use oneOf to check that at least one of the fields is present
 		req.checkQuery()
 			.oneOf(['organisation_id', 'organisation_code'])
