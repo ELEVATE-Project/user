@@ -399,11 +399,9 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} 									- Organization creation details.
 	 */
 
-	static async read(organisationId, organisationCode, tenantCode) {
+	static async read(organisationId, organisationCode) {
 		try {
-			let filter = {
-				tenant_code: tenantCode,
-			}
+			let filter = {}
 			// Build filter based on incoming query
 			if (organisationId !== '') {
 				filter.id = parseInt(organisationId)
