@@ -227,7 +227,7 @@ exports.findOrgWithRegistrationCode = async (filter, options = {}) => {
 					model: Organization,
 					as: 'organization',
 					where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
-					required: false,
+					required: true,
 				},
 			],
 			nest: true,

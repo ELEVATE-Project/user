@@ -379,8 +379,10 @@ module.exports = class AccountHelper {
 
 			if (invitedUserMatch) {
 				const tempBody = utils.restructureBody(invitedUserMatch, prunedEntities, userModel)
-				Object.keys(tempBody).forEach((keys) => {
-					bodyData[keys] = tempBody[keys] == '' ? null : tempBody[keys]
+				userModel.forEach((keys) => {
+					if (tempBody?.[keys] && tempBody?.[keys] != null) {
+						bodyData[keys] = tempBody[keys]
+					}
 				})
 				bodyData = {
 					...bodyData,

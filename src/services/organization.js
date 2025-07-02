@@ -664,7 +664,7 @@ module.exports = class OrganizationsHelper {
 			registrationCodes = Array.isArray(registrationCodes)
 				? registrationCodes
 				: registrationCodes.split(',') || []
-			registrationCodes = registrationCodes.map((code) => code.toString().trim())
+			registrationCodes = registrationCodes.map((code) => code.toString().toLowerCase().trim())
 			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
 			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))].map((code) =>
 				code.trim().toLowerCase()
