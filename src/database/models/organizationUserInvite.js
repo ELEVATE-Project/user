@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			invitation_key: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 				unique: true,
 			},
 			invitation_id: {
@@ -73,7 +73,8 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			invitation_code: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
+				unique: true,
 			},
 			created_by: {
 				type: DataTypes.INTEGER,
@@ -89,7 +90,12 @@ module.exports = (sequelize, DataTypes) => {
 				{
 					unique: true,
 					fields: ['invitation_code', 'tenant_code'],
-					name: 'unique_invitation_code_tenant_code',
+					name: 'invitations_invitation_code_tenant_code_unique',
+				},
+				{
+					unique: true,
+					fields: ['invitation_key', 'tenant_code'],
+					name: 'invitations_invitation_key_tenant_code_unique',
 				},
 			],
 		}

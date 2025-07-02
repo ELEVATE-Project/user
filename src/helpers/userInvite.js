@@ -850,7 +850,7 @@ module.exports = class UserInviteHelper {
 						continue
 					}
 				}
-				if (!existingUser && uploadType != common.TYPE_INVITE.trim().toUpperCase()) {
+				if (!existingUser && uploadType == common.TYPE_UPLOAD.trim().toUpperCase()) {
 					const validInvitation =
 						existingInvitees.get(encryptedEmail) ||
 						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
@@ -1070,27 +1070,6 @@ module.exports = class UserInviteHelper {
 						invitee.statusOrUserId = newInvitee
 					}
 				} else if (!existingUser && uploadType == common.TYPE_INVITE.trim().toUpperCase()) {
-					invitee.meta = prunedEntities.reduce((acc, index) => {
-						if (index.data_type == 'ARRAY' || index.data_type == 'ARRAY[STRING]') {
-							if (invitee[index.value]) {
-								acc[index.value] = invitee[index.value].split(',').map((entity) => {
-									return externalEntityNameIdMap[entity.replaceAll(/\s+/g, '').toLowerCase()]._id
-								})
-							} else {
-								acc[index.value] = []
-							}
-						} else {
-							if (invitee[index.value]) {
-								acc[index.value] =
-									externalEntityNameIdMap[
-										invitee[index.value].replaceAll(/\s+/g, '').toLowerCase()
-									]._id
-							} else {
-								acc[index.value] = ''
-							}
-						}
-						return acc
-					}, {})
 					const raw_phone = invitee?.phone || null
 					const inviteCodeString = await generateUniqueCodeString(4)
 					// first letter of tenant code + random string of len 4 + random digit of len 4 + firrst letter of org code
