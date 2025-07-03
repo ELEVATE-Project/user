@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			invitation_key: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 				unique: true,
 			},
 			invitation_id: {
@@ -71,6 +71,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
+			invitation_code: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				unique: true,
+			},
 			created_by: {
 				type: DataTypes.INTEGER,
 			},
@@ -81,6 +86,18 @@ module.exports = (sequelize, DataTypes) => {
 			tableName: 'organization_user_invites',
 			freezeTableName: true,
 			paranoid: true,
+			indexes: [
+				{
+					unique: true,
+					fields: ['invitation_code', 'tenant_code'],
+					name: 'invitations_invitation_code_tenant_code_unique',
+				},
+				{
+					unique: true,
+					fields: ['invitation_key', 'tenant_code'],
+					name: 'invitations_invitation_key_tenant_code_unique',
+				},
+			],
 		}
 	)
 	// Many-to-one: Many OrganizationUserInvites belong to one Invitation

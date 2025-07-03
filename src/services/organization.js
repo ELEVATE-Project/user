@@ -1,6 +1,7 @@
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const organizationQueries = require('@database/queries/organization')
+const organizationRegCodeQueries = require('@database/queries/OrganizationRegistrationCode')
 const utils = require('@generics/utils')
 const roleQueries = require('@database/queries/user-role')
 const orgRoleReqQueries = require('@database/queries/orgRoleRequest')
@@ -151,6 +152,13 @@ module.exports = class OrganizationsHelper {
 			if (error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR) {
 				return responses.failureResponse({
 					message: 'ORG_UNIQUE_CONSTRAIN_ERROR',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			if (error.message === 'registration_code') {
+				return responses.failureResponse({
+					message: 'REG_CODE_ERROR',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -428,7 +436,7 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} 									- Organization details.
 	 */
 
-	static async details(organisationId, userId, tenantCode) {
+	static async details(organisationId, userId, tenantCode, isAdmin) {
 		try {
 			const userOrgs = await userOrgQueries.findAll(
 				{
@@ -462,9 +470,10 @@ module.exports = class OrganizationsHelper {
 
 			let filter = {
 				id: parseInt(organisationId),
+				tenant_code: tenantCode,
 			}
 
-			const organisationDetails = await organizationQueries.findOne(filter)
+			const organisationDetails = await organizationQueries.findOne(filter, { isAdmin })
 			if (!organisationDetails) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',
@@ -608,6 +617,91 @@ module.exports = class OrganizationsHelper {
 			throw error
 		}
 	}
+
+	static async addRegCode(code, tenantCode, registrationCodes) {
+		try {
+			// fetch organization details before update
+			const orgDetailsBeforeUpdate = await verifyOrg(code, tenantCode)
+			if (Object.keys(orgDetailsBeforeUpdate).length <= 0) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: 'ORGANIZATION_NOT_FOUND',
+				})
+			}
+			// append registration codes
+			registrationCodes = registrationCodes.map((code) => code.toString().trim())
+			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
+			const codeToAppend = [...new Set(_.difference(registrationCodes, existingRegCodes))]
+
+			if (codeToAppend.length > 0) {
+				const registrationCodeBody = codeToAppend.map((registration_code) => {
+					return {
+						registration_code: registration_code.toLowerCase().trim(),
+						organization_code: orgDetailsBeforeUpdate.code,
+						status: common.ACTIVE_STATUS,
+						tenant_code: orgDetailsBeforeUpdate?.tenant_code,
+						created_by: orgDetailsBeforeUpdate?.created_by || null,
+						deleted_at: null,
+					}
+				})
+				await organizationRegCodeQueries.bulkCreate(registrationCodeBody)
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+	static async removeRegCode(id, tenantCode, registrationCodes) {
+		try {
+			// fetch organization details before update
+			const orgDetailsBeforeUpdate = await verifyOrg(id, tenantCode)
+			// append registration codes
+			registrationCodes = Array.isArray(registrationCodes)
+				? registrationCodes
+				: registrationCodes.split(',') || []
+			registrationCodes = registrationCodes.map((code) => code.toString().toLowerCase().trim())
+			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
+			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))].map((code) =>
+				code.trim().toLowerCase()
+			)
+
+			if (codeToRemove.length > 0) {
+				await organizationRegCodeQueries.bulkDelete(
+					codeToRemove,
+					orgDetailsBeforeUpdate?.code,
+					orgDetailsBeforeUpdate?.tenant_code
+				)
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.accepted,
+				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+}
+
+async function verifyOrg(code, tenantCode) {
+	// fetch organization details before update
+	const orgDetailsBeforeUpdate = await organizationQueries.findOne(
+		{ code, tenant_code: tenantCode },
+		{ isAdmin: true }
+	)
+	if (!orgDetailsBeforeUpdate) {
+		throw responses.failureResponse({
+			statusCode: httpStatusCode.not_acceptable,
+			responseCode: 'CLIENT_ERROR',
+			message: 'ORGANIZATION_NOT_FOUND',
+		})
+	}
+	return orgDetailsBeforeUpdate
 }
 
 async function createRoleRequest(bodyData, tokenInformation) {

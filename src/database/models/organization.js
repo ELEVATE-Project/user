@@ -42,10 +42,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			registration_code: {
-				type: DataTypes.STRING(32),
-				allowNull: true,
-			},
 			meta: {
 				type: DataTypes.JSON,
 				allowNull: true,
@@ -79,6 +75,13 @@ module.exports = (sequelize, DataTypes) => {
 			foreignKey: 'tenant_code',
 			targetKey: 'code',
 			as: 'tenant',
+		})
+
+		// Association with OrganizationRegistrationCode
+		Organization.hasMany(models.OrganizationRegistrationCode, {
+			foreignKey: 'organization_code',
+			sourceKey: 'code',
+			as: 'organizationRegistrationCodes',
 		})
 	}
 
