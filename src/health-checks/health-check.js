@@ -6,56 +6,22 @@
  */
 
 // Dependencies
-
-const { v1: uuidv1 } = require('uuid')
-const kafkaHealthCheck = require('./kafka')
-
-const obj = {
-	KAFKA: {
-		NAME: 'kafka',
-		FAILED_CODE: 'KAFKA_HEALTH_FAILED',
-		FAILED_MESSAGE: 'Kafka is not connected',
-	},
-	NAME: 'UserServiceHealthCheck',
-	API_VERSION: '1.0',
-}
+const { healthCheckHandler } = require('elevate-services-health-check')
+const healthCheckConfig = require('./health.config')
 
 let health_check = async function (req, res) {
-	let checks = []
-	let kafkaServiceStatus = await kafkaHealthCheck.health_check()
-
-	checks.push(checkResult('KAFKA', kafkaServiceStatus))
-
-	let checkServices = checks.filter((check) => check.healthy === false)
-
-	let result = {
-		name: obj.NAME,
-		version: obj.API_VERSION,
-		healthy: checkServices.length > 0 ? false : true,
-		checks: checks,
-	}
-
-	let responseData = response(req, result)
-	res.status(200).json(responseData)
-}
-
-let checkResult = function (serviceName, isHealthy) {
-	return {
-		name: obj[serviceName].NAME,
-		healthy: isHealthy,
-		err: !isHealthy ? obj[serviceName].FAILED_CODE : '',
-		errMsg: !isHealthy ? obj[serviceName].FAILED_MESSAGE : '',
-	}
+	const response = await healthCheckHandler(healthCheckConfig, req.query.serviceName)
+	res.status(200).json(response)
 }
 
 let healthCheckStatus = function (req, res) {
 	let responseData = response(req)
 	res.status(200).json(responseData)
-}
+} // enabled:process.env.NODE_ENV !== 'development',
 
-let response = function (req, result = {}) {
+let response = function (req, result) {
 	return {
-		id: 'userService.Health.API',
+		id: 'Project.service.Health.API',
 		ver: '1.0',
 		ts: new Date(),
 		params: {
@@ -71,6 +37,6 @@ let response = function (req, result = {}) {
 }
 
 module.exports = {
-	healthCheckStatus: healthCheckStatus,
 	health_check: health_check,
+	healthCheckStatus: healthCheckStatus,
 }
