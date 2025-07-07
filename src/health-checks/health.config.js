@@ -6,13 +6,9 @@
  */
 
 module.exports = {
-	name: 'UserService',
+	name: process.env.SERVICE_NAME,
 	version: '1.0.0',
 	checks: {
-		mongodb: {
-			enabled: true,
-			url: process.env.MONGODB_URL,
-		},
 		kafka: {
 			enabled: true,
 			url: process.env.KAFKA_URL,
@@ -28,20 +24,18 @@ module.exports = {
 		microservices: [
 			{
 				name: 'EntityManagementService',
-				url: 'http://localhost:3569/entity/health?serviceName=UserService', // Replace with actual URL - use environment variable if needed
+				url: `${process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL}/health?serviceName=${process.env.SERVICE_NAME}`,
 				enabled: true,
-
 				request: {
 					method: 'GET',
-					header: {
-						'internal-access-token': process.env.INTERNAL_TOKEN,
-					},
+					header: {},
 					body: {},
 				},
 
 				expectedResponse: {
 					status: 200,
 					'params.status': 'successful',
+					'result.healthy': true,
 				},
 			},
 		],
