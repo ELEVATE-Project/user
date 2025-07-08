@@ -40,7 +40,7 @@ module.exports = {
 					onDelete: 'CASCADE',
 				})
 
-				await addConstraintSafely('entities', {
+				/* await addConstraintSafely('entities', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_entities_created_by',
@@ -50,9 +50,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('entities', {
+				/* await addConstraintSafely('entities', {
 					fields: ['updated_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_entities_updated_by',
@@ -62,7 +62,8 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
+
 				// 2. entity_types table relations
 				console.log('Adding constraints for entity_types table...')
 				await addConstraintSafely('entity_types', {
@@ -101,7 +102,7 @@ module.exports = {
 					onDelete: 'CASCADE',
 				})
 
-				await addConstraintSafely('entity_types', {
+				/* await addConstraintSafely('entity_types', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_entity_types_created_by',
@@ -111,9 +112,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('entity_types', {
+				/* await addConstraintSafely('entity_types', {
 					fields: ['updated_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_entity_types_updated_by',
@@ -123,7 +124,7 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
 				// 3. features table relations
 				console.log('Adding constraints for features table...')
@@ -177,7 +178,7 @@ module.exports = {
 					onDelete: 'CASCADE',
 				})
 
-				await addConstraintSafely('file_uploads', {
+				/* await addConstraintSafely('file_uploads', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_file_uploads_created_by',
@@ -187,9 +188,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('file_uploads', {
+				/* await addConstraintSafely('file_uploads', {
 					fields: ['updated_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_file_uploads_updated_by',
@@ -199,7 +200,7 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
 				// 5. forms table relations
 				console.log('Adding constraints for forms table...')
@@ -229,7 +230,7 @@ module.exports = {
 
 				// 6. invitations table relations (already has file_id FK)
 				console.log('Adding constraints for invitations table...')
-				await addConstraintSafely('invitations', {
+				/* await addConstraintSafely('invitations', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_invitations_created_by',
@@ -239,7 +240,7 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'CASCADE',
-				})
+				}) */
 
 				await addConstraintSafely('invitations', {
 					fields: ['organization_id', 'tenant_code'],
@@ -317,7 +318,7 @@ module.exports = {
 					onDelete: 'CASCADE',
 				})
 
-				await addConstraintSafely('organization_email_domains', {
+				/* await addConstraintSafely('organization_email_domains', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_org_email_domains_created_by',
@@ -327,9 +328,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('organization_email_domains', {
+				/* await addConstraintSafely('organization_email_domains', {
 					fields: ['updated_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_org_email_domains_updated_by',
@@ -339,7 +340,7 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
 				// 9. organization_features table relations (already has feature_code FK)
 				console.log('Adding constraints for organization_features table...')
@@ -367,7 +368,7 @@ module.exports = {
 					onDelete: 'CASCADE',
 				})
 
-				await addConstraintSafely('organization_features', {
+				/* await addConstraintSafely('organization_features', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_org_features_created_by',
@@ -377,9 +378,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('organization_features', {
+				/* await addConstraintSafely('organization_features', {
 					fields: ['updated_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_org_features_updated_by',
@@ -389,9 +390,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('organization_features', {
+				/* 				await addConstraintSafely('organization_features', {
 					fields: ['feature_code'],
 					type: 'foreign key',
 					name: 'fk_org_features_features',
@@ -401,7 +402,7 @@ module.exports = {
 					},
 					onDelete: 'NO ACTION', // Adjust based on your requirements (e.g., CASCADE, RESTRICT)
 					onUpdate: 'NO ACTION', // Adjust based on your requirements
-				})
+				}) */
 
 				// 10. organization_role_requests table relations
 				console.log('Adding constraints for organization_role_requests table...')
@@ -468,12 +469,12 @@ module.exports = {
 				// 11. organization_user_invites table relations (already has invitation_id FK)
 				console.log('Adding constraints for organization_user_invites table...')
 				await addConstraintSafely('organization_user_invites', {
-					fields: ['organization_id', 'tenant_code'],
+					fields: ['organization_code', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_org_user_invites_organization_id',
 					references: {
 						table: 'organizations',
-						fields: ['id', 'tenant_code'],
+						fields: ['code', 'tenant_code'],
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'CASCADE',
@@ -491,7 +492,7 @@ module.exports = {
 					onDelete: 'NO ACTION',
 				})
 
-				await addConstraintSafely('organization_user_invites', {
+				/* await addConstraintSafely('organization_user_invites', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_org_user_invites_created_by',
@@ -501,7 +502,7 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
 				await addConstraintSafely('organization_user_invites', {
 					fields: ['organization_code', 'tenant_code'],
@@ -541,7 +542,7 @@ module.exports = {
 					onDelete: 'NO ACTION',
 				})
 
-				await addConstraintSafely('organizations', {
+				/* await addConstraintSafely('organizations', {
 					fields: ['created_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_organizations_created_by',
@@ -551,9 +552,9 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
-				await addConstraintSafely('organizations', {
+				/* await addConstraintSafely('organizations', {
 					fields: ['updated_by', 'tenant_code'],
 					type: 'foreign key',
 					name: 'fk_organizations_updated_by',
@@ -563,7 +564,7 @@ module.exports = {
 					},
 					onUpdate: 'NO ACTION',
 					onDelete: 'NO ACTION',
-				})
+				}) */
 
 				await addConstraintSafely('organizations', {
 					fields: ['tenant_code'],
@@ -697,7 +698,7 @@ module.exports = {
 				await addIndexSafely('organization_features', ['organization_code', 'tenant_code'])
 				await addIndexSafely('organization_role_requests', ['requester_id'])
 				await addIndexSafely('organization_role_requests', ['organization_id', 'tenant_code'])
-				await addIndexSafely('organization_user_invites', ['organization_id'])
+				await addIndexSafely('organization_user_invites', ['organization_code'])
 				await addIndexSafely('organizations', ['parent_id', 'tenant_code'])
 				await addIndexSafely('user_roles', ['organization_id', 'tenant_code'])
 				await addIndexSafely('user_sessions', ['user_id'])

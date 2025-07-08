@@ -15,14 +15,23 @@ module.exports = {
 				{ transaction }
 			)
 
+			//Delete missing users
+			await queryInterface.sequelize.query(
+				`
+			DELETE FROM user_sessions
+			WHERE user_id NOT IN (SELECT id FROM users)
+  			`,
+				{ transaction }
+			)
+
 			// 2. Backfill tenant_code from users table
 			await queryInterface.sequelize.query(
 				`
-        UPDATE user_sessions us
-        SET tenant_code = u.tenant_code
-        FROM users u
-        WHERE us.user_id = u.id
-        `,
+  UPDATE user_sessions us
+  SET tenant_code = u.tenant_code
+  FROM users u
+  WHERE us.user_id = u.id
+  `,
 				{ transaction }
 			)
 
@@ -64,6 +73,14 @@ module.exports = {
 					{ transaction }
 				)
 			}
+
+			await queryInterface.sequelize.query(
+				`
+  ALTER TABLE organization_features
+  DROP CONSTRAINT IF EXISTS organization_features_feature_code_fkey
+  `,
+				{ transaction }
+			)
 
 			await transaction.commit()
 		} catch (err) {
