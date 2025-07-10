@@ -267,7 +267,7 @@ module.exports = class UserInviteHelper {
 							.split(',')
 							.map((role) => role.trim())
 					}
-
+					row.username = row?.username ? row.username.toLowerCase() : null
 					// Extract and prepare meta fields
 					row.meta = {
 						block: row?.block
