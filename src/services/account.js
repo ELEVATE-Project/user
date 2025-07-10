@@ -206,7 +206,7 @@ module.exports = class AccountHelper {
 
 			if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
 				filterCondition.phone = encryptedPhoneNumber
-				filterCondition.phone = bodyData.phone_code
+				filterCondition.phone_code = bodyData.phone_code
 			}
 
 			filterCondition.tenant_code = tenantDomain.tenant_code
