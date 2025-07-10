@@ -1,41 +1,94 @@
 'use strict'
-const { Organization, sequelize, organizationCode } = require('@database/models/index')
+const { Organization, sequelize, OrganizationRegistrationCode } = require('@database/models/index')
 const { Op } = require('sequelize')
 const common = require('@constants/common')
 
 exports.create = async (data) => {
+	const t = await sequelize.transaction() // Start a transaction
 	try {
-		const createdOrg = await Organization.create(data)
-		// await organizationCode.create({
-		// 	code: data.code,
-		// 	organization_id: createdOrg.toJSON().id,
-		// })
-		return createdOrg.get({ plain: true })
+		// Create the organization
+		const createdOrg = await Organization.create(data, { transaction: t })
+		let successfulCodes = []
+
+		// Handle registration codes if provided
+		if (data?.registration_codes) {
+			const registrationCodes = Array.isArray(data?.registration_codes)
+				? data.registration_codes
+				: data.registration_codes.split(',') || []
+
+			const registrationCodesBody = registrationCodes.map((registration_code) => {
+				return {
+					registration_code: registration_code.toLowerCase().trim(),
+					organization_code: createdOrg.toJSON().code,
+					status: common.ACTIVE_STATUS,
+					tenant_code: createdOrg.toJSON().tenant_code,
+					created_by: createdOrg.toJSON().created_by || null,
+					deleted_at: null,
+				}
+			})
+
+			const results = await OrganizationRegistrationCode.bulkCreate(registrationCodesBody, { transaction: t })
+
+			// // Wait for all promises to settle
+			// const results = await Promise.all(registrationCodePromises)
+
+			successfulCodes = results.map((result) => result.registration_code) || []
+		}
+
+		// Commit the transaction
+		await t.commit()
+		// Return the created organization
+		return successfulCodes.length > 0
+			? { ...createdOrg.get({ plain: true }), registration_codes: successfulCodes }
+			: createdOrg.get({ plain: true })
 	} catch (error) {
+		// Roll back the transaction on error
+		await t.rollback()
+
+		// Log and rethrow the error
 		console.error(error)
 		throw error
 	}
 }
-
-exports.findOne = async (filter, options) => {
+exports.findOne = async (filter, options = {}) => {
 	try {
-		/* if (filter.code) {
-			const organization = await organizationCode.findOne({
-				where: { code: filter.code },
-				attributes: ['organization_id'],
-				raw: true,
-			})
-			if (!organization) {
-				return null
+		if (options?.isAdmin) {
+			options = {
+				...options,
+				include: [
+					{
+						model: OrganizationRegistrationCode,
+						as: 'organizationRegistrationCodes',
+						attributes: ['registration_code'],
+						where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
+						required: false,
+					},
+				],
 			}
-			delete filter.code
-			filter.id = organization.organization_id
-		} */
-		return await Organization.findOne({
+		}
+		delete options.isAdmin
+		let organization = await Organization.findOne({
 			where: filter,
 			...options,
-			raw: true,
+			nest: true,
 		})
+		if (!organization) return null
+
+		// Convert Sequelize instance to plain object
+		organization = organization.toJSON()
+
+		if (organization && organization?.organizationRegistrationCodes) {
+			const registrationCodes = organization.organizationRegistrationCodes
+				? Array.isArray(organization.organizationRegistrationCodes)
+					? organization.organizationRegistrationCodes.map((code) => code.registration_code).filter(Boolean)
+					: [organization.organizationRegistrationCodes.registration_code].filter(Boolean)
+				: []
+
+			delete organization.organizationRegistrationCodes
+			organization.registration_codes = registrationCodes
+		}
+
+		return organization
 	} catch (error) {
 		throw error
 	}
@@ -159,6 +212,28 @@ exports.findAll = async (filter, options = {}) => {
 exports.findByPk = async (id) => {
 	try {
 		return await Organization.findByPk(id, { raw: true })
+	} catch (error) {
+		throw error
+	}
+}
+
+exports.findOrgWithRegistrationCode = async (filter, options = {}) => {
+	try {
+		let organizationReg = await OrganizationRegistrationCode.findOne({
+			where: filter,
+			...options,
+			include: [
+				{
+					model: Organization,
+					as: 'organization',
+					where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
+					required: true,
+				},
+			],
+			nest: true,
+		})
+		const organization = organizationReg ? organizationReg.toJSON().organization : null
+		return organization
 	} catch (error) {
 		throw error
 	}

@@ -177,6 +177,7 @@ module.exports = class tenantHelper {
 									status: common.ACTIVE_STATUS,
 									type: 'SYSTEM',
 									allow_filtering: entityType.allow_filtering,
+									allow_custom_entities: entityType?.allow_custom_entities,
 									model_names: entityType.model_names,
 									data_type: entityType.data_type,
 									has_entities: entityType?.has_entities,

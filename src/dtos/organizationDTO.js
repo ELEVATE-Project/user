@@ -7,6 +7,7 @@ class organizationDTO {
 			description: input.description,
 			status: input.status,
 			meta: input.meta,
+			registration_codes: input?.registration_codes || [],
 		}
 	}
 }

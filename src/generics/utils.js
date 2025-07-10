@@ -141,7 +141,7 @@ function generateCSVContent(data) {
 	].join('\n')
 }
 
-function validateInput(input, validationData, modelName, skipValidation = false) {
+async function validateInput(input, validationData, modelName, skipValidation = false, tenantCode) {
 	const errors = []
 	for (const field of validationData) {
 		if (!skipValidation) {
@@ -165,7 +165,7 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 		function addError(field, value, dataType, message) {
 			errors.push({
 				param: field.value,
-				msg: `${value} is invalid for data type ${dataType}. ${message}`,
+				msg: dataType ? `${value} is invalid for data type ${dataType}. ${message}` : message,
 			})
 		}
 
@@ -252,6 +252,20 @@ function validateInput(input, validationData, modelName, skipValidation = false)
 			field.has_entities === false ||
 			field.external_entity_type === true
 		) {
+			if (field.external_entity_type) {
+				let verifyExternalEntityFlag = false
+				if (field.data_type == 'ARRAY' || field.data_type == 'ARRAY[STRING]') {
+					fieldValue.forEach(async (key) => {
+						verifyExternalEntityFlag = await verifyExternalEntity(key, field, tenantCode)
+						if (!verifyExternalEntityFlag)
+							addError(field, fieldValue, false, `'${key}' is an invalid ${field.value} entity!`)
+					})
+				} else {
+					verifyExternalEntityFlag = await verifyExternalEntity(fieldValue, field, tenantCode)
+					if (!verifyExternalEntityFlag)
+						addError(field, fieldValue, false, `'${fieldValue}' is an invalid ${field.value} entity!`)
+				}
+			}
 			continue // Skip validation if the field is not present in the input or allow_custom_entities is true
 		}
 
@@ -373,6 +387,39 @@ function restructureBody(requestBody, entityData, allowedKeys) {
 		return requestBody
 	} catch (error) {
 		console.error(error)
+	}
+}
+
+const verifyExternalEntity = async (fieldValue, matchedEntity, tenantCode) => {
+	let filterData = {}
+	const externalBaseUrl =
+		process.env?.[`${matchedEntity.meta.service.toUpperCase()}_BASE_URL`] ||
+		process.env?.[`${matchedEntity.meta.service.replace(/-/g, '_').toUpperCase()}_BASE_URL`]
+	const url = constructUrl(externalBaseUrl, matchedEntity.meta.endPoint)
+	const projection = ['_id', 'entityType']
+	filterData['_id'] = fieldValue
+	filterData['tenantId'] = tenantCode
+	let result = {}
+	try {
+		result = await axios.post(
+			url,
+			{
+				query: filterData,
+				projection: projection,
+			},
+			{
+				headers: {
+					'Content-Type': 'application/json',
+					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+				},
+			}
+		)
+		return (
+			result?.data?.result?.[0]?._id === fieldValue &&
+			result?.data?.result?.[0]?.entityType == matchedEntity.value
+		)
+	} catch {
+		return false
 	}
 }
 

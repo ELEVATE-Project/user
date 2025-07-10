@@ -86,9 +86,27 @@ exports.deleteOne = async (id, options = {}) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
+		const include = [
+			{
+				model: Invitation,
+				as: 'invitation',
+				where: {
+					tenant_code: filter.tenant_code, // Ensure JOIN respects distribution key
+					...(options.isValid && {
+						valid_till: {
+							[Op.gte]: new Date(),
+						},
+					}),
+					deleted_at: null, // Explicitly filter out soft-deleted records
+				},
+				required: true,
+			},
+		]
+		delete options.isValid
 		return await OrganizationUserInvite.findAll({
 			where: filter,
 			...options,
+			include,
 			raw: true,
 		})
 	} catch (error) {

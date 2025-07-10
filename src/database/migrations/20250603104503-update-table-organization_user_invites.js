@@ -122,6 +122,8 @@ module.exports = {
 				allowNull: true,
 			})
 
+			await queryInterface.removeColumn(tableName, 'organization_id')
+
 			const [results] = await queryInterface.sequelize.query(
 				`SELECT constraint_name 
                  FROM information_schema.table_constraints 
