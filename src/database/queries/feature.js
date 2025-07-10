@@ -22,7 +22,7 @@ module.exports = class FeatureData {
 			const data = await Feature.findAndCountAll({
 				where: filter,
 				attributes,
-				options,
+				...options,
 			})
 			return data
 		} catch (error) {

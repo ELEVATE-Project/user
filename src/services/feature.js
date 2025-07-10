@@ -134,8 +134,9 @@ module.exports = class featureHelper {
 			const options = {
 				offset,
 				limit,
+				order: [['sequence_no', 'ASC']], // Sort by sequence_no in ascending order
 			}
-			const attributes = ['code', 'label', 'description', 'icon', 'meta']
+			const attributes = ['code', 'label', 'description', 'icon', 'meta', 'sequence_no']
 
 			const features = await featureQueries.findAndCountAll(filter, attributes, options)
 

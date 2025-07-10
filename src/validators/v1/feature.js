@@ -17,8 +17,18 @@ module.exports = {
 			.matches(/^[A-Za-z]*$/)
 			.notEmpty()
 			.withMessage('label field is empty')
+
+		if (isUpdate && req.body.sequence_no !== undefined) {
+			req.checkBody('sequence_no').matches(/^\d+$/).withMessage('sequence_no must contain only digits')
+		}
+
 		if (!isUpdate) {
 			req.checkBody('code').trim().notEmpty().withMessage('code field is empty')
+			req.checkBody('sequence_no')
+				.notEmpty()
+				.withMessage('sequence_no must not be empty')
+				.matches(/^\d+$/)
+				.withMessage('sequence_no must contain only digits')
 		}
 	},
 

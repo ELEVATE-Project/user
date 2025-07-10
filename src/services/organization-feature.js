@@ -64,6 +64,7 @@ module.exports = class organizationFeatureHelper {
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
 		try {
+			console.log(tokenInformation)
 			// validate that the feature exists in the default organization
 			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
 				const defaultFeature = await organizationFeatureQueries.findOne({
@@ -72,7 +73,8 @@ module.exports = class organizationFeatureHelper {
 					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
 					enabled: true,
 				})
-
+				console.log('\n\n\n\n\n\n\n\n\n')
+				console.log(defaultFeature)
 				// If the feature is not available in the default organization, return an error
 				if (!defaultFeature) {
 					return responses.failureResponse({
@@ -80,6 +82,10 @@ module.exports = class organizationFeatureHelper {
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
+				}
+				// Else, attach the default sequence_no from default organization
+				else {
+					bodyData.sequence_no = defaultFeature.sequence_no
 				}
 			}
 
@@ -177,11 +183,11 @@ module.exports = class organizationFeatureHelper {
 				organization_code: orgCode,
 				tenant_code: tenantCode,
 			}
-
 			const queryOptions = {
 				attributes: {
 					exclude: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
 				},
+				order: [['sequence_no', 'ASC']], // Sort by sequence_no in ascending order
 			}
 
 			// Fetch features for default and current org in parallel
@@ -205,10 +211,13 @@ module.exports = class organizationFeatureHelper {
 
 			const organizationFeatures = Array.from(featureMap.values())
 
+			// Sort the organization features based on the sequence_no in ascending order
+			const sortedFeatures = organizationFeatures.sort((a, b) => a.sequence_no - b.sequence_no)
+
 			// Process icons in parallel
-			if (organizationFeatures?.length) {
+			if (sortedFeatures?.length) {
 				await Promise.all(
-					organizationFeatures.map(async (feature) => {
+					sortedFeatures.map(async (feature) => {
 						if (feature.icon) {
 							feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
 						}
@@ -219,7 +228,7 @@ module.exports = class organizationFeatureHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_FETCHED',
-				result: organizationFeatures ?? [],
+				result: sortedFeatures ?? [],
 			})
 		} catch (error) {
 			throw error
