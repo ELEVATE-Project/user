@@ -103,7 +103,7 @@ module.exports = {
 				label: 'MITRA',
 				description: 'mitra capability',
 				meta: {
-					url: 'http://dev.elevate-mitra.shikshalokam.org/mohini/sso?accToken=',
+					url: '{{mitra_url}}/mohini/sso?accToken=',
 					icon: '/assets/images/ic_mitra.svg',
 					theme: {
 						primaryColor: '#572E91',
