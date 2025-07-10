@@ -64,7 +64,6 @@ module.exports = class organizationFeatureHelper {
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
 		try {
-			console.log(tokenInformation)
 			// validate that the feature exists in the default organization
 			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
 				const defaultFeature = await organizationFeatureQueries.findOne({
@@ -73,8 +72,6 @@ module.exports = class organizationFeatureHelper {
 					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
 					enabled: true,
 				})
-				console.log('\n\n\n\n\n\n\n\n\n')
-				console.log(defaultFeature)
 				// If the feature is not available in the default organization, return an error
 				if (!defaultFeature) {
 					return responses.failureResponse({
