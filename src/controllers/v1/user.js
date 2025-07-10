@@ -46,7 +46,7 @@ module.exports = class User {
 	async read(req) {
 		try {
 			const userDetails = await userService.read(
-				req.decodedToken.id,
+				req.params.id ? req.params.id : req.decodedToken.id,
 				req.headers,
 				req.query.language ? req.query.language : '',
 				req.decodedToken.tenant_code
