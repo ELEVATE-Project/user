@@ -39,22 +39,26 @@ async function updateSequenceNumbers() {
 		await sequelize.authenticate()
 		console.log('Connection established successfully.')
 
+		const featureOrder = ['programs', 'project', 'survey', 'observation', 'reports', 'mentoring', 'mitra']
+
 		// 1. Fetch all features ordered by code
 		const features = await sequelize.query(`SELECT code FROM features WHERE deleted_at IS NULL`, {
 			type: Sequelize.QueryTypes.SELECT,
 		})
 
-		// 2. Update sequence_no incrementally in features
-		let counter = 1
+		// 2. Loop through all features and update based on whether code is in featureOrder
 		for (const feature of features) {
-			await sequelize.query(`UPDATE features SET sequence_no = :seq WHERE code = :code`, {
+			const code = feature.code
+			const index = featureOrder.indexOf(code)
+			const sequenceNo = index !== -1 ? index + 1 : featureOrder.length + 1
+
+			await sequelize.query(`UPDATE features SET sequence_no = :seq WHERE code = :code AND deleted_at IS NULL`, {
 				replacements: {
-					seq: counter,
-					code: feature.code,
+					seq: sequenceNo,
+					code: code,
 				},
 				type: Sequelize.QueryTypes.UPDATE,
 			})
-			counter++
 		}
 		console.log('Updated sequence_no in features table.')
 
