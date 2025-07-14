@@ -57,13 +57,11 @@ Each service has the following structure:
 
 ### ✅ Common Services
 
-| Service     | Purpose                         | Notes                                        |
-| ----------- | ------------------------------- | -------------------------------------------- |
-| `mongodb`   | Check MongoDB connection        | `url` must point to a valid MongoDB URI      |
-| `postgres`  | Check PostgreSQL database       | Example: `postgres://user:pass@host:port/db` |
-| `redis`     | Check Redis connectivity        | Can be local or remote                       |
-| `kafka`     | Check Kafka producer & consumer | Broker URL must be reachable                 |
-| `gotenberg` | Check PDF conversion service    | URL to Gotenberg's health endpoint           |
+| Service    | Purpose                         | Notes                                        |
+| ---------- | ------------------------------- | -------------------------------------------- |
+| `postgres` | Check PostgreSQL database       | Example: `postgres://user:pass@host:port/db` |
+| `redis`    | Check Redis connectivity        | Can be local or remote                       |
+| `kafka`    | Check Kafka producer & consumer | Broker URL must be reachable                 |
 
 ---
 
@@ -102,9 +100,7 @@ microservices: [
 ## 📌 Example `.env` Usage (Recommended)
 
 ```env
-MONGODB_URL=mongodb://localhost:27017/mydb
 POSTGRES_URL=postgres://user:pass@localhost:5432/mydb
-GOTENBERG_URL=http://localhost:3000
 KAFKA_URL=kafka://localhost:9092
 SURVEY_SERVICE_URL=http://localhost:4001/survey/health
 ```
@@ -127,9 +123,9 @@ module.exports = {
 	name: 'MyService',
 	version: '1.0.0',
 	checks: {
-		mongodb: {
+		postgres: {
 			enabled: true,
-			url: process.env.MONGODB_URL,
+			url: process.env.POSTGRES_URL,
 		},
 		redis: {
 			enabled: false,
@@ -143,4 +139,4 @@ module.exports = {
 
 ## 📞 Need More?
 
-Supports Kafka send/receive, Redis ping, MongoDB & Postgres connectivity, HTTP validation for microservices, and response structure validation.
+Supports Kafka send/receive, Redis ping & Postgres connectivity, HTTP validation for microservices, and response structure validation.
