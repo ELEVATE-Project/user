@@ -66,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
 			display_order: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
+				defaultValue: 0,
 			},
 		},
 		{
