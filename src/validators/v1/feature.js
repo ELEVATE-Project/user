@@ -18,17 +18,17 @@ module.exports = {
 			.notEmpty()
 			.withMessage('label field is empty')
 
-		if (isUpdate && req.body.sequence_no !== undefined) {
-			req.checkBody('sequence_no').matches(/^\d+$/).withMessage('sequence_no must contain only digits')
+		if (isUpdate && req.body.display_order !== undefined) {
+			req.checkBody('display_order').matches(/^\d+$/).withMessage('display_order must contain only digits')
 		}
 
 		if (!isUpdate) {
 			req.checkBody('code').trim().notEmpty().withMessage('code field is empty')
-			req.checkBody('sequence_no')
+			req.checkBody('display_order')
 				.notEmpty()
-				.withMessage('sequence_no must not be empty')
+				.withMessage('display_order must not be empty')
 				.matches(/^\d+$/)
-				.withMessage('sequence_no must contain only digits')
+				.withMessage('display_order must contain only digits')
 		}
 	},
 

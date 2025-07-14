@@ -60,7 +60,7 @@ const insertOrgFeatureQuery = `
 		tenant_code,
 		created_at,
 		updated_at,
-		sequence_no
+		display_order
 	) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?);
 `
 const defaultValues = ['Default Organization', process.env.DEFAULT_ORGANISATION_CODE, 'Default Organisation', 'ACTIVE']
@@ -98,7 +98,7 @@ const queryParams = defaultValues.map((value, index) => (value === 'default' ? n
 				feature.label, // feature_name
 				feature.icon, // icon (can be null)
 				process.env.DEFAULT_TENANT_CODE, // tenant_code
-				feature.sequence_no,
+				feature.display_order,
 			]
 
 			await sequelize.query(insertOrgFeatureQuery, {

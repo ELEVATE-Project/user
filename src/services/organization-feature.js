@@ -80,9 +80,9 @@ module.exports = class organizationFeatureHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				// Else, attach the default sequence_no from default organization
+				// Else, attach the default display_order from default organization
 				else {
-					bodyData.sequence_no = defaultFeature.sequence_no
+					bodyData.display_order = defaultFeature.display_order
 				}
 			}
 
@@ -184,7 +184,7 @@ module.exports = class organizationFeatureHelper {
 				attributes: {
 					exclude: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
 				},
-				order: [['sequence_no', 'ASC']], // Sort by sequence_no in ascending order
+				order: [['display_order', 'ASC']], // Sort by display_order in ascending order
 			}
 
 			// Fetch features for default and current org in parallel
@@ -208,8 +208,8 @@ module.exports = class organizationFeatureHelper {
 
 			const organizationFeatures = Array.from(featureMap.values())
 
-			// Sort the organization features based on the sequence_no in ascending order
-			const sortedFeatures = organizationFeatures.sort((a, b) => a.sequence_no - b.sequence_no)
+			// Sort the organization features based on the display_order in ascending order
+			const sortedFeatures = organizationFeatures.sort((a, b) => a.display_order - b.display_order)
 
 			// Process icons in parallel
 			if (sortedFeatures?.length) {

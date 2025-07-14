@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.DATE,
 				allowNull: true,
 			},
-			sequence_no: {
+			display_order: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
 			},
