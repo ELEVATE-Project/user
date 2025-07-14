@@ -184,7 +184,6 @@ module.exports = class organizationFeatureHelper {
 				attributes: {
 					exclude: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
 				},
-				order: [['display_order', 'ASC']], // Sort by display_order in ascending order
 			}
 
 			// Fetch features for default and current org in parallel

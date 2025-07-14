@@ -3,21 +3,18 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		// Add display_order to features table
+		// Step 1: Add column with allowNull: true
 		await queryInterface.addColumn('features', 'display_order', {
 			type: Sequelize.INTEGER,
-			allowNull: false,
-			defaultValue: 0, // Required to avoid errors for existing rows
+			allowNull: true,
 		})
 
-		// Add display_order to organization_features table
 		await queryInterface.addColumn('organization_features', 'display_order', {
 			type: Sequelize.INTEGER,
-			allowNull: false,
-			defaultValue: 0, // Required to avoid errors for existing rows
+			allowNull: true,
 		})
 
-		// 3. Feature display order logic
+		// Step 2: Seed values
 		const featureOrder = ['programs', 'project', 'survey', 'observation', 'reports', 'mentoring', 'mitra']
 
 		// Fetch all features
@@ -40,7 +37,7 @@ module.exports = {
 			)
 		}
 
-		// Update organization_features with matching display_order from features
+		// Update organization_features with matching display_order
 		for (const feature of features) {
 			const [result] = await queryInterface.sequelize.query(
 				`SELECT display_order FROM features WHERE code = :code`,
@@ -60,6 +57,17 @@ module.exports = {
 				)
 			}
 		}
+
+		// Step 3: Alter columns to NOT NULL
+		await queryInterface.changeColumn('features', 'display_order', {
+			type: Sequelize.INTEGER,
+			allowNull: false,
+		})
+
+		await queryInterface.changeColumn('organization_features', 'display_order', {
+			type: Sequelize.INTEGER,
+			allowNull: false,
+		})
 	},
 
 	async down(queryInterface, Sequelize) {
