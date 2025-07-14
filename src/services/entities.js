@@ -17,9 +17,10 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity created response.
 	 */
 
-	static async create(bodyData, id) {
+	static async create(bodyData, id, tenantCode) {
 		bodyData.created_by = id
 		bodyData.updated_by = id
+		bodyData.tenant_code = tenantCode
 		try {
 			const entity = await entityTypeQueries.createEntity(bodyData)
 			return responses.successResponse({
