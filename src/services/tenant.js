@@ -313,6 +313,7 @@ module.exports = class tenantHelper {
 								redirect_code: feature.redirect_code,
 								translation: feature.translation,
 								meta: feature.meta,
+								display_order: feature.display_order,
 							},
 							{
 								organization_id: defaultOrgId,
