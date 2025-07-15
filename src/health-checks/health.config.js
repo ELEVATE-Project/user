@@ -38,6 +38,22 @@ module.exports = {
 					'result.healthy': true,
 				},
 			},
+			{
+				name: 'SchedulerService',
+				url: `${process.env.INTERFACE_SERVICE_HOST}/scheduler/health?serviceName=${process.env.SERVICE_NAME}`,
+				enabled: true,
+				request: {
+					method: 'GET',
+					header: {},
+					body: {},
+				},
+
+				expectedResponse: {
+					status: 200,
+					'params.status': 'successful',
+					'result.healthy': true,
+				},
+			},
 		],
 	},
 }
