@@ -58,6 +58,17 @@ module.exports = {
 			}
 		}
 
+		// Update the deleted features in both the tables. Set display_order to 0
+
+		await queryInterface.sequelize.query(`UPDATE features SET display_order = 0 WHERE deleted_at IS NOT NULL`, {
+			type: Sequelize.QueryTypes.UPDATE,
+		})
+
+		await queryInterface.sequelize.query(
+			`UPDATE organization_features SET display_order = 0 WHERE deleted_at IS NOT NULL`,
+			{ type: Sequelize.QueryTypes.UPDATE }
+		)
+
 		// Step 3: Alter columns to NOT NULL
 		await queryInterface.changeColumn('features', 'display_order', {
 			type: Sequelize.INTEGER,
