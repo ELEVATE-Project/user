@@ -24,24 +24,21 @@ exports.findOne = async (filter, options = {}) => {
 	}
 }
 
-exports.findOneSMSTemplate = async (code, orgId, tenantCode) => {
+exports.findOneSMSTemplate = async (code, orgCode, tenantCode) => {
 	try {
-		const defaultOrg = await organizationQueries.findOne(
-			{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-			{ attributes: ['id'] }
-		)
-		const defaultOrgId = defaultOrg.id
+		const defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
 
 		const filter = {
 			code,
 			type: common.notificationSMSType,
 			status: common.ACTIVE_STATUS,
 			tenant_code: tenantCode,
-			organization_id: orgId
-				? {
-						[Op.or]: [orgId, defaultOrgId],
-				  }
-				: defaultOrgId,
+			organization_code:
+				orgCode && orgCode != defaultOrgCode
+					? {
+							[Op.or]: [orgCode, defaultOrgCode],
+					  }
+					: defaultOrgCode,
 		}
 
 		let templateData = await NotificationTemplate.findAll({
@@ -49,7 +46,8 @@ exports.findOneSMSTemplate = async (code, orgId, tenantCode) => {
 			raw: true,
 		})
 
-		const matchedTemplate = templateData.find((template) => template.organization_id === orgId) || templateData[0]
+		const matchedTemplate =
+			templateData.find((template) => template.organization_code === orgCode) || templateData[0]
 
 		return matchedTemplate || null // return null if nothing is found
 	} catch (error) {
@@ -58,14 +56,9 @@ exports.findOneSMSTemplate = async (code, orgId, tenantCode) => {
 	}
 }
 
-exports.findOneEmailTemplate = async (code, orgId, tenantCode) => {
+exports.findOneEmailTemplate = async (code, orgCode = null, tenantCode) => {
 	try {
-		// Get default orgId using code defined in env
-		const defaultOrg = await organizationQueries.findOne(
-			{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-			{ attributes: ['id'] }
-		)
-		const defaultOrgId = defaultOrg.id
+		const defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
 		/**If data exists for both `orgId` and `defaultOrgId`, the query will return data for both
 		 * Later we will filter the response
 		 */
@@ -74,11 +67,12 @@ exports.findOneEmailTemplate = async (code, orgId, tenantCode) => {
 			type: 'email',
 			tenant_code: tenantCode,
 			status: common.ACTIVE_STATUS,
-			organization_id: orgId
-				? {
-						[Op.or]: [orgId, defaultOrgId],
-				  }
-				: defaultOrgId,
+			organization_code:
+				orgCode && orgCode != defaultOrgCode
+					? {
+							[Op.or]: [orgCode, defaultOrgCode],
+					  }
+					: defaultOrgCode,
 		}
 
 		let templateData = await NotificationTemplate.findAll({
@@ -87,7 +81,7 @@ exports.findOneEmailTemplate = async (code, orgId, tenantCode) => {
 		})
 
 		// If there are multiple results, find the one matching orgId
-		templateData = templateData.find((template) => template.organization_id === orgId) || templateData[0]
+		templateData = templateData.find((template) => template.organization_code === orgCode) || templateData[0]
 
 		// If no data is found, set an empty object
 		templateData = templateData || {}

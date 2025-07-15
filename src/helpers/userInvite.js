@@ -1040,6 +1040,7 @@ module.exports = class UserInviteHelper {
 										username: inviteeData.username,
 									},
 									tenantCode: tenantDetails.code,
+									organization_code: user.organization_code,
 								})
 							}
 
@@ -1057,6 +1058,7 @@ module.exports = class UserInviteHelper {
 										username: inviteeData.username,
 									},
 									tenantCode: tenantDetails.code,
+									organization_code: user.organization_code,
 								})
 							}
 						} else {
@@ -1236,7 +1238,7 @@ module.exports = class UserInviteHelper {
 					downloadLink: inviteeUploadURL,
 				},
 				tenantCode: userData.tenant_code,
-				organization_id: userData.organization_id,
+				organization_code: userData.organization_code,
 			})
 			return {
 				success: true,
@@ -1257,7 +1259,7 @@ module.exports = class UserInviteHelper {
 					error: message,
 				},
 				tenantCode: userData.tenant_code,
-				organization_id: userData.organization_id,
+				organization_code: userData.organization_code,
 			})
 			return {
 				success: true,

@@ -587,6 +587,7 @@ module.exports = class AccountHelper {
 						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0].code || null,
 				})
 			}
 
@@ -602,6 +603,7 @@ module.exports = class AccountHelper {
 						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0].code || null,
 				})
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
@@ -1043,8 +1045,8 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const user = await userQueries.findOne(query)
+			const findAllUsers = await userQueries.findAllUserWithOrganization(query, {}, tenantDomain.tenant_code)
+			const user = findAllUsers.length > 0 ? findAllUsers[0] : null
 
 			if (!user) {
 				return responses.failureResponse({
@@ -1080,6 +1082,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
 					variables: { name: user.name, otp },
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0]?.code || null,
 				})
 			}
 
@@ -1090,6 +1093,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
 					variables: { app_name: tenantDetail.name, otp },
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0]?.code || null,
 				})
 			}
 
@@ -1272,6 +1276,7 @@ module.exports = class AccountHelper {
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
 				variables: { name: bodyData.name || plaintextEmailId, otp },
 				tenantCode: tenantDetail.code,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
 			})
 		}
 
@@ -1282,6 +1287,7 @@ module.exports = class AccountHelper {
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
 				variables: { app_name: tenantDetail.name, otp },
 				tenantCode: tenantDetail.code,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
 			})
 		}
 
@@ -1984,6 +1990,16 @@ module.exports = class AccountHelper {
 			 */
 			await userSessionsService.removeUserSessions(userSessionIds)
 
+			const userOrg = userOrganizationQueries.findOne(
+				{
+					user_id: userId,
+					tenant_code: tenantCode,
+				},
+				{
+					attributes: ['organization_code'],
+				}
+			)
+
 			// Send email notification with OTP if email is provided
 			if (user?.email) {
 				notificationUtils.sendEmailNotification({
@@ -1991,6 +2007,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.CHANGE_PASSWORD_TEMPLATE_CODE,
 					variables: { name: user.name },
 					tenantCode: tenantCode,
+					organization_code: userOrg?.organization_code || null,
 				})
 			}
 

@@ -18,7 +18,7 @@ module.exports = class NotificationTemplateHelper {
 		try {
 			const template = await notificationTemplateQueries.findOne({
 				code: bodyData.code,
-				organization_id: tokenInformation.organization_id,
+				organization_code: tokenInformation.organization_code,
 				tenant_code: tokenInformation.tenant_code,
 			})
 			if (template) {
@@ -29,7 +29,7 @@ module.exports = class NotificationTemplateHelper {
 				})
 			}
 
-			bodyData['organization_id'] = tokenInformation.organization_id
+			bodyData['organization_code'] = tokenInformation.organization_code
 			bodyData['tenant_code'] = tokenInformation.tenant_code
 			bodyData['created_by'] = tokenInformation.id
 
@@ -56,7 +56,8 @@ module.exports = class NotificationTemplateHelper {
 	static async update(id, bodyData, tokenInformation) {
 		try {
 			let filter = {
-				organization_id: tokenInformation.organization_id,
+				organization_code: tokenInformation.organization_code,
+				tenant_code: tokenInformation.tenant_code,
 			}
 
 			if (id) {
@@ -65,7 +66,6 @@ module.exports = class NotificationTemplateHelper {
 				filter.code = bodyData.code
 			}
 
-			bodyData['organization_id'] = tokenInformation.organization_id
 			bodyData['updated_by'] = tokenInformation.id
 
 			const result = await notificationTemplateQueries.updateTemplate(filter, bodyData)
@@ -94,9 +94,9 @@ module.exports = class NotificationTemplateHelper {
 	 * @returns {JSON} - Read Notification template.
 	 */
 
-	static async read(id = null, code = null, organizationId) {
+	static async read(id = null, code = null, organizationCode, tenantCode) {
 		try {
-			let filter = { organization_id: organizationId }
+			let filter = { organization_code: organizationCode, tenant_code: tenantCode }
 
 			if (id) {
 				filter.id = id
@@ -108,12 +108,8 @@ module.exports = class NotificationTemplateHelper {
 			console.log('NOTIFICATION TEMPLATES: ', notificationTemplates)
 			let defaultOrgNotificationTemplates
 			if (notificationTemplates.length === 0) {
-				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
-					{ attributes: ['id'] }
-				)
-				let defaultOrgId = defaultOrg.id
-				filter = id ? { id, organization_id: defaultOrgId } : { code, organization_id: defaultOrgId }
+				let defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
+				filter = id ? { id, organization_code: defaultOrgCode } : { code, organization_code: defaultOrgCode }
 				defaultOrgNotificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
 			}
 			if (notificationTemplates.length === 0 && defaultOrgNotificationTemplates.length === 0) {
@@ -133,10 +129,11 @@ module.exports = class NotificationTemplateHelper {
 			throw error
 		}
 	}
-	static async readAllNotificationTemplates(organizationId) {
+	static async readAllNotificationTemplates(organizationCode, tenantCode) {
 		try {
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates({
-				organization_id: organizationId,
+				organization_code: organizationCode,
+				tenant_code: tenantCode,
 			})
 			console.log('NOTIFICATION TEMPLATESSSSSSSSS: ', notificationTemplates)
 			return responses.successResponse({
