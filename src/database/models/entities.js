@@ -23,14 +23,17 @@ module.exports = (sequelize, DataTypes) => {
 		},
 		{ sequelize, modelName: 'Entity', tableName: 'entities', freezeTableName: true, paranoid: true }
 	)
-	/* 	Entity.associate = (models) => {
+
+	Entity.associate = (models) => {
 		Entity.belongsTo(models.EntityType, {
 			foreignKey: 'entity_type_id',
 			as: 'entity_type',
+			targetKey: 'id',
 			scope: {
 				deleted_at: null, // Only associate with active EntityType records
 			},
 		})
-	} */
+	}
+
 	return Entity
 }

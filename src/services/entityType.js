@@ -122,28 +122,38 @@ module.exports = class EntityHelper {
 
 	static async readUserEntityTypes(body, userId, orgId, tenantCode) {
 		try {
-			let defaultOrg = await organizationQueries.findOne(
+			// Fetch default organization ID (consider caching this)
+			const defaultOrg = await organizationQueries.findOne(
 				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
-			let defaultOrgId = defaultOrg.id
+			if (!defaultOrg) {
+				throw new Error('Default organization not found')
+			}
+			const defaultOrgId = defaultOrg.id
+
+			// Include tenant_code in filter for consistency with schema
 			const filter = {
 				value: body.value,
 				status: 'ACTIVE',
+				tenant_code: tenantCode, // Ensure tenant isolation
 				organization_id: {
 					[Op.in]: [orgId, defaultOrgId],
 				},
 			}
+
 			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
 
+			// Deduplicate entity types by value, prioritizing orgId
 			const prunedEntities = removeDefaultOrgEntityTypes(entities, orgId)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
 				result: { entity_types: prunedEntities },
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in readUserEntityTypes:', error)
 			throw error
 		}
 	}
