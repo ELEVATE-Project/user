@@ -98,11 +98,12 @@ module.exports = class EntityHelper {
 			)
 			const defaultOrgId = defaultOrg.id
 
-			const attributes = ['value', 'label', 'id']
+			const attributes = ['value', 'label', 'id', 'organization_id']
 
 			const entities = await entityTypeQueries.findAllEntityTypes([orgId, defaultOrgId], attributes)
+			const prunedEntities = removeDefaultOrgEntityTypes(entities, orgId)
 
-			if (!entities.length) {
+			if (!prunedEntities.length) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -112,7 +113,7 @@ module.exports = class EntityHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
-				result: entities,
+				result: prunedEntities,
 			})
 		} catch (error) {
 			throw error
