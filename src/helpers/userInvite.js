@@ -345,6 +345,7 @@ module.exports = class UserInviteHelper {
 			console.log(
 				'******************************** User bulk Upload STARTS Here ********************************'
 			)
+			let duplicateChecker = []
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 
 			//find default org id
@@ -372,22 +373,12 @@ module.exports = class UserInviteHelper {
 			const emailArray = _.uniq(_.map(csvData, 'email').filter((email) => email && email.trim())).map((email) =>
 				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
-			// find duplicate emails in the file
-			const duplicateEmailsInCsv = _.filter(_.groupBy(_.map(csvData, 'email')), (group) => group.length > 1)
-				.map((group) => group[0])
-				.filter((email) => email && email !== '')
 
 			//get all existing user with phone
 			const phoneArray = _.uniq(_.map(csvData, 'phone').filter((phone) => phone && phone.trim())).map((phone) =>
 				emailEncryption.encrypt(phone.trim().toLowerCase())
 			)
-			// find duplicate phone + phone_code in the file
-			const duplicatePhonesInCsv = _.filter(
-				_.groupBy(csvData, (item) => `${item.phone_code || ''}${item.phone || ''}`),
-				(group) => group.length > 1
-			)
-				.map((group) => `${group[0].phone_code}${group[0].phone}`)
-				.filter((phone) => phone && phone !== '')
+
 			//get all user names
 			const userNameArray = _.uniq(_.map(csvData, 'username'))
 				.filter((username) => _.isString(username) && username.trim() !== '')
@@ -483,7 +474,7 @@ module.exports = class UserInviteHelper {
 			for (const invitee of csvData) {
 				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
-				invitee.roles = invitee.roles.map((role) => role.trim())
+				invitee.roles = Array.isArray(invitee?.roles) ? invitee.roles.map((role) => role.trim()) : []
 				const raw_email = invitee.email.toLowerCase() || null
 				const encryptedEmail = raw_email ? emailEncryption.encrypt(raw_email) : null
 				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
@@ -500,7 +491,7 @@ module.exports = class UserInviteHelper {
 					invalidFields.push('email')
 				}
 				// check if the email is duplicate
-				if (invitee?.email.toString() != '' && isEmailValid && duplicateEmailsInCsv.includes(invitee?.email)) {
+				if (invitee?.email.toString() != '' && isEmailValid && duplicateChecker.includes(invitee?.email)) {
 					duplicateValues.push('email')
 				}
 
@@ -521,7 +512,7 @@ module.exports = class UserInviteHelper {
 				}
 				// check if the phone is duplicate
 				if (invitee.phone && invitee.phone_code) {
-					if (duplicatePhonesInCsv.includes(`${invitee.phone_code}${invitee.phone}`)) {
+					if (duplicateChecker.includes(`${invitee.phone_code}${invitee.phone}`)) {
 						duplicateValues.push('phone')
 					}
 					const phoneCodeEntityType =
@@ -903,6 +894,9 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				if (!existingUser && uploadType == common.TYPE_UPLOAD.trim().toUpperCase()) {
+					if (invitee.phone_code && invitee.phone)
+						duplicateChecker.push(`${invitee.phone_code}${invitee.phone}`)
+					if (invitee.email) duplicateChecker.push(invitee.email)
 					const validInvitation =
 						existingInvitees.get(encryptedEmail) ||
 						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
@@ -943,18 +937,21 @@ module.exports = class UserInviteHelper {
 						inviteeData?.username.toString() == '' ||
 						duplicateUsernamesInCsv.includes(inviteeData?.username)
 					) {
+						if (alreadyTakenUserNames.includes(inviteeData?.username)) {
+							userNameMessage = 'Username you provided was already taken, '
+						} else if (!inviteeData?.username || inviteeData?.username.toString() == '') {
+							userNameMessage = 'Username field empty, '
+						} else if (duplicateUsernamesInCsv.includes(inviteeData?.username)) {
+							userNameMessage = 'Username is repeating in the file. '
+						} else {
+							userNameMessage = ''
+						}
+
+						userNameMessage += 'Hence system generated a unique username.'
+
 						inviteeData.username = await generateUniqueUsername(
 							inviteeData?.name.trim().replace(/\s+/g, '_')
 						)
-						userNameMessage = `Username ${
-							alreadyTakenUserNames.includes(inviteeData?.username)
-								? 'you provided was already taken, '
-								: inviteeData?.username
-								? 'field empty,'
-								: duplicateUsernamesInCsv.includes(inviteeData?.username)
-								? 'is repeating in the file.'
-								: ''
-						} Hence system generated a unique username.`
 					}
 					const newInvitee = validInvitation ? validInvitation : await userInviteQueries.create(inviteeData)
 
