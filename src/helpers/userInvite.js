@@ -372,12 +372,22 @@ module.exports = class UserInviteHelper {
 			const emailArray = _.uniq(_.map(csvData, 'email').filter((email) => email && email.trim())).map((email) =>
 				emailEncryption.encrypt(email.trim().toLowerCase())
 			)
+			// find duplicate emails in the file
+			const duplicateEmailsInCsv = _.filter(_.groupBy(_.map(csvData, 'email')), (group) => group.length > 1)
+				.map((group) => group[0])
+				.filter((email) => email && email !== '')
 
 			//get all existing user with phone
 			const phoneArray = _.uniq(_.map(csvData, 'phone').filter((phone) => phone && phone.trim())).map((phone) =>
 				emailEncryption.encrypt(phone.trim().toLowerCase())
 			)
-
+			// find duplicate phone + phone_code in the file
+			const duplicatePhonesInCsv = _.filter(
+				_.groupBy(csvData, (item) => `${item.phone_code || ''}${item.phone || ''}`),
+				(group) => group.length > 1
+			)
+				.map((group) => `${group[0].phone_code}${group[0].phone}`)
+				.filter((phone) => phone && phone !== '')
 			//get all user names
 			const userNameArray = _.uniq(_.map(csvData, 'username'))
 				.filter((username) => _.isString(username) && username.trim() !== '')
@@ -389,6 +399,10 @@ module.exports = class UserInviteHelper {
 				].filter((condition) => condition !== null),
 				tenant_code: user.tenant_code,
 			}
+			// find duplicate usernames in the file
+			const duplicateUsernamesInCsv = _.filter(_.groupBy(_.map(csvData, 'username')), (group) => group.length > 1)
+				.map((group) => group[0])
+				.filter((username) => username && username !== '')
 			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
 
 			const userPresentWithUsername = await userQueries.findAll(
@@ -477,13 +491,19 @@ module.exports = class UserInviteHelper {
 
 				//find the invalid fields and generate error message
 				let invalidFields = []
+				let duplicateValues = []
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
-
-				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
+				const isEmailValid = utils.isValidEmail(invitee.email)
+				if (invitee?.email.toString() != '' && !isEmailValid) {
 					invalidFields.push('email')
 				}
+				// check if the email is duplicate
+				if (invitee?.email.toString() != '' && isEmailValid && duplicateEmailsInCsv.includes(invitee?.email)) {
+					duplicateValues.push('email')
+				}
+
 				if (
 					!utils.isValidPassword(invitee.password) &&
 					uploadType.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()
@@ -498,6 +518,20 @@ module.exports = class UserInviteHelper {
 
 				if (invitee.phone && !invitee.phone_code) {
 					invalidFields.push('phone_code')
+				}
+				// check if the phone is duplicate
+				if (invitee.phone && invitee.phone_code) {
+					if (duplicatePhonesInCsv.includes(`${invitee.phone_code}${invitee.phone}`)) {
+						duplicateValues.push('phone')
+					}
+					const phoneCodeEntityType =
+						prunedEntities.find((entityType) => entityType.value == 'phone_code') || null
+					if (phoneCodeEntityType && phoneCodeEntityType.has_entities) {
+						const findEntity = phoneCodeEntityType.entities.find((ent) => ent.value == invitee.phone_code)
+						!findEntity ? invalidFields.push('phone_code') : null
+					}
+					const regex = /^[0-9]{7,15}$/
+					!regex.test(invitee?.phone) ? invalidFields.push('phone') : null
 				}
 
 				if (invitee?.username) {
@@ -544,7 +578,8 @@ module.exports = class UserInviteHelper {
 
 				//merge all error message
 				invalidFields = [...new Set(invalidFields)]
-
+				duplicateValues = [...new Set(duplicateValues)]
+				let errorMessageArray = []
 				if (invalidFields.length > 0) {
 					let errorMessage = `${
 						invalidFields.length > 2
@@ -552,10 +587,23 @@ module.exports = class UserInviteHelper {
 							: invalidFields.join(' and ')
 					} ${invalidFields.length > 1 ? 'are' : 'is'} invalid.`
 					// if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
+					errorMessageArray.push(errorMessage)
+				}
 
-					invitee.statusOrUserId = errorMessage
+				if (duplicateValues.length > 0) {
+					let errorMessage = `${
+						duplicateValues.length > 2
+							? duplicateValues.slice(0, -1).join(', ') + ', and ' + duplicateValues.slice(-1)
+							: duplicateValues.join(' and ')
+					} ${duplicateValues.length > 1 ? 'are' : 'is'} repeated in the file.`
+					// if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
+					errorMessageArray.push(errorMessage)
+				}
+
+				if (errorMessageArray.length > 0) {
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
+					invitee.statusOrUserId = errorMessageArray.join('. ')
 					input.push(invitee)
 					continue
 				}
@@ -591,7 +639,7 @@ module.exports = class UserInviteHelper {
 
 				// Update user details if the user exists and belongs to the default organization
 				if (existingUser) {
-					invitee.statusOrUserId = 'User already exist'
+					invitee.statusOrUserId = 'User already exist and updated'
 					isErrorOccured = true
 					let isRoleUpdated = false
 
@@ -840,7 +888,11 @@ module.exports = class UserInviteHelper {
 							//remove user data from redis
 							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
 							await utils.redisDel(redisUserKey)
-							invitee.statusOrUserId = 'Success'
+							// if user is trying to update username , inform it is not possible to update username.
+							if (existingUser.username != invitee.username) {
+								invitee.username = userUpdate[0].dataValues['username']
+								invitee.statusOrUserId = `${invitee.statusOrUserId}. However username cannot be updated.`
+							}
 						} else {
 							invitee.statusOrUserId = 'No updates needed. User details are already up to date'
 						}
@@ -886,8 +938,10 @@ module.exports = class UserInviteHelper {
 
 					inviteeData.email = encryptedEmail
 					if (
+						!inviteeData?.username ||
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
-						inviteeData?.username.toString() == ''
+						inviteeData?.username.toString() == '' ||
+						duplicateUsernamesInCsv.includes(inviteeData?.username)
 					) {
 						inviteeData.username = await generateUniqueUsername(
 							inviteeData?.name.trim().replace(/\s+/g, '_')
@@ -897,6 +951,8 @@ module.exports = class UserInviteHelper {
 								? 'you provided was already taken, '
 								: inviteeData?.username
 								? 'field empty,'
+								: duplicateUsernamesInCsv.includes(inviteeData?.username)
+								? 'is repeating in the file.'
 								: ''
 						} Hence system generated a unique username.`
 					}
