@@ -252,7 +252,7 @@ async function validateInput(input, validationData, modelName, skipValidation = 
 			field.has_entities === false ||
 			field.external_entity_type === true
 		) {
-			if (field.external_entity_type) {
+			if (field.external_entity_type && fieldValue !== undefined) {
 				let verifyExternalEntityFlag = false
 				if (field.data_type == 'ARRAY' || field.data_type == 'ARRAY[STRING]') {
 					fieldValue.forEach(async (key) => {
