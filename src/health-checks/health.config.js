@@ -24,7 +24,23 @@ module.exports = {
 		microservices: [
 			{
 				name: 'EntityManagementService',
-				url: `${process.env.INTERFACE_SERVICE_HOST}/entity/health?serviceName=${process.env.SERVICE_NAME}`,
+				url: `${process.env.INTERFACE_SERVICE_HOST}/entity-management/health?serviceName=${process.env.SERVICE_NAME}`,
+				enabled: true,
+				request: {
+					method: 'GET',
+					header: {},
+					body: {},
+				},
+
+				expectedResponse: {
+					status: 200,
+					'params.status': 'successful',
+					'result.healthy': true,
+				},
+			},
+			{
+				name: 'SchedulerService',
+				url: `${process.env.INTERFACE_SERVICE_HOST}/scheduler/health?serviceName=${process.env.SERVICE_NAME}`,
 				enabled: true,
 				request: {
 					method: 'GET',

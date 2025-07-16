@@ -72,7 +72,6 @@ module.exports = class organizationFeatureHelper {
 					organization_code: process.env.DEFAULT_TENANT_ORG_CODE,
 					enabled: true,
 				})
-
 				// If the feature is not available in the default organization, return an error
 				if (!defaultFeature) {
 					return responses.failureResponse({
@@ -80,6 +79,10 @@ module.exports = class organizationFeatureHelper {
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
+				}
+				// Else, attach the default display_order from default organization
+				else {
+					bodyData.display_order = defaultFeature.display_order
 				}
 			}
 
@@ -177,7 +180,6 @@ module.exports = class organizationFeatureHelper {
 				organization_code: orgCode,
 				tenant_code: tenantCode,
 			}
-
 			const queryOptions = {
 				attributes: {
 					exclude: ['created_by', 'updated_by', 'created_at', 'updated_at', 'deleted_at'],
@@ -205,10 +207,13 @@ module.exports = class organizationFeatureHelper {
 
 			const organizationFeatures = Array.from(featureMap.values())
 
+			// Sort the organization features based on the display_order in ascending order
+			const sortedFeatures = organizationFeatures.sort((a, b) => a.display_order - b.display_order)
+
 			// Process icons in parallel
-			if (organizationFeatures?.length) {
+			if (sortedFeatures?.length) {
 				await Promise.all(
-					organizationFeatures.map(async (feature) => {
+					sortedFeatures.map(async (feature) => {
 						if (feature.icon) {
 							feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
 						}
@@ -219,7 +224,7 @@ module.exports = class organizationFeatureHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_FETCHED',
-				result: organizationFeatures ?? [],
+				result: sortedFeatures ?? [],
 			})
 		} catch (error) {
 			throw error
