@@ -469,12 +469,29 @@ module.exports = class UserInviteHelper {
 
 			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
 			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
+			// get and process default roles from .env
+			const defaultRoles =
+				process.env.DEFAULT_ROLE && typeof process.env.DEFAULT_ROLE === 'string'
+					? process.env.DEFAULT_ROLE.split(',')
+							.map((role) => role.trim())
+							.filter((role) => role)
+					: []
 
 			// process csv data
 			for (const invitee of csvData) {
 				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
-				invitee.roles = Array.isArray(invitee?.roles) ? invitee.roles.map((role) => role.trim()) : []
+
+				// trim and merge all the roles given in csv and default roles
+				invitee.roles = Array.isArray(invitee?.roles)
+					? [
+							...new Set([
+								...invitee.roles.map((role) => role.trim()).filter((role) => role),
+								...defaultRoles,
+							]),
+					  ]
+					: [...new Set(defaultRoles)]
+
 				const raw_email = invitee.email.toLowerCase() || null
 				const encryptedEmail = raw_email ? emailEncryption.encrypt(raw_email) : null
 				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
@@ -666,16 +683,63 @@ module.exports = class UserInviteHelper {
 
 							isOrgUpdate = true
 						}
-						//find the new roles
-						const elementsNotInArray = _.difference(
-							_.map(invitee.roles, (role) => roleTitlesToIds[role.toLowerCase()]).flat(),
-							existingUser.roles.map((role) => role.id)
-						)
+
+						const defaultRoleIds = _.map(defaultRoles, (role) => roleTitlesToIds[role.toLowerCase()])
+							.filter((id) => id !== undefined && id !== null)
+							.flat()
+						let rolesToAdd = []
+						let rolesToRemove = []
+
+						invitee.roles.forEach((role) => {
+							const roleId = roleTitlesToIds[role.toLowerCase()] //find the role id of role from csv
+							const findRole = existingUser.roles.find((role) => role.id == roleId) || null // check if the role is already present for the user
+							if (!findRole) {
+								// if role is not present add
+								rolesToAdd.push(roleId)
+							}
+							// remove the processed roles from the existing user roles
+							const index = existingUser.roles.findIndex((existngRole) => existngRole.id == roleId)
+							if (index > -1) {
+								// only splice array when item is found
+								existingUser.roles.splice(index, 1) // 2nd parameter means remove one item only
+							}
+						})
+						// remove default roles from the list so that it is not removed
+						defaultRoleIds.forEach((role) => {
+							const index = existingUser.roles.findIndex((existngRole) => existngRole.id == role)
+							if (index > -1) {
+								// only splice array when item is found
+								existingUser.roles.splice(index, 1) // 2nd parameter means remove one item only
+							}
+						})
+						// check if there are any existing roles to remove
+						if (existingUser.roles.length > 0) {
+							rolesToRemove = existingUser.roles.map((role) => role.id)
+						}
+
 						let rolesPromises = []
+
 						//update the user roles and handle downgrade of role
-						if (elementsNotInArray.length > 0) {
+						if (rolesToRemove.length > 0) {
 							isRoleUpdated = true
-							rolesPromises = elementsNotInArray.map((roleId) => {
+							rolesPromises = rolesToRemove.map((roleId) => {
+								return userRolesQueries.delete(
+									{
+										tenant_code: user.tenant_code,
+										user_id: existingUser.id,
+										organization_code: user.organization_code,
+										role_id: roleId,
+									},
+									{
+										force: true,
+									}
+								)
+							})
+						}
+						//update the user roles and handle downgrade of role
+						if (rolesToAdd.length > 0) {
+							isRoleUpdated = true
+							rolesPromises = rolesToAdd.map((roleId) => {
 								return userRolesQueries.create({
 									tenant_code: user.tenant_code,
 									user_id: existingUser.id,
@@ -685,7 +749,9 @@ module.exports = class UserInviteHelper {
 									updated_at: new Date(),
 								})
 							})
+						}
 
+						if (rolesPromises.length > 0) {
 							await Promise.all(rolesPromises)
 						}
 
