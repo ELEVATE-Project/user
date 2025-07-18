@@ -390,10 +390,7 @@ module.exports = class UserInviteHelper {
 				].filter((condition) => condition !== null),
 				tenant_code: user.tenant_code,
 			}
-			// find duplicate usernames in the file
-			const duplicateUsernamesInCsv = _.filter(_.groupBy(_.map(csvData, 'username')), (group) => group.length > 1)
-				.map((group) => group[0])
-				.filter((username) => username && username !== '')
+
 			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
 
 			const userPresentWithUsername = await userQueries.findAll(
@@ -1001,13 +998,13 @@ module.exports = class UserInviteHelper {
 						!inviteeData?.username ||
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
 						inviteeData?.username.toString() == '' ||
-						duplicateUsernamesInCsv.includes(inviteeData?.username)
+						duplicateChecker.includes(inviteeData?.username)
 					) {
 						if (alreadyTakenUserNames.includes(inviteeData?.username)) {
 							userNameMessage = 'Username you provided was already taken, '
 						} else if (!inviteeData?.username || inviteeData?.username.toString() == '') {
 							userNameMessage = 'Username field empty, '
-						} else if (duplicateUsernamesInCsv.includes(inviteeData?.username)) {
+						} else if (duplicateChecker.includes(inviteeData?.username)) {
 							userNameMessage = 'Username is repeating in the file. '
 						} else {
 							userNameMessage = ''
@@ -1019,6 +1016,7 @@ module.exports = class UserInviteHelper {
 							inviteeData?.name.trim().replace(/\s+/g, '_')
 						)
 					}
+					duplicateChecker.push(inviteeData.username)
 					const newInvitee = validInvitation ? validInvitation : await userInviteQueries.create(inviteeData)
 
 					// if the username is taken generate random username and inform user
