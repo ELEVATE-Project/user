@@ -3873,7 +3873,7 @@ paths:
   /user/health:
     get:
       summary: >-
-        This API is used to verify the service health status of the User Service and its dependencies.
+        Service health status.
       description: >-
         This API is used to verify the health status of the user Service and its
         dependencies. 
