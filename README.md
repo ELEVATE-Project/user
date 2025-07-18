@@ -41,7 +41,7 @@
 </details>
 
 </br>
-The Mentor building block enables effective mentoring interactions between mentors and mentees. The capability aims to create a transparent eco-system to learn, connect, solve, and share within communities. Mentor is an open-source mentoring application that facilitates peer learning and professional development by creating a community of mentors and mentees.
+The User service block enables secure and highly extensible user management and organization management capabilities - User registration, Live and JWT basesd session management, Delete user, Forgot password with email notifications.
 
 </div>
 <br>
@@ -742,13 +742,11 @@ npm test
 
 # Used in
 
-This project was built to be used with [Mentor Service](https://github.com/ELEVATE-Project/mentoring.git).
+This project was built to be used with [Mentoring Service](https://github.com/ELEVATE-Project/mentoring.git), [Project Service](https://github.com/ELEVATE-Project/project-service.git), [Survey Service](https://github.com/ELEVATE-Project/samiksha-service.git), [User Service](https://github.com/ELEVATE-Project/user.git).
 
-Notification service repo can be found [here](https://github.com/ELEVATE-Project/notification.git).
+The frontend/mobile application for Mentoring [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app) and Projects and Survey [repo](https://github.com/ELEVATE-Project/observation-survey-projects-pwa) 
 
-The PWA [repo](https://github.com/ELEVATE-Project/mentoring-mobile-app).
-
-You can learn more about the full implementation of Mentor [here](https://elevate-docs.shikshalokam.org/.mentorEd/intro) .
+You can learn more about the full implementation of various capabilities of ELEVATE [here](https://elevate-docs.shikshalokam.org) .
 <br>
 
 # Team
@@ -761,7 +759,7 @@ You can learn more about the full implementation of Mentor [here](https://elevat
 
 # Open Source Dependencies
 
-Several open source dependencies that have aided user service development:
+Several open-source dependencies have aided user service development:
 
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
