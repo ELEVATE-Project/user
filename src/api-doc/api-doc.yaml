@@ -3887,7 +3887,7 @@ paths:
         * This is a mandatory parameter and cannot be empty or null
       operationId: ''
       tags:
-        - healthCheck
+        - Health Check
       parameters: []
       responses:
         '200':
@@ -6435,7 +6435,7 @@ tags:
     externalDocs:
       description: ''
       url: ''
-  - name: healthCheck
+  - name: Health Check
     description: ''
     externalDocs:
       description: ''

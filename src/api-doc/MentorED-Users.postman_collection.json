@@ -2637,7 +2637,7 @@
 			]
 		},
 		{
-			"name": "healthCheck",
+			"name": "Health Check",
 			"item": [
 				{
 					"name": "health",
