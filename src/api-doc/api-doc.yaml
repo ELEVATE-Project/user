@@ -3870,6 +3870,161 @@ paths:
                     meta:
                       correlation: 4373a59a-ca10-4932-b7ce-8675009ef388
                       meetingPlatform: BBB
+  /user/health:
+    get:
+      summary: >-
+        Performs a complete health scan including core and downstream
+        microservices.
+      description: >-
+        This API is used to verify the health status of the user Service and its
+        dependencies. 
+
+        * The API Endpoint for health check is /user/health
+
+        * It is mandatory to provide values for parameters that are marked as
+        `required`
+
+        * This is a mandatory parameter and cannot be empty or null
+      operationId: ''
+      tags:
+        - healthCheck
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  ver:
+                    type: string
+                  ts:
+                    type: string
+                  params:
+                    type: object
+                    properties:
+                      resmsgid:
+                        type: string
+                      msgid:
+                        type: string
+                      status:
+                        type: string
+                      err:
+                        type: 'null'
+                      errMsg:
+                        type: 'null'
+                  status:
+                    type: number
+                  result:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      version:
+                        type: string
+                      healthy:
+                        type: boolean
+                      checks:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            healthy:
+                              type: boolean
+                            err:
+                              type: string
+                            errMsg:
+                              type: string
+                          required:
+                            - name
+                            - healthy
+                            - err
+                            - errMsg
+              examples:
+                Success Response:
+                  value:
+                    id: service.health.api
+                    ver: '1.0'
+                    ts: '2025-07-18T06:26:10.726Z'
+                    params:
+                      resmsgid: 189bdb70-63a0-11f0-b86a-3b7c197fc982
+                      msgid: 189bdb71-63a0-11f0-b86a-3b7c197fc982
+                      status: successful
+                      err: null
+                      errMsg: null
+                    status: 200
+                    result:
+                      name: UserService
+                      version: 1.0.0
+                      healthy: true
+                      checks:
+                        - name: Kafka
+                          healthy: true
+                          err: ''
+                          errMsg: ''
+                        - name: redis
+                          healthy: true
+                          err: ''
+                          errMsg: ''
+                        - name: EntityManagementService
+                          healthy: true
+                          err: ''
+                          errMsg: ''
+                        - name: SchedulerService
+                          healthy: true
+                          err: ''
+                          errMsg: ''
+        '400':
+          description: Bad Request
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  ver:
+                    type: string
+                  ts:
+                    type: string
+                  params:
+                    type: object
+                    properties:
+                      resmsgid:
+                        type: string
+                      msgid:
+                        type: string
+                      status:
+                        type: string
+                      err:
+                        type: string
+                      errMsg:
+                        type: string
+                  status:
+                    type: number
+                  result:
+                    type: object
+                    properties: {}
+              examples:
+                Bad Request:
+                  value:
+                    id: userService.Health.API
+                    ver: '1.0'
+                    ts: '2025-07-18T04:43:35.352Z'
+                    params:
+                      resmsgid: c3b82b80-6391-11f0-9617-d554ca31487a
+                      msgid: c3b82b81-6391-11f0-9617-d554ca31487a
+                      status: failed
+                      err: CONFIG_VALIDATION_ERROR
+                      errMsg: "Missing 'url' for enabled service: redis"
+                    status: 400
+                    result: {}
 components:
   schemas:
     user:
@@ -6255,7 +6410,7 @@ components:
                 type: string
                 example: null
     securitySchemes:
-      bearer:
+      bearer: null
       type: apiKey
       name: X-auth-token
       in: header
@@ -6276,6 +6431,11 @@ tags:
       description: ''
       url: ''
   - name: RolePermissionMapping
+    description: ''
+    externalDocs:
+      description: ''
+      url: ''
+  - name: healthCheck
     description: ''
     externalDocs:
       description: ''
