@@ -356,14 +356,19 @@ module.exports = class UserInviteHelper {
 			const defaultOrgId = defaultOrg?.id || null
 
 			//get all the roles and map title and id
-			const roleList = await roleQueries.findAll({
-				user_type: common.ROLE_TYPE_NON_SYSTEM,
+			const fullroleList = await roleQueries.findAll({
 				status: common.ACTIVE_STATUS,
 				organization_id: {
 					[Op.in]: [defaultOrgId, user.organization_id],
 				},
 				tenant_code: user.tenant_code,
 			})
+			const roleList = fullroleList.filter((role) => role.user_type === common.ROLE_TYPE_NON_SYSTEM)
+			const systemRoleList = fullroleList.filter((role) => role.user_type === common.ROLE_TYPE_SYSTEM)
+			const systemRoleIdList = systemRoleList.map((role) => role.id)
+			const defaultRoleIds = _.map(defaultRoles, (role) => roleTitlesToIds[role.toLowerCase()])
+				.filter((id) => id !== undefined && id !== null)
+				.flat()
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
 				roleTitlesToIds[role.title] = [role.id]
@@ -681,9 +686,6 @@ module.exports = class UserInviteHelper {
 							isOrgUpdate = true
 						}
 
-						const defaultRoleIds = _.map(defaultRoles, (role) => roleTitlesToIds[role.toLowerCase()])
-							.filter((id) => id !== undefined && id !== null)
-							.flat()
 						let rolesToAdd = []
 						let rolesToRemove = []
 
@@ -711,7 +713,9 @@ module.exports = class UserInviteHelper {
 						})
 						// check if there are any existing roles to remove
 						if (existingUser.roles.length > 0) {
-							rolesToRemove = existingUser.roles.map((role) => role.id)
+							rolesToRemove = existingUser.roles
+								.map((role) => role.id)
+								.filter((id) => !systemRoleIdList.includes(id))
 						}
 
 						let rolesPromises = []
