@@ -16,20 +16,7 @@ module.exports = class NotificationTemplateHelper {
 
 	static async create(bodyData, tokenInformation) {
 		try {
-			const template = await notificationTemplateQueries.findOne({
-				code: bodyData.code,
-				organization_id: tokenInformation.organization_id,
-				tenant_code: tokenInformation.tenant_code,
-			})
-			if (template) {
-				return responses.failureResponse({
-					message: 'NOTIFICATION_TEMPLATE_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			bodyData['organization_id'] = tokenInformation.organization_id
+			bodyData['organization_code'] = tokenInformation.organization_code
 			bodyData['tenant_code'] = tokenInformation.tenant_code
 			bodyData['created_by'] = tokenInformation.id
 
@@ -40,7 +27,17 @@ module.exports = class NotificationTemplateHelper {
 				result: createdNotification,
 			})
 		} catch (error) {
-			console.log(error)
+			// Handle unique constraint error
+			if (
+				error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR ||
+				error.code === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE
+			) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.conflict,
+					responseCode: 'CLIENT_ERROR',
+					message: 'NOTIFICATION_TEMPLATE_ALREADY_EXISTS',
+				})
+			}
 			throw error
 		}
 	}
@@ -56,7 +53,8 @@ module.exports = class NotificationTemplateHelper {
 	static async update(id, bodyData, tokenInformation) {
 		try {
 			let filter = {
-				organization_id: tokenInformation.organization_id,
+				organization_code: tokenInformation.organization_code,
+				tenant_code: tokenInformation.tenant_code,
 			}
 
 			if (id) {
@@ -65,7 +63,6 @@ module.exports = class NotificationTemplateHelper {
 				filter.code = bodyData.code
 			}
 
-			bodyData['organization_id'] = tokenInformation.organization_id
 			bodyData['updated_by'] = tokenInformation.id
 
 			const result = await notificationTemplateQueries.updateTemplate(filter, bodyData)
@@ -94,9 +91,9 @@ module.exports = class NotificationTemplateHelper {
 	 * @returns {JSON} - Read Notification template.
 	 */
 
-	static async read(id = null, code = null, organizationId) {
+	static async read(id = null, code = null, type, organizationCode, tenantCode) {
 		try {
-			let filter = { organization_id: organizationId }
+			let filter = { organization_code: organizationCode, tenant_code: tenantCode, type }
 
 			if (id) {
 				filter.id = id
@@ -108,12 +105,9 @@ module.exports = class NotificationTemplateHelper {
 			console.log('NOTIFICATION TEMPLATES: ', notificationTemplates)
 			let defaultOrgNotificationTemplates
 			if (notificationTemplates.length === 0) {
-				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE },
-					{ attributes: ['id'] }
-				)
-				let defaultOrgId = defaultOrg.id
-				filter = id ? { id, organization_id: defaultOrgId } : { code, organization_id: defaultOrgId }
+				let defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
+				filter = id ? { id, organization_code: defaultOrgCode } : { code, organization_code: defaultOrgCode }
+				filter.type = type
 				defaultOrgNotificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
 			}
 			if (notificationTemplates.length === 0 && defaultOrgNotificationTemplates.length === 0) {
@@ -133,12 +127,12 @@ module.exports = class NotificationTemplateHelper {
 			throw error
 		}
 	}
-	static async readAllNotificationTemplates(organizationId) {
+	static async readAllNotificationTemplates(organizationCode, tenantCode) {
 		try {
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates({
-				organization_id: organizationId,
+				organization_code: organizationCode,
+				tenant_code: tenantCode,
 			})
-			console.log('NOTIFICATION TEMPLATESSSSSSSSS: ', notificationTemplates)
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY',
