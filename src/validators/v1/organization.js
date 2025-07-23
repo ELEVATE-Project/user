@@ -8,6 +8,7 @@ const filterRequestBody = require('../common')
 const { organization } = require('@constants/blacklistConfig')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
+
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, organization.create)
@@ -104,6 +105,11 @@ module.exports = {
 				}
 				return true
 			})
+
+		req.checkBody('registration_codes.*')
+			.optional()
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
 	removeRegistrationCode: (req) => {
 		const isAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)
@@ -125,5 +131,10 @@ module.exports = {
 				}
 				return true
 			})
+
+		req.checkBody('registration_codes.*')
+			.optional()
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
 }

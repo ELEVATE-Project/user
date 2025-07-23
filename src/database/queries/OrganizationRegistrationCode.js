@@ -13,10 +13,22 @@ exports.create = async (data) => {
 }
 exports.bulkCreate = async (dataArray) => {
 	try {
-		const createdOrgRegCodes = await OrganizationRegistrationCode.bulkCreate(dataArray, {
-			individualHooks: true,
-		})
-		return createdOrgRegCodes.map((code) => code.get({ plain: true }))
+		const transaction = await sequelize.transaction()
+		try {
+			// Perform bulkCreate within the transaction
+			const createdOrgRegCodes = await OrganizationRegistrationCode.bulkCreate(dataArray, {
+				individualHooks: true,
+				transaction, // Pass the transaction object
+			})
+
+			// Commit the transaction if successful
+			await transaction.commit()
+			return createdOrgRegCodes.map((code) => code.get({ plain: true }))
+		} catch (error) {
+			// Rollback the transaction on error
+			await transaction.rollback()
+			throw error // Re-throw the error for further handling
+		}
 	} catch (error) {
 		console.error(error)
 		throw error
