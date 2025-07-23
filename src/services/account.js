@@ -1941,7 +1941,7 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - password changed response
 	 */
 
-	static async changePassword(bodyData, userId, tenantCode) {
+	static async changePassword(bodyData, userId, organizationCode, tenantCode) {
 		try {
 			const user = await userQueries.findOne(
 				{ id: userId, tenant_code: tenantCode },
@@ -2004,16 +2004,6 @@ module.exports = class AccountHelper {
 			 */
 			await userSessionsService.removeUserSessions(userSessionIds)
 
-			const userOrg = userOrganizationQueries.findOne(
-				{
-					user_id: userId,
-					tenant_code: tenantCode,
-				},
-				{
-					attributes: ['organization_code'],
-				}
-			)
-
 			// Send email notification with OTP if email is provided
 			if (user?.email) {
 				notificationUtils.sendEmailNotification({
@@ -2021,7 +2011,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.CHANGE_PASSWORD_TEMPLATE_CODE,
 					variables: { name: user.name },
 					tenantCode: tenantCode,
-					organization_code: userOrg?.organization_code || null,
+					organization_code: organizationCode || null,
 				})
 			}
 

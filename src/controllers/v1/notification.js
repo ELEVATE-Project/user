@@ -51,6 +51,7 @@ module.exports = class NotificationTemplate {
 					const templatesData = await notificationService.read(
 						req.params.id,
 						req.query.code,
+						req.query.type,
 						req.decodedToken.organization_code,
 						req.decodedToken.tenant_code
 					)

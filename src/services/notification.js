@@ -16,19 +16,6 @@ module.exports = class NotificationTemplateHelper {
 
 	static async create(bodyData, tokenInformation) {
 		try {
-			const template = await notificationTemplateQueries.findOne({
-				code: bodyData.code,
-				organization_code: tokenInformation.organization_code,
-				tenant_code: tokenInformation.tenant_code,
-			})
-			if (template) {
-				return responses.failureResponse({
-					message: 'NOTIFICATION_TEMPLATE_ALREADY_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			bodyData['organization_code'] = tokenInformation.organization_code
 			bodyData['tenant_code'] = tokenInformation.tenant_code
 			bodyData['created_by'] = tokenInformation.id
@@ -40,7 +27,17 @@ module.exports = class NotificationTemplateHelper {
 				result: createdNotification,
 			})
 		} catch (error) {
-			console.log(error)
+			// Handle unique constraint error
+			if (
+				error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR ||
+				error.code === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE
+			) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.conflict,
+					responseCode: 'CLIENT_ERROR',
+					message: 'NOTIFICATION_TEMPLATE_ALREADY_EXISTS',
+				})
+			}
 			throw error
 		}
 	}
@@ -94,9 +91,9 @@ module.exports = class NotificationTemplateHelper {
 	 * @returns {JSON} - Read Notification template.
 	 */
 
-	static async read(id = null, code = null, organizationCode, tenantCode) {
+	static async read(id = null, code = null, type, organizationCode, tenantCode) {
 		try {
-			let filter = { organization_code: organizationCode, tenant_code: tenantCode }
+			let filter = { organization_code: organizationCode, tenant_code: tenantCode, type }
 
 			if (id) {
 				filter.id = id
@@ -110,6 +107,7 @@ module.exports = class NotificationTemplateHelper {
 			if (notificationTemplates.length === 0) {
 				let defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
 				filter = id ? { id, organization_code: defaultOrgCode } : { code, organization_code: defaultOrgCode }
+				filter.type = type
 				defaultOrgNotificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
 			}
 			if (notificationTemplates.length === 0 && defaultOrgNotificationTemplates.length === 0) {
@@ -135,7 +133,6 @@ module.exports = class NotificationTemplateHelper {
 				organization_code: organizationCode,
 				tenant_code: tenantCode,
 			})
-			console.log('NOTIFICATION TEMPLATESSSSSSSSS: ', notificationTemplates)
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'NOTIFICATION_TEMPLATE_FETCHED_SUCCESSFULLY',

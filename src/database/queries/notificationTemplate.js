@@ -8,7 +8,7 @@ exports.create = async (data) => {
 	try {
 		return await NotificationTemplate.create(data)
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -79,7 +79,7 @@ exports.findOneEmailTemplate = async (code, orgCode = null, tenantCode) => {
 			where: filter,
 			raw: true,
 		})
-		if (templateData.length == 0) return null
+		if (!templateData || templateData?.length == 0) return null
 		// If there are multiple results, find the one matching orgId
 		templateData = templateData.find((template) => template.organization_code === orgCode) || templateData[0]
 
