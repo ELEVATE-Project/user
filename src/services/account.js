@@ -1052,8 +1052,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const findAllUsers = await userQueries.findAllUserWithOrganization(query, {}, tenantDomain.tenant_code)
-			const user = findAllUsers.length > 0 ? findAllUsers[0] : null
+			const user = await userQueries.findUserWithOrganization(query, {}, tenantDomain.tenant_code)
 
 			if (!user) {
 				return responses.failureResponse({
