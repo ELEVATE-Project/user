@@ -622,16 +622,14 @@ module.exports = class OrganizationsHelper {
 		try {
 			// fetch organization details before update
 			const orgDetailsBeforeUpdate = await verifyOrg(code, tenantCode)
-			if (Object.keys(orgDetailsBeforeUpdate).length <= 0) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-					message: 'ORGANIZATION_NOT_FOUND',
-				})
-			}
-			// append registration codes
-			registrationCodes = registrationCodes.map((code) => code.toString().trim())
+
 			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
+			// append registration codes
+			registrationCodes = registrationCodes.map((code) => {
+				if (existingRegCodes.length > 0 && existingRegCodes.includes(code)) throw new Error('REG_CODE_ERROR')
+				return code.toString().trim()
+			})
+
 			const codeToAppend = [...new Set(_.difference(registrationCodes, existingRegCodes))]
 
 			if (codeToAppend.length > 0) {
@@ -653,6 +651,13 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			if (error.message == 'REG_CODE_ERROR') {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: error.message,
+				})
+			}
 			throw error
 		}
 	}
@@ -660,12 +665,16 @@ module.exports = class OrganizationsHelper {
 		try {
 			// fetch organization details before update
 			const orgDetailsBeforeUpdate = await verifyOrg(id, tenantCode)
+			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
 			// append registration codes
 			registrationCodes = Array.isArray(registrationCodes)
 				? registrationCodes
 				: registrationCodes.split(',') || []
-			registrationCodes = registrationCodes.map((code) => code.toString().toLowerCase().trim())
-			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
+			registrationCodes = registrationCodes.map((code) => {
+				if (existingRegCodes.length > 0 && !existingRegCodes.includes(code)) throw new Error('REG_CODE_ERROR')
+				return code.toString().toLowerCase().trim()
+			})
+
 			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))].map((code) =>
 				code.trim().toLowerCase()
 			)
@@ -683,6 +692,13 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			if (error.message == 'REG_CODE_ERROR') {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: error.message,
+				})
+			}
 			throw error
 		}
 	}
@@ -694,7 +710,7 @@ async function verifyOrg(code, tenantCode) {
 		{ code, tenant_code: tenantCode },
 		{ isAdmin: true }
 	)
-	if (!orgDetailsBeforeUpdate) {
+	if (Object.keys(orgDetailsBeforeUpdate).length <= 0) {
 		throw responses.failureResponse({
 			statusCode: httpStatusCode.not_acceptable,
 			responseCode: 'CLIENT_ERROR',

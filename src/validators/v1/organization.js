@@ -103,8 +103,13 @@ module.exports = {
 				if (value.length === 0) {
 					throw new Error('registration_codes array cannot be empty')
 				}
-				return utilsHelper.validateRegistrationCode(value)
+				return true
 			})
+
+		req.checkBody('registration_codes.*')
+			.optional()
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
 	removeRegistrationCode: (req) => {
 		const isAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)
@@ -124,7 +129,12 @@ module.exports = {
 				if (value.length === 0) {
 					throw new Error('registration_codes array cannot be empty')
 				}
-				return utilsHelper.validateRegistrationCode(value)
+				return true
 			})
+
+		req.checkBody('registration_codes.*')
+			.optional()
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
 }
