@@ -177,5 +177,5 @@
 	"ORG_UNIQUE_CONSTRAIN_ERROR": "Organization Creation / Updation Failed. code / registration_code not unique.",
 	"REG_CODE_ERROR": "registration_code is not valid or unique.",
 	"INVALID_REG_CODE_ERROR": "registration_codes {{errorMessage}}. Invalid Code(s) : {{errorValues}}",
-	"UNIQUE_CONSTRAINT_ERROR": "{{field}} violates unique constrain criteria."
+	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid."
 }
