@@ -366,13 +366,20 @@ module.exports = class UserInviteHelper {
 			const roleList = fullroleList.filter((role) => role.user_type === common.ROLE_TYPE_NON_SYSTEM)
 			const systemRoleList = fullroleList.filter((role) => role.user_type === common.ROLE_TYPE_SYSTEM)
 			const systemRoleIdList = systemRoleList.map((role) => role.id)
-			const defaultRoleIds = _.map(defaultRoles, (role) => roleTitlesToIds[role.toLowerCase()])
-				.filter((id) => id !== undefined && id !== null)
-				.flat()
+			// get and process default roles from .env
+			const defaultRoles =
+				process.env.DEFAULT_ROLE && typeof process.env.DEFAULT_ROLE === 'string'
+					? process.env.DEFAULT_ROLE.split(',')
+							.map((role) => role.trim())
+							.filter((role) => role)
+					: []
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
 				roleTitlesToIds[role.title] = [role.id]
 			})
+			const defaultRoleIds = _.map(defaultRoles, (role) => roleTitlesToIds[role.toLowerCase()])
+				.filter((id) => id !== undefined && id !== null)
+				.flat()
 
 			//get all existing user
 			const emailArray = _.uniq(_.map(csvData, 'email').filter((email) => email && email.trim())).map((email) =>
@@ -471,13 +478,6 @@ module.exports = class UserInviteHelper {
 
 			const tenantDomains = await tenantDomainQueries.findOne({ tenant_code: user.tenant_code })
 			const tenantDetails = await tenantQueries.findOne({ code: user.tenant_code }, { raw: true })
-			// get and process default roles from .env
-			const defaultRoles =
-				process.env.DEFAULT_ROLE && typeof process.env.DEFAULT_ROLE === 'string'
-					? process.env.DEFAULT_ROLE.split(',')
-							.map((role) => role.trim())
-							.filter((role) => role)
-					: []
 
 			// process csv data
 			for (const invitee of csvData) {
@@ -688,35 +688,37 @@ module.exports = class UserInviteHelper {
 
 						let rolesToAdd = []
 						let rolesToRemove = []
+						// Create a set for faster lookup of default and system role IDs
+						const defaultRoleIdsSet = new Set(defaultRoleIds)
+						const systemRoleIdsSet = new Set(systemRoleIdList)
 
+						// Process invitee roles and update existingUser.roles in one pass
 						invitee.roles.forEach((role) => {
-							const roleId = roleTitlesToIds[role.toLowerCase()] //find the role id of role from csv
-							const findRole = existingUser.roles.find((role) => role.id == roleId) || null // check if the role is already present for the user
-							if (!findRole) {
-								// if role is not present add
+							const roleId = roleTitlesToIds[role.toLowerCase()]
+							let found = false
+
+							// Check and remove role in one loop
+							for (let i = 0; i < existingUser.roles.length; i++) {
+								if (existingUser.roles[i].id == roleId) {
+									existingUser.roles.splice(i, 1)
+									found = true
+									break // Exit loop after finding and removing
+								}
+							}
+
+							// If role not found, add to rolesToAdd
+							if (!found) {
 								rolesToAdd.push(roleId)
 							}
-							// remove the processed roles from the existing user roles
-							const index = existingUser.roles.findIndex((existngRole) => existngRole.id == roleId)
-							if (index > -1) {
-								// only splice array when item is found
-								existingUser.roles.splice(index, 1) // 2nd parameter means remove one item only
-							}
 						})
-						// remove default roles from the list so that it is not removed
-						defaultRoleIds.forEach((role) => {
-							const index = existingUser.roles.findIndex((existngRole) => existngRole.id == role)
-							if (index > -1) {
-								// only splice array when item is found
-								existingUser.roles.splice(index, 1) // 2nd parameter means remove one item only
-							}
-						})
-						// check if there are any existing roles to remove
-						if (existingUser.roles.length > 0) {
-							rolesToRemove = existingUser.roles
-								.map((role) => role.id)
-								.filter((id) => !systemRoleIdList.includes(id))
-						}
+
+						// Remove default roles from existingUser.roles
+						existingUser.roles = existingUser.roles.filter((role) => !defaultRoleIdsSet.has(role.id))
+
+						// Compute rolesToRemove, excluding system roles
+						rolesToRemove = existingUser.roles
+							.map((role) => role.id)
+							.filter((id) => !systemRoleIdsSet.has(id))
 
 						let rolesPromises = []
 
@@ -884,6 +886,8 @@ module.exports = class UserInviteHelper {
 										username: userUpdate[0].dataValues?.username,
 										status: userUpdate[0].dataValues?.status,
 										deleted: userUpdate[0].dataValues?.deleted_at ? true : false,
+										created_at: userUpdate[0].dataValues?.created_at || null,
+										updated_at: userUpdate[0].dataValues?.updated_at || new Date(),
 										oldValues,
 										newValues,
 									},
@@ -1106,6 +1110,8 @@ module.exports = class UserInviteHelper {
 							status: insertedUser.status,
 							deleted: false,
 							id: insertedUser?.id,
+							created_at: parsedData?.created_at || new Date(),
+							updated_at: parsedData?.updated_at || new Date(),
 						}
 
 						additionalCsvHeaders.forEach((additionalKeys) => {
