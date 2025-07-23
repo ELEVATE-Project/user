@@ -691,7 +691,7 @@ module.exports = class OrganizationsHelper {
 					responseCode: 'CLIENT_ERROR',
 					message: {
 						key: 'UNIQUE_CONSTRAINT_ERROR',
-						interpolation: { fields: `{${Object.keys(error?.fields) || 'Some fields'}} ` },
+						interpolation: { fields: `registration_codes` },
 					},
 				})
 			}
