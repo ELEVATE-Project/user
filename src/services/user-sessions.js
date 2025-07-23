@@ -27,7 +27,7 @@ module.exports = class UserSessionsHelper {
 	 * @throws {Error} - Throws an error if any issue occurs during the process.
 	 */
 
-	static async createUserSession(userId, refreshToken = '', accessToken = '', deviceInfo) {
+	static async createUserSession(userId, refreshToken = '', accessToken = '', deviceInfo, tenantCode) {
 		try {
 			/**
 			 * data for user-session creation
@@ -36,6 +36,7 @@ module.exports = class UserSessionsHelper {
 				user_id: userId,
 				device_info: deviceInfo,
 				started_at: Math.floor(new Date().getTime() / 1000),
+				tenant_code: tenantCode,
 			}
 			if (accessToken !== '') {
 				userSessionDetails.token = accessToken

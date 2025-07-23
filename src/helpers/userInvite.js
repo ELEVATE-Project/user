@@ -345,6 +345,7 @@ module.exports = class UserInviteHelper {
 			console.log(
 				'******************************** User bulk Upload STARTS Here ********************************'
 			)
+			let duplicateChecker = []
 			const outputFileName = utils.generateFileName(common.inviteeOutputFile, common.csvExtension)
 
 			//find default org id
@@ -389,6 +390,7 @@ module.exports = class UserInviteHelper {
 				].filter((condition) => condition !== null),
 				tenant_code: user.tenant_code,
 			}
+
 			const userCredentials = await userQueries.findAllUserWithOrganization(userCredQuery, {}, user.tenant_code)
 
 			const userPresentWithUsername = await userQueries.findAll(
@@ -469,7 +471,7 @@ module.exports = class UserInviteHelper {
 			for (const invitee of csvData) {
 				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
-				invitee.roles = invitee.roles.map((role) => role.trim())
+				invitee.roles = Array.isArray(invitee?.roles) ? invitee.roles.map((role) => role.trim()) : []
 				const raw_email = invitee.email.toLowerCase() || null
 				const encryptedEmail = raw_email ? emailEncryption.encrypt(raw_email) : null
 				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
@@ -477,13 +479,19 @@ module.exports = class UserInviteHelper {
 
 				//find the invalid fields and generate error message
 				let invalidFields = []
+				let duplicateValues = []
 				if (!utils.isValidName(invitee.name)) {
 					invalidFields.push('name')
 				}
-
-				if (invitee?.email.toString() != '' && !utils.isValidEmail(invitee.email)) {
+				const isEmailValid = utils.isValidEmail(invitee.email)
+				if (invitee?.email.toString() != '' && !isEmailValid) {
 					invalidFields.push('email')
 				}
+				// check if the email is duplicate
+				if (invitee?.email.toString() != '' && isEmailValid && duplicateChecker.includes(invitee?.email)) {
+					duplicateValues.push('email')
+				}
+
 				if (
 					!utils.isValidPassword(invitee.password) &&
 					uploadType.trim().toLowerCase() != common.TYPE_INVITE.trim().toLowerCase()
@@ -498,6 +506,20 @@ module.exports = class UserInviteHelper {
 
 				if (invitee.phone && !invitee.phone_code) {
 					invalidFields.push('phone_code')
+				}
+				// check if the phone is duplicate
+				if (invitee.phone && invitee.phone_code) {
+					if (duplicateChecker.includes(`${invitee.phone_code}${invitee.phone}`)) {
+						duplicateValues.push('phone')
+					}
+					const phoneCodeEntityType =
+						prunedEntities.find((entityType) => entityType.value == 'phone_code') || null
+					if (phoneCodeEntityType && phoneCodeEntityType.has_entities) {
+						const findEntity = phoneCodeEntityType.entities.find((ent) => ent.value == invitee.phone_code)
+						!findEntity ? invalidFields.push('phone_code') : null
+					}
+					const regex = /^[0-9]{7,15}$/
+					!regex.test(invitee?.phone) ? invalidFields.push('phone') : null
 				}
 
 				if (invitee?.username) {
@@ -544,7 +566,8 @@ module.exports = class UserInviteHelper {
 
 				//merge all error message
 				invalidFields = [...new Set(invalidFields)]
-
+				duplicateValues = [...new Set(duplicateValues)]
+				let errorMessageArray = []
 				if (invalidFields.length > 0) {
 					let errorMessage = `${
 						invalidFields.length > 2
@@ -552,10 +575,23 @@ module.exports = class UserInviteHelper {
 							: invalidFields.join(' and ')
 					} ${invalidFields.length > 1 ? 'are' : 'is'} invalid.`
 					// if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
+					errorMessageArray.push(errorMessage)
+				}
 
-					invitee.statusOrUserId = errorMessage
+				if (duplicateValues.length > 0) {
+					let errorMessage = `${
+						duplicateValues.length > 2
+							? duplicateValues.slice(0, -1).join(', ') + ', and ' + duplicateValues.slice(-1)
+							: duplicateValues.join(' and ')
+					} ${duplicateValues.length > 1 ? 'are' : 'is'} repeated in the file.`
+					// if (emailAndPhoneMissing) errorMessage = `${errorMessage} Either email or phone is Mandatory.`
+					errorMessageArray.push(errorMessage)
+				}
+
+				if (errorMessageArray.length > 0) {
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
+					invitee.statusOrUserId = errorMessageArray.join('. ')
 					input.push(invitee)
 					continue
 				}
@@ -591,7 +627,7 @@ module.exports = class UserInviteHelper {
 
 				// Update user details if the user exists and belongs to the default organization
 				if (existingUser) {
-					invitee.statusOrUserId = 'User already exist'
+					invitee.statusOrUserId = 'User already exist and updated'
 					isErrorOccured = true
 					let isRoleUpdated = false
 
@@ -617,12 +653,11 @@ module.exports = class UserInviteHelper {
 								invitee.statusOrUserId = `User not found in tenant : ${user.tenant_code} `
 								continue
 							}
-							await organizationQueries.create({
-								user_id: existingUser.id,
-								organization_code: user.organization_code,
-								tenant_code: user.tenant_code,
-								created_at: new Date(),
-								updated_at: new Date(),
+							await userOrganizationQueries.changeUserOrganization({
+								userId: existingUser.id,
+								oldOrgCode: existingUser.organizations[0].code,
+								newOrgCode: user.organization_code,
+								tenantCode: user.tenant_code,
 							})
 
 							isOrgUpdate = true
@@ -840,7 +875,11 @@ module.exports = class UserInviteHelper {
 							//remove user data from redis
 							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
 							await utils.redisDel(redisUserKey)
-							invitee.statusOrUserId = 'Success'
+							// if user is trying to update username , inform it is not possible to update username.
+							if (existingUser.username != invitee.username) {
+								invitee.username = userUpdate[0].dataValues['username']
+								invitee.statusOrUserId = `${invitee.statusOrUserId}. However username cannot be updated.`
+							}
 						} else {
 							invitee.statusOrUserId = 'No updates needed. User details are already up to date'
 						}
@@ -851,6 +890,9 @@ module.exports = class UserInviteHelper {
 					}
 				}
 				if (!existingUser && uploadType == common.TYPE_UPLOAD.trim().toUpperCase()) {
+					if (invitee.phone_code && invitee.phone)
+						duplicateChecker.push(`${invitee.phone_code}${invitee.phone}`)
+					if (invitee.email) duplicateChecker.push(invitee.email)
 					const validInvitation =
 						existingInvitees.get(encryptedEmail) ||
 						existingInvitees.get(`${invitee.phone_code}${encryptedPhoneNumber}`) ||
@@ -886,20 +928,28 @@ module.exports = class UserInviteHelper {
 
 					inviteeData.email = encryptedEmail
 					if (
+						!inviteeData?.username ||
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
-						inviteeData?.username.toString() == ''
+						inviteeData?.username.toString() == '' ||
+						duplicateChecker.includes(inviteeData?.username)
 					) {
+						if (alreadyTakenUserNames.includes(inviteeData?.username)) {
+							userNameMessage = 'Username you provided was already taken, '
+						} else if (!inviteeData?.username || inviteeData?.username.toString() == '') {
+							userNameMessage = 'Username field empty, '
+						} else if (duplicateChecker.includes(inviteeData?.username)) {
+							userNameMessage = 'Username is repeating in the file. '
+						} else {
+							userNameMessage = ''
+						}
+
+						userNameMessage += 'Hence system generated a unique username.'
+
 						inviteeData.username = await generateUniqueUsername(
 							inviteeData?.name.trim().replace(/\s+/g, '_')
 						)
-						userNameMessage = `Username ${
-							alreadyTakenUserNames.includes(inviteeData?.username)
-								? 'you provided was already taken, '
-								: inviteeData?.username
-								? 'field empty,'
-								: ''
-						} Hence system generated a unique username.`
 					}
+					duplicateChecker.push(inviteeData.username)
 					const newInvitee = validInvitation ? validInvitation : await userInviteQueries.create(inviteeData)
 
 					// if the username is taken generate random username and inform user

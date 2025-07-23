@@ -218,7 +218,7 @@ module.exports = class tenantHelper {
 
 						// Step 2: Create promises for each entity
 						const entitiesCreationPromise = filteredEntities.map((entity) => {
-							return EntityHelper.create(entity, userId)
+							return EntityHelper.create(entity, userId, tenantCreateResponse.code)
 						})
 
 						const createdEntities = await Promise.all(entitiesCreationPromise)
@@ -314,6 +314,7 @@ module.exports = class tenantHelper {
 								redirect_code: feature.redirect_code,
 								translation: feature.translation,
 								meta: feature.meta,
+								display_order: feature.display_order,
 							},
 							{
 								organization_id: defaultOrgId,

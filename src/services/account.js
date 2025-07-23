@@ -481,7 +481,8 @@ module.exports = class AccountHelper {
 				user.id, // userid
 				'', // refresh token
 				'', // Access token
-				deviceInfo
+				deviceInfo,
+				user.tenant_code
 			)
 
 			/**
@@ -746,7 +747,13 @@ module.exports = class AccountHelper {
 			}
 
 			// Create user session
-			const userSessionDetails = await userSessionsService.createUserSession(user.id, '', '', deviceInformation)
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id,
+				'',
+				'',
+				deviceInformation,
+				user.tenant_code
+			)
 
 			// Determine tenant ID
 			/* 			let tenantDetails = await organizationQueries.findOne(
@@ -1435,7 +1442,14 @@ module.exports = class AccountHelper {
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
 
 			// Create user session
-			const userSessionDetails = await userSessionsService.createUserSession(user.id, '', '', deviceInfo)
+			const userSessionDetails = await userSessionsService.createUserSession(
+				user.id,
+				'',
+				'',
+				deviceInfo,
+				tenantDetail.code
+			)
+
 			user = UserTransformDTO.transform(user) // Transform the data
 			const tokenDetail = {
 				data: {
