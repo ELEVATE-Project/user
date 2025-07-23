@@ -631,14 +631,7 @@ module.exports = class OrganizationsHelper {
 				existingRegCodes.size > 0
 					? registrationCodes
 							.filter((code) => {
-								// Handle null/undefined codes
-								if (code == null) {
-									invalidCodes.push(code)
-									return false
-								}
-
 								const trimmedCode = code.toString().trim()
-
 								// Check if code exists in existingRegCodes
 								if (existingRegCodes.has(trimmedCode)) {
 									invalidCodes.push(trimmedCode)
