@@ -653,12 +653,11 @@ module.exports = class UserInviteHelper {
 								invitee.statusOrUserId = `User not found in tenant : ${user.tenant_code} `
 								continue
 							}
-							await organizationQueries.create({
-								user_id: existingUser.id,
-								organization_code: user.organization_code,
-								tenant_code: user.tenant_code,
-								created_at: new Date(),
-								updated_at: new Date(),
+							await userOrganizationQueries.changeUserOrganization({
+								userId: existingUser.id,
+								oldOrgCode: existingUser.organizations[0].code,
+								newOrgCode: user.organization_code,
+								tenantCode: user.tenant_code,
 							})
 
 							isOrgUpdate = true
