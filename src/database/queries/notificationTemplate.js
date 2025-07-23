@@ -79,12 +79,9 @@ exports.findOneEmailTemplate = async (code, orgCode = null, tenantCode) => {
 			where: filter,
 			raw: true,
 		})
-
+		if (templateData.length == 0) return null
 		// If there are multiple results, find the one matching orgId
 		templateData = templateData.find((template) => template.organization_code === orgCode) || templateData[0]
-
-		// If no data is found, set an empty object
-		templateData = templateData || {}
 
 		if (templateData && templateData.email_header) {
 			const header = await this.getEmailHeader(templateData.email_header)

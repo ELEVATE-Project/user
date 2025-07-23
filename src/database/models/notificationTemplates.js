@@ -45,7 +45,6 @@ module.exports = (sequelize, DataTypes) => {
 			organization_code: {
 				type: DataTypes.STRING,
 				allowNull: false,
-				primaryKey: true,
 			},
 		},
 		{
