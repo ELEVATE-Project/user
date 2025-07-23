@@ -8,6 +8,7 @@ const filterRequestBody = require('../common')
 const { organization } = require('@constants/blacklistConfig')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
+
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, organization.create)
@@ -102,7 +103,7 @@ module.exports = {
 				if (value.length === 0) {
 					throw new Error('registration_codes array cannot be empty')
 				}
-				return true
+				return utilsHelper.validateRegistrationCode(value)
 			})
 	},
 	removeRegistrationCode: (req) => {
@@ -123,7 +124,7 @@ module.exports = {
 				if (value.length === 0) {
 					throw new Error('registration_codes array cannot be empty')
 				}
-				return true
+				return utilsHelper.validateRegistrationCode(value)
 			})
 	},
 }

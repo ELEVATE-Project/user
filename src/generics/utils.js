@@ -70,6 +70,15 @@ const validateRoleAccess = (roles, requiredRoles) => {
 
 	return roles.some((role) => requiredRoles.includes(role.title))
 }
+// validate organization registration code and throw error if any
+const validateRegistrationCode = (value) => {
+	// Validate each registration code for alphanumeric + _ only
+	const registrationCodeRegex = /^[a-zA-Z0-9_]+$/
+	if (value.some((code) => !registrationCodeRegex.test(code))) {
+		throw new Error('registration_codes must contain only alphanumeric characters and underscores')
+	}
+	return true
+}
 
 const generateFileName = (name, extension) => {
 	const currentDate = new Date()
@@ -1127,4 +1136,5 @@ module.exports = {
 	isValidAction,
 	appendParamsToUrl,
 	parseMetaData,
+	validateRegistrationCode,
 }
