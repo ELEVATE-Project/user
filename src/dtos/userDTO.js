@@ -84,8 +84,6 @@ class UserDTO {
 
 			const disallowedArgs = [
 				'password',
-				'created_at',
-				'updated_at',
 				'deleted_at',
 				'email_verified',
 				'share_link',
