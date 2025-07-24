@@ -356,18 +356,30 @@ module.exports = class UserInviteHelper {
 			const defaultOrgId = defaultOrg?.id || null
 
 			//get all the roles and map title and id
-			const roleList = await roleQueries.findAll({
-				user_type: common.ROLE_TYPE_NON_SYSTEM,
+			const fullroleList = await roleQueries.findAll({
 				status: common.ACTIVE_STATUS,
 				organization_id: {
 					[Op.in]: [defaultOrgId, user.organization_id],
 				},
 				tenant_code: user.tenant_code,
 			})
+			const roleList = fullroleList.filter((role) => role.user_type === common.ROLE_TYPE_NON_SYSTEM)
+			const systemRoleList = fullroleList.filter((role) => role.user_type === common.ROLE_TYPE_SYSTEM)
+			const systemRoleIdList = systemRoleList.map((role) => role.id)
+			// get and process default roles from .env
+			const defaultRoles =
+				process.env.DEFAULT_ROLE && typeof process.env.DEFAULT_ROLE === 'string'
+					? process.env.DEFAULT_ROLE.split(',')
+							.map((role) => role.trim())
+							.filter((role) => role)
+					: []
 			const roleTitlesToIds = {}
 			roleList.forEach((role) => {
 				roleTitlesToIds[role.title] = [role.id]
 			})
+			const defaultRoleIds = _.map(defaultRoles, (role) => roleTitlesToIds[role.toLowerCase()])
+				.filter((id) => id !== undefined && id !== null)
+				.flat()
 
 			//get all existing user
 			const emailArray = _.uniq(_.map(csvData, 'email').filter((email) => email && email.trim())).map((email) =>
@@ -471,7 +483,17 @@ module.exports = class UserInviteHelper {
 			for (const invitee of csvData) {
 				let userNameMessage = ''
 				invitee.email = invitee.email.trim().toLowerCase()
-				invitee.roles = Array.isArray(invitee?.roles) ? invitee.roles.map((role) => role.trim()) : []
+
+				// trim and merge all the roles given in csv and default roles
+				invitee.roles = Array.isArray(invitee?.roles)
+					? [
+							...new Set([
+								...invitee.roles.map((role) => role.trim()).filter((role) => role),
+								...defaultRoles,
+							]),
+					  ]
+					: [...new Set(defaultRoles)]
+
 				const raw_email = invitee.email.toLowerCase() || null
 				const encryptedEmail = raw_email ? emailEncryption.encrypt(raw_email) : null
 				const hashedPassword = uploadType != common.TYPE_INVITE ? utils.hashPassword(invitee.password) : ''
@@ -662,16 +684,64 @@ module.exports = class UserInviteHelper {
 
 							isOrgUpdate = true
 						}
-						//find the new roles
-						const elementsNotInArray = _.difference(
-							_.map(invitee.roles, (role) => roleTitlesToIds[role.toLowerCase()]).flat(),
-							existingUser.roles.map((role) => role.id)
-						)
+
+						let rolesToAdd = []
+						let rolesToRemove = []
+						// Create a set for faster lookup of default and system role IDs
+						const defaultRoleIdsSet = new Set(defaultRoleIds)
+						const systemRoleIdsSet = new Set(systemRoleIdList)
+
+						// Process invitee roles and update existingUser.roles in one pass
+						invitee.roles.forEach((role) => {
+							const roleId = roleTitlesToIds[role.toLowerCase()]
+							let found = false
+
+							// Check and remove role in one loop
+							for (let i = 0; i < existingUser.roles.length; i++) {
+								if (existingUser.roles[i].id == roleId) {
+									existingUser.roles.splice(i, 1)
+									found = true
+									break // Exit loop after finding and removing
+								}
+							}
+
+							// If role not found, add to rolesToAdd
+							if (!found) {
+								rolesToAdd.push(roleId)
+							}
+						})
+
+						// Remove default roles from existingUser.roles
+						existingUser.roles = existingUser.roles.filter((role) => !defaultRoleIdsSet.has(role.id))
+
+						// Compute rolesToRemove, excluding system roles
+						rolesToRemove = existingUser.roles
+							.map((role) => role.id)
+							.filter((id) => !systemRoleIdsSet.has(id))
+
 						let rolesPromises = []
+
 						//update the user roles and handle downgrade of role
-						if (elementsNotInArray.length > 0) {
+						if (rolesToRemove.length > 0) {
 							isRoleUpdated = true
-							rolesPromises = elementsNotInArray.map((roleId) => {
+							rolesPromises = rolesToRemove.map((roleId) => {
+								return userRolesQueries.delete(
+									{
+										tenant_code: user.tenant_code,
+										user_id: existingUser.id,
+										organization_code: user.organization_code,
+										role_id: roleId,
+									},
+									{
+										force: true,
+									}
+								)
+							})
+						}
+						//update the user roles and handle downgrade of role
+						if (rolesToAdd.length > 0) {
+							isRoleUpdated = true
+							rolesPromises = rolesToAdd.map((roleId) => {
 								return userRolesQueries.create({
 									tenant_code: user.tenant_code,
 									user_id: existingUser.id,
@@ -681,7 +751,9 @@ module.exports = class UserInviteHelper {
 									updated_at: new Date(),
 								})
 							})
+						}
 
+						if (rolesPromises.length > 0) {
 							await Promise.all(rolesPromises)
 						}
 
@@ -813,6 +885,8 @@ module.exports = class UserInviteHelper {
 										username: userUpdate[0].dataValues?.username,
 										status: userUpdate[0].dataValues?.status,
 										deleted: userUpdate[0].dataValues?.deleted_at ? true : false,
+										created_at: userUpdate[0].dataValues?.created_at || null,
+										updated_at: userUpdate[0].dataValues?.updated_at || new Date(),
 										oldValues,
 										newValues,
 									},
@@ -1035,6 +1109,8 @@ module.exports = class UserInviteHelper {
 							status: insertedUser.status,
 							deleted: false,
 							id: insertedUser?.id,
+							created_at: parsedData?.created_at || new Date(),
+							updated_at: parsedData?.updated_at || new Date(),
 						}
 
 						additionalCsvHeaders.forEach((additionalKeys) => {
