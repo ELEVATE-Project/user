@@ -316,6 +316,7 @@ module.exports = class Account {
 			const result = await accountService.changePassword(
 				req.body,
 				req.decodedToken.id,
+				req.decodedToken.organization_code,
 				req.decodedToken.tenant_code
 			)
 			return result

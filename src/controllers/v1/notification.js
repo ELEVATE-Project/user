@@ -43,14 +43,17 @@ module.exports = class NotificationTemplate {
 			} else if (req.method === common.GET_METHOD) {
 				if (!req.params.id && !req.query.code) {
 					const templatesData = await notificationService.readAllNotificationTemplates(
-						req.decodedToken.organization_id
+						req.decodedToken.organization_code,
+						req.decodedToken.tenant_code
 					)
 					return templatesData
 				} else {
 					const templatesData = await notificationService.read(
 						req.params.id,
 						req.query.code,
-						req.decodedToken.organization_id
+						req.query.type,
+						req.decodedToken.organization_code,
+						req.decodedToken.tenant_code
 					)
 					return templatesData
 				}

@@ -588,6 +588,7 @@ module.exports = class AccountHelper {
 						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0].code || null,
 				})
 			}
 
@@ -603,6 +604,7 @@ module.exports = class AccountHelper {
 						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0].code || null,
 				})
 			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
@@ -627,6 +629,8 @@ module.exports = class AccountHelper {
 					phone: result.user?.phone,
 					organizations: result.user?.organizations,
 					tenant_code: result.user?.tenant_code,
+					created_at: result.user?.created_at || new Date(),
+					updated_at: result.user?.updated_at || new Date(),
 					...metaData,
 					status: insertedUser?.status || common.ACTIVE_STATUS,
 					deleted: false,
@@ -1050,8 +1054,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
-			const user = await userQueries.findOne(query)
+			const user = await userQueries.findUserWithOrganization(query, {}, tenantDomain.tenant_code)
 
 			if (!user) {
 				return responses.failureResponse({
@@ -1087,6 +1090,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
 					variables: { name: user.name, otp },
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0]?.code || null,
 				})
 			}
 
@@ -1097,6 +1101,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.OTP_EMAIL_TEMPLATE_CODE,
 					variables: { app_name: tenantDetail.name, otp },
 					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0]?.code || null,
 				})
 			}
 
@@ -1279,6 +1284,7 @@ module.exports = class AccountHelper {
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
 				variables: { name: bodyData.name || plaintextEmailId, otp },
 				tenantCode: tenantDetail.code,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
 			})
 		}
 
@@ -1289,6 +1295,7 @@ module.exports = class AccountHelper {
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
 				variables: { app_name: tenantDetail.name, otp },
 				tenantCode: tenantDetail.code,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
 			})
 		}
 
@@ -1935,7 +1942,7 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - password changed response
 	 */
 
-	static async changePassword(bodyData, userId, tenantCode) {
+	static async changePassword(bodyData, userId, organizationCode, tenantCode) {
 		try {
 			const user = await userQueries.findOne(
 				{ id: userId, tenant_code: tenantCode },
@@ -2005,6 +2012,7 @@ module.exports = class AccountHelper {
 					templateCode: process.env.CHANGE_PASSWORD_TEMPLATE_CODE,
 					variables: { name: user.name },
 					tenantCode: tenantCode,
+					organization_code: organizationCode || null,
 				})
 			}
 

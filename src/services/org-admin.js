@@ -46,7 +46,10 @@ module.exports = class OrgAdminHelper {
 			)
 			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
-			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
+			const organization = await organizationQueries.findOne(
+				{ id: organization_id },
+				{ attributes: ['name', 'code'] }
+			)
 
 			const creationData = {
 				name: utils.extractFilename(filePath),
@@ -79,6 +82,7 @@ module.exports = class OrgAdminHelper {
 						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
+						organization_code: organization.code,
 					},
 				},
 				{
@@ -619,6 +623,7 @@ async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 						portalURL: process.env.PORTAL_URL,
 					},
 					tenantCode: userDetails.tenant_code,
+					organization_code: orgCode || null,
 				})
 			}
 		} else if (status === common.REJECTED_STATUS) {
@@ -631,6 +636,7 @@ async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
 					},
 					tenantCode: userDetails.tenant_code,
+					organization_code: orgCode || null,
 				})
 			}
 		}
