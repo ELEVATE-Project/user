@@ -629,6 +629,8 @@ module.exports = class AccountHelper {
 					phone: result.user?.phone,
 					organizations: result.user?.organizations,
 					tenant_code: result.user?.tenant_code,
+					created_at: result.user?.created_at || new Date(),
+					updated_at: result.user?.updated_at || new Date(),
 					...metaData,
 					status: insertedUser?.status || common.ACTIVE_STATUS,
 					deleted: false,

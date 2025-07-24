@@ -32,10 +32,12 @@ const invitationQueries = require('@database/queries/invitation')
 const notificationUtils = require('@utils/notification')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
 const tenantQueries = require('@database/queries/tenants')
+const userSessionsService = require('@services/user-sessions')
 let defaultOrg = {}
 let modelName = ''
 let externalEntityNameIdMap = {}
 let emailAndPhoneMissing = false
+let updatedUserIds = []
 let loginUrl = ''
 
 module.exports = class UserInviteHelper {
@@ -800,6 +802,7 @@ module.exports = class UserInviteHelper {
 								{ id: existingUser.id },
 								userUpdateData
 							)
+							updatedUserIds.push(existingUser.id)
 
 							let modifiedKeys = Object.keys(userUpdate[0].dataValues).filter((key) => {
 								const current = userUpdate[0].dataValues[key]
@@ -947,8 +950,10 @@ module.exports = class UserInviteHelper {
 							}
 
 							//remove user data from redis
-							const redisUserKey = common.redisUserPrefix + existingUser.id.toString()
+							const redisUserKey =
+								common.redisUserPrefix + user.tenant_code + '_' + existingUser.id.toString()
 							await utils.redisDel(redisUserKey)
+
 							// if user is trying to update username , inform it is not possible to update username.
 							if (existingUser.username != invitee.username) {
 								invitee.username = userUpdate[0].dataValues['username']
@@ -1282,7 +1287,10 @@ module.exports = class UserInviteHelper {
 				delete invitee.meta
 				input.push(invitee)
 			}
-
+			if (updatedUserIds.length > 0) {
+				// flush all user active sessions after update
+				await this.flushUserSessions(updatedUserIds)
+			}
 			//generate output csv
 			const csvContent = utils.generateCSVContent(input)
 			const outputFilePath = path.join(inviteeFileDir, outputFileName)
@@ -1301,6 +1309,27 @@ module.exports = class UserInviteHelper {
 				message: error,
 			}
 		}
+	}
+
+	static async flushUserSessions(userIds) {
+		// Find active sessions of user and remove them
+		const userSessionData = await userSessionsService.findUserSession(
+			{
+				user_id: {
+					[Op.in]: userIds,
+				},
+				ended_at: null,
+			},
+			{
+				attributes: ['id'],
+			}
+		)
+		const userSessionIds = userSessionData.map(({ id }) => id)
+		/**
+		 * 1: Remove redis data
+		 * 2: Update ended_at in user-sessions
+		 */
+		await userSessionsService.removeUserSessions(userSessionIds)
 	}
 
 	static async uploadFileToCloud(fileName, folderPath, userId = '', dynamicPath = '') {

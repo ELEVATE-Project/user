@@ -748,7 +748,7 @@ async function verifyOrg(code, tenantCode) {
 		{ code, tenant_code: tenantCode },
 		{ isAdmin: true }
 	)
-	if (Object.keys(orgDetailsBeforeUpdate).length <= 0) {
+	if (!orgDetailsBeforeUpdate || Object.keys(orgDetailsBeforeUpdate).length <= 0) {
 		throw responses.failureResponse({
 			statusCode: httpStatusCode.not_acceptable,
 			responseCode: 'CLIENT_ERROR',
