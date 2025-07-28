@@ -31,7 +31,7 @@ module.exports = class Admin {
 				})
 			}
 
-			const user = await adminService.deleteUser(req.params.id)
+			const user = await adminService.deleteUser(req.params.id, req.decodedToken.id)
 			return user
 		} catch (error) {
 			return error
