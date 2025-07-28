@@ -12,7 +12,12 @@ const common = require('@constants/common')
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, organization.create)
-		req.checkBody('code').trim().notEmpty().withMessage('code field is empty')
+		req.checkBody('code')
+			.trim()
+			.notEmpty()
+			.withMessage('code field is empty')
+			.matches(/^[a-z0-9]+$/)
+			.withMessage('code is invalid. Only lowercase alphanumeric characters allowed')
 		req.checkBody('tenant_code').trim().notEmpty().withMessage('tenant_code field is empty')
 		req.checkBody('registration_codes')
 			.optional({ checkFalsy: true })
