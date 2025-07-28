@@ -25,6 +25,8 @@ const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const userSessionsService = require('@services/user-sessions')
 const userHelper = require('@helpers/userHelper')
+const UserTransformDTO = require('@dtos/userDTO')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class AdminHelper {
 	/**
@@ -34,7 +36,7 @@ module.exports = class AdminHelper {
 	 * @param {string} userId -delete user Id.
 	 * @returns {JSON} - delete user response
 	 */
-	static async deleteUser(userId) {
+	static async deleteUser(userId, adminUserId) {
 		try {
 			let user = await userQueries.findByPk(userId)
 			if (!user) {
@@ -45,6 +47,27 @@ module.exports = class AdminHelper {
 				})
 			}
 			const result = await userHelper.deleteUser(userId, user)
+			const eventBody = UserTransformDTO.deleteEventBodyDTO({
+				entity: 'user',
+				eventType: 'delete',
+				entityId: userId,
+				args: {
+					created_by: adminUserId,
+					created_at: user?.created_at,
+					updated_at: user?.updated_at,
+					deleted_at: new Date(),
+					tenant_code: user?.tenant_code,
+					status: 'DELETED',
+					deleted: true,
+					id: userId,
+					username: user?.username || null,
+					email: user?.email ? emailEncryption.decrypt(user?.email) : user?.email || null,
+					phone: user?.phone ? emailEncryption.decrypt(user?.phone) : user?.phone || null,
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: result.message,
