@@ -49,6 +49,19 @@ module.exports = class UserEntityData {
 		}
 	}
 
+	static async hardDelete(id) {
+		try {
+			return await Entity.destroy({
+				where: {
+					id: id,
+				},
+				force: true,
+			})
+		} catch (error) {
+			throw error
+		}
+	}
+
 	static async findEntityTypeById(filter) {
 		try {
 			const entityData = await Entity.findByPk(filter)

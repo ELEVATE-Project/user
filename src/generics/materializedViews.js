@@ -258,41 +258,37 @@ const createViewUniqueIndexOnPK = async (model) => {
 }
 
 const generateMaterializedView = async (modelEntityTypes) => {
-	try {
-		const model = require('@database/models/index')[modelEntityTypes.modelName]
+	const model = require('@database/models/index')[modelEntityTypes.modelName]
 
-		const { concreteAttributes, metaAttributes } = await filterConcreteAndMetaAttributes(
-			Object.keys(model.rawAttributes),
-			modelEntityTypes.entityTypeValueList
-		)
+	const { concreteAttributes, metaAttributes } = await filterConcreteAndMetaAttributes(
+		Object.keys(model.rawAttributes),
+		modelEntityTypes.entityTypeValueList
+	)
 
-		const concreteFields = await rawAttributesTypeModifier(model.rawAttributes)
+	const concreteFields = await rawAttributesTypeModifier(model.rawAttributes)
 
-		const metaFields = await modelEntityTypes.entityTypes
-			.map((entity) => {
-				if (metaAttributes.includes(entity.value)) return entity
-				else null
-			})
-			.filter(Boolean)
+	const metaFields = await modelEntityTypes.entityTypes
+		.map((entity) => {
+			if (metaAttributes.includes(entity.value)) return entity
+			else null
+		})
+		.filter(Boolean)
 
-		const modifiedMetaFields = await metaAttributesTypeModifier(metaFields)
+	const modifiedMetaFields = await metaAttributesTypeModifier(metaFields)
 
-		const { materializedViewGenerationQuery, temporaryMaterializedViewName } = await materializedViewQueryBuilder(
-			model,
-			concreteFields,
-			modifiedMetaFields
-		)
+	const { materializedViewGenerationQuery, temporaryMaterializedViewName } = await materializedViewQueryBuilder(
+		model,
+		concreteFields,
+		modifiedMetaFields
+	)
 
-		await sequelize.query(materializedViewGenerationQuery)
-		const allFields = [...modifiedMetaFields, ...concreteFields]
-		const randomViewName = await renameMaterializedView(temporaryMaterializedViewName, model.tableName)
-		if (randomViewName) await deleteMaterializedView(randomViewName)
-		await createIndexesOnAllowFilteringFields(model, modelEntityTypes, allFields)
-		await createViewUniqueIndexOnPK(model)
-		await executeIndexQueries(model.name)
-	} catch (err) {
-		console.log(err)
-	}
+	await sequelize.query(materializedViewGenerationQuery)
+	const allFields = [...modifiedMetaFields, ...concreteFields]
+	const randomViewName = await renameMaterializedView(temporaryMaterializedViewName, model.tableName)
+	if (randomViewName) await deleteMaterializedView(randomViewName)
+	await createIndexesOnAllowFilteringFields(model, modelEntityTypes, allFields)
+	await createViewUniqueIndexOnPK(model)
+	await executeIndexQueries(model.name)
 }
 
 const getAllowFilteringEntityTypes = async () => {

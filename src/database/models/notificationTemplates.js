@@ -17,11 +17,6 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
-			organization_id: {
-				type: DataTypes.INTEGER,
-				allowNull: false,
-				primaryKey: true,
-			},
 			subject: {
 				type: DataTypes.STRING,
 			},
@@ -41,6 +36,15 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			updated_by: {
 				type: DataTypes.INTEGER,
+			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+				defaultValue: '',
+			},
+			organization_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
 			},
 		},
 		{

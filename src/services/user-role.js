@@ -13,6 +13,7 @@ const common = require('@constants/common')
 const { Op } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
+const utils = require('@generics/utils')
 
 module.exports = class userRoleHelper {
 	/**
@@ -24,6 +25,7 @@ module.exports = class userRoleHelper {
 	 * @param {String} req.body.title - Title of the role.
 	 * @param {Integer} req.body.userType - User type of the role.
 	 * @param {String} req.body.status - Role status.
+	 * @param {String} req.body.translations - Translation for roles.
 	 * @param {String} req.body.visibility - Visibility of the role.
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role creation details.
@@ -41,6 +43,7 @@ module.exports = class userRoleHelper {
 					status: roles.status,
 					visibility: roles.visibility,
 					organization_id: roles.organization_id,
+					translations: roles.translations,
 				},
 			})
 		} catch (error) {
@@ -58,6 +61,7 @@ module.exports = class userRoleHelper {
 	 * @param {Integer} req.body.userType - User type of the role.
 	 * @param {String} req.body.status - Role status.
 	 * @param {String} req.body.visibility - Visibility of the role.
+	 * @param {String} req.body.translations - Translation for roles.
 	 * @param {Integer} req.body.organization_id - Organization ID for the role.
 	 * @returns {JSON} - Response contains role update details.
 	 */
@@ -77,11 +81,12 @@ module.exports = class userRoleHelper {
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_UPDATED_SUCCESSFULLY',
 				result: {
-					title: updateRole.title,
-					user_type: updateRole.user_type,
-					status: updateRole.status,
-					visibility: updateRole.visibility,
-					organization_id: updateRole.organization_id,
+					title: updateRole[0].title,
+					user_type: updateRole[0].user_type,
+					status: updateRole[0].status,
+					visibility: updateRole[0].visibility,
+					organization_id: updateRole[0].organization_id,
+					translations: updateRole[0].translations,
 				},
 			})
 		} catch (error) {
@@ -131,16 +136,17 @@ module.exports = class userRoleHelper {
 	 * @returns {JSON} - Role list.
 	 */
 
-	static async list(filters, page, limit, search, userOrganizationId) {
+	static async list(filters, page, limit, search, userOrganizationId, tenantCode, language) {
 		try {
 			delete filters.search
+			delete filters.language
 			const offset = common.getPaginationOffset(page, limit)
 			const options = {
 				offset,
 				limit,
 			}
 			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
+				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
 				{ attributes: ['id'] }
 			)
 			let defaultOrgId = defaultOrg.id
@@ -148,8 +154,18 @@ module.exports = class userRoleHelper {
 				[Op.or]: [{ organization_id: userOrganizationId }, { organization_id: defaultOrgId }],
 				title: { [Op.iLike]: `%${search}%` },
 				...filters,
+				tenant_code: tenantCode,
 			}
-			const attributes = ['id', 'title', 'user_type', 'visibility', 'status', 'organization_id']
+			const attributes = [
+				'id',
+				'title',
+				'user_type',
+				'visibility',
+				'label',
+				'status',
+				'organization_id',
+				'translations',
+			]
 			const roles = await roleQueries.findAllRoles(filter, attributes, options)
 
 			if (roles.rows == 0 || roles.count == 0) {
@@ -159,6 +175,15 @@ module.exports = class userRoleHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			if (language && language !== common.ENGLISH_LANGUGE_CODE) {
+				utils.setRoleLabelsByLanguage(roles.rows, language)
+			} else {
+				roles.rows.map((labels) => {
+					delete labels.translations
+					return labels
+				})
+			}
+
 			const results = {
 				data: roles.rows,
 				count: roles.count,

@@ -54,25 +54,48 @@ module.exports = {
 
 	addOrgAdmin: (req) => {
 		req.body = filterRequestBody(req.body, admin.addOrgAdmin)
-		req.checkBody('organization_id').notEmpty().withMessage('organization_id field is empty')
 
-		req.checkBody(['user_id', 'email']).custom(() => {
+		// Validate organization_id
+		req.checkBody('organization_id')
+			.notEmpty()
+			.withMessage('organization_id field is empty')
+			.isNumeric()
+			.withMessage('organization_id must be a number')
+
+		// Validate that either identifier or user_id is present, but not both
+		req.checkBody(['identifier', 'user_id']).custom(() => {
+			const identifier = req.body.identifier
 			const user_id = req.body.user_id
-			const email = req.body.email
 
-			if (!user_id && !email) {
-				throw new Error('Either user_id or email is required')
+			if (!identifier && !user_id) {
+				throw new Error('Either identifier or user_id is required')
 			}
 
-			if (user_id && email) {
-				throw new Error('Only one of user_id or email should be present')
+			if (identifier && user_id) {
+				throw new Error('Only one of identifier or user_id should be present')
 			}
 
 			return true
 		})
+
+		// Validate identifier (if present)
+		req.checkBody('identifier').optional().isString().withMessage('identifier must be a string')
+
+		// Validate user_id (if present)
 		req.checkBody('user_id').optional().isNumeric().withMessage('user_id must be a number')
 
-		req.checkBody('email').optional().isEmail().withMessage('Invalid email address')
+		// Validate phone_code (optional, but if present, should be valid)
+		req.checkBody('phone_code')
+			.optional()
+			.matches(/^\+\d{1,3}$/)
+			.withMessage('phone_code must be a valid country code (e.g., +91)')
+
+		// Validate tenant_id in header
+		req.checkHeaders('tenant-id')
+			.notEmpty()
+			.withMessage('tenant-id header is required')
+			.isString()
+			.withMessage('tenant-id must be a string')
 	},
 
 	deactivateUser: (req) => {

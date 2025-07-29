@@ -1,5 +1,14 @@
+require('module-alias/register')
 require('dotenv').config()
 
+let environmentData = require('../envVariables')()
+
+if (!environmentData.success) {
+	console.error('Server could not start . Not all environment variable is provided', {
+		triggerNotification: true,
+	})
+	process.exit()
+}
 module.exports = {
 	development: {
 		url: process.env.DEV_DATABASE_URL,

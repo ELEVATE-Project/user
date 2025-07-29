@@ -23,9 +23,12 @@ const successResponse = async ({ statusCode = 500, responseCode = 'OK', message,
 }
 
 const failureResponse = ({ message = 'Oops! Something Went Wrong.', statusCode = 500, responseCode, result }) => {
-	const error = new Error(message)
+	const errorMessage = message.key || message
+
+	const error = new Error(errorMessage)
 	error.statusCode = statusCode
 	error.responseCode = responseCode
+	error.interpolation = message?.interpolation || false
 	error.data = result || []
 
 	return error

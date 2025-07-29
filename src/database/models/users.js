@@ -11,11 +11,11 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			email: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 			},
 			email_verified: {
 				type: DataTypes.STRING,
-				allowNull: false,
+				allowNull: true,
 				defaultValue: false,
 			},
 			password: {
@@ -25,6 +25,25 @@ module.exports = (sequelize, DataTypes) => {
 			name: {
 				type: DataTypes.STRING,
 				allowNull: false,
+			},
+			username: {
+				type: DataTypes.STRING,
+				allowNull: true,
+				set(value) {
+					if (value) {
+						this.setDataValue('username', value.toLowerCase())
+					} else {
+						this.setDataValue('username', null)
+					}
+				},
+			},
+			phone: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
+			phone_code: {
+				type: DataTypes.STRING,
+				allowNull: true,
 			},
 			location: DataTypes.STRING,
 			about: DataTypes.TEXT,
@@ -43,8 +62,8 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'en',
 			},
-			organization_id: {
-				type: DataTypes.INTEGER,
+			tenant_code: {
+				type: DataTypes.STRING,
 				allowNull: false,
 				primaryKey: true,
 			},
@@ -60,10 +79,28 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: true,
 			},
 		},
-		{ sequelize, modelName: 'User', tableName: 'users', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'User',
+			tableName: 'users',
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
+
 	User.associate = (models) => {
-		User.belongsTo(models.Organization, { foreignKey: 'organization_id', as: 'organization' })
+		User.hasMany(models.UserOrganization, {
+			foreignKey: 'user_id',
+			as: 'user_organizations',
+		})
+
+		User.belongsToMany(models.Organization, {
+			through: models.UserOrganization,
+			foreignKey: 'user_id',
+			otherKey: 'organization_code',
+			as: 'organization',
+		})
 	}
+
 	return User
 }

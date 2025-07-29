@@ -1,0 +1,46 @@
+'use strict'
+
+module.exports = {
+	up: async (queryInterface, Sequelize) => {
+		const now = new Date()
+
+		// Insert into tenants
+		await queryInterface.bulkInsert('tenants', [
+			{
+				code: process.env.DEFAULT_TENANT_CODE,
+				name: 'Default Tenant',
+				status: 'ACTIVE',
+				description: 'This is the default tenant.',
+				logo: 'https://www.logo.dev',
+				theming: JSON.stringify({
+					primaryColor: '#4F46E5',
+					secondaryColor: '#F97316',
+				}),
+				meta: null,
+				created_by: null,
+				updated_by: null,
+				created_at: now,
+				updated_at: now,
+				deleted_at: null,
+			},
+		])
+
+		// Insert into tenant_domains
+		await queryInterface.bulkInsert('tenant_domains', [
+			{
+				id: 1,
+				tenant_code: process.env.DEFAULT_TENANT_CODE,
+				domain: 'localhost',
+				verified: true,
+				created_at: now,
+				updated_at: now,
+				deleted_at: null,
+			},
+		])
+	},
+
+	down: async (queryInterface, Sequelize) => {
+		await queryInterface.bulkDelete('tenant_domains', { tenant_code: 'default' })
+		await queryInterface.bulkDelete('tenants', { code: 'default' })
+	},
+}

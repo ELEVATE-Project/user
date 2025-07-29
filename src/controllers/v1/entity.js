@@ -19,7 +19,11 @@ module.exports = class Entity {
 
 	async create(req) {
 		try {
-			const createdEntity = await entityService.create(req.body, req.decodedToken.id, req.decodedToken.roles)
+			const createdEntity = await entityService.create(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.tenant_code
+			)
 			return createdEntity
 		} catch (error) {
 			return error

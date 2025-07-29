@@ -95,12 +95,13 @@ module.exports = class UserEntityData {
 		}
 	} */
 
-	static async updateOneEntityType(id, organizationId, update, options = {}) {
+	static async updateOneEntityType(id, organizationId, tenantCode, update, options = {}) {
 		try {
 			return await EntityType.update(update, {
 				where: {
 					id: id,
 					organization_id: organizationId,
+					tenant_code: tenantCode,
 				},
 				...options,
 			})
@@ -158,5 +159,20 @@ module.exports = class UserEntityData {
 		} catch (error) {
 			return error
 		}
+	}
+}
+
+exports.hardDelete = async (id) => {
+	try {
+		await EntityType.destroy({
+			where: {
+				id,
+			},
+			force: true,
+		})
+		return { success: true }
+	} catch (error) {
+		console.error(error)
+		return error
 	}
 }

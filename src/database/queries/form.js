@@ -46,3 +46,29 @@ exports.findAllTypeFormVersion = async () => {
 		return error
 	}
 }
+
+exports.findAll = async (filter, attributes) => {
+	try {
+		const formData = await Form.findAll({
+			where: filter,
+			attributes,
+			raw: true,
+		})
+		return formData
+	} catch (error) {
+		return error
+	}
+}
+
+exports.hardDelete = async (id) => {
+	try {
+		return await Form.destroy({
+			where: {
+				id: id,
+			},
+			force: true,
+		})
+	} catch (error) {
+		throw error
+	}
+}

@@ -12,10 +12,12 @@ module.exports = {
 
 			await queryInterface.removeColumn('users', 'gender')
 
-			//recreate the view
-			await materializedViewsService.checkAndCreateMaterializedViews()
+			try {
+				await materializedViewsService.checkAndCreateMaterializedViews()
+			} catch (err) {
+				console.warn('Skipping materialized view creation')
+			}
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	},
