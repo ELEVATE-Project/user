@@ -10,12 +10,12 @@ module.exports = {
 			// Start a transaction
 			transaction = await queryInterface.sequelize.transaction()
 
-			const ORG_FETCH_QUERY = `SELECT id, name, code FROM organizations WHERE code ~ '\\s+';`
+			const ORG_FETCH_QUERY = `SELECT id, name, code FROM organizations WHERE code ~ '\\s+' OR code ~ '[A-Z]';`
 			const disableFK = (table, fk_name) => `ALTER TABLE ${table} DROP CONSTRAINT IF EXISTS ${fk_name};`
 			const enableFK = (table, fk_name, fkey, refTable, refKey) =>
 				`ALTER TABLE ${table} ADD CONSTRAINT ${fk_name} FOREIGN KEY ${fkey} REFERENCES ${refTable} ${refKey} ON UPDATE NO ACTION ON DELETE CASCADE;`
 			const updateQuery = (table, key) =>
-				`UPDATE ${table} SET ${key} = REGEXP_REPLACE(${key}, '\\s+', '', 'g') WHERE ${key} ~ '\\s+';`
+				`UPDATE ${table} SET ${key} = LOWER(REGEXP_REPLACE(${key}, '\\s+', '_', 'g')) WHERE ${key} ~ '[A-Z|\\s+]';`
 
 			// Execute the query to fetch organizations with whitespace
 			const fetchOrg = await queryInterface.sequelize.query(ORG_FETCH_QUERY, {
