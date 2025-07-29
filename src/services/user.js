@@ -35,7 +35,7 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, id, orgId, tenantCode) {
+	static async update(bodyData, id, orgCode, tenantCode) {
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -58,16 +58,12 @@ module.exports = class UserHelper {
 				})
 			}
 
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
+			let defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
 
 			const filter = {
 				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [orgId, defaultOrgId],
+				organization_code: {
+					[Op.in]: [orgCode, defaultOrganizationCode],
 				},
 				tenant_code: tenantCode,
 				model_names: { [Op.contains]: [await userQueries.getModelName()] },
@@ -348,22 +344,19 @@ module.exports = class UserHelper {
 
 				//user.user_roles = roles
 
-				let defaultOrg = await organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-					{ attributes: ['id'] }
-				)
-				let defaultOrgId = defaultOrg.id
-				let userOrg = user.organizations[0].id
+				let defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
+				let userOrg = user.organizations[0].code
 
 				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 					status: 'ACTIVE',
-					organization_id: {
-						[Op.in]: [userOrg, defaultOrgId],
+					organization_code: {
+						[Op.in]: [userOrg, defaultOrganizationCode],
 					},
 					tenant_code: tenantCode,
 					model_names: { [Op.contains]: [await userQueries.getModelName()] },
 				})
-				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations[0].id)
 				const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
 				user.permissions = permissionsByModule
 
@@ -456,22 +449,19 @@ module.exports = class UserHelper {
 			if (user.image) {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
-			let userOrg = user.organizations[0].id
+			let defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
+			let userOrganizationCode = user.organizations[0].code
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [userOrg, defaultOrgId],
+				organization_code: {
+					[Op.in]: [userOrganizationCode, defaultOrganizationCode],
 				},
 				tenant_code: tenantCode,
 				model_names: { [Op.contains]: [await userQueries.getModelName()] },
 			})
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations[0].id)
 
 			const processDbResponse = await utils.processDbResponse(user, prunedEntities)
 			return responses.successResponse({
@@ -527,7 +517,7 @@ module.exports = class UserHelper {
 	 * @param {Object} bodyData - it contains user preferred language
 	 * @returns {JSON} - updated user preferred languages response
 	 */
-	static async setLanguagePreference(bodyData, id, orgId, tenantCode) {
+	static async setLanguagePreference(bodyData, id, organizationCode, tenantCode) {
 		try {
 			let skipRequiredValidation = true
 			const user = await userQueries.findOne({ id: id, tenant_code: tenantCode })
@@ -538,15 +528,12 @@ module.exports = class UserHelper {
 					responseCode: 'UNAUTHORIZED',
 				})
 			}
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantCode },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
+			let defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
 			let userModel = await userQueries.getColumns()
 			const filter = {
 				status: common.ACTIVE_STATUS,
-				organization_id: { [Op.in]: [orgId, defaultOrgId] },
+				organization_code: { [Op.in]: [organizationCode, defaultOrganizationCode] },
 				model_names: { [Op.contains]: [userModel] },
 				value: 'preferred_language',
 				tenant_code: tenantCode,

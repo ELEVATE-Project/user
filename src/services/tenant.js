@@ -142,24 +142,23 @@ module.exports = class tenantHelper {
 				}
 
 				const defaultOrgId = defaultOrgCreateResponse.result.id
+				const defaultOrganizationCode = defaultOrgCreateResponse.result.code
 				// add rollback code for org
 				rollbackStack.push(async () => {
 					await organisationQueries.hardDelete(defaultOrgId)
 				})
 
 				// ******* adding default entities and entity types to Default Org CODE BEGINS HERE *******
-				let allDefaultEntityTypeValues = await entityTypeQueries.findAllEntityTypes(
-					process.env.DEFAULT_ORG_ID,
-					['value']
-				)
+				let allDefaultEntityTypeValues = await entityTypeQueries.findAllEntityTypes(defaultOrganizationCode, [
+					'value',
+				])
 				allDefaultEntityTypeValues = allDefaultEntityTypeValues.map((entityType) => entityType.value)
 				if (allDefaultEntityTypeValues.length > 0) {
 					const entityTypeResponse = await entityTypeService.readUserEntityTypes(
 						{
 							value: allDefaultEntityTypeValues,
 						},
-						userId,
-						process.env.DEFAULT_ORG_ID,
+						defaultOrganizationCode,
 						process.env.DEFAULT_TENANT_CODE
 					)
 
@@ -187,6 +186,7 @@ module.exports = class tenantHelper {
 									external_entity_type: entityType?.external_entity_type || false,
 								},
 								userId,
+								defaultOrganizationCode,
 								defaultOrgId,
 								tenantCreateResponse.code
 							)
@@ -218,7 +218,12 @@ module.exports = class tenantHelper {
 
 						// Step 2: Create promises for each entity
 						const entitiesCreationPromise = filteredEntities.map((entity) => {
-							return EntityHelper.create(entity, userId, tenantCreateResponse.code)
+							return EntityHelper.create(
+								entity,
+								userId,
+								tenantCreateResponse.code,
+								defaultOrganizationCode
+							)
 						})
 
 						const createdEntities = await Promise.all(entitiesCreationPromise)

@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
+			organization_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
 			created_by: { type: DataTypes.INTEGER, allowNull: true },
 			updated_by: { type: DataTypes.INTEGER, allowNull: true },
 		},

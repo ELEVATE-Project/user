@@ -1,8 +1,5 @@
 const EntityType = require('../models/index').EntityType
 const Entity = require('../models/index').Entity
-const { Op } = require('sequelize')
-const Sequelize = require('../models/index').sequelize
-
 module.exports = class UserEntityData {
 	static async createEntityType(data) {
 		try {
@@ -24,11 +21,11 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntityTypes(orgId, attributes, filter = {}) {
+	static async findAllEntityTypes(organizationCode, attributes, filter = {}) {
 		try {
 			const entityData = await EntityType.findAll({
 				where: {
-					organization_id: orgId,
+					organization_code: organizationCode,
 					...filter,
 				},
 				attributes,
@@ -94,12 +91,12 @@ module.exports = class UserEntityData {
 		}
 	} */
 
-	static async updateOneEntityType(id, organizationId, tenantCode, update, options = {}) {
+	static async updateOneEntityType(id, organizationCode, tenantCode, update, options = {}) {
 		try {
 			return await EntityType.update(update, {
 				where: {
 					id: id,
-					organization_id: organizationId,
+					organization_code: organizationCode,
 					tenant_code: tenantCode,
 				},
 				...options,
@@ -109,12 +106,12 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async deleteOneEntityType(id, orgId) {
+	static async deleteOneEntityType(id, organizationCode) {
 		try {
 			return await EntityType.destroy({
 				where: {
 					id: id,
-					organization_id: orgId,
+					organization_code: organizationCode,
 				},
 				individualHooks: true,
 			})

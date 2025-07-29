@@ -74,22 +74,41 @@ module.exports = {
 
 	read: (req) => {
 		req.checkQuery('id')
-			.trim()
 			.optional()
+			.trim()
 			.notEmpty()
 			.withMessage('id param is empty')
 			.isNumeric()
 			.withMessage('id param is invalid, must be an integer')
 
 		req.checkQuery('value')
-			.trim()
 			.optional()
+			.trim()
 			.notEmpty()
 			.withMessage('value field is empty')
 			.matches(/^[A-Za-z0-9 ]+$/)
 			.withMessage('value is invalid, must not contain spaces')
-	},
 
+		req.checkQuery('entity_type_id')
+			.optional()
+			.trim()
+			.notEmpty()
+			.withMessage('entity_type_id is empty')
+			.isNumeric()
+			.withMessage('entity_type_id must be numeric')
+
+		// Custom validator to ensure either `id` OR (`value` + `entity_type_id`) is present
+		req.checkQuery('').custom(() => {
+			const id = req.query.id
+			const value = req.query.value
+			const entityTypeId = req.query.entity_type_id
+
+			if (id) return true
+			if (value && entityTypeId) return true
+
+			throw new Error('Either id OR (value and entity_type_id) must be provided')
+		})
+	},
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 	},
