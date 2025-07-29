@@ -85,6 +85,18 @@ module.exports = {
 				})
 				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
 
+				table = 'organization_features'
+				fk_name = 'fk_org_features_organization'
+				fkey = '(organization_code, tenant_code)'
+				refTable = 'organizations'
+				refKey = '(code, tenant_code)'
+				await queryInterface.sequelize.query(disableFK(table, fk_name), {
+					type: Sequelize.QueryTypes.RAW,
+					raw: true,
+					transaction,
+				})
+				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
+
 				// Update tables to remove whitespace
 				let updateTable = 'organizations'
 				let key = 'code'
@@ -119,6 +131,13 @@ module.exports = {
 				})
 
 				updateTable = 'user_organization_roles'
+				key = 'organization_code'
+				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
+					type: Sequelize.QueryTypes.UPDATE,
+					raw: true,
+					transaction,
+				})
+				updateTable = 'organization_features'
 				key = 'organization_code'
 				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
 					type: Sequelize.QueryTypes.UPDATE,
