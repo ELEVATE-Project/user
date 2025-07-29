@@ -72,7 +72,6 @@ module.exports = {
 					raw: true,
 					transaction,
 				})
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
 
 				table = 'user_organization_roles'
 				fk_name = 'fk_user_org_roles_user_organizations'
