@@ -83,93 +83,41 @@ reviews:
     issue_assessment:
       mode: warning
   tools:
-    ast-grep:
-      rule_dirs: []
-      util_dirs: []
-      essential_rules: true
-      packages: []
-    shellcheck:
-      enabled: true
-    ruff:
-      enabled: true
-    markdownlint:
-      enabled: true
-    github-checks:
-      enabled: true
-      timeout_ms: 90000
-    languagetool:
-      enabled: true
-      enabled_rules: []
-      disabled_rules: []
-      enabled_categories: []
-      disabled_categories: []
-      enabled_only: false
-      level: default
-    biome:
-      enabled: true
-    hadolint:
-      enabled: true
-    swiftlint:
-      enabled: true
-    phpstan:
-      enabled: true
-      level: default
-    phpmd:
-      enabled: true
-    phpcs:
-      enabled: true
-    golangci-lint:
-      enabled: true
-    yamllint:
-      enabled: true
-    gitleaks:
-      enabled: true
-    checkov:
-      enabled: true
-    detekt:
-      enabled: true
     eslint:
-      enabled: true
-    flake8:
-      enabled: true
-    rubocop:
-      enabled: true
-    buf:
-      enabled: true
-    regal:
-      enabled: true
-    actionlint:
-      enabled: true
-    pmd:
-      enabled: true
-    cppcheck:
       enabled: true
     semgrep:
       enabled: true
-    circleci:
-      enabled: true
-    clippy:
+    dotenvLint:
       enabled: true
     sqlfluff:
       enabled: true
-    prismaLint:
+    checkov:
       enabled: true
-    pylint:
+    gitleaks:
       enabled: true
-    oxc:
+    hadolint:
       enabled: true
-    shopifyThemeCheck:
+    shellcheck:
       enabled: true
-    luacheck:
+    actionlint:
       enabled: true
-    brakeman:
+    circleci:
       enabled: true
-    dotenvLint:
+    github-checks:
       enabled: true
-    htmlhint:
+    markdownlint:
       enabled: true
-    checkmake:
+    yamllint:
       enabled: true
+    biome:
+      enabled: true
+    languagetool:
+      enabled: false  # optional
+    ast-grep:
+      essential_rules: true
+      rule_dirs: []
+      util_dirs: []
+      packages: []
 chat:
   auto_reply: true
   integrations:
