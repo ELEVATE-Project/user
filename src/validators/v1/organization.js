@@ -16,7 +16,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('code field is empty')
-			.matches(/^[a-z0-9]+$/)
+			.matches(/^[a-z0-9_]+$/)
 			.withMessage('code is invalid. Only lowercase alphanumeric characters allowed')
 		req.checkBody('tenant_code').trim().notEmpty().withMessage('tenant_code field is empty')
 		req.checkBody('registration_codes')

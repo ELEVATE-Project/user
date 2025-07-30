@@ -51,18 +51,6 @@ module.exports = {
 				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
 
 				table = 'organization_user_invites'
-				fk_name = 'fk_org_user_invites_org_code'
-				fkey = '(organization_code, tenant_code)'
-				refTable = 'organizations'
-				refKey = '(code, tenant_code)'
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
-
-				table = 'organization_user_invites'
 				fk_name = 'fk_org_user_invites_organization_id'
 				fkey = '(organization_code, tenant_code)'
 				refTable = 'organizations'
@@ -151,7 +139,6 @@ module.exports = {
 					raw: true,
 					transaction,
 				})
-				console.log(fetchOrgs)
 
 				// Re-enable foreign key constraints
 				let fk_retainerPromise = []
@@ -169,7 +156,6 @@ module.exports = {
 
 				// Commit the transaction
 				await transaction.commit()
-				console.log('Transaction committed successfully.')
 			}
 		} catch (error) {
 			// Rollback transaction on error
