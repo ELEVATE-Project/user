@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://storage.googleapis.com/coderabbit_public_assets/schema.v2.json
+
 language: en-US
 tone_instructions: ''
 early_access: false
@@ -26,17 +28,44 @@ reviews:
   auto_assign_reviewers: false
   poem: true
   labeling_instructions: []
-  path_filters: []
-  path_instructions: []
+
+  #Exclude non-source code directories from reviews.
+  path_filters:
+    - "!deployment/**"
+    - "!dev-ops/**"
+    - "!release-notes/**"
+    - "!src/api-doc/**"
+    - "!src/assets/**"
+    - "!src/configs/**"
+    - "!src/public/**"
+    - "!src/temp/**"
+    - "!**/*.md"
+
+  # Add specific review instructions for critical paths.
+  path_instructions:
+    - path: "src/services/**"
+      instructions: "This is core business logic. Please check for correctness, efficiency, and potential edge cases."
+    - path: "src/controllers/**"
+      instructions: "These are API controllers. Focus on request/response handling, security (auth middleware usage), and proper status codes."
+    - path: "src/database/queries/**"
+      instructions: "Review database queries for performance. Check for N+1 problems and ensure indexes can be used."
+    - path: "src/validators/**"
+      instructions: "Validate all incoming data thoroughly. Check for missing or incomplete validation rules."
+    - path: "src/middlewares/**"
+      instructions: "This is security-sensitive middleware. Scrutinize for potential vulnerabilities."
+
   abort_on_close: true
   disable_cache: false
   auto_review:
     enabled: true
     auto_incremental_review: true
-    ignore_title_keywords: []
+    ignore_title_keywords: ["WIP", "skip-review"]
     labels: []
     drafts: false
-    base_branches: []
+    # Target reviews to development branches.
+    base_branches:
+      - "develop"
+
   finishing_touches:
     docstrings:
       enabled: true
