@@ -65,9 +65,9 @@ module.exports = class Entity {
 				)
 			}
 			return await entityTypeService.readAllSystemEntityTypes(
-				req.decodedToken.organization_id,
 				req.decodedToken.organization_code,
-				req.decodedToken.tenant_code
+				req.decodedToken.tenant_code,
+				req.decodedToken.organization_id
 			)
 		} catch (error) {
 			return error

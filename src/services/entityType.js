@@ -91,7 +91,7 @@ module.exports = class EntityHelper {
 		}
 	}
 
-	static async readAllSystemEntityTypes(organizationId, organizationCode, tenantCode) {
+	static async readAllSystemEntityTypes(organizationCode, tenantCode, organizationId) {
 		try {
 			const attributes = ['value', 'label', 'id', 'organization_code']
 
