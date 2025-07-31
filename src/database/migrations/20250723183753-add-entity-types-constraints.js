@@ -17,7 +17,7 @@ module.exports = {
 			await queryInterface.sequelize.query(
 				`
         CREATE UNIQUE INDEX unique_entities_value_type_tenant
-        ON entities (value, entity_type_id, tenant_code)
+        ON entities (value, entity_type_id,organization_code, tenant_code)
         WHERE deleted_at IS NULL;
       `,
 				{ transaction }
