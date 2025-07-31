@@ -16,6 +16,9 @@ module.exports = (sequelize, DataTypes) => {
 			updated_by: { type: DataTypes.INTEGER, allowNull: true },
 			allow_filtering: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
 			data_type: { type: DataTypes.STRING, allowNull: false, defaultValue: 'STRING' },
+			// NOTE: `organization_id` is temporarily retained only for the backfill
+			// and restore migration process. It is planned to be removed once that
+			// process is complete. Use `organization_code` for all ongoing references.
 			organization_id: { type: DataTypes.INTEGER, allowNull: false },
 			organization_code: {
 				type: DataTypes.STRING,
