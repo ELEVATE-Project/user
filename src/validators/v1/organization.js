@@ -8,10 +8,16 @@ const filterRequestBody = require('../common')
 const { organization } = require('@constants/blacklistConfig')
 const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
+
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, organization.create)
-		req.checkBody('code').trim().notEmpty().withMessage('code field is empty')
+		req.checkBody('code')
+			.trim()
+			.notEmpty()
+			.withMessage('code field is empty')
+			.matches(/^[a-z0-9_]+$/)
+			.withMessage('code is invalid. Only lowercase alphanumeric characters allowed')
 		req.checkBody('tenant_code').trim().notEmpty().withMessage('tenant_code field is empty')
 		req.checkBody('registration_codes')
 			.optional({ checkFalsy: true })
@@ -104,6 +110,11 @@ module.exports = {
 				}
 				return true
 			})
+
+		req.checkBody('registration_codes.*')
+			.optional()
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
 	removeRegistrationCode: (req) => {
 		const isAdmin = utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)
@@ -125,5 +136,10 @@ module.exports = {
 				}
 				return true
 			})
+
+		req.checkBody('registration_codes.*')
+			.optional()
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
 }

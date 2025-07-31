@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.DATE,
 				allowNull: true,
 			},
+			display_order: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+			},
 		},
 		{
 			sequelize,

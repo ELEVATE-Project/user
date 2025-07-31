@@ -195,6 +195,8 @@ module.exports = class UserHelper {
 					args: {
 						oldValues,
 						newValues,
+						created_at: currentUser.dataValues?.created_at || null,
+						updated_at: currentUser.dataValues?.updated_at || new Date(),
 					},
 				})
 

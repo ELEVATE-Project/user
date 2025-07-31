@@ -620,31 +620,49 @@ module.exports = class OrganizationsHelper {
 
 	static async addRegCode(code, tenantCode, registrationCodes) {
 		try {
-			// fetch organization details before update
+			// Fetch organization details before update
 			const orgDetailsBeforeUpdate = await verifyOrg(code, tenantCode)
-			if (Object.keys(orgDetailsBeforeUpdate).length <= 0) {
+
+			// Convert existing codes to Set for O(1) lookup
+			const existingRegCodes = new Set(orgDetailsBeforeUpdate?.registration_codes || [])
+
+			// Process registration codes in a single pass
+			const invalidCodes = []
+			const validCodes = []
+
+			for (const code of registrationCodes) {
+				const trimmedCode = code.toString().trim().toLowerCase()
+				if (existingRegCodes.has(trimmedCode)) {
+					invalidCodes.push(trimmedCode)
+				} else {
+					validCodes.push(trimmedCode)
+				}
+			}
+
+			if (invalidCodes.length > 0) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
-					message: 'ORGANIZATION_NOT_FOUND',
+					message: {
+						key: 'INVALID_REG_CODE_ERROR',
+						interpolation: { errorValues: invalidCodes, errorMessage: 'already added' },
+					},
 				})
 			}
-			// append registration codes
-			registrationCodes = registrationCodes.map((code) => code.toString().trim())
-			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
-			const codeToAppend = [...new Set(_.difference(registrationCodes, existingRegCodes))]
+
+			// Create unique codes to append using Set for deduplication
+			const codeToAppend = [...new Set(validCodes)]
 
 			if (codeToAppend.length > 0) {
-				const registrationCodeBody = codeToAppend.map((registration_code) => {
-					return {
-						registration_code: registration_code.toLowerCase().trim(),
-						organization_code: orgDetailsBeforeUpdate.code,
-						status: common.ACTIVE_STATUS,
-						tenant_code: orgDetailsBeforeUpdate?.tenant_code,
-						created_by: orgDetailsBeforeUpdate?.created_by || null,
-						deleted_at: null,
-					}
-				})
+				const registrationCodeBody = codeToAppend.map((registration_code) => ({
+					registration_code,
+					organization_code: orgDetailsBeforeUpdate.code,
+					status: common.ACTIVE_STATUS,
+					tenant_code: orgDetailsBeforeUpdate?.tenant_code,
+					created_by: orgDetailsBeforeUpdate?.created_by || null,
+					deleted_at: null,
+				}))
+
 				await organizationRegCodeQueries.bulkCreate(registrationCodeBody)
 			}
 
@@ -653,26 +671,62 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			// Handle unique constraint error
+			if (
+				error.name === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR ||
+				error.code === common.SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE
+			) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: {
+						key: 'UNIQUE_CONSTRAINT_ERROR',
+						interpolation: { fields: `Registration code : '${error?.fields?.registration_code}'` },
+					},
+				})
+			}
 			throw error
 		}
 	}
 	static async removeRegCode(id, tenantCode, registrationCodes) {
 		try {
-			// fetch organization details before update
+			// Fetch organization details before update
 			const orgDetailsBeforeUpdate = await verifyOrg(id, tenantCode)
-			// append registration codes
-			registrationCodes = Array.isArray(registrationCodes)
-				? registrationCodes
-				: registrationCodes.split(',') || []
-			registrationCodes = registrationCodes.map((code) => code.toString().toLowerCase().trim())
-			const existingRegCodes = orgDetailsBeforeUpdate?.registration_codes || []
-			const codeToRemove = [...new Set(_.intersection(registrationCodes, existingRegCodes))].map((code) =>
-				code.trim().toLowerCase()
+
+			// Convert existing codes to Set for O(1) lookup
+			const existingRegCodesSet = new Set(
+				orgDetailsBeforeUpdate?.registration_codes?.map((code) => code?.toString().toLowerCase().trim()) || []
 			)
 
-			if (codeToRemove.length > 0) {
+			// Process codes in a single pass
+			const validCodes = []
+			const invalidCodes = []
+			const uniqueCodes = new Set(
+				registrationCodes.map((code) => code?.toString().toLowerCase().trim()).filter((code) => code != null)
+			)
+
+			for (const code of uniqueCodes) {
+				if (existingRegCodesSet.has(code)) {
+					validCodes.push(code)
+				} else {
+					invalidCodes.push(code)
+				}
+			}
+
+			if (invalidCodes.length > 0) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: {
+						key: 'INVALID_REG_CODE_ERROR',
+						interpolation: { errorValues: invalidCodes, errorMessage: 'not added' },
+					},
+				})
+			}
+
+			if (validCodes.length > 0) {
 				await organizationRegCodeQueries.bulkDelete(
-					codeToRemove,
+					validCodes,
 					orgDetailsBeforeUpdate?.code,
 					orgDetailsBeforeUpdate?.tenant_code
 				)
@@ -694,7 +748,7 @@ async function verifyOrg(code, tenantCode) {
 		{ code, tenant_code: tenantCode },
 		{ isAdmin: true }
 	)
-	if (!orgDetailsBeforeUpdate) {
+	if (!orgDetailsBeforeUpdate || Object.keys(orgDetailsBeforeUpdate).length <= 0) {
 		throw responses.failureResponse({
 			statusCode: httpStatusCode.not_acceptable,
 			responseCode: 'CLIENT_ERROR',

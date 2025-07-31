@@ -23,6 +23,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const notificationUtils = require('@utils/notification')
@@ -46,7 +47,10 @@ module.exports = class OrgAdminHelper {
 			)
 			const adminPlaintextEmailId = emailEncryption.decrypt(email)
 
-			const organization = await organizationQueries.findOne({ id: organization_id }, { attributes: ['name'] })
+			const organization = await organizationQueries.findOne(
+				{ id: organization_id },
+				{ attributes: ['name', 'code'] }
+			)
 
 			const creationData = {
 				name: utils.extractFilename(filePath),
@@ -79,6 +83,7 @@ module.exports = class OrgAdminHelper {
 						email: adminPlaintextEmailId,
 						organization_id,
 						org_name: organization.name,
+						organization_code: organization.code,
 					},
 				},
 				{
@@ -362,7 +367,6 @@ module.exports = class OrgAdminHelper {
 				tenant_code: tokenInformation.tenant_code,
 			})
 
-			console.log(isApproved, 'isApproved')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(
 					requestDetails,
@@ -372,9 +376,13 @@ module.exports = class OrgAdminHelper {
 				)
 			}
 
-			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (shouldSendEmail) {
-				await sendRoleRequestStatusEmail(user, bodyData.status, tokenInformation.organization_code)
+				await sendRoleRequestStatusEmail(
+					user,
+					bodyData.status,
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code
+				)
 			}
 
 			return responses.successResponse({
@@ -603,22 +611,28 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 	})
 }
 
-async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
+async function sendRoleRequestStatusEmail(userDetails, status, organizationCode, tenantCode) {
 	try {
 		const plaintextEmailId = emailEncryption.decrypt(userDetails.email)
 
 		if (status === common.ACCEPTED_STATUS) {
 			if (plaintextEmailId) {
+				const tenantDomain = await tenantDomainQueries.findOne(
+					{ tenant_code: tenantCode },
+					{ attributes: ['domain'] }
+				)
+
 				notificationUtils.sendEmailNotification({
 					emailId: plaintextEmailId,
 					templateCode: process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
-						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
-						portalURL: process.env.PORTAL_URL,
+						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
+						portalURL: tenantDomain,
 					},
 					tenantCode: userDetails.tenant_code,
+					organization_code: organizationCode || null,
 				})
 			}
 		} else if (status === common.REJECTED_STATUS) {
@@ -631,13 +645,14 @@ async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
 					},
 					tenantCode: userDetails.tenant_code,
+					organization_code: orgCode || null,
 				})
 			}
 		}
-		console.log({ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name }, 'payload')
 
 		return { success: true }
 	} catch (error) {
+		console.error(error)
 		return error
 	}
 }

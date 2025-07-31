@@ -74,9 +74,9 @@ module.exports = class User {
 			if (req?.params?.id) {
 				param.id = req?.params?.id
 			} else if (req.query.username) {
-				param.username = req.query.username
+				param.username = req.query.username.toLowerCase() //make it case insensitive
 			} else if (req.query.email) {
-				param.email = req.query.email
+				param.email = req.query.email.toLowerCase() //make it case insensitive
 			} else if (req.query.phone) {
 				param.phone = req.query.phone
 				param.phone_code = req?.query?.phone_code

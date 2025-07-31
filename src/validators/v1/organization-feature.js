@@ -12,12 +12,21 @@ module.exports = {
 		req.body = filterRequestBody(req.body, organizationFeatures.create)
 		req.checkBody('feature_code').trim().notEmpty().withMessage('feature_code field is empty')
 		req.checkBody('feature_name').trim().notEmpty().withMessage('feature_name field is empty')
+		req.checkBody('display_order')
+			.notEmpty()
+			.withMessage('display_order must not be empty')
+			.matches(/^\d+$/)
+			.withMessage('display_order must contain only digits')
 	},
 	update: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
 		if (req.method != common.DELETE_METHOD) {
 			req.body = filterRequestBody(req.body, organizationFeatures.update)
 			req.checkBody('feature_name').trim().notEmpty().withMessage('feature_name field is empty')
+			req.checkBody('display_order')
+				.optional()
+				.matches(/^\d+$/)
+				.withMessage('display_order must contain only digits')
 		}
 	},
 

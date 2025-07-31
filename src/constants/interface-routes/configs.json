@@ -1644,6 +1644,19 @@
 					"packageName": "elevate-user"
 				}
 			]
+		},
+		{
+			"sourceRoute": "/user/health",
+			"type": "GET",
+			"priority": "MUST_HAVE",
+			"inSequence": false,
+			"orchestrated": false,
+			"targetPackages": [
+				{
+					"basePackageName": "user",
+					"packageName": "elevate-user"
+				}
+			]
 		}
 	]
 }

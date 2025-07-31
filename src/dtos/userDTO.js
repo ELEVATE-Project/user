@@ -84,8 +84,6 @@ class UserDTO {
 
 			const disallowedArgs = [
 				'password',
-				'created_at',
-				'updated_at',
 				'deleted_at',
 				'email_verified',
 				'share_link',
@@ -128,7 +126,9 @@ class UserDTO {
 				tenant_code: args?.tenant_code,
 				status: 'DELETED',
 				deleted: true,
-				created_by: args.created_by,
+				created_by: args?.created_by || null,
+				updated_at: args?.updated_at || null,
+				deleted_at: args?.deleted_at || new Date(),
 				email: args?.email || null,
 				phone: args?.phone || null,
 			}

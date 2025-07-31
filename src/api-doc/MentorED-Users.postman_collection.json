@@ -2635,6 +2635,24 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{UserDevBaseUrl}}/user/health",
+							"host": ["{{UserDevBaseUrl}}"],
+							"path": ["user", "health"]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

@@ -266,23 +266,24 @@ module.exports = class tenantHelper {
 
 				// ******* adding default Notification Template to Default Org CODE BEGINS HERE *******
 
-				const fetchAllDefaultNotificatin = await notificationTemplateQueries.findAllNotificationTemplates({
-					organization_id: process.env.DEFAULT_ORG_ID,
+				const fetchAllDefaultNotification = await notificationTemplateQueries.findAllNotificationTemplates({
+					organization_code: process.env.DEFAULT_ORGANISATION_CODE,
+					tenant_code: process.env.DEFAULT_TENANT_CODE,
 				})
 
-				if (fetchAllDefaultNotificatin.length > 0) {
-					const notificationCreationPromise = fetchAllDefaultNotificatin.map((notification) => {
+				if (fetchAllDefaultNotification.length > 0) {
+					const notificationCreationPromise = fetchAllDefaultNotification.map((notification) => {
 						return notificationTemplateService.create(
 							{
 								type: notification.type,
 								code: notification.code,
 								subject: notification.subject,
 								body: notification.body,
-								email_header: notification.email_header,
-								email_footer: notification.email_footer,
+								email_header: notification?.email_header || null,
+								email_footer: notification?.email_footer || null,
 							},
 							{
-								organization_id: defaultOrgId,
+								organization_code: process.env.DEFAULT_ORGANISATION_CODE,
 								tenant_code: tenantCreateResponse.code,
 								id: userId,
 							}
@@ -318,6 +319,7 @@ module.exports = class tenantHelper {
 								redirect_code: feature.redirect_code,
 								translation: feature.translation,
 								meta: feature.meta,
+								display_order: feature.display_order,
 							},
 							{
 								organization_id: defaultOrgId,
