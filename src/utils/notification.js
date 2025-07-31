@@ -7,13 +7,17 @@ const NOTIFICATION_MODE = process.env.NOTIFICATION_MODE
 const { sendNotification } = require('../requests/notification')
 const common = require('@constants/common')
 
-async function sendEmailNotification({ emailId, templateCode, variables, tenantCode, organization_code = '' }) {
+async function sendEmailNotification({ emailId, templateCode, variables, tenantCode, organizationCode = '' }) {
 	try {
 		if (!emailId) return
 
-		const templateData =
-			(await notificationTemplateQueries.findOneEmailTemplate(templateCode, organization_code, tenantCode)) || {}
-		if (Object.keys(templateData).length <= 0) {
+		const templateData = await notificationTemplateQueries.findOneEmailTemplate(
+			templateCode,
+			organizationCode,
+			tenantCode
+		)
+
+		if (!templateData) {
 			console.warn(`Email template not found for code: ${templateCode}`)
 			return
 		}
@@ -47,13 +51,13 @@ async function sendEmailNotification({ emailId, templateCode, variables, tenantC
 	}
 }
 
-async function sendSMSNotification({ phoneNumber, templateCode, variables, tenantCode, organization_code = '' }) {
+async function sendSMSNotification({ phoneNumber, templateCode, variables, tenantCode, organizationCode = '' }) {
 	try {
 		if (!phoneNumber) return
 
 		const templateData = await notificationTemplateQueries.findOneSMSTemplate(
 			templateCode,
-			organization_code,
+			organizationCode,
 			tenantCode
 		)
 		if (!templateData) {
