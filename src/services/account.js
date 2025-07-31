@@ -727,7 +727,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Verify password
-			const isPasswordCorrect = bcryptJs.compare(bodyData.password, user.password)
+			const isPasswordCorrect = await bcryptJs.compare(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return responses.failureResponse({
 					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
