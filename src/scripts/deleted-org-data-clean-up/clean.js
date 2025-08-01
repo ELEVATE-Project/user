@@ -18,8 +18,6 @@ switch (nodeEnv) {
 		databaseUrl = process.env.DEV_DATABASE_URL
 }
 
-console.info('Database selected: ', databaseUrl.split('/').at(-1))
-
 // Function to prompt user and get input
 function promptUser(question) {
 	return new Promise((resolve) => {
@@ -40,6 +38,16 @@ const sequelize = new Sequelize(databaseUrl, {
 		const organizationCode = await promptUser(
 			'---------> Please enter the organization code to delete (e.g., sot): '
 		)
+		if (!organizationCode || organizationCode.trim() === '') {
+			console.error('Error: Organization code cannot be empty')
+			process.exit(1)
+		}
+
+		// Validate format (alphanumeric and underscores only)
+		if (!/^[a-z0-9_]+$/.test(organizationCode)) {
+			console.error('Error: Organization code must contain only lowercase letters, numbers, and underscores')
+			process.exit(1)
+		}
 
 		// Test database connection
 		await sequelize.authenticate()
@@ -136,9 +144,10 @@ FROM reg_codes;`
 			head: ['Table Name', 'Row Count'],
 			colWidths: [30, 15],
 		})
-
+		let countChecker = 0
 		// Populate the table with data
 		report[0].forEach((item) => {
+			countChecker += item.row_count
 			table.push([item.table_name, item.row_count])
 		})
 
@@ -146,9 +155,12 @@ FROM reg_codes;`
 		console.log('\n\n\nBelow is number of rows attached to the organization code: ', organizationCode)
 		console.log(table.toString())
 
-		const confirmation = await promptUser(
-			'---------> Are you sure you want to delete all data related to this organization? (yes/no): '
-		)
+		const confirmation =
+			countChecker > 0
+				? await promptUser(
+						'---------> Are you sure you want to delete all data related to this organization? (yes/no): '
+				  )
+				: 'no'
 		// Start transaction
 		if (confirmation.toLowerCase() == 'yes') {
 			await sequelize.transaction(async (t) => {
@@ -246,7 +258,7 @@ FROM reg_codes;`
 
 			console.log('Transaction completed successfully.')
 		} else {
-			console.log('Transaction aborted by user.')
+			console.log(`Transaction aborted${countChecker == 0 ? '! No records to delete.' : ' by the user'}  `)
 		}
 	} catch (error) {
 		console.error(`Error executing transaction: ${error}`)
