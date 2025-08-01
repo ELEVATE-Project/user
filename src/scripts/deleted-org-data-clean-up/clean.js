@@ -252,5 +252,6 @@ FROM reg_codes;`
 		console.error(`Error executing transaction: ${error}`)
 	} finally {
 		sequelize.close()
+		process.exit()
 	}
 })()
