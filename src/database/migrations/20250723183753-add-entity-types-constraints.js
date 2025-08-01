@@ -7,6 +7,13 @@ module.exports = {
 			// Drop existing UNIQUE constraint
 			await queryInterface.sequelize.query(
 				`
+        ALTER TABLE entity_types
+        DROP CONSTRAINT IF EXISTS unique_value_org_id_tenant_code;
+      `,
+				{ transaction }
+			)
+			await queryInterface.sequelize.query(
+				`
         ALTER TABLE entities
         DROP CONSTRAINT IF EXISTS unique_entities_value_type_tenant;
       `,
@@ -16,8 +23,8 @@ module.exports = {
 			// Add partial unique index
 			await queryInterface.sequelize.query(
 				`
-        CREATE UNIQUE INDEX unique_entities_value_type_tenant
-        ON entities (value, entity_type_id,organization_code, tenant_code)
+        CREATE UNIQUE INDEX unique_value_org_code_tenant_code
+        ON entity_types (value,organization_code, tenant_code)
         WHERE deleted_at IS NULL;
       `,
 				{ transaction }
