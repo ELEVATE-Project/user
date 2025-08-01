@@ -72,8 +72,7 @@ module.exports = {
 			.withMessage('model_names must be an array with at least one element')
 
 		req.checkBody('model_names.*')
-			.isIn(['Session', 'MentorExtension', 'UserExtension'])
-			.withMessage('model_names must be in Session,MentorExtension,UserExtension')
+		isIn(['User']).withMessage('model_names must be in User')
 	},
 
 	read: (req) => {

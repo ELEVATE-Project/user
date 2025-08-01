@@ -346,29 +346,17 @@ module.exports = class AccountHelper {
 
 			delete bodyData.role
 
-			const [defaultOrg, userOrgDetails, modelName] = await Promise.all([
-				organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-					{ attributes: ['id'] }
-				),
-				organizationQueries.findOne(
-					{ code: organizationCode, tenant_code: tenantDetail.code },
-					{ attributes: ['id'] }
-				),
-				userQueries.getModelName(),
-			])
+			const modelName = await userQueries.getModelName()
 
-			if (!defaultOrg || !userOrgDetails) {
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
+			if (!defaultOrganizationCode || !organizationCode) {
 				throw new Error('Default or user organization not found.')
 			}
-
-			const defaultOrgId = defaultOrg.id
-			userOrgId = userOrgDetails.id
-
 			const [validationData, userModel] = await Promise.all([
 				entityTypeQueries.findUserEntityTypesAndEntities({
 					status: 'ACTIVE',
-					organization_id: { [Op.in]: [userOrgId, defaultOrgId] },
+					organization_code: { [Op.in]: [defaultOrganizationCode, organizationCode] },
 					model_names: { [Op.contains]: [modelName] },
 					tenant_code: tenantDetail.code,
 				}),
@@ -739,7 +727,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Verify password
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+			const isPasswordCorrect = await bcryptJs.compare(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return responses.failureResponse({
 					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
@@ -793,24 +781,22 @@ module.exports = class AccountHelper {
 
 			delete user.password
 
-			// Fetch default organization and validation data
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
 			const modelName = await userQueries.getModelName()
+
+			const orgCodes = user.organizations?.map((org) => org.code).filter(Boolean) || []
+			orgCodes.push(process.env.DEFAULT_ORGANISATION_CODE)
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
+				organization_code: {
+					[Op.in]: orgCodes,
 				},
 				tenant_code: tenantDetail.code,
 				model_names: { [Op.contains]: [modelName] },
 			})
 
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations?.[0]?.id)
+
 			user = await utils.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
@@ -1488,23 +1474,20 @@ module.exports = class AccountHelper {
 			delete user.otpInfo
 
 			// Fetch default organization and validation data
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
+			const userOrgCodes = user.organizations?.map((org) => org.code) || []
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
 			const modelName = await userQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
+				organization_code: {
+					[Op.in]: [...userOrgCodes, defaultOrganizationCode],
 				},
 				model_names: { [Op.contains]: [modelName] },
 				tenant_code: tenantDetail.code,
 			})
 
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations[0].id)
 			user = await utils.processDbResponse(user, prunedEntities)
 
 			// Handle user image

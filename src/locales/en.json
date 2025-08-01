@@ -91,7 +91,7 @@
 	"EMAIL_OR_ID_REQUIRED": "Either 'id' or 'email' fields is required",
 	"REQUEST_NOT_FOUND": "Role Change Request not found.",
 	"FAILED_TO_ASSIGN_AS_ADMIN": "User belongs to different organization",
-	"USER_IS_FROM_DEFAULT_ORG": "User is from default org",
+	"USER_IS_FROM_DEFAULT_ORG": "Users from the default organization are not permitted to proceed with this action.",
 	"NOTIFICATION_TEMPLATE_ALREADY_EXISTS": "Notification template already exists",
 	"NOTIFICATION_TEMPLATE_CREATED_SUCCESSFULLY": "Notification template created successfully",
 	"NOTIFICATION_TEMPLATE_UPDATED_SUCCESSFULLY": "Notification template updated successfully",

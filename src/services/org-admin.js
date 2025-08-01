@@ -462,40 +462,37 @@ module.exports = class OrgAdminHelper {
 	}
 
 	/**
-	 * @description 					- Inherit new entity type from an existing default org's entityType.
+	 * @description                         - Inherit new entity type from an existing default org's entityType.
 	 * @method
-	 * @name 							- inheritEntityType
-	 * @param {String} entityValue 		- Entity type value
-	 * @param {String} entityLabel 		- Entity type label
-	 * @param {Integer} userOrgId 		- User org id
-	 * @param {Integer} userId 			- Userid
-	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 * @name                                - inheritEntityType
+	 * @param {String} entityValue          - Entity type value
+	 * @param {String} entityLabel          - Entity type label
+	 * @param {String} userOrganizationCode - User's organization code
+	 * @param {Integer} userOrganizationId  - User's organization ID
+	 * @param {Integer} userId              - User ID
+	 * @returns {Promise<Object>}           - A Promise that resolves to a response object.
 	 */
-
-	static async inheritEntityType(entityValue, entityLabel, userOrgId, userId) {
+	static async inheritEntityType(entityValue, entityLabel, userOrganizationCode, userOrganizationId, userId) {
 		try {
-			let defaultOrgId = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
-				{ attributes: ['id'] }
-			)
-			defaultOrgId = defaultOrgId.id
-			if (defaultOrgId === userOrgId) {
+			// Prevent inheriting from the default org
+			if (process.env.DEFAULT_ORGANISATION_CODE === userOrganizationCode) {
 				return responses.failureResponse({
 					message: 'USER_IS_FROM_DEFAULT_ORG',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// Fetch entity type data using defaultOrgId and entityValue
+
+			// Fetch entity type data from default org
 			const filter = {
 				value: entityValue,
-				organization_id: defaultOrgId,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE,
 				allow_filtering: true,
 			}
 
-			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
+			const entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
 
-			// If no matching data found return failure response
+			// If no matching data found, return failure
 			if (!entityTypeDetails) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
@@ -504,23 +501,28 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			// Build data for inheriting entityType
-			entityTypeDetails.parent_id = entityTypeDetails.organization_id
-			entityTypeDetails.label = entityLabel
-			entityTypeDetails.organization_id = userOrgId
-			entityTypeDetails.created_by = userId
-			entityTypeDetails.updated_by = userId
-			delete entityTypeDetails.id
+			// Prepare new entity type object (clone and modify)
+			const newEntityType = {
+				...entityTypeDetails,
+				parent_id: entityTypeDetails.id,
+				label: entityLabel,
+				organization_code: userOrganizationCode,
+				organization_id: userOrganizationId,
+				created_by: userId,
+				updated_by: userId,
+			}
+			delete newEntityType.id
 
 			// Create new inherited entity type
-			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
+			const inheritedEntityType = await entityTypeQueries.createEntityType(newEntityType)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: inheritedEntityType,
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in inheritEntityType:', error)
 			throw error
 		}
 	}
