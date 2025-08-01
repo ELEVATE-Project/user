@@ -1,5 +1,36 @@
 const { Sequelize } = require('sequelize')
 
+/*
+BEGIN;
+
+-- Delete from user_organization_roles
+DELETE FROM user_organization_roles WHERE organization_code = 'sot' RETURNING *;
+
+-- Delete from user_organizations and capture user_id for users deletion
+WITH deleted_user_orgs AS (
+    DELETE FROM user_organizations WHERE organization_code = 'sot' RETURNING user_id
+)
+-- Delete from users using user_id from user_organizations
+DELETE FROM users WHERE id IN (SELECT user_id FROM deleted_user_orgs) RETURNING *;
+
+-- Delete from organizations
+DELETE FROM organizations WHERE code = 'sot' RETURNING *;
+
+-- Delete from organization_user_invites
+DELETE FROM organization_user_invites WHERE organization_code = 'sot' RETURNING *;
+
+-- Delete from notification_templates
+DELETE FROM notification_templates WHERE organization_code = 'sot' RETURNING *;
+
+-- Delete from organization_features
+DELETE FROM organization_features WHERE organization_code = 'sot' RETURNING *;
+
+-- Delete from organization_registration_codes
+DELETE FROM organization_registration_codes WHERE organization_code = 'sot' RETURNING *;
+
+COMMIT;
+*/
+
 module.exports = {
 	async up(queryInterface, Sequelize) {
 		let transaction
@@ -60,6 +91,17 @@ module.exports = {
 					raw: true,
 					transaction,
 				})
+				table = 'organization_user_invites'
+				fk_name = 'fk_org_user_invites_org_code'
+				fkey = '(organization_code, tenant_code)'
+				refTable = 'organizations'
+				refKey = '(code, tenant_code)'
+				await queryInterface.sequelize.query(disableFK(table, fk_name), {
+					type: Sequelize.QueryTypes.RAW,
+					raw: true,
+					transaction,
+				})
+				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
 
 				table = 'user_organization_roles'
 				fk_name = 'fk_user_org_roles_user_organizations'
