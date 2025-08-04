@@ -1675,17 +1675,22 @@ module.exports = class AccountHelper {
 	}
 
 	/**
-	 * Accept term and condition
+	 * Accept terms and conditions for a user
 	 * @method
 	 * @name acceptTermsAndCondition
-	 * @param {string} userId - userId.
-	 * @returns {JSON} - returns accept the term success response
+	 * @param {string|number} userId - The ID of the user accepting terms and conditions
+	 * @param {string} tenantCode - The tenant code associated with the user
+	 * @returns {Promise<Object>} Promise that resolves to a JSON response object containing success/failure status
+	 * @throws {Error} Throws error if database operation fails
 	 */
-	static async acceptTermsAndCondition(userId, orgId) {
+	static async acceptTermsAndCondition(userId, tenantCode) {
 		try {
-			const user = await userQueries.findByPk(userId)
+			const [affectedRows] = await userQueries.updateUser(
+				{ id: userId, tenant_code: tenantCode },
+				{ has_accepted_terms_and_conditions: true }
+			)
 
-			if (!user) {
+			if (affectedRows === 0) {
 				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -1693,11 +1698,11 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			await userQueries.updateUser(
-				{ id: userId, organization_id: orgId },
-				{ has_accepted_terms_and_conditions: true }
-			)
-			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
+			// Clear Redis cache asynchronously (fire and forget)
+			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
+			utilsHelper.redisDel(redisUserKey).catch((err) => {
+				console.error('Redis delete error:', err)
+			})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
