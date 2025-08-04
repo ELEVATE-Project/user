@@ -21,11 +21,12 @@ exports.getModelName = async () => {
 		throw error
 	}
 }
-exports.create = async (data) => {
+
+exports.create = async (data, options = {}) => {
 	try {
-		return await database.User.create(data)
+		return await database.User.create(data, options)
 	} catch (error) {
-		console.log(error)
+		console.error(error)
 		throw error
 	}
 }

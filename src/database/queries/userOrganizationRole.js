@@ -6,13 +6,13 @@ const { Op } = require('sequelize')
  * Create a new UserOrganizationRole record
  * @param {Object} data - Data for creation
  */
-exports.create = async (data) => {
+exports.create = async (data, options = {}) => {
 	try {
-		const result = await UserOrganizationRole.create(data)
+		const result = await UserOrganizationRole.create(data, options)
 		return result.get({ plain: true })
 	} catch (error) {
 		console.error('Create Error:', error)
-		return error
+		throw error
 	}
 }
 

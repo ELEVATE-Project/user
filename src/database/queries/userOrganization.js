@@ -1,17 +1,17 @@
 'use strict'
 
 const { UserOrganization, Organization, UserOrganizationRole, sequelize } = require('@database/models/index')
-const { Op } = require('sequelize')
 
-exports.create = async (data) => {
+exports.create = async (data, options = {}) => {
 	try {
-		const createdUserOrg = await UserOrganization.create(data)
+		const createdUserOrg = await UserOrganization.create(data, options)
 		return createdUserOrg.get({ plain: true })
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
+
 exports.changeUserOrganization = async ({ userId, tenantCode, oldOrgCode, newOrgCode }) => {
 	const transaction = await sequelize.transaction()
 
