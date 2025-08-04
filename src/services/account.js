@@ -911,6 +911,7 @@ module.exports = class AccountHelper {
 			const userSessionData = await userSessionsService.findUserSession(
 				{
 					id: decodedToken.data.session_id,
+					tenant_code: decodedToken.data.tenant_code,
 				},
 				{
 					attributes: ['refresh_token'],
