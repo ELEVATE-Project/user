@@ -160,9 +160,6 @@ module.exports = class AdminHelper {
 
 			// Get default organization code
 			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
-			if (!defaultOrganizationCode) {
-				throw new Error('Default organization code not found.')
-			}
 
 			// Prepare user data
 			bodyData.email = encryptedEmailId
