@@ -165,9 +165,9 @@ FROM reg_codes;`
 			await sequelize.transaction(async (t) => {
 				// Delete from user_organization_roles
 				const DELETE_USER_ORG_ROLES_QUERY =
-					'DELETE FROM user_organization_roles WHERE organization_code = :organizationCode RETURNING *'
+					'DELETE FROM user_organization_roles WHERE organization_code = :organizationCode AND tenant_code = :tenantCode RETURNING *'
 				const deletedUserOrgRoles = await sequelize.query(DELETE_USER_ORG_ROLES_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
@@ -176,9 +176,9 @@ FROM reg_codes;`
 
 				// Delete from user_organizations and capture user_ids
 				const DELETE_USER_ORGS_QUERY =
-					'DELETE FROM user_organizations WHERE organization_code = :organizationCode RETURNING user_id'
+					'DELETE FROM user_organizations WHERE organization_code = :organizationCode AND tenant_code = :tenantCode RETURNING user_id'
 				const deletedUserOrgs = await sequelize.query(DELETE_USER_ORGS_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
@@ -200,9 +200,10 @@ FROM reg_codes;`
 				}
 
 				// Delete from organizations
-				const DELETE_ORGS_QUERY = 'DELETE FROM organizations WHERE code = :organizationCode RETURNING *'
+				const DELETE_ORGS_QUERY =
+					'DELETE FROM organizations WHERE code = :organizationCode AND tenant_code = :tenantCode RETURNING *'
 				const deletedOrgs = await sequelize.query(DELETE_ORGS_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
@@ -211,9 +212,9 @@ FROM reg_codes;`
 
 				// Delete from organization_user_invites
 				const DELETE_INVITES_QUERY =
-					'DELETE FROM organization_user_invites WHERE organization_code = :organizationCode RETURNING *'
+					'DELETE FROM organization_user_invites WHERE organization_code = :organizationCode AND tenant_code = :tenantCode RETURNING *'
 				const deletedInvites = await sequelize.query(DELETE_INVITES_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
@@ -222,9 +223,9 @@ FROM reg_codes;`
 
 				// Delete from notification_templates
 				const DELETE_NOTIFICATIONS_QUERY =
-					'DELETE FROM notification_templates WHERE organization_code = :organizationCode RETURNING *'
+					'DELETE FROM notification_templates WHERE organization_code = :organizationCode AND tenant_code = :tenantCode RETURNING *'
 				const deletedNotifications = await sequelize.query(DELETE_NOTIFICATIONS_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
@@ -233,9 +234,9 @@ FROM reg_codes;`
 
 				// Delete from organization_features
 				const DELETE_FEATURES_QUERY =
-					'DELETE FROM organization_features WHERE organization_code = :organizationCode RETURNING *'
+					'DELETE FROM organization_features WHERE organization_code = :organizationCode AND tenant_code = :tenantCode RETURNING *'
 				const deletedFeatures = await sequelize.query(DELETE_FEATURES_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
@@ -244,9 +245,9 @@ FROM reg_codes;`
 
 				// Delete from organization_registration_codes
 				const DELETE_REG_CODES_QUERY =
-					'DELETE FROM organization_registration_codes WHERE organization_code = :organizationCode RETURNING *'
+					'DELETE FROM organization_registration_codes WHERE organization_code = :organizationCode AND tenant_code = :tenantCode RETURNING *'
 				const deletedRegCodes = await sequelize.query(DELETE_REG_CODES_QUERY, {
-					replacements: { organizationCode },
+					replacements: { organizationCode, tenantCode },
 					type: Sequelize.QueryTypes.DELETE,
 					raw: true,
 					transaction: t,
