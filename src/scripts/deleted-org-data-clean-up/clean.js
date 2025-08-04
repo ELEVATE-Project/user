@@ -42,10 +42,9 @@ const sequelize = new Sequelize(databaseUrl, {
 			console.error('Error: Organization code cannot be empty')
 			process.exit(1)
 		}
-
-		// Validate format (alphanumeric and underscores only)
-		if (!/^[a-z0-9_]+$/.test(organizationCode)) {
-			console.error('Error: Organization code must contain only lowercase letters, numbers, and underscores')
+		const tenantCode = await promptUser('---------> Please enter the tenant code to delete (e.g., shikshalokam): ')
+		if (!tenantCode || tenantCode.trim() === '') {
+			console.error('Error: tenant code cannot be empty')
 			process.exit(1)
 		}
 
@@ -57,14 +56,14 @@ const sequelize = new Sequelize(databaseUrl, {
            json_agg(row_to_json(uor)) AS data, 
            count(*) AS row_count
     FROM user_organization_roles uor
-    WHERE organization_code = '${organizationCode}'
+    WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 ),
 user_orgs AS (
     SELECT 'user_organizations' AS table_name, 
            json_agg(row_to_json(uo)) AS data, 
            count(*) AS row_count
     FROM user_organizations uo
-    WHERE organization_code = '${organizationCode}'
+    WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 ),
 users_to_delete AS (
     SELECT 'users' AS table_name, 
@@ -74,7 +73,7 @@ users_to_delete AS (
     WHERE u.id IN (
         SELECT user_id 
         FROM user_organizations 
-        WHERE organization_code = '${organizationCode}'
+        WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
     )
 ),
 orgs AS (
@@ -82,35 +81,35 @@ orgs AS (
            json_agg(row_to_json(o)) AS data, 
            count(*) AS row_count
     FROM organizations o
-    WHERE code = '${organizationCode}'
+    WHERE code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 ),
 invites AS (
     SELECT 'organization_user_invites' AS table_name, 
            json_agg(row_to_json(oui)) AS data, 
            count(*) AS row_count
     FROM organization_user_invites oui
-    WHERE organization_code = '${organizationCode}'
+    WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 ),
 notifications AS (
     SELECT 'notification_templates' AS table_name, 
            json_agg(row_to_json(nt)) AS data, 
            count(*) AS row_count
     FROM notification_templates nt
-    WHERE organization_code = '${organizationCode}'
+    WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 ),
 features AS (
     SELECT 'organization_features' AS table_name, 
            json_agg(row_to_json(of)) AS data, 
            count(*) AS row_count
     FROM organization_features of
-    WHERE organization_code = '${organizationCode}'
+    WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 ),
 reg_codes AS (
     SELECT 'organization_registration_codes' AS table_name, 
            json_agg(row_to_json(orc)) AS data, 
            count(*) AS row_count
     FROM organization_registration_codes orc
-    WHERE organization_code = '${organizationCode}'
+    WHERE organization_code = '${organizationCode}' AND tenant_code = '${tenantCode}'
 )
 SELECT table_name, row_count
 FROM user_org_roles
