@@ -23,6 +23,7 @@ const UserCredentialQueries = require('@database/queries/userCredential')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const userQueries = require('@database/queries/users')
+const { sequelize } = require('@database/models/index')
 
 // Services
 const adminService = require('../generics/materializedViews')
@@ -105,8 +106,11 @@ module.exports = class AdminHelper {
 	 */
 
 	static async create(bodyData) {
+		let transaction
+
 		try {
-			// Handle email encryption
+			transaction = await sequelize.transaction()
+
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
 
@@ -115,50 +119,27 @@ module.exports = class AdminHelper {
 				code: process.env.DEFAULT_TENANT_CODE,
 				status: common.ACTIVE_STATUS,
 			})
+			if (!tenantDetail) throw new Error('DEFAULT_TENANT_NOT_FOUND')
 
-			if (!tenantDetail) {
-				return responses.failureResponse({
-					message: 'DEFAULT_TENANT_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			// Check if admin user already exists
 			const existingUser = await userQueries.findOne(
 				{
 					email: encryptedEmailId,
 					password: { [Op.ne]: null },
 					tenant_code: tenantDetail.code,
 				},
-				{
-					attributes: ['id'],
-				}
+				{ attributes: ['id'], transaction }
 			)
+			if (existingUser) throw new Error('ADMIN_USER_ALREADY_EXISTS')
 
-			if (existingUser) {
-				return responses.failureResponse({
-					message: 'ADMIN_USER_ALREADY_EXISTS',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+			const role = await roleQueries.findOne(
+				{
+					title: common.ADMIN_ROLE,
+					tenant_code: tenantDetail.code,
+				},
+				{ transaction }
+			)
+			if (!role) throw new Error('ADMIN_ROLE_NOT_FOUND')
 
-			// Find admin role
-			const role = await roleQueries.findOne({
-				title: common.ADMIN_ROLE,
-				tenant_code: tenantDetail.code,
-			})
-
-			if (!role) {
-				return responses.failureResponse({
-					message: 'ADMIN_ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			// Get default organization code
 			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
 
 			// Prepare user data
@@ -176,52 +157,45 @@ module.exports = class AdminHelper {
 			const createdUser = await userQueries.create(bodyData)
 
 			// Create user-organization relationship
-			await userOrganizationQueries.create({
-				user_id: createdUser.id,
-				organization_code: defaultOrganizationCode,
-				tenant_code: tenantDetail.code,
-			})
-
-			// Create user-organization-role relationship
-			await userOrganizationRoleQueries.create({
-				tenant_code: tenantDetail.code,
-				user_id: createdUser.id,
-				organization_code: defaultOrganizationCode,
-				role_id: role.id,
-			})
-
-			// Get created user with organization details
-			const user = await userQueries.findUserWithOrganization(
-				{ id: createdUser.id, tenant_code: tenantDetail.code },
+			await userOrganizationQueries.create(
 				{
-					attributes: {
-						exclude: ['password'],
-					},
-				}
+					user_id: createdUser.id,
+					organization_code: defaultOrganizationCode,
+					tenant_code: tenantDetail.code,
+				},
+				{ transaction }
 			)
 
-			// Process response data
-			const processedUser = user
-			processedUser.email = plaintextEmailId
+			// Create user-organization-role relationship
+			await userOrganizationRoleQueries.create(
+				{
+					tenant_code: tenantDetail.code,
+					user_id: createdUser.id,
+					organization_code: defaultOrganizationCode,
+					role_id: role.id,
+				},
+				{ transaction }
+			)
 
-			// Emit user creation event
+			await transaction.commit()
+
+			const user = await userQueries.findUserWithOrganization(
+				{ id: createdUser.id, tenant_code: tenantDetail.code },
+				{ attributes: { exclude: ['password'] } }
+			)
+
+			const processedUser = { ...user, email: plaintextEmailId }
+
 			const eventBody = UserTransformDTO.eventBodyDTO({
 				entity: 'user',
 				eventType: 'create',
-				entityId: processedUser?.id,
+				entityId: processedUser.id,
 				args: {
+					...processedUser,
 					created_by: processedUser.id,
-					name: processedUser?.name,
-					username: processedUser?.username,
-					email: processedUser.email,
-					phone: processedUser?.phone,
-					organizations: processedUser?.organizations,
-					tenant_code: processedUser?.tenant_code,
+					deleted: false,
 					created_at: processedUser?.created_at || new Date(),
 					updated_at: processedUser?.updated_at || new Date(),
-					status: createdUser?.status || common.ACTIVE_STATUS,
-					deleted: false,
-					id: processedUser.id,
 				},
 			})
 
@@ -230,11 +204,30 @@ module.exports = class AdminHelper {
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ADMIN_USER_CREATED_SUCCESSFULLY',
-				result: { user },
+				result: { user: processedUser },
 			})
 		} catch (error) {
-			console.log(error)
-			throw error
+			if (transaction && !transaction.finished) {
+				try {
+					await transaction.rollback()
+				} catch (rollbackErr) {
+					console.error('Rollback failed:', rollbackErr)
+				}
+			}
+
+			switch (error.message) {
+				case 'DEFAULT_TENANT_NOT_FOUND':
+				case 'ADMIN_USER_ALREADY_EXISTS':
+				case 'ADMIN_ROLE_NOT_FOUND':
+					return responses.failureResponse({
+						message: error.message,
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				default:
+					console.error('Unexpected error in admin.create:', error)
+					throw error
+			}
 		}
 	}
 
