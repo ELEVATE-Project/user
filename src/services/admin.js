@@ -154,7 +154,7 @@ module.exports = class AdminHelper {
 			}
 
 			// Create user
-			const createdUser = await userQueries.create(bodyData)
+			const createdUser = await userQueries.create(bodyData, { transaction })
 
 			// Create user-organization relationship
 			await userOrganizationQueries.create(

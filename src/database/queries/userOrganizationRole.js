@@ -30,7 +30,7 @@ exports.findOne = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.error('FindOne Error:', error)
-		return error
+		throw error
 	}
 }
 
@@ -48,7 +48,7 @@ exports.findAll = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.error('FindAll Error:', error)
-		return error
+		throw error
 	}
 }
 
@@ -65,7 +65,7 @@ exports.update = async (values, filter) => {
 		return affectedCount
 	} catch (error) {
 		console.error('Update Error:', error)
-		return error
+		throw error
 	}
 }
 

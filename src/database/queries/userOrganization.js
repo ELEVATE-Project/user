@@ -100,7 +100,7 @@ exports.findOne = async (filter, options = {}) => {
 		})
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
@@ -124,7 +124,7 @@ exports.findAll = async (filter = {}, options = {}) => {
 		})
 	} catch (error) {
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
@@ -140,7 +140,7 @@ exports.update = async (filter, updates) => {
 	} catch (error) {
 		await transaction.rollback()
 		console.error(error)
-		return error
+		throw error
 	}
 }
 
