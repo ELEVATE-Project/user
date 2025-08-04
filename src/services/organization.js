@@ -399,7 +399,7 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} 									- Organization creation details.
 	 */
 
-	static async read(organisationId, organisationCode) {
+	static async read(organisationId, organisationCode, tenantCode = null) {
 		try {
 			let filter = {}
 			// Build filter based on incoming query
@@ -407,6 +407,7 @@ module.exports = class OrganizationsHelper {
 				filter.id = parseInt(organisationId)
 			} else {
 				filter.code = organisationCode
+				if (tenantCode.trim()) filter.tenant_code = tenantCode
 			}
 
 			const organisationDetails = await organizationQueries.findOne(filter)
