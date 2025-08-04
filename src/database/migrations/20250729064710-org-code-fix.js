@@ -60,6 +60,17 @@ module.exports = {
 					raw: true,
 					transaction,
 				})
+				table = 'organization_user_invites'
+				fk_name = 'fk_org_user_invites_org_code'
+				fkey = '(organization_code, tenant_code)'
+				refTable = 'organizations'
+				refKey = '(code, tenant_code)'
+				await queryInterface.sequelize.query(disableFK(table, fk_name), {
+					type: Sequelize.QueryTypes.RAW,
+					raw: true,
+					transaction,
+				})
+				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
 
 				table = 'user_organization_roles'
 				fk_name = 'fk_user_org_roles_user_organizations'
