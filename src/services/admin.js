@@ -6,27 +6,38 @@
  */
 
 // Dependencies
+// Third-party libraries
+const _ = require('lodash')
+const { Op } = require('sequelize')
 
+// Constants and generics
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
-const _ = require('lodash')
-const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user-role')
+
+// Database queries
 const organizationQueries = require('@database/queries/organization')
+const roleQueries = require('@database/queries/user-role')
+const tenantQueries = require('@database/queries/tenants')
+const UserCredentialQueries = require('@database/queries/userCredential')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
-const { eventBroadcaster } = require('@helpers/eventBroadcaster')
-const { Op } = require('sequelize')
-const Sequelize = require('@database/models/index').sequelize
-const UserCredentialQueries = require('@database/queries/userCredential')
+const userQueries = require('@database/queries/users')
+
+// Services
 const adminService = require('../generics/materializedViews')
-const emailEncryption = require('@utils/emailEncryption')
-const responses = require('@helpers/responses')
 const userSessionsService = require('@services/user-sessions')
-const userHelper = require('@helpers/userHelper')
-const UserTransformDTO = require('@dtos/userDTO')
+
+// Helpers and utilities
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const emailEncryption = require('@utils/emailEncryption')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { generateUniqueUsername } = require('@utils/usernameGenerator')
+const responses = require('@helpers/responses')
+const userHelper = require('@helpers/userHelper')
+
+// DTOs
+const UserTransformDTO = require('@dtos/userDTO')
 
 module.exports = class AdminHelper {
 	/**
@@ -78,21 +89,54 @@ module.exports = class AdminHelper {
 	}
 
 	/**
-	 * create admin users
+	 * Creates a new admin user.
+	 *
+	 * @async
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData - user create information
-	 * @param {string} bodyData.email - email.
-	 * @param {string} bodyData.password - email.
-	 * @returns {JSON} - returns created user information
+	 * @param {Object} bodyData - Data for creating the user.
+	 * @param {string} bodyData.email - Email of the user.
+	 * @param {string} bodyData.password - Password for the user account.
+	 * @param {string} [bodyData.username] - Optional username (generated if not provided).
+	 * @param {string} [bodyData.name] - Optional name (used for username generation if username not provided).
+	 * @returns {Promise<Object>} - Response containing the created user data or error.
+	 *
+	 * @throws {Error} If default tenant or organization is not found or if creation fails.
 	 */
+
 	static async create(bodyData) {
 		try {
+			// Handle email encryption
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const user = await UserCredentialQueries.findOne({ email: encryptedEmailId })
 
-			if (user) {
+			// Get default tenant details
+			const tenantDetail = await tenantQueries.findOne({
+				code: process.env.DEFAULT_TENANT_CODE,
+				status: common.ACTIVE_STATUS,
+			})
+
+			if (!tenantDetail) {
+				return responses.failureResponse({
+					message: 'DEFAULT_TENANT_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Check if admin user already exists
+			const existingUser = await userQueries.findOne(
+				{
+					email: encryptedEmailId,
+					password: { [Op.ne]: null },
+					tenant_code: tenantDetail.code,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+
+			if (existingUser) {
 				return responses.failureResponse({
 					message: 'ADMIN_USER_ALREADY_EXISTS',
 					statusCode: httpStatusCode.not_acceptable,
@@ -100,46 +144,96 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			let role = await roleQueries.findOne({ title: common.ADMIN_ROLE })
+			// Find admin role
+			const role = await roleQueries.findOne({
+				title: common.ADMIN_ROLE,
+				tenant_code: tenantDetail.code,
+			})
+
 			if (!role) {
 				return responses.failureResponse({
-					message: 'ROLE_NOT_FOUND',
+					message: 'ADMIN_ROLE_NOT_FOUND',
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
 
-			bodyData.roles = [role.id]
-			bodyData.organization_id = process.env.DEFAULT_ORG_ID
-			bodyData.tenant_code = process.env.DEFAULT_TENANT_CODE
+			// Get default organization code
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+			if (!defaultOrganizationCode) {
+				throw new Error('Default organization code not found.')
+			}
 
-			// if (!bodyData.organization_id) {
-			// 	let organization = await organizationQueries.findOne(
-			// 		{ code: process.env.DEFAULT_ORGANISATION_CODE },
-			// 		{ attributes: ['id'] }
-			// 	)
-			// 	bodyData.organization_id = organization.id
-			// }
-			bodyData.password = utils.hashPassword(bodyData.password)
+			// Prepare user data
 			bodyData.email = encryptedEmailId
+			bodyData.password = utils.hashPassword(bodyData.password)
+			bodyData.tenant_code = tenantDetail.code
+			bodyData.roles = [role.id]
+
+			// Generate username if not provided
+			if (!bodyData.username) {
+				bodyData.username = await generateUniqueUsername(bodyData.name)
+			}
+
+			// Create user
 			const createdUser = await userQueries.create(bodyData)
-			const userCredentialsBody = {
-				email: bodyData.email,
-				password: bodyData.password,
-				organization_id: process.env.DEFAULT_ORG_ID,
+
+			// Create user-organization relationship
+			await userOrganizationQueries.create({
 				user_id: createdUser.id,
-			}
-			const userData = await UserCredentialQueries.create(userCredentialsBody)
-			if (!userData?.id) {
-				return responses.failureResponse({
-					message: userData,
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+				organization_code: defaultOrganizationCode,
+				tenant_code: tenantDetail.code,
+			})
+
+			// Create user-organization-role relationship
+			await userOrganizationRoleQueries.create({
+				tenant_code: tenantDetail.code,
+				user_id: createdUser.id,
+				organization_code: defaultOrganizationCode,
+				role_id: role.id,
+			})
+
+			// Get created user with organization details
+			const user = await userQueries.findUserWithOrganization(
+				{ id: createdUser.id, tenant_code: tenantDetail.code },
+				{
+					attributes: {
+						exclude: ['password'],
+					},
+				}
+			)
+
+			// Process response data
+			const processedUser = user
+			processedUser.email = plaintextEmailId
+
+			// Emit user creation event
+			const eventBody = UserTransformDTO.eventBodyDTO({
+				entity: 'user',
+				eventType: 'create',
+				entityId: processedUser?.id,
+				args: {
+					created_by: processedUser.id,
+					name: processedUser?.name,
+					username: processedUser?.username,
+					email: processedUser.email,
+					phone: processedUser?.phone,
+					organizations: processedUser?.organizations,
+					tenant_code: processedUser?.tenant_code,
+					created_at: processedUser?.created_at || new Date(),
+					updated_at: processedUser?.updated_at || new Date(),
+					status: createdUser?.status || common.ACTIVE_STATUS,
+					deleted: false,
+					id: processedUser.id,
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
-				message: 'USER_CREATED_SUCCESSFULLY',
+				message: 'ADMIN_USER_CREATED_SUCCESSFULLY',
+				result: { user },
 			})
 		} catch (error) {
 			console.log(error)
