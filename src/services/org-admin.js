@@ -191,12 +191,15 @@ module.exports = class OrgAdminHelper {
 	 */
 	static async getBulkInvitesFilesList(req) {
 		try {
-			let listFileUpload = await fileUploadQueries.listUploads(
-				req.pageNo,
-				req.pageSize,
-				req.query.status ? req.query.status : null,
-				req.decodedToken.organization_id
-			)
+			const listFileUpload = await fileUploadQueries.listUploads({
+				page: req.pageNo,
+				limit: req.pageSize,
+				filter: {
+					...(req.query.status && { status: req.query.status }),
+					organization_id: req.decodedToken.organization_id,
+					tenant_code: req.decodedToken.tenant_code,
+				},
+			})
 
 			if (listFileUpload.count > 0) {
 				await Promise.all(
