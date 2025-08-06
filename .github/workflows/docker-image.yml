@@ -14,7 +14,7 @@ env:
 
 jobs:
   docker-image-build-and-push:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/docker-image'
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
