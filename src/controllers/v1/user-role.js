@@ -10,23 +10,28 @@ const roleService = require('@services/user-role')
 
 module.exports = class userRole {
 	/**
-	 * Create roles.
+	 * Create a new role.
 	 * @method
 	 * @name create
-	 * @param {Object} req - Request data.
-	 * @param {Object} req.body - Request body contains role creation details.
+	 * @param {Object} req - Request object.
+	 * @param {Object} req.body - Request body containing role details.
 	 * @param {String} req.body.title - Title of the role.
-	 * @param {Integer} req.body.userType - User type of the role.
+	 * @param {Number} req.body.userType - User type for the role.
 	 * @param {String} req.body.status - Role status.
-	 * @param {String} req.body.visibility - Visibility of the role.
-	 * @param {String} req.body.translations - Translation for roles.
-	 * @param {Integer} req.body.organization_id - Organization ID for the role.
-	 * @returns {JSON} - Response contains role creation details.
+	 * @param {String} req.body.visibility - Role visibility.
+	 * @param {String} req.body.translations - Role translations.
+	 * @param {Number} req.body.organization_id - Organization ID.
+	 * @param {Object} req.decodedToken - Authenticated user token.
+	 * @returns {Object} - Created role details.
 	 */
 
 	async create(req) {
 		try {
-			const createRole = await roleService.create(req.body, req.decodedToken.organization_id)
+			const createRole = await roleService.create(
+				req.body,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return createRole
 		} catch (error) {
 			return error
@@ -34,23 +39,30 @@ module.exports = class userRole {
 	}
 
 	/**
-	 * Update roles.
+	 * Update a role.
 	 * @method
 	 * @name update
-	 * @param {Object} req - Request data.
-	 * @param {Object} req.body - Request body contains role update details.
+	 * @param {Object} req - Request object.
+	 * @param {Object} req.body - Request body containing updated role details.
 	 * @param {String} req.body.title - Title of the role.
-	 * @param {Integer} req.body.userType - User type of the role.
+	 * @param {Number} req.body.userType - User type for the role.
 	 * @param {String} req.body.status - Role status.
-	 * @param {String} req.body.visibility - Visibility of the role.
-	 * @param {String} req.body.translations - Translation for roles.
-	 * @param {Integer} req.body.organization_id - Organization ID for the role.
-	 * @returns {JSON} - Response contains role update details.
+	 * @param {String} req.body.visibility - Role visibility.
+	 * @param {String} req.body.translations - Role translations.
+	 * @param {Number} req.body.organization_id - Organization ID.
+	 * @param {String} req.params.id - Role ID to be updated.
+	 * @param {Object} req.decodedToken - Authenticated user token.
+	 * @returns {Object} - Updated role details.
 	 */
 
 	async update(req) {
 		try {
-			const updateRole = await roleService.update(req.params.id, req.body, req.decodedToken.organization_id)
+			const updateRole = await roleService.update(
+				req.params.id,
+				req.body,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return updateRole
 		} catch (error) {
 			return error
@@ -58,32 +70,39 @@ module.exports = class userRole {
 	}
 
 	/**
-	 * Delete role.
+	 * Delete a role.
 	 * @method
 	 * @name delete
-	 * @param {Object} req - Request data.
-	 * @returns {JSON} - Role deletion response.
+	 * @param {Object} req - Request object.
+	 * @param {String} req.params.id - Role ID to be deleted.
+	 * @param {Object} req.decodedToken - Authenticated user token.
+	 * @returns {Object} - Deletion response.
 	 */
-
 	async delete(req) {
 		try {
-			return await roleService.delete(req.params.id, req.decodedToken.organization_id)
+			return await roleService.delete(
+				req.params.id,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 		} catch (error) {
 			return error
 		}
 	}
 
 	/**
-	 * Get all available roles.
+	 * Get a paginated list of roles with optional filters and search.
 	 * @method
-	 * @name defaultlist
-	 * @param {Array(String)} req.body.filters - Filters.
+	 * @name list
+	 * @param {Object} req - Request object.
+	 * @param {Object} req.query - Query parameters.
+	 * @param {Array<String>} [req.query.filters] - Filters.
+	 * @param {String} [req.query.language] - Language code.
 	 * @param {String} req.pageNo - Page number.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
-	 * @param {Integer} req.decodedToken.organization_id - user organization_id.
-	 * @query {String} req.query.language - Language Code
-	 * @returns {JSON} - Role list.
+	 * @param {Object} req.decodedToken - Authenticated user token.
+	 * @returns {Object} - List of roles.
 	 */
 	async list(req) {
 		try {
@@ -94,7 +113,7 @@ module.exports = class userRole {
 				req.searchText,
 				req.decodedToken.organization_id,
 				req.decodedToken.tenant_code,
-				req.query.language ? req.query.language : ''
+				req.query.language || ''
 			)
 			return roleList
 		} catch (error) {
@@ -103,21 +122,30 @@ module.exports = class userRole {
 	}
 
 	/**
-	 * Get all available roles.
+	 * @deprecated
+	 * This method is deprecated. Use `list()` instead.
 	 * @method
 	 * @name default
-	 * @param {Array(String)} req.body.filters - Filters.
+	 * @param {Object} req - Request object.
+	 * @param {Array<String>} req.body.filters - Filters.
 	 * @param {String} req.pageNo - Page number.
 	 * @param {String} req.pageSize - Page size limit.
 	 * @param {String} req.searchText - Search text.
-	 * @returns {JSON} - Role list.
+	 * @returns {Object} - List of roles.
 	 */
+	/* 
 	async default(req) {
 		try {
-			const defaultRoleList = await roleService.defaultList(req.query, req.pageNo, req.pageSize, req.searchText)
+			const defaultRoleList = await roleService.defaultList(
+				req.query, 
+				req.pageNo, 
+				req.pageSize, 
+				req.searchText
+			)
 			return defaultRoleList
 		} catch (error) {
 			return error
 		}
 	}
+	*/
 }
