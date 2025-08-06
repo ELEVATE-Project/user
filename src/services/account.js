@@ -1827,24 +1827,32 @@ module.exports = class AccountHelper {
 	}
 
 	/**
-	 * Account List
-	 * @method
-	 * @name list method post
-	 * @param {Object} req -request data.
-	 * @param {Array} userIds -contains userIds.
-	 * @returns {JSON} - all accounts data
-	 * User list.
-	 * @method
-	 * @name list method get
-	 * @param {Boolean} userType - mentor/mentee.
-	 * @param {Number} page - page No.
-	 * @param {Number} limit - page limit.
-	 * @param {String} search - search field.
-	 * @returns {JSON} - List of users
+	 * Search and list users based on filters such as role, email, search text, etc.
+	 *
+	 * Handles both POST-based user ID filtering and GET-based search queries.
+	 *
+	 * @async
+	 * @method search
+	 * @param {Object} params - Parameters for the search.
+	 * @param {Object} params.query - Query parameters from the request.
+	 * @param {string} params.query.tenant_code - Tenant identifier for scoping the search.
+	 * @param {string} params.query.type - Role type(s) to filter by (comma-separated, e.g., "mentor,mentee" or "all").
+	 * @param {string} [params.query.organization_id] - Organization ID for filtering users.
+	 * @param {string} [params.searchText] - Text input for searching users (can include emails or names).
+	 * @param {number} [params.pageNo] - Page number for pagination.
+	 * @param {number} [params.pageSize] - Number of users per page.
+	 * @param {Object} [params.body] - POST body parameters.
+	 * @param {Array<string>} [params.body.user_ids] - Specific user IDs to include in search.
+	 * @param {Array<string>} [params.body.excluded_user_ids] - User IDs to exclude from search.
+	 *
+	 * @returns {Promise<Object>} JSON response with user list and count.
 	 */
+
 	static async search(params) {
 		try {
-			let roleQuery = {}
+			let roleQuery = {
+				tenant_code: params.query.tenant_code,
+			}
 			if (params.query.type.toLowerCase() === common.TYPE_ALL) {
 				roleQuery.status = common.ACTIVE_STATUS
 			} else {
@@ -1869,29 +1877,18 @@ module.exports = class AccountHelper {
 				}
 			})
 
-			let users = await userQueries.listUsersFromView(
-				roleIds ? roleIds : [],
-				params.query.organization_id ? params.query.organization_id : '',
-				params.pageNo,
-				params.pageSize,
-				emailIds.length == 0 ? params.searchText : false,
-				params.body.user_ids ? params.body.user_ids : false,
-				emailIds.length > 0 ? emailIds : false,
-				params.body.excluded_user_ids ? params.body.excluded_user_ids : false
-			)
+			let users = await userQueries.searchUsersWithOrganization({
+				roleIds,
+				organization_id: params.query.organization_id,
+				page: params.pageNo,
+				limit: params.pageSize,
+				search: emailIds.length == 0 ? params.searchText : false,
+				userIds: params.body.user_ids || false,
+				emailIds: emailIds.length > 0 ? emailIds : false,
+				excluded_user_ids: params.body.excluded_user_ids || false,
+				tenantCode: params.query.tenant_code,
+			})
 
-			/* Required to resolve all promises first before preparing response object else sometime 
-					it will push unresolved promise object if you put this logic in below for loop */
-
-			await Promise.all(
-				users.data.map(async (user) => {
-					/* Assigned image url from the stored location */
-					if (user.image) {
-						user.image = await utilsHelper.getDownloadableUrl(user.image)
-					}
-					return user
-				})
-			)
 			if (users.count == 0) {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -1902,6 +1899,22 @@ module.exports = class AccountHelper {
 					},
 				})
 			}
+
+			/* Required to resolve all promises first before preparing response object else sometime 
+			it will push unresolved promise object if you put this logic in below for loop */
+			// Decrypt email and add image URL
+			await Promise.all(
+				users.data.map(async (user) => {
+					/* Assigned image url from the stored location */
+					if (user.image) {
+						user.image = await utilsHelper.getDownloadableUrl(user.image)
+					}
+					if (user.email) {
+						user.email = emailEncryption.decrypt(user.email)
+					}
+					return user
+				})
+			)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,

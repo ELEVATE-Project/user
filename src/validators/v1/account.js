@@ -240,6 +240,11 @@ module.exports = {
 	},
 
 	search: (req) => {
+		req.checkQuery('tenant_code')
+			.notEmpty()
+			.withMessage('tenant_code can not be null')
+			.isString()
+			.withMessage('tenant_code type value')
 		req.checkQuery('type')
 			.notEmpty()
 			.withMessage('type can not be null')
@@ -247,6 +252,7 @@ module.exports = {
 			.notIn([common.ADMIN_ROLE, common.MENTEE_ROLE, common.MENTEE_ROLE, common.ORG_ADMIN_ROLE, common.TYPE_ALL])
 			.withMessage('Invalid type value')
 		req.checkQuery('organization_id').isNumeric().withMessage('organization_id must be an Id')
+
 		req.checkBody('user_ids')
 			.isArray()
 			.withMessage('user_ids must be an array')
