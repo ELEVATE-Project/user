@@ -61,6 +61,7 @@
 		"kafkajs": "^2.2.0",
 		"lodash": "^4.17.21",
 		"md5": "^2.3.0",
+		"minimist": "^1.2.8",
 		"module-alias": "^2.2.3",
 		"moment": "^2.29.1",
 		"moment-timezone": "^0.5.34",
