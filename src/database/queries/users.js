@@ -455,7 +455,7 @@ exports.searchUsersWithOrganization = async ({
 							required: roleIds && roleIds.length > 0,
 							where: {
 								tenant_code: tenantCode,
-								role_id: { [Op.in]: roleIds },
+								...(roleIds && roleIds.length > 0 && { role_id: { [Op.in]: roleIds } }),
 							},
 							attributes: ['role_id'],
 							include: [

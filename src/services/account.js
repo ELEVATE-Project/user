@@ -1883,9 +1883,9 @@ module.exports = class AccountHelper {
 				page: params.pageNo,
 				limit: params.pageSize,
 				search: emailIds.length == 0 ? params.searchText : false,
-				userIds: params.body.user_ids || false,
+				userIds: params.body?.user_ids || false,
 				emailIds: emailIds.length > 0 ? emailIds : false,
-				excluded_user_ids: params.body.excluded_user_ids || false,
+				excluded_user_ids: params.body?.excluded_user_ids || false,
 				tenantCode: params.query.tenant_code,
 			})
 
