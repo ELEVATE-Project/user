@@ -21,11 +21,12 @@ exports.getModelName = async () => {
 		throw error
 	}
 }
-exports.create = async (data) => {
+
+exports.create = async (data, options = {}) => {
 	try {
-		return await database.User.create(data)
+		return await database.User.create(data, options)
 	} catch (error) {
-		console.log(error)
+		console.error(error)
 		throw error
 	}
 }
@@ -384,6 +385,102 @@ exports.listUsersFromView = async (
 
 		return { count: totalCount, data: users }
 	} catch (error) {
+		throw error
+	}
+}
+exports.searchUsersWithOrganization = async ({
+	roleIds,
+	organization_id,
+	page,
+	limit,
+	search,
+	userIds,
+	emailIds,
+	excluded_user_ids,
+	tenantCode,
+}) => {
+	try {
+		const offset = (page - 1) * limit
+
+		// Base filter for user
+		const userWhere = {}
+
+		// Filter by userIds / exclude
+		if (userIds && Array.isArray(userIds)) {
+			userWhere.id = { [Op.in]: userIds }
+			if (excluded_user_ids && excluded_user_ids.length > 0) {
+				userWhere.id = {
+					[Op.and]: [{ [Op.in]: userIds }, { [Op.notIn]: excluded_user_ids }],
+				}
+			}
+		} else if (excluded_user_ids && excluded_user_ids.length > 0) {
+			userWhere.id = { [Op.notIn]: excluded_user_ids }
+		}
+
+		// Filter by search text or email
+		if (emailIds && emailIds.length > 0) {
+			userWhere.email = { [Op.in]: emailIds }
+		} else if (search) {
+			userWhere.name = { [Op.iLike]: `%${search}%` }
+		}
+
+		const users = await database.User.findAndCountAll({
+			where: userWhere,
+			limit: limit,
+			offset: offset,
+			order: [['name', 'ASC']],
+			include: [
+				{
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
+					where: {
+						tenant_code: tenantCode,
+						...(organization_id && { organization_id }),
+					},
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							required: false,
+							where: {
+								status: 'ACTIVE',
+								tenant_code: tenantCode,
+							},
+							attributes: ['id', 'name', 'code'],
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							required: roleIds && roleIds.length > 0,
+							where: {
+								tenant_code: tenantCode,
+								...(roleIds && roleIds.length > 0 && { role_id: { [Op.in]: roleIds } }),
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									required: false,
+									where: { tenant_code: tenantCode },
+									attributes: ['id', 'title', 'label'],
+								},
+							],
+						},
+					],
+				},
+			],
+			raw: false,
+			distinct: true, // Needed for correct count when using include
+		})
+
+		return {
+			count: users.count,
+			data: users.rows,
+		}
+	} catch (error) {
+		console.error('Error in searchUsersWithOrganization:', error)
 		throw error
 	}
 }

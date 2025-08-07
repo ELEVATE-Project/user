@@ -64,9 +64,9 @@ exports.findAllRoles = async (filter, attributes, options) => {
 	}
 }
 
-exports.updateRole = async (filter, updatedata) => {
+exports.updateRole = async (filter, updateData) => {
 	try {
-		return await UserRole.update(updatedata, {
+		return await UserRole.update(updateData, {
 			where: filter,
 			returning: true,
 		})

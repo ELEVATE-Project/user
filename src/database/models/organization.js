@@ -38,6 +38,10 @@ module.exports = (sequelize, DataTypes) => {
 			in_domain_visibility: {
 				type: DataTypes.STRING,
 			},
+			theming: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,

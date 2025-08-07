@@ -2,7 +2,6 @@
 const NotificationTemplate = require('@database/models/index').NotificationTemplate
 const { Op } = require('sequelize')
 const common = require('@constants/common')
-const organizationQueries = require('@database/queries/organization')
 
 exports.create = async (data) => {
 	try {
@@ -20,7 +19,7 @@ exports.findOne = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -98,7 +97,7 @@ exports.findOneEmailTemplate = async (code, orgCode = null, tenantCode) => {
 		}
 		return templateData
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -116,7 +115,7 @@ exports.getEmailHeader = async (header) => {
 		})
 		return headerData
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -134,7 +133,7 @@ exports.getEmailFooter = async (footer) => {
 		})
 		return headerData
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -148,7 +147,7 @@ exports.updateTemplate = async (filter, update, options = {}) => {
 
 		return template
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -178,7 +177,7 @@ exports.findAllNotificationTemplates = async (filter, options = {}) => {
 
 		return templates
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 

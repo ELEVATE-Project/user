@@ -193,9 +193,10 @@ module.exports = class OrgAdmin {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let entityTypeDetails = orgAdminService.inheritEntityType(
+			let entityTypeDetails = await orgAdminService.inheritEntityType(
 				req.body.entity_type_value,
 				req.body.target_entity_type_label,
+				req.decodedToken.organization_code,
 				req.decodedToken.organization_id,
 				req.decodedToken.id
 			)

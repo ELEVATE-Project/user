@@ -23,6 +23,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
 const UserCredentialQueries = require('@database/queries/userCredential')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const notificationUtils = require('@utils/notification')
@@ -190,12 +191,15 @@ module.exports = class OrgAdminHelper {
 	 */
 	static async getBulkInvitesFilesList(req) {
 		try {
-			let listFileUpload = await fileUploadQueries.listUploads(
-				req.pageNo,
-				req.pageSize,
-				req.query.status ? req.query.status : null,
-				req.decodedToken.organization_id
-			)
+			const listFileUpload = await fileUploadQueries.listUploads({
+				page: req.pageNo,
+				limit: req.pageSize,
+				filter: {
+					...(req.query.status && { status: req.query.status }),
+					organization_id: req.decodedToken.organization_id,
+					tenant_code: req.decodedToken.tenant_code,
+				},
+			})
 
 			if (listFileUpload.count > 0) {
 				await Promise.all(
@@ -366,7 +370,6 @@ module.exports = class OrgAdminHelper {
 				tenant_code: tokenInformation.tenant_code,
 			})
 
-			console.log(isApproved, 'isApproved')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(
 					requestDetails,
@@ -376,9 +379,13 @@ module.exports = class OrgAdminHelper {
 				)
 			}
 
-			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (shouldSendEmail) {
-				await sendRoleRequestStatusEmail(user, bodyData.status, tokenInformation.organization_code)
+				await sendRoleRequestStatusEmail(
+					user,
+					bodyData.status,
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code
+				)
 			}
 
 			return responses.successResponse({
@@ -458,40 +465,37 @@ module.exports = class OrgAdminHelper {
 	}
 
 	/**
-	 * @description 					- Inherit new entity type from an existing default org's entityType.
+	 * @description                         - Inherit new entity type from an existing default org's entityType.
 	 * @method
-	 * @name 							- inheritEntityType
-	 * @param {String} entityValue 		- Entity type value
-	 * @param {String} entityLabel 		- Entity type label
-	 * @param {Integer} userOrgId 		- User org id
-	 * @param {Integer} userId 			- Userid
-	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 * @name                                - inheritEntityType
+	 * @param {String} entityValue          - Entity type value
+	 * @param {String} entityLabel          - Entity type label
+	 * @param {String} userOrganizationCode - User's organization code
+	 * @param {Integer} userOrganizationId  - User's organization ID
+	 * @param {Integer} userId              - User ID
+	 * @returns {Promise<Object>}           - A Promise that resolves to a response object.
 	 */
-
-	static async inheritEntityType(entityValue, entityLabel, userOrgId, userId) {
+	static async inheritEntityType(entityValue, entityLabel, userOrganizationCode, userOrganizationId, userId) {
 		try {
-			let defaultOrgId = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
-				{ attributes: ['id'] }
-			)
-			defaultOrgId = defaultOrgId.id
-			if (defaultOrgId === userOrgId) {
+			// Prevent inheriting from the default org
+			if (process.env.DEFAULT_ORGANISATION_CODE === userOrganizationCode) {
 				return responses.failureResponse({
 					message: 'USER_IS_FROM_DEFAULT_ORG',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// Fetch entity type data using defaultOrgId and entityValue
+
+			// Fetch entity type data from default org
 			const filter = {
 				value: entityValue,
-				organization_id: defaultOrgId,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE,
 				allow_filtering: true,
 			}
 
-			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
+			const entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
 
-			// If no matching data found return failure response
+			// If no matching data found, return failure
 			if (!entityTypeDetails) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
@@ -500,23 +504,28 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			// Build data for inheriting entityType
-			entityTypeDetails.parent_id = entityTypeDetails.organization_id
-			entityTypeDetails.label = entityLabel
-			entityTypeDetails.organization_id = userOrgId
-			entityTypeDetails.created_by = userId
-			entityTypeDetails.updated_by = userId
-			delete entityTypeDetails.id
+			// Prepare new entity type object (clone and modify)
+			const newEntityType = {
+				...entityTypeDetails,
+				parent_id: entityTypeDetails.id,
+				label: entityLabel,
+				organization_code: userOrganizationCode,
+				organization_id: userOrganizationId,
+				created_by: userId,
+				updated_by: userId,
+			}
+			delete newEntityType.id
 
 			// Create new inherited entity type
-			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
+			const inheritedEntityType = await entityTypeQueries.createEntityType(newEntityType)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: inheritedEntityType,
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in inheritEntityType:', error)
 			throw error
 		}
 	}
@@ -607,23 +616,28 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 	})
 }
 
-async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
+async function sendRoleRequestStatusEmail(userDetails, status, organizationCode, tenantCode) {
 	try {
 		const plaintextEmailId = emailEncryption.decrypt(userDetails.email)
 
 		if (status === common.ACCEPTED_STATUS) {
 			if (plaintextEmailId) {
+				const tenantDomain = await tenantDomainQueries.findOne(
+					{ tenant_code: tenantCode },
+					{ attributes: ['domain'] }
+				)
+
 				notificationUtils.sendEmailNotification({
 					emailId: plaintextEmailId,
 					templateCode: process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
-						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
-						portalURL: process.env.PORTAL_URL,
+						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
+						portalURL: tenantDomain,
 					},
 					tenantCode: userDetails.tenant_code,
-					organization_code: orgCode || null,
+					organization_code: organizationCode || null,
 				})
 			}
 		} else if (status === common.REJECTED_STATUS) {
@@ -640,10 +654,10 @@ async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 				})
 			}
 		}
-		console.log({ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name }, 'payload')
 
 		return { success: true }
 	} catch (error) {
+		console.error(error)
 		return error
 	}
 }

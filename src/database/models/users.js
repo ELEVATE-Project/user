@@ -62,6 +62,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				defaultValue: 'en',
 			},
+			configs: {
+				type: DataTypes.JSONB,
+				allowNull: true,
+			},
 			tenant_code: {
 				type: DataTypes.STRING,
 				allowNull: false,

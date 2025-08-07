@@ -24,7 +24,7 @@ module.exports = class User {
 			const updatedUser = await userService.update(
 				params,
 				req.decodedToken.id,
-				req.decodedToken.organization_id,
+				req.decodedToken.organization_code,
 				req.decodedToken.tenant_code
 			)
 			return updatedUser
@@ -118,7 +118,7 @@ module.exports = class User {
 			const updateUsersLanguagePreference = await userService.setLanguagePreference(
 				params,
 				req.decodedToken.id,
-				req.decodedToken.organization_id,
+				req.decodedToken.organization_code,
 				req.decodedToken.tenant_code
 			)
 			return updateUsersLanguagePreference

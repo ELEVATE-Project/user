@@ -16,7 +16,7 @@ module.exports = {
 		req.checkBody('upload_type')
 			.notEmpty()
 			.withMessage('upload_type is required')
-			.isIn()
+			.isIn(upload_type)
 			.withMessage(`upload_type must be from : ${upload_type.join(',')}`)
 	},
 	getRequestDetails: (req) => {
