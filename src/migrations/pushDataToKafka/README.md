@@ -29,7 +29,7 @@ This Node.js script pushes user data (along with organization, roles, and enrich
 The script expects a `.env` file at the **project root (`../../.env`)** with the following variables:
 
 ```env
-DEV_DATABASE_URL=postgres://user:password@localhost:5432/database
+DEV_DATABASE_URL=postgres://user:password@localhost:5432/database  # Adjust for your environment
 ENTITY_MANAGEMENT_SERVICE_BASE_URL=http://localhost:5000
 INTERNAL_ACCESS_TOKEN=your_internal_token
 ```
@@ -73,7 +73,7 @@ node pushUserDataToKafka.js --from="2025-07-01" --to="2025-07-30"
 
 ## 📌 Notes
 
--   The script assumes Kafka is configured via the file at `../../configs/kafka/index.js`.
+-   The script assumes Kafka is configured via the file at `../../configs/kafka.js`.
 -   Events are published using `eventBroadcasterKafka` helper.
 -   If an Axios request fails (e.g., service down), it logs an error and continues with the next user.
 -   Deleted users are detected via `deleted_at IS NOT NULL` and tagged as `"eventType": "delete"`.

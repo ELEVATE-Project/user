@@ -24,7 +24,7 @@ function parseDbUrl(url) {
 		host: dbUrl.hostname,
 		port: dbUrl.port,
 		database: dbUrl.pathname.slice(1),
-		ssl: dbUrl.searchParams.get('sslmode') === 'require',
+		ssl: dbUrl.searchParams.get('sslmode') === 'require' ? { rejectUnauthorized: false } : false,
 	}
 }
 
@@ -172,6 +172,7 @@ async function fetchEntityDetail(id, tenantCode) {
 			headers: {
 				'content-type': 'application/json',
 				'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+				timeout: 5000, // 5 seconds timeout
 			},
 		}
 		const response = await axios.post(
@@ -189,6 +190,7 @@ async function fetchEntityDetail(id, tenantCode) {
 		}
 	} catch (error) {
 		console.error('Axios Error:', error.response?.data?.message || error.message)
+		throw error // Let the caller handle the error appropriately
 	}
 }
 
@@ -255,6 +257,15 @@ async function enrichLocationFields(event) {
 		process.exit(1)
 	}
 
+	if (!dbUrl) {
+		console.error('DEV_DATABASE_URL environment variable is required')
+		process.exit(1)
+	}
+	if (!process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL || !process.env.INTERNAL_ACCESS_TOKEN) {
+		console.error('ENTITY_MANAGEMENT_SERVICE_BASE_URL and INTERNAL_ACCESS_TOKEN are required')
+		process.exit(1)
+	}
+
 	// Setup DB connection
 	const dbConfig = parseDbUrl(dbUrl)
 	const client = new Client(dbConfig)
@@ -289,9 +300,14 @@ async function enrichLocationFields(event) {
 				kafkaEvent = await enrichLocationFields(kafkaEvent)
 
 				// Send event to Kafka
-				eventBroadcasterKafka('userEvents', {
-					requestBody: kafkaEvent,
-				})
+				try {
+					await eventBroadcasterKafka('userEvents', {
+						requestBody: kafkaEvent,
+					})
+				} catch (kafkaError) {
+					console.error(`Failed to publish to Kafka for user ${userId}:`, kafkaError.message)
+					throw kafkaError
+				}
 
 				console.log(`Pushed user ${userId}`)
 				successCount++
