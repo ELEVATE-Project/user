@@ -28,10 +28,30 @@ module.exports = {
 		req.checkBody('status').notEmpty().withMessage('status field is empty')
 	},
 	deactivateUser: (req) => {
-		const field = req.body.email ? 'email' : req.body.id ? 'id' : null
-		if (field) {
-			req.checkBody(field).isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
-		}
+		req.checkBody('emails').optional().isArray().withMessage('The "emails" field must be an array, if provided.')
+
+		req.checkBody('emails.*')
+			.optional()
+			.isEmail()
+			.withMessage('Each item in the "emails" array must be a valid email address.')
+
+		req.checkBody('ids').optional().isArray().withMessage('The "ids" field must be an array, if provided.')
+
+		req.checkBody('ids.*')
+			.optional()
+			.isNumeric()
+			.withMessage('Each item in the "ids" array must be a numeric value.')
+
+		req.checkBody(['emails', 'ids']).custom(() => {
+			const ids = req.body.ids
+			const emails = req.body.emails
+
+			if (!emails && !ids) {
+				throw new Error('At least one of "emails" or "ids" must be provided.')
+			}
+
+			return true
+		})
 	},
 	inheritEntityType: (req) => {
 		// Validate incoming request body

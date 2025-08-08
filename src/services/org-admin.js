@@ -22,11 +22,12 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
-const UserCredentialQueries = require('@database/queries/userCredential')
+
 const tenantDomainQueries = require('@database/queries/tenantDomain')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const notificationUtils = require('@utils/notification')
+const userHelper = require('@helpers/userHelper')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -400,46 +401,85 @@ module.exports = class OrgAdminHelper {
 	}
 
 	/**
-	 * Deactivate User
-	 * @method
-	 * @name deactivateUser
-	 * @param {Number} id - user id
-	 * @param {Object} loggedInUserId - logged in user id
-	 * @returns {JSON} - Deactivated user data
+	 * Deactivates users by their IDs or email addresses within a specific organization and tenant.
+	 *
+	 * This function performs the following:
+	 * - Deactivates users by matching user IDs (if provided) under the same tenant and organization.
+	 * - Deactivates users by matching emails (if provided) under the same tenant and organization.
+	 * - Broadcasts an event to handle cleanup of upcoming sessions for deactivated users.
+	 * - Removes all active sessions for the affected users.
+	 *
+	 * Note:
+	 * - This function currently does **not** support users associated with multiple organizations.
+	 *   It only considers users under the organization specified in `tokenInformation.organization_code`.
+	 *
+	 * @async
+	 * @param {Object} bodyData - Request payload containing user identifiers.
+	 * @param {number[]} [bodyData.ids] - Optional array of user IDs to deactivate.
+	 * @param {string[]} [bodyData.emails] - Optional array of user emails to deactivate.
+	 *
+	 * @param {Object} tokenInformation - Authenticated user's context information.
+	 * @param {string} tokenInformation.organization_code - The organization code for scoping the operation.
+	 * @param {string} tokenInformation.tenant_code - The tenant code to match users within the same tenant.
+	 * @param {number} tokenInformation.id - The ID of the user initiating the deactivation (used as `updated_by`).
+	 *
+	 * @returns {Promise<Object>} Response object with success or failure details.
+	 * - If successful, includes the user IDs that were deactivated.
+	 * - If no users were updated, returns a failure response with appropriate status.
+	 *
+	 * @throws {Error} Throws error on unexpected failure during the deactivation process.
 	 */
+
 	static async deactivateUser(bodyData, tokenInformation) {
 		try {
-			let filterQuery = {
-				organization_id: tokenInformation.organization_id,
-			}
+			const { ids = [], emails = [] } = bodyData
 
-			for (let item in bodyData) {
-				filterQuery[item] = {
-					[Op.in]: bodyData[item],
-				}
-			}
-			let userIds = []
+			let totalRowsAffected = 0
+			const updatedByIds = []
+			const updatedByEmails = []
 
-			if (bodyData.email) {
-				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
-				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: encryptedEmailIds } },
+			// Deactivate by IDs
+			if (ids.length) {
+				const [rowsAffected, updatedUsers] = await userQueries.deactivateUserInOrg(
 					{
-						attributes: ['user_id'],
-					}
+						id: { [Op.in]: ids },
+						tenant_code: tokenInformation.tenant_code,
+					},
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code,
+					{
+						status: common.INACTIVE_STATUS,
+						updated_by: tokenInformation.id,
+					},
+					true // pass flag to return matched users (optional)
 				)
-				userIds = _.map(userCredentials, 'user_id')
-				delete filterQuery.email
-				filterQuery.id = userIds
-			} else {
-				userIds = bodyData.id
+				console.log(rowsAffected, updatedUsers)
+				totalRowsAffected += rowsAffected
+				updatedByIds.push(...updatedUsers.map((user) => user.id))
 			}
-			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
-				status: common.INACTIVE_STATUS,
-				updated_by: tokenInformation.id,
-			})
 
-			if (rowsAffected == 0) {
+			// Deactivate by Emails
+			if (emails.length) {
+				const [rowsAffected, updatedUsers] = await userQueries.deactivateUserInOrg(
+					{
+						email: { [Op.in]: emails.map((email) => emailEncryption.encrypt(email.toLowerCase())) },
+						tenant_code: tokenInformation.tenant_code,
+					},
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code,
+					{
+						status: common.INACTIVE_STATUS,
+						updated_by: tokenInformation.id,
+					},
+					true // return updated users
+				)
+
+				totalRowsAffected += rowsAffected
+				updatedByEmails.push(...updatedUsers.map((user) => user.id))
+			}
+
+			// If nothing was deactivated
+			if (totalRowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -447,19 +487,27 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			//check and deactivate upcoming sessions
+			// Broadcast event
+			const allUserIds = [...new Set([...updatedByIds, ...updatedByEmails])]
+
+			userHelper.removeAllUserSessions(allUserIds, tokenInformation.tenant_code)
+
 			eventBroadcaster('deactivateUpcomingSession', {
 				requestBody: {
-					user_ids: userIds,
+					user_ids: allUserIds,
 				},
 			})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_DEACTIVATED',
+				result: {
+					updated_by_ids: updatedByIds,
+					updated_by_emails: updatedByEmails,
+				},
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in deactivateUser:', error)
 			throw error
 		}
 	}
