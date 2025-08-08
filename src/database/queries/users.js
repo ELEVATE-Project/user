@@ -570,7 +570,7 @@ exports.deactivateUserInOrg = async (filter, organizationCode, tenantCode, updat
 		if (userIds.length === 0) return [0, []]
 
 		const [rowsAffected] = await database.User.update(updateData, {
-			where: { id: { [Op.in]: userIds, tenant_code: tenantCode } },
+			where: { id: { [Op.in]: userIds }, tenant_code: tenantCode },
 		})
 
 		return [rowsAffected, returnUpdatedUsers ? users : []]
