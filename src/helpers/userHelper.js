@@ -7,6 +7,7 @@ const userSessionsService = require('@services/user-sessions')
 const Sequelize = require('@database/models/index').sequelize
 const REDIS_USER_PREFIX = common.redisUserPrefix
 const DELETED_STATUS = common.DELETED_STATUS
+const userSessionsQueries = require('@database/queries/user-sessions')
 
 function generateUpdateParams(userId) {
 	return {
@@ -93,6 +94,65 @@ const userHelper = {
 			},
 			transactionOptions
 		)
+	},
+
+	/**
+	 * Removes all active sessions for the specified user(s) within a tenant.
+	 *
+	 * This function performs the following:
+	 * - Accepts one or more user IDs and ensures they belong to the given tenant.
+	 * - Retrieves all active sessions (where `ended_at` is null).
+	 * - Deletes associated session keys from Redis.
+	 * - Marks the sessions as ended in the database by setting `ended_at` to the current timestamp.
+	 *
+	 * @async
+	 * @param {number|number[]} userIds - A single user ID or an array of user IDs whose sessions should be removed.
+	 * @param {string} tenantCode - The tenant code used to scope session lookup.
+	 *
+	 * @returns {Promise<{ success: boolean, removedCount: number }>} Object indicating success status and number of sessions removed.
+	 *
+	 * @throws {Error} If any step in the removal process fails (Redis or DB update).
+	 */
+
+	async removeAllUserSessions(userIds, tenantCode) {
+		try {
+			const userIdArray = Array.isArray(userIds) ? userIds : [userIds]
+
+			if (userIdArray.length === 0) {
+				return { success: true, removedCount: 0 }
+			}
+
+			// Find all active sessions for the user(s)
+			const sessions = await userSessionsQueries.findAll(
+				{
+					user_id: userIdArray,
+					tenant_code: tenantCode,
+					ended_at: null,
+				},
+				{ attributes: ['id'] }
+			)
+
+			const sessionIds = sessions.map((s) => s.id)
+
+			if (sessionIds.length === 0) {
+				return { success: true, removedCount: 0 }
+			}
+
+			// Delete from Redis
+			await Promise.all(sessionIds.map((id) => utils.redisDel(id.toString())))
+
+			// Mark sessions as ended in DB
+			const currentTime = Math.floor(Date.now() / 1000)
+			const updateResult = await userSessionsQueries.update({ id: sessionIds }, { ended_at: currentTime })
+
+			if (updateResult instanceof Error) {
+				throw updateResult
+			}
+
+			return { success: true, removedCount: sessionIds.length }
+		} catch (error) {
+			throw new Error(`Failed to remove sessions: ${error.message}`)
+		}
 	},
 }
 
