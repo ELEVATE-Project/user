@@ -490,7 +490,7 @@ module.exports = class OrgAdminHelper {
 			// Broadcast event
 			const allUserIds = [...new Set([...updatedByIds, ...updatedByEmails])]
 
-			userHelper.removeAllUserSessions(allUserIds, tokenInformation.tenant_code)
+			await userHelper.removeAllUserSessions(allUserIds, tokenInformation.tenant_code)
 
 			eventBroadcaster('deactivateUpcomingSession', {
 				requestBody: {
