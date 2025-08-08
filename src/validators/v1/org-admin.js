@@ -46,8 +46,8 @@ module.exports = {
 			const ids = req.body.ids
 			const emails = req.body.emails
 
-			if (!emails && !ids) {
-				throw new Error('At least one of "emails" or "ids" must be provided.')
+			if ((!emails || emails.length === 0) && (!ids || ids.length === 0)) {
+				throw new Error('Provide at least one non-empty "emails" or "ids" array.')
 			}
 
 			return true
