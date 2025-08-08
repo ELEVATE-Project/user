@@ -546,13 +546,7 @@ exports.changeOrganization = async (id, currentOrgId, newOrgId, updateBody = {})
  * @throws {Error} Throws if there is any issue during the query or update.
  */
 
-exports.deactivateUserInOrg = async (
-	filter,
-	organization_code,
-	tenant_code,
-	updateData,
-	returnUpdatedUsers = false
-) => {
+exports.deactivateUserInOrg = async (filter, organizationCode, tenantCode, updateData, returnUpdatedUsers = false) => {
 	try {
 		const users = await database.User.findAll({
 			where: filter,
@@ -562,8 +556,8 @@ exports.deactivateUserInOrg = async (
 					as: 'user_organizations',
 					required: true,
 					where: {
-						organization_code,
-						tenant_code,
+						organization_code: organizationCode,
+						tenant_code: tenantCode,
 					},
 					attributes: [],
 				},
@@ -576,7 +570,7 @@ exports.deactivateUserInOrg = async (
 		if (userIds.length === 0) return [0, []]
 
 		const [rowsAffected] = await database.User.update(updateData, {
-			where: { id: { [Op.in]: userIds } },
+			where: { id: { [Op.in]: userIds, tenant_code: tenantCode } },
 		})
 
 		return [rowsAffected, returnUpdatedUsers ? users : []]
