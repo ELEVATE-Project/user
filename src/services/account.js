@@ -753,8 +753,19 @@ module.exports = class AccountHelper {
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
  */
+
+			//Remove all 'admin' roles from user.user_organizations
+			if (user?.user_organizations?.length) {
+				user.user_organizations.forEach((org) => {
+					if (org.roles) {
+						org.roles = org.roles.filter((r) => r.role?.title?.toLowerCase() !== 'admin')
+					}
+				})
+			}
+
 			// Transform user data
 			user = UserTransformDTO.transform(user)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
