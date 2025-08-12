@@ -120,12 +120,28 @@ module.exports = class Admin {
 	}
 
 	/**
-	 * Deactivate Org
-	 * @method
-	 * @name deactivateOrg
-	 * @param {String} req.params.id - org Id.
-	 * @returns {JSON} - deactivated org response
+	 * Deactivate an organization by its ID.
+	 *
+	 * Validates that the requesting user has admin access before deactivating
+	 * the specified organization and all associated users.
+	 *
+	 * @async
+	 * @method deactivateOrg
+	 * @param {Object} req - Express request object.
+	 * @param {string} req.params.id - The unique identifier (ID or code) of the organization to deactivate.
+	 * @param {Object} req.decodedToken - Decoded JWT token of the authenticated user.
+	 * @param {string[]} req.decodedToken.roles - Roles assigned to the logged-in user.
+	 * @param {number} req.decodedToken.id - ID of the logged-in user.
+	 * @param {Object} req.headers - HTTP request headers.
+	 * @param {string} req.headers.tenant-id - Tenant code associated with the request.
+	 * @returns {Promise<Object>} Response object from `adminService.deactivateOrg`,
+	 * containing status, message, and deactivated user count.
+	 *
+	 * @throws {Object} Failure response if:
+	 *  - The user is not an admin.
+	 *  - The organization cannot be deactivated.
 	 */
+
 	async deactivateOrg(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
@@ -136,7 +152,11 @@ module.exports = class Admin {
 				})
 			}
 
-			const result = await adminService.deactivateOrg(req.params.id, req.decodedToken.id)
+			const result = await adminService.deactivateOrg(
+				req.params.id,
+				req.headers?.['tenant-id'],
+				req.decodedToken.id
+			)
 			return result
 		} catch (error) {
 			return error

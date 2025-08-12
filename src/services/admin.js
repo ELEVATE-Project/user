@@ -568,19 +568,32 @@ module.exports = class AdminHelper {
 	}
 
 	/**
-	 * Deactivate Organization
-	 * @method
-	 * @name deactivateOrg
-	 * @param {Number} id - org id
-	 * @param {Object} loggedInUserId - logged in user id
-	 * @returns {JSON} - Deactivated user count
+	 * Deactivate an organization and all its associated users.
+	 *
+	 * This method:
+	 * 1. Updates the organization's status to inactive.
+	 * 2. Deactivates all users belonging to the organization.
+	 * 3. Ends all active sessions for the deactivated users.
+	 * 4. Broadcasts an event to end any upcoming sessions.
+	 *
+	 * @async
+	 * @function deactivateOrg
+	 * @param {string} organizationCode - The unique code identifying the organization.
+	 * @param {string} tenantCode - The tenant code to which the organization belongs.
+	 * @param {number} loggedInUserId - The ID of the user performing the deactivation.
+	 * @returns {Promise<Object>} Success or failure response object containing:
+	 *  - {number} result.deactivated_users - The number of users deactivated.
+	 *
+	 * @throws {Error} Will throw an error if the organization status update fails or if a database error occurs.
 	 */
-	static async deactivateOrg(id, loggedInUserId) {
+
+	static async deactivateOrg(organizationCode, tenantCode, loggedInUserId) {
 		try {
-			//deactivate org
-			let rowsAffected = await organizationQueries.update(
+			// 1. Deactivate org
+			const orgRowsAffected = await organizationQueries.update(
 				{
-					id,
+					code: organizationCode,
+					tenant_code: tenantCode,
 				},
 				{
 					status: common.INACTIVE_STATUS,
@@ -588,7 +601,7 @@ module.exports = class AdminHelper {
 				}
 			)
 
-			if (rowsAffected == 0) {
+			if (orgRowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -596,42 +609,43 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			//deactivate all users in org
-			const [modifiedCount] = await userQueries.updateUser(
+			// 2. Deactivate all users in the org using the same helper as deactivateUser
+			const [userRowsAffected, updatedUsers] = await userQueries.deactivateUserInOrg(
 				{
-					organization_id: id,
+					tenant_code: tenantCode,
 				},
+				organizationCode,
+				tenantCode,
 				{
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
-				}
+				},
+				true // so we can get the user IDs
 			)
 
-			const users = await userQueries.findAll(
-				{
-					organization_id: id,
-				},
-				{
-					attributes: ['id'],
-				}
-			)
+			// 3. Broadcast & remove sessions if users were found
+			if (userRowsAffected > 0) {
+				const userIds = updatedUsers.map((u) => u.id)
 
-			const userIds = _.map(users, 'id')
-			eventBroadcaster('deactivateUpcomingSession', {
-				requestBody: {
-					user_ids: userIds,
-				},
-			})
+				// End all active sessions for those users
+				await userHelper.removeAllUserSessions(userIds, tenantCode)
 
+				// Broadcast to end upcoming sessions
+				eventBroadcaster('deactivateUpcomingSession', {
+					requestBody: { user_ids: userIds },
+				})
+			}
+
+			// 4. Return success
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_DEACTIVATED',
 				result: {
-					deactivated_users: modifiedCount,
+					deactivated_users: userRowsAffected,
 				},
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in deactivateOrg:', error)
 			throw error
 		}
 	}
