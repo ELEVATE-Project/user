@@ -410,7 +410,17 @@ module.exports = class OrganizationsHelper {
 				if (tenantCode.trim()) filter.tenant_code = tenantCode
 			}
 
-			const organisationDetails = await organizationQueries.findOne(filter)
+			const organisationDetails = await organizationQueries.findOne(filter, { getRelatedOrgIdAndCode: true })
+
+			// if(organisationDetails.related_orgs && organisationDetails.related_orgs.length >0){
+			//     let orgFilters = {id:{[Op.in]:organisationDetails.related_orgs}}
+			// 	const relatedOrgsIdAndCode = await organizationQueries.findAll(orgFilters)
+			// 	organisationDetails.relatedOrgsIdAndCode = relatedOrgsIdAndCode.map(eachOrg => ({
+			// 		id: eachOrg.id,
+			// 		code: eachOrg.code
+			// 	  }));
+			// }
+
 			if (!organisationDetails) {
 				return responses.failureResponse({
 					message: 'ORGANIZATION_NOT_FOUND',

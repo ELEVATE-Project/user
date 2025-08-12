@@ -52,28 +52,34 @@ exports.create = async (data) => {
 }
 exports.findOne = async (filter, options = {}) => {
 	try {
+		let includes = [...(options.include || [])]
 		if (options?.isAdmin) {
-			options = {
-				...options,
-				include: [
-					{
-						model: OrganizationRegistrationCode,
-						as: 'organizationRegistrationCodes',
-						attributes: ['registration_code'],
-						where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
-						required: false,
-					},
-				],
-			}
+			includes.push({
+				model: OrganizationRegistrationCode,
+				as: 'organizationRegistrationCodes',
+				attributes: ['registration_code'],
+				where: { status: 'ACTIVE', deleted_at: null, tenant_code: filter.tenant_code },
+				required: false,
+			})
 		}
-		delete options.isAdmin
+
+		if (options?.getRelatedOrgIdAndCode) {
+			includes.push({
+				model: Organization,
+				as: 'relatedOrgsDetails',
+				attributes: ['id', 'code'],
+				required: false,
+				on: sequelize.literal(`"relatedOrgsDetails"."id" = ANY("Organization"."related_orgs")`),
+			})
+		}
+
 		let organization = await Organization.findOne({
 			where: filter,
 			...options,
+			include: includes,
 			nest: true,
 		})
 		if (!organization) return null
-
 		// Convert Sequelize instance to plain object
 		organization = organization.toJSON()
 
