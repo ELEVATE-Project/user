@@ -209,7 +209,7 @@ let enviromentVariables = {
 		message: 'Required password policy message',
 		optional: true,
 		default:
-			'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long',
+			'Password must have at least two uppercase letters, two numbers, three special characters, and be at least 11 characters long.',
 	},
 	DOWNLOAD_URL_EXPIRATION_DURATION: {
 		message: 'Required downloadable url expiration time',
