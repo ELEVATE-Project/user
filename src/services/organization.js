@@ -56,6 +56,8 @@ module.exports = class OrganizationsHelper {
 							domain: domain,
 							organization_id: createdOrganization.id,
 							created_by: loggedInUserId,
+							updated_by: loggedInUserId,
+							tenant_code: bodyData.tenant_code,
 						}
 						await orgDomainQueries.create(domainCreationData)
 					})
