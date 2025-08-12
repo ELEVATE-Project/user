@@ -758,7 +758,7 @@ module.exports = class AccountHelper {
 			if (user?.user_organizations?.length) {
 				user.user_organizations.forEach((org) => {
 					if (org.roles) {
-						org.roles = org.roles.filter((r) => r.role?.title?.toLowerCase() !== 'admin')
+						org.roles = org.roles.filter((r) => r.role?.title?.toLowerCase() !== common.ADMIN_ROLE)
 					}
 				})
 			}
