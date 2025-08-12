@@ -254,14 +254,17 @@ module.exports = class OrganizationsHelper {
 				let options = {
 					attributes: ['id', 'name', 'code', 'description'],
 				}
+				let filter = {
+					tenant_code: params?.query?.tenantCode,
+					status: common.ACTIVE_STATUS,
+				}
+				if (params.body && params.body.organizationCodes) {
+					filter.code = {
+						[Op.in]: params.body.organizationCodes.map((code) => code.toString().toLowerCase().trim()),
+					}
+				}
 
-				let organizations = await organizationQueries.findAll(
-					{
-						tenant_code: params?.query?.tenantCode,
-						status: common.ACTIVE_STATUS,
-					},
-					options
-				)
+				let organizations = await organizationQueries.findAll(filter, options)
 
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
