@@ -87,6 +87,12 @@ module.exports = (sequelize, DataTypes) => {
 			sourceKey: 'code',
 			as: 'organizationRegistrationCodes',
 		})
+
+		Organization.hasMany(models.Organization, {
+			as: 'relatedOrgsDetails',
+			foreignKey: 'id',
+			constraints: false,
+		})
 	}
 
 	return Organization
