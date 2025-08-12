@@ -161,14 +161,6 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			if (!req.body.id && !req.body.email) {
-				throw responses.failureResponse({
-					message: 'EMAIL_OR_ID_REQUIRED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const result = await orgAdminService.deactivateUser(req.body, req.decodedToken)
 
 			return result
