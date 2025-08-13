@@ -321,7 +321,7 @@ module.exports = class UserHelper {
 				if (!user) {
 					return responses.failureResponse({
 						message: 'USER_NOT_FOUND',
-						statusCode: httpStatusCode.unauthorized,
+						statusCode: httpStatusCode.not_found,
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
