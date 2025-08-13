@@ -258,9 +258,9 @@ module.exports = class OrganizationsHelper {
 					tenant_code: params?.query?.tenantCode,
 					status: common.ACTIVE_STATUS,
 				}
-				if (params.body && params.body.organizationCodes) {
+				if (params.body && params.body.organization_codes) {
 					filter.code = {
-						[Op.in]: params.body.organizationCodes.map((code) => code.toString().toLowerCase().trim()),
+						[Op.in]: params.body.organization_codes.map((code) => code.toString().toLowerCase().trim()),
 					}
 				}
 
