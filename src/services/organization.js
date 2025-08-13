@@ -418,6 +418,15 @@ module.exports = class OrganizationsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			//Get related orgs with code
+			if (organisationDetails.related_orgs && organisationDetails.related_orgs.length > 0) {
+				let orgFilters = { id: { [Op.in]: organisationDetails.related_orgs } }
+				const relatedOrgsIdAndCode = await organizationQueries.findAll(orgFilters)
+				organisationDetails.relatedOrgsIdAndCode = relatedOrgsIdAndCode.map((eachOrg) => ({
+					id: eachOrg.id,
+					code: eachOrg.code,
+				}))
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
