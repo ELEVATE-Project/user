@@ -161,14 +161,6 @@ module.exports = class OrgAdmin {
 				})
 			}
 
-			if (!req.body.id && !req.body.email) {
-				throw responses.failureResponse({
-					message: 'EMAIL_OR_ID_REQUIRED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const result = await orgAdminService.deactivateUser(req.body, req.decodedToken)
 
 			return result
@@ -193,9 +185,10 @@ module.exports = class OrgAdmin {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let entityTypeDetails = orgAdminService.inheritEntityType(
+			let entityTypeDetails = await orgAdminService.inheritEntityType(
 				req.body.entity_type_value,
 				req.body.target_entity_type_label,
+				req.decodedToken.organization_code,
 				req.decodedToken.organization_id,
 				req.decodedToken.id
 			)

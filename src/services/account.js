@@ -346,29 +346,17 @@ module.exports = class AccountHelper {
 
 			delete bodyData.role
 
-			const [defaultOrg, userOrgDetails, modelName] = await Promise.all([
-				organizationQueries.findOne(
-					{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-					{ attributes: ['id'] }
-				),
-				organizationQueries.findOne(
-					{ code: organizationCode, tenant_code: tenantDetail.code },
-					{ attributes: ['id'] }
-				),
-				userQueries.getModelName(),
-			])
+			const modelName = await userQueries.getModelName()
 
-			if (!defaultOrg || !userOrgDetails) {
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
+			if (!defaultOrganizationCode || !organizationCode) {
 				throw new Error('Default or user organization not found.')
 			}
-
-			const defaultOrgId = defaultOrg.id
-			userOrgId = userOrgDetails.id
-
 			const [validationData, userModel] = await Promise.all([
 				entityTypeQueries.findUserEntityTypesAndEntities({
 					status: 'ACTIVE',
-					organization_id: { [Op.in]: [userOrgId, defaultOrgId] },
+					organization_code: { [Op.in]: [defaultOrganizationCode, organizationCode] },
 					model_names: { [Op.contains]: [modelName] },
 					tenant_code: tenantDetail.code,
 				}),
@@ -572,10 +560,6 @@ module.exports = class AccountHelper {
 			}
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
-			const templateData = await notificationTemplateQueries.findOneEmailTemplate(
-				process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
-				user.organization_id
-			)
 
 			if (plaintextEmailId) {
 				notificationUtils.sendEmailNotification({
@@ -739,7 +723,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Verify password
-			const isPasswordCorrect = bcryptJs.compareSync(bodyData.password, user.password)
+			const isPasswordCorrect = await bcryptJs.compare(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
 				return responses.failureResponse({
 					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
@@ -765,8 +749,19 @@ module.exports = class AccountHelper {
 			const tenant_id =
 				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
  */
+
+			//Remove all 'admin' roles from user.user_organizations
+			if (user?.user_organizations?.length) {
+				user.user_organizations.forEach((org) => {
+					if (org.roles) {
+						org.roles = org.roles.filter((r) => r.role?.title?.toLowerCase() !== common.ADMIN_ROLE)
+					}
+				})
+			}
+
 			// Transform user data
 			user = UserTransformDTO.transform(user)
+
 			const tokenDetail = {
 				data: {
 					id: user.id,
@@ -793,24 +788,22 @@ module.exports = class AccountHelper {
 
 			delete user.password
 
-			// Fetch default organization and validation data
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
 			const modelName = await userQueries.getModelName()
+
+			const orgCodes = user.organizations?.map((org) => org.code).filter(Boolean) || []
+			orgCodes.push(process.env.DEFAULT_ORGANISATION_CODE)
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
+				organization_code: {
+					[Op.in]: orgCodes,
 				},
 				tenant_code: tenantDetail.code,
 				model_names: { [Op.contains]: [modelName] },
 			})
 
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations?.[0]?.id)
+
 			user = await utils.processDbResponse(user, prunedEntities)
 
 			if (user && user.image) {
@@ -925,6 +918,7 @@ module.exports = class AccountHelper {
 			const userSessionData = await userSessionsService.findUserSession(
 				{
 					id: decodedToken.data.session_id,
+					tenant_code: decodedToken.data.tenant_code,
 				},
 				{
 					attributes: ['refresh_token'],
@@ -1488,23 +1482,20 @@ module.exports = class AccountHelper {
 			delete user.otpInfo
 
 			// Fetch default organization and validation data
-			let defaultOrg = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE, tenant_code: tenantDetail.code },
-				{ attributes: ['id'] }
-			)
-			let defaultOrgId = defaultOrg.id
+			const userOrgCodes = user.organizations?.map((org) => org.code) || []
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
 			const modelName = await userQueries.getModelName()
 
 			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
 				status: 'ACTIVE',
-				organization_id: {
-					[Op.in]: [user.organization_id, defaultOrgId],
+				organization_code: {
+					[Op.in]: [...userOrgCodes, defaultOrganizationCode],
 				},
 				model_names: { [Op.contains]: [modelName] },
 				tenant_code: tenantDetail.code,
 			})
 
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organization_id)
+			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations[0].id)
 			user = await utils.processDbResponse(user, prunedEntities)
 
 			// Handle user image
@@ -1692,17 +1683,22 @@ module.exports = class AccountHelper {
 	}
 
 	/**
-	 * Accept term and condition
+	 * Accept terms and conditions for a user
 	 * @method
 	 * @name acceptTermsAndCondition
-	 * @param {string} userId - userId.
-	 * @returns {JSON} - returns accept the term success response
+	 * @param {string|number} userId - The ID of the user accepting terms and conditions
+	 * @param {string} tenantCode - The tenant code associated with the user
+	 * @returns {Promise<Object>} Promise that resolves to a JSON response object containing success/failure status
+	 * @throws {Error} Throws error if database operation fails
 	 */
-	static async acceptTermsAndCondition(userId, orgId) {
+	static async acceptTermsAndCondition(userId, tenantCode) {
 		try {
-			const user = await userQueries.findByPk(userId)
+			const [affectedRows] = await userQueries.updateUser(
+				{ id: userId, tenant_code: tenantCode },
+				{ has_accepted_terms_and_conditions: true }
+			)
 
-			if (!user) {
+			if (affectedRows === 0) {
 				return responses.failureResponse({
 					message: 'USER_DOESNOT_EXISTS',
 					statusCode: httpStatusCode.bad_request,
@@ -1710,11 +1706,11 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			await userQueries.updateUser(
-				{ id: userId, organization_id: orgId },
-				{ has_accepted_terms_and_conditions: true }
-			)
-			await utilsHelper.redisDel(common.redisUserPrefix + userId.toString())
+			// Clear Redis cache asynchronously (fire and forget)
+			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
+			utilsHelper.redisDel(redisUserKey).catch((err) => {
+				console.error('Redis delete error:', err)
+			})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1839,24 +1835,32 @@ module.exports = class AccountHelper {
 	}
 
 	/**
-	 * Account List
-	 * @method
-	 * @name list method post
-	 * @param {Object} req -request data.
-	 * @param {Array} userIds -contains userIds.
-	 * @returns {JSON} - all accounts data
-	 * User list.
-	 * @method
-	 * @name list method get
-	 * @param {Boolean} userType - mentor/mentee.
-	 * @param {Number} page - page No.
-	 * @param {Number} limit - page limit.
-	 * @param {String} search - search field.
-	 * @returns {JSON} - List of users
+	 * Search and list users based on filters such as role, email, search text, etc.
+	 *
+	 * Handles both POST-based user ID filtering and GET-based search queries.
+	 *
+	 * @async
+	 * @method search
+	 * @param {Object} params - Parameters for the search.
+	 * @param {Object} params.query - Query parameters from the request.
+	 * @param {string} params.query.tenant_code - Tenant identifier for scoping the search.
+	 * @param {string} params.query.type - Role type(s) to filter by (comma-separated, e.g., "mentor,mentee" or "all").
+	 * @param {string} [params.query.organization_id] - Organization ID for filtering users.
+	 * @param {string} [params.searchText] - Text input for searching users (can include emails or names).
+	 * @param {number} [params.pageNo] - Page number for pagination.
+	 * @param {number} [params.pageSize] - Number of users per page.
+	 * @param {Object} [params.body] - POST body parameters.
+	 * @param {Array<string>} [params.body.user_ids] - Specific user IDs to include in search.
+	 * @param {Array<string>} [params.body.excluded_user_ids] - User IDs to exclude from search.
+	 *
+	 * @returns {Promise<Object>} JSON response with user list and count.
 	 */
+
 	static async search(params) {
 		try {
-			let roleQuery = {}
+			let roleQuery = {
+				tenant_code: params.query.tenant_code,
+			}
 			if (params.query.type.toLowerCase() === common.TYPE_ALL) {
 				roleQuery.status = common.ACTIVE_STATUS
 			} else {
@@ -1881,29 +1885,18 @@ module.exports = class AccountHelper {
 				}
 			})
 
-			let users = await userQueries.listUsersFromView(
-				roleIds ? roleIds : [],
-				params.query.organization_id ? params.query.organization_id : '',
-				params.pageNo,
-				params.pageSize,
-				emailIds.length == 0 ? params.searchText : false,
-				params.body.user_ids ? params.body.user_ids : false,
-				emailIds.length > 0 ? emailIds : false,
-				params.body.excluded_user_ids ? params.body.excluded_user_ids : false
-			)
+			let users = await userQueries.searchUsersWithOrganization({
+				roleIds,
+				organization_id: params.query.organization_id,
+				page: params.pageNo,
+				limit: params.pageSize,
+				search: emailIds.length == 0 ? params.searchText : false,
+				userIds: params.body?.user_ids || false,
+				emailIds: emailIds.length > 0 ? emailIds : false,
+				excluded_user_ids: params.body?.excluded_user_ids || false,
+				tenantCode: params.query.tenant_code,
+			})
 
-			/* Required to resolve all promises first before preparing response object else sometime 
-					it will push unresolved promise object if you put this logic in below for loop */
-
-			await Promise.all(
-				users.data.map(async (user) => {
-					/* Assigned image url from the stored location */
-					if (user.image) {
-						user.image = await utilsHelper.getDownloadableUrl(user.image)
-					}
-					return user
-				})
-			)
 			if (users.count == 0) {
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -1914,6 +1907,22 @@ module.exports = class AccountHelper {
 					},
 				})
 			}
+
+			/* Required to resolve all promises first before preparing response object else sometime 
+			it will push unresolved promise object if you put this logic in below for loop */
+			// Decrypt email and add image URL
+			await Promise.all(
+				users.data.map(async (user) => {
+					/* Assigned image url from the stored location */
+					if (user.image) {
+						user.image = await utilsHelper.getDownloadableUrl(user.image)
+					}
+					if (user.email) {
+						user.email = emailEncryption.decrypt(user.email)
+					}
+					return user
+				})
+			)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,

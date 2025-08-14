@@ -184,7 +184,7 @@ module.exports = class Account {
 		try {
 			const result = await accountService.acceptTermsAndCondition(
 				req.decodedToken.id,
-				req.decodedToken.organization_id
+				req.decodedToken.tenant_code
 			)
 			return result
 		} catch (error) {

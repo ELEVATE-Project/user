@@ -41,7 +41,7 @@ module.exports = class UserSessionsHelper {
 			if (accessToken !== '') {
 				userSessionDetails.token = accessToken
 			}
-			if (accessToken !== '') {
+			if (refreshToken !== '') {
 				userSessionDetails.refresh_token = refreshToken
 			}
 

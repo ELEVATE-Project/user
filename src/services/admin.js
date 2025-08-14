@@ -6,27 +6,40 @@
  */
 
 // Dependencies
+// Third-party libraries
+const _ = require('lodash')
+const { Op } = require('sequelize')
+const bcryptJs = require('bcryptjs')
 
+// Constants and generics
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
-const _ = require('lodash')
-const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user-role')
+
+// Database queries
 const organizationQueries = require('@database/queries/organization')
+const roleQueries = require('@database/queries/user-role')
+const tenantQueries = require('@database/queries/tenants')
+const UserCredentialQueries = require('@database/queries/userCredential')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
-const { eventBroadcaster } = require('@helpers/eventBroadcaster')
-const { Op } = require('sequelize')
-const Sequelize = require('@database/models/index').sequelize
-const UserCredentialQueries = require('@database/queries/userCredential')
+const userQueries = require('@database/queries/users')
+const { sequelize } = require('@database/models/index')
+
+// Services
 const adminService = require('../generics/materializedViews')
-const emailEncryption = require('@utils/emailEncryption')
-const responses = require('@helpers/responses')
 const userSessionsService = require('@services/user-sessions')
-const userHelper = require('@helpers/userHelper')
-const UserTransformDTO = require('@dtos/userDTO')
+
+// Helpers and utilities
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const emailEncryption = require('@utils/emailEncryption')
+const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+const { generateUniqueUsername } = require('@utils/usernameGenerator')
+const responses = require('@helpers/responses')
+const userHelper = require('@helpers/userHelper')
+
+// DTOs
+const UserTransformDTO = require('@dtos/userDTO')
 
 module.exports = class AdminHelper {
 	/**
@@ -78,173 +91,286 @@ module.exports = class AdminHelper {
 	}
 
 	/**
-	 * create admin users
+	 * Creates a new admin user.
+	 *
+	 * @async
 	 * @method
 	 * @name create
-	 * @param {Object} bodyData - user create information
-	 * @param {string} bodyData.email - email.
-	 * @param {string} bodyData.password - email.
-	 * @returns {JSON} - returns created user information
+	 * @param {Object} bodyData - Data for creating the user.
+	 * @param {string} bodyData.email - Email of the user.
+	 * @param {string} bodyData.password - Password for the user account.
+	 * @param {string} [bodyData.username] - Optional username (generated if not provided).
+	 * @param {string} [bodyData.name] - Optional name (used for username generation if username not provided).
+	 * @returns {Promise<Object>} - Response containing the created user data or error.
+	 *
+	 * @throws {Error} If default tenant or organization is not found or if creation fails.
 	 */
+
 	static async create(bodyData) {
+		let transaction
+
 		try {
+			transaction = await sequelize.transaction()
+
 			const plaintextEmailId = bodyData.email.toLowerCase()
 			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const user = await UserCredentialQueries.findOne({ email: encryptedEmailId })
 
-			if (user) {
-				return responses.failureResponse({
-					message: 'ADMIN_USER_ALREADY_EXISTS',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+			// Get default tenant details
+			const tenantDetail = await tenantQueries.findOne({
+				code: process.env.DEFAULT_TENANT_CODE,
+				status: common.ACTIVE_STATUS,
+			})
+			if (!tenantDetail) throw new Error('DEFAULT_TENANT_NOT_FOUND')
 
-			let role = await roleQueries.findOne({ title: common.ADMIN_ROLE })
-			if (!role) {
-				return responses.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+			const existingUser = await userQueries.findOne(
+				{
+					email: encryptedEmailId,
+					password: { [Op.ne]: null },
+					tenant_code: tenantDetail.code,
+				},
+				{ attributes: ['id'], transaction }
+			)
+			if (existingUser) throw new Error('ADMIN_USER_ALREADY_EXISTS')
 
-			bodyData.roles = [role.id]
-			bodyData.organization_id = process.env.DEFAULT_ORG_ID
-			bodyData.tenant_code = process.env.DEFAULT_TENANT_CODE
+			const role = await roleQueries.findOne(
+				{
+					title: common.ADMIN_ROLE,
+					tenant_code: tenantDetail.code,
+				},
+				{ transaction }
+			)
+			if (!role) throw new Error('ADMIN_ROLE_NOT_FOUND')
 
-			// if (!bodyData.organization_id) {
-			// 	let organization = await organizationQueries.findOne(
-			// 		{ code: process.env.DEFAULT_ORGANISATION_CODE },
-			// 		{ attributes: ['id'] }
-			// 	)
-			// 	bodyData.organization_id = organization.id
-			// }
-			bodyData.password = utils.hashPassword(bodyData.password)
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
+			// Prepare user data
 			bodyData.email = encryptedEmailId
-			const createdUser = await userQueries.create(bodyData)
-			const userCredentialsBody = {
-				email: bodyData.email,
-				password: bodyData.password,
-				organization_id: process.env.DEFAULT_ORG_ID,
-				user_id: createdUser.id,
+			bodyData.password = utils.hashPassword(bodyData.password)
+			bodyData.tenant_code = tenantDetail.code
+			bodyData.roles = [role.id]
+
+			// Generate username if not provided
+			if (!bodyData.username) {
+				bodyData.username = await generateUniqueUsername(bodyData.name)
 			}
-			const userData = await UserCredentialQueries.create(userCredentialsBody)
-			if (!userData?.id) {
-				return responses.failureResponse({
-					message: userData,
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
+
+			// Create user
+			const createdUser = await userQueries.create(bodyData, { transaction })
+
+			// Create user-organization relationship
+			await userOrganizationQueries.create(
+				{
+					user_id: createdUser.id,
+					organization_code: defaultOrganizationCode,
+					tenant_code: tenantDetail.code,
+				},
+				{ transaction }
+			)
+
+			// Create user-organization-role relationship
+			await userOrganizationRoleQueries.create(
+				{
+					tenant_code: tenantDetail.code,
+					user_id: createdUser.id,
+					organization_code: defaultOrganizationCode,
+					role_id: role.id,
+				},
+				{ transaction }
+			)
+
+			await transaction.commit()
+
+			const user = await userQueries.findUserWithOrganization(
+				{ id: createdUser.id, tenant_code: tenantDetail.code },
+				{ attributes: { exclude: ['password'] } }
+			)
+
+			const processedUser = { ...user, email: plaintextEmailId }
+
+			const eventBody = UserTransformDTO.eventBodyDTO({
+				entity: 'user',
+				eventType: 'create',
+				entityId: processedUser.id,
+				args: {
+					...processedUser,
+					created_by: processedUser.id,
+					deleted: false,
+					created_at: processedUser?.created_at || new Date(),
+					updated_at: processedUser?.updated_at || new Date(),
+				},
+			})
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
-				message: 'USER_CREATED_SUCCESSFULLY',
+				message: 'ADMIN_USER_CREATED_SUCCESSFULLY',
+				result: { user: processedUser },
 			})
 		} catch (error) {
-			console.log(error)
-			throw error
+			if (transaction && !transaction.finished) {
+				try {
+					await transaction.rollback()
+				} catch (rollbackErr) {
+					console.error('Rollback failed:', rollbackErr)
+				}
+			}
+
+			switch (error.message) {
+				case 'DEFAULT_TENANT_NOT_FOUND':
+				case 'ADMIN_USER_ALREADY_EXISTS':
+				case 'ADMIN_ROLE_NOT_FOUND':
+					return responses.failureResponse({
+						message: error.message,
+						statusCode: httpStatusCode.not_acceptable,
+						responseCode: 'CLIENT_ERROR',
+					})
+				default:
+					console.error('Unexpected error in admin.create:', error)
+					throw error
+			}
 		}
 	}
 
 	/**
-	 * login admin user
-	 * @method
-	 * @name login
-	 * @param {Object} bodyData - user login data.
-	 * @param {string} bodyData.email - email.
-	 * @param {string} bodyData.password - email.
-	 * @param {string} deviceInformation - device information.
-	 * @returns {JSON} - returns login response
+	 * Handles the login process for admin users.
+	 *
+	 * This method validates user credentials and enforces additional checks
+	 * (such as admin role verification and active session limits) before
+	 * generating access/refresh tokens and creating a user session.
+	 *
+	 * Steps performed:
+	 *  1. Normalize and validate the identifier (email, phone, or username).
+	 *  2. Construct the user lookup query using the DEFAULT_TENANT_CODE.
+	 *  3. Retrieve the user with their associated organizations and roles.
+	 *  4. Verify the user's password using bcrypt.
+	 *  5. Ensure the user has the required admin role (`common.ADMIN_ROLE`).
+	 *  6. Enforce allowed active session limits (if configured).
+	 *  7. Create a new user session record.
+	 *  8. Enrich token payload with user and organization details.
+	 *  9. Generate access and refresh tokens.
+	 * 10. Remove sensitive data and process user image URLs.
+	 * 11. Update session details in Redis for active tracking.
+	 * 12. Return tokens and user details in the success response.
+	 *
+	 * @async
+	 * @param {Object} bodyData - Login request payload.
+	 * @param {string} [bodyData.identifier] - The user's email, phone, or username.
+	 * @param {string} [bodyData.email] - The user's email (alternative to `identifier`).
+	 * @param {string} [bodyData.phone_code] - Phone country code (required if using phone login).
+	 * @param {string} bodyData.password - The user's password.
+	 * @param {Object} deviceInformation - Metadata about the device used for login.
+	 *
+	 * @returns {Promise<Object>} A success response containing:
+	 *  - `access_token` {string} - JWT for API access.
+	 *  - `refresh_token` {string} - JWT for refreshing sessions.
+	 *  - `user` {Object} - Sanitized user object with organization details.
+	 *
+	 * @throws {Error} Rethrows unexpected errors for global error handling.
+	 *
+	 * @example
+	 * const loginResponse = await AuthService.login(
+	 *   { identifier: 'admin@example.com', password: 'StrongPass123!' },
+	 *   { ip: '192.168.1.1', device: 'Chrome on Windows' }
+	 * );
+	 * console.log(loginResponse.result.access_token);
 	 */
+
 	static async login(bodyData, deviceInformation) {
 		try {
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const userCredentials = await UserCredentialQueries.findOne({ email: encryptedEmailId })
-			if (!userCredentials) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
+			// helper for consistent failure responses
+			const failure = (message, status = httpStatusCode.bad_request) =>
+				responses.failureResponse({
+					message,
+					statusCode: status,
 					responseCode: 'CLIENT_ERROR',
 				})
+
+			// 1) Identifier handling: accept `identifier` or fallback to `email`
+			const rawIdentifier = (bodyData.identifier || bodyData.email || '').toString().trim()
+			const identifier = rawIdentifier.toLowerCase()
+			if (!identifier) return failure('IDENTIFIER_REQUIRED', httpStatusCode.bad_request)
+
+			// identifier type helpers
+			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
+			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str)
+			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+
+			// 2) Build query (skip domain checks; use DEFAULT_TENANT_CODE)
+			const query = {
+				[Op.or]: [],
+				password: { [Op.ne]: null },
+				status: common.ACTIVE_STATUS,
+				tenant_code: process.env.DEFAULT_TENANT_CODE,
 			}
 
-			let user = await userQueries.findOne({
-				id: userCredentials.user_id,
-				// organization_id: userCredentials.organization_id,
-			})
-			if (!user.id) {
-				return responses.failureResponse({
-					message: 'USER_DOESNOT_EXISTS',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
+			if (isEmail(identifier)) {
+				query[Op.or].push({ email: emailEncryption.encrypt(identifier) })
+			} else if (isPhone(identifier)) {
+				// expects bodyData.phone_code when phone login is used
+				query[Op.or].push({
+					phone: emailEncryption.encrypt(identifier),
+					phone_code: bodyData.phone_code,
 				})
+			} else {
+				query[Op.or].push({ username: identifier })
 			}
-			const isPasswordCorrect = utils.comparePassword(bodyData.password, user.password)
+
+			// 3) Find user (reuse the helper that returns org associations like user/login)
+			const userInstance = await userQueries.findUserWithOrganization(query, {}, true)
+			let user = userInstance ? userInstance.toJSON() : null
+
+			if (!user) return failure('IDENTIFIER_OR_PASSWORD_INVALID', httpStatusCode.bad_request)
+
+			//Password verification (bcrypt async compare)
+			const isPasswordCorrect = await bcryptJs.compare(bodyData.password, user.password)
 			if (!isPasswordCorrect) {
-				return responses.failureResponse({
-					message: 'PASSWORD_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				return failure('IDENTIFIER_OR_PASSWORD_INVALID', httpStatusCode.bad_request)
 			}
 
-			let roles = await roleQueries.findAll(
-				{ id: user.roles },
-				{
-					attributes: {
-						exclude: ['created_at', 'updated_at', 'deleted_at'],
-					},
+			// Check for admin role
+			const hasAdminRole = user.user_organizations?.some((org) =>
+				org.roles?.some((r) => r.role?.title?.toLowerCase() === common.ADMIN_ROLE)
+			)
+
+			if (!hasAdminRole) {
+				return failure('IDENTIFIER_OR_PASSWORD_INVALID', httpStatusCode.bad_request)
+			}
+			// 4) Active session limit enforcement (if configured)
+			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
+				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
+				if (activeSessionCount >= Number(process.env.ALLOWED_ACTIVE_SESSIONS)) {
+					return failure('ACTIVE_SESSION_LIMIT_EXCEEDED', httpStatusCode.not_acceptable)
 				}
-			)
-			if (!roles) {
-				return responses.failureResponse({
-					message: 'ROLE_NOT_FOUND',
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-				})
 			}
 
-			// create user session entry and add session_id to token data
+			// 6) Create user session
 			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInformation
+				user.id,
+				'', // refresh token placeholder
+				'', // access token placeholder
+				deviceInformation,
+				user.tenant_code
 			)
 
-			/**
-			 * Based on user organisation id get user org parent Id value
-			 * If parent org id is present then set it to tenant of user
-			 * if not then set user organisation id to tenant
-			 */
+			// 7) Token payload enrichment - follow same shape as user/login
+			// Ensure organizations exist; if not, create a default org object from env
 
-			// let tenantDetails = await organizationQueries.findOne(
-			// 	{ id: user.organization_id },
-			// 	{ attributes: ['parent_id'] }
-			// )
-
-			// const tenant_id =
-			// 	tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
+			user = UserTransformDTO.transform(user)
 
 			const tokenDetail = {
 				data: {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organizations: [
-						{
-							id: process.env.DEFAULT_ORG_ID,
-							roles: roles,
-						},
-					],
-					tenant_code: process.env.DEFAULT_TENANT_CODE,
+					organization_ids: user.organizations.map((o) => String(o.id)),
+					organization_codes: user.organizations.map((o) => String(o.code)),
+					organizations: user.organizations,
+					tenant_code: user.tenant_code,
 				},
 			}
 
-			user.user_roles = roles
-
+			// 8) Generate tokens (same helper as user/login)
 			const accessToken = utils.generateToken(
 				tokenDetail,
 				process.env.ACCESS_TOKEN_SECRET,
@@ -256,19 +382,22 @@ module.exports = class AdminHelper {
 				common.refreshTokenExpiry
 			)
 
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
+			// 9) Remove sensitive fields and post-process user image
+			delete user.password
+			if (user && user.image) {
+				user.image = await utils.getDownloadableUrl(user.image)
+			}
+
+			// 10) Return original identifier and result
+			user.identifier = identifier
+			const result = { access_token: accessToken, refresh_token: refreshToken, user }
+
+			// 11) Update session and set Redis data (same flow as user/login)
 			await userSessionsService.updateUserSessionAndsetRedisData(
 				userSessionDetails.result.id,
 				accessToken,
 				refreshToken
 			)
-
-			delete user.password
-			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -484,19 +613,32 @@ module.exports = class AdminHelper {
 	}
 
 	/**
-	 * Deactivate Organization
-	 * @method
-	 * @name deactivateOrg
-	 * @param {Number} id - org id
-	 * @param {Object} loggedInUserId - logged in user id
-	 * @returns {JSON} - Deactivated user count
+	 * Deactivate an organization and all its associated users.
+	 *
+	 * This method:
+	 * 1. Updates the organization's status to inactive.
+	 * 2. Deactivates all users belonging to the organization.
+	 * 3. Ends all active sessions for the deactivated users.
+	 * 4. Broadcasts an event to end any upcoming sessions.
+	 *
+	 * @async
+	 * @function deactivateOrg
+	 * @param {string} organizationCode - The unique code identifying the organization.
+	 * @param {string} tenantCode - The tenant code to which the organization belongs.
+	 * @param {number} loggedInUserId - The ID of the user performing the deactivation.
+	 * @returns {Promise<Object>} Success or failure response object containing:
+	 *  - {number} result.deactivated_users - The number of users deactivated.
+	 *
+	 * @throws {Error} Will throw an error if the organization status update fails or if a database error occurs.
 	 */
-	static async deactivateOrg(id, loggedInUserId) {
+
+	static async deactivateOrg(organizationCode, tenantCode, loggedInUserId) {
 		try {
-			//deactivate org
-			let rowsAffected = await organizationQueries.update(
+			// 1. Deactivate org
+			const orgRowsAffected = await organizationQueries.update(
 				{
-					id,
+					code: organizationCode,
+					tenant_code: tenantCode,
 				},
 				{
 					status: common.INACTIVE_STATUS,
@@ -504,7 +646,7 @@ module.exports = class AdminHelper {
 				}
 			)
 
-			if (rowsAffected == 0) {
+			if (orgRowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -512,42 +654,43 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			//deactivate all users in org
-			const [modifiedCount] = await userQueries.updateUser(
+			// 2. Deactivate all users in the org using the same helper as deactivateUser
+			const [userRowsAffected, updatedUsers] = await userQueries.deactivateUserInOrg(
 				{
-					organization_id: id,
+					tenant_code: tenantCode,
 				},
+				organizationCode,
+				tenantCode,
 				{
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
-				}
+				},
+				true // so we can get the user IDs
 			)
 
-			const users = await userQueries.findAll(
-				{
-					organization_id: id,
-				},
-				{
-					attributes: ['id'],
-				}
-			)
+			// 3. Broadcast & remove sessions if users were found
+			if (userRowsAffected > 0) {
+				const userIds = updatedUsers.map((u) => u.id)
 
-			const userIds = _.map(users, 'id')
-			eventBroadcaster('deactivateUpcomingSession', {
-				requestBody: {
-					user_ids: userIds,
-				},
-			})
+				// End all active sessions for those users
+				await userHelper.removeAllUserSessions(userIds, tenantCode)
 
+				// Broadcast to end upcoming sessions
+				eventBroadcaster('deactivateUpcomingSession', {
+					requestBody: { user_ids: userIds },
+				})
+			}
+
+			// 4. Return success
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_DEACTIVATED',
 				result: {
-					deactivated_users: modifiedCount,
+					deactivated_users: userRowsAffected,
 				},
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in deactivateOrg:', error)
 			throw error
 		}
 	}

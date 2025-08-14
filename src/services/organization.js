@@ -56,6 +56,8 @@ module.exports = class OrganizationsHelper {
 							domain: domain,
 							organization_id: createdOrganization.id,
 							created_by: loggedInUserId,
+							updated_by: loggedInUserId,
+							tenant_code: bodyData.tenant_code,
 						}
 						await orgDomainQueries.create(domainCreationData)
 					})
@@ -399,7 +401,7 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} 									- Organization creation details.
 	 */
 
-	static async read(organisationId, organisationCode) {
+	static async read(organisationId, organisationCode, tenantCode = null) {
 		try {
 			let filter = {}
 			// Build filter based on incoming query
@@ -407,6 +409,7 @@ module.exports = class OrganizationsHelper {
 				filter.id = parseInt(organisationId)
 			} else {
 				filter.code = organisationCode
+				if (tenantCode.trim()) filter.tenant_code = tenantCode
 			}
 
 			const organisationDetails = await organizationQueries.findOne(filter)

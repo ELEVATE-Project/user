@@ -22,10 +22,12 @@ const userOrganizationRoleQueries = require('@database/queries/userOrganizationR
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { Queue } = require('bullmq')
 const { Op } = require('sequelize')
-const UserCredentialQueries = require('@database/queries/userCredential')
+
+const tenantDomainQueries = require('@database/queries/tenantDomain')
 const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const notificationUtils = require('@utils/notification')
+const userHelper = require('@helpers/userHelper')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -190,12 +192,15 @@ module.exports = class OrgAdminHelper {
 	 */
 	static async getBulkInvitesFilesList(req) {
 		try {
-			let listFileUpload = await fileUploadQueries.listUploads(
-				req.pageNo,
-				req.pageSize,
-				req.query.status ? req.query.status : null,
-				req.decodedToken.organization_id
-			)
+			const listFileUpload = await fileUploadQueries.listUploads({
+				page: req.pageNo,
+				limit: req.pageSize,
+				filter: {
+					...(req.query.status && { status: req.query.status }),
+					organization_id: req.decodedToken.organization_id,
+					tenant_code: req.decodedToken.tenant_code,
+				},
+			})
 
 			if (listFileUpload.count > 0) {
 				await Promise.all(
@@ -366,7 +371,6 @@ module.exports = class OrgAdminHelper {
 				tenant_code: tokenInformation.tenant_code,
 			})
 
-			console.log(isApproved, 'isApproved')
 			if (isApproved) {
 				await updateRoleForApprovedRequest(
 					requestDetails,
@@ -376,9 +380,13 @@ module.exports = class OrgAdminHelper {
 				)
 			}
 
-			console.log(shouldSendEmail, 'shouldSendEmail')
 			if (shouldSendEmail) {
-				await sendRoleRequestStatusEmail(user, bodyData.status, tokenInformation.organization_code)
+				await sendRoleRequestStatusEmail(
+					user,
+					bodyData.status,
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code
+				)
 			}
 
 			return responses.successResponse({
@@ -393,46 +401,85 @@ module.exports = class OrgAdminHelper {
 	}
 
 	/**
-	 * Deactivate User
-	 * @method
-	 * @name deactivateUser
-	 * @param {Number} id - user id
-	 * @param {Object} loggedInUserId - logged in user id
-	 * @returns {JSON} - Deactivated user data
+	 * Deactivates users by their IDs or email addresses within a specific organization and tenant.
+	 *
+	 * This function performs the following:
+	 * - Deactivates users by matching user IDs (if provided) under the same tenant and organization.
+	 * - Deactivates users by matching emails (if provided) under the same tenant and organization.
+	 * - Broadcasts an event to handle cleanup of upcoming sessions for deactivated users.
+	 * - Removes all active sessions for the affected users.
+	 *
+	 * Note:
+	 * - This function currently does **not** support users associated with multiple organizations.
+	 *   It only considers users under the organization specified in `tokenInformation.organization_code`.
+	 *
+	 * @async
+	 * @param {Object} bodyData - Request payload containing user identifiers.
+	 * @param {number[]} [bodyData.ids] - Optional array of user IDs to deactivate.
+	 * @param {string[]} [bodyData.emails] - Optional array of user emails to deactivate.
+	 *
+	 * @param {Object} tokenInformation - Authenticated user's context information.
+	 * @param {string} tokenInformation.organization_code - The organization code for scoping the operation.
+	 * @param {string} tokenInformation.tenant_code - The tenant code to match users within the same tenant.
+	 * @param {number} tokenInformation.id - The ID of the user initiating the deactivation (used as `updated_by`).
+	 *
+	 * @returns {Promise<Object>} Response object with success or failure details.
+	 * - If successful, includes the user IDs that were deactivated.
+	 * - If no users were updated, returns a failure response with appropriate status.
+	 *
+	 * @throws {Error} Throws error on unexpected failure during the deactivation process.
 	 */
+
 	static async deactivateUser(bodyData, tokenInformation) {
 		try {
-			let filterQuery = {
-				organization_id: tokenInformation.organization_id,
-			}
+			const { ids = [], emails = [] } = bodyData
 
-			for (let item in bodyData) {
-				filterQuery[item] = {
-					[Op.in]: bodyData[item],
-				}
-			}
-			let userIds = []
+			let totalRowsAffected = 0
+			const updatedByIds = []
+			const updatedByEmails = []
 
-			if (bodyData.email) {
-				const encryptedEmailIds = bodyData.email.map((email) => emailEncryption.encrypt(email.toLowerCase()))
-				const userCredentials = await UserCredentialQueries.findAll(
-					{ email: { [Op.in]: encryptedEmailIds } },
+			// Deactivate by IDs
+			if (ids.length) {
+				const [rowsAffected, updatedUsers] = await userQueries.deactivateUserInOrg(
 					{
-						attributes: ['user_id'],
-					}
+						id: { [Op.in]: ids },
+						tenant_code: tokenInformation.tenant_code,
+					},
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code,
+					{
+						status: common.INACTIVE_STATUS,
+						updated_by: tokenInformation.id,
+					},
+					true // pass flag to return matched users (optional)
 				)
-				userIds = _.map(userCredentials, 'user_id')
-				delete filterQuery.email
-				filterQuery.id = userIds
-			} else {
-				userIds = bodyData.id
+				console.log(rowsAffected, updatedUsers)
+				totalRowsAffected += rowsAffected
+				updatedByIds.push(...updatedUsers.map((user) => user.id))
 			}
-			let [rowsAffected] = await userQueries.updateUser(filterQuery, {
-				status: common.INACTIVE_STATUS,
-				updated_by: tokenInformation.id,
-			})
 
-			if (rowsAffected == 0) {
+			// Deactivate by Emails
+			if (emails.length) {
+				const [rowsAffected, updatedUsers] = await userQueries.deactivateUserInOrg(
+					{
+						email: { [Op.in]: emails.map((email) => emailEncryption.encrypt(email.toLowerCase())) },
+						tenant_code: tokenInformation.tenant_code,
+					},
+					tokenInformation.organization_code,
+					tokenInformation.tenant_code,
+					{
+						status: common.INACTIVE_STATUS,
+						updated_by: tokenInformation.id,
+					},
+					true // return updated users
+				)
+
+				totalRowsAffected += rowsAffected
+				updatedByEmails.push(...updatedUsers.map((user) => user.id))
+			}
+
+			// If nothing was deactivated
+			if (totalRowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -440,58 +487,63 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			//check and deactivate upcoming sessions
+			// Broadcast event
+			const allUserIds = [...new Set([...updatedByIds, ...updatedByEmails])]
+
+			await userHelper.removeAllUserSessions(allUserIds, tokenInformation.tenant_code)
+
 			eventBroadcaster('deactivateUpcomingSession', {
 				requestBody: {
-					user_ids: userIds,
+					user_ids: allUserIds,
 				},
 			})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'USER_DEACTIVATED',
+				result: {
+					updated_by_ids: updatedByIds,
+					updated_by_emails: updatedByEmails,
+				},
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in deactivateUser:', error)
 			throw error
 		}
 	}
 
 	/**
-	 * @description 					- Inherit new entity type from an existing default org's entityType.
+	 * @description                         - Inherit new entity type from an existing default org's entityType.
 	 * @method
-	 * @name 							- inheritEntityType
-	 * @param {String} entityValue 		- Entity type value
-	 * @param {String} entityLabel 		- Entity type label
-	 * @param {Integer} userOrgId 		- User org id
-	 * @param {Integer} userId 			- Userid
-	 * @returns {Promise<Object>} 		- A Promise that resolves to a response object.
+	 * @name                                - inheritEntityType
+	 * @param {String} entityValue          - Entity type value
+	 * @param {String} entityLabel          - Entity type label
+	 * @param {String} userOrganizationCode - User's organization code
+	 * @param {Integer} userOrganizationId  - User's organization ID
+	 * @param {Integer} userId              - User ID
+	 * @returns {Promise<Object>}           - A Promise that resolves to a response object.
 	 */
-
-	static async inheritEntityType(entityValue, entityLabel, userOrgId, userId) {
+	static async inheritEntityType(entityValue, entityLabel, userOrganizationCode, userOrganizationId, userId) {
 		try {
-			let defaultOrgId = await organizationQueries.findOne(
-				{ code: process.env.DEFAULT_ORGANISATION_CODE },
-				{ attributes: ['id'] }
-			)
-			defaultOrgId = defaultOrgId.id
-			if (defaultOrgId === userOrgId) {
+			// Prevent inheriting from the default org
+			if (process.env.DEFAULT_ORGANISATION_CODE === userOrganizationCode) {
 				return responses.failureResponse({
 					message: 'USER_IS_FROM_DEFAULT_ORG',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// Fetch entity type data using defaultOrgId and entityValue
+
+			// Fetch entity type data from default org
 			const filter = {
 				value: entityValue,
-				organization_id: defaultOrgId,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE,
 				allow_filtering: true,
 			}
 
-			let entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
+			const entityTypeDetails = await entityTypeQueries.findOneEntityType(filter)
 
-			// If no matching data found return failure response
+			// If no matching data found, return failure
 			if (!entityTypeDetails) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
@@ -500,23 +552,28 @@ module.exports = class OrgAdminHelper {
 				})
 			}
 
-			// Build data for inheriting entityType
-			entityTypeDetails.parent_id = entityTypeDetails.organization_id
-			entityTypeDetails.label = entityLabel
-			entityTypeDetails.organization_id = userOrgId
-			entityTypeDetails.created_by = userId
-			entityTypeDetails.updated_by = userId
-			delete entityTypeDetails.id
+			// Prepare new entity type object (clone and modify)
+			const newEntityType = {
+				...entityTypeDetails,
+				parent_id: entityTypeDetails.id,
+				label: entityLabel,
+				organization_code: userOrganizationCode,
+				organization_id: userOrganizationId,
+				created_by: userId,
+				updated_by: userId,
+			}
+			delete newEntityType.id
 
 			// Create new inherited entity type
-			let inheritedEntityType = await entityTypeQueries.createEntityType(entityTypeDetails)
+			const inheritedEntityType = await entityTypeQueries.createEntityType(newEntityType)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
 				result: inheritedEntityType,
 			})
 		} catch (error) {
-			console.log(error)
+			console.error('Error in inheritEntityType:', error)
 			throw error
 		}
 	}
@@ -607,23 +664,28 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 	})
 }
 
-async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
+async function sendRoleRequestStatusEmail(userDetails, status, organizationCode, tenantCode) {
 	try {
 		const plaintextEmailId = emailEncryption.decrypt(userDetails.email)
 
 		if (status === common.ACCEPTED_STATUS) {
 			if (plaintextEmailId) {
+				const tenantDomain = await tenantDomainQueries.findOne(
+					{ tenant_code: tenantCode },
+					{ attributes: ['domain'] }
+				)
+
 				notificationUtils.sendEmailNotification({
 					emailId: plaintextEmailId,
 					templateCode: process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
-						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
-						portalURL: process.env.PORTAL_URL,
+						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
+						portalURL: tenantDomain,
 					},
 					tenantCode: userDetails.tenant_code,
-					organization_code: orgCode || null,
+					organization_code: organizationCode || null,
 				})
 			}
 		} else if (status === common.REJECTED_STATUS) {
@@ -640,10 +702,10 @@ async function sendRoleRequestStatusEmail(userDetails, status, orgCode) {
 				})
 			}
 		}
-		console.log({ name: userDetails.name, appName: process.env.APP_NAME, orgName: organization.name }, 'payload')
 
 		return { success: true }
 	} catch (error) {
+		console.error(error)
 		return error
 	}
 }
