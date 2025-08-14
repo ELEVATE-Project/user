@@ -142,4 +142,18 @@ module.exports = {
 			.matches(/^[a-zA-Z0-9_]+$/)
 			.withMessage('Each registration code must be alphanumeric with underscores only')
 	},
+	list: (req) => {
+		req.checkBody('organization_codes')
+			.optional({ checkFalsy: true })
+			.custom((value) => {
+				if (!Array.isArray(value)) {
+					throw new Error('organization_codes must be an array')
+				}
+				return true
+			})
+		req.checkBody('organization_codes.*')
+			.optional({ checkFalsy: true })
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage('Each organization code must be alphanumeric with underscores only')
+	},
 }
