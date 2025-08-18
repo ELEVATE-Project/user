@@ -4,6 +4,7 @@ language: en-US
 tone_instructions: ''
 early_access: false
 enable_free_tier: true
+
 reviews:
   profile: chill
   request_changes_workflow: false
@@ -29,48 +30,50 @@ reviews:
   poem: true
   labeling_instructions: []
 
-  #Exclude non-source code directories from reviews.
+  # Exclude non-source code directories from reviews
   path_filters:
-    - "!deployment/**"
-    - "!dev-ops/**"
-    - "!release-notes/**"
-    - "!src/api-doc/**"
-    - "!src/assets/**"
-    - "!src/configs/**"
-    - "!src/public/**"
-    - "!src/temp/**"
-    - "!**/*.md"
+    - '!deployment/**'
+    - '!dev-ops/**'
+    - '!release-notes/**'
+    - '!src/api-doc/**'
+    - '!src/assets/**'
+    - '!src/configs/**'
+    - '!src/public/**'
+    - '!src/temp/**'
+    - '!**/*.md'
 
-  # Add specific review instructions for critical paths.
+  # Add specific review instructions for critical paths
   path_instructions:
-    - path: "src/services/**"
-      instructions: "This is core business logic. Please check for correctness, efficiency, and potential edge cases."
-    - path: "src/controllers/**"
-      instructions: "These are API controllers. Focus on request/response handling, security (auth middleware usage), and proper status codes."
-    - path: "src/database/queries/**"
-      instructions: "Review database queries for performance. Check for N+1 problems and ensure indexes can be used."
-    - path: "src/validators/**"
-      instructions: "Validate all incoming data thoroughly. Check for missing or incomplete validation rules."
-    - path: "src/middlewares/**"
-      instructions: "This is security-sensitive middleware. Scrutinize for potential vulnerabilities."
+    - path: 'src/services/**'
+      instructions: 'This is core business logic. Please check for correctness, efficiency, and potential edge cases.'
+    - path: 'src/controllers/**'
+      instructions: 'These are API controllers. Focus on request/response handling, security (auth middleware usage), and proper status codes.'
+    - path: 'src/database/queries/**'
+      instructions: 'Review database queries for performance. Check for N+1 problems and ensure indexes can be used.'
+    - path: 'src/validators/**'
+      instructions: 'Validate all incoming data thoroughly. Check for missing or incomplete validation rules.'
+    - path: 'src/middlewares/**'
+      instructions: 'This is security-sensitive middleware. Scrutinize for potential vulnerabilities.'
 
   abort_on_close: true
   disable_cache: false
+
   auto_review:
     enabled: true
     auto_incremental_review: true
-    ignore_title_keywords: ["WIP", "skip-review"]
+    ignore_title_keywords: ['WIP', 'skip-review']
     labels: []
     drafts: false
-    # Target reviews to development branches.
+    # Regular reviews: all PRs into develop
     base_branches:
-      - "develop"
+      - 'develop'
 
   finishing_touches:
     docstrings:
       enabled: true
     unit_tests:
       enabled: true
+
   pre_merge_checks:
     docstrings:
       mode: warning
@@ -82,42 +85,47 @@ reviews:
       mode: warning
     issue_assessment:
       mode: warning
+
   tools:
-    eslint:
-      enabled: true
-    semgrep:
-      enabled: true
-    dotenvLint:
-      enabled: true
-    sqlfluff:
-      enabled: true
-    checkov:
-      enabled: true
-    gitleaks:
-      enabled: true
-    hadolint:
-      enabled: true
-    shellcheck:
-      enabled: true
-    actionlint:
-      enabled: true
-    circleci:
-      enabled: true
-    github-checks:
-      enabled: true
-    markdownlint:
-      enabled: true
-    yamllint:
-      enabled: true
-    biome:
-      enabled: true
-    languagetool:
-      enabled: false  # optional
+    eslint: { enabled: true }
+    semgrep: { enabled: true }
+    dotenvLint: { enabled: true }
+    sqlfluff: { enabled: true }
+    checkov: { enabled: true }
+    gitleaks: { enabled: true }
+    hadolint: { enabled: true }
+    shellcheck: { enabled: true }
+    actionlint: { enabled: true }
+    circleci: { enabled: true }
+    github-checks: { enabled: true }
+    markdownlint: { enabled: true }
+    yamllint: { enabled: true }
+    biome: { enabled: true }
+    languagetool: { enabled: false }
     ast-grep:
       essential_rules: true
       rule_dirs: []
       util_dirs: []
       packages: []
+
+# --- NEW: PR-specific changelog generation for staging merges ---
+changelog:
+  enabled: true
+  base_branches:
+    - 'develop'
+  instructions: |
+    For PRs merging into `staging`, generate a **QA-focused changelog** using only the diff files in this PR:
+
+    1. Provide **detailed bullet points** of all changes relevant to QA:
+       - Updated or new endpoints in `controllers`
+       - Business logic in `services`
+       - Database changes (migrations, models, queries)
+       - Config/constant changes
+       - Helpers/middlewares
+    2. End each section with clear action points for QA testing.
+    3. After the detailed list, write a **compact QA summary (1–2 paragraphs)** suitable for Jira/Slack.
+    4. Keep changelog strictly PR-specific — do not include unrelated history.
+
 chat:
   auto_reply: true
   integrations:
@@ -125,6 +133,7 @@ chat:
       usage: auto
     linear:
       usage: auto
+
 knowledge_base:
   opt_out: false
   web_search:
@@ -144,6 +153,7 @@ knowledge_base:
     team_keys: []
   pull_requests:
     scope: auto
+
 code_generation:
   docstrings:
     language: en-US
