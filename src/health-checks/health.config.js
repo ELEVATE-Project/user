@@ -12,11 +12,11 @@ module.exports = {
 		kafka: {
 			enabled: true,
 			url: process.env.KAFKA_URL,
+			topic: process.env.KAFKA_HEALTH_CHECK_TOPIC,
 		},
 		redis: {
 			enabled: true,
 			url: process.env.REDIS_HOST,
-			topic: process.env.KAFKA_HEALTH_CHECK_TOPIC,
 		},
 		postgres: {
 			enabled: true,
