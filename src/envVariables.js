@@ -410,6 +410,11 @@ let enviromentVariables = {
 		optional: true,
 		default: '+91',
 	},
+	KAFKA_HEALTH_CHECK_TOPIC: {
+		message: 'Required KAFKA_HEALTH_CHECK_TOPIC',
+		optional: true,
+		default: 'user-health-check-topic-check',
+	},
 }
 let success = true
 
