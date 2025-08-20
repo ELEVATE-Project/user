@@ -41,16 +41,17 @@ INTERNAL_ACCESS_TOKEN=your_internal_token
 Run the script using:
 
 ```bash
-node pushUserDataToKafka.js --from="YYYY-MM-DD" --to="YYYY-MM-DD"
+node pushUserDataToKafka.js --from="YYYY-MM-DD" --to="YYYY-MM-DD" --tenantId="TENANT-ID"
 ```
 
 -   `--from`: Start date (inclusive)
 -   `--to`: End date (inclusive)
+-   `--tenantId`: Tenant Id
 
 📌 **Example:**
 
 ```bash
-node pushUserDataToKafka.js --from="2025-07-01" --to="2025-07-30"
+node pushUserDataToKafka.js --from="2025-07-01" --to="2025-07-30" --tenantId="shikshalokam"
 ```
 
 ---
