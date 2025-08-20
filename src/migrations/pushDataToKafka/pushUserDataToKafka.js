@@ -7,10 +7,46 @@ require('../../configs/kafka')()
 // External dependencies
 const minimist = require('minimist')
 const axios = require('axios')
+const { Kafka } = require('kafkajs')
 
 // Internal helper for Kafka broadcasting
 const { eventBroadcasterKafka } = require('../../helpers/eventBroadcasterMain')
 const { Client } = require('pg')
+const BATCH_SIZE = 50
+
+// Kafka healthCheck
+async function initKafka() {
+	let producer
+	if (!producer) {
+		const kafka = new Kafka({
+			clientId: 'mentoring',
+			brokers: process.env.KAFKA_URL.split(','),
+		})
+
+		producer = kafka.producer()
+
+		try {
+			// Add a timeout so it doesn’t retry forever
+			await Promise.race([
+				producer.connect(),
+				new Promise((_, reject) => setTimeout(() => reject(new Error('Kafka connect timeout')), 3000)),
+			])
+			console.log('✅ Kafka is reachable')
+		} catch (err) {
+			console.error('❌ Kafka is not reachable:', err.message)
+			process.exit(1)
+		}
+	}
+	return producer
+}
+
+function chunkArray(array, size) {
+	const result = []
+	for (let i = 0; i < array.length; i += size) {
+		result.push(array.slice(i, i + size))
+	}
+	return result
+}
 
 /**
  * Parses a PostgreSQL connection URL into a config object
@@ -31,7 +67,7 @@ function parseDbUrl(url) {
 /**
  * Fetches user details, along with associated organization and role information
  */
-async function fetchUserOrgRoles(client, userId) {
+async function fetchUserOrgRoles(client, userId, tenantId) {
 	const query = `
         SELECT 
             u.id AS user_id,
@@ -77,9 +113,9 @@ async function fetchUserOrgRoles(client, userId) {
             ON u.id = uor.user_id AND uor.organization_code = org.code AND uor.tenant_code = u.tenant_code
         JOIN user_roles r 
             ON r.id = uor.role_id AND r.tenant_code = u.tenant_code
-        WHERE u.id = $1
+        WHERE u.id = $1 AND u.tenant_code = $2
     `
-	const result = await client.query(query, [userId])
+	const result = await client.query(query, [userId, tenantId])
 	return result.rows
 }
 
@@ -240,15 +276,19 @@ async function enrichLocationFields(event) {
 
 // Main execution block
 ;(async () => {
+	// Kafka healthCheck call
+	await initKafka()
+
 	// Parse command line arguments
 	const argv = minimist(process.argv.slice(2))
 	const fromDate = new Date(`${argv.from}T00:00:00Z`)
 	const toDate = new Date(`${argv.to}T23:59:59Z`) // End of the day
+	const tenantId = argv.tenantId
 	const dbUrl = process.env.DEV_DATABASE_URL
 
 	// Validate input
-	if (!fromDate || !toDate) {
-		console.error('Usage: node script.js --from=<fromTime> --to=<toTime>')
+	if (!fromDate || !toDate || !tenantId) {
+		console.error('Usage: node script.js --from=<fromDate> --to=<toDate> --tenantId=<tenantCode>')
 		process.exit(1)
 	}
 
@@ -273,52 +313,46 @@ async function enrichLocationFields(event) {
 	try {
 		await client.connect()
 
-		// Query user IDs updated within the specified range
+		// Query user IDs updated within the specified range and tenant
 		const userQuery = `
             SELECT id FROM users 
             WHERE updated_at BETWEEN $1 AND $2
+            AND tenant_code = $3
         `
-		const res = await client.query(userQuery, [fromDate.toISOString(), toDate.toISOString()])
+		const res = await client.query(userQuery, [fromDate.toISOString(), toDate.toISOString(), tenantId])
 		const userIds = res.rows.map((r) => r.id)
 
-		console.log(`Found ${userIds.length} users\n`)
+		console.log(`Found ${userIds.length} users in tenant ${tenantId}\n`)
 
-		let successCount = 0
-		let errorCount = 0
+		const chunks = chunkArray(userIds, BATCH_SIZE)
 
 		// Process each user
-		for (const userId of userIds) {
-			try {
-				const userData = await fetchUserOrgRoles(client, userId)
-				let kafkaEvent = buildKafkaEvent(userData)
+		for (const chunk of chunks) {
+			await Promise.all(
+				chunk.map(async (userId) => {
+					try {
+						const userData = await fetchUserOrgRoles(client, userId, tenantId)
+						let kafkaEvent = buildKafkaEvent(userData)
 
-				if (!kafkaEvent) {
-					console.warn(`No org-role data for user ${userId}, skipping`)
-					continue
-				}
+						if (!kafkaEvent) {
+							console.warn(`No org-role data for user ${userId}, skipping`)
+							return
+						}
 
-				kafkaEvent = await enrichLocationFields(kafkaEvent)
+						kafkaEvent = await enrichLocationFields(kafkaEvent)
 
-				// Send event to Kafka
-				try {
-					await eventBroadcasterKafka('userEvents', {
-						requestBody: kafkaEvent,
-					})
-				} catch (kafkaError) {
-					console.error(`Failed to publish to Kafka for user ${userId}:`, kafkaError.message)
-					throw kafkaError
-				}
+						await eventBroadcasterKafka('userEvents', { requestBody: kafkaEvent })
 
-				console.log(`Pushed user ${userId}`)
-				successCount++
-			} catch (err) {
-				console.error(`Failed to push user ${userId}:`, err.message)
-				errorCount++
-			}
+						console.log(`Pushed user ${userId}`)
+					} catch (err) {
+						console.error(`Failed to push user ${userId}:`, err.message)
+					}
+				})
+			)
 		}
 
 		// Summary
-		console.log(`\nDone. Total: ${userIds.length}, Success: ${successCount}, Failed: ${errorCount}`)
+		console.log(`\nDone. Total: ${userIds.length}`)
 	} catch (err) {
 		console.error('Unexpected Error:', err)
 	} finally {
