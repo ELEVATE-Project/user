@@ -675,6 +675,8 @@ async function sendRoleRequestStatusEmail(userDetails, status, organizationCode,
 					{ attributes: ['domain'] }
 				)
 
+				const portalURL = tenantDomain?.domain || ''
+
 				notificationUtils.sendEmailNotification({
 					emailId: plaintextEmailId,
 					templateCode: process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
@@ -682,7 +684,7 @@ async function sendRoleRequestStatusEmail(userDetails, status, organizationCode,
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
 						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
-						portalURL: tenantDomain,
+						portalURL,
 					},
 					tenantCode: userDetails.tenant_code,
 					organization_code: organizationCode || null,
