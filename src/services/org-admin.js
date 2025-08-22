@@ -697,10 +697,10 @@ async function sendRoleRequestStatusEmail(userDetails, status, organizationCode,
 					templateCode: process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: userDetails.name,
-						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
+						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
 					},
 					tenantCode: userDetails.tenant_code,
-					organization_code: orgCode || null,
+					organization_code: organizationCode || null,
 				})
 			}
 		}
