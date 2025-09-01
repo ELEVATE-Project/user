@@ -251,24 +251,23 @@ module.exports = class OrganizationsHelper {
 
 	static async list(params) {
 		try {
+			const tenantCode = params?.query?.tenant_code || params?.query?.tenantCode || null
 			// fetch orgs under tenants
-			if (params?.query?.tenantCode) {
+			if (tenantCode) {
 				let options = {
 					attributes: ['id', 'name', 'code', 'description'],
 				}
 				let filters = {
-					tenant_code: params?.query?.tenantCode,
+					tenant_code: tenantCode,
 					status: common.ACTIVE_STATUS,
 				}
-				// fetch list by org codes
-				if (params.body && params.body.organizationCodes) {
-					const orgCodes = Array.isArray(params.body.organizationCodes)
-						? params.body.organizationCodes
-						: params.body.organizationCodes.split(',').map((code) => code.trim())
-					filters.code = {
-						[Op.in]: orgCodes,
-					}
-				}
+				// filter by org codes if provided
+				const orgCodes = params?.query?.organization_codes || params?.query?.organizationCodes || null
+				orgCodes
+					? (filters.code = {
+							[Op.in]: orgCodes.split(',').map((code) => code.toLowerCase().trim()),
+					  })
+					: null
 
 				let organizations = await organizationQueries.findAll(filters, options)
 
