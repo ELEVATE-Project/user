@@ -256,14 +256,21 @@ module.exports = class OrganizationsHelper {
 				let options = {
 					attributes: ['id', 'name', 'code', 'description'],
 				}
+				let filters = {
+					tenant_code: params?.query?.tenantCode,
+					status: common.ACTIVE_STATUS,
+				}
+				// fetch list by org codes
+				if (params.body && params.body.organizationCodes) {
+					const orgCodes = Array.isArray(params.body.organizationCodes)
+						? params.body.organizationCodes
+						: params.body.organizationCodes.split(',').map((code) => code.trim())
+					filters.code = {
+						[Op.in]: orgCodes,
+					}
+				}
 
-				let organizations = await organizationQueries.findAll(
-					{
-						tenant_code: params?.query?.tenantCode,
-						status: common.ACTIVE_STATUS,
-					},
-					options
-				)
+				let organizations = await organizationQueries.findAll(filters, options)
 
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
