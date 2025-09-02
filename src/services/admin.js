@@ -128,10 +128,6 @@ module.exports = class AdminHelper {
 			if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
 			if (bodyData.username) criteria.push({ username: bodyData.username })
 
-			if (criteria.length === 0) {
-				return // Skip if no criteria
-			}
-
 			// Check if user already exists with email or phone or username
 			let existingUser = await userQueries.findOne(
 				{
