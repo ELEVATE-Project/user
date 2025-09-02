@@ -93,21 +93,25 @@ module.exports = class NotificationTemplateHelper {
 
 	static async read(id = null, code = null, type, organizationCode, tenantCode) {
 		try {
-			let filter = { organization_code: organizationCode, tenant_code: tenantCode, type }
-
-			if (id) {
-				filter.id = id
-			} else {
-				filter.code = code
+			let filter = {
+				organization_code: organizationCode,
+				tenant_code: tenantCode,
+				...((!id && type) || type ? { type } : {}),
+				...(id ? { id } : { code }),
 			}
 
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
-			console.log('NOTIFICATION TEMPLATES: ', notificationTemplates)
+
 			let defaultOrgNotificationTemplates
 			if (notificationTemplates.length === 0) {
 				let defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
-				filter = id ? { id, organization_code: defaultOrgCode } : { code, organization_code: defaultOrgCode }
-				filter.type = type
+				filter = {
+					...(id ? { id } : { code }),
+					organization_code: defaultOrgCode,
+					tenant_code: tenantCode,
+					type,
+				}
+
 				defaultOrgNotificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
 			}
 			if (notificationTemplates.length === 0 && defaultOrgNotificationTemplates.length === 0) {

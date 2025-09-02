@@ -42,10 +42,10 @@ module.exports = {
 	template: (req) => {
 		if (req.method == common.GET_METHOD) {
 			req.checkQuery('type')
-				.notEmpty()
+				.optional()
 				.withMessage('type field is empty')
-				.isIn(['sms', 'email'])
-				.withMessage('type must be either sms or email')
+				.isIn(['sms', 'email', 'emailHeader', 'emailFooter'])
+				.withMessage('type must be either sms, email,emailHeader or emailFooter')
 		}
 	},
 }
