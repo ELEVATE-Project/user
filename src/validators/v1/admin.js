@@ -49,8 +49,8 @@ module.exports = {
 		req.checkBody('phone_code')
 			.optional({ checkFalsy: true })
 			.trim()
-			.isLength({ min: 2, max: 4 }) // Length between 2 and 4 characters
-			.withMessage('Phone code must be between 2 and 4 characters')
+			.matches(/^\+[1-9]\d{0,3}$/)
+			.withMessage('Phone code must be a valid country code (e.g., +1, +91)')
 
 		// Validate password
 		req.checkBody('password')
@@ -87,7 +87,7 @@ module.exports = {
 			.custom((value) => {
 				// Check if the identifier is a valid email, phone, or username
 				const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
-				const isPhone = /^\d{6,15}$/.test(value) // Phone: 6-15 digits
+				const isPhone = /^[0-9]{7,15}$/.test(value) // Phone: 7-15 digits (matching create validator)
 				const isUsername = /^[a-zA-Z0-9-_]{3,30}$/.test(value)
 
 				if (!isEmail && !isPhone && !isUsername) {
