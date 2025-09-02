@@ -96,8 +96,8 @@ module.exports = class NotificationTemplateHelper {
 			let filter = {
 				organization_code: organizationCode,
 				tenant_code: tenantCode,
-				...((!id && type) || type ? { type } : {}),
-				...(id ? { id } : { code }),
+				...(id ? { id } : code ? { code } : {}),
+				...(type ? { type } : {}),
 			}
 
 			const notificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
@@ -106,10 +106,10 @@ module.exports = class NotificationTemplateHelper {
 			if (notificationTemplates.length === 0) {
 				let defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
 				filter = {
-					...(id ? { id } : { code }),
 					organization_code: defaultOrgCode,
 					tenant_code: tenantCode,
-					type,
+					...(id ? { id } : code ? { code } : {}),
+					...(type ? { type } : {}),
 				}
 
 				defaultOrgNotificationTemplates = await notificationTemplateQueries.findAllNotificationTemplates(filter)
