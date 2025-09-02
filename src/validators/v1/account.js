@@ -33,7 +33,7 @@ module.exports = {
 		if (!req || typeof req !== 'object') {
 			throw new Error('Request object is undefined or invalid')
 		}
-		console.log(req.body)
+
 		req.body = filterRequestBody(req.body, account.create)
 		req.body.username = req?.body?.username ? req?.body?.username.toLowerCase() : req?.body?.username
 
