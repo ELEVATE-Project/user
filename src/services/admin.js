@@ -112,9 +112,9 @@ module.exports = class AdminHelper {
 		try {
 			transaction = await sequelize.transaction()
 
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			const encryptedPhoneNumber = emailEncryption.encrypt(bodyData.phone)
+			const plaintextEmailId = bodyData.email ? bodyData.email.toLowerCase() : null
+			const encryptedEmailId = plaintextEmailId ? emailEncryption.encrypt(plaintextEmailId) : null
+			const encryptedPhoneNumber = bodyData.phone ? emailEncryption.encrypt(bodyData.phone) : null
 
 			// Get default tenant details
 			const tenantDetail = await tenantQueries.findOne({
