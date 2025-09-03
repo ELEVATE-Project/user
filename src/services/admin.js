@@ -125,7 +125,12 @@ module.exports = class AdminHelper {
 
 			const criteria = []
 			if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
-			if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
+			if (bodyData.phone && bodyData.phone_code) {
+				criteria.push({
+					phone: encryptedPhoneNumber,
+					phone_code: bodyData.phone_code,
+				})
+			}
 			if (bodyData.username) criteria.push({ username: bodyData.username })
 
 			// Check if user already exists with email or phone or username
