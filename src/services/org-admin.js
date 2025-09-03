@@ -648,6 +648,8 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 					user_id: requestDetails.requester_id,
 					new_roles: [newRole.title],
 					current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
+					tenant_code: tenantCode,
+					organization_code: orgCode,
 				},
 			})
 			//delete from cache
