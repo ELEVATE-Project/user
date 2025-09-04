@@ -430,7 +430,7 @@ module.exports = class OrganizationsHelper {
 			if (organisationDetails.related_orgs && organisationDetails.related_orgs.length > 0) {
 				let orgFilters = { id: { [Op.in]: organisationDetails.related_orgs } }
 				const relatedOrgsIdAndCode = await organizationQueries.findAll(orgFilters)
-				organisationDetails.relatedOrgsIdAndCode = relatedOrgsIdAndCode.map((eachOrg) => ({
+				organisationDetails.related_org_details = relatedOrgsIdAndCode.map((eachOrg) => ({
 					id: eachOrg.id,
 					code: eachOrg.code,
 				}))
