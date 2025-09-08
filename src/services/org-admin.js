@@ -648,6 +648,8 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 					user_id: requestDetails.requester_id,
 					new_roles: [newRole.title],
 					current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
+					tenant_code: tenantCode,
+					organization_code: orgCode,
 				},
 			})
 			//delete from cache
@@ -675,6 +677,8 @@ async function sendRoleRequestStatusEmail(userDetails, status, organizationCode,
 					{ attributes: ['domain'] }
 				)
 
+				const portalURL = tenantDomain?.domain || ''
+
 				notificationUtils.sendEmailNotification({
 					emailId: plaintextEmailId,
 					templateCode: process.env.MENTOR_REQUEST_ACCEPTED_EMAIL_TEMPLATE_CODE,
@@ -682,7 +686,7 @@ async function sendRoleRequestStatusEmail(userDetails, status, organizationCode,
 						name: userDetails.name,
 						appName: process.env.APP_NAME,
 						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
-						portalURL: tenantDomain,
+						portalURL,
 					},
 					tenantCode: userDetails.tenant_code,
 					organization_code: organizationCode || null,
@@ -695,10 +699,10 @@ async function sendRoleRequestStatusEmail(userDetails, status, organizationCode,
 					templateCode: process.env.MENTOR_REQUEST_REJECTED_EMAIL_TEMPLATE_CODE,
 					variables: {
 						name: userDetails.name,
-						orgName: _.find(userDetails.organizations, { code: orgCode })?.name || '',
+						orgName: _.find(userDetails.organizations, { code: organizationCode })?.name || '',
 					},
 					tenantCode: userDetails.tenant_code,
-					organization_code: orgCode || null,
+					organization_code: organizationCode || null,
 				})
 			}
 		}

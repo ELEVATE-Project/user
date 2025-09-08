@@ -112,8 +112,9 @@ module.exports = class AdminHelper {
 		try {
 			transaction = await sequelize.transaction()
 
-			const plaintextEmailId = bodyData.email.toLowerCase()
-			const encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			const plaintextEmailId = bodyData.email ? bodyData.email.toLowerCase() : null
+			const encryptedEmailId = plaintextEmailId ? emailEncryption.encrypt(plaintextEmailId) : null
+			const encryptedPhoneNumber = bodyData.phone ? emailEncryption.encrypt(bodyData.phone) : null
 
 			// Get default tenant details
 			const tenantDetail = await tenantQueries.findOne({
@@ -122,14 +123,29 @@ module.exports = class AdminHelper {
 			})
 			if (!tenantDetail) throw new Error('DEFAULT_TENANT_NOT_FOUND')
 
-			const existingUser = await userQueries.findOne(
+			const criteria = []
+			if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
+			if (bodyData.phone && bodyData.phone_code) {
+				criteria.push({
+					phone: encryptedPhoneNumber,
+					phone_code: bodyData.phone_code,
+				})
+			}
+			if (bodyData.username) criteria.push({ username: bodyData.username })
+
+			// Check if user already exists with email or phone or username
+			let existingUser = await userQueries.findOne(
 				{
-					email: encryptedEmailId,
+					[Op.or]: criteria,
 					password: { [Op.ne]: null },
 					tenant_code: tenantDetail.code,
 				},
-				{ attributes: ['id'], transaction }
+				{
+					attributes: ['id'],
+					transaction,
+				}
 			)
+
 			if (existingUser) throw new Error('ADMIN_USER_ALREADY_EXISTS')
 
 			const role = await roleQueries.findOne(
@@ -145,6 +161,7 @@ module.exports = class AdminHelper {
 
 			// Prepare user data
 			bodyData.email = encryptedEmailId
+			bodyData.phone = encryptedPhoneNumber
 			bodyData.password = utils.hashPassword(bodyData.password)
 			bodyData.tenant_code = tenantDetail.code
 			bodyData.roles = [role.id]

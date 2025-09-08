@@ -13,12 +13,35 @@ const config = require('../../configs/postgres.js')[env]
 const db = {}
 let sequelize
 
-if (config.url) {
-	sequelize = new Sequelize(config.url, config)
-} else {
-	sequelize = new Sequelize(config.database, config.username, config.password, config)
+// --- Custom logger ---
+const SLOW_QUERY_THRESHOLD = 200 // ms
+
+function queryLogger(sql, timing) {
+	//TODO: remove after getting the data
+	if (timing && timing > SLOW_QUERY_THRESHOLD) {
+		console.warn(`[SLOW-QUERY:::] ${sql} (${timing} ms)`)
+	} else {
+		// Uncomment if you want to see all queries (optional)
+		console.log(`[SQL:::] ${sql} (${timing} ms)`)
+	}
 }
 
+// --- Initialize Sequelize ---
+if (config.url) {
+	sequelize = new Sequelize(config.url, {
+		...config,
+		logging: queryLogger,
+		benchmark: true,
+	})
+} else {
+	sequelize = new Sequelize(config.database, config.username, config.password, {
+		...config,
+		logging: queryLogger,
+		benchmark: true,
+	})
+}
+
+// --- Load models ---
 fs.readdirSync(__dirname)
 	.filter((file) => {
 		return (

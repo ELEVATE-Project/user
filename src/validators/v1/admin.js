@@ -23,13 +23,36 @@ module.exports = {
 			.withMessage('name is invalid')
 
 		req.checkBody('email')
+			.optional()
 			.trim()
-			.notEmpty()
-			.withMessage('email field is empty')
 			.isEmail()
+			.matches(
+				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+			)
 			.withMessage('email is invalid')
-			.normalizeEmail()
+			.normalizeEmail({ gmail_remove_dots: false })
 
+		req.checkBody('username')
+			.optional()
+			.trim()
+			.matches(/^(?:[a-z0-9_-]{3,40}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})$/) //accept random string (min 3 max 40) of smaller case letters _ - and numbers OR email in lowercase as username
+			.withMessage('username is invalid')
+
+		// Validate phone (optional)
+		req.checkBody('phone')
+			.optional()
+			.trim()
+			.matches(/^[0-9]{7,15}$/)
+			.withMessage('phone must be a valid number between 7 and 15 digits')
+
+		// Validate phone_code (required if phone is provided)
+		req.checkBody('phone_code')
+			.optional({ checkFalsy: true })
+			.trim()
+			.matches(/^\+[1-9]\d{0,3}$/)
+			.withMessage('Phone code must be a valid country code (e.g., +1, +91)')
+
+		// Validate password
 		req.checkBody('password')
 			.notEmpty()
 			.withMessage('Password field is empty')
@@ -37,19 +60,54 @@ module.exports = {
 			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
 			.custom((value) => !/\s/.test(value))
 			.withMessage('Password cannot contain spaces')
+
+		req.checkBody(['email', 'phone', 'phone_code']).custom(() => {
+			const phone = req.body.phone
+			const phone_code = req.body.phone_code
+			const email = req.body.email
+
+			if (!email && !phone) {
+				throw new Error('At least one of email or phone must be provided')
+			}
+
+			if (phone && !phone_code) {
+				throw new Error('phone_code is required when phone is provided')
+			}
+
+			return true
+		})
 	},
 
 	login: (req) => {
 		req.body = filterRequestBody(req.body, admin.login)
-		req.checkBody('email')
+		req.checkBody('identifier')
 			.trim()
 			.notEmpty()
-			.withMessage('email field is empty')
-			.isEmail()
-			.withMessage('email is invalid')
-			.normalizeEmail({ gmail_remove_dots: false })
+			.withMessage('Identifier field is empty')
+			.custom((value) => {
+				// Check if the identifier is a valid email, phone, or username
+				const isEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)
+				const isPhone = /^[0-9]{7,15}$/.test(value) // Phone: 7-15 digits (matching create validator)
+				const isUsername = /^[a-zA-Z0-9-_]{3,30}$/.test(value)
 
-		req.checkBody('password').trim().notEmpty().withMessage('password field is empty')
+				if (!isEmail && !isPhone && !isUsername) {
+					throw new Error('Identifier must be a valid email, phone number, or username')
+				}
+				return true
+			})
+			.if(body('identifier').custom((value) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)))
+			.normalizeEmail({ gmail_remove_dots: false }) // Normalize email only if identifier is an email
+
+		// Validate phone_code (required only if identifier is a phone number)
+		req.checkBody('phone_code')
+			.if(body('identifier').custom((value) => /^\d{6,15}$/.test(value))) // Apply only for phone identifiers
+			.notEmpty()
+			.withMessage('Phone code is required for phone number login')
+			.matches(/^\+[1-9]\d{0,3}$/)
+			.withMessage('Phone code must be a valid country code (e.g., +1, +91)')
+
+		// Validate password
+		req.checkBody('password').trim().notEmpty().withMessage('Password field is empty')
 	},
 
 	addOrgAdmin: (req) => {

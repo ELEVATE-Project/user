@@ -203,13 +203,13 @@ let enviromentVariables = {
 	PASSWORD_POLICY_REGEX: {
 		message: 'Required password policy',
 		optional: true,
-		default: '^(?=(?:.*[A-Z]){2})(?=(?:.*[0-9]){2})(?=(?:.*[!@#%$&()\\-`.+,]){3}).{11,}$',
+		default: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&*()_+`\\-={}"\';<>?,./\\\\]).{8,}$',
 	},
 	PASSWORD_POLICY_MESSAGE: {
 		message: 'Required password policy message',
 		optional: true,
 		default:
-			'Password must have at least two uppercase letters, two numbers, three special characters, and be at least 11 characters long.',
+			'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character',
 	},
 	DOWNLOAD_URL_EXPIRATION_DURATION: {
 		message: 'Required downloadable url expiration time',
