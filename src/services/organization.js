@@ -427,13 +427,15 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 			//Get related orgs with code
+			organisationDetails.related_org_details = []
 			if (organisationDetails.related_orgs && organisationDetails.related_orgs.length > 0) {
-				let orgFilters = { id: { [Op.in]: organisationDetails.related_orgs } }
-				const relatedOrgsIdAndCode = await organizationQueries.findAll(orgFilters)
-				organisationDetails.related_org_details = relatedOrgsIdAndCode.map((eachOrg) => ({
-					id: eachOrg.id,
-					code: eachOrg.code,
-				}))
+				const options = {
+					attributes: ['id', 'code'],
+				}
+				organisationDetails.related_org_details = await organizationQueries.findAll(
+					{ id: { [Op.in]: organisationDetails.related_orgs } },
+					options
+				)
 			}
 
 			return responses.successResponse({
