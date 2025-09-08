@@ -426,6 +426,17 @@ module.exports = class OrganizationsHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			//Get related orgs with code
+			organisationDetails.related_org_details = []
+			if (organisationDetails.related_orgs && organisationDetails.related_orgs.length > 0) {
+				const options = {
+					attributes: ['id', 'code'],
+				}
+				organisationDetails.related_org_details = await organizationQueries.findAll(
+					{ id: { [Op.in]: organisationDetails.related_orgs } },
+					options
+				)
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
