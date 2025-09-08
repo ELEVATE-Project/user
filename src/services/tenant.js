@@ -30,6 +30,8 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const UserTransformDTO = require('@dtos/userDTO')
 
 module.exports = class tenantHelper {
 	/**
@@ -371,6 +373,10 @@ module.exports = class tenantHelper {
 						})
 					})
 				}
+
+				tenantCreateResponse.orgId = defaultOrgCreateResponse?.result?.id
+				tenantCreateResponse.orgCode = defaultOrgCreateResponse?.result?.code
+
 				// ******* adding default user roles to Default Org CODE ENDS HERE *******
 			} catch (error) {
 				if (rollbackStack.size() > 0) await rollbackStack.execute()
@@ -380,6 +386,28 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+
+			const eventBody = UserTransformDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'create',
+				entityId: tenantCreateResponse.code,
+				args: {
+					created_by: tenantCreateResponse.created_by,
+					name: tenantCreateResponse.name,
+					code: tenantCreateResponse.code,
+					created_at: tenantCreateResponse?.created_at || new Date(),
+					updated_at: tenantCreateResponse?.updated_at || new Date(),
+					...tenantCreateResponse.meta,
+					status: tenantCreateResponse?.status || common.ACTIVE_STATUS,
+					deleted: false,
+					org_id: tenantCreateResponse.orgId,
+					org_code: tenantCreateResponse.orgCode,
+					description: tenantCreateResponse.description,
+					logo: tenantCreateResponse.logo,
+				},
+			})
+
+			broadcastUserEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

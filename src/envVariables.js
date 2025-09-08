@@ -415,6 +415,19 @@ let enviromentVariables = {
 		optional: true,
 		default: 'user-health-check-topic-check',
 	},
+	EVENT_ENABLE_TENANT_EVENTS: {
+		message: 'Key to toggle tenant creation kafka event',
+		optional: true,
+	},
+	EVENT_TENANT_KAFKA_TOPIC: {
+		message: 'Kafka topic for Tenant creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_TENANT_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
 }
 let success = true
 
