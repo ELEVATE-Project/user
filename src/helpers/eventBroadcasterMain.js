@@ -11,6 +11,10 @@ const getEndpoints = (eventGroup) => {
 		case 'userEvents':
 			if (process.env.EVENT_USER_LISTENER_API)
 				return process.env.EVENT_USER_LISTENER_API.split(',').filter((url) => url.trim())
+		case 'tenantEvents':
+			if (process.env.EVENT_TENANT_LISTENER_API)
+				return process.env.EVENT_TENANT_LISTENER_API.split(',').filter((url) => url.trim())
+
 		default:
 			return []
 	}
@@ -23,9 +27,10 @@ const isEventEnabled = (eventGroup) => {
 
 		case 'userEvents':
 			return process.env.EVENT_ENABLE_USER_EVENTS !== 'false'
-
 		case 'userEvents-kafka':
 			return process.env.EVENT_ENABLE_KAFKA_PUSH !== 'false'
+		case 'tenantEvents':
+			return process.env.EVENT_ENABLE_TENANT_EVENTS !== 'false'
 		default:
 			return true
 	}
@@ -56,8 +61,21 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 		if (!requestBody) throw new Error('Kafka Event Body Generation Failed')
 		if (!isEventEnabled(`${eventGroup}-kafka`))
 			throw new Error(`Kafka Events Not Enabled For The Group "${eventGroup}"`)
-
-		kafkaCommunication.pushUserEventsToKafka(requestBody)
+		//push to kafka based on eventGroup
+		switch (eventGroup) {
+			case 'organizationEvents':
+				kafkaCommunication.pushOrganizationEventsToKafka(requestBody)
+				break
+			case 'userEvents':
+				kafkaCommunication.pushUserEventsToKafka(requestBody)
+				break
+			case 'tenantEvents':
+				kafkaCommunication.pushTenantEventsToKafka(requestBody)
+				break
+			default:
+				console.log('No Kafka Event Group Found')
+				break
+		}
 	} catch (err) {
 		console.log(err)
 	}
