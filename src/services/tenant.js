@@ -387,6 +387,7 @@ module.exports = class tenantHelper {
 				})
 			}
 
+			//event Body for tenant create
 			const eventBody = UserTransformDTO.eventBodyDTO({
 				entity: 'tenant',
 				eventType: 'create',
