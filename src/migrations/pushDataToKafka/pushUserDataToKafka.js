@@ -8,11 +8,18 @@ require('../../configs/kafka')()
 const minimist = require('minimist')
 const axios = require('axios')
 const { Kafka } = require('kafkajs')
+const pLimit = require('p-limit') // concurrency limiter
 
 // Internal helper for Kafka broadcasting
 const { eventBroadcasterKafka } = require('../../helpers/eventBroadcasterMain')
 const { Client } = require('pg')
-const BATCH_SIZE = 50
+const BATCH_SIZE = 200
+
+// Simple in-memory cache for entity details
+const entityCache = new Map()
+
+// Limit concurrency of API calls to avoid overwhelming service
+const limit = pLimit(10) // allow max 10 concurrent API requests
 
 // Kafka healthCheck
 async function initKafka() {
@@ -66,8 +73,9 @@ function parseDbUrl(url) {
 
 /**
  * Fetches user details, along with associated organization and role information
+ * for multiple users in a single query (optimized with WHERE id = ANY($1))
  */
-async function fetchUserOrgRoles(client, userId, tenantId) {
+async function fetchUserOrgRoles(client, userIds, tenantId) {
 	const query = `
         SELECT 
             u.id AS user_id,
@@ -113,10 +121,21 @@ async function fetchUserOrgRoles(client, userId, tenantId) {
             ON u.id = uor.user_id AND uor.organization_code = org.code AND uor.tenant_code = u.tenant_code
         JOIN user_roles r 
             ON r.id = uor.role_id AND r.tenant_code = u.tenant_code
-        WHERE u.id = $1 AND u.tenant_code = $2
+        WHERE u.id = ANY($1) AND u.tenant_code = $2
     `
-	const result = await client.query(query, [userId, tenantId])
+	const result = await client.query(query, [userIds, tenantId])
 	return result.rows
+}
+
+/**
+ * Groups rows by user_id for processing (using reduce)
+ */
+function groupByUserId(rows) {
+	return rows.reduce((acc, row) => {
+		if (!acc[row.user_id]) acc[row.user_id] = []
+		acc[row.user_id].push(row)
+		return acc
+	}, {})
 }
 
 /**
@@ -191,43 +210,56 @@ function buildKafkaEvent(userRows) {
 
 /**
  * Fetches entity metadata from external service using ID and tenantCode
+ * with caching + concurrency limiting
  */
 async function fetchEntityDetail(id, tenantCode) {
-	try {
-		if (id && Array.isArray(id) && id.length > 0) {
-			id = {
-				$in: id,
-			}
-		}
-		const projection = ['_id', 'metaInformation']
-		let requestJSON = {
-			query: { _id: id, tenantId: tenantCode },
-			projection: projection,
-		}
-		const options = {
-			headers: {
-				'content-type': 'application/json',
-				'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
-				timeout: 5000, // 5 seconds timeout
-			},
-		}
-		const response = await axios.post(
-			`${process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL}/v1/entities/find`,
-			requestJSON,
-			options
-		)
-		const entity = response.data?.result?.[0]
-		if (!entity) throw new Error(`Entity not found for id: ${id}`)
-
-		return {
-			id: entity._id,
-			name: entity.metaInformation.name,
-			externalId: entity.metaInformation.externalId,
-		}
-	} catch (error) {
-		console.error('Axios Error:', error.response?.data?.message || error.message)
-		throw error // Let the caller handle the error appropriately
+	// Check cache first
+	const cacheKey = `${tenantCode}:${JSON.stringify(id)}`
+	if (entityCache.has(cacheKey)) {
+		return entityCache.get(cacheKey)
 	}
+
+	return limit(async () => {
+		try {
+			if (id && Array.isArray(id) && id.length > 0) {
+				id = {
+					$in: id,
+				}
+			}
+			const projection = ['_id', 'metaInformation']
+			let requestJSON = {
+				query: { _id: id, tenantId: tenantCode },
+				projection: projection,
+			}
+			const options = {
+				headers: {
+					'content-type': 'application/json',
+					'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
+					timeout: 5000, // 5 seconds timeout
+				},
+			}
+			const response = await axios.post(
+				`${process.env.ENTITY_MANAGEMENT_SERVICE_BASE_URL}/v1/entities/find`,
+				requestJSON,
+				options
+			)
+			const entity = response.data?.result?.[0]
+			if (!entity) throw new Error(`Entity not found for id: ${id}`)
+
+			const entityObj = {
+				id: entity._id,
+				name: entity.metaInformation.name,
+				externalId: entity.metaInformation.externalId,
+			}
+
+			// Save to cache
+			entityCache.set(cacheKey, entityObj)
+			return entityObj
+		} catch (error) {
+			console.error('Axios Error:', error.response?.data?.message || error.message)
+			throw error // Let the caller handle the error appropriately
+		}
+	})
 }
 
 /**
@@ -326,29 +358,37 @@ async function enrichLocationFields(event) {
 
 		const chunks = chunkArray(userIds, BATCH_SIZE)
 
-		// Process each user
+		// Process each batch of users
 		for (const chunk of chunks) {
-			await Promise.all(
-				chunk.map(async (userId) => {
-					try {
-						const userData = await fetchUserOrgRoles(client, userId, tenantId)
-						let kafkaEvent = buildKafkaEvent(userData)
+			try {
+				// Fetch org-role details for all users in this batch with one query
+				const rows = await fetchUserOrgRoles(client, chunk, tenantId)
+				const grouped = groupByUserId(rows)
 
-						if (!kafkaEvent) {
-							console.warn(`No org-role data for user ${userId}, skipping`)
-							return
+				// Process each user individually for Kafka event building + push
+				await Promise.all(
+					Object.entries(grouped).map(async ([userId, userData]) => {
+						try {
+							let kafkaEvent = buildKafkaEvent(userData)
+
+							if (!kafkaEvent) {
+								console.warn(`No org-role data for user ${userId}, skipping`)
+								return
+							}
+
+							kafkaEvent = await enrichLocationFields(kafkaEvent)
+
+							await eventBroadcasterKafka('userEvents', { requestBody: kafkaEvent })
+
+							console.log(`Pushed user ${userId}`)
+						} catch (err) {
+							console.error(`Failed to push user ${userId}:`, err.message)
 						}
-
-						kafkaEvent = await enrichLocationFields(kafkaEvent)
-
-						await eventBroadcasterKafka('userEvents', { requestBody: kafkaEvent })
-
-						console.log(`Pushed user ${userId}`)
-					} catch (err) {
-						console.error(`Failed to push user ${userId}:`, err.message)
-					}
-				})
-			)
+					})
+				)
+			} catch (err) {
+				console.error('Batch failed:', err.message)
+			}
 		}
 
 		// Summary
