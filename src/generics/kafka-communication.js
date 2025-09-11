@@ -35,6 +35,19 @@ const pushTenantEventsToKafka = async (message) => {
 	}
 }
 
+const pushOrganizationEventsToKafka = async (message) => {
+	try {
+		const payload = {
+			topic: process.env.EVENT_ORGANIZATION_KAFKA_TOPIC,
+			messages: [{ value: JSON.stringify(message) }],
+		}
+		return await pushPayloadToKafka(payload)
+	} catch (error) {
+		console.log(error)
+		return error
+	}
+}
+
 const pushPayloadToKafka = async (payload) => {
 	try {
 		let response = await kafkaProducer.send(payload)
@@ -62,4 +75,5 @@ module.exports = {
 	clearInternalCache,
 	pushUserEventsToKafka,
 	pushTenantEventsToKafka,
+	pushOrganizationEventsToKafka,
 }

@@ -1081,6 +1081,33 @@ function appendParamsToUrl(host, params) {
 
 	return url.toString()
 }
+
+/**
+ * Compare object and get the updated value with old value
+ * @method
+ * @name getChanges
+ * @param {Object} oldData - Data before update
+ * @param {Object} newData - Data after update
+ * @param {updateData} updateData - reqBody data
+ * @returns {string} - cleaned up url
+ */
+
+function getChanges(oldData, newData, updateData) {
+	let changes = []
+
+	for (let key of Object.keys(updateData)) {
+		let oldValue = oldData[key]
+		let newValue = newData[key]
+		let fieldName = key
+		// Compare only if key exists in updateData
+		if (!_.isEqual(oldValue, newValue)) {
+			changes.push({ fieldName, oldValue, newValue })
+		}
+	}
+
+	return changes
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1127,4 +1154,5 @@ module.exports = {
 	isValidAction,
 	appendParamsToUrl,
 	parseMetaData,
+	getChanges,
 }

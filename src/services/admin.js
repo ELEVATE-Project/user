@@ -40,6 +40,7 @@ const userHelper = require('@helpers/userHelper')
 
 // DTOs
 const UserTransformDTO = require('@dtos/userDTO')
+const organizationDTO = require('@dtos/organizationDTO')
 
 module.exports = class AdminHelper {
 	/**
@@ -660,7 +661,8 @@ module.exports = class AdminHelper {
 				{
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
-				}
+				},
+				{ returning: true, raw: true }
 			)
 
 			if (orgRowsAffected === 0) {
@@ -697,6 +699,27 @@ module.exports = class AdminHelper {
 					requestBody: { user_ids: userIds },
 				})
 			}
+
+			//event Body for org create
+			let deletedOrgDetails = orgRowsAffected.updatedRows?.[0]
+			const eventBodyData = organizationDTO.eventBodyDTO({
+				entity: 'organization',
+				eventType: 'delete',
+				entityId: deletedOrgDetails.id,
+				args: {
+					created_by: deletedOrgDetails.created_by,
+					name: deletedOrgDetails.name,
+					code: deletedOrgDetails.code,
+					deleted_at: deletedOrgDetails?.deleted_at || new Date(),
+					updated_at: deletedOrgDetails?.updated_at || new Date(),
+					status: deletedOrgDetails?.status || common.DELETED_STATUS,
+					deleted: true,
+					id: deletedOrgDetails.id,
+					tenant_code: tenantCode,
+				},
+			})
+
+			broadcastUserEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			// 4. Return success
 			return responses.successResponse({

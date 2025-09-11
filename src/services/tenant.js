@@ -31,7 +31,8 @@ const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
-const UserTransformDTO = require('@dtos/userDTO')
+const TenantDTO = require('@dtos/tenantDTO')
+
 module.exports = class tenantHelper {
 	/**
 	 * Create Tenant
@@ -385,7 +386,7 @@ module.exports = class tenantHelper {
 			}
 
 			//event Body for tenant create
-			const eventBody = UserTransformDTO.eventBodyDTO({
+			const eventBody = TenantDTO.eventBodyDTO({
 				entity: 'tenant',
 				eventType: 'create',
 				entityId: tenantCreateResponse.code,

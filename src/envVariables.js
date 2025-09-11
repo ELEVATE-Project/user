@@ -437,6 +437,19 @@ let enviromentVariables = {
 			value: 'true',
 		},
 	},
+	EVENT_ENABLE_ORGANIZATION_EVENTS: {
+		message: 'Key to toggle organization creation kafka event',
+		optional: true,
+	},
+	EVENT_ORGANIZATION_KAFKA_TOPIC: {
+		message: 'Kafka topic for organization create/update Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_ORGANIZATION_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
 }
 let success = true
 
