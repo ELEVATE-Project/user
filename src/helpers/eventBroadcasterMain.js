@@ -11,10 +11,11 @@ const getEndpoints = (eventGroup) => {
 		case 'userEvents':
 			if (process.env.EVENT_USER_LISTENER_API)
 				return process.env.EVENT_USER_LISTENER_API.split(',').filter((url) => url.trim())
+			return []
 		case 'tenantEvents':
 			if (process.env.EVENT_TENANT_LISTENER_API)
 				return process.env.EVENT_TENANT_LISTENER_API.split(',').filter((url) => url.trim())
-
+			return []
 		default:
 			return []
 	}
