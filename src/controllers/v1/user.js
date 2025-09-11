@@ -49,7 +49,8 @@ module.exports = class User {
 				req.params.id ? req.params.id : req.decodedToken.id,
 				req.headers,
 				req.query.language ? req.query.language : '',
-				req.decodedToken.tenant_code
+				req.decodedToken.tenant_code,
+				req.decodedToken.organization_code
 			)
 			return userDetails
 		} catch (error) {
