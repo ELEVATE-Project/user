@@ -784,4 +784,55 @@ module.exports = class tenantHelper {
 			throw error // Re-throw other errors
 		}
 	}
+
+	/**
+	 * Get primary domain for tenant
+	 * @method
+	 * @name getDomain
+	 * @param {string} tenantCode - code of the tenant
+	 * @returns {JSON} - tenant domain information
+	 */
+	static async getDomain(tenantCode) {
+		try {
+			// Validate tenant exists
+			const tenantDetails = await tenantQueries.findOne({
+				code: tenantCode,
+			})
+
+			if (!tenantDetails) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'TENANT_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Get the first domain (primary domain) for the tenant
+			const domain = await tenantDomainQueries.findOne({
+				tenant_code: tenantCode,
+				verified: true,
+			})
+
+			if (!domain) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_found,
+					message: 'TENANT_DOMAIN_NOT_FOUND',
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'TENANT_DOMAIN_FETCHED',
+				result: {
+					domain: domain.domain,
+					tenant_code: tenantCode,
+					verified: domain.verified,
+				},
+			})
+		} catch (error) {
+			console.log(error)
+			throw error
+		}
+	}
 }

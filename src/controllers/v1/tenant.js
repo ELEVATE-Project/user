@@ -156,4 +156,30 @@ module.exports = class Tenant {
 			return error
 		}
 	}
+
+	/**
+	 * Get primary domain for tenant
+	 * @method GET
+	 * @name domain
+	 * @param {Object} req -request data.
+	 * @returns {JSON} - tenant domain information
+	 */
+
+	async domain(req) {
+		try {
+			const tenantCode = req.params.id
+			if (!tenantCode) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'TENANT_CODE_REQUIRED',
+					result: {},
+				})
+			}
+
+			const domain = await tenantService.getDomain(tenantCode)
+			return domain
+		} catch (error) {
+			return error
+		}
+	}
 }

@@ -31,6 +31,7 @@ module.exports = {
 		'/user/v1/account/validatingEmailIds',
 		'/user/v1/tenant/list',
 		'/user/v1/tenant/read/',
+		'/user/v1/tenant/domain/',
 		'/v1/cloud-services/file/getDownloadableUrl',
 	],
 	notificationEmailType: 'email',
