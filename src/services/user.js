@@ -25,6 +25,8 @@ const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
 
+const cacheClient = require('@generics/cacheHelper')
+
 module.exports = class UserHelper {
 	/**
 	 * update profile
@@ -140,10 +142,16 @@ module.exports = class UserHelper {
 					},
 				})
 			}
-			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
-			if (await utils.redisGet(redisUserKey)) {
-				await utils.redisDel(redisUserKey)
-			}
+
+			const ns = common.CACHE_CONFIG.namespaces.profile.name
+			const cacheKey = cacheClient.namespacedKey({
+				tenantCode,
+				orgId: orgCode,
+				ns,
+				id,
+			})
+			await cacheClient.del(cacheKey)
+
 			const processDbResponse = await utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				validationData
@@ -295,107 +303,117 @@ module.exports = class UserHelper {
 	 * @param {string} searchText - search text.
 	 * @returns {JSON} - user information
 	 */
-	static async read(id, header = null, language, tenantCode) {
+	static async read(id, header = null, language, tenantCode, organizationCode) {
 		try {
-			let filter = {}
-			console.log(tenantCode)
-			if (utils.isNumeric(id)) {
-				filter = { id: id, tenant_code: tenantCode }
-			} else {
-				filter = { share_link: id }
-			}
+			const filter = utils.isNumeric(id) ? { id, tenant_code: tenantCode } : { share_link: id }
 
-			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
-			const userDetails = (await utils.redisGet(redisUserKey)) || false
-			if (!userDetails) {
-				let options = {
-					attributes: {
-						exclude: ['password', 'refresh_tokens'],
-					},
-				}
-				if (header.internal_access_token) {
-					options.paranoid = false
-				}
-				let user = await userQueries.findUserWithOrganization(filter, options)
+			const ns = common.CACHE_CONFIG.namespaces.profile.name
+			const cacheKey = cacheClient.namespacedKey({
+				tenantCode,
+				orgId: organizationCode,
+				ns,
+				id,
+			})
 
-				if (!user) {
-					return responses.failureResponse({
-						message: 'USER_NOT_FOUND',
-						statusCode: httpStatusCode.not_found,
-						responseCode: 'UNAUTHORIZED',
-					})
-				}
-
-				let roles = user.organizations[0].roles
-
-				if (!roles) {
-					return responses.failureResponse({
-						message: 'ROLE_NOT_FOUND',
-						statusCode: httpStatusCode.not_acceptable,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
-				if (language && language !== common.ENGLISH_LANGUGE_CODE) {
-					utils.setRoleLabelsByLanguage(roles, language)
-				} else {
-					roles.map((roles) => {
-						delete roles.translations
-						return roles
-					})
-				}
-
-				//user.user_roles = roles
-
-				let defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
-
-				let userOrg = user.organizations[0].code
-
-				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
-					status: 'ACTIVE',
-					organization_code: {
-						[Op.in]: [userOrg, defaultOrganizationCode],
-					},
-					tenant_code: tenantCode,
-					model_names: { [Op.contains]: [await userQueries.getModelName()] },
-				})
-				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations[0].id)
-				const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
-				user.permissions = permissionsByModule
-
-				const processDbResponse = await utils.processDbResponse(user, prunedEntities)
-
-				if (processDbResponse) {
-					;['email', 'phone'].forEach((field) => {
-						const value = processDbResponse[field]
-						if (typeof value === 'string' && value.trim() !== '') {
-							processDbResponse[field] = emailEncryption.decrypt(value)
-						}
-					})
-				}
-
-				if (utils.validateRoleAccess(roles, [common.MENTOR_ROLE, common.MENTEE_ROLE])) {
-					await utils.redisSet(redisUserKey, processDbResponse, common.redisUserCacheTTL)
-				}
-
-				processDbResponse['image_cloud_path'] = processDbResponse.image
-				if (processDbResponse && processDbResponse.image) {
-					processDbResponse.image = await utils.getDownloadableUrl(processDbResponse.image)
-				}
+			// Try cache first
+			let userDetails = await cacheClient.get(cacheKey)
+			if (userDetails) {
+				if (userDetails.image) userDetails.image = await utils.getDownloadableUrl(userDetails.image)
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
-					result: processDbResponse ? processDbResponse : {},
-				})
-			} else {
-				if (userDetails && userDetails.image) {
-					userDetails.image = await utils.getDownloadableUrl(userDetails.image)
-				}
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: 'PROFILE_FETCHED_SUCCESSFULLY',
-					result: userDetails ? userDetails : {},
+					result: userDetails,
 				})
 			}
+
+			// Cache miss -> load from DB and compute
+			const options = {
+				attributes: { exclude: ['password', 'refresh_tokens'] },
+			}
+			if (header && header.internal_access_token) options.paranoid = false
+
+			const user = await userQueries.findUserWithOrganization(filter, options)
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'UNAUTHORIZED',
+				})
+			}
+
+			const roles = user.organizations[0].roles
+			if (!roles) {
+				return responses.failureResponse({
+					message: 'ROLE_NOT_FOUND',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (language && language !== common.ENGLISH_LANGUAGE_CODE) {
+				utils.setRoleLabelsByLanguage(roles, language)
+			} else {
+				roles.forEach((r) => {
+					delete r.translations
+				})
+			}
+
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+			const userOrg = user.organizations[0].code
+			const modelName = await userQueries.getModelName()
+
+			const prunedEntities = await cacheClient.getOrSet({
+				tenantCode,
+				orgId: organizationCode,
+				ns: common.CACHE_CONFIG.namespaces.entity_types.name,
+				id: `${userOrg}:${modelName}`, // per-org stable id
+				fetchFn: async () => {
+					const raw = await entityTypeQueries.findUserEntityTypesAndEntities({
+						status: 'ACTIVE',
+						organization_code: { [Op.in]: [userOrg, defaultOrganizationCode] },
+						tenant_code: tenantCode,
+						model_names: { [Op.contains]: [modelName] },
+					})
+					return removeDefaultOrgEntityTypes(raw, user.organizations[0].id)
+				},
+			})
+
+			const permissionsByModule = await this.getPermissions(user.organizations[0].roles)
+			user.permissions = permissionsByModule
+
+			const processDbResponse = await utils.processDbResponse(user, prunedEntities)
+
+			if (processDbResponse) {
+				;['email', 'phone'].forEach((field) => {
+					const value = processDbResponse[field]
+					if (typeof value === 'string' && value.trim() !== '') {
+						processDbResponse[field] = emailEncryption.decrypt(value)
+					}
+				})
+			}
+
+			// Conditional caching: only cache if user has mentor/mentee role access
+			if (utils.validateRoleAccess(roles, [common.MENTOR_ROLE, common.MENTEE_ROLE])) {
+				await cacheClient.setScoped({
+					tenantCode,
+					orgId: organizationCode,
+					ns,
+					id,
+					value: processDbResponse,
+				})
+			}
+
+			// Prepare image url for response
+			if (processDbResponse && processDbResponse.image) {
+				processDbResponse.image_cloud_path = processDbResponse.image
+				processDbResponse.image = await utils.getDownloadableUrl(processDbResponse.image)
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'PROFILE_FETCHED_SUCCESSFULLY',
+				result: processDbResponse || {},
+			})
 		} catch (error) {
 			console.log(error)
 			throw error
@@ -565,10 +583,16 @@ module.exports = class UserHelper {
 				{ id: id, tenant_code: tenantCode },
 				bodyData
 			)
-			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + id.toString()
-			if (await utils.redisGet(redisUserKey)) {
-				await utils.redisDel(redisUserKey)
-			}
+
+			const ns = common.CACHE_CONFIG.namespaces.profile.name
+			const cacheKey = cacheClient.namespacedKey({
+				tenantCode,
+				orgId: orgCode,
+				ns,
+				id,
+			})
+			await cacheClient.del(cacheKey)
+
 			const processDbResponse = await utils.processDbResponse(
 				JSON.parse(JSON.stringify(updatedData[0])),
 				dataValidation
