@@ -200,7 +200,7 @@ module.exports = class userRoleHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			if (language && language !== common.ENGLISH_LANGUGE_CODE) {
+			if (language && language !== common.ENGLISH_LANGUAGE_CODE) {
 				utils.setRoleLabelsByLanguage(roles.rows, language)
 			} else {
 				roles.rows.map((labels) => {
