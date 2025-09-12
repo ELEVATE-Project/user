@@ -653,7 +653,7 @@ module.exports = class AdminHelper {
 	static async deactivateOrg(organizationCode, tenantCode, loggedInUserId) {
 		try {
 			// 1. Deactivate org
-			const orgRowsAffected = await organizationQueries.update(
+			const orgUpdateResult = await organizationQueries.update(
 				{
 					code: organizationCode,
 					tenant_code: tenantCode,
@@ -665,7 +665,7 @@ module.exports = class AdminHelper {
 				{ returning: true, raw: true }
 			)
 
-			if (orgRowsAffected === 0) {
+			if (!orgUpdateResult || orgUpdateResult.rowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'STATUS_UPDATE_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -701,7 +701,7 @@ module.exports = class AdminHelper {
 			}
 
 			//event Body for org create
-			let deletedOrgDetails = orgRowsAffected.updatedRows?.[0]
+			let deletedOrgDetails = orgUpdateResult.updatedRows?.[0]
 			const eventBodyData = organizationDTO.eventBodyDTO({
 				entity: 'organization',
 				eventType: 'delete',
@@ -712,7 +712,7 @@ module.exports = class AdminHelper {
 					code: deletedOrgDetails.code,
 					deleted_at: deletedOrgDetails?.deleted_at || new Date(),
 					updated_at: deletedOrgDetails?.updated_at || new Date(),
-					status: deletedOrgDetails?.status || common.DELETED_STATUS,
+					status: deletedOrgDetails?.status || common.INACTIVE_STATUS,
 					deleted: true,
 					id: deletedOrgDetails.id,
 					tenant_code: tenantCode,

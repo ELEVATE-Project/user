@@ -163,12 +163,12 @@ module.exports = class OrganizationsHelper {
 					deleted: false,
 					id: createdOrganization.id,
 					description: createdOrganization.description,
-					related_orgs: createdOrganization?.relatedOrgs || [],
+					related_orgs: createdOrganization?.related_orgs || [],
 					tenant_code: createdOrganization.tenant_code,
 				},
 			})
 
-			broadcastUserEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+			await broadcastUserEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -829,10 +829,10 @@ async function createRoleRequest(bodyData, tokenInformation) {
 }
 
 async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData) {
-	//get the changes from old and newValue
+	// compute changes from provided body keys
 	let changes = await utils.getChanges(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData)
 	let related_org_details
-	if (bodyData.hasOwnProperty('related_orgs')) {
+	if (Object.prototype.hasOwnProperty.call(bodyData, 'related_orgs') && updatedOrgDetails?.related_orgs?.length) {
 		const options = {
 			attributes: ['id', 'code'],
 		}
@@ -858,7 +858,7 @@ async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyDa
 			deleted: false,
 			id: orgDetailsBeforeUpdate.id,
 			description: orgDetailsBeforeUpdate.description,
-			related_orgs: orgDetailsBeforeUpdate?.relatedOrgs || [],
+			related_orgs: orgDetailsBeforeUpdate?.related_orgs || [],
 			tenant_code: orgDetailsBeforeUpdate.tenant_code,
 			...(related_org_details ? { related_org_details } : {}),
 		},

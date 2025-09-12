@@ -1088,14 +1088,14 @@ function appendParamsToUrl(host, params) {
  * @name getChanges
  * @param {Object} oldData - Data before update
  * @param {Object} newData - Data after update
- * @param {updateData} updateData - reqBody data
- * @returns {string} - cleaned up url
+ * @param {Object} updateData - reqBody data
+ * @returns {Array<{fieldName:string, oldValue:any, newValue:any}>}
  */
 
-function getChanges(oldData, newData, updateData) {
-	let changes = []
+function getChanges(oldData = {}, newData = {}, updateData = {}) {
+	const changes = []
 
-	for (let key of Object.keys(updateData)) {
+	for (const key of Object.keys(updateData)) {
 		let oldValue = oldData[key]
 		let newValue = newData[key]
 		let fieldName = key
