@@ -173,6 +173,7 @@ module.exports = {
 					eachEntity.entity_type_id = eachType.id
 					eachEntity.type = 'SYSTEM'
 					eachEntity.status = 'ACTIVE'
+					eachEntity.tenant_code = process.env.DEFAULT_TENANT_CODE
 					eachEntity.created_at = new Date()
 					eachEntity.updated_at = new Date()
 					eachEntity.created_by = 0
