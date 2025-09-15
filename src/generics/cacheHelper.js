@@ -19,6 +19,10 @@ const SHARDS = toInt(CACHE_CONFIG.shards, 32)
 const BATCH = toInt(CACHE_CONFIG.scanBatch, 1000)
 const SHARD_RETENTION_DAYS = toInt(CACHE_CONFIG.shardRetentionDays, 7)
 
+// Version config
+const VERSION_CACHE_TTL = toInt(CACHE_CONFIG.versionCacheTtlSeconds, 5) // seconds, short in-process TTL
+const VERSION_DEFAULT = toInt(CACHE_CONFIG.versionDefault || 0, 0)
+
 /** Helpers */
 function toInt(v, d) {
 	const n = parseInt(v, 10)
@@ -72,11 +76,18 @@ function namespacedKey({ tenantCode, orgId, ns, id }) {
 	const base = orgId ? orgKey(tenantCode, orgId, []) : tenantKey(tenantCode, [])
 	return [base, ns, id].filter(Boolean).join(':')
 }
+
+async function versionedKey({ tenantCode, orgId, ns, id, key }) {
+	return buildVersionedKey({ tenantCode, orgId, ns, id, key })
+}
 function shardOf(key) {
 	const h = md5(key)
 	const asInt = parseInt(h.slice(0, 8), 16)
 	return (asInt >>> 0) % SHARDS
 }
+
+/** In-process short cache for version lookups */
+const _versionCache = new Map() // key -> { ver: number, expiresAt: timestamp }
 
 /** Low-level redis client (best-effort) */
 function getRedisClient() {
@@ -85,6 +96,98 @@ function getRedisClient() {
 	} catch (err) {
 		console.log(err, 'error in getting native redis client')
 	}
+}
+
+/** Version key name resolution */
+function versionKeyName({ tenantCode, orgId, ns }) {
+	if (tenantCode && orgId && ns) return `__version:tenant:${tenantCode}:org:${orgId}:ns:${ns}`
+	if (tenantCode && ns) return `__version:tenant:${tenantCode}:ns:${ns}`
+	if (tenantCode) return `__version:tenant:${tenantCode}`
+	return `__version:global`
+}
+
+/** Get version from in-process cache or Redis (short TTL). */
+async function getVersion({ tenantCode, orgId, ns } = {}) {
+	const vKey = versionKeyName({ tenantCode, orgId, ns })
+	const cached = _versionCache.get(vKey)
+	if (cached && cached.expiresAt > Date.now()) return cached.ver
+
+	try {
+		// try Redis via wrapper
+		if (RedisCache && typeof RedisCache.getKey === 'function') {
+			const raw = await RedisCache.getKey(vKey)
+			const ver = raw ? parseInt(raw, 10) || VERSION_DEFAULT : VERSION_DEFAULT
+			_versionCache.set(vKey, { ver, expiresAt: Date.now() + VERSION_CACHE_TTL * 1000 })
+			return ver
+		}
+	} catch (e) {
+		console.error('getVersion redis read error', e)
+	}
+
+	// fallback default
+	_versionCache.set(vKey, { ver: VERSION_DEFAULT, expiresAt: Date.now() + VERSION_CACHE_TTL * 1000 })
+	return VERSION_DEFAULT
+}
+
+/**
+ * Bump version atomically for the given level.
+ * Preferred method is native Redis INCR. Fallback to read+set.
+ * Returns new version number.
+ */
+async function bumpVersion({ tenantCode, orgId, ns } = {}) {
+	const vKey = versionKeyName({ tenantCode, orgId, ns })
+	const redis = getRedisClient()
+	try {
+		if (redis && typeof redis.incr === 'function') {
+			// atomic increment
+			const newVer = await redis.incr(vKey)
+			// ensure wrapper reflects new value (best-effort)
+			try {
+				if (RedisCache && typeof RedisCache.setKey === 'function') {
+					await RedisCache.setKey(vKey, String(newVer))
+				}
+			} catch (_) {}
+			_versionCache.set(vKey, { ver: Number(newVer), expiresAt: Date.now() + VERSION_CACHE_TTL * 1000 })
+			return Number(newVer)
+		}
+		// fallback: read + increment + set
+		const currRaw = await RedisCache.getKey(vKey)
+		const curr = currRaw ? parseInt(currRaw, 10) || VERSION_DEFAULT : VERSION_DEFAULT
+		const newVer = curr + 1
+		await RedisCache.setKey(vKey, String(newVer))
+		_versionCache.set(vKey, { ver: newVer, expiresAt: Date.now() + VERSION_CACHE_TTL * 1000 })
+		return newVer
+	} catch (e) {
+		console.error('bumpVersion error', e)
+		// as last resort update in-memory and return incremented value
+		const currCached = _versionCache.get(vKey)
+		const curr = currCached ? currCached.ver : VERSION_DEFAULT
+		const newVer = curr + 1
+		_versionCache.set(vKey, { ver: newVer, expiresAt: Date.now() + VERSION_CACHE_TTL * 1000 })
+		try {
+			await RedisCache.setKey(vKey, String(newVer))
+		} catch (_) {}
+		return newVer
+	}
+}
+
+/** Build final key with version token inserted so patterns still match. */
+async function buildVersionedKey({ tenantCode, orgId, ns, id, key }) {
+	// If caller provided ns or id, treat as namespaced. Matches previous behaviour:
+	// previous code used ns || id ? namespacedKey({ ns: ns || 'ns', id: id||key }) : tenantKey(tenantCode, [key])
+	const isNamespaced = Boolean(ns || id)
+	if (isNamespaced) {
+		const effNs = ns || 'ns'
+		const ver = await getVersion({ tenantCode, orgId, ns: effNs })
+		const base = orgId ? orgKey(tenantCode, orgId, []) : tenantKey(tenantCode, [])
+		const final = [base, effNs, `v${ver}`, id || key].filter(Boolean).join(':')
+		return final
+	}
+	// tenant-level key
+	const ver = await getVersion({ tenantCode })
+	const base = tenantKey(tenantCode, [])
+	const final = [base, `v${ver}`, key].filter(Boolean).join(':')
+	return final
 }
 
 /** Base ops (Internal cache opt-in via config or caller) */
@@ -148,14 +251,18 @@ async function del(key, { useInternal = false } = {}) {
  * - fetchFn: function that returns value
  * - orgId, ns, id: for namespaced keys
  * - useInternal: optional boolean override. If omitted, resolved from namespace/config.
+ *
+ * NOTE: This function now resolves a versioned key internally.
  */
 async function getOrSet({ key, tenantCode, ttl = undefined, fetchFn, orgId, ns, id, useInternal = undefined }) {
 	if (!namespaceEnabled(ns)) return await fetchFn()
 
 	const resolvedUseInternal = nsUseInternal(ns, useInternal)
-	console.log('resolvedUseInternal', resolvedUseInternal, ns, useInternal)
+	// build versioned key (keeps previous behaviour but adds version token)
 	const fullKey =
-		ns || id ? namespacedKey({ tenantCode, orgId, ns: ns || 'ns', id: id || key }) : tenantKey(tenantCode, [key])
+		ns || id
+			? await buildVersionedKey({ tenantCode, orgId, ns: ns || 'ns', id: id || key })
+			: await buildVersionedKey({ tenantCode, key })
 
 	const cached = await get(fullKey, { useInternal: resolvedUseInternal })
 	if (cached !== null && cached !== undefined) return cached
@@ -167,13 +274,42 @@ async function getOrSet({ key, tenantCode, ttl = undefined, fetchFn, orgId, ns, 
 	return value
 }
 
-/** Scoped set that uses namespace TTL and namespace useInternal setting */
+/** Scoped set that uses namespace TTL and namespace useInternal setting
+ * Returns the versioned key that was written.
+ */
 async function setScoped({ tenantCode, orgId, ns, id, value, ttl = undefined, useInternal = undefined }) {
 	if (!namespaceEnabled(ns)) return null
 	const resolvedUseInternal = nsUseInternal(ns, useInternal)
-	const fullKey = namespacedKey({ tenantCode, orgId, ns, id })
+	const fullKey = await buildVersionedKey({ tenantCode, orgId, ns, id })
 	await set(fullKey, value, nsTtl(ns, ttl), { useInternal: resolvedUseInternal })
 	return fullKey
+}
+
+/** Scoped delete that uses namespace config (TTL/useInternal)
+ * Returns the versioned key that was deleted.
+ */
+async function delScoped({ tenantCode, orgId, ns, id, useInternal = undefined }) {
+	if (!namespaceEnabled(ns)) return null
+	const resolvedUseInternal = nsUseInternal(ns, useInternal)
+	const fullKey = await buildVersionedKey({ tenantCode, orgId, ns, id })
+	await del(fullKey, { useInternal: resolvedUseInternal })
+	return fullKey
+}
+
+/**
+ * Evict all keys for a namespace.
+ * If orgId is provided will target org-level keys, otherwise tenant-level keys.
+ * patternSuffix defaults to '*' (delete all keys under the namespace).
+ *
+ * NOTE: Because version is a token between ns and id, the glob pattern `tenant:acme:users:*`
+ * will match versioned keys like `tenant:acme:users:v3:...`.
+ */
+async function evictNamespace({ tenantCode, orgId = null, ns, patternSuffix = '*' } = {}) {
+	if (!tenantCode || !ns) return
+	if (!namespaceEnabled(ns)) return
+	const base = orgId ? `tenant:${tenantCode}:org:${orgId}` : `tenant:${tenantCode}`
+	const pattern = `${base}:${ns}:${patternSuffix}`
+	await scanAndDelete(pattern)
 }
 
 /**
@@ -226,6 +362,20 @@ async function evictTenantByPattern(tenantCode, { patternSuffix = '*' } = {}) {
 	await scanAndDelete(pattern)
 }
 
+/** Convenience invalidation by bumping version (fast) */
+async function invalidateNamespaceVersion({ tenantCode, orgId = null, ns } = {}) {
+	if (!tenantCode || !ns) return
+	return bumpVersion({ tenantCode, orgId, ns })
+}
+async function invalidateTenantVersion({ tenantCode } = {}) {
+	if (!tenantCode) return
+	return bumpVersion({ tenantCode })
+}
+async function invalidateOrgNamespaceVersion({ tenantCode, orgId, ns } = {}) {
+	if (!tenantCode || !orgId || !ns) return
+	return bumpVersion({ tenantCode, orgId, ns })
+}
+
 /** Public API */
 module.exports = {
 	// Base ops
@@ -238,11 +388,21 @@ module.exports = {
 	// Scoped helpers
 	setScoped,
 	namespacedKey,
+	versionedKey,
 
 	// Eviction (pattern based)
+	delScoped,
+	evictNamespace,
 	evictOrgByPattern,
 	evictTenantByPattern,
 	scanAndDelete,
+
+	// Versioning API
+	getVersion,
+	bumpVersion,
+	invalidateNamespaceVersion,
+	invalidateTenantVersion,
+	invalidateOrgNamespaceVersion,
 
 	// Introspection
 	_internal: {
@@ -251,5 +411,7 @@ module.exports = {
 		BATCH,
 		ENABLE_CACHE,
 		CACHE_CONFIG,
+		VERSION_CACHE_TTL,
+		VERSION_DEFAULT,
 	},
 }
