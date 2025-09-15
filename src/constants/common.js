@@ -117,10 +117,13 @@ module.exports = {
 		enableCache: true,
 		enableTracking: true,
 		shards: 32,
+		versionDefault: 0,
 		namespaces: {
 			profile: { name: 'profile', enabled: true, defaultTtl: 43200, useInternal: false },
 			entity_types: { name: 'entity_types', enabled: true, defaultTtl: 86400, useInternal: false },
 			tenant: { name: 'tenant', enabled: true, defaultTtl: 86400, useInternal: false },
+			branding: { name: 'branding', enabled: true, defaultTtl: 86400, useInternal: false },
+			organization: { name: 'organization', enabled: true, defaultTtl: 86400, useInternal: false },
 		},
 	},
 }
