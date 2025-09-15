@@ -63,7 +63,7 @@ const insertOrgFeatureQuery = `
 		display_order
 	) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW(), ?);
 `
-const defaultValues = ['Default Organization', process.env.DEFAULT_ORGANISATION_CODE, 'Default Organisation', 'ACTIVE']
+const defaultValues = ['Default Organization', 'Default Organisation', 'ACTIVE']
 const queryParams = defaultValues.map((value, index) => (value === 'default' ? null : value))
 
 ;(async () => {
