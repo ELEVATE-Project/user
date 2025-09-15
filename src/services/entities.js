@@ -1,11 +1,38 @@
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
 const entityQueries = require('@database/queries/entities')
-const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
 const responses = require('@helpers/responses')
+const common = require('@constants/common')
+const cacheClient = require('@generics/cacheHelper')
 
 module.exports = class EntityHelper {
+	static async _invalidateEntityCaches({ tenantCode, organizationCode }) {
+		try {
+			await cacheClient.invalidateOrgNamespaceVersion({
+				tenantCode,
+				orgId: organizationCode,
+				ns: common.CACHE_CONFIG.namespaces.entity_types.name,
+			})
+
+			await cacheClient.invalidateOrgNamespaceVersion({
+				tenantCode,
+				orgId: organizationCode,
+				ns: common.CACHE_CONFIG.namespaces.profile.name,
+			})
+
+			if (process.env.DEFAULT_ORGANISATION_CODE === organizationCode) {
+				await cacheClient.invalidateNamespaceVersion({
+					tenantCode,
+					ns: common.CACHE_CONFIG.namespaces.entity_types.name,
+				})
+			}
+		} catch (err) {
+			console.error('Entity cache invalidation failed', err)
+			// Do not throw. Cache failures should not block DB ops.
+		}
+	}
+
 	/**
 	 * Create entity.
 	 * @method
@@ -14,7 +41,6 @@ module.exports = class EntityHelper {
 	 * @param {String} id -  id.
 	 * @returns {JSON} - Entity created response.
 	 */
-
 	static async create(bodyData, userId, tenantCode, organizationCode) {
 		bodyData.created_by = userId
 		bodyData.updated_by = userId
@@ -23,6 +49,9 @@ module.exports = class EntityHelper {
 
 		try {
 			const entity = await entityQueries.createEntity(bodyData)
+
+			// invalidate caches after successful create
+			await this._invalidateEntityCaches({ tenantCode, organizationCode })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -59,7 +88,6 @@ module.exports = class EntityHelper {
 	 * @param {String} loggedInUserId - logged in user id.
 	 * @returns {JSON} - Entity updated response.
 	 */
-
 	static async update(bodyData, id, loggedInUserId, organizationCode, tenantCode) {
 		bodyData.updated_by = loggedInUserId
 		try {
@@ -81,6 +109,10 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			// invalidate caches after successful update
+			await this._invalidateEntityCaches({ tenantCode, organizationCode })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_UPDATED_SUCCESSFULLY',
@@ -105,7 +137,6 @@ module.exports = class EntityHelper {
 	 * @param {Object} bodyData - entity body data.
 	 * @returns {JSON} - Entity read response.
 	 */
-
 	static async read(query, tenantCode) {
 		try {
 			let filter
@@ -149,7 +180,6 @@ module.exports = class EntityHelper {
 	 * @param {String} _id - Delete entity.
 	 * @returns {JSON} - Entity deleted response.
 	 */
-
 	static async delete(id, organizationCode, tenantCode) {
 		try {
 			const deleteCount = await entityQueries.deleteOneEntity(id, organizationCode, tenantCode)
@@ -161,6 +191,9 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			// invalidate caches after successful delete
+			await this._invalidateEntityCaches({ tenantCode, organizationCode })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
