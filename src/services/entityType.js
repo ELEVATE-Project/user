@@ -1,3 +1,4 @@
+// EntityHelper.js
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
@@ -110,28 +111,41 @@ module.exports = class EntityHelper {
 		}
 	}
 
+	// Read all system entity types (cached)
 	static async readAllSystemEntityTypes(organizationCode, tenantCode, organizationId) {
 		try {
-			await this._invalidateEntityTypeCaches({ tenantCode, organizationCode })
+			const ns = common.CACHE_CONFIG.namespaces.entity_types.name
+			const cacheId = `all` // stable id under namespace; versioning handles invalidation
+			const fetchFn = async () => {
+				const attributes = ['value', 'label', 'id', 'organization_code']
+				const entities = await entityTypeQueries.findAllEntityTypes(
+					[organizationCode, process.env.DEFAULT_ORGANISATION_CODE],
+					attributes,
+					{
+						tenant_code: tenantCode,
+					}
+				)
+				const pruned = removeDefaultOrgEntityTypes(entities, organizationId)
+				return pruned
+			}
 
-			const attributes = ['value', 'label', 'id', 'organization_code']
+			const prunedEntities = await cacheClient.getOrSet({
+				key: cacheId,
+				tenantCode,
+				orgId: organizationCode,
+				ns,
+				id: cacheId,
+				fetchFn,
+			})
 
-			const entities = await entityTypeQueries.findAllEntityTypes(
-				[organizationCode, process.env.DEFAULT_ORGANISATION_CODE],
-				attributes,
-				{
-					tenant_code: tenantCode,
-				}
-			)
-			const prunedEntities = removeDefaultOrgEntityTypes(entities, organizationId)
-
-			if (!prunedEntities.length) {
+			if (!prunedEntities || !prunedEntities.length) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
@@ -142,25 +156,38 @@ module.exports = class EntityHelper {
 		}
 	}
 
+	// Read user entity types by value (cached)
 	static async readUserEntityTypes(body, organizationCode, tenantCode, organizationId = '') {
 		try {
-			const filter = {
-				value: body.value,
-				status: 'ACTIVE',
-				tenant_code: tenantCode,
-				organization_code: {
-					[Op.in]: [process.env.DEFAULT_ORGANISATION_CODE, organizationCode],
-				},
+			const ns = common.CACHE_CONFIG.namespaces.entity_types.name
+			const cacheId = `user:value:${body.value}`
+			const fetchFn = async () => {
+				const filter = {
+					value: body.value,
+					status: 'ACTIVE',
+					tenant_code: tenantCode,
+					organization_code: {
+						[Op.in]: [process.env.DEFAULT_ORGANISATION_CODE, organizationCode],
+					},
+				}
+				const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+				const pruned = removeDefaultOrgEntityTypes(entities, organizationId)
+				return { entity_types: pruned }
 			}
 
-			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
-
-			const prunedEntities = removeDefaultOrgEntityTypes(entities, organizationId)
+			const result = await cacheClient.getOrSet({
+				key: cacheId,
+				tenantCode,
+				orgId: organizationCode,
+				ns,
+				id: cacheId,
+				fetchFn,
+			})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
-				result: { entity_types: prunedEntities },
+				result,
 			})
 		} catch (error) {
 			console.error('Error in readUserEntityTypes:', error)
