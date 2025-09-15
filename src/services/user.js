@@ -308,15 +308,15 @@ module.exports = class UserHelper {
 			const filter = utils.isNumeric(id) ? { id, tenant_code: tenantCode } : { share_link: id }
 
 			const ns = common.CACHE_CONFIG.namespaces.profile.name
-			const cacheKey = cacheClient.namespacedKey({
+			const fullKey = await cacheClient.versionedKey({
 				tenantCode,
 				orgId: organizationCode,
 				ns,
 				id,
 			})
 
-			// Try cache first
-			let userDetails = await cacheClient.get(cacheKey)
+			const userDetails = await cacheClient.get(fullKey)
+
 			if (userDetails) {
 				if (userDetails.image) userDetails.image = await utils.getDownloadableUrl(userDetails.image)
 				return responses.successResponse({
