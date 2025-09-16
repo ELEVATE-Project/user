@@ -2046,7 +2046,7 @@ module.exports = class AccountHelper {
 				tenantCode,
 				orgId: organizationCode,
 				ns,
-				id,
+				id: userId,
 			})
 			await cacheClient.del(cacheKey)
 
