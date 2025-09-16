@@ -79,9 +79,8 @@ module.exports = {
 
 	down: async (queryInterface, Sequelize) => {
 		const t = await queryInterface.sequelize.transaction()
-		const DEFAULT_TENANT_CODE = process.env.DEFAULT_TENANT_CODE || 'default'
-		const DEFAULT_ORG_CODE = process.env.DEFAULT_ORGANISATION_CODE || 'default'
-
+		const DEFAULT_TENANT_CODE = process.env.DEFAULT_TENANT_CODE
+		const DEFAULT_ORG_CODE = process.env.DEFAULT_ORGANISATION_CODE
 		try {
 			await queryInterface.bulkDelete(
 				'organization_features',

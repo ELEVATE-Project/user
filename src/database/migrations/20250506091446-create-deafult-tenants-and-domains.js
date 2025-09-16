@@ -71,7 +71,7 @@ module.exports = {
 			// Insert organization if not exists
 			const existingOrgId = await queryInterface.rawSelect(
 				'organizations',
-				{ where: { code: DEFAULT_ORG_CODE }, transaction: t },
+				{ where: { code: DEFAULT_ORG_CODE, tenant_code: DEFAULT_TENANT_CODE }, transaction: t },
 				'id'
 			)
 
@@ -162,7 +162,11 @@ module.exports = {
 			)
 
 			// Delete organization
-			await queryInterface.bulkDelete('organizations', { code: DEFAULT_ORG_CODE }, { transaction: t })
+			await queryInterface.bulkDelete(
+				'organizations',
+				{ code: DEFAULT_ORG_CODE, tenant_code: DEFAULT_TENANT_CODE },
+				{ transaction: t }
+			)
 
 			// Delete tenant_domain(s)
 			await queryInterface.bulkDelete('tenant_domains', { tenant_code: DEFAULT_TENANT_CODE }, { transaction: t })
