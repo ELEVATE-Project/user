@@ -792,6 +792,12 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 	const url = constructUrl(externalBaseUrl, endPoint)
 	const projection = ['_id', 'metaInformation.name', 'metaInformation.externalId', 'entityType']
 	let data = []
+	let query = {
+		'metaInformation.name': {
+			$in: entities, // Dynamically pass the array here
+		},
+		tenantId: tenantCode,
+	}
 
 	await axios({
 		method: 'post',
@@ -801,12 +807,7 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 			'internal-access-token': process.env.INTERNAL_ACCESS_TOKEN,
 		},
 		data: {
-			query: {
-				'metaInformation.name': {
-					$in: entities, // Dynamically pass the array here
-				},
-				tenantId: tenantCode,
-			},
+			query,
 			projection,
 		},
 	})
@@ -818,7 +819,9 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 		})
 
 	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
-		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
+		const key = `${metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()}${entityType
+			.replaceAll(/\s+/g, '')
+			.toLowerCase()}`
 		if (key) {
 			acc[key] = { _id, name: metaInformation?.name, entityType, externalId: metaInformation.externalId }
 		}
