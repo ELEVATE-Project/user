@@ -2044,7 +2044,7 @@ module.exports = class AccountHelper {
 			const ns = common.CACHE_CONFIG.namespaces.profile.name
 			const cacheKey = cacheClient.namespacedKey({
 				tenantCode,
-				orgId: orgCode,
+				orgId: organizationCode,
 				ns,
 				id,
 			})
