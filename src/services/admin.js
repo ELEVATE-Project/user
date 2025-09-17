@@ -704,7 +704,7 @@ module.exports = class AdminHelper {
 			let deletedOrgDetails = orgUpdateResult.updatedRows?.[0]
 			const eventBodyData = organizationDTO.eventBodyDTO({
 				entity: 'organization',
-				eventType: 'delete',
+				eventType: 'update',
 				entityId: deletedOrgDetails.id,
 				args: {
 					created_by: deletedOrgDetails.created_by,
