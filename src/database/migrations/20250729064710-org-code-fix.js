@@ -1,184 +1,159 @@
-const { Sequelize } = require('sequelize')
+const { QueryTypes } = require('sequelize')
 
 module.exports = {
-	async up(queryInterface, Sequelize) {
+	async up(queryInterface) {
 		let transaction
-		let fk_retainer = []
-		let table, fk_name, fkey, refTable, refKey
+		const ORG_FETCH_QUERY = `SELECT id, name, code FROM organizations WHERE code ~ '\\s+' OR code ~ '[A-Z]';`
+		const disableFK = (table, fk_name) => `ALTER TABLE ${table} DROP CONSTRAINT IF EXISTS ${fk_name};`
+		const enableFK = (table, fk_name, fkey, refTable, refKey) =>
+			`ALTER TABLE ${table} ADD CONSTRAINT ${fk_name} FOREIGN KEY ${fkey} REFERENCES ${refTable} ${refKey} ON UPDATE NO ACTION ON DELETE CASCADE;`
+		const updateQuery = (table, key) =>
+			`UPDATE ${table} SET ${key} = LOWER(REGEXP_REPLACE(${key}, '\\s+', '_', 'g')) WHERE ${key} ~ '[A-Z\\s]';`
 
 		try {
-			// Start a transaction
+			// Check if any rows need changing before opening a transaction
+			const fetchOrg = await queryInterface.sequelize.query(ORG_FETCH_QUERY, {
+				type: QueryTypes.SELECT,
+				raw: true,
+			})
+
+			if (!fetchOrg || fetchOrg.length === 0) {
+				return
+			}
+
+			// Start transaction only when we need to make changes
 			transaction = await queryInterface.sequelize.transaction()
 
-			const ORG_FETCH_QUERY = `SELECT id, name, code FROM organizations WHERE code ~ '\\s+' OR code ~ '[A-Z]';`
-			const disableFK = (table, fk_name) => `ALTER TABLE ${table} DROP CONSTRAINT IF EXISTS ${fk_name};`
-			const enableFK = (table, fk_name, fkey, refTable, refKey) =>
-				`ALTER TABLE ${table} ADD CONSTRAINT ${fk_name} FOREIGN KEY ${fkey} REFERENCES ${refTable} ${refKey} ON UPDATE NO ACTION ON DELETE CASCADE;`
-			const updateQuery = (table, key) =>
-				`UPDATE ${table} SET ${key} = LOWER(REGEXP_REPLACE(${key}, '\\s+', '_', 'g')) WHERE ${key} ~ '[A-Z|\\s+]';`
+			const fk_retainer = []
 
-			// Execute the query to fetch organizations with whitespace
-			const fetchOrg = await queryInterface.sequelize.query(ORG_FETCH_QUERY, {
-				type: Sequelize.QueryTypes.SELECT,
+			// organization_registration_codes
+			fk_retainer.push(
+				enableFK(
+					'organization_registration_codes',
+					'fk_organization_code_tenant_code_in_org_reg_code',
+					'(organization_code, tenant_code)',
+					'organizations',
+					'(code, tenant_code)'
+				)
+			)
+			await queryInterface.sequelize.query(
+				disableFK('organization_registration_codes', 'fk_organization_code_tenant_code_in_org_reg_code'),
+				{ transaction }
+			)
+
+			// user_organizations
+			fk_retainer.push(
+				enableFK(
+					'user_organizations',
+					'fk_user_organizations_organizations',
+					'(organization_code, tenant_code)',
+					'organizations',
+					'(code, tenant_code)'
+				)
+			)
+			await queryInterface.sequelize.query(
+				disableFK('user_organizations', 'fk_user_organizations_organizations'),
+				{ transaction }
+			)
+
+			// organization_user_invites - first FK
+			fk_retainer.push(
+				enableFK(
+					'organization_user_invites',
+					'fk_org_user_invites_organization_id',
+					'(organization_code, tenant_code)',
+					'organizations',
+					'(code, tenant_code)'
+				)
+			)
+			await queryInterface.sequelize.query(
+				disableFK('organization_user_invites', 'fk_org_user_invites_organization_id'),
+				{ transaction }
+			)
+
+			// organization_user_invites - second FK
+			fk_retainer.push(
+				enableFK(
+					'organization_user_invites',
+					'fk_org_user_invites_org_code',
+					'(organization_code, tenant_code)',
+					'organizations',
+					'(code, tenant_code)'
+				)
+			)
+			await queryInterface.sequelize.query(
+				disableFK('organization_user_invites', 'fk_org_user_invites_org_code'),
+				{ transaction }
+			)
+
+			// user_organization_roles
+			fk_retainer.push(
+				enableFK(
+					'user_organization_roles',
+					'fk_user_org_roles_user_organizations',
+					'(user_id, organization_code, tenant_code)',
+					'user_organizations',
+					'(user_id, organization_code, tenant_code)'
+				)
+			)
+			await queryInterface.sequelize.query(
+				disableFK('user_organization_roles', 'fk_user_org_roles_user_organizations'),
+				{ transaction }
+			)
+
+			// organization_features
+			fk_retainer.push(
+				enableFK(
+					'organization_features',
+					'fk_org_features_organization',
+					'(organization_code, tenant_code)',
+					'organizations',
+					'(code, tenant_code)'
+				)
+			)
+			await queryInterface.sequelize.query(disableFK('organization_features', 'fk_org_features_organization'), {
+				transaction,
+			})
+
+			// Run updates
+			await queryInterface.sequelize.query(updateQuery('organizations', 'code'), { transaction })
+			await queryInterface.sequelize.query(updateQuery('organization_registration_codes', 'organization_code'), {
+				transaction,
+			})
+			await queryInterface.sequelize.query(updateQuery('organization_user_invites', 'organization_code'), {
+				transaction,
+			})
+			await queryInterface.sequelize.query(updateQuery('user_organizations', 'organization_code'), {
+				transaction,
+			})
+			await queryInterface.sequelize.query(updateQuery('user_organization_roles', 'organization_code'), {
+				transaction,
+			})
+			await queryInterface.sequelize.query(updateQuery('organization_features', 'organization_code'), {
+				transaction,
+			})
+
+			// Verify (optional)
+			const fetchOrgs = await queryInterface.sequelize.query(ORG_FETCH_QUERY, {
+				type: QueryTypes.SELECT,
 				raw: true,
 				transaction,
 			})
 
-			if (fetchOrg.length > 0) {
-				// Disable foreign key constraints and store enable queries
-				table = 'organization_registration_codes'
-				fk_name = 'fk_organization_code_tenant_code_in_org_reg_code'
-				fkey = '(organization_code, tenant_code)'
-				refTable = 'organizations'
-				refKey = '(code, tenant_code)'
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-
-				table = 'user_organizations'
-				fk_name = 'fk_user_organizations_organizations'
-				fkey = '(organization_code, tenant_code)'
-				refTable = 'organizations'
-				refKey = '(code, tenant_code)'
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
-
-				table = 'organization_user_invites'
-				fk_name = 'fk_org_user_invites_organization_id'
-				fkey = '(organization_code, tenant_code)'
-				refTable = 'organizations'
-				refKey = '(code, tenant_code)'
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-				table = 'organization_user_invites'
-				fk_name = 'fk_org_user_invites_org_code'
-				fkey = '(organization_code, tenant_code)'
-				refTable = 'organizations'
-				refKey = '(code, tenant_code)'
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
-
-				table = 'user_organization_roles'
-				fk_name = 'fk_user_org_roles_user_organizations'
-				fkey = '(user_id, organization_code, tenant_code)'
-				refTable = 'user_organizations'
-				refKey = '(user_id, organization_code, tenant_code)'
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
-
-				table = 'organization_features'
-				fk_name = 'fk_org_features_organization'
-				fkey = '(organization_code, tenant_code)'
-				refTable = 'organizations'
-				refKey = '(code, tenant_code)'
-				await queryInterface.sequelize.query(disableFK(table, fk_name), {
-					type: Sequelize.QueryTypes.RAW,
-					raw: true,
-					transaction,
-				})
-				fk_retainer.push(enableFK(table, fk_name, fkey, refTable, refKey))
-
-				// Update tables to remove whitespace
-				let updateTable = 'organizations'
-				let key = 'code'
-				const updateOrgs = await queryInterface.sequelize.query(updateQuery(updateTable, key), {
-					type: Sequelize.QueryTypes.UPDATE,
-					raw: true,
-					transaction,
-				})
-
-				updateTable = 'organization_registration_codes'
-				key = 'organization_code'
-				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
-					type: Sequelize.QueryTypes.UPDATE,
-					raw: true,
-					transaction,
-				})
-
-				updateTable = 'organization_user_invites'
-				key = 'organization_code'
-				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
-					type: Sequelize.QueryTypes.UPDATE,
-					raw: true,
-					transaction,
-				})
-
-				updateTable = 'user_organizations'
-				key = 'organization_code'
-				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
-					type: Sequelize.QueryTypes.UPDATE,
-					raw: true,
-					transaction,
-				})
-
-				updateTable = 'user_organization_roles'
-				key = 'organization_code'
-				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
-					type: Sequelize.QueryTypes.UPDATE,
-					raw: true,
-					transaction,
-				})
-				updateTable = 'organization_features'
-				key = 'organization_code'
-				await queryInterface.sequelize.query(updateQuery(updateTable, key), {
-					type: Sequelize.QueryTypes.UPDATE,
-					raw: true,
-					transaction,
-				})
-
-				// Verify the update
-				const fetchOrgs = await queryInterface.sequelize.query(ORG_FETCH_QUERY, {
-					type: Sequelize.QueryTypes.SELECT,
-					raw: true,
-					transaction,
-				})
-
-				// Re-enable foreign key constraints
-				let fk_retainerPromise = []
-				for (let i = 0; i < fk_retainer.length; i++) {
-					fk_retainerPromise.push(
-						queryInterface.sequelize.query(fk_retainer[i], {
-							type: Sequelize.QueryTypes.RAW,
-							raw: true,
-							transaction,
-						})
-					)
-				}
-
-				await Promise.all(fk_retainerPromise)
-
-				// Commit the transaction
-				await transaction.commit()
+			// Re-create foreign keys
+			for (const q of fk_retainer) {
+				await queryInterface.sequelize.query(q, { transaction })
 			}
-		} catch (error) {
-			// Rollback transaction on error
+
+			await transaction.commit()
+		} catch (err) {
 			if (transaction) await transaction.rollback()
-			console.error(`Error during transaction: ${error}`)
-			throw error
+			console.error('Error during migration:', err)
+			throw err
 		}
 	},
 
-	async down(queryInterface, Sequelize) {
-		console.warn(
-			'Down migration not implemented: Cannot reliably restore original whitespace in organization codes.'
-		)
+	async down() {
+		console.warn('Down migration not implemented.')
 	},
 }
