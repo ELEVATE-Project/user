@@ -396,7 +396,7 @@ module.exports = class tenantHelper {
 					code: tenantCreateResponse.code,
 					created_at: tenantCreateResponse?.created_at || new Date(),
 					updated_at: tenantCreateResponse?.updated_at || new Date(),
-					...(tenantCreateResponse.meta || {}),
+					meta: tenantCreateResponse?.meta || {},
 					status: tenantCreateResponse?.status || common.ACTIVE_STATUS,
 					deleted: false,
 					org_id: tenantCreateResponse.orgId,
@@ -459,7 +459,7 @@ module.exports = class tenantHelper {
 			// update only if the data is changed
 			if (Object.keys(tenantUpdateBody).length > 0) {
 				tenantUpdateBody.updated_by = userId
-				updatedTenantDetails = await tenantQueries.update(
+				const [rowsAffected, updatedRows] = await tenantQueries.update(
 					{
 						code: tenantCode,
 					},
@@ -469,11 +469,10 @@ module.exports = class tenantHelper {
 						raw: true,
 					}
 				)
+				updatedTenantDetails = updatedRows?.[0]
 			}
 
-			const [rowsAffected, updatedRows] = updatedTenantDetails
-
-			await tenantEventEmitter(tenantDetails, updatedRows?.[0], bodyData)
+			await tenantEventEmitter(tenantDetails, updatedTenantDetails, bodyData)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

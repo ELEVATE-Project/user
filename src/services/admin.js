@@ -700,21 +700,19 @@ module.exports = class AdminHelper {
 				})
 			}
 
-			//event Body for org create
-			let deletedOrgDetails = orgUpdateResult.updatedRows?.[0]
+			//Event body for org update (deactivation)
+			let updatedOrgDetails = orgUpdateResult.updatedRows?.[0]
 			const eventBodyData = organizationDTO.eventBodyDTO({
 				entity: 'organization',
 				eventType: 'update',
-				entityId: deletedOrgDetails.id,
+				entityId: updatedOrgDetails.id,
 				args: {
-					created_by: deletedOrgDetails.created_by,
-					name: deletedOrgDetails.name,
-					code: deletedOrgDetails.code,
-					deleted_at: deletedOrgDetails?.deleted_at || new Date(),
-					updated_at: deletedOrgDetails?.updated_at || new Date(),
-					status: deletedOrgDetails?.status || common.INACTIVE_STATUS,
-					deleted: true,
-					id: deletedOrgDetails.id,
+					created_by: updatedOrgDetails.created_by,
+					name: updatedOrgDetails.name,
+					code: updatedOrgDetails.code,
+					updated_at: updatedOrgDetails?.updated_at || new Date(),
+					status: updatedOrgDetails?.status || common.INACTIVE_STATUS,
+					id: updatedOrgDetails.id,
 					tenant_code: tenantCode,
 				},
 			})

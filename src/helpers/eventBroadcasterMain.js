@@ -25,13 +25,16 @@ const isEventEnabled = (eventGroup) => {
 	switch (eventGroup) {
 		case 'organizationEvents':
 			return process.env.EVENT_ENABLE_ORG_EVENTS !== 'false'
-
 		case 'userEvents':
 			return process.env.EVENT_ENABLE_USER_EVENTS !== 'false'
+		case 'tenantEvents':
+			return process.env.EVENT_ENABLE_TENANT_EVENTS !== 'false'
 		case 'userEvents-kafka':
 			return process.env.EVENT_ENABLE_KAFKA_PUSH !== 'false'
 		case 'tenantEvents-kafka':
 			return process.env.EVENT_ENABLE_TENANT_EVENTS !== 'false'
+		case 'organizationEvents-kafka':
+			return process.env.EVENT_ENABLE_ORG_EVENTS !== 'false'
 		default:
 			return true
 	}
