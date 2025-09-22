@@ -141,7 +141,7 @@ async function bumpVersion({ tenantCode, orgId, ns } = {}) {
 		if (redis && typeof redis.incr === 'function') {
 			// atomic increment
 			const newVer = await redis.incr(vKey)
-			// ensure wrapper reflects new value (best-effort)
+			// Ensure wrapper reflects new value (best-effort)
 			try {
 				if (RedisCache && typeof RedisCache.setKey === 'function') {
 					await RedisCache.setKey(vKey, String(newVer))
@@ -173,7 +173,7 @@ async function bumpVersion({ tenantCode, orgId, ns } = {}) {
 
 /** Build final key with version token inserted so patterns still match. */
 async function buildVersionedKey({ tenantCode, orgId, ns, id, key }) {
-	// If caller provided ns or id, treat as namespaced. Matches previous behaviour:
+	// If caller provided ns or id, treat as namespaced. Matches previous behavior:
 	// previous code used ns || id ? namespacedKey({ ns: ns || 'ns', id: id||key }) : tenantKey(tenantCode, [key])
 	const isNamespaced = Boolean(ns || id)
 	if (isNamespaced) {

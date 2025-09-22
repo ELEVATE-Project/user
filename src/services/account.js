@@ -557,6 +557,12 @@ module.exports = class AccountHelper {
 						org_admin: orgAdmins,
 					}
 				)
+
+				cacheClient.invalidateOrgNamespaceVersion({
+					tenantCode: tenantDetail.code,
+					orgId: user.organization_id,
+					ns: common.CACHE_CONFIG.namespaces.organization.name,
+				})
 			}
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
