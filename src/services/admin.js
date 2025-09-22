@@ -697,7 +697,7 @@ module.exports = class AdminHelper {
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
 				},
-				true // so we can get the user IDs
+				true // So we can get the user IDs
 			)
 
 			const namespaces = [
@@ -706,7 +706,9 @@ module.exports = class AdminHelper {
 			]
 
 			await Promise.allSettled(
-				namespaces.map((ns) => cacheClient.invalidateOrgNamespaceVersion({ tenantCode, orgId, ns }))
+				namespaces.map((ns) =>
+					cacheClient.invalidateOrgNamespaceVersion({ tenantCode, orgId: organizationCode, ns })
+				)
 			).then((results) =>
 				results.forEach((r, i) => {
 					if (r.status === 'rejected') {

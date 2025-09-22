@@ -171,7 +171,6 @@ module.exports = class userRoleHelper {
 				.invalidateOrgNamespaceVersion({
 					tenantCode,
 					orgId: userOrganizationCode,
-					orgId: userOrganizationCode,
 					ns: common.CACHE_CONFIG.namespaces.profile.name,
 				})
 				.catch((error) => {

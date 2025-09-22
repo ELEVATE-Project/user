@@ -761,7 +761,7 @@ module.exports = class AccountHelper {
 
 			// Find user with org
 			const userInstance = await userQueries.findUserWithOrganization(query, {}, true)
-			let user = userInstance ? userInstance.toJSON() : null
+			let user = userInstance ? (userInstance.toJSON ? userInstance.toJSON() : userInstance) : null
 
 			if (!user) {
 				return responses.failureResponse({

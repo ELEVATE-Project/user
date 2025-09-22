@@ -657,10 +657,10 @@ module.exports = class OrganizationsHelper {
 			}
 
 			// ensure the orgs to remove exist in same tenant
-			const relatedOrgRecords = await organizationQueries.findAll({
-				where: { id: relatedOrgs, tenant_code: tenantCode },
-				raw: true,
-			})
+			const relatedOrgRecords = await organizationQueries.findAll(
+				{ id: relatedOrgs, tenant_code: tenantCode },
+				{ raw: true }
+			)
 			const foundIds = relatedOrgRecords.map((r) => Number(r.id))
 			const notFound = relatedOrgs.filter((rid) => !foundIds.includes(Number(rid)))
 			if (notFound.length) {
