@@ -695,14 +695,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			// Cache lookup for tenant domain
-			const tenantDomain = await cacheClient.getOrSet({
-				tenantCode: null,
-				orgId: null,
-				ns: common.CACHE_CONFIG.namespaces.tenant.name,
-				id: domain,
-				fetchFn: async () => tenantDomainQueries.findOne({ domain }),
-			})
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
 
 			if (!tenantDomain) {
 				return makeNotFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')

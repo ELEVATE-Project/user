@@ -22,9 +22,11 @@ module.exports = class EntityHelper {
 			})
 
 			if (process.env.DEFAULT_ORGANISATION_CODE === organizationCode) {
-				await cacheClient.invalidateNamespaceVersion({
-					tenantCode,
-					ns: common.CACHE_CONFIG.namespaces.entity_types.name,
+				await cacheClient.evictTenantByPattern(tenantCode, {
+					patternSuffix: `org:*:${common.CACHE_CONFIG.namespaces.entity_types.name}:*`,
+				})
+				await cacheClient.evictTenantByPattern(tenantCode, {
+					patternSuffix: `org:*:${common.CACHE_CONFIG.namespaces.profile.name}:*`,
 				})
 			}
 		} catch (err) {
