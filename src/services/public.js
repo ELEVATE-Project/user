@@ -59,7 +59,7 @@ module.exports = class AccountHelper {
 				})
 			}
 			return responses.successResponse({
-				statusCode: httpStatusCode.created,
+				statusCode: httpStatusCode.ok,
 				message: 'TENANT_DETAILS',
 				result: tenantTransformDTO.publicTransform({
 					tenant: tenantDetail,

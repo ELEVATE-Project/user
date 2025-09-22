@@ -439,7 +439,9 @@ module.exports = class tenantHelper {
 					tenantUpdateBody
 				)
 			}
-			await cacheClient.invalidateTenantVersion({ tenantCode }).catch(() => {})
+			await cacheClient
+				.invalidateTenantVersion({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
+				.catch(() => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -521,7 +523,9 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
-			await cacheClient.invalidateTenantVersion({ tenantCode }).catch(() => {})
+			await cacheClient
+				.invalidateTenantVersion({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
+				.catch(() => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -635,7 +639,9 @@ module.exports = class tenantHelper {
 			})
 
 			await Promise.all(domainRemovePromise)
-			await cacheClient.invalidateTenantVersion({ tenantCode }).catch(() => {})
+			await cacheClient
+				.invalidateTenantVersion({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
+				.catch(() => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

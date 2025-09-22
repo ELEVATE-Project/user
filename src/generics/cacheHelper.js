@@ -367,9 +367,9 @@ async function invalidateNamespaceVersion({ tenantCode, orgId = null, ns } = {})
 	if (!tenantCode || !ns) return
 	return bumpVersion({ tenantCode, orgId, ns })
 }
-async function invalidateTenantVersion({ tenantCode } = {}) {
+async function invalidateTenantVersion({ tenantCode, ns } = {}) {
 	if (!tenantCode) return
-	return bumpVersion({ tenantCode })
+	return bumpVersion({ tenantCode, ns })
 }
 async function invalidateOrgNamespaceVersion({ tenantCode, orgId, ns } = {}) {
 	if (!tenantCode || !orgId || !ns) return
