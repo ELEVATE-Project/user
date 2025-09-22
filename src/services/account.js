@@ -560,7 +560,7 @@ module.exports = class AccountHelper {
 
 				cacheClient.invalidateOrgNamespaceVersion({
 					tenantCode: tenantDetail.code,
-					orgId: user.organization_id,
+					orgId: organization.code,
 					ns: common.CACHE_CONFIG.namespaces.organization.name,
 				})
 			}
