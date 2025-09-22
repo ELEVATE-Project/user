@@ -12,6 +12,7 @@ const { Op } = require('sequelize')
 const UserTransformDTO = require('@dtos/userDTO')
 const emailEncryption = require('@utils/emailEncryption')
 const common = require('@constants/common')
+const cacheClient = require('@generics/cacheHelper')
 
 module.exports = class AccountHelper {
 	static async tenantBranding(domain = null, organizationCode, tenantCode = null) {
@@ -32,16 +33,28 @@ module.exports = class AccountHelper {
 				code = tenantDomain?.tenant_code
 			}
 			if (!code) return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
-			const tenantDetail = await tenantQueries.findOne({ code }, {})
+
+			const tenantDetail = await cacheClient.getOrSet({
+				tenantCode: code, // ensures key is tenant-scoped
+				ns: common.CACHE_CONFIG.namespaces.tenant.name,
+				id: code, // unique per tenant
+				fetchFn: () => tenantQueries.findOne({ code }, {}),
+			})
 
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 			let orgDetails
 			if (organizationCode) {
-				orgDetails = await organizationQueries.findOne({
-					code: organizationCode,
-					tenant_code: tenantDomain.tenant_code,
+				orgDetails = await cacheClient.getOrSet({
+					tenantCode: code, // ensures key is tenant-scoped
+					ns: common.CACHE_CONFIG.namespaces.organization.name,
+					id: organizationCode, // unique per tenant
+					fetchFn: () =>
+						organizationQueries.findOne({
+							code: organizationCode,
+							tenant_code: code,
+						}),
 				})
 			}
 			return responses.successResponse({
@@ -77,10 +90,12 @@ module.exports = class AccountHelper {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
 
-			const tenantDetail = await tenantQueries.findOne(
-				{ code: tenantDomain.tenant_code },
-				{ attributes: ['code'] }
-			)
+			const tenantDetail = await cacheClient.getOrSet({
+				tenantCode: code, // ensures key is tenant-scoped
+				ns: common.CACHE_CONFIG.namespaces.tenant.name,
+				id: code, // unique per tenant
+				fetchFn: () => tenantQueries.findOne({ code: tenantDomain.tenant_code }, {}),
+			})
 
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
