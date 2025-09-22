@@ -19,6 +19,7 @@ const { eventBodyDTO } = require('@dtos/eventBody')
 const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
 const userOrgQueries = require('@database/queries/userOrganization')
+const cacheClient = require('@generics/cacheHelper')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -177,7 +178,7 @@ module.exports = class OrganizationsHelper {
 	 * @returns {JSON} - Update Organization data.
 	 */
 
-	static async update(id, bodyData, loggedInUserId) {
+	static async update(id, bodyData, loggedInUserId, tenantCode) {
 		try {
 			bodyData.updated_by = loggedInUserId
 			if (bodyData.relatedOrgs) {
@@ -192,7 +193,24 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
-
+			await cacheClient
+				.invalidateOrgNamespaceVersion({
+					tenantCode,
+					orgId: orgDetailsBeforeUpdate.code,
+					ns: common.CACHE_CONFIG.namespaces.organization.name,
+				})
+				.catch((error) => {
+					console.error(error)
+				})
+			await cacheClient
+				.invalidateOrgNamespaceVersion({
+					tenantCode,
+					orgId: orgDetailsBeforeUpdate.code,
+					ns: common.CACHE_CONFIG.namespaces.profile.name,
+				})
+				.catch((error) => {
+					console.error(error)
+				})
 			let domains = []
 			if (bodyData.domains?.length) {
 				let existingDomains = await orgDomainQueries.findAll({
@@ -501,10 +519,10 @@ module.exports = class OrganizationsHelper {
 		}
 	}
 
-	static async addRelatedOrg(id, relatedOrgs = []) {
+	static async addRelatedOrg(id, relatedOrgs = [], tenantCode) {
 		try {
-			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
+			// fetch organization details before update (ensures tenant_code checked)
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id, tenant_code: tenantCode })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
@@ -512,15 +530,44 @@ module.exports = class OrganizationsHelper {
 					message: 'ORGANIZATION_NOT_FOUND',
 				})
 			}
-			// append related organizations and make sure it is unique
-			let newRelatedOrgs = [...new Set([...(orgDetailsBeforeUpdate?.related_orgs ?? []), ...relatedOrgs])]
+
+			// normalize and remove self if present
+			let requestedRelated = Array.isArray(relatedOrgs) ? relatedOrgs.map(Number) : []
+			requestedRelated = [...new Set(requestedRelated)].filter((rid) => rid && rid !== Number(id))
+
+			if (requestedRelated.length === 0) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.accepted,
+					message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
+				})
+			}
+
+			const relatedOrgRecords = await organizationQueries.findAll(
+				{ id: requestedRelated, tenant_code: tenantCode },
+				{ raw: true }
+			)
+
+			// not found or tenant mismatch (because tenant_code filter applied)
+			const foundIds = relatedOrgRecords.map((r) => Number(r.id))
+			const notFound = requestedRelated.filter((rid) => !foundIds.includes(Number(rid)))
+			if (notFound.length) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: `RELATED_ORGANIZATIONS_NOT_FOUND`,
+				})
+			}
+
+			// append related organizations and make sure unique (local copy)
+			let newRelatedOrgs = [...new Set([...(orgDetailsBeforeUpdate?.related_orgs ?? []), ...requestedRelated])]
 
 			// check if there are any addition to related_org
 			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, newRelatedOrgs)) {
-				// update org related orgs
-				await organizationQueries.update(
+				// update org related orgs (scoped by tenant)
+				const updatedOrg = await organizationQueries.update(
 					{
 						id,
+						tenant_code: tenantCode,
 					},
 					{
 						related_orgs: newRelatedOrgs,
@@ -530,12 +577,43 @@ module.exports = class OrganizationsHelper {
 						raw: true,
 					}
 				)
-				// update related orgs to append org Id
-				await organizationQueries.appendRelatedOrg(id, newRelatedOrgs, {
+
+				// update related orgs to append org Id. scoped to same tenant
+				const updatedRelatedOrgs = await organizationQueries.appendRelatedOrg(id, newRelatedOrgs, tenantCode, {
 					returning: true,
 					raw: true,
 				})
+
 				const deltaOrgs = _.difference(newRelatedOrgs, orgDetailsBeforeUpdate?.related_orgs)
+
+				// build list of orgs with their tenant codes
+				const orgsToInvalidateRecords = [...updatedOrg.updatedRows, ...updatedRelatedOrgs.updatedRows].map(
+					(r) => ({
+						orgId: r.code,
+						tenantCode: r.tenant_code,
+					})
+				)
+
+				const { organization, profile } = common.CACHE_CONFIG.namespaces
+				const { invalidateOrgNamespaceVersion } = cacheClient
+
+				const tasks = orgsToInvalidateRecords.flatMap(({ orgId, tenantCode: tCode }) =>
+					[organization.name, profile.name].map((ns) => ({
+						orgId,
+						tenantCode: tCode,
+						ns,
+						promise: invalidateOrgNamespaceVersion({ tenantCode: tCode, orgId, ns }),
+					}))
+				)
+
+				const results = await Promise.allSettled(tasks.map((t) => t.promise))
+
+				results.forEach((res, i) => {
+					if (res.status === 'rejected') {
+						const { orgId, tenantCode, ns } = tasks[i]
+						console.error(`invalidate failed for org ${orgId} (tenant ${tenantCode}) ns: ${ns}`, res.reason)
+					}
+				})
 
 				eventBroadcaster('updateRelatedOrgs', {
 					requestBody: {
@@ -551,13 +629,15 @@ module.exports = class OrganizationsHelper {
 				message: 'ORGANIZATION_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
+			console.log(error)
 			throw error
 		}
 	}
-	static async removeRelatedOrg(id, relatedOrgs = []) {
+
+	static async removeRelatedOrg(id, relatedOrgs = [], tenantCode) {
 		try {
 			// fetch organization details before update
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id, tenant_code: tenantCode })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
@@ -565,21 +645,10 @@ module.exports = class OrganizationsHelper {
 					message: 'ORGANIZATION_NOT_FOUND',
 				})
 			}
-			if (orgDetailsBeforeUpdate?.related_orgs == null) {
-				return responses.failureResponse({
-					statusCode: httpStatusCode.not_acceptable,
-					responseCode: 'CLIENT_ERROR',
-					message: 'RELATED_ORG_REMOVAL_FAILED',
-				})
-			}
-			const relatedOrganizations = _.difference(orgDetailsBeforeUpdate?.related_orgs, relatedOrgs)
-
-			// check if the given org ids are present in the organization's related org
-			const relatedOrgMismatchFlag = relatedOrgs.some(
-				(orgId) => !orgDetailsBeforeUpdate?.related_orgs.includes(orgId)
-			)
-
-			if (relatedOrgMismatchFlag) {
+			if (
+				!Array.isArray(orgDetailsBeforeUpdate.related_orgs) ||
+				orgDetailsBeforeUpdate.related_orgs.length === 0
+			) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
@@ -587,26 +656,63 @@ module.exports = class OrganizationsHelper {
 				})
 			}
 
-			// check if there are any addition to related_org
-			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, relatedOrganizations)) {
-				// update org remove related orgs
-				await organizationQueries.update(
-					{
-						id: parseInt(id, 10),
-					},
-					{
-						related_orgs: relatedOrganizations,
-					},
-					{
-						returning: true,
-						raw: true,
-					}
+			// ensure the orgs to remove exist in same tenant
+			const relatedOrgRecords = await organizationQueries.findAll({
+				where: { id: relatedOrgs, tenant_code: tenantCode },
+				raw: true,
+			})
+			const foundIds = relatedOrgRecords.map((r) => Number(r.id))
+			const notFound = relatedOrgs.filter((rid) => !foundIds.includes(Number(rid)))
+			if (notFound.length) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+					message: `RELATED_ORG_REMOVAL_FAILED_NOT_FOUND_OR_DIFFERENT_TENANT: ${notFound.join(',')}`,
+				})
+			}
+
+			// recalc related orgs for this org
+			const newRelated = _.difference(orgDetailsBeforeUpdate.related_orgs, relatedOrgs)
+
+			if (!_.isEqual(orgDetailsBeforeUpdate.related_orgs, newRelated)) {
+				// update this org
+				const updatedOrg = await organizationQueries.update(
+					{ id, tenant_code: tenantCode },
+					{ related_orgs: newRelated },
+					{ returning: true, raw: true }
 				)
 
-				// update related orgs remove orgId
-				await organizationQueries.removeRelatedOrg(id, relatedOrgs, {
+				// update reverse side (other orgs remove this org's id), scoped by tenant
+				const updatedRelatedOrgs = await organizationQueries.removeRelatedOrg(id, relatedOrgs, tenantCode, {
 					returning: true,
 					raw: true,
+				})
+
+				// invalidate cache and broadcast event
+				const orgsToInvalidateRecords = [...updatedOrg.updatedRows, ...updatedRelatedOrgs.updatedRows].map(
+					(r) => ({
+						orgId: r.code,
+						tenantCode: r.tenant_code,
+					})
+				)
+				const { organization, profile } = common.CACHE_CONFIG.namespaces
+				const { invalidateOrgNamespaceVersion } = cacheClient
+
+				const tasks = orgsToInvalidateRecords.flatMap(({ orgId, tenantCode: tCode }) =>
+					[organization.name, profile.name].map((ns) => ({
+						orgId,
+						tenantCode: tCode,
+						ns,
+						promise: invalidateOrgNamespaceVersion({ tenantCode: tCode, orgId, ns }),
+					}))
+				)
+
+				const results = await Promise.allSettled(tasks.map((t) => t.promise))
+				results.forEach((res, i) => {
+					if (res.status === 'rejected') {
+						const { orgId, tenantCode, ns } = tasks[i]
+						console.error(`invalidate failed for org ${orgId} (tenant ${tenantCode}) ns: ${ns}`, res.reason)
+					}
 				})
 
 				eventBroadcaster('updateRelatedOrgs', {

@@ -111,35 +111,36 @@ exports.update = async (filter, update, options = {}) => {
 	}
 }
 
-exports.appendRelatedOrg = async (relatedOrg, ids, options = {}) => {
+exports.appendRelatedOrg = async (relatedOrg, ids, tenantCode, options = {}) => {
 	try {
+		const whereClause = {
+			id: ids,
+			tenant_code: tenantCode, // enforce tenant
+			[Op.or]: [
+				{
+					[Op.not]: {
+						related_orgs: {
+							[Op.contains]: [relatedOrg],
+						},
+					},
+				},
+				{
+					related_orgs: {
+						[Op.is]: null,
+					},
+				},
+			],
+		}
 		const result = await Organization.update(
 			{
 				related_orgs: sequelize.fn('array_append', sequelize.col('related_orgs'), relatedOrg),
 			},
 			{
-				where: {
-					id: ids,
-					[Op.or]: [
-						{
-							[Op.not]: {
-								related_orgs: {
-									[Op.contains]: [relatedOrg],
-								},
-							},
-						},
-						{
-							related_orgs: {
-								[Op.is]: null,
-							},
-						},
-					],
-				},
+				where: whereClause,
 				...options,
 				individualHooks: true,
 			}
 		)
-
 		const [rowsAffected, updatedRows] = result
 		return options.returning ? { rowsAffected, updatedRows } : rowsAffected
 	} catch (error) {
@@ -148,13 +149,17 @@ exports.appendRelatedOrg = async (relatedOrg, ids, options = {}) => {
 	}
 }
 
-exports.removeRelatedOrg = async (removedOrgIds, ids, options = {}) => {
+// (removedOrgIds, ids, tenantCode, options = {})
+exports.removeRelatedOrg = async (removedOrgIds, ids, tenantCode, options = {}) => {
 	try {
 		const result = await Organization.update(
-			{ related_orgs: sequelize.fn('array_remove', sequelize.col('related_orgs'), removedOrgIds) },
+			{
+				related_orgs: sequelize.fn('array_remove', sequelize.col('related_orgs'), removedOrgIds),
+			},
 			{
 				where: {
 					id: ids,
+					tenant_code: tenantCode, // enforce same tenant
 				},
 				...options,
 				individualHooks: true,
@@ -168,6 +173,7 @@ exports.removeRelatedOrg = async (removedOrgIds, ids, options = {}) => {
 		throw error
 	}
 }
+
 exports.listOrganizations = async (page, limit, search) => {
 	try {
 		let filterQuery = {
