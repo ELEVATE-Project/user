@@ -48,6 +48,7 @@ module.exports = class AccountHelper {
 			if (organizationCode) {
 				orgDetails = await cacheClient.getOrSet({
 					tenantCode: code, // ensures key is tenant-scoped
+					orgId: organizationCode, // ensures key is tenant-scoped
 					ns: common.CACHE_CONFIG.namespaces.organization.name,
 					id: organizationCode, // unique per tenant
 					fetchFn: () =>
