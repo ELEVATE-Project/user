@@ -137,6 +137,7 @@
 	"TENANT_DOMAIN_ALREADY_EXISTS": "Tenant domain already exists.",
 	"TENANT_CREATED_SUCCESSFULLY": "Tenant created successfully.",
 	"DEFAULT_ORG_CREATION_FAILED": "Default Organization creation under tenant failed.",
+	"RELATED_ORGANIZATIONS_NOT_FOUND": "Related organisations not found!",
 	"TENANT_NOT_FOUND": "Tenant not found.",
 	"TENANT_UPDATED_SUCCESSFULLY": "Tenant updated successfully.",
 	"TENANT_DOMAINS_ALREADY_PRESENT": "All the domains are already added for the tenant",
