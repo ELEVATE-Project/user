@@ -14,6 +14,7 @@ const { Op } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const responses = require('@helpers/responses')
 const utils = require('@generics/utils')
+const cacheClient = require('@generics/cacheHelper')
 
 module.exports = class userRoleHelper {
 	/**
@@ -78,7 +79,7 @@ module.exports = class userRoleHelper {
 	 * @returns {Promise<Object>} - Updated role response.
 	 */
 
-	static async update(id, bodyData, userOrganizationId, tenantCode) {
+	static async update(id, bodyData, userOrganizationId, userOrganizationCode, tenantCode) {
 		try {
 			const filter = { id: id, organization_id: userOrganizationId, tenant_code: tenantCode }
 			const [updateCount, updateRole] = await roleQueries.updateRole(filter, bodyData)
@@ -89,11 +90,32 @@ module.exports = class userRoleHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			await cacheClient
+				.invalidateOrgNamespaceVersion({
+					tenantCode,
+					orgId: userOrganizationCode,
+					ns: common.CACHE_CONFIG.namespaces.organization.name,
+				})
+				.catch((error) => {
+					console.error(error)
+				})
+			await cacheClient
+				.invalidateOrgNamespaceVersion({
+					tenantCode,
+					orgId: userOrganizationCode,
+					ns: common.CACHE_CONFIG.namespaces.profile.name,
+				})
+				.catch((error) => {
+					console.error(error)
+				})
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ROLE_UPDATED_SUCCESSFULLY',
 				result: {
 					title: updateRole[0].title,
+					label: updateRole[0].label,
 					user_type: updateRole[0].user_type,
 					status: updateRole[0].status,
 					visibility: updateRole[0].visibility,
@@ -123,7 +145,7 @@ module.exports = class userRoleHelper {
 	 * @returns {Promise<Object>} - Deletion result response.
 	 */
 
-	static async delete(id, userOrganizationId, tenantCode) {
+	static async delete(id, userOrganizationId, userOrganizationCode, tenantCode) {
 		try {
 			const filter = { id: id, organization_id: userOrganizationId, tenant_code: tenantCode }
 			const deleteRole = await roleQueries.deleteRole(filter)
@@ -135,6 +157,26 @@ module.exports = class userRoleHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			await cacheClient
+				.invalidateOrgNamespaceVersion({
+					tenantCode,
+					orgId: userOrganizationCode,
+					ns: common.CACHE_CONFIG.namespaces.organization.name,
+				})
+				.catch((error) => {
+					console.error(error)
+				})
+			await cacheClient
+				.invalidateOrgNamespaceVersion({
+					tenantCode,
+					orgId: userOrganizationCode,
+					orgId: userOrganizationCode,
+					ns: common.CACHE_CONFIG.namespaces.profile.name,
+				})
+				.catch((error) => {
+					console.error(error)
+				})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
