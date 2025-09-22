@@ -106,7 +106,7 @@ exports.findOne = async (filter, options = {}) => {
 
 exports.findAll = async (filter = {}, options = {}) => {
 	try {
-		if (options.organizationAttributes.length > 0) {
+		if (options?.organizationAttributes?.length > 0) {
 			options.include = [
 				{
 					model: Organization,

@@ -69,6 +69,14 @@ const userHelper = {
 				const update = { ...rest, ...generateUpdateParams(userId) }
 
 				await userQueries.updateUser({ id: user.id }, update, { transaction })
+
+				// Capture org codes before delete for cache invalidation
+				const orgRows = await userOrganizationQueries.findAll(
+					{ user_id: user.id, tenant_code: user.tenant_code },
+					{ attributes: ['organization_code'], transaction }
+				)
+				const orgCodes = [...new Set(orgRows.map((r) => r.organization_code))]
+
 				await userOrganizationQueries.delete(
 					{ user_id: user.id, tenant_code: user.tenant_code },
 					{ transaction }
@@ -94,13 +102,15 @@ const userHelper = {
 				// Clear cache entries for this user
 				try {
 					const ns = common.CACHE_CONFIG.namespaces.profile.name
-					const fullKey = await cacheClient.versionedKey({
-						tenantCode: user.tenant_code,
-						orgId: user.organization_code,
-						ns,
-						id: userId,
-					})
-					await cacheClient.del(fullKey)
+					for (const orgId of orgCodes) {
+						const fullKey = await cacheClient.versionedKey({
+							tenantCode: user.tenant_code,
+							orgId,
+							ns,
+							id: userId,
+						})
+						await cacheClient.del(fullKey)
+					}
 				} catch (err) {
 					console.error('Failed to delete user cache', err)
 				}
