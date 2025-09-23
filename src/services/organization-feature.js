@@ -12,8 +12,27 @@ const responses = require('@helpers/responses')
 const utilsHelper = require('@generics/utils')
 const { UniqueConstraintError } = require('sequelize')
 const common = require('@constants/common')
+const cacheClient = require('@generics/cacheHelper')
 
 module.exports = class organizationFeatureHelper {
+	static async _invalidateOrganizationFeatureCache({ tenantCode, organizationCode }) {
+		try {
+			await cacheClient.evictNamespace({
+				tenantCode,
+				orgId: organizationCode,
+				ns: common.CACHE_CONFIG.namespaces.organization_features.name,
+			})
+
+			if (process.env.DEFAULT_ORGANISATION_CODE === organizationCode) {
+				await cacheClient.evictTenantByPattern(tenantCode, {
+					patternSuffix: `org:*:${common.CACHE_CONFIG.namespaces.organization_features.name}:*`,
+				})
+			}
+		} catch (err) {
+			console.error('Org features cache invalidation failed', err)
+			// Do not throw. Caching failure should not block main operation.
+		}
+	}
 	/**
 	 * Validate organization features Req.
 	 * @method
@@ -93,6 +112,11 @@ module.exports = class organizationFeatureHelper {
 
 			// Create the new organization feature
 			const createdOrgFeature = await organizationFeatureQueries.create(bodyData)
+			await this._invalidateOrganizationFeatureCache({
+				tenantCode: tokenInformation.tenant_code,
+				organizationCode: tokenInformation.organization_code,
+			})
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORG_FEATURE_CREATED_SUCCESSFULLY',
@@ -148,7 +172,10 @@ module.exports = class organizationFeatureHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			await this._invalidateOrganizationFeatureCache({
+				tenantCode: tokenInformation.tenant_code,
+				organizationCode: tokenInformation.organization_code,
+			})
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_UPDATED_SUCCESSFULLY',
@@ -176,7 +203,22 @@ module.exports = class organizationFeatureHelper {
 
 	static async list(tenantCode, orgCode) {
 		try {
-			let filter = {
+			const ns = common.CACHE_CONFIG.namespaces.organization_features.name
+			const id = common.CACHE_CONFIG.common.list
+
+			// 1) try final response cache
+			const finalKey = await cacheClient.buildKey({ tenantCode, orgId: orgCode, ns, id })
+			const cached = await cacheClient.get(finalKey)
+			if (cached) {
+				return responses.successResponse({
+					statusCode: httpStatusCode.ok,
+					message: 'ORG_FEATURE_FETCHED',
+					result: cached?.result ?? [],
+				})
+			}
+
+			// 2) DB reads
+			const filter = {
 				organization_code: orgCode,
 				tenant_code: tenantCode,
 			}
@@ -186,7 +228,6 @@ module.exports = class organizationFeatureHelper {
 				},
 			}
 
-			// Fetch features for default and current org in parallel
 			const [defaultOrgFeatures, currentOrgFeatures] = await Promise.all([
 				organizationFeatureQueries.findAllOrganizationFeature(
 					{ ...filter, organization_code: process.env.DEFAULT_ORGANISATION_CODE },
@@ -195,37 +236,38 @@ module.exports = class organizationFeatureHelper {
 				organizationFeatureQueries.findAllOrganizationFeature(filter, queryOptions),
 			])
 
-			// Merge features with Map for efficiency
-			const featureMap = new Map(defaultOrgFeatures.map((feature) => [feature.feature_code, feature]))
-
-			// Override with current org features if they exist
+			// 3) merge + sort + post-process
+			const featureMap = new Map(defaultOrgFeatures.map((f) => [f.feature_code, f]))
 			if (currentOrgFeatures?.length) {
-				currentOrgFeatures.forEach((feature) => {
-					featureMap.set(feature.feature_code, feature)
-				})
+				currentOrgFeatures.forEach((f) => featureMap.set(f.feature_code, f))
 			}
+			const sortedFeatures = Array.from(featureMap.values()).sort((a, b) => a.display_order - b.display_order)
 
-			const organizationFeatures = Array.from(featureMap.values())
-
-			// Sort the organization features based on the display_order in ascending order
-			const sortedFeatures = organizationFeatures.sort((a, b) => a.display_order - b.display_order)
-
-			// Process icons in parallel
 			if (sortedFeatures?.length) {
 				await Promise.all(
 					sortedFeatures.map(async (feature) => {
-						if (feature.icon) {
-							feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
-						}
+						if (feature.icon) feature.icon = await utilsHelper.getDownloadableUrl(feature.icon)
 					})
 				)
 			}
 
-			return responses.successResponse({
+			// 4) always build success response
+			const response = responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_FETCHED',
 				result: sortedFeatures ?? [],
 			})
+
+			// 5) cache final result (store only payload, not wrapper)
+			await cacheClient.setScoped({
+				tenantCode,
+				orgId: orgCode,
+				ns,
+				id,
+				value: { result: sortedFeatures ?? [] },
+			})
+
+			return response
 		} catch (error) {
 			throw error
 		}
@@ -305,7 +347,10 @@ module.exports = class organizationFeatureHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
+			await this._invalidateOrganizationFeatureCache({
+				tenantCode: tokenInformation.tenant_code,
+				organizationCode: tokenInformation.organization_code,
+			})
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_DELETED_SUCCESSFULLY',

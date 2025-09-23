@@ -115,15 +115,22 @@ module.exports = {
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE: 'ER_DUP_ENTRY',
 	CACHE_CONFIG: {
 		enableCache: true,
-		enableTracking: true,
 		shards: 32,
-		versionDefault: 0,
+		common: {
+			list: 'list',
+		},
 		namespaces: {
 			profile: { name: 'profile', enabled: true, defaultTtl: 3600, useInternal: false },
 			entity_types: { name: 'entity_types', enabled: true, defaultTtl: 86400, useInternal: false },
 			tenant: { name: 'tenant', enabled: true, defaultTtl: 21600, useInternal: false },
 			branding: { name: 'branding', enabled: true, defaultTtl: 43200, useInternal: false },
 			organization: { name: 'organization', enabled: true, defaultTtl: 21600, useInternal: false },
+			organization_features: {
+				name: 'organization_features',
+				enabled: true,
+				defaultTtl: 21600,
+				useInternal: false,
+			},
 		},
 	},
 }
