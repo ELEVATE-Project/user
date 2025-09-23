@@ -251,19 +251,25 @@ module.exports = class OrganizationsHelper {
 
 	static async list(params) {
 		try {
+			const tenantCode = params?.query?.tenant_code || params?.query?.tenantCode || null
 			// fetch orgs under tenants
-			if (params?.query?.tenantCode) {
+			if (tenantCode) {
 				let options = {
 					attributes: ['id', 'name', 'code', 'description'],
 				}
+				let filters = {
+					tenant_code: tenantCode,
+					status: common.ACTIVE_STATUS,
+				}
+				// filter by org codes if provided
+				const orgCodes = params?.query?.organization_codes || params?.query?.organizationCodes || null
+				orgCodes
+					? (filters.code = {
+							[Op.in]: orgCodes.split(',').map((code) => code.toLowerCase().trim()),
+					  })
+					: null
 
-				let organizations = await organizationQueries.findAll(
-					{
-						tenant_code: params?.query?.tenantCode,
-						status: common.ACTIVE_STATUS,
-					},
-					options
-				)
+				let organizations = await organizationQueries.findAll(filters, options)
 
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
@@ -419,6 +425,17 @@ module.exports = class OrganizationsHelper {
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
+			}
+			//Get related orgs with code
+			organisationDetails.related_org_details = []
+			if (organisationDetails.related_orgs && organisationDetails.related_orgs.length > 0) {
+				const options = {
+					attributes: ['id', 'code'],
+				}
+				organisationDetails.related_org_details = await organizationQueries.findAll(
+					{ id: { [Op.in]: organisationDetails.related_orgs } },
+					options
+				)
 			}
 
 			return responses.successResponse({

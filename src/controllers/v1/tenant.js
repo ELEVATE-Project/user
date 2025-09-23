@@ -156,4 +156,30 @@ module.exports = class Tenant {
 			return error
 		}
 	}
+
+	/**
+	 * Read tenant details for internal service calls
+	 * @method
+	 * @name readInternal
+	 * @param {Object} req - request data
+	 * @param {String} req.params.id - tenant code to fetch details for
+	 * @returns {JSON} - tenant details without any filtering for internal service use
+	 */
+
+	async readInternal(req) {
+		try {
+			const tenantCode = req.params.id
+			if (!tenantCode) {
+				return responses.failureResponse({
+					statusCode: httpStatusCode.bad_request,
+					message: 'TENANT_CODE_REQUIRED',
+					result: {},
+				})
+			}
+			const tenant = await tenantService.read(tenantCode, true)
+			return tenant
+		} catch (error) {
+			return error
+		}
+	}
 }
