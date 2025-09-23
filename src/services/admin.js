@@ -707,9 +707,7 @@ module.exports = class AdminHelper {
 			]
 
 			const results = await Promise.allSettled(
-				namespaces.map((ns) =>
-					cacheClient.invalidateOrgNamespaceVersion({ tenantCode, orgId: organizationCode, ns })
-				)
+				namespaces.map((ns) => cacheClient.evictNamespace({ tenantCode, orgId: organizationCode, ns }))
 			)
 			results.forEach((r, i) => {
 				if (r.status === 'rejected') {
