@@ -20,6 +20,7 @@ const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
 const userOrgQueries = require('@database/queries/userOrganization')
 const cacheClient = require('@generics/cacheHelper')
+const tenant = require('@validators/v1/tenant')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -184,7 +185,7 @@ module.exports = class OrganizationsHelper {
 			if (bodyData.relatedOrgs) {
 				delete bodyData.relatedOrgs
 			}
-			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id })
+			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id: id, tenant_code: tenantCode })
 			if (!orgDetailsBeforeUpdate) {
 				return responses.failureResponse({
 					statusCode: httpStatusCode.not_acceptable,
@@ -192,7 +193,10 @@ module.exports = class OrganizationsHelper {
 					message: 'ORGANIZATION_NOT_FOUND',
 				})
 			}
-			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
+			const orgDetails = await organizationQueries.update({ id: id, tenant_code: tenantCode }, bodyData, {
+				returning: true,
+				raw: true,
+			})
 			await cacheClient
 				.evictNamespace({
 					tenantCode,
