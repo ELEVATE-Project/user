@@ -92,7 +92,7 @@ module.exports = class userRoleHelper {
 			}
 
 			await cacheClient
-				.invalidateOrgNamespaceVersion({
+				.evictNamespace({
 					tenantCode,
 					orgId: userOrganizationCode,
 					ns: common.CACHE_CONFIG.namespaces.organization.name,
@@ -101,7 +101,7 @@ module.exports = class userRoleHelper {
 					console.error(error)
 				})
 			await cacheClient
-				.invalidateOrgNamespaceVersion({
+				.evictNamespace({
 					tenantCode,
 					orgId: userOrganizationCode,
 					ns: common.CACHE_CONFIG.namespaces.profile.name,
@@ -159,7 +159,7 @@ module.exports = class userRoleHelper {
 			}
 
 			await cacheClient
-				.invalidateOrgNamespaceVersion({
+				.evictNamespace({
 					tenantCode,
 					orgId: userOrganizationCode,
 					ns: common.CACHE_CONFIG.namespaces.organization.name,
@@ -168,7 +168,7 @@ module.exports = class userRoleHelper {
 					console.error(error)
 				})
 			await cacheClient
-				.invalidateOrgNamespaceVersion({
+				.evictNamespace({
 					tenantCode,
 					orgId: userOrganizationCode,
 					ns: common.CACHE_CONFIG.namespaces.profile.name,

@@ -601,15 +601,16 @@ module.exports = class AdminHelper {
 				{ attributes: { exclude: ['created_at', 'updated_at', 'deleted_at'] } }
 			)
 
-			cacheClient.invalidateOrgNamespaceVersion({
+			await cacheClient.evictNamespace({
 				tenantCode,
-				orgId: organizationId,
+				orgId: organization.code,
 				ns: common.CACHE_CONFIG.namespaces.organization.name,
+				patternSuffix: '*',
 			})
 
 			const cacheKey = cacheClient.namespacedKey({
 				tenantCode,
-				orgId: organizationId,
+				orgId: organization.code,
 				ns: common.CACHE_CONFIG.namespaces.profile.name,
 				id: user.id,
 			})
@@ -705,17 +706,16 @@ module.exports = class AdminHelper {
 				common.CACHE_CONFIG.namespaces.profile.name,
 			]
 
-			await Promise.allSettled(
+			const results = await Promise.allSettled(
 				namespaces.map((ns) =>
 					cacheClient.invalidateOrgNamespaceVersion({ tenantCode, orgId: organizationCode, ns })
 				)
-			).then((results) =>
-				results.forEach((r, i) => {
-					if (r.status === 'rejected') {
-						console.error(`invalidate failed for ns=${namespaces[i]} org=${orgId}`, r.reason)
-					}
-				})
 			)
+			results.forEach((r, i) => {
+				if (r.status === 'rejected') {
+					console.error(`invalidate failed for ns=${namespaces[i]} org=${organizationCode}`, r.reason)
+				}
+			})
 
 			// 3. Broadcast & remove sessions if users were found
 			if (userRowsAffected > 0) {

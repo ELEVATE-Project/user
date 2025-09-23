@@ -194,7 +194,7 @@ module.exports = class OrganizationsHelper {
 			}
 			const orgDetails = await organizationQueries.update({ id: id }, bodyData, { returning: true, raw: true })
 			await cacheClient
-				.invalidateOrgNamespaceVersion({
+				.evictNamespace({
 					tenantCode,
 					orgId: orgDetailsBeforeUpdate.code,
 					ns: common.CACHE_CONFIG.namespaces.organization.name,
@@ -203,7 +203,7 @@ module.exports = class OrganizationsHelper {
 					console.error(error)
 				})
 			await cacheClient
-				.invalidateOrgNamespaceVersion({
+				.evictNamespace({
 					tenantCode,
 					orgId: orgDetailsBeforeUpdate.code,
 					ns: common.CACHE_CONFIG.namespaces.profile.name,
@@ -595,14 +595,14 @@ module.exports = class OrganizationsHelper {
 				)
 
 				const { organization, profile } = common.CACHE_CONFIG.namespaces
-				const { invalidateOrgNamespaceVersion } = cacheClient
+				const { evictNamespace } = cacheClient
 
 				const tasks = orgsToInvalidateRecords.flatMap(({ orgId, tenantCode: tCode }) =>
 					[organization.name, profile.name].map((ns) => ({
 						orgId,
 						tenantCode: tCode,
 						ns,
-						promise: invalidateOrgNamespaceVersion({ tenantCode: tCode, orgId, ns }),
+						promise: evictNamespace({ tenantCode: tCode, orgId, ns }),
 					}))
 				)
 
@@ -696,14 +696,14 @@ module.exports = class OrganizationsHelper {
 					})
 				)
 				const { organization, profile } = common.CACHE_CONFIG.namespaces
-				const { invalidateOrgNamespaceVersion } = cacheClient
+				const { evictNamespace } = cacheClient
 
 				const tasks = orgsToInvalidateRecords.flatMap(({ orgId, tenantCode: tCode }) =>
 					[organization.name, profile.name].map((ns) => ({
 						orgId,
 						tenantCode: tCode,
 						ns,
-						promise: invalidateOrgNamespaceVersion({ tenantCode: tCode, orgId, ns }),
+						promise: evictNamespace({ tenantCode: tCode, orgId, ns }),
 					}))
 				)
 

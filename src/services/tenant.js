@@ -440,7 +440,7 @@ module.exports = class tenantHelper {
 				)
 			}
 			await cacheClient
-				.invalidateTenantVersion({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
+				.evictTenantByPattern({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
 				.catch(() => {})
 
 			return responses.successResponse({
@@ -524,9 +524,12 @@ module.exports = class tenantHelper {
 				})
 			}
 			await cacheClient
-				.invalidateTenantVersion({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
+				.evictNamespace({
+					tenantCode,
+					ns: common.CACHE_CONFIG.namespaces.tenant.name,
+					patternSuffix: '*',
+				})
 				.catch(() => {})
-
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'TENANT_DOMAINS_ADDED_SUCCESSFULLY',
@@ -640,7 +643,11 @@ module.exports = class tenantHelper {
 
 			await Promise.all(domainRemovePromise)
 			await cacheClient
-				.invalidateTenantVersion({ tenantCode, ns: common.CACHE_CONFIG.namespaces.tenant.name })
+				.evictNamespace({
+					tenantCode,
+					ns: common.CACHE_CONFIG.namespaces.tenant.name,
+					patternSuffix: '*',
+				})
 				.catch(() => {})
 
 			return responses.successResponse({

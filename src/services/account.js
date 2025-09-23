@@ -557,11 +557,11 @@ module.exports = class AccountHelper {
 						org_admin: orgAdmins,
 					}
 				)
-
-				cacheClient.invalidateOrgNamespaceVersion({
+				await cacheClient.evictNamespace({
 					tenantCode: tenantDetail.code,
 					orgId: organization.code,
 					ns: common.CACHE_CONFIG.namespaces.organization.name,
+					patternSuffix: '*',
 				})
 			}
 

@@ -103,7 +103,7 @@ const userHelper = {
 				try {
 					const ns = common.CACHE_CONFIG.namespaces.profile.name
 					for (const orgId of orgCodes) {
-						const fullKey = await cacheClient.versionedKey({
+						const fullKey = await cacheClient.buildKey({
 							tenantCode: user.tenant_code,
 							orgId,
 							ns,

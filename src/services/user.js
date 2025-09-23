@@ -308,7 +308,7 @@ module.exports = class UserHelper {
 			const filter = utils.isNumeric(id) ? { id, tenant_code: tenantCode } : { share_link: id }
 
 			const ns = common.CACHE_CONFIG.namespaces.profile.name
-			const fullKey = await cacheClient.versionedKey({
+			const fullKey = await cacheClient.buildKey({
 				tenantCode,
 				orgId: organizationCode,
 				ns,
@@ -318,7 +318,11 @@ module.exports = class UserHelper {
 			const userDetails = await cacheClient.get(fullKey)
 
 			if (userDetails) {
-				if (userDetails.image) userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+				if (userDetails.image) {
+					userDetails.image_cloud_path = userDetails.image
+					userDetails.image = await utils.getDownloadableUrl(userDetails.image)
+				}
+
 				return responses.successResponse({
 					statusCode: httpStatusCode.ok,
 					message: 'PROFILE_FETCHED_SUCCESSFULLY',
