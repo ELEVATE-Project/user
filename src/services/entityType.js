@@ -195,7 +195,7 @@ module.exports = class EntityHelper {
 
 	static async delete(id, organizationCode, tenantCode) {
 		try {
-			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, organizationCode)
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, organizationCode, tenantCode)
 			if (deleteCount === 0) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
