@@ -9,13 +9,13 @@ const cacheClient = require('@generics/cacheHelper')
 module.exports = class EntityHelper {
 	static async _invalidateEntityCaches({ tenantCode, organizationCode }) {
 		try {
-			await cacheClient.evictOrgByPattern({
+			await cacheClient.evictNamespace({
 				tenantCode,
 				orgId: organizationCode,
 				ns: common.CACHE_CONFIG.namespaces.entity_types.name,
 			})
 
-			await cacheClient.evictOrgByPattern({
+			await cacheClient.evictNamespace({
 				tenantCode,
 				orgId: organizationCode,
 				ns: common.CACHE_CONFIG.namespaces.profile.name,
