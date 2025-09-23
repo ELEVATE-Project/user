@@ -47,7 +47,7 @@ module.exports = {
 						},
 						transaction: t,
 					},
-					'id'
+					'feature_code'
 				)
 
 				if (!exists) {

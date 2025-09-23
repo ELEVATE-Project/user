@@ -15,7 +15,7 @@ module.exports = {
 			const existingTenant = await queryInterface.rawSelect(
 				'tenants',
 				{ where: { code: DEFAULT_TENANT_CODE }, transaction: t },
-				'id'
+				'code'
 			)
 
 			if (!existingTenant) {
@@ -47,8 +47,8 @@ module.exports = {
 			// Insert tenant_domain (if not exists)
 			const existingDomain = await queryInterface.rawSelect(
 				'tenant_domains',
-				{ where: { tenant_code: DEFAULT_TENANT_CODE, domain: 'localhost' }, transaction: t },
-				'id'
+				{ where: { tenant_code: DEFAULT_TENANT_CODE }, transaction: t },
+				'tenant_code'
 			)
 
 			if (!existingDomain) {
@@ -95,49 +95,6 @@ module.exports = {
 				)
 
 				// get the id just inserted (DB may have returned id via serial; rawSelect by code ensures we get it)
-			}
-
-			// Fetch all features to seed organization_features
-			const [features] = await queryInterface.sequelize.query('SELECT code, label, icon FROM features;', {
-				transaction: t,
-			})
-
-			if (features && features.length > 0) {
-				// prepare rows but skip duplicates: check existing by org + feature
-				const orgFeatureRows = []
-
-				for (const feature of features) {
-					// check if already exists
-					const exists = await queryInterface.rawSelect(
-						'organization_features',
-						{
-							where: {
-								organization_code: DEFAULT_ORG_CODE,
-								feature_code: feature.code,
-								tenant_code: DEFAULT_TENANT_CODE,
-							},
-							transaction: t,
-						},
-						'id'
-					)
-
-					if (!exists) {
-						orgFeatureRows.push({
-							organization_code: DEFAULT_ORG_CODE,
-							feature_code: feature.code,
-							enabled: true,
-							feature_name: feature.label,
-							icon: feature.icon || null,
-							tenant_code: DEFAULT_TENANT_CODE,
-							created_at: now,
-							updated_at: now,
-						})
-					}
-				}
-
-				if (orgFeatureRows.length > 0) {
-					await queryInterface.bulkInsert('organization_features', orgFeatureRows, { transaction: t })
-				}
 			}
 
 			await t.commit()
