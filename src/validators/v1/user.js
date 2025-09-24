@@ -39,4 +39,60 @@ module.exports = {
 			.isString()
 			.withMessage('preferred_language must be string')
 	},
+	profileById: (req) => {
+		// id (numeric only)
+		req.checkParams('id')
+			.optional()
+			.trim()
+			.matches(/^[0-9]+$/)
+			.withMessage('id is invalid. Must be numeric')
+
+		// email
+		req.checkQuery('email')
+			.optional()
+			.trim()
+			.isEmail()
+			.withMessage('email is invalid. Must be a valid email format')
+		// username
+		req.checkQuery('username')
+			.optional()
+			.trim()
+			.matches(/^(?:[a-z0-9_-]{3,40}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})$/) //accept random string (min 3 max 40) of smaller case letters _ - and numbers OR email in lowercase as username
+			.withMessage('username is invalid')
+		// phone
+		req.checkQuery('phone')
+			.optional()
+			.trim()
+			.matches(/^[0-9]{7,15}$/)
+			.withMessage('phone is invalid. Must be digits only, length 7–15')
+
+		// phone_code
+		req.checkQuery('phone_code')
+			.optional()
+			.trim()
+			.matches(/^\+[0-9]{1,4}$/)
+			.withMessage('phone_code is invalid. Must start with + and contain 1–4 digits')
+
+		// tenant_code
+		req.checkQuery('tenant_code')
+			.trim()
+			.matches(/^[A-Za-z0-9_-]+$/)
+			.withMessage('tenant_code is invalid. Only letters, numbers, underscore, and hyphen allowed')
+
+		if (!req.params.id) {
+			req.checkQuery(['email', 'username', 'phone', 'phone_code']).custom(() => {
+				const { email, username, phone, phone_code } = req.query
+
+				if (!email && !username && !phone) {
+					throw new Error('At least one of id, email, username, or phone must be provided')
+				}
+
+				if (phone && !phone_code) {
+					throw new Error('phone_code is required when phone is provided')
+				}
+
+				return true
+			})
+		}
+	},
 }
