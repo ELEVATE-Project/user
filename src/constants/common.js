@@ -32,6 +32,7 @@ module.exports = {
 		'/user/v1/tenant/list',
 		'/user/v1/tenant/read/',
 		'/user/v1/tenant/domain/',
+		'/user/v1/tenant/readInternal/',
 		'/v1/cloud-services/file/getDownloadableUrl',
 	],
 	notificationEmailType: 'email',
