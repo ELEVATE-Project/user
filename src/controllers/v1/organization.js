@@ -188,7 +188,8 @@ module.exports = class Organization {
 		try {
 			const result = await orgService.addRelatedOrg(
 				req.params.id ? req.params.id : '',
-				req.body.related_orgs ? req.body.related_orgs : []
+				req.body.related_orgs ? req.body.related_orgs : [],
+				req?.decodedToken?.tenant_code
 			)
 			return result
 		} catch (error) {
@@ -199,7 +200,8 @@ module.exports = class Organization {
 		try {
 			const result = await orgService.removeRelatedOrg(
 				req.params.id ? req.params.id : '',
-				req.body.related_orgs ? req.body.related_orgs : []
+				req.body.related_orgs ? req.body.related_orgs : [],
+				req?.decodedToken?.tenant_code
 			)
 			return result
 		} catch (error) {

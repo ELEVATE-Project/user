@@ -188,7 +188,7 @@ module.exports = class Admin {
 				})
 			}
 
-			const result = await adminService.deactivateUser(req.body, req.decodedToken.id)
+			const result = await adminService.deactivateUser(req.body, req.decodedToken.id, req.decodedToken.tenant_code, req.decodedToken.organization_code)
 
 			return result
 		} catch (error) {

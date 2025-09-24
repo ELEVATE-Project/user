@@ -512,7 +512,7 @@ module.exports = class OrganizationsHelper {
 		}
 	}
 
-	static async addRelatedOrg(id, relatedOrgs = []) {
+	static async addRelatedOrg(id, relatedOrgs = [], tenantCode) {
 		try {
 			// fetch organization details before update
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
@@ -553,6 +553,7 @@ module.exports = class OrganizationsHelper {
 						delta_organization_ids: deltaOrgs,
 						organization_id: id,
 						action: 'PUSH',
+						tenant_code: tenantCode
 					},
 				})
 			}
@@ -565,7 +566,7 @@ module.exports = class OrganizationsHelper {
 			throw error
 		}
 	}
-	static async removeRelatedOrg(id, relatedOrgs = []) {
+	static async removeRelatedOrg(id, relatedOrgs = [], tenantCode) {
 		try {
 			// fetch organization details before update
 			const orgDetailsBeforeUpdate = await organizationQueries.findOne({ id })
@@ -625,6 +626,7 @@ module.exports = class OrganizationsHelper {
 						delta_organization_ids: relatedOrgs,
 						organization_id: id,
 						action: 'POP',
+						tenant_code:tenantCode
 					},
 				})
 			}

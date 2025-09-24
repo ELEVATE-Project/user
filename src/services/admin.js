@@ -607,6 +607,7 @@ module.exports = class AdminHelper {
 						user_id: user.id,
 						organization_id: organizationId,
 						roles: roleData.map((r) => r.title),
+						organization_code: organization.code,
 					},
 				})
 			)
@@ -694,7 +695,7 @@ module.exports = class AdminHelper {
 
 				// Broadcast to end upcoming sessions
 				eventBroadcaster('deactivateUpcomingSession', {
-					requestBody: { user_ids: userIds },
+					requestBody: { user_ids: userIds , tenant_code: tenantCode, organization_code: organizationCode},
 				})
 			}
 
@@ -720,7 +721,7 @@ module.exports = class AdminHelper {
 	 * @param {Object} loggedInUserId - logged in user id
 	 * @returns {JSON} - Deactivated user data
 	 */
-	static async deactivateUser(bodyData, loggedInUserId) {
+	static async deactivateUser(bodyData, loggedInUserId, tenantCode, orgCode) {
 		try {
 			let filterQuery = {}
 			for (let item in bodyData) {
@@ -763,6 +764,8 @@ module.exports = class AdminHelper {
 			eventBroadcaster('deactivateUpcomingSession', {
 				requestBody: {
 					user_ids: userIds,
+					tenant_code: tenantCode,
+					organization_code: orgCode
 				},
 			})
 

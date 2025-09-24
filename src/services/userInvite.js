@@ -370,6 +370,7 @@ module.exports = class UserInviteHelper {
 										user_id: existingUser.id,
 										organization_id: user.organization_id,
 										roles: currentRoles,
+										organization_code: user.organization_code
 									},
 								})
 							}
@@ -380,6 +381,8 @@ module.exports = class UserInviteHelper {
 									user_id: existingUser.id,
 									new_roles: newRoles,
 									current_roles: currentRoles,
+									tenant_code: user.tenant_code,
+									organization_code: user.organization_code
 								}
 								if (isOrgUpdate) requestBody.organization_id = user.organization_id
 								eventBroadcaster('roleChange', {

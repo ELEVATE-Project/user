@@ -495,6 +495,8 @@ module.exports = class OrgAdminHelper {
 			eventBroadcaster('deactivateUpcomingSession', {
 				requestBody: {
 					user_ids: allUserIds,
+					tenant_code: tokenInformation.tenant_code,
+					organization_code: tokenInformation.organization_code
 				},
 			})
 
