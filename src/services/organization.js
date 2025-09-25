@@ -19,7 +19,7 @@ const { eventBodyDTO } = require('@dtos/eventBody')
 const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
 const userOrgQueries = require('@database/queries/userOrganization')
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -168,7 +168,7 @@ module.exports = class OrganizationsHelper {
 				},
 			})
 
-			await broadcastUserEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+			await broadcastUserServiceEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -830,7 +830,7 @@ async function createRoleRequest(bodyData, tokenInformation) {
 
 async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData) {
 	// compute changes from provided body keys
-	let changes = await utils.getChanges(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData)
+	let changes = await utils.extractUpdatedValues(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData)
 	let related_org_details
 	if (Object.prototype.hasOwnProperty.call(bodyData, 'related_orgs') && updatedOrgDetails?.related_orgs?.length) {
 		const options = {
@@ -863,5 +863,5 @@ async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyDa
 			...(related_org_details ? { related_org_details } : {}),
 		},
 	})
-	broadcastUserEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+	broadcastUserServiceEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 }

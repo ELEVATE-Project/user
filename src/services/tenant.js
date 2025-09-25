@@ -30,7 +30,7 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
 const TenantDTO = require('@dtos/tenantDTO')
 
 module.exports = class tenantHelper {
@@ -406,7 +406,7 @@ module.exports = class tenantHelper {
 				},
 			})
 
-			broadcastUserEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
+			broadcastUserServiceEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -579,7 +579,7 @@ module.exports = class tenantHelper {
 					description: tenantDetails.description,
 				},
 			})
-			broadcastUserEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
+			broadcastUserServiceEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -719,7 +719,7 @@ module.exports = class tenantHelper {
 					description: tenantDetails.description,
 				},
 			})
-			broadcastUserEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
+			broadcastUserServiceEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -876,7 +876,7 @@ module.exports = class tenantHelper {
 
 async function tenantEventEmitter(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData) {
 	// compute changes from provided body keys
-	let changes = await utils.getChanges(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData)
+	let changes = await utils.extractUpdatedValues(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData)
 
 	//event Body for org updates
 	const eventBodyData = TenantDTO.eventBodyDTO({
@@ -896,5 +896,5 @@ async function tenantEventEmitter(tenantDetailsBeforeUpdate, updatedTenantDetail
 			description: tenantDetailsBeforeUpdate.description,
 		},
 	})
-	broadcastUserEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
+	broadcastUserServiceEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 }

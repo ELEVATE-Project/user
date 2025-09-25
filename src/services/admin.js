@@ -31,7 +31,7 @@ const adminService = require('../generics/materializedViews')
 const userSessionsService = require('@services/user-sessions')
 
 // Helpers and utilities
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { generateUniqueUsername } = require('@utils/usernameGenerator')
@@ -80,7 +80,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastUserServiceEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -218,7 +218,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastUserServiceEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -717,7 +717,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+			broadcastUserServiceEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			// 4. Return success
 			return responses.successResponse({

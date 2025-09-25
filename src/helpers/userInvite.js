@@ -25,7 +25,7 @@ const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername, generateUniqueCodeString } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
 const invitationQueries = require('@database/queries/invitation')
@@ -895,7 +895,7 @@ module.exports = class UserInviteHelper {
 									},
 								})
 
-								broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+								broadcastUserServiceEvent('userEvents', { requestBody: eventBody, isInternal: true })
 							}
 
 							// Update UserCredential with organization_id and potentially password
@@ -1129,7 +1129,7 @@ module.exports = class UserInviteHelper {
 							args,
 						})
 
-						broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+						broadcastUserServiceEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 						if (insertedUser?.id) {
 							const { name, email } = invitee

@@ -396,11 +396,15 @@ let enviromentVariables = {
 		message: 'Key to toggle user creation kafka event',
 		optional: true,
 	},
+	ENABLE_USER_KAFKA_EVENTS: {
+		message: 'Key to toggle user creation kafka event',
+		optional: true,
+	},
 	EVENT_USER_KAFKA_TOPIC: {
 		message: 'Kafka topic for User creation Event',
 		optional: true,
 		requiredIf: {
-			key: 'EVENT_ENABLE_KAFKA_PUSH',
+			key: 'ENABLE_USER_KAFKA_PUSH',
 			operator: 'EQUALS',
 			value: 'true',
 		},
@@ -416,6 +420,10 @@ let enviromentVariables = {
 		default: 'user-health-check-topic-check',
 	},
 	EVENT_ENABLE_TENANT_EVENTS: {
+		message: 'Key to toggle tenant creation api event',
+		optional: true,
+	},
+	ENABLE_TENANT_KAFKA_EVENTS: {
 		message: 'Key to toggle tenant creation kafka event',
 		optional: true,
 	},
@@ -423,7 +431,7 @@ let enviromentVariables = {
 		message: 'Kafka topic for Tenant creation Event',
 		optional: true,
 		requiredIf: {
-			key: 'EVENT_ENABLE_TENANT_EVENTS',
+			key: 'ENABLE_TENANT_KAFKA_EVENTS',
 			operator: 'EQUALS',
 			value: 'true',
 		},
@@ -437,7 +445,7 @@ let enviromentVariables = {
 			value: 'true',
 		},
 	},
-	EVENT_ENABLE_ORGANIZATION_EVENTS: {
+	ENABLE_ORG_KAFKA_EVENTS: {
 		message: 'Key to toggle organization creation kafka event',
 		optional: true,
 	},
@@ -445,7 +453,7 @@ let enviromentVariables = {
 		message: 'Kafka topic for organization create/update Event',
 		optional: true,
 		requiredIf: {
-			key: 'EVENT_ENABLE_ORGANIZATION_EVENTS',
+			key: 'ENABLE_ORG_KAFKA_EVENTS',
 			operator: 'EQUALS',
 			value: 'true',
 		},

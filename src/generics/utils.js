@@ -1085,14 +1085,14 @@ function appendParamsToUrl(host, params) {
 /**
  * Compare object and get the updated value with old value
  * @method
- * @name getChanges
+ * @name extractUpdatedValues
  * @param {Object} oldData - Data before update
  * @param {Object} newData - Data after update
  * @param {Object} updateData - reqBody data
  * @returns {Array<{fieldName:string, oldValue:any, newValue:any}>}
  */
 
-function getChanges(oldData = {}, newData = {}, updateData = {}) {
+function extractUpdatedValues(oldData = {}, newData = {}, updateData = {}) {
 	const changes = []
 
 	for (const key of Object.keys(updateData)) {
@@ -1154,5 +1154,5 @@ module.exports = {
 	isValidAction,
 	appendParamsToUrl,
 	parseMetaData,
-	getChanges,
+	extractUpdatedValues,
 }
