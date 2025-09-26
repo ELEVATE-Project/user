@@ -68,13 +68,13 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 		//push to kafka based on eventGroup
 		switch (eventGroup) {
 			case 'organizationEvents':
-				kafkaCommunication.pushOrganizationEventsToKafka(requestBody)
+				await kafkaCommunication.pushOrganizationEventsToKafka(requestBody)
 				break
 			case 'userEvents':
-				kafkaCommunication.pushUserEventsToKafka(requestBody)
+				await kafkaCommunication.pushUserEventsToKafka(requestBody)
 				break
 			case 'tenantEvents':
-				kafkaCommunication.pushTenantEventsToKafka(requestBody)
+				await kafkaCommunication.pushTenantEventsToKafka(requestBody)
 				break
 			default:
 				console.log('No Kafka Event Group Found')
