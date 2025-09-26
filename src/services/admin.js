@@ -683,7 +683,7 @@ module.exports = class AdminHelper {
 				}
 			)
 
-			if (orgRowsAffected === 0) {
+			if (!orgRowsAffected) {
 				return responses.failureResponse({
 					message: 'ORG_DEACTIVATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
