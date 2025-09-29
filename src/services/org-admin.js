@@ -630,69 +630,58 @@ module.exports = class OrgAdminHelper {
 	}
 }
 
-function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode) {
-	return new Promise(async (resolve, reject) => {
-		try {
-			const newRole = await roleQueries.findOne(
-				{ id: requestDetails.role, status: common.ACTIVE_STATUS, tenant_code: tenantCode },
-				{ attributes: ['title', 'id', 'user_type', 'status'] }
-			)
+async function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode) {
+	try {
+		const newRole = await roleQueries.findOne(
+			{ id: requestDetails.role, status: common.ACTIVE_STATUS, tenant_code: tenantCode },
+			{ attributes: ['title', 'id', 'user_type', 'status'] }
+		)
 
-			// Capture old organizations array before the update
-			const oldOrganizations = user.organizations || []
+		const oldOrganizations = user.organizations || []
 
-			// Create the new role assignment
-			await userOrganizationRoleQueries.create({
-				tenant_code: tenantCode,
-				user_id: user.id,
-				organization_code: orgCode,
-				role_id: newRole.id,
-			})
+		await userOrganizationRoleQueries.create({
+			tenant_code: tenantCode,
+			user_id: user.id,
+			organization_code: orgCode,
+			role_id: newRole.id,
+		})
 
-			// Fetch updated user data with new roles
-			const updatedUser = await userQueries.findUserWithOrganization({
-				id: requestDetails.requester_id,
-				tenant_code: tenantCode,
-			})
+		const updatedUser = await userQueries.findUserWithOrganization({
+			id: requestDetails.requester_id,
+			tenant_code: tenantCode,
+		})
 
-			// Get updated organizations array
-			const newOrganizations = updatedUser.organizations || []
+		const newOrganizations = updatedUser.organizations || []
 
-			// Prepare changed values for the DTO
-			const changedValues = [
-				{
-					fieldName: 'organizations',
-					oldValue: oldOrganizations,
-					newValue: newOrganizations,
-				},
-			]
+		const changedValues = [
+			{
+				fieldName: 'organizations',
+				oldValue: oldOrganizations,
+				newValue: newOrganizations,
+			},
+		]
 
-			// Broadcast the event with new broadcaster using DTO
-			const eventBody = eventBodyDTO({
-				entity: 'user',
-				eventType: 'update',
-				entityId: requestDetails.requester_id,
-				changedValues: changedValues,
-				args: {
-					created_at: updatedUser.created_at,
-					updated_at: updatedUser.updated_at,
-				},
-			})
+		const eventBody = eventBodyDTO({
+			entity: 'user',
+			eventType: 'update',
+			entityId: requestDetails.requester_id,
+			changedValues,
+			args: {
+				created_at: updatedUser.created_at,
+				updated_at: updatedUser.updated_at,
+			},
+		})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+		broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
-			// Delete from cache
-			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${requestDetails.requester_id.toString()}`
-			await utils.redisDel(redisUserKey)
+		const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${requestDetails.requester_id.toString()}`
+		await utils.redisDel(redisUserKey)
 
-			return resolve({
-				success: true,
-			})
-		} catch (error) {
-			console.log(error, 'error')
-			return reject(error)
-		}
-	})
+		return { success: true }
+	} catch (error) {
+		console.log(error, 'error')
+		throw error
+	}
 }
 
 async function sendRoleRequestStatusEmail(userDetails, status, organizationCode, tenantCode) {
