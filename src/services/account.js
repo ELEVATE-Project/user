@@ -38,7 +38,7 @@ const { generateUniqueUsername } = require('@utils/usernameGenerator.js')
 const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
-const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class AccountHelper {
 	/**
@@ -622,7 +622,7 @@ module.exports = class AccountHelper {
 				},
 			})
 
-			broadcastUserServiceEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -1768,7 +1768,7 @@ module.exports = class AccountHelper {
 				},
 			})
 
-			broadcastUserServiceEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,

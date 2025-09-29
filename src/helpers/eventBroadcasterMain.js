@@ -30,11 +30,11 @@ const isEventEnabled = (eventGroup) => {
 		case 'tenantEvents':
 			return process.env.EVENT_ENABLE_TENANT_EVENTS !== 'false'
 		case 'userEvents-kafka':
-			return process.env.ENABLE_USER_KAFKA_EVENTS !== 'false'
+			return process.env.EVENT_ENABLE_USER_KAFKA_EVENTS !== 'false'
 		case 'tenantEvents-kafka':
-			return process.env.ENABLE_TENANT_KAFKA_EVENTS !== 'false'
+			return process.env.EVENT_ENABLE_TENANT_KAFKA_EVENTS !== 'false'
 		case 'organizationEvents-kafka':
-			return process.env.ENABLE_ORG_KAFKA_EVENTS !== 'false'
+			return process.env.EVENT_ENABLE_ORG_KAFKA_EVENTS !== 'false'
 		default:
 			return true
 	}
@@ -84,7 +84,7 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 		console.log(err)
 	}
 }
-exports.broadcastUserServiceEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
+exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
 		// Fire both broadcaster functions concurrently
 		const broadcastPromises = [
@@ -104,6 +104,6 @@ exports.broadcastUserServiceEvent = async (eventGroup, { requestBody, headers = 
 		})
 	} catch (err) {
 		// Log any unexpected errors from the promise settlement
-		console.error('Error in broadcastUserServiceEvent:', err)
+		console.error('Error in broadcastEvent:', err)
 	}
 }

@@ -30,7 +30,7 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
-const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const TenantDTO = require('@dtos/tenantDTO')
 
 module.exports = class tenantHelper {
@@ -406,7 +406,7 @@ module.exports = class tenantHelper {
 				},
 			})
 
-			broadcastUserServiceEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -579,7 +579,7 @@ module.exports = class tenantHelper {
 					description: tenantDetails.description,
 				},
 			})
-			broadcastUserServiceEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
+			broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -719,7 +719,7 @@ module.exports = class tenantHelper {
 					description: tenantDetails.description,
 				},
 			})
-			broadcastUserServiceEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
+			broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -896,5 +896,5 @@ async function tenantEventEmitter(tenantDetailsBeforeUpdate, updatedTenantDetail
 			description: tenantDetailsBeforeUpdate.description,
 		},
 	})
-	broadcastUserServiceEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
+	broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 }

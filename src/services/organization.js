@@ -19,7 +19,7 @@ const { eventBodyDTO } = require('@dtos/eventBody')
 const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
 const userOrgQueries = require('@database/queries/userOrganization')
-const { broadcastUserServiceEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -168,7 +168,7 @@ module.exports = class OrganizationsHelper {
 				},
 			})
 
-			await broadcastUserServiceEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+			await broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -863,5 +863,5 @@ async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyDa
 			...(related_org_details ? { related_org_details } : {}),
 		},
 	})
-	broadcastUserServiceEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+	broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 }
