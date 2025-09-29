@@ -41,6 +41,8 @@ module.exports = {
 			.withMessage('label is required')
 			.matches(/^[A-Z][a-zA-Z\s]*$/)
 			.withMessage('label must start with an uppercase letter and contain only letters and spaces')
+			.isLength({ max: 50 })
+			.withMessage('label must be at most 50 characters')
 
 		req.checkBody('status')
 			.optional({ checkFalsy: true })
@@ -76,10 +78,18 @@ module.exports = {
 			.withMessage('visibility must be PUBLIC')
 
 		req.checkBody('status')
-			.optional({ checkFalsy: true })
 			.trim()
+			.optional({ checkFalsy: true })
 			.isIn([common.ACTIVE_STATUS, common.INACTIVE_STATUS])
 			.withMessage(`status must be either ${common.ACTIVE_STATUS} or ${common.INACTIVE_STATUS} when provided`)
+
+		req.checkBody('label')
+			.trim()
+			.optional()
+			.matches(/^[A-Z][a-zA-Z\s]*$/)
+			.withMessage('label must start with an uppercase letter and contain only letters and spaces')
+			.isLength({ max: 50 })
+			.withMessage('label must be at most 50 characters')
 	},
 	delete: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
