@@ -28,6 +28,8 @@ const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
+const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { eventBodyDTO } = require('@dtos/userDTO')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -636,6 +638,10 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 				{ attributes: ['title', 'id', 'user_type', 'status'] }
 			)
 
+			// Capture old organizations array before the update
+			const oldOrganizations = user.organizations || []
+
+			// Create the new role assignment
 			await userOrganizationRoleQueries.create({
 				tenant_code: tenantCode,
 				user_id: user.id,
@@ -643,16 +649,39 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 				role_id: newRole.id,
 			})
 
-			eventBroadcaster('roleChange', {
-				requestBody: {
-					user_id: requestDetails.requester_id,
-					new_roles: [newRole.title],
-					current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
-					tenant_code: tenantCode,
-					organization_code: orgCode,
+			// Fetch updated user data with new roles
+			const updatedUser = await userQueries.findUserWithOrganization({
+				id: requestDetails.requester_id,
+				tenant_code: tenantCode,
+			})
+
+			// Get updated organizations array
+			const newOrganizations = updatedUser.organizations || []
+
+			// Prepare changed values for the DTO
+			const changedValues = [
+				{
+					fieldName: 'organizations',
+					oldValue: oldOrganizations,
+					newValue: newOrganizations,
+				},
+			]
+
+			// Broadcast the event with new broadcaster using DTO
+			const eventBody = eventBodyDTO({
+				entity: 'user',
+				eventType: 'update',
+				entityId: requestDetails.requester_id,
+				changedValues: changedValues,
+				args: {
+					created_at: updatedUser.created_at,
+					updated_at: updatedUser.updated_at,
 				},
 			})
-			//delete from cache
+
+			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
+			// Delete from cache
 			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${requestDetails.requester_id.toString()}`
 			await utils.redisDel(redisUserKey)
 
@@ -661,7 +690,7 @@ function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode)
 			})
 		} catch (error) {
 			console.log(error, 'error')
-			return error
+			return reject(error)
 		}
 	})
 }
