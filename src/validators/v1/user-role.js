@@ -45,8 +45,8 @@ module.exports = {
 			.withMessage('label must be at most 50 characters')
 
 		req.checkBody('status')
-			.optional({ checkFalsy: true })
 			.trim()
+			.optional({ checkFalsy: true })
 			.isIn([common.ACTIVE_STATUS, common.INACTIVE_STATUS])
 			.withMessage(`status must be either ${common.ACTIVE_STATUS} or ${common.INACTIVE_STATUS} when provided`)
 	},
