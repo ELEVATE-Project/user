@@ -27,7 +27,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('name field is empty')
-			.matches(/^[A-Za-z ]+$/)
+			.matches(/^[A-Za-z0-9 ]+$/)
 			.withMessage('name is invalid')
 
 		req.checkBody('description')
@@ -47,7 +47,7 @@ module.exports = {
 			.trim()
 			.notEmpty()
 			.withMessage('name field is empty')
-			.matches(/^[A-Za-z ]+$/)
+			.matches(/^[A-Za-z0-9 ]+$/)
 			.withMessage('name is invalid')
 
 		req.checkBody('description')
