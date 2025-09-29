@@ -652,6 +652,26 @@ module.exports = class AdminHelper {
 
 	static async deactivateOrg(organizationCode, tenantCode, loggedInUserId) {
 		try {
+			const org = await organizationQueries.findOne({ code: organizationCode, tenant_code: tenantCode })
+
+			if (!org) {
+				return responses.failureResponse({
+					message: 'ORG_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (org.status === common.INACTIVE_STATUS) {
+				return responses.failureResponse({
+					message: 'ORG_ALREADY_INACTIVE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// proceed with update
+
 			// 1. Deactivate org
 			const orgUpdateResult = await organizationQueries.update(
 				{
@@ -667,7 +687,7 @@ module.exports = class AdminHelper {
 
 			if (!orgUpdateResult || orgUpdateResult.rowsAffected === 0) {
 				return responses.failureResponse({
-					message: 'STATUS_UPDATE_FAILED',
+					message: 'ORG_DEACTIVATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})

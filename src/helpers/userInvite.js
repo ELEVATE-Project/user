@@ -273,31 +273,59 @@ module.exports = class UserInviteHelper {
 					// Extract and prepare meta fields
 					row.meta = {
 						block: row?.block
-							? externalEntityNameIdMap?.[row.block?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
+							? externalEntityNameIdMap?.[
+									`${row.block?.replaceAll(/\s+/g, '').toLowerCase()}${'block'
+										.replaceAll(/\s+/g, '')
+										.toLowerCase()}`
+							  ]?._id || null
 							: '',
 						state: row?.state
-							? externalEntityNameIdMap?.[row.state?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
+							? externalEntityNameIdMap?.[
+									`${row.state?.replaceAll(/\s+/g, '').toLowerCase()}${'state'
+										.replaceAll(/\s+/g, '')
+										.toLowerCase()}`
+							  ]?._id || null
 							: '',
 						school: row?.school
-							? externalEntityNameIdMap?.[row.school?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
+							? externalEntityNameIdMap?.[
+									`${row.school?.replaceAll(/\s+/g, '').toLowerCase()}${'school'
+										.replaceAll(/\s+/g, '')
+										.toLowerCase()}`
+							  ]?._id || null
 							: '',
 						cluster: row?.cluster
-							? externalEntityNameIdMap?.[row.cluster?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
+							? externalEntityNameIdMap?.[
+									`${row.cluster?.replaceAll(/\s+/g, '').toLowerCase()}${'cluster'
+										.replaceAll(/\s+/g, '')
+										.toLowerCase()}`
+							  ]?._id || null
 							: '',
 						district: row?.district
-							? externalEntityNameIdMap?.[row.district?.replaceAll(/\s+/g, '').toLowerCase()]?._id || null
+							? externalEntityNameIdMap?.[
+									`${row.district?.replaceAll(/\s+/g, '').toLowerCase()}${'district'
+										.replaceAll(/\s+/g, '')
+										.toLowerCase()}`
+							  ]?._id || null
 							: '',
 						professional_role: row?.professional_role
-							? externalEntityNameIdMap?.[row.professional_role?.replaceAll(/\s+/g, '').toLowerCase()]
-									?._id || ''
+							? externalEntityNameIdMap?.[
+									`${row.professional_role?.replaceAll(/\s+/g, '').toLowerCase()}${'professional_role'
+										.replaceAll(/\s+/g, '')
+										.toLowerCase()}`
+							  ]?._id || ''
 							: '',
 						professional_subroles: row?.professional_subroles
 							? row.professional_subroles
 									.split(',')
 									.map(
 										(prof_subRole) =>
-											externalEntityNameIdMap[prof_subRole?.replaceAll(/\s+/g, '').toLowerCase()]
-												?._id
+											externalEntityNameIdMap[
+												`${prof_subRole
+													?.replaceAll(/\s+/g, '')
+													.toLowerCase()}${'professional_subroles'
+													.replaceAll(/\s+/g, '')
+													.toLowerCase()}`
+											]?._id
 									) || []
 							: [],
 					}

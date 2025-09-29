@@ -802,7 +802,7 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 		},
 		data: {
 			query: {
-				'metaInformation.name': {
+				'metaInformation.externalId': {
 					$in: entities, // Dynamically pass the array here
 				},
 				tenantId: tenantCode,
@@ -818,7 +818,11 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 		})
 
 	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
-		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
+		const normalize = (s) => (s ?? '').toString().replace(/\s+/g, '').toLowerCase()
+		const namePart = normalize(metaInformation?.externalId)
+		const typePart = normalize(entityType)
+		if (!namePart || !typePart) return acc
+		const key = `${namePart}${typePart}`
 		if (key) {
 			acc[key] = { _id, name: metaInformation?.name, entityType, externalId: metaInformation.externalId }
 		}
