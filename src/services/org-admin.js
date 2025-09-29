@@ -637,6 +637,10 @@ async function updateRoleForApprovedRequest(requestDetails, user, tenantCode, or
 			{ attributes: ['title', 'id', 'user_type', 'status'] }
 		)
 
+		if (!newRole) {
+			throw new Error('ROLE_NOT_FOUND')
+		}
+
 		const oldOrganizations = user.organizations || []
 
 		await userOrganizationRoleQueries.create({
