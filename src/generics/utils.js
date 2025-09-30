@@ -1085,6 +1085,33 @@ function appendParamsToUrl(host, params) {
 
 	return url.toString()
 }
+
+/**
+ * Compare object and get the updated value with old value
+ * @method
+ * @name extractUpdatedValues
+ * @param {Object} oldData - Data before update
+ * @param {Object} newData - Data after update
+ * @param {Object} updateData - reqBody data
+ * @returns {Array<{fieldName:string, oldValue:any, newValue:any}>}
+ */
+
+function extractUpdatedValues(oldData = {}, newData = {}, updateData = {}) {
+	const changes = []
+
+	for (const key of Object.keys(updateData)) {
+		let oldValue = oldData[key]
+		let newValue = newData[key]
+		let fieldName = key
+		// Compare only if key exists in updateData
+		if (!_.isEqual(oldValue, newValue)) {
+			changes.push({ fieldName, oldValue, newValue })
+		}
+	}
+
+	return changes
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1131,4 +1158,5 @@ module.exports = {
 	isValidAction,
 	appendParamsToUrl,
 	parseMetaData,
+	extractUpdatedValues,
 }

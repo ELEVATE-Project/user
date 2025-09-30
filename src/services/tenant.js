@@ -30,6 +30,8 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
+const TenantDTO = require('@dtos/tenantDTO')
 
 module.exports = class tenantHelper {
 	/**
@@ -371,6 +373,8 @@ module.exports = class tenantHelper {
 						})
 					})
 				}
+				tenantCreateResponse.orgId = defaultOrgCreateResponse?.result?.id
+				tenantCreateResponse.orgCode = defaultOrgCreateResponse?.result?.code
 				// ******* adding default user roles to Default Org CODE ENDS HERE *******
 			} catch (error) {
 				if (rollbackStack.size() > 0) await rollbackStack.execute()
@@ -380,6 +384,29 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+
+			//event Body for tenant create
+			const eventBody = TenantDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'create',
+				entityId: tenantCreateResponse.code,
+				args: {
+					created_by: tenantCreateResponse.created_by,
+					name: tenantCreateResponse.name,
+					code: tenantCreateResponse.code,
+					created_at: tenantCreateResponse?.created_at || new Date(),
+					updated_at: tenantCreateResponse?.updated_at || new Date(),
+					meta: tenantCreateResponse?.meta || {},
+					status: tenantCreateResponse?.status || common.ACTIVE_STATUS,
+					deleted: false,
+					org_id: tenantCreateResponse.orgId,
+					org_code: tenantCreateResponse.orgCode,
+					description: tenantCreateResponse.description,
+					logo: tenantCreateResponse.logo,
+				},
+			})
+
+			broadcastEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -428,16 +455,24 @@ module.exports = class tenantHelper {
 					tenantUpdateBody[key] = bodyData[key]
 				}
 			}
+			let updatedTenantDetails
 			// update only if the data is changed
 			if (Object.keys(tenantUpdateBody).length > 0) {
 				tenantUpdateBody.updated_by = userId
-				await tenantQueries.update(
+				const [rowsAffected, updatedRows] = await tenantQueries.update(
 					{
 						code: tenantCode,
 					},
-					tenantUpdateBody
+					tenantUpdateBody,
+					{
+						returning: true,
+						raw: true,
+					}
 				)
+				updatedTenantDetails = updatedRows?.[0]
 			}
+
+			await tenantEventEmitter(tenantDetails, updatedTenantDetails, bodyData)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -519,6 +554,32 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+			let changes = [
+				{
+					fieldName: 'domains',
+					oldValue: existingDomains,
+					newValue: [...existingDomains, ...domainsToCreate],
+				},
+			]
+
+			const eventBodyData = TenantDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'update',
+				entityId: tenantDetails.code,
+				changedValues: changes,
+				args: {
+					created_by: tenantDetails.created_by,
+					name: tenantDetails.name,
+					code: tenantDetails.code,
+					created_at: tenantDetails?.created_at || new Date(),
+					updated_at: tenantDetails?.updated_at || new Date(),
+					status: tenantDetails?.status || common.ACTIVE_STATUS,
+					meta: tenantDetails?.meta || {},
+					deleted: false,
+					description: tenantDetails.description,
+				},
+			})
+			broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -632,6 +693,33 @@ module.exports = class tenantHelper {
 			})
 
 			await Promise.all(domainRemovePromise)
+
+			let changes = [
+				{
+					fieldName: 'domains',
+					oldValue: existingDomains,
+					newValue: existingDomains.filter((d) => !domainsToRemove.includes(d)),
+				},
+			]
+
+			const eventBodyData = TenantDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'update',
+				entityId: tenantDetails.code,
+				changedValues: changes,
+				args: {
+					created_by: tenantDetails.created_by,
+					name: tenantDetails.name,
+					code: tenantDetails.code,
+					created_at: tenantDetails?.created_at || new Date(),
+					updated_at: tenantDetails?.updated_at || new Date(),
+					status: tenantDetails?.status || common.ACTIVE_STATUS,
+					meta: tenantDetails?.meta || {},
+					deleted: false,
+					description: tenantDetails.description,
+				},
+			})
+			broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -784,4 +872,29 @@ module.exports = class tenantHelper {
 			throw error // Re-throw other errors
 		}
 	}
+}
+
+async function tenantEventEmitter(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData) {
+	// compute changes from provided body keys
+	let changes = await utils.extractUpdatedValues(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData)
+
+	//event Body for org updates
+	const eventBodyData = TenantDTO.eventBodyDTO({
+		entity: 'tenant',
+		eventType: 'update',
+		entityId: tenantDetailsBeforeUpdate.code,
+		changedValues: changes,
+		args: {
+			created_by: tenantDetailsBeforeUpdate.created_by,
+			name: tenantDetailsBeforeUpdate.name,
+			code: tenantDetailsBeforeUpdate.code,
+			created_at: tenantDetailsBeforeUpdate?.created_at || new Date(),
+			updated_at: updatedTenantDetails?.updated_at || new Date(),
+			status: tenantDetailsBeforeUpdate?.status || common.ACTIVE_STATUS,
+			meta: tenantDetailsBeforeUpdate?.meta || {},
+			deleted: false,
+			description: tenantDetailsBeforeUpdate.description,
+		},
+	})
+	broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 }
