@@ -1,21 +1,42 @@
-// DependenciesI
+// EntityHelper.js
+// Dependencies
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError } = require('sequelize')
-const organizationQueries = require('@database/queries/organization')
 const { Op } = require('sequelize')
 const { removeDefaultOrgEntityTypes } = require('@generics/utils')
 const responses = require('@helpers/responses')
+const cacheClient = require('@generics/cacheHelper')
+
 module.exports = class EntityHelper {
-	/**
-	 * Create entity type.
-	 * @method
-	 * @name create
-	 * @param {Object} bodyData - entity type body data.
-	 * @param {String} id -  id.
-	 * @returns {JSON} - Created entity type response.
-	 */
+	static async _invalidateEntityTypeCaches({ tenantCode, organizationCode }) {
+		try {
+			await cacheClient.evictNamespace({
+				tenantCode,
+				orgId: organizationCode,
+				ns: common.CACHE_CONFIG.namespaces.entity_types.name,
+			})
+
+			await cacheClient.evictNamespace({
+				tenantCode,
+				orgId: organizationCode,
+				ns: common.CACHE_CONFIG.namespaces.profile.name,
+			})
+
+			if (process.env.DEFAULT_ORGANISATION_CODE === organizationCode) {
+				await cacheClient.evictTenantByPattern(tenantCode, {
+					patternSuffix: `org:*:${common.CACHE_CONFIG.namespaces.entity_types.name}:*`,
+				})
+				await cacheClient.evictTenantByPattern(tenantCode, {
+					patternSuffix: `org:*:${common.CACHE_CONFIG.namespaces.profile.name}:*`,
+				})
+			}
+		} catch (err) {
+			console.error('Entity type cache invalidation failed', err)
+			// Do not throw. Caching failure should not block main operation.
+		}
+	}
 
 	static async create(bodyData, id, organizationCode, organizationId, tenantCode) {
 		bodyData.created_by = id
@@ -25,6 +46,10 @@ module.exports = class EntityHelper {
 		bodyData.tenant_code = tenantCode
 		try {
 			const entityType = await entityTypeQueries.createEntityType(bodyData)
+
+			// invalidate caches after successful create
+			await this._invalidateEntityTypeCaches({ tenantCode, organizationCode })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_TYPE_CREATED_SUCCESSFULLY',
@@ -41,16 +66,6 @@ module.exports = class EntityHelper {
 			throw error
 		}
 	}
-
-	/**
-	 * Update entity type.
-	 * @method
-	 * @name update
-	 * @param {Object} bodyData -  body data.
-	 * @param {String} id - entity type id.
-	 * @param {String} loggedInUserId - logged in user id.
-	 * @returns {JSON} - Updated Entity Type.
-	 */
 
 	static async update(bodyData, id, loggedInUserId, organizationCode, tenantCode) {
 		;(bodyData.updated_by = loggedInUserId), (bodyData.organization_code = organizationCode)
@@ -74,6 +89,9 @@ module.exports = class EntityHelper {
 				})
 			}
 
+			// invalidate caches after successful update
+			await this._invalidateEntityTypeCaches({ tenantCode, organizationCode })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
 				message: 'ENTITY_TYPE_UPDATED_SUCCESSFULLY',
@@ -91,26 +109,41 @@ module.exports = class EntityHelper {
 		}
 	}
 
+	// Read all system entity types (cached)
 	static async readAllSystemEntityTypes(organizationCode, tenantCode, organizationId) {
 		try {
-			const attributes = ['value', 'label', 'id', 'organization_code']
+			const ns = common.CACHE_CONFIG.namespaces.entity_types.name
+			const cacheId = `all` // stable id under namespace; versioning handles invalidation
+			const fetchFn = async () => {
+				const attributes = ['value', 'label', 'id', 'organization_code']
+				const entities = await entityTypeQueries.findAllEntityTypes(
+					[organizationCode, process.env.DEFAULT_ORGANISATION_CODE],
+					attributes,
+					{
+						tenant_code: tenantCode,
+					}
+				)
+				const pruned = removeDefaultOrgEntityTypes(entities, organizationId)
+				return pruned
+			}
 
-			const entities = await entityTypeQueries.findAllEntityTypes(
-				[organizationCode, process.env.DEFAULT_ORGANISATION_CODE],
-				attributes,
-				{
-					tenant_code: tenantCode,
-				}
-			)
-			const prunedEntities = removeDefaultOrgEntityTypes(entities, organizationId)
+			const prunedEntities = await cacheClient.getOrSet({
+				key: cacheId,
+				tenantCode,
+				orgId: organizationCode,
+				ns,
+				id: cacheId,
+				fetchFn,
+			})
 
-			if (!prunedEntities.length) {
+			if (!prunedEntities || !prunedEntities.length) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
@@ -121,44 +154,48 @@ module.exports = class EntityHelper {
 		}
 	}
 
+	// Read user entity types by value (cached)
 	static async readUserEntityTypes(body, organizationCode, tenantCode, organizationId = '') {
 		try {
-			// Include tenant_code in filter for consistency with schema
-			const filter = {
-				value: body.value,
-				status: 'ACTIVE',
-				tenant_code: tenantCode, // Ensure tenant isolation
-				organization_code: {
-					[Op.in]: [process.env.DEFAULT_ORGANISATION_CODE, organizationCode],
-				},
+			const ns = common.CACHE_CONFIG.namespaces.entity_types.name
+			const cacheId = `user:value:${body.value}`
+			const fetchFn = async () => {
+				const filter = {
+					value: body.value,
+					status: 'ACTIVE',
+					tenant_code: tenantCode,
+					organization_code: {
+						[Op.in]: [process.env.DEFAULT_ORGANISATION_CODE, organizationCode],
+					},
+				}
+				const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
+				const pruned = removeDefaultOrgEntityTypes(entities, organizationId)
+				return { entity_types: pruned }
 			}
 
-			const entities = await entityTypeQueries.findUserEntityTypesAndEntities(filter)
-
-			// Deduplicate entity types by value, prioritizing orgId
-			const prunedEntities = removeDefaultOrgEntityTypes(entities, organizationId)
+			const result = await cacheClient.getOrSet({
+				key: cacheId,
+				tenantCode,
+				orgId: organizationCode,
+				ns,
+				id: cacheId,
+				fetchFn,
+			})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ENTITY_TYPE_FETCHED_SUCCESSFULLY',
-				result: { entity_types: prunedEntities },
+				result,
 			})
 		} catch (error) {
 			console.error('Error in readUserEntityTypes:', error)
 			throw error
 		}
 	}
-	/**
-	 * Delete entity type.
-	 * @method
-	 * @name delete
-	 * @param {String} id - Delete entity type.
-	 * @returns {JSON} - Entity deleted response.
-	 */
 
-	static async delete(id, organizationCode) {
+	static async delete(id, organizationCode, tenantCode) {
 		try {
-			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, organizationCode)
+			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, organizationCode, tenantCode)
 			if (deleteCount === 0) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
@@ -166,6 +203,9 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
+			// invalidate caches after successful delete
+			await this._invalidateEntityTypeCaches({ tenantCode, organizationCode })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

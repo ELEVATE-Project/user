@@ -61,6 +61,7 @@ module.exports = class userRole {
 				req.params.id,
 				req.body,
 				req.decodedToken.organization_id,
+				req.decodedToken.organization_code,
 				req.decodedToken.tenant_code
 			)
 			return updateRole
@@ -83,6 +84,7 @@ module.exports = class userRole {
 			return await roleService.delete(
 				req.params.id,
 				req.decodedToken.organization_id,
+				req.decodedToken.organization_code,
 				req.decodedToken.tenant_code
 			)
 		} catch (error) {

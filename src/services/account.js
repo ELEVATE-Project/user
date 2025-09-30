@@ -39,7 +39,7 @@ const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
 const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
-
+const cacheClient = require('@generics/cacheHelper')
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -557,6 +557,12 @@ module.exports = class AccountHelper {
 						org_admin: orgAdmins,
 					}
 				)
+				await cacheClient.evictNamespace({
+					tenantCode: tenantDetail.code,
+					orgId: organization.code,
+					ns: common.CACHE_CONFIG.namespaces.organization.name,
+					patternSuffix: '*',
+				})
 			}
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
@@ -636,43 +642,87 @@ module.exports = class AccountHelper {
 	}
 
 	/**
-	 * login user account
-	 * @method
-	 * @name login
-	 * @param {Object} bodyData -request body contains user login deatils.
-	 * @param {String} bodyData.email - user email.
-	 * @param {String} bodyData.password - user password.
-	 * @param {Object} deviceInformation - device information
-	 * @returns {JSON} - returns susccess or failure of login details.
+	 * Authenticate a user and create a session for the given tenant domain.
+	 *
+	 * Steps (logic unchanged):
+	 * 1. Validate tenant domain via cache then load tenant details.
+	 * 2. Validate and classify identifier (email | phone | username).
+	 * 3. Query user by identifier and tenant, ensure password exists and user is active.
+	 * 4. Enforce active session limit when configured.
+	 * 5. Verify password, create user session, prune admin roles, transform user object.
+	 * 6. Generate access and refresh tokens, fetch pruned entity types for user's org,
+	 *    process DB response, attach downloadable image URL if present.
+	 * 7. Update session storage/Redis and return success response.
+	 *
+	 * Logic, return shape and error handling are preserved exactly from the original.
+	 *
+	 * @async
+	 * @function login
+	 * @param {Object} bodyData - Request body for login.
+	 * @param {string} bodyData.identifier - Email, phone or username used to identify the user. Case-insensitive.
+	 * @param {string} bodyData.password - Plain text password to validate.
+	 * @param {string} [bodyData.phone_code] - Optional phone country code used when identifier is a phone.
+	 * @param {Object} deviceInformation - Device metadata to store with the session (e.g. { ip, userAgent, deviceId }).
+	 * @param {string} domain - Tenant domain string used to resolve tenant information.
+	 * @returns {Promise<Object>} Resolves to a response object from responses.successResponse or responses.failureResponse.
+	 *
+	 * The success response resolves with:
+	 * {
+	 *   statusCode: httpStatusCode.ok,
+	 *   message: 'LOGGED_IN_SUCCESSFULLY',
+	 *   result: {
+	 *     access_token: string,
+	 *     refresh_token: string,
+	 *     user: Object // transformed user DTO (password removed) with `identifier` set to the original identifier
+	 *   }
+	 * }
+	 *
+	 * Failure responses use responses.failureResponse and return early for cases such as:
+	 * - missing identifier
+	 * - tenant domain not found
+	 * - tenant not found
+	 * - identifier/password invalid
+	 * - active session limit exceeded
+	 *
+	 * @throws {Error} Re-throws any unexpected error encountered during processing.
 	 */
-
 	static async login(bodyData, deviceInformation, domain) {
 		try {
-			const notFoundResponse = (message) =>
+			const makeNotFoundResponse = (message) =>
 				responses.failureResponse({
 					message,
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			// Validate tenant domain
 			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+
 			if (!tenantDomain) {
-				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+				return makeNotFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
 
-			// Validate tenant
-			const tenantDetail = await tenantQueries.findOne({
-				code: tenantDomain.tenant_code,
+			// Cache lookup for tenant by tenant_code
+			const tenantCode = tenantDomain.tenant_code
+			const tenantDetail = await cacheClient.getOrSet({
+				tenantCode,
+				orgId: null,
+				ns: common.CACHE_CONFIG.namespaces.tenant.name,
+				id: tenantCode,
+				fetchFn: async () => tenantQueries.findOne({ code: tenantCode }),
 			})
+
 			if (!tenantDetail) {
-				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+				return makeNotFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
-			// Helper functions to detect identifier type
-			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
-			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
-			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+			// Identifier validators
+			const EMAIL_RE = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/
+			const PHONE_RE = /^\+?[1-9]\d{1,14}$/
+			const USERNAME_RE = /^[a-zA-Z0-9_]{3,30}$/
+
+			const isEmailFormat = (s) => EMAIL_RE.test(s)
+			const isPhoneFormat = (s) => PHONE_RE.test(s)
+			const isUsernameFormat = (s) => USERNAME_RE.test(s)
 
 			const identifier = bodyData.identifier?.toLowerCase()
 			if (!identifier) {
@@ -683,7 +733,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// Prepare query based on identifier type
+			// Build user query based on identifier type
 			const query = {
 				[Op.or]: [],
 				password: { [Op.ne]: null },
@@ -691,16 +741,20 @@ module.exports = class AccountHelper {
 				tenant_code: tenantDetail.code,
 			}
 
-			if (isEmail(identifier)) {
+			if (isEmailFormat(identifier)) {
 				query[Op.or].push({ email: emailEncryption.encrypt(identifier) })
-			} else if (isPhone(identifier)) {
-				query[Op.or].push({ phone: emailEncryption.encrypt(identifier), phone_code: bodyData.phone_code }) // Adjust if phone encryption differs
+			} else if (isPhoneFormat(identifier)) {
+				query[Op.or].push({
+					phone: emailEncryption.encrypt(identifier),
+					phone_code: bodyData.phone_code,
+				})
 			} else {
 				query[Op.or].push({ username: identifier })
 			}
-			// Find user
+
+			// Find user with org
 			const userInstance = await userQueries.findUserWithOrganization(query, {}, true)
-			let user = userInstance ? userInstance.toJSON() : null
+			let user = userInstance ? (userInstance.toJSON ? userInstance.toJSON() : userInstance) : null
 
 			if (!user) {
 				return responses.failureResponse({
@@ -710,7 +764,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// Check active session limit
+			// Enforce active session limit
 			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
 				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
 				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
@@ -732,7 +786,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// Create user session
+			// Create session
 			const userSessionDetails = await userSessionsService.createUserSession(
 				user.id,
 				'',
@@ -741,16 +795,7 @@ module.exports = class AccountHelper {
 				user.tenant_code
 			)
 
-			// Determine tenant ID
-			/* 			let tenantDetails = await organizationQueries.findOne(
-				{ id: user.organization_id },
-				{ attributes: ['related_orgs'] }
-			)
-			const tenant_id =
-				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id
- */
-
-			//Remove all 'admin' roles from user.user_organizations
+			// Remove admin roles from user_organizations
 			if (user?.user_organizations?.length) {
 				user.user_organizations.forEach((org) => {
 					if (org.roles) {
@@ -759,16 +804,16 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// Transform user data
+			// Transform user for response
 			user = UserTransformDTO.transform(user)
 
-			const tokenDetail = {
+			const tokenPayload = {
 				data: {
 					id: user.id,
 					name: user.name,
 					session_id: userSessionDetails.result.id,
-					organization_ids: user.organizations.map((org) => String(org.id)), // Convert to string
-					organization_codes: user.organizations.map((org) => String(org.code)), // Convert to string					// tenant_id: tenant_id,
+					organization_ids: user.organizations.map((org) => String(org.id)),
+					organization_codes: user.organizations.map((org) => String(org.code)),
 					tenant_code: tenantDetail.code,
 					organizations: user.organizations,
 				},
@@ -776,12 +821,12 @@ module.exports = class AccountHelper {
 
 			// Generate tokens
 			const accessToken = utilsHelper.generateToken(
-				tokenDetail,
+				tokenPayload,
 				process.env.ACCESS_TOKEN_SECRET,
 				common.accessTokenExpiry
 			)
 			const refreshToken = utilsHelper.generateToken(
-				tokenDetail,
+				tokenPayload,
 				process.env.REFRESH_TOKEN_SECRET,
 				common.refreshTokenExpiry
 			)
@@ -790,19 +835,25 @@ module.exports = class AccountHelper {
 
 			const modelName = await userQueries.getModelName()
 
-			const orgCodes = user.organizations?.map((org) => org.code).filter(Boolean) || []
+			const orgCodes = user.organizations?.map((o) => o.code).filter(Boolean) || []
 			orgCodes.push(process.env.DEFAULT_ORGANISATION_CODE)
 
-			let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
-				status: 'ACTIVE',
-				organization_code: {
-					[Op.in]: orgCodes,
+			// Fetch pruned entities for the user's primary org and model
+			const prunedEntities = await cacheClient.getOrSet({
+				tenantCode,
+				orgId: tokenPayload.data.organization_codes[0],
+				ns: common.CACHE_CONFIG.namespaces.entity_types.name,
+				id: `${tokenPayload.data.organization_codes[0]}:${modelName}`,
+				fetchFn: async () => {
+					const raw = await entityTypeQueries.findUserEntityTypesAndEntities({
+						status: 'ACTIVE',
+						organization_code: { [Op.in]: orgCodes },
+						tenant_code: tenantDetail.code,
+						model_names: { [Op.contains]: [modelName] },
+					})
+					return removeDefaultOrgEntityTypes(raw, user.organizations[0].id)
 				},
-				tenant_code: tenantDetail.code,
-				model_names: { [Op.contains]: [modelName] },
 			})
-
-			const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.organizations?.[0]?.id)
 
 			user = await utils.processDbResponse(user, prunedEntities)
 
@@ -810,11 +861,11 @@ module.exports = class AccountHelper {
 				user.image = await utils.getDownloadableUrl(user.image)
 			}
 
-			// Return original identifier (email, phone, or username)
+			// Preserve original identifier for response
 			user.identifier = identifier
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
-			// Update session and Redis
+			// Update session storage / Redis
 			await userSessionsService.updateUserSessionAndsetRedisData(
 				userSessionDetails.result.id,
 				accessToken,
@@ -1989,10 +2040,14 @@ module.exports = class AccountHelper {
 			await userQueries.updateUser({ id: user.id, tenant_code: tenantCode }, updateParams)
 			//await UserCredentialQueries.updateUser({ email: userCredentials.email }, { password: bodyData.newPassword })
 
-			const redisUserKey = common.redisUserPrefix + tenantCode + '_' + user.id.toString()
-
-			// remove profile caching
-			await utils.redisDel(redisUserKey)
+			const ns = common.CACHE_CONFIG.namespaces.profile.name
+			const cacheKey = cacheClient.namespacedKey({
+				tenantCode,
+				orgId: organizationCode,
+				ns,
+				id: userId,
+			})
+			await cacheClient.del(cacheKey)
 
 			// remove reset otp caching
 			await utils.redisDel(user?.username)

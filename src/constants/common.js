@@ -101,7 +101,7 @@ module.exports = {
 	WRITE_ACCESS: 'w',
 	READ_ACCESS: 'r',
 	TYPE_ALL: 'all',
-	ENGLISH_LANGUGE_CODE: 'en',
+	ENGLISH_LANGUAGE_CODE: 'en',
 	ORG_CODE_HEADER: 'organizationcode',
 	TENANT_CODE_HEADER: 'tenantcode',
 	DELETE_METHOD: 'DELETE',
@@ -113,4 +113,24 @@ module.exports = {
 	SIGNEDUP_STATUS: 'SIGNEDUP',
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR: 'SequelizeUniqueConstraintError',
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE: 'ER_DUP_ENTRY',
+	CACHE_CONFIG: {
+		enableCache: true,
+		shards: 32,
+		common: {
+			list: 'list',
+		},
+		namespaces: {
+			profile: { name: 'profile', enabled: true, defaultTtl: 3600, useInternal: false },
+			entity_types: { name: 'entity_types', enabled: true, defaultTtl: 86400, useInternal: false },
+			tenant: { name: 'tenant', enabled: true, defaultTtl: 21600, useInternal: false },
+			branding: { name: 'branding', enabled: true, defaultTtl: 43200, useInternal: false },
+			organization: { name: 'organization', enabled: true, defaultTtl: 21600, useInternal: false },
+			organization_features: {
+				name: 'organization_features',
+				enabled: true,
+				defaultTtl: 21600,
+				useInternal: false,
+			},
+		},
+	},
 }

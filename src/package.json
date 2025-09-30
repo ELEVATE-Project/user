@@ -43,7 +43,7 @@
 		"elevate-cloud-storage": "^2.6.3",
 		"elevate-encryption": "^1.0.1",
 		"elevate-logger": "^3.1.0",
-		"elevate-node-cache": "^1.0.6",
+		"elevate-node-cache": "^2.0.0",
 		"elevate-services-health-check": "^0.0.6",
 		"email-validator": "^2.0.4",
 		"express": "^4.17.1",

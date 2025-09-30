@@ -37,6 +37,7 @@ const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { generateUniqueUsername } = require('@utils/usernameGenerator')
 const responses = require('@helpers/responses')
 const userHelper = require('@helpers/userHelper')
+const cacheClient = require('@generics/cacheHelper')
 
 // DTOs
 const UserTransformDTO = require('@dtos/userDTO')
@@ -600,6 +601,21 @@ module.exports = class AdminHelper {
 				{ attributes: { exclude: ['created_at', 'updated_at', 'deleted_at'] } }
 			)
 
+			await cacheClient.evictNamespace({
+				tenantCode,
+				orgId: organization.code,
+				ns: common.CACHE_CONFIG.namespaces.organization.name,
+				patternSuffix: '*',
+			})
+
+			const cacheKey = cacheClient.namespacedKey({
+				tenantCode,
+				orgId: organization.code,
+				ns: common.CACHE_CONFIG.namespaces.profile.name,
+				id: user.id,
+			})
+			await cacheClient.del(cacheKey)
+
 			// Broadcast event asynchronously
 			setImmediate(() =>
 				eventBroadcaster('updateOrganization', {
@@ -702,8 +718,22 @@ module.exports = class AdminHelper {
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
 				},
-				true // so we can get the user IDs
+				true // So we can get the user IDs
 			)
+
+			const namespaces = [
+				common.CACHE_CONFIG.namespaces.organization.name,
+				common.CACHE_CONFIG.namespaces.profile.name,
+			]
+
+			const results = await Promise.allSettled(
+				namespaces.map((ns) => cacheClient.evictNamespace({ tenantCode, orgId: organizationCode, ns }))
+			)
+			results.forEach((r, i) => {
+				if (r.status === 'rejected') {
+					console.error(`invalidate failed for ns=${namespaces[i]} org=${organizationCode}`, r.reason)
+				}
+			})
 
 			// 3. Broadcast & remove sessions if users were found
 			if (userRowsAffected > 0) {

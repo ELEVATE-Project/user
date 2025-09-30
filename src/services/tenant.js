@@ -30,6 +30,7 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
+const cacheClient = require('@generics/cacheHelper')
 
 module.exports = class tenantHelper {
 	/**
@@ -438,6 +439,7 @@ module.exports = class tenantHelper {
 					tenantUpdateBody
 				)
 			}
+			await cacheClient.evictTenantByPattern(tenantCode).catch(() => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -519,6 +521,8 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+
+			await cacheClient.evictTenantByPattern(tenantCode).catch(() => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -632,6 +636,8 @@ module.exports = class tenantHelper {
 			})
 
 			await Promise.all(domainRemovePromise)
+
+			await cacheClient.evictTenantByPattern(tenantCode).catch(() => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,

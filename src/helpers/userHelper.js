@@ -1,11 +1,11 @@
 const common = require('@constants/common')
+const cacheClient = require('@generics/cacheHelper')
 const utils = require('@generics/utils')
 const userQueries = require('@database/queries/users')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
 const userSessionsService = require('@services/user-sessions')
 const Sequelize = require('@database/models/index').sequelize
-const REDIS_USER_PREFIX = common.redisUserPrefix
 const DELETED_STATUS = common.DELETED_STATUS
 const userSessionsQueries = require('@database/queries/user-sessions')
 
@@ -69,6 +69,14 @@ const userHelper = {
 				const update = { ...rest, ...generateUpdateParams(userId) }
 
 				await userQueries.updateUser({ id: user.id }, update, { transaction })
+
+				// Capture org codes before delete for cache invalidation
+				const orgRows = await userOrganizationQueries.findAll(
+					{ user_id: user.id, tenant_code: user.tenant_code },
+					{ attributes: ['organization_code'], transaction }
+				)
+				const orgCodes = [...new Set(orgRows.map((r) => r.organization_code))]
+
 				await userOrganizationQueries.delete(
 					{ user_id: user.id, tenant_code: user.tenant_code },
 					{ transaction }
@@ -77,7 +85,6 @@ const userHelper = {
 					{ user_id: user.id, tenant_code: user.tenant_code },
 					{ transaction }
 				)
-				await utils.redisDel([`${REDIS_USER_PREFIX}${user.tenant_code}_${userId}`])
 
 				const userSessionData = await userSessionsService.findUserSession(
 					{
@@ -91,6 +98,22 @@ const userHelper = {
 				)
 				const userSessionIds = userSessionData.map(({ id }) => id)
 				await userSessionsService.removeUserSessions(userSessionIds)
+
+				// Clear cache entries for this user
+				try {
+					const ns = common.CACHE_CONFIG.namespaces.profile.name
+					for (const orgId of orgCodes) {
+						const fullKey = await cacheClient.buildKey({
+							tenantCode: user.tenant_code,
+							orgId,
+							ns,
+							id: userId,
+						})
+						await cacheClient.del(fullKey)
+					}
+				} catch (err) {
+					console.error('Failed to delete user cache', err)
+				}
 			},
 			transactionOptions
 		)
