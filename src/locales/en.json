@@ -85,6 +85,9 @@
 	"ORG_ROLE_REQ_UPDATED": "Organisation request updated",
 	"FILE_UPLOAD_MODIFY_ERROR": "File update failed",
 	"STATUS_UPDATE_FAILED": "Failed to deactivate user",
+	"ORG_DEACTIVATION_FAILED": "Failed to deactivate organisation.",
+	"ORG_NOT_FOUND": "Organisation not found.",
+	"ORG_ALREADY_INACTIVE": "Organisation is already inactive.",
 	"USER_DEACTIVATED": "User deactivated Successfully",
 	"USER_CSV_UPLOADED_FAILED": "Failed to Uploaded User Invites CSV",
 	"ORG_DEACTIVATED": "Organization deactivated Successfully",
@@ -178,5 +181,6 @@
 	"ORG_UNIQUE_CONSTRAIN_ERROR": "Organization Creation / Updation Failed. code / registration_code not unique.",
 	"REG_CODE_ERROR": "registration_code is not valid or unique.",
 	"INVALID_REG_CODE_ERROR": "registration_codes {{errorMessage}}. Invalid Code(s) : {{errorValues}}",
-	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid."
+	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid.",
+	"USER_PROFILE_FETCHED_SUCCESSFULLY": "User profile fetched successfully!"
 }
