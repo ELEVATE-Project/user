@@ -43,15 +43,15 @@ module.exports = (sequelize, DataTypes) => {
 		})
 
 		// Association with UserRole model
-		FeatureRoleMapping.belongsTo(models.UserRole, {
-			foreignKey: {
-				name: 'role_title',
-				allowNull: false,
-			},
-			targetKey: 'title',
-			constraints: false,
-			as: 'userRole',
-		})
+		// FeatureRoleMapping.belongsTo(models.UserRole, {
+		// 	foreignKey: {
+		// 		name: 'role_title',
+		// 		allowNull: false,
+		// 	},
+		// 	targetKey: 'title',
+		// 	constraints: false,
+		// 	as: 'userRole',
+		// })
 
 		// Association with Organization model
 		FeatureRoleMapping.belongsTo(models.Organization, {

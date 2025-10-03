@@ -22,7 +22,7 @@ module.exports = {
 			type: 'foreign key',
 			name: 'fk_feature_role_mapping_tenant_code',
 			references: {
-				table: 'tenants', // Adjust to your actual table name
+				table: 'tenants',
 				field: 'code',
 			},
 			onUpdate: 'CASCADE',
