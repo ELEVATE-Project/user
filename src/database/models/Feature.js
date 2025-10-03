@@ -62,6 +62,11 @@ module.exports = (sequelize, DataTypes) => {
 			foreignKey: 'feature_code',
 			as: 'organization_features',
 		})
+		Feature.hasMany(models.FeatureRoleMapping, {
+			foreignKey: 'feature_code',
+			sourceKey: 'code',
+			as: 'featureRoleMappings',
+		})
 	}
 
 	return Feature
