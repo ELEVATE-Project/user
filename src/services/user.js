@@ -23,7 +23,7 @@ const responses = require('@helpers/responses')
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
 
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class UserHelper {
 	/**
@@ -200,7 +200,7 @@ module.exports = class UserHelper {
 					},
 				})
 
-				broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+				broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 			}
 
 			return responses.successResponse({

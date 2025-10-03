@@ -11,6 +11,11 @@ const getEndpoints = (eventGroup) => {
 		case 'userEvents':
 			if (process.env.EVENT_USER_LISTENER_API)
 				return process.env.EVENT_USER_LISTENER_API.split(',').filter((url) => url.trim())
+			return []
+		case 'tenantEvents':
+			if (process.env.EVENT_TENANT_LISTENER_API)
+				return process.env.EVENT_TENANT_LISTENER_API.split(',').filter((url) => url.trim())
+			return []
 		default:
 			return []
 	}
@@ -20,12 +25,16 @@ const isEventEnabled = (eventGroup) => {
 	switch (eventGroup) {
 		case 'organizationEvents':
 			return process.env.EVENT_ENABLE_ORG_EVENTS !== 'false'
-
 		case 'userEvents':
 			return process.env.EVENT_ENABLE_USER_EVENTS !== 'false'
-
+		case 'tenantEvents':
+			return process.env.EVENT_ENABLE_TENANT_EVENTS !== 'false'
 		case 'userEvents-kafka':
-			return process.env.EVENT_ENABLE_KAFKA_PUSH !== 'false'
+			return process.env.EVENT_ENABLE_USER_KAFKA_EVENTS !== 'false'
+		case 'tenantEvents-kafka':
+			return process.env.EVENT_ENABLE_TENANT_KAFKA_EVENTS !== 'false'
+		case 'organizationEvents-kafka':
+			return process.env.EVENT_ENABLE_ORG_KAFKA_EVENTS !== 'false'
 		default:
 			return true
 	}
@@ -56,13 +65,26 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 		if (!requestBody) throw new Error('Kafka Event Body Generation Failed')
 		if (!isEventEnabled(`${eventGroup}-kafka`))
 			throw new Error(`Kafka Events Not Enabled For The Group "${eventGroup}"`)
-
-		kafkaCommunication.pushUserEventsToKafka(requestBody)
+		//push to kafka based on eventGroup
+		switch (eventGroup) {
+			case 'organizationEvents':
+				await kafkaCommunication.pushOrganizationEventsToKafka(requestBody)
+				break
+			case 'userEvents':
+				await kafkaCommunication.pushUserEventsToKafka(requestBody)
+				break
+			case 'tenantEvents':
+				await kafkaCommunication.pushTenantEventsToKafka(requestBody)
+				break
+			default:
+				console.log('No Kafka Event Group Found')
+				break
+		}
 	} catch (err) {
 		console.log(err)
 	}
 }
-exports.broadcastUserEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
+exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
 		// Fire both broadcaster functions concurrently
 		const broadcastPromises = [
@@ -82,6 +104,6 @@ exports.broadcastUserEvent = async (eventGroup, { requestBody, headers = {}, isI
 		})
 	} catch (err) {
 		// Log any unexpected errors from the promise settlement
-		console.error('Error in broadcastUserEvent:', err)
+		console.error('Error in broadcastEvent:', err)
 	}
 }

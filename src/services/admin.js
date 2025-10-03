@@ -31,7 +31,7 @@ const adminService = require('../generics/materializedViews')
 const userSessionsService = require('@services/user-sessions')
 
 // Helpers and utilities
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { generateUniqueUsername } = require('@utils/usernameGenerator')
@@ -40,6 +40,7 @@ const userHelper = require('@helpers/userHelper')
 
 // DTOs
 const UserTransformDTO = require('@dtos/userDTO')
+const organizationDTO = require('@dtos/organizationDTO')
 
 module.exports = class AdminHelper {
 	/**
@@ -79,7 +80,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -217,7 +218,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -673,7 +674,7 @@ module.exports = class AdminHelper {
 			// proceed with update
 
 			// 1. Deactivate org
-			const orgRowsAffected = await organizationQueries.update(
+			const orgUpdateResult = await organizationQueries.update(
 				{
 					code: organizationCode,
 					tenant_code: tenantCode,
@@ -681,10 +682,11 @@ module.exports = class AdminHelper {
 				{
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
-				}
+				},
+				{ returning: true, raw: true }
 			)
 
-			if (!orgRowsAffected) {
+			if (!orgUpdateResult || orgUpdateResult.rowsAffected === 0) {
 				return responses.failureResponse({
 					message: 'ORG_DEACTIVATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
@@ -718,6 +720,25 @@ module.exports = class AdminHelper {
 					requestBody: { user_ids: userIds , tenant_code: tenantCode, organization_code: organizationCode},
 				})
 			}
+
+			//Event body for org update (deactivation)
+			let updatedOrgDetails = orgUpdateResult.updatedRows?.[0]
+			const eventBodyData = organizationDTO.eventBodyDTO({
+				entity: 'organization',
+				eventType: 'update',
+				entityId: updatedOrgDetails.id,
+				args: {
+					created_by: updatedOrgDetails.created_by,
+					name: updatedOrgDetails.name,
+					code: updatedOrgDetails.code,
+					updated_at: updatedOrgDetails?.updated_at || new Date(),
+					status: updatedOrgDetails?.status || common.INACTIVE_STATUS,
+					id: updatedOrgDetails.id,
+					tenant_code: tenantCode,
+				},
+			})
+
+			broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			// 4. Return success
 			return responses.successResponse({
