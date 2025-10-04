@@ -15,6 +15,7 @@ const { UniqueConstraintError } = require('sequelize')
 const common = require('@constants/common')
 const { Op } = require('sequelize')
 const roleQueries = require('@database/queries/user-role')
+const { sequelize } = require('@database/models/index')
 
 module.exports = class organizationFeatureHelper {
 	/**
@@ -66,6 +67,7 @@ module.exports = class organizationFeatureHelper {
 	 */
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
+		const transaction = await sequelize.transaction()
 		try {
 			// validate that the feature exists in the default organization
 			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
@@ -95,7 +97,7 @@ module.exports = class organizationFeatureHelper {
 			bodyData.created_by = tokenInformation.id
 
 			// Create the new organization feature
-			const createdOrgFeature = await organizationFeatureQueries.create(bodyData)
+			const createdOrgFeature = await organizationFeatureQueries.create(bodyData, { transaction })
 
 			// If roles are provided, create feature_role_mapping entries
 			if (bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
@@ -122,15 +124,16 @@ module.exports = class organizationFeatureHelper {
 					tenant_code: tokenInformation.tenant_code,
 				}))
 
-				await featureRoleMappingQueries.bulkCreate(featureRoleMappingData)
+				await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
 			}
-
+			await transaction.commit()
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORG_FEATURE_CREATED_SUCCESSFULLY',
 				result: createdOrgFeature,
 			})
 		} catch (error) {
+			if (transaction) await transaction.rollback()
 			if (error.name === common.SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR) {
 				return responses.failureResponse({
 					message: 'FEATURE_NOT_FOUND',
@@ -161,6 +164,7 @@ module.exports = class organizationFeatureHelper {
 	 * @returns {JSON} - Org feature update response.
 	 */
 	static async update(feature_code, bodyData, tokenInformation) {
+		const transaction = await sequelize.transaction()
 		try {
 			// Prepare filter query to identify the organization feature to update
 			let filterQuery = {
@@ -173,7 +177,8 @@ module.exports = class organizationFeatureHelper {
 
 			const [updatedCount, updatedOrgFeature] = await organizationFeatureQueries.updateOrganizationFeature(
 				filterQuery,
-				bodyData
+				bodyData,
+				{ transaction }
 			)
 
 			// Return error if no record was updated
@@ -186,7 +191,7 @@ module.exports = class organizationFeatureHelper {
 			}
 
 			// If roles are provided, update feature_role_mapping entries
-			if (bodyData.roles && Array.isArray(bodyData.roles)) {
+			if (bodyData?.roles && Array.isArray(bodyData?.roles)) {
 				// First, delete existing mappings for this feature and organization
 				await featureRoleMappingQueries.delete({
 					feature_code: feature_code,
@@ -195,7 +200,7 @@ module.exports = class organizationFeatureHelper {
 				})
 
 				// Then create new mappings if roles are provided
-				if (bodyData.roles.length > 0) {
+				if (bodyData?.roles.length > 0) {
 					const featureRoleMappingData = bodyData.roles.map((role) => ({
 						feature_code: feature_code,
 						role_title: role,
@@ -203,16 +208,17 @@ module.exports = class organizationFeatureHelper {
 						tenant_code: tokenInformation.tenant_code,
 					}))
 
-					await featureRoleMappingQueries.bulkCreate(featureRoleMappingData)
+					await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
 				}
 			}
-
+			await transaction.commit()
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_UPDATED_SUCCESSFULLY',
 				result: updatedOrgFeature?.[0],
 			})
 		} catch (error) {
+			if (transaction) await transaction.rollback()
 			if (error.name === common.SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR) {
 				return responses.failureResponse({
 					message: 'FEATURE_NOT_FOUND',

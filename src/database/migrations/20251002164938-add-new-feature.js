@@ -28,7 +28,7 @@ module.exports = {
 				{
 					replacements: {
 						tenantCode: tenant.code,
-						orgCode: process.env.DEFAULT_ORG_CODE || 'default_code',
+						orgCode: process.env.DEFAULT_ORGANISATION_CODE || 'default_code',
 					},
 					type: Sequelize.QueryTypes.SELECT,
 				}
@@ -36,7 +36,7 @@ module.exports = {
 
 			if (orgExist.length > 0) {
 				organizationFeatureData.push({
-					organization_code: process.env.DEFAULT_ORG_CODE || 'default_code',
+					organization_code: process.env.DEFAULT_ORGANISATION_CODE || 'default_code',
 					tenant_code: tenant.code,
 					feature_code: 'scp',
 					feature_name: 'SCP',
