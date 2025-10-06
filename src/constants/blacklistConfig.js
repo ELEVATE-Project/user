@@ -299,6 +299,7 @@ const organization = {
 	update: [
 		'id',
 		'org_admin',
+		'code',
 		'tenant_code',
 		'parent_id',
 		'related_orgs',
