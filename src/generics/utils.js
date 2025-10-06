@@ -1112,6 +1112,28 @@ function extractUpdatedValues(oldData = {}, newData = {}, updateData = {}) {
 	return changes
 }
 
+function flattenLeafPaths(obj, prefix = '') {
+	const out = []
+	for (const [k, v] of Object.entries(obj || {})) {
+		const path = prefix ? `${prefix}.${k}` : k
+		if (v && typeof v === 'object' && !Array.isArray(v)) out.push(...flattenLeafPaths(v, path))
+		else out.push(path)
+	}
+	return out
+}
+
+function extractDelta(oldData = {}, newData = {}, updateData = {}) {
+	const delta = {}
+	const paths = flattenLeafPaths(updateData) // only compare fields the client attempted to update
+
+	for (const p of paths) {
+		const oldVal = _.get(oldData, p)
+		const newVal = _.get(newData, p)
+		if (!_.isEqual(oldVal, newVal)) _.set(delta, p, newVal)
+	}
+	return delta
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1159,4 +1181,5 @@ module.exports = {
 	appendParamsToUrl,
 	parseMetaData,
 	extractUpdatedValues,
+	extractDelta,
 }
