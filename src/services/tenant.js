@@ -432,9 +432,14 @@ module.exports = class tenantHelper {
 	static async update(tenantCode, bodyData, userId) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne(
+				{
+					code: tenantCode,
+				},
+				{
+					raw: true,
+				}
+			)
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -443,35 +448,17 @@ module.exports = class tenantHelper {
 					message: 'TENANT_NOT_FOUND',
 				})
 			}
-			// list of updatable keys for a tenant
-			const tenantUpdatableKeys = ['name', 'description', 'logo', 'theming', 'meta']
-			// pick relevant data from body data for tenant updation
-			bodyData = _.pick(bodyData, tenantUpdatableKeys)
 
-			let tenantUpdateBody = {}
-			// prepare the update body based on comparing with the current data to make sure the change
-			for (let key of tenantUpdatableKeys) {
-				if (!_.isEqual(bodyData[key], tenantDetails[key])) {
-					tenantUpdateBody[key] = bodyData[key]
-				}
-			}
-			let updatedTenantDetails
-			// update only if the data is changed
-			if (Object.keys(tenantUpdateBody).length > 0) {
-				tenantUpdateBody.updated_by = userId
-				const [rowsAffected, updatedRows] = await tenantQueries.update(
-					{
-						code: tenantCode,
-					},
-					tenantUpdateBody,
-					{
-						returning: true,
-						raw: true,
-					}
-				)
-				updatedTenantDetails = updatedRows?.[0]
-			}
+			bodyData.updated_by = userId
+			const [rowsAffected, updatedRows] = await tenantQueries.update(
+				{
+					code: tenantCode,
+				},
+				bodyData
+			)
+			let updatedTenantDetails = updatedRows?.[0]
 
+			console.log({ updatedTenantDetails })
 			await tenantEventEmitter(tenantDetails, updatedTenantDetails, bodyData)
 
 			return responses.successResponse({
@@ -554,19 +541,13 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
-			let changes = [
-				{
-					fieldName: 'domains',
-					oldValue: existingDomains,
-					newValue: [...existingDomains, ...domainsToCreate],
-				},
-			]
 
 			const eventBodyData = TenantDTO.eventBodyDTO({
 				entity: 'tenant',
 				eventType: 'update',
 				entityId: tenantDetails.code,
-				changedValues: changes,
+				oldValue: existingDomains,
+				newValue: [...existingDomains, ...domainsToCreate],
 				args: {
 					created_by: tenantDetails.created_by,
 					name: tenantDetails.name,
@@ -694,19 +675,12 @@ module.exports = class tenantHelper {
 
 			await Promise.all(domainRemovePromise)
 
-			let changes = [
-				{
-					fieldName: 'domains',
-					oldValue: existingDomains,
-					newValue: existingDomains.filter((d) => !domainsToRemove.includes(d)),
-				},
-			]
-
 			const eventBodyData = TenantDTO.eventBodyDTO({
 				entity: 'tenant',
 				eventType: 'update',
 				entityId: tenantDetails.code,
-				changedValues: changes,
+				oldValue: existingDomains,
+				newValue: existingDomains.filter((d) => !domainsToRemove.includes(d)),
 				args: {
 					created_by: tenantDetails.created_by,
 					name: tenantDetails.name,
@@ -874,27 +848,26 @@ module.exports = class tenantHelper {
 	}
 }
 
-async function tenantEventEmitter(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData) {
-	// compute changes from provided body keys
-	let changes = await utils.extractUpdatedValues(tenantDetailsBeforeUpdate, updatedTenantDetails, bodyData)
+// tenant events
+async function tenantEventEmitter(tenantBefore, tenantAfter, bodyData) {
+	// compute delta based on attempted update fields
+	const newValues = utils.extractDelta(tenantBefore, tenantAfter, bodyData)
 
-	//event Body for org updates
-	const eventBodyData = TenantDTO.eventBodyDTO({
+	// nothing changed → no event
+	if (Object.keys(newValues).length === 0) return
+
+	// deep-clone old to avoid later mutation bleed
+	const oldValues = _.cloneDeep(tenantBefore)
+
+	const eventBodyData = {
 		entity: 'tenant',
 		eventType: 'update',
-		entityId: tenantDetailsBeforeUpdate.code,
-		changedValues: changes,
-		args: {
-			created_by: tenantDetailsBeforeUpdate.created_by,
-			name: tenantDetailsBeforeUpdate.name,
-			code: tenantDetailsBeforeUpdate.code,
-			created_at: tenantDetailsBeforeUpdate?.created_at || new Date(),
-			updated_at: updatedTenantDetails?.updated_at || new Date(),
-			status: tenantDetailsBeforeUpdate?.status || common.ACTIVE_STATUS,
-			meta: tenantDetailsBeforeUpdate?.meta || {},
-			deleted: false,
-			description: tenantDetailsBeforeUpdate.description,
-		},
-	})
+		entityId: tenantBefore.code,
+		oldValues,
+		newValues,
+		created_at: tenantBefore?.created_at || new Date(),
+		updated_at: tenantAfter?.updated_at || new Date(),
+	}
+
 	broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 }
