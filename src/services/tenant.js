@@ -483,9 +483,7 @@ module.exports = class tenantHelper {
 	static async addDomain(tenantCode, domains) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne({ code: tenantCode }, { raw: true })
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -541,13 +539,14 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+			tenantDetails.domains = existingDomains
 
 			const eventBodyData = TenantDTO.eventBodyDTO({
 				entity: 'tenant',
 				eventType: 'update',
 				entityId: tenantDetails.code,
-				oldValue: existingDomains,
-				newValue: [...existingDomains, ...domainsToCreate],
+				oldValues: tenantDetails,
+				newValues: { domains: [...existingDomains, ...domainsToCreate] },
 				args: {
 					created_by: tenantDetails.created_by,
 					name: tenantDetails.name,
@@ -586,9 +585,12 @@ module.exports = class tenantHelper {
 	static async removeDomain(tenantCode, domains) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne(
+				{
+					code: tenantCode,
+				},
+				{ raw: true }
+			)
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -675,12 +677,14 @@ module.exports = class tenantHelper {
 
 			await Promise.all(domainRemovePromise)
 
+			tenantDetails.domains = existingDomains
+
 			const eventBodyData = TenantDTO.eventBodyDTO({
 				entity: 'tenant',
 				eventType: 'update',
 				entityId: tenantDetails.code,
-				oldValue: existingDomains,
-				newValue: existingDomains.filter((d) => !domainsToRemove.includes(d)),
+				oldValues: tenantDetails,
+				newValues: { domains: existingDomains.filter((d) => !domainsToRemove.includes(d)) },
 				args: {
 					created_by: tenantDetails.created_by,
 					name: tenantDetails.name,
