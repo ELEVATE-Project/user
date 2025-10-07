@@ -456,9 +456,17 @@ module.exports = class tenantHelper {
 				},
 				bodyData
 			)
+
+			if (!updatedRows || updatedRows.length === 0) {
+				console.error('Update query did not return updated tenant data')
+				return responses.failureResponse({
+					statusCode: httpStatusCode.internal_server_error,
+					message: 'TENANT_UPDATE_FAILED',
+				})
+			}
+
 			let updatedTenantDetails = updatedRows?.[0]
 
-			console.log({ updatedTenantDetails })
 			await tenantEventEmitter(tenantDetails, updatedTenantDetails, bodyData)
 
 			return responses.successResponse({
