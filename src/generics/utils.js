@@ -1122,9 +1122,10 @@ function flattenLeafPaths(obj, prefix = '') {
 	return out
 }
 
-function extractDelta(oldData = {}, newData = {}, updateData = {}) {
+function extractDelta(oldData = {}, newData = {}, updateData) {
 	const delta = {}
-	const paths = flattenLeafPaths(updateData) // only compare fields the client attempted to update
+	const paths =
+		updateData && Object.keys(updateData).length ? flattenLeafPaths(updateData) : flattenLeafPaths(newData) // fallback to full compare
 
 	for (const p of paths) {
 		const oldVal = _.get(oldData, p)
