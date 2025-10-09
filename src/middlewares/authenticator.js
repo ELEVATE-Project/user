@@ -210,7 +210,7 @@ module.exports = async function (req, res, next) {
 		//check for admin user
 		let isAdmin = false
 		if (decodedToken.data.roles) {
-			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
+			isAdmin = decodedToken.data.roles.some((role) => role.title === common.ADMIN_ROLE)
 		}
 
 		if (isAdmin) {
