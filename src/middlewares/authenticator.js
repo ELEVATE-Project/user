@@ -260,7 +260,6 @@ module.exports = async function (req, res, next) {
 			}
 
 			req.decodedToken = decodedToken.data
-			//return next()
 		}
 
 		if (roleValidation) {
