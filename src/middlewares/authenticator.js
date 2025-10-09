@@ -255,7 +255,7 @@ module.exports = async function (req, res, next) {
 
 				// Override the values from the token with sanitized header values
 				decodedToken.data.tenant_code = tenantCode
-				decodedToken.data.organization_id = orgId
+				decodedToken.data.organization_id = parsedOrgId
 				decodedToken.data.organization_code = orgCode
 			}
 
