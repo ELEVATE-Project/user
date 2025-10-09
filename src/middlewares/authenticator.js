@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user-role')
+
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
@@ -159,6 +159,7 @@ module.exports = async function (req, res, next) {
 			token = extractedToken.trim()
 		} else token = authHeader.trim()
 
+		let decodedToken
 		let org
 		try {
 			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
@@ -210,10 +211,56 @@ module.exports = async function (req, res, next) {
 		let isAdmin = false
 		if (decodedToken.data.roles) {
 			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
-			if (isAdmin) {
-				req.decodedToken = decodedToken.data
-				return next()
+		}
+
+		if (isAdmin) {
+			// For admin users, allow overriding tenant_code, organization_id, and organization_code via headers
+			// Header names are configurable via environment variables with sensible defaults
+			const orgIdHeaderName = process.env.ORG_ID_HEADER_NAME
+			const orgCodeHeaderName = process.env.ORG_CODE_HEADER_NAME
+			const tenantCodeHeaderName = process.env.TENANT_CODE_HEADER_NAME
+
+			// Extract and sanitize header values (trim whitespace, case-insensitive header lookup)
+			const orgId = (req.headers[orgIdHeaderName.toLowerCase()] || '').trim()
+			const orgCode = (req.headers[orgCodeHeaderName.toLowerCase()] || '').trim()
+			const tenantCode = (req.headers[tenantCodeHeaderName.toLowerCase()] || '').trim()
+
+			// If any override header is provided (non-empty after trim), all three must be present and non-empty
+			const hasAnyOverrideHeader = orgId || orgCode || tenantCode
+			if (hasAnyOverrideHeader) {
+				if (!orgId || !orgCode || !tenantCode) {
+					throw responses.failureResponse({
+						message: {
+							key: 'ADD_ORG_HEADER',
+							interpolation: {
+								orgIdHeader: orgIdHeaderName,
+								orgCodeHeader: orgCodeHeaderName,
+								tenantCodeHeader: tenantCodeHeaderName,
+							},
+						},
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				// Validate orgId is a valid positive integer
+				const parsedOrgId = parseInt(orgId, 10)
+				if (isNaN(parsedOrgId) || parsedOrgId <= 0) {
+					throw responses.failureResponse({
+						message: 'INVALID_ORG_ID',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				// Override the values from the token with sanitized header values
+				decodedToken.data.tenant_code = tenantCode
+				decodedToken.data.organization_id = orgId
+				decodedToken.data.organization_code = orgCode
 			}
+
+			req.decodedToken = decodedToken.data
+			//return next()
 		}
 
 		if (roleValidation) {
