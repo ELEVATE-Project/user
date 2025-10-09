@@ -258,8 +258,6 @@ module.exports = async function (req, res, next) {
 				decodedToken.data.organization_id = parsedOrgId
 				decodedToken.data.organization_code = orgCode
 			}
-
-			req.decodedToken = decodedToken.data
 		}
 
 		if (roleValidation) {
