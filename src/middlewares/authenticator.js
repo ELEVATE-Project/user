@@ -18,6 +18,7 @@ const utilsHelper = require('@generics/utils')
 const { verifyCaptchaToken } = require('@utils/captcha')
 const { getDomainFromRequest } = require('@utils/domain')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
+const organizationQueries = require('@database/queries/organization')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -252,7 +253,21 @@ module.exports = async function (req, res, next) {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
+				const org = await organizationQueries.findOne({
+					id: parsedOrgId,
+					code: orgCode,
+					tenant_code: tenantCode,
+					status: common.ACTIVE_STATUS,
+					deleted_at: null,
+				})
 
+				if (!org) {
+					throw responses.failureResponse({
+						message: 'INVALID_ORG_OR_TENANT_CODE',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 				// Override the values from the token with sanitized header values
 				decodedToken.data.tenant_code = tenantCode
 				decodedToken.data.organization_id = parsedOrgId

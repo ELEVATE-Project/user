@@ -184,5 +184,6 @@
 	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid.",
 	"USER_PROFILE_FETCHED_SUCCESSFULLY": "User profile fetched successfully!",
 	"ADD_ORG_HEADER": "Please provide all required organization headers: {{orgIdHeader}}, {{orgCodeHeader}}, and {{tenantCodeHeader}} for admin override.",
-	"INVALID_ORG_ID": "Organization ID must be a valid positive integer."
+	"INVALID_ORG_ID": "Organization ID must be a valid positive integer.",
+	"INVALID_ORG_OR_TENANT_CODE": "The provided organization or tenant code is invalid or does not match."
 }
