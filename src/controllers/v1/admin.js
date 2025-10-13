@@ -110,7 +110,7 @@ module.exports = class Admin {
 				req.body.organization_id,
 				req.decodedToken.id,
 				req.body?.identifier,
-				req.headers?.[process.env.TENANT_CODE_HEADER_NAME],
+				req.headers?.[common.TENANT_CODE_HEADER],
 				req.body?.phone_code
 			)
 			return orgAdminCreation
@@ -154,7 +154,7 @@ module.exports = class Admin {
 
 			const result = await adminService.deactivateOrg(
 				req.params.id,
-				req.headers?.[process.env.TENANT_CODE_HEADER_NAME],
+				req.headers?.[common.TENANT_CODE_HEADER],
 				req.decodedToken.id
 			)
 			return result

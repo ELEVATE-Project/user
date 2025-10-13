@@ -7,6 +7,7 @@
 
 // Dependencies
 const formsService = require('@services/form')
+const common = require('@constants/common')
 
 module.exports = class Form {
 	/**
@@ -100,7 +101,7 @@ module.exports = class Form {
 					req.params.id,
 					params,
 					req?.decodedToken?.organization_id || null,
-					req?.decodedToken?.tenant_code || req?.headers?.[process.env.TENANT_CODE_HEADER_NAME] || null,
+					req?.decodedToken?.tenant_code || req?.headers?.[common.TENANT_CODE_HEADER] || null,
 					domain
 				)
 				return form
