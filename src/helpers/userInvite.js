@@ -916,6 +916,8 @@ module.exports = class UserInviteHelper {
 										username: userUpdate[0].dataValues?.username,
 										status: userUpdate[0].dataValues?.status,
 										deleted: userUpdate[0].dataValues?.deleted_at ? true : false,
+										tenant_code: user.tenant_code,
+										organization_code: user.organization_code,
 										created_at: userUpdate[0].dataValues?.created_at || null,
 										updated_at: userUpdate[0].dataValues?.updated_at || new Date(),
 										oldValues,
