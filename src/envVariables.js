@@ -461,17 +461,17 @@ let enviromentVariables = {
 	ORG_ID_HEADER_NAME: {
 		message: 'Required ORG_ID_HEADER_NAME',
 		optional: true,
-		default: 'X-Org-Id',
+		default: 'x-org-id',
 	},
 	ORG_CODE_HEADER_NAME: {
 		message: 'Required ORG_CODE_HEADER_NAME',
 		optional: true,
-		default: 'X-Org-Code',
+		default: 'x-org-code',
 	},
 	TENANT_CODE_HEADER_NAME: {
 		message: 'Required TENANT_CODE_HEADER_NAME',
 		optional: true,
-		default: 'X-Tenant-Code',
+		default: 'x-tenant-code',
 	},
 }
 let success = true

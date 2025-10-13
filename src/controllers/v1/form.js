@@ -100,7 +100,7 @@ module.exports = class Form {
 					req.params.id,
 					params,
 					req?.decodedToken?.organization_id || null,
-					req?.decodedToken?.tenant_code || req?.headers?.tenant_code || null,
+					req?.decodedToken?.tenant_code || req?.headers?.[process.env.TENANT_CODE_HEADER_NAME] || null,
 					domain
 				)
 				return form
