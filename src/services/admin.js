@@ -816,6 +816,73 @@ module.exports = class AdminHelper {
 			throw error
 		}
 	}
+	/**
+	 * Execute raw SELECT query with pagination
+	 * @method
+	 * @name executeRawQuery
+	 * @param {String} query - Raw SQL SELECT query
+	 * @param {String} adminUserId - ID of the admin executing the query
+	 * @param {Number} pageNo - Page number
+	 * @param {Number} pageSize - Page size limit
+	 * @returns {JSON} - Paginated query results with count
+	 */
+	static async executeRawQuery(query, adminUserId, pageNo, pageSize) {
+		try {
+			if (!query || typeof query !== 'string') {
+				return responses.failureResponse({
+					message: 'INVALID_QUERY_INPUT',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+			// Validate that the query is a SELECT statement
+			const normalizedQuery = query.trim().toLowerCase()
+			if (!normalizedQuery.startsWith('select')) {
+				return responses.failureResponse({
+					message: 'ONLY_SELECT_QUERIES_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Log the query for auditing
+			console.log(`Admin ${adminUserId} executed query: ${query} (Page: ${pageNo}, Size: ${pageSize})`)
+
+			// Calculate offset
+			const offset = (pageNo - 1) * pageSize
+
+			// Modify query for pagination
+			const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`
+
+			// Execute the paginated query
+			const data = await sequelize.query(paginatedQuery, {
+				type: sequelize.QueryTypes.SELECT,
+			})
+			// Get total count (construct COUNT query)
+			const countQuery = `SELECT COUNT(*) as count FROM (${query}) AS subquery`
+			const [countResult] = await sequelize.query(countQuery, {
+				type: sequelize.QueryTypes.SELECT,
+			})
+			const count = countResult.count
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'QUERY_EXECUTED_SUCCESSFULLY',
+				result: {
+					data,
+					count,
+				},
+			})
+		} catch (error) {
+			console.error('Error executing raw query:', error)
+			return responses.failureResponse({
+				message: 'QUERY_EXECUTION_FAILED',
+				statusCode: httpStatusCode.internal_server_error,
+				responseCode: 'SERVER_ERROR',
+				error: error.message,
+			})
+		}
+	}
 
 	static async triggerViewRebuild(decodedToken) {
 		try {
