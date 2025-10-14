@@ -67,6 +67,7 @@ exports.update = async (filter, updatedata) => {
 		return await Tenant.update(updatedata, {
 			where: filter,
 			returning: true,
+			raw: true,
 		})
 	} catch (error) {
 		throw error
