@@ -183,7 +183,7 @@
 	"INVALID_REG_CODE_ERROR": "registration_codes {{errorMessage}}. Invalid Code(s) : {{errorValues}}",
 	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid.",
 	"USER_PROFILE_FETCHED_SUCCESSFULLY": "User profile fetched successfully!",
-	"RAW_QUERY_EXECUTED_SUCCESSFULLY": "Raw query executed successfully!",
+	"QUERY_EXECUTED_SUCCESSFULLY": "Raw query executed successfully!",
 	"INVALID_QUERY_INPUT": "Invalid query input provided.",
 	"ONLY_SELECT_QUERIES_ALLOWED": "Only SELECT queries are allowed.",
 	"QUERY_EXECUTION_FAILED": "Failed to execute query."

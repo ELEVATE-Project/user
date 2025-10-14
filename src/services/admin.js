@@ -836,23 +836,27 @@ module.exports = class AdminHelper {
 				})
 			}
 			// Validate that the query is a SELECT statement
-			const normalizedQuery = query.trim().toLowerCase()
-			if (!normalizedQuery.startsWith('select')) {
+			const rawQuery = query.trim()
+			// Allow SELECT or WITH; block multi-statements and DDL/DML
+			const isSelectLike = /^\s*(with|select)\b/i.test(rawQuery)
+			const hasForbidden = /[;]|(--|\/\*)|\b(drop|alter|truncate|insert|update|delete)\b/i.test(rawQuery)
+			if (!isSelectLike || hasForbidden) {
 				return responses.failureResponse({
 					message: 'ONLY_SELECT_QUERIES_ALLOWED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+			const sanitizedQuery = rawQuery.replace(/;+\s*$/, '')
 
 			// Log the query for auditing
-			console.log(`Admin ${adminUserId} executed query: ${query} (Page: ${pageNo}, Size: ${pageSize})`)
+			console.log(`Admin ${adminUserId} executed query: ${sanitizedQuery} (Page: ${pageNo}, Size: ${pageSize})`)
 
 			// Calculate offset
 			const offset = (pageNo - 1) * pageSize
 
 			// Modify query for pagination
-			const paginatedQuery = `${query} LIMIT ${pageSize} OFFSET ${offset}`
+			const paginatedQuery = `${sanitizedQuery} LIMIT ${pageSize} OFFSET ${offset}`
 
 			// Execute the paginated query
 			const data = await sequelize.query(paginatedQuery, {
@@ -879,7 +883,6 @@ module.exports = class AdminHelper {
 				message: 'QUERY_EXECUTION_FAILED',
 				statusCode: httpStatusCode.internal_server_error,
 				responseCode: 'SERVER_ERROR',
-				error: error.message,
 			})
 		}
 	}
