@@ -215,26 +215,23 @@ module.exports = async function (req, res, next) {
 		}
 
 		if (isAdmin) {
-			// For admin users, allow overriding tenant_code, organization_id, and organization_code via headers
+			// For admin users, allow overriding tenant_code and organization_code via headers
 			// Header names are configurable via environment variables with sensible defaults
-			const orgIdHeaderName = process.env.ORG_ID_HEADER_NAME
-			const orgCodeHeaderName = process.env.ORG_CODE_HEADER_NAME
-			const tenantCodeHeaderName = process.env.TENANT_CODE_HEADER_NAME
+			const orgCodeHeaderName = common.ORG_CODE_HEADER
+			const tenantCodeHeaderName = common.TENANT_CODE_HEADER
 
 			// Extract and sanitize header values (trim whitespace, case-insensitive header lookup)
-			const orgId = (req.headers[orgIdHeaderName.toLowerCase()] || '').trim()
 			const orgCode = (req.headers[orgCodeHeaderName.toLowerCase()] || '').trim()
 			const tenantCode = (req.headers[tenantCodeHeaderName.toLowerCase()] || '').trim()
 
-			// If any override header is provided (non-empty after trim), all three must be present and non-empty
-			const hasAnyOverrideHeader = orgId || orgCode || tenantCode
+			// If any override header is provided (non-empty after trim), both must be present and non-empty
+			const hasAnyOverrideHeader = orgCode || tenantCode
 			if (hasAnyOverrideHeader) {
-				if (!orgId || !orgCode || !tenantCode) {
+				if (!orgCode || !tenantCode) {
 					throw responses.failureResponse({
 						message: {
 							key: 'ADD_ORG_HEADER',
 							interpolation: {
-								orgIdHeader: orgIdHeaderName,
 								orgCodeHeader: orgCodeHeaderName,
 								tenantCodeHeader: tenantCodeHeaderName,
 							},
@@ -244,17 +241,8 @@ module.exports = async function (req, res, next) {
 					})
 				}
 
-				// Validate orgId is a valid positive integer
-				const parsedOrgId = parseInt(orgId, 10)
-				if (isNaN(parsedOrgId) || parsedOrgId <= 0) {
-					throw responses.failureResponse({
-						message: 'INVALID_ORG_ID',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
-					})
-				}
+				// Query the database to find the organization based on orgCode and tenantCode
 				const org = await organizationQueries.findOne({
-					id: parsedOrgId,
 					code: orgCode,
 					tenant_code: tenantCode,
 					status: common.ACTIVE_STATUS,
@@ -268,9 +256,10 @@ module.exports = async function (req, res, next) {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-				// Override the values from the token with sanitized header values
+
+				// Override the values from the token with sanitized header values and fetched orgId
 				decodedToken.data.tenant_code = tenantCode
-				decodedToken.data.organization_id = parsedOrgId
+				decodedToken.data.organization_id = org.id // Use the ID from the database
 				decodedToken.data.organization_code = orgCode
 			}
 		}
