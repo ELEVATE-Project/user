@@ -19,6 +19,7 @@ SELECT create_distributed_table('user_sessions', 'tenant_code');
 -- Organization-related tables
 SELECT create_distributed_table('organization_email_domains', 'tenant_code');
 SELECT create_distributed_table('organization_features', 'tenant_code');
+SELECT create_distributed_table('organization_registration_codes', 'tenant_code');
 
 -- Invitation / user-related
 SELECT create_distributed_table('invitations','tenant_code');

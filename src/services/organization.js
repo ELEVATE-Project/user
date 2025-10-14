@@ -830,23 +830,53 @@ async function createRoleRequest(bodyData, tokenInformation) {
 
 async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData) {
 	// compute changes from provided body keys
-	let changes = await utils.extractUpdatedValues(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData)
-	let related_org_details
-	if (Object.prototype.hasOwnProperty.call(bodyData, 'related_orgs') && updatedOrgDetails?.related_orgs?.length) {
+	const newValues = utils.extractDelta(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData)
+
+	// nothing changed → no event
+	if (Object.keys(newValues).length === 0) return
+
+	// deep-clone old to avoid later mutation bleed
+	const oldValues = _.cloneDeep(orgDetailsBeforeUpdate)
+
+	let related_org_details_new
+	let related_org_details_old
+
+	if (Object.prototype.hasOwnProperty.call(bodyData, 'related_orgs')) {
 		const options = {
 			attributes: ['id', 'code'],
 		}
-		related_org_details = await organizationQueries.findAll(
-			{ id: { [Op.in]: updatedOrgDetails.related_orgs } },
-			options
-		)
+
+		// Handle new values: fetch if non-empty, else set empty array
+		if (updatedOrgDetails?.related_orgs?.length > 0) {
+			related_org_details_new = await organizationQueries.findAll(
+				{ id: { [Op.in]: updatedOrgDetails.related_orgs } },
+				options
+			)
+			newValues.related_org_details = related_org_details_new
+		} else {
+			newValues.related_org_details = []
+		}
+
+		// Handle old values: fetch if non-empty before update, else set empty array
+		// (This covers additions symmetrically, where old was empty)
+		if (orgDetailsBeforeUpdate?.related_orgs?.length > 0) {
+			related_org_details_old = await organizationQueries.findAll(
+				{ id: { [Op.in]: orgDetailsBeforeUpdate.related_orgs } },
+				options
+			)
+			oldValues.related_org_details = related_org_details_old
+		} else {
+			oldValues.related_org_details = []
+		}
 	}
+
 	//event Body for org updates
 	const eventBodyData = organizationDTO.eventBodyDTO({
 		entity: 'organization',
 		eventType: 'update',
 		entityId: orgDetailsBeforeUpdate.id,
-		changedValues: changes,
+		oldValues,
+		newValues,
 		args: {
 			created_by: orgDetailsBeforeUpdate.created_by,
 			name: orgDetailsBeforeUpdate.name,
@@ -860,7 +890,6 @@ async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyDa
 			description: orgDetailsBeforeUpdate.description,
 			related_orgs: orgDetailsBeforeUpdate?.related_orgs || [],
 			tenant_code: orgDetailsBeforeUpdate.tenant_code,
-			...(related_org_details ? { related_org_details } : {}),
 		},
 	})
 	broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
