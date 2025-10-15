@@ -841,29 +841,28 @@ module.exports = class UserInviteHelper {
 
 							let oldValues = {},
 								newValues = {},
-								userFetch = {}
+								userFetch =
+									isOrgUpdate ||
+									isRoleUpdated ||
+									modifiedKeys.length > 0 ||
+									additionalCsvHeaders.length > 0
+										? await userQueries.findAllUserWithOrganization(
+												{ id: existingUser.id },
+												{},
+												user.tenant_code
+										  )
+										: {}
+
+							userFetch = userFetch?.[0] || {}
+
 							if (isOrgUpdate || isRoleUpdated) {
 								oldValues.organizations = existingUser.organizations
-								userFetch = await userQueries.findAllUserWithOrganization(
-									{ id: existingUser.id },
-									{},
-									user.tenant_code
-								)
-
-								newValues.organizations = userFetch[0].organizations
+								newValues.organizations = userFetch.organizations
 							}
+							let userMeta = {}
 
 							if (modifiedKeys.length > 0 || additionalCsvHeaders.length > 0) {
-								if (Object.keys(userFetch).length == 0) {
-									userFetch = await userQueries.findAllUserWithOrganization(
-										{ id: existingUser.id },
-										{},
-										user.tenant_code
-									)
-								}
-
-								userFetch = userCredentials.find((user) => user.id == existingUser.id)
-								let userMeta = { ...userFetch?.meta }
+								userMeta = { ...userFetch?.meta }
 								userFetch = await utils.processDbResponse(userFetch, prunedEntities)
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
@@ -888,24 +887,30 @@ module.exports = class UserInviteHelper {
 									}
 								})
 
-								oldValues = userFetch
-								oldValues.email = oldValues.email
-									? emailEncryption.decrypt(oldValues.email)
-									: oldValues.email
 								/*
 								user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
 								to prarse it to a standard format with data for emitting the event
 								*/
 								userMeta = utils.parseMetaData(userMeta, prunedEntities, externalEntityNameIdMap)
-								oldValues = {
-									...oldValues,
-									...userMeta,
-								}
-								oldValues.phone = oldValues.phone
-									? emailEncryption.decrypt(oldValues.phone)
-									: oldValues.phone
+							}
+							oldValues =
+								isOrgUpdate ||
+								isRoleUpdated ||
+								modifiedKeys.length > 0 ||
+								additionalCsvHeaders.length > 0
+									? { ...userFetch, ...oldValues }
+									: {}
+							oldValues = {
+								...oldValues,
+								...userMeta,
 							}
 
+							oldValues.email = oldValues?.email
+								? emailEncryption.decrypt(oldValues.email)
+								: oldValues?.email
+							oldValues.phone = oldValues?.phone
+								? emailEncryption.decrypt(oldValues.phone)
+								: oldValues?.phone
 							if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
 								const eventBody = eventBodyDTO({
 									entity: 'user',
@@ -916,8 +921,6 @@ module.exports = class UserInviteHelper {
 										username: userUpdate[0].dataValues?.username,
 										status: userUpdate[0].dataValues?.status,
 										deleted: userUpdate[0].dataValues?.deleted_at ? true : false,
-										tenant_code: user.tenant_code,
-										organization_code: user.organization_code,
 										created_at: userUpdate[0].dataValues?.created_at || null,
 										updated_at: userUpdate[0].dataValues?.updated_at || new Date(),
 										oldValues,
@@ -1136,8 +1139,9 @@ module.exports = class UserInviteHelper {
 							created_by: user.id,
 							name: parsedData?.name,
 							username: parsedData?.username,
-							email: raw_email,
+							email: raw_email ? raw_email : null,
 							phone: parsedData?.phone ? parsedData?.phone : null,
+							phone_code: parsedData?.phone_code ? parsedData?.phone_code : null,
 							organizations,
 							tenant_code: user?.tenant_code,
 							...metaData,
