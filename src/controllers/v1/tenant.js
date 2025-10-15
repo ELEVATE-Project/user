@@ -146,8 +146,8 @@ module.exports = class Tenant {
 			const tenant = await tenantService.userBulkUpload(
 				req.body.file_path,
 				req.decodedToken.id,
-				req.headers.organization,
-				req.headers.tenant,
+				req.headers?.[common.ORG_CODE_HEADER],
+				req.headers?.[common.TENANT_CODE_HEADER],
 				req?.body?.editable_fields,
 				req?.body?.upload_type.toUpperCase()
 			)
