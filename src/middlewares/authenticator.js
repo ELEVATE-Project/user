@@ -256,7 +256,14 @@ module.exports = async function (req, res, next) {
 				decodedToken.data.tenant_code = tenantCode
 				decodedToken.data.organization_id = org.id // Use the ID from the database
 				decodedToken.data.organization_code = orgCode
+			} else {
+				req.decodedToken = decodedToken.data
 			}
+			// Admin users intentionally bypass role and permission validation below.
+			// This early return ensures admins proceed without further checks.
+			// If admin access rules change, remove or adjust this bypass accordingly.
+
+			return next()
 		}
 
 		if (roleValidation) {
