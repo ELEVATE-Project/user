@@ -41,7 +41,7 @@ function validateQuerySecurity(query) {
  */
 function getPaginationParams(pageNo, pageSize) {
 	const validPageNo = Math.max(1, parseInt(pageNo) || 1)
-	const validPageSize = Math.min(Math.max(1, parseInt(pageSize) || 100), 1000) // Cap at 1000
+	const validPageSize = Math.min(Math.max(1, parseInt(pageSize) || 100), 100) // Cap at 100
 	const offset = (validPageNo - 1) * validPageSize
 
 	return { limit: validPageSize, offset }
