@@ -39,12 +39,16 @@ jobs:
     - name: Get Docker tag version
       id: get-version
       run: |
-        VERSION="${{ github.event.inputs.tag_version }}"
+        # Safely assign without evaluating input
+        echo "version=${{ github.event.inputs.tag_version }}" | tr -d '\r' > safe_output.txt
+        VERSION=$(cat safe_output.txt)
         if [ -z "$VERSION" ]; then
           echo "Error: tag_version input required"
           exit 1
         fi
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        # Write to GITHUB_OUTPUT securely
+        printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
+
 
     - name: Check if version exists on Docker Hub
       id: check-version
