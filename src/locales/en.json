@@ -186,5 +186,8 @@
 	"QUERY_EXECUTED_SUCCESSFULLY": "Raw query executed successfully!",
 	"INVALID_QUERY_INPUT": "Invalid query input provided.",
 	"ONLY_SELECT_QUERIES_ALLOWED": "Only SELECT queries are allowed.",
-	"QUERY_EXECUTION_FAILED": "Failed to execute query."
+	"QUERY_EXECUTION_FAILED": "Failed to execute query.",
+	"QUERY_INVALID_OR_UNBALANCED_QUOTES": "Query contains unbalanced or invalid quotes.",
+	"QUERY_FORBIDDEN_INJECTION_PATTERNS": "Query contains forbidden injection patterns.",
+	"QUERY_FORBIDDEN_PATTERNS": "Query contains forbidden SQL operations."
 }

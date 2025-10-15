@@ -80,8 +80,8 @@ function normalizeQuery(query) {
  * @returns {boolean} - True if forbidden patterns are found
  */
 function hasForbiddenPatterns(normalizedQuery) {
-	const forbiddenVerbs = /\b(drop|alter|truncate|insert|update|delete)\b/i
-	return forbiddenVerbs.test(normalizedQuery)
+	const forbiddenPatterns = /\b(drop|alter|truncate|insert|update|delete|union|concat|\|\|)\b/i
+	return forbiddenPatterns.test(normalizedQuery)
 }
 
 /**
