@@ -189,5 +189,8 @@
 	"QUERY_EXECUTION_FAILED": "Failed to execute query.",
 	"QUERY_INVALID_OR_UNBALANCED_QUOTES": "Query contains unbalanced or invalid quotes.",
 	"QUERY_FORBIDDEN_INJECTION_PATTERNS": "Query contains forbidden injection patterns.",
-	"QUERY_FORBIDDEN_PATTERNS": "Query contains forbidden SQL operations."
+	"QUERY_FORBIDDEN_PATTERNS": "Query contains forbidden SQL operations.",
+	"ADD_ORG_HEADER": "Please provide all required organization headers: {{orgCodeHeader}}, and {{tenantCodeHeader}} for admin override.",
+	"INVALID_ORG_ID": "Organization ID must be a valid positive integer.",
+	"INVALID_ORG_OR_TENANT_CODE": "The provided organization or tenant code is invalid or does not match."
 }

@@ -1,6 +1,7 @@
 'use strict'
 const requester = require('@utils/requester')
 const kafkaCommunication = require('@generics/kafka-communication')
+const util = require('util')
 
 const getEndpoints = (eventGroup) => {
 	switch (eventGroup) {
@@ -86,6 +87,9 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 }
 exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
+		//TODO: Remove this log after testing
+		console.log(util.inspect(requestBody, { depth: null, colors: true, compact: false }))
+
 		// Fire both broadcaster functions concurrently
 		const broadcastPromises = [
 			exports.eventBroadcasterMain(eventGroup, { requestBody, headers, isInternal }),
