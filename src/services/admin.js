@@ -861,7 +861,6 @@ module.exports = class AdminHelper {
 				type: sequelize.QueryTypes.SELECT,
 				timeout: 30000, // Prevent long-running queries
 			})
-
 			// Get total count (use sanitizedQuery as subquery)
 			const countQuery = `SELECT COUNT(*) AS count FROM (${sanitizedQuery}) AS subquery`
 			const [countResult] = await sequelize.query(countQuery, {
@@ -880,12 +879,15 @@ module.exports = class AdminHelper {
 			})
 		} catch (error) {
 			console.error('Error executing raw query:', error)
+			const isValidationError =
+				error.message &&
+				(error.message.startsWith('QUERY_') ||
+					error.message === 'INVALID_QUERY_INPUT' ||
+					error.message === 'ONLY_SELECT_QUERIES_ALLOWED')
 			return responses.failureResponse({
-				message: error.message || 'QUERY_EXECUTION_FAILED',
-				statusCode: error.message.includes('QUERY_')
-					? httpStatusCode.bad_request
-					: httpStatusCode.internal_server_error,
-				responseCode: error.message.includes('QUERY_') ? 'CLIENT_ERROR' : 'SERVER_ERROR',
+				message: isValidationError ? error.message : 'QUERY_EXECUTION_FAILED',
+				statusCode: isValidationError ? httpStatusCode.bad_request : httpStatusCode.internal_server_error,
+				responseCode: isValidationError ? 'CLIENT_ERROR' : 'SERVER_ERROR',
 			})
 		}
 	}
