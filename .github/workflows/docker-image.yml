@@ -6,20 +6,26 @@ on:
       tag_version:
         description: 'Docker image tag version (e.g., 3.3.11)'
         required: true
+      branch:
+        description: 'Branch to build from (default: staging)'
+        required: false
+        default: 'staging'
 
 env:
-  DOCKER_IMAGE_NAME: elevate-user  # Configure your image name here
+  DOCKER_IMAGE_NAME: elevate-user
   DOCKER_REGISTRY: docker.io
   DOCKER_NAMESPACE: shikshalokamqa
 
 jobs:
   docker-image-build-and-push:
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
-    - name: Checkout code
+    - name: Checkout code from target branch
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || 'staging' }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -30,20 +36,19 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Get Docker tag version (fail if not provided)
+    - name: Get Docker tag version
       id: get-version
       run: |
-        # Use workflow_dispatch input if provided
-        if [ ! -z "${{ github.event.inputs.tag_version }}" ]; then
-          VERSION="${{ github.event.inputs.tag_version }}"
-        # Or use TAG_VERSION env if set (for push/PR)
-        elif [ ! -z "${TAG_VERSION}" ]; then
-          VERSION="${TAG_VERSION}"
-        else
-          echo "Error: Docker image version must be provided as workflow_dispatch input or TAG_VERSION env."
+        # Safely assign without evaluating input
+        echo "version=${{ github.event.inputs.tag_version }}" | tr -d '\r' > safe_output.txt
+        VERSION=$(cat safe_output.txt)
+        if [ -z "$VERSION" ]; then
+          echo "Error: tag_version input required"
           exit 1
         fi
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        # Write to GITHUB_OUTPUT securely
+        printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
+
 
     - name: Check if version exists on Docker Hub
       id: check-version
@@ -53,8 +58,6 @@ jobs:
         if [ "$RESPONSE" -eq 200 ]; then
           echo "Error: Tag $VERSION already exists on Docker Hub"
           exit 1
-        else
-          echo "Tag $VERSION does not exist, proceeding with build"
         fi
 
     - name: Extract metadata
@@ -77,9 +80,6 @@ jobs:
         platforms: linux/amd64,linux/arm64
         cache-from: type=gha
         cache-to: type=gha,mode=max
-
-    - name: Image digest
-      run: echo "Image pushed with digest  ${{ steps.build.outputs.digest }}"
 
     - name: Print pushed tags
       run: |
