@@ -178,6 +178,6 @@ module.exports = {
 			.withMessage('tenant-id must be lowercase alphanumeric with underscores.')
 	},
 	executeRawQuery: (req) => {
-		req.checkBody('query').trim().notEmpty().withMessage('query is required for phone number login')
+		req.checkBody('query').trim().notEmpty().withMessage('query field is empty')
 	},
 }
