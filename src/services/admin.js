@@ -15,6 +15,7 @@ const bcryptJs = require('bcryptjs')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
+const rawQueryUtils = require('@utils/rawQueryUtils')
 
 // Database queries
 const organizationQueries = require('@database/queries/organization')
@@ -828,6 +829,7 @@ module.exports = class AdminHelper {
 	 */
 	static async executeRawQuery(query, adminUserId, pageNo, pageSize) {
 		try {
+			// Basic input validation
 			if (!query || typeof query !== 'string') {
 				return responses.failureResponse({
 					message: 'INVALID_QUERY_INPUT',
@@ -835,39 +837,34 @@ module.exports = class AdminHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			// Validate that the query is a SELECT statement
-			const rawQuery = query.trim()
-			// Allow SELECT or WITH; block multi-statements and DDL/DML
-			const isSelectLike = /^\s*(with|select)\b/i.test(rawQuery)
-			const hasForbidden = /[;]|(--|\/\*)|\b(drop|alter|truncate|insert|update|delete)\b/i.test(rawQuery)
-			if (!isSelectLike || hasForbidden) {
-				return responses.failureResponse({
-					message: 'ONLY_SELECT_QUERIES_ALLOWED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			const sanitizedQuery = rawQuery.replace(/;+\s*$/, '')
+
+			// Trim and strip trailing semicolon(s)
+			let sanitizedQuery = query.trim().replace(/;+\s*$/, '')
+
+			// Security validation
+			rawQueryUtils.validateQuerySecurity(sanitizedQuery)
 
 			// Log the query for auditing
 			console.log(`Admin ${adminUserId} executed query: ${sanitizedQuery} (Page: ${pageNo}, Size: ${pageSize})`)
 
-			// Calculate offset
-			const offset = (pageNo - 1) * pageSize
+			// Get pagination parameters
+			const { limit, offset } = rawQueryUtils.getPaginationParams(pageNo, pageSize)
 
-			// Modify query for pagination
-			const paginatedQuery = `${sanitizedQuery} LIMIT ${pageSize} OFFSET ${offset}`
-
-			// Execute the paginated query
+			// Execute the paginated query with bindings
+			const paginatedQuery = `${sanitizedQuery} LIMIT :limit OFFSET :offset`
 			const data = await sequelize.query(paginatedQuery, {
+				replacements: { limit, offset },
 				type: sequelize.QueryTypes.SELECT,
+				timeout: 30000, // Prevent long-running queries
 			})
-			// Get total count (construct COUNT query)
-			const countQuery = `SELECT COUNT(*) as count FROM (${query}) AS subquery`
+
+			// Get total count (use sanitizedQuery as subquery)
+			const countQuery = `SELECT COUNT(*) AS count FROM (${sanitizedQuery}) AS subquery`
 			const [countResult] = await sequelize.query(countQuery, {
 				type: sequelize.QueryTypes.SELECT,
+				timeout: 30000,
 			})
-			const count = countResult.count
+			const count = Number(countResult.count) // Coerce to number
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -880,9 +877,11 @@ module.exports = class AdminHelper {
 		} catch (error) {
 			console.error('Error executing raw query:', error)
 			return responses.failureResponse({
-				message: 'QUERY_EXECUTION_FAILED',
-				statusCode: httpStatusCode.internal_server_error,
-				responseCode: 'SERVER_ERROR',
+				message: error.message || 'QUERY_EXECUTION_FAILED',
+				statusCode: error.message.includes('QUERY_')
+					? httpStatusCode.bad_request
+					: httpStatusCode.internal_server_error,
+				responseCode: error.message.includes('QUERY_') ? 'CLIENT_ERROR' : 'SERVER_ERROR',
 			})
 		}
 	}
