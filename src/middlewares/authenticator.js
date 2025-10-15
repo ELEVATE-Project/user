@@ -259,6 +259,10 @@ module.exports = async function (req, res, next) {
 			} else {
 				req.decodedToken = decodedToken.data
 			}
+			// Admin users intentionally bypass role and permission validation below.
+			// This early return ensures admins proceed without further checks.
+			// If admin access rules change, remove or adjust this bypass accordingly.
+
 			return next()
 		}
 
