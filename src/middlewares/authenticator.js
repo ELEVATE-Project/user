@@ -111,18 +111,13 @@ module.exports = async function (req, res, next) {
 					})
 				}
 
-				const domain = getDomainFromRequest(req) || null
-				const tenant_code =
-					req?.headers?.tenantId ||
-					req?.headers?.tenantid ||
-					req?.headers?.tenant_Id ||
-					req?.headers?.tenant_id ||
-					req?.headers?.tenant ||
-					req?.headers?.tenant_code ||
-					req.headers.tenantCode ||
-					null
+				const tenantFilter = {}
+				const domain = getDomainFromRequest(req)
 
-				const tenantFilter = domain ? { domain } : tenant_code ? { tenant_code } : null || {}
+				const tenant_code = req?.headers?.[common.TENANT_CODE_HEADER] ?? null
+
+				if (domain) tenantFilter.domain = domain
+				else if (tenant_code) tenantFilter.tenant_code = tenant_code
 
 				if (Object.keys(tenantFilter).length > 0) {
 					const tenantDomain = await tenantDomainQueries.findOne(tenantFilter, {
