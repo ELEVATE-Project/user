@@ -208,15 +208,6 @@ module.exports = class Admin {
 	 */
 	async executeRawQuery(req) {
 		try {
-			// Validate admin role
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
-				return responses.failureResponse({
-					message: 'USER_IS_NOT_A_ADMIN',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const { query } = req.body
 
 			const pageNo = req.pageNo
