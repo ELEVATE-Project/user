@@ -458,6 +458,21 @@ let enviromentVariables = {
 			value: 'true',
 		},
 	},
+	ORG_ID_HEADER_NAME: {
+		message: 'Required ORG_ID_HEADER_NAME',
+		optional: true,
+		default: 'x-org-id',
+	},
+	ORG_CODE_HEADER_NAME: {
+		message: 'Required ORG_CODE_HEADER_NAME',
+		optional: true,
+		default: 'x-org-code',
+	},
+	TENANT_CODE_HEADER_NAME: {
+		message: 'Required TENANT_CODE_HEADER_NAME',
+		optional: true,
+		default: 'x-tenant-code',
+	},
 }
 let success = true
 

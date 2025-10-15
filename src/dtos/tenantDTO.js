@@ -20,7 +20,7 @@ class TenantResponseDTO {
 		}
 	}
 
-	static eventBodyDTO({ entity, eventType, entityId, changedValues = [], args = {} }) {
+	static eventBodyDTO({ entity, eventType, entityId, oldValues, newValues, args = {} }) {
 		try {
 			if (!entity || !eventType || !entityId)
 				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
@@ -31,18 +31,12 @@ class TenantResponseDTO {
 				delete args[key]
 			})
 
-			const changes = changedValues.reduce((result, obj) => {
-				const { fieldName, oldValue, newValue } = obj
-				if (!result[fieldName]) result[fieldName] = {}
-				if (oldValue) result[fieldName].oldValue = oldValue
-				if (newValue) result[fieldName].newValue = newValue
-				return result
-			}, {})
 			return {
 				entity,
 				eventType,
 				entityId,
-				changes,
+				...(oldValues ? { oldValues } : {}),
+				...(newValues ? { newValues } : {}),
 				...args,
 			}
 		} catch (error) {

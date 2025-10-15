@@ -177,4 +177,7 @@ module.exports = {
 			.matches(/^[a-z0-9_]+$/)
 			.withMessage('tenant-id must be lowercase alphanumeric with underscores.')
 	},
+	executeRawQuery: (req) => {
+		req.checkBody('query').trim().notEmpty().withMessage('query field is empty')
+	},
 }

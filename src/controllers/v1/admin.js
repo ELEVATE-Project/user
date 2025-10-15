@@ -110,7 +110,7 @@ module.exports = class Admin {
 				req.body.organization_id,
 				req.decodedToken.id,
 				req.body?.identifier,
-				req.headers?.['tenant-id'],
+				req.headers?.[common.TENANT_CODE_HEADER],
 				req.body?.phone_code
 			)
 			return orgAdminCreation
@@ -154,7 +154,7 @@ module.exports = class Admin {
 
 			const result = await adminService.deactivateOrg(
 				req.params.id,
-				req.headers?.['tenant-id'],
+				req.headers?.[common.TENANT_CODE_HEADER],
 				req.decodedToken.id
 			)
 			return result
@@ -196,6 +196,36 @@ module.exports = class Admin {
 		}
 	}
 
+	/**
+	 * Execute raw SELECT query with pagination
+	 * @method
+	 * @name executeRawQuery
+	 * @param {Object} req - Request object containing query in body and pagination params
+	 * @param {String} req.body.query - Raw SQL SELECT query
+	 * @param {Number} req.pageNo - Page number
+	 * @param {Number} req.pageSize - Page size limit
+	 * @returns {JSON} - Paginated query results
+	 */
+	async executeRawQuery(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const { query } = req.body
+
+			const pageNo = req.pageNo
+			const pageSize = req.pageSize
+
+			return await adminService.executeRawQuery(query, req.decodedToken.id, pageNo, pageSize)
+		} catch (error) {
+			return error
+		}
+	}
 	async triggerViewRebuild(req) {
 		try {
 			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {
