@@ -658,6 +658,16 @@ async function updateRoleForApprovedRequest(requestDetails, user, tenantCode, or
 		// nothing changed → no event
 		if (Object.keys(newValues).length === 0) return
 
+		eventBroadcaster('roleChange', {
+			requestBody: {
+				user_id: requestDetails.requester_id,
+				new_roles: [newRole.title],
+				current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
+				tenant_code: tenantCode,
+				organization_code: orgCode,
+			},
+		})
+
 		const eventBody = eventBodyDTO({
 			entity: 'user',
 			eventType: 'update',
