@@ -24,7 +24,7 @@ const { Op } = require('sequelize')
 const emailEncryption = require('@utils/emailEncryption')
 const userOrganizationQueries = require('@database/queries/userOrganization')
 const userOrganizationRoleQueries = require('@database/queries/userOrganizationRole')
-const { eventBodyDTO, keysFilter } = require('@dtos/userDTO')
+const { eventBodyDTO, keysFilter, transformUser } = require('@dtos/userDTO')
 const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const { generateUniqueUsername, generateUniqueCodeString } = require('@utils/usernameGenerator.js')
 const userRolesQueries = require('@database/queries/userOrganizationRole')
@@ -822,49 +822,43 @@ module.exports = class UserInviteHelper {
 							userUpdateData.meta ||
 							userUpdateData.password_update
 						) {
-							// const userCred = await UserCredentialQueries.findOne({
-							// 	email: encryptedEmail,
-							// })
-
 							const [count, userUpdate] = await userQueries.updateUser(
 								{ id: existingUser.id },
 								userUpdateData
 							)
 							updatedUserIds.push(existingUser.id)
-
+							// find the keys which are modified
 							let modifiedKeys = Object.keys(userUpdate[0].dataValues).filter((key) => {
 								const current = userUpdate[0].dataValues[key]
 								const previous = userUpdate[0]._previousDataValues[key]
 								return current !== previous && !_.isEqual(current, previous)
 							})
+							// remove critical and obvious datas from the keys to be sent in event
 							modifiedKeys = keysFilter(modifiedKeys)
 
-							let oldValues = {},
+							// format old values for event and remove transform it to match the standards
+							let oldValues = transformUser(userUpdate[0]?._previousDataValues) || {},
 								newValues = {},
-								userFetch = {}
+								userFetch =
+									isOrgUpdate ||
+									isRoleUpdated ||
+									modifiedKeys.length > 0 ||
+									additionalCsvHeaders.length > 0
+										? await userQueries.findAllUserWithOrganization(
+												{ id: existingUser.id },
+												{},
+												user.tenant_code
+										  )
+										: {} // fetch the user with organization and roles if any of the critical fields are updated
+							userFetch = userFetch?.[0] || {}
+
+							// if org or role is updated assign the old and new values
 							if (isOrgUpdate || isRoleUpdated) {
 								oldValues.organizations = existingUser.organizations
-								userFetch = await userQueries.findAllUserWithOrganization(
-									{ id: existingUser.id },
-									{},
-									user.tenant_code
-								)
-
-								newValues.organizations = userFetch[0].organizations
+								newValues.organizations = userFetch?.organizations
 							}
-
+							// if any keys are modified in user table or additional csv headers are present prepare the new values
 							if (modifiedKeys.length > 0 || additionalCsvHeaders.length > 0) {
-								if (Object.keys(userFetch).length == 0) {
-									userFetch = await userQueries.findAllUserWithOrganization(
-										{ id: existingUser.id },
-										{},
-										user.tenant_code
-									)
-								}
-
-								userFetch = userCredentials.find((user) => user.id == existingUser.id)
-								let userMeta = { ...userFetch?.meta }
-								userFetch = await utils.processDbResponse(userFetch, prunedEntities)
 								const comparisonKeys = [...modifiedKeys, ...additionalCsvHeaders]
 								comparisonKeys.forEach((modifiedKey) => {
 									if (modifiedKey == 'meta') {
@@ -888,24 +882,29 @@ module.exports = class UserInviteHelper {
 									}
 								})
 
-								oldValues = userFetch
-								oldValues.email = oldValues.email
-									? emailEncryption.decrypt(oldValues.email)
-									: oldValues.email
 								/*
 								user meta with entity and _id from external micro-service is passed with entity information and value of the _ids
 								to prarse it to a standard format with data for emitting the event
 								*/
-								userMeta = utils.parseMetaData(userMeta, prunedEntities, externalEntityNameIdMap)
-								oldValues = {
-									...oldValues,
-									...userMeta,
-								}
-								oldValues.phone = oldValues.phone
-									? emailEncryption.decrypt(oldValues.phone)
-									: oldValues.phone
 							}
-
+							// parse meta data to fetch the entity name and value instead of _ids
+							const userOldMeta = oldValues?.meta
+								? utils.parseMetaData(oldValues.meta, prunedEntities, externalEntityNameIdMap)
+								: {}
+							// delete the meta raw field
+							delete oldValues.meta
+							// merge the parsed meta data with old values
+							oldValues = {
+								...oldValues,
+								...userOldMeta,
+							}
+							// decrypt email and phone for event
+							if (oldValues?.email) {
+								oldValues.email = emailEncryption.decrypt(oldValues.email)
+							}
+							if (oldValues?.phone) {
+								oldValues.phone = emailEncryption.decrypt(oldValues.phone)
+							}
 							if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
 								const eventBody = eventBodyDTO({
 									entity: 'user',
@@ -925,23 +924,6 @@ module.exports = class UserInviteHelper {
 
 								broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 							}
-
-							// Update UserCredential with organization_id and potentially password
-							// const credentialUpdateData = { organization_id: user.organization_id }
-
-							// // Add password to update data if provided
-							// if (invitee.password) {
-							// 	// Assuming you have a password hashing utility
-							// 	// You might need to adjust this based on your password handling
-							// 	credentialUpdateData.password = invitee.password // Consider hashing
-							// }
-
-							// await UserCredentialQueries.updateUser(
-							// 	{
-							// 		email: encryptedEmail,
-							// 	},
-							// 	credentialUpdateData
-							// )
 
 							const currentRoles = existingUser.roles.map((role) => role.title)
 							let newRoles = []
@@ -1134,8 +1116,9 @@ module.exports = class UserInviteHelper {
 							created_by: user.id,
 							name: parsedData?.name,
 							username: parsedData?.username,
-							email: raw_email,
+							email: raw_email ? raw_email : null,
 							phone: parsedData?.phone ? parsedData?.phone : null,
+							phone_code: parsedData?.phone_code ? parsedData?.phone_code : null,
 							organizations,
 							tenant_code: user?.tenant_code,
 							...metaData,
