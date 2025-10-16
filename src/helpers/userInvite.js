@@ -39,7 +39,15 @@ let externalEntityNameIdMap = {}
 let emailAndPhoneMissing = false
 let updatedUserIds = []
 let loginUrl = ''
-
+const outPutFileKeys = ['name', 'email', 'phone_code', 'phone', 'username', 'password', 'roles', 'statusOrUserId'] // final output file headers
+const filterOutput = (input) => {
+	return outPutFileKeys.reduce((acc, key) => {
+		if (input.hasOwnProperty(key)) {
+			acc[key] = input[key]
+		}
+		return acc
+	}, {})
+}
 module.exports = class UserInviteHelper {
 	static async uploadInvites(data) {
 		return new Promise(async (resolve, reject) => {
@@ -559,8 +567,9 @@ module.exports = class UserInviteHelper {
 				if (invitee.phone && !invitee.phone_code) {
 					invalidFields.push('phone_code')
 				}
-				// check if the phone is duplicate
+
 				if (invitee.phone && invitee.phone_code) {
+					// check if the phone is duplicate
 					if (duplicateChecker.includes(`${invitee.phone_code}${invitee.phone}`)) {
 						duplicateValues.push('phone')
 					}
@@ -644,7 +653,7 @@ module.exports = class UserInviteHelper {
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
 					invitee.statusOrUserId = errorMessageArray.join('. ')
-					input.push(invitee)
+					input.push(filterOutput(invitee))
 					continue
 				}
 
@@ -673,7 +682,7 @@ module.exports = class UserInviteHelper {
 						: 'User already exist or invited'
 					invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
 					delete invitee.meta
-					input.push(invitee)
+					input.push(filterOutput(invitee))
 					continue
 				}
 
@@ -703,6 +712,7 @@ module.exports = class UserInviteHelper {
 							)
 							if (currentOrgs.length <= 0) {
 								invitee.statusOrUserId = `User not found in tenant : ${user.tenant_code} `
+								input.push(filterOutput(invitee))
 								continue
 							}
 							await userOrganizationQueries.changeUserOrganization({
@@ -926,23 +936,6 @@ module.exports = class UserInviteHelper {
 								broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 							}
 
-							// Update UserCredential with organization_id and potentially password
-							// const credentialUpdateData = { organization_id: user.organization_id }
-
-							// // Add password to update data if provided
-							// if (invitee.password) {
-							// 	// Assuming you have a password hashing utility
-							// 	// You might need to adjust this based on your password handling
-							// 	credentialUpdateData.password = invitee.password // Consider hashing
-							// }
-
-							// await UserCredentialQueries.updateUser(
-							// 	{
-							// 		email: encryptedEmail,
-							// 	},
-							// 	credentialUpdateData
-							// )
-
 							const currentRoles = existingUser.roles.map((role) => role.title)
 							let newRoles = []
 							if (userUpdateData?.roles) {
@@ -993,6 +986,8 @@ module.exports = class UserInviteHelper {
 					} else {
 						//user doesn't have access to update user data
 						invitee.statusOrUserId = 'Unauthorised to bulk upload user from another organisation'
+						invitee.roles = invitee.roles.length > 0 ? invitee.roles.join(',') : ''
+						input.push(filterOutput(invitee))
 						continue
 					}
 				}
@@ -1313,7 +1308,7 @@ module.exports = class UserInviteHelper {
 					invitee.statusOrUserId = `${invitee.statusOrUserId} , Login URL : ${loginUrl}`
 				}
 				delete invitee.meta
-				input.push(invitee)
+				input.push(filterOutput(invitee))
 			}
 			if (updatedUserIds.length > 0) {
 				// flush all user active sessions after update
