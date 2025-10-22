@@ -230,7 +230,7 @@ module.exports = async function (req, res, next) {
 					if (!orgCode) {
 						throw responses.failureResponse({
 							message: {
-								key: 'ADD_ORG_HEADER',
+								key: 'ORG_CODE_REQUIRED_FOR_TENANT_ADMIN',
 								interpolation: {
 									orgCodeHeader: orgCodeHeaderName,
 								},
@@ -241,14 +241,14 @@ module.exports = async function (req, res, next) {
 					}
 
 					// Query the database to find the organization within tenant admin's tenant
-					const org = await organizationQueries.findOne({
+					const organization = await organizationQueries.findOne({
 						code: orgCode,
 						tenant_code: effectiveTenantCode,
 						status: common.ACTIVE_STATUS,
 						deleted_at: null,
 					})
 
-					if (!org) {
+					if (!organization) {
 						throw responses.failureResponse({
 							message: 'INVALID_ORG_CODE_FOR_TENANT',
 							statusCode: httpStatusCode.bad_request,
@@ -257,7 +257,7 @@ module.exports = async function (req, res, next) {
 					}
 
 					// Override organization details
-					decodedToken.data.organization_id = org.id
+					decodedToken.data.organization_id = organization.id
 					decodedToken.data.organization_code = orgCode
 					// tenant_code remains unchanged for tenant admin
 				} else if (isAdmin) {
@@ -276,14 +276,14 @@ module.exports = async function (req, res, next) {
 						})
 					}
 
-					const org = await organizationQueries.findOne({
+					const organization = await organizationQueries.findOne({
 						code: orgCode,
 						tenant_code: tenantCode,
 						status: common.ACTIVE_STATUS,
 						deleted_at: null,
 					})
 
-					if (!org) {
+					if (!organization) {
 						throw responses.failureResponse({
 							message: 'INVALID_ORG_OR_TENANT_CODE',
 							statusCode: httpStatusCode.bad_request,
@@ -293,7 +293,7 @@ module.exports = async function (req, res, next) {
 
 					// Override both tenant and organization details
 					decodedToken.data.tenant_code = tenantCode
-					decodedToken.data.organization_id = org.id
+					decodedToken.data.organization_id = organization.id
 					decodedToken.data.organization_code = orgCode
 				}
 			}
