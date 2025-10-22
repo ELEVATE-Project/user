@@ -241,14 +241,14 @@ module.exports = async function (req, res, next) {
 					}
 
 					// Query the database to find the organization within tenant admin's tenant
-					const organization = await organizationQueries.findOne({
+					const overrideOrg = await organizationQueries.findOne({
 						code: orgCode,
 						tenant_code: effectiveTenantCode,
 						status: common.ACTIVE_STATUS,
 						deleted_at: null,
 					})
 
-					if (!organization) {
+					if (!overrideOrg) {
 						throw responses.failureResponse({
 							message: 'INVALID_ORG_CODE_FOR_TENANT',
 							statusCode: httpStatusCode.bad_request,
@@ -257,7 +257,7 @@ module.exports = async function (req, res, next) {
 					}
 
 					// Override organization details
-					decodedToken.data.organization_id = organization.id
+					decodedToken.data.organization_id = overrideOrg.id
 					decodedToken.data.organization_code = orgCode
 					// tenant_code remains unchanged for tenant admin
 				} else if (isAdmin) {
@@ -276,14 +276,14 @@ module.exports = async function (req, res, next) {
 						})
 					}
 
-					const organization = await organizationQueries.findOne({
+					const overrideOrg = await organizationQueries.findOne({
 						code: orgCode,
 						tenant_code: tenantCode,
 						status: common.ACTIVE_STATUS,
 						deleted_at: null,
 					})
 
-					if (!organization) {
+					if (!overrideOrg) {
 						throw responses.failureResponse({
 							message: 'INVALID_ORG_OR_TENANT_CODE',
 							statusCode: httpStatusCode.bad_request,
@@ -293,7 +293,7 @@ module.exports = async function (req, res, next) {
 
 					// Override both tenant and organization details
 					decodedToken.data.tenant_code = tenantCode
-					decodedToken.data.organization_id = organization.id
+					decodedToken.data.organization_id = overrideOrg.id
 					decodedToken.data.organization_code = orgCode
 				}
 			}
