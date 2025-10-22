@@ -203,67 +203,108 @@ module.exports = async function (req, res, next) {
 		}
 		if (!decodedToken) throw unAuthorizedResponse
 
-		//check for admin user
+		// Check for admin and tenant admin roles
 		let isAdmin = false
+		let isTenantAdmin = false
 		if (decodedToken.data.roles) {
 			isAdmin = decodedToken.data.roles.some((role) => role.title === common.ADMIN_ROLE)
+			isTenantAdmin = decodedToken.data.roles.some((role) => role.title === common.TENANT_ADMIN_ROLE)
 		}
 
-		if (isAdmin) {
-			// For admin users, allow overriding tenant_code and organization_code via headers
-			// Header names are configurable via environment variables with sensible defaults
+		// Handle organization override for admin and tenant admin
+		if (isAdmin || isTenantAdmin) {
 			const orgCodeHeaderName = common.ORG_CODE_HEADER
 			const tenantCodeHeaderName = common.TENANT_CODE_HEADER
 
-			// Extract and sanitize header values (trim whitespace, case-insensitive header lookup)
 			const orgCode = (req.headers[orgCodeHeaderName.toLowerCase()] || '').trim()
 			const tenantCode = (req.headers[tenantCodeHeaderName.toLowerCase()] || '').trim()
 
-			// If any override header is provided (non-empty after trim), both must be present and non-empty
 			const hasAnyOverrideHeader = orgCode || tenantCode
+
 			if (hasAnyOverrideHeader) {
-				if (!orgCode || !tenantCode) {
-					throw responses.failureResponse({
-						message: {
-							key: 'ADD_ORG_HEADER',
-							interpolation: {
-								orgCodeHeader: orgCodeHeaderName,
-								tenantCodeHeader: tenantCodeHeaderName,
+				// For tenant admin, always use their token's tenant_code (ignore any header value)
+				if (isTenantAdmin && !isAdmin) {
+					// Always use tenant_code from token, ignoring any header value for security
+					const effectiveTenantCode = decodedToken.data.tenant_code
+
+					if (!orgCode) {
+						throw responses.failureResponse({
+							message: {
+								key: 'ADD_ORG_HEADER',
+								interpolation: {
+									orgCodeHeader: orgCodeHeaderName,
+								},
 							},
-						},
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					// Query the database to find the organization within tenant admin's tenant
+					const org = await organizationQueries.findOne({
+						code: orgCode,
+						tenant_code: effectiveTenantCode,
+						status: common.ACTIVE_STATUS,
+						deleted_at: null,
 					})
-				}
 
-				// Query the database to find the organization based on orgCode and tenantCode
-				const org = await organizationQueries.findOne({
-					code: orgCode,
-					tenant_code: tenantCode,
-					status: common.ACTIVE_STATUS,
-					deleted_at: null,
-				})
+					if (!org) {
+						throw responses.failureResponse({
+							message: 'INVALID_ORG_CODE_FOR_TENANT',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
 
-				if (!org) {
-					throw responses.failureResponse({
-						message: 'INVALID_ORG_OR_TENANT_CODE',
-						statusCode: httpStatusCode.bad_request,
-						responseCode: 'CLIENT_ERROR',
+					// Override organization details
+					decodedToken.data.organization_id = org.id
+					decodedToken.data.organization_code = orgCode
+					// tenant_code remains unchanged for tenant admin
+				} else if (isAdmin) {
+					// Admin logic - can override both tenant and org
+					if (!orgCode || !tenantCode) {
+						throw responses.failureResponse({
+							message: {
+								key: 'ADD_ORG_HEADER',
+								interpolation: {
+									orgCodeHeader: orgCodeHeaderName,
+									tenantCodeHeader: tenantCodeHeaderName,
+								},
+							},
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					const org = await organizationQueries.findOne({
+						code: orgCode,
+						tenant_code: tenantCode,
+						status: common.ACTIVE_STATUS,
+						deleted_at: null,
 					})
-				}
 
-				// Override the values from the token with sanitized header values and fetched orgId
-				decodedToken.data.tenant_code = tenantCode
-				decodedToken.data.organization_id = org.id // Use the ID from the database
-				decodedToken.data.organization_code = orgCode
+					if (!org) {
+						throw responses.failureResponse({
+							message: 'INVALID_ORG_OR_TENANT_CODE',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					// Override both tenant and organization details
+					decodedToken.data.tenant_code = tenantCode
+					decodedToken.data.organization_id = org.id
+					decodedToken.data.organization_code = orgCode
+				}
 			}
+
 			req.decodedToken = decodedToken.data
 
-			// Admin users intentionally bypass role and permission validation below.
-			// This early return ensures admins proceed without further checks.
-			// If admin access rules change, remove or adjust this bypass accordingly.
-
-			return next()
+			// Only admin users bypass role and permission validation
+			// Tenant admins must go through permission checks
+			if (isAdmin) {
+				return next()
+			}
 		}
 
 		if (roleValidation) {

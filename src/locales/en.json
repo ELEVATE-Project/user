@@ -192,5 +192,7 @@
 	"QUERY_FORBIDDEN_PATTERNS": "Query contains forbidden SQL operations.",
 	"ADD_ORG_HEADER": "Please provide all required organization headers: {{orgCodeHeader}}, and {{tenantCodeHeader}} for admin override.",
 	"INVALID_ORG_ID": "Organization ID must be a valid positive integer.",
-	"INVALID_ORG_OR_TENANT_CODE": "The provided organization or tenant code is invalid or does not match."
+	"INVALID_ORG_OR_TENANT_CODE": "The provided organization or tenant code is invalid or does not match.",
+	"INVALID_ORG_CODE_FOR_TENANT": "The provided organization is invalid or does not match.",
+	"TENANT_ADMIN_CANNOT_OVERRIDE_TENANT": "Tenant admin cannot override tenant."
 }
