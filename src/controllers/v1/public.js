@@ -1,10 +1,11 @@
 const publicService = require('@services/public')
 const { getDomainFromRequest } = require('@utils/domain')
+const common = require('@constants/common')
 
 module.exports = class Public {
 	async branding(req) {
 		let domain = ''
-		let tenantCode = req?.headers?.tenantid || null
+		let tenantCode = req?.headers?.[common.TENANT_CODE_HEADER] || null
 		if (!tenantCode) {
 			domain = getDomainFromRequest(req)
 		}

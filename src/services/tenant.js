@@ -30,6 +30,8 @@ const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
 const { Op } = require('sequelize')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
+const TenantDTO = require('@dtos/tenantDTO')
 
 module.exports = class tenantHelper {
 	/**
@@ -371,6 +373,8 @@ module.exports = class tenantHelper {
 						})
 					})
 				}
+				tenantCreateResponse.orgId = defaultOrgCreateResponse?.result?.id
+				tenantCreateResponse.orgCode = defaultOrgCreateResponse?.result?.code
 				// ******* adding default user roles to Default Org CODE ENDS HERE *******
 			} catch (error) {
 				if (rollbackStack.size() > 0) await rollbackStack.execute()
@@ -380,6 +384,29 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+
+			//event Body for tenant create
+			const eventBody = TenantDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'create',
+				entityId: tenantCreateResponse.code,
+				args: {
+					created_by: tenantCreateResponse.created_by,
+					name: tenantCreateResponse.name,
+					code: tenantCreateResponse.code,
+					created_at: tenantCreateResponse?.created_at || new Date(),
+					updated_at: tenantCreateResponse?.updated_at || new Date(),
+					meta: tenantCreateResponse?.meta || {},
+					status: tenantCreateResponse?.status || common.ACTIVE_STATUS,
+					deleted: false,
+					org_id: tenantCreateResponse.orgId,
+					org_code: tenantCreateResponse.orgCode,
+					description: tenantCreateResponse.description,
+					logo: tenantCreateResponse.logo,
+				},
+			})
+
+			broadcastEvent('tenantEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -405,9 +432,14 @@ module.exports = class tenantHelper {
 	static async update(tenantCode, bodyData, userId) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne(
+				{
+					code: tenantCode,
+				},
+				{
+					raw: true,
+				}
+			)
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -416,28 +448,26 @@ module.exports = class tenantHelper {
 					message: 'TENANT_NOT_FOUND',
 				})
 			}
-			// list of updatable keys for a tenant
-			const tenantUpdatableKeys = ['name', 'description', 'logo', 'theming', 'meta']
-			// pick relevant data from body data for tenant updation
-			bodyData = _.pick(bodyData, tenantUpdatableKeys)
 
-			let tenantUpdateBody = {}
-			// prepare the update body based on comparing with the current data to make sure the change
-			for (let key of tenantUpdatableKeys) {
-				if (!_.isEqual(bodyData[key], tenantDetails[key])) {
-					tenantUpdateBody[key] = bodyData[key]
-				}
+			bodyData.updated_by = userId
+			const [rowsAffected, updatedRows] = await tenantQueries.update(
+				{
+					code: tenantCode,
+				},
+				bodyData
+			)
+
+			if (!updatedRows || updatedRows.length === 0) {
+				console.error('Update query did not return updated tenant data')
+				return responses.failureResponse({
+					statusCode: httpStatusCode.internal_server_error,
+					message: 'TENANT_UPDATE_FAILED',
+				})
 			}
-			// update only if the data is changed
-			if (Object.keys(tenantUpdateBody).length > 0) {
-				tenantUpdateBody.updated_by = userId
-				await tenantQueries.update(
-					{
-						code: tenantCode,
-					},
-					tenantUpdateBody
-				)
-			}
+
+			let updatedTenantDetails = updatedRows?.[0]
+
+			await tenantEventEmitter(tenantDetails, updatedTenantDetails, bodyData)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -461,9 +491,7 @@ module.exports = class tenantHelper {
 	static async addDomain(tenantCode, domains) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne({ code: tenantCode }, { raw: true })
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -519,6 +547,27 @@ module.exports = class tenantHelper {
 					result: {},
 				})
 			}
+			tenantDetails.domains = existingDomains
+
+			const eventBodyData = TenantDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'update',
+				entityId: tenantDetails.code,
+				oldValues: tenantDetails,
+				newValues: { domains: [...existingDomains, ...domainsToCreate] },
+				args: {
+					created_by: tenantDetails.created_by,
+					name: tenantDetails.name,
+					code: tenantDetails.code,
+					created_at: tenantDetails?.created_at || new Date(),
+					updated_at: tenantDetails?.updated_at || new Date(),
+					status: tenantDetails?.status || common.ACTIVE_STATUS,
+					meta: tenantDetails?.meta || {},
+					deleted: false,
+					description: tenantDetails.description,
+				},
+			})
+			broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -544,9 +593,12 @@ module.exports = class tenantHelper {
 	static async removeDomain(tenantCode, domains) {
 		try {
 			// fetch tenant details
-			const tenantDetails = await tenantQueries.findOne({
-				code: tenantCode,
-			})
+			const tenantDetails = await tenantQueries.findOne(
+				{
+					code: tenantCode,
+				},
+				{ raw: true }
+			)
 
 			if (!tenantDetails?.code) {
 				return responses.failureResponse({
@@ -632,6 +684,28 @@ module.exports = class tenantHelper {
 			})
 
 			await Promise.all(domainRemovePromise)
+
+			tenantDetails.domains = existingDomains
+
+			const eventBodyData = TenantDTO.eventBodyDTO({
+				entity: 'tenant',
+				eventType: 'update',
+				entityId: tenantDetails.code,
+				oldValues: tenantDetails,
+				newValues: { domains: existingDomains.filter((d) => !domainsToRemove.includes(d)) },
+				args: {
+					created_by: tenantDetails.created_by,
+					name: tenantDetails.name,
+					code: tenantDetails.code,
+					created_at: tenantDetails?.created_at || new Date(),
+					updated_at: tenantDetails?.updated_at || new Date(),
+					status: tenantDetails?.status || common.ACTIVE_STATUS,
+					meta: tenantDetails?.meta || {},
+					deleted: false,
+					description: tenantDetails.description,
+				},
+			})
+			broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -784,4 +858,28 @@ module.exports = class tenantHelper {
 			throw error // Re-throw other errors
 		}
 	}
+}
+
+// tenant events
+async function tenantEventEmitter(tenantBefore, tenantAfter, bodyData) {
+	// compute delta based on attempted update fields
+	const newValues = utils.extractDelta(tenantBefore, tenantAfter, bodyData)
+
+	// nothing changed → no event
+	if (Object.keys(newValues).length === 0) return
+
+	// deep-clone old to avoid later mutation bleed
+	const oldValues = _.cloneDeep(tenantBefore)
+
+	const eventBodyData = {
+		entity: 'tenant',
+		eventType: 'update',
+		entityId: tenantBefore.code,
+		oldValues,
+		newValues,
+		created_at: tenantBefore?.created_at || new Date(),
+		updated_at: tenantAfter?.updated_at || new Date(),
+	}
+
+	broadcastEvent('tenantEvents', { requestBody: eventBodyData, isInternal: true })
 }

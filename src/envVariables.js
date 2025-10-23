@@ -396,11 +396,15 @@ let enviromentVariables = {
 		message: 'Key to toggle user creation kafka event',
 		optional: true,
 	},
+	EVENT_ENABLE_USER_KAFKA_EVENTS: {
+		message: 'Key to toggle user creation kafka event',
+		optional: true,
+	},
 	EVENT_USER_KAFKA_TOPIC: {
 		message: 'Kafka topic for User creation Event',
 		optional: true,
 		requiredIf: {
-			key: 'EVENT_ENABLE_KAFKA_PUSH',
+			key: 'EVENT_ENABLE_USER_KAFKA_EVENTS',
 			operator: 'EQUALS',
 			value: 'true',
 		},
@@ -414,6 +418,60 @@ let enviromentVariables = {
 		message: 'Required KAFKA_HEALTH_CHECK_TOPIC',
 		optional: true,
 		default: 'user-health-check-topic-check',
+	},
+	EVENT_ENABLE_TENANT_EVENTS: {
+		message: 'Key to toggle tenant creation api event',
+		optional: true,
+	},
+	EVENT_ENABLE_TENANT_KAFKA_EVENTS: {
+		message: 'Key to toggle tenant creation kafka event',
+		optional: true,
+	},
+	EVENT_TENANT_KAFKA_TOPIC: {
+		message: 'Kafka topic for Tenant creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_TENANT_KAFKA_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_TENANT_LISTENER_API: {
+		message: 'URL for Tenant creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_TENANT_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_ENABLE_ORG_KAFKA_EVENTS: {
+		message: 'Key to toggle organization creation kafka event',
+		optional: true,
+	},
+	EVENT_ORGANIZATION_KAFKA_TOPIC: {
+		message: 'Kafka topic for organization create/update Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_ORG_KAFKA_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	ORG_ID_HEADER_NAME: {
+		message: 'Required ORG_ID_HEADER_NAME',
+		optional: true,
+		default: 'x-org-id',
+	},
+	ORG_CODE_HEADER_NAME: {
+		message: 'Required ORG_CODE_HEADER_NAME',
+		optional: true,
+		default: 'x-org-code',
+	},
+	TENANT_CODE_HEADER_NAME: {
+		message: 'Required TENANT_CODE_HEADER_NAME',
+		optional: true,
+		default: 'x-tenant-code',
 	},
 }
 let success = true

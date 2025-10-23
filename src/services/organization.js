@@ -19,6 +19,7 @@ const { eventBodyDTO } = require('@dtos/eventBody')
 const organizationDTO = require('@dtos/organizationDTO')
 const responses = require('@helpers/responses')
 const userOrgQueries = require('@database/queries/userOrganization')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 
 module.exports = class OrganizationsHelper {
 	/**
@@ -133,7 +134,7 @@ module.exports = class OrganizationsHelper {
 
 			const cacheKey = common.redisOrgPrefix + createdOrganization.id.toString()
 			await utils.internalDel(cacheKey)
-
+			// This event will deprecated in future
 			const eventBody = eventBodyDTO({
 				entity: 'organization',
 				eventType: 'create',
@@ -144,6 +145,31 @@ module.exports = class OrganizationsHelper {
 				},
 			})
 			eventBroadcasterMain('organizationEvents', { requestBody: eventBody, isInternal: true })
+			//ends here
+
+			//event Body for org create
+			const eventBodyData = organizationDTO.eventBodyDTO({
+				entity: 'organization',
+				eventType: 'create',
+				entityId: createdOrganization.id,
+				args: {
+					created_by: createdOrganization.created_by,
+					name: createdOrganization.name,
+					code: createdOrganization.code,
+					created_at: createdOrganization?.created_at || new Date(),
+					updated_at: createdOrganization?.updated_at || new Date(),
+					status: createdOrganization?.status || common.ACTIVE_STATUS,
+					meta: createdOrganization?.meta || {},
+					deleted: false,
+					id: createdOrganization.id,
+					description: createdOrganization.description,
+					related_orgs: createdOrganization?.related_orgs || [],
+					tenant_code: createdOrganization.tenant_code,
+				},
+			})
+
+			await broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORGANIZATION_CREATED_SUCCESSFULLY',
@@ -221,9 +247,10 @@ module.exports = class OrganizationsHelper {
 					})
 				)
 			}
-
 			const cacheKey = common.redisOrgPrefix + id.toString()
 			await utils.internalDel(cacheKey)
+			//org update event emitter
+			await orgEventEmitter(orgDetailsBeforeUpdate, orgDetails?.updatedRows?.[0], bodyData)
 			// await KafkaProducer.clearInternalCache(cacheKey)
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -529,7 +556,7 @@ module.exports = class OrganizationsHelper {
 			// check if there are any addition to related_org
 			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, newRelatedOrgs)) {
 				// update org related orgs
-				await organizationQueries.update(
+				const addOrUpdateRelatedOrg = await organizationQueries.update(
 					{
 						id,
 					},
@@ -555,7 +582,13 @@ module.exports = class OrganizationsHelper {
 						action: 'PUSH',
 					},
 				})
+
+				await orgEventEmitter(orgDetailsBeforeUpdate, addOrUpdateRelatedOrg?.updatedRows?.[0], {
+					related_orgs: relatedOrgs,
+				})
 			}
+
+			//event type will be update
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.accepted,
@@ -601,7 +634,7 @@ module.exports = class OrganizationsHelper {
 			// check if there are any addition to related_org
 			if (!_.isEqual(orgDetailsBeforeUpdate?.related_orgs, relatedOrganizations)) {
 				// update org remove related orgs
-				await organizationQueries.update(
+				const addOrUpdateRelatedOrg = await organizationQueries.update(
 					{
 						id: parseInt(id, 10),
 					},
@@ -626,6 +659,10 @@ module.exports = class OrganizationsHelper {
 						organization_id: id,
 						action: 'POP',
 					},
+				})
+
+				await orgEventEmitter(orgDetailsBeforeUpdate, addOrUpdateRelatedOrg?.updatedRows?.[0], {
+					related_orgs: relatedOrgs,
 				})
 			}
 
@@ -789,4 +826,71 @@ async function createRoleRequest(bodyData, tokenInformation) {
 
 	const result = await orgRoleReqQueries.create(roleRequestData)
 	return result
+}
+
+async function orgEventEmitter(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData) {
+	// compute changes from provided body keys
+	const newValues = utils.extractDelta(orgDetailsBeforeUpdate, updatedOrgDetails, bodyData)
+
+	// nothing changed → no event
+	if (Object.keys(newValues).length === 0) return
+
+	// deep-clone old to avoid later mutation bleed
+	const oldValues = _.cloneDeep(orgDetailsBeforeUpdate)
+
+	let related_org_details_new
+	let related_org_details_old
+
+	if (Object.prototype.hasOwnProperty.call(bodyData, 'related_orgs')) {
+		const options = {
+			attributes: ['id', 'code'],
+		}
+
+		// Handle new values: fetch if non-empty, else set empty array
+		if (updatedOrgDetails?.related_orgs?.length > 0) {
+			related_org_details_new = await organizationQueries.findAll(
+				{ id: { [Op.in]: updatedOrgDetails.related_orgs } },
+				options
+			)
+			newValues.related_org_details = related_org_details_new
+		} else {
+			newValues.related_org_details = []
+		}
+
+		// Handle old values: fetch if non-empty before update, else set empty array
+		// (This covers additions symmetrically, where old was empty)
+		if (orgDetailsBeforeUpdate?.related_orgs?.length > 0) {
+			related_org_details_old = await organizationQueries.findAll(
+				{ id: { [Op.in]: orgDetailsBeforeUpdate.related_orgs } },
+				options
+			)
+			oldValues.related_org_details = related_org_details_old
+		} else {
+			oldValues.related_org_details = []
+		}
+	}
+
+	//event Body for org updates
+	const eventBodyData = organizationDTO.eventBodyDTO({
+		entity: 'organization',
+		eventType: 'update',
+		entityId: orgDetailsBeforeUpdate.id,
+		oldValues,
+		newValues,
+		args: {
+			created_by: orgDetailsBeforeUpdate.created_by,
+			name: orgDetailsBeforeUpdate.name,
+			code: orgDetailsBeforeUpdate.code,
+			created_at: orgDetailsBeforeUpdate?.created_at || new Date(),
+			updated_at: updatedOrgDetails?.updated_at || new Date(),
+			status: orgDetailsBeforeUpdate?.status || common.ACTIVE_STATUS,
+			meta: orgDetailsBeforeUpdate?.meta || {},
+			deleted: false,
+			id: orgDetailsBeforeUpdate.id,
+			description: orgDetailsBeforeUpdate.description,
+			related_orgs: orgDetailsBeforeUpdate?.related_orgs || [],
+			tenant_code: orgDetailsBeforeUpdate.tenant_code,
+		},
+	})
+	broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 }

@@ -28,6 +28,8 @@ const emailEncryption = require('@utils/emailEncryption')
 const responses = require('@helpers/responses')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
+const { eventBodyDTO } = require('@dtos/userDTO')
 
 module.exports = class OrgAdminHelper {
 	/**
@@ -628,42 +630,66 @@ module.exports = class OrgAdminHelper {
 	}
 }
 
-function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode) {
-	return new Promise(async (resolve, reject) => {
-		try {
-			const newRole = await roleQueries.findOne(
-				{ id: requestDetails.role, status: common.ACTIVE_STATUS, tenant_code: tenantCode },
-				{ attributes: ['title', 'id', 'user_type', 'status'] }
-			)
+async function updateRoleForApprovedRequest(requestDetails, user, tenantCode, orgCode) {
+	try {
+		const newRole = await roleQueries.findOne(
+			{ id: requestDetails.role, status: common.ACTIVE_STATUS, tenant_code: tenantCode },
+			{ attributes: ['title', 'id', 'user_type', 'status'] }
+		)
 
-			await userOrganizationRoleQueries.create({
-				tenant_code: tenantCode,
-				user_id: user.id,
-				organization_code: orgCode,
-				role_id: newRole.id,
-			})
-
-			eventBroadcaster('roleChange', {
-				requestBody: {
-					user_id: requestDetails.requester_id,
-					new_roles: [newRole.title],
-					current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
-					tenant_code: tenantCode,
-					organization_code: orgCode,
-				},
-			})
-			//delete from cache
-			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${requestDetails.requester_id.toString()}`
-			await utils.redisDel(redisUserKey)
-
-			return resolve({
-				success: true,
-			})
-		} catch (error) {
-			console.log(error, 'error')
-			return error
+		if (!newRole) {
+			throw new Error('ROLE_NOT_FOUND')
 		}
-	})
+
+		await userOrganizationRoleQueries.create({
+			tenant_code: tenantCode,
+			user_id: user.id,
+			organization_code: orgCode,
+			role_id: newRole.id,
+		})
+
+		const updatedUser = await userQueries.findUserWithOrganization({
+			id: requestDetails.requester_id,
+			tenant_code: tenantCode,
+		})
+
+		const newValues = utils.extractDelta(user, updatedUser)
+
+		// nothing changed → no event
+		if (Object.keys(newValues).length === 0) return
+
+		eventBroadcaster('roleChange', {
+			requestBody: {
+				user_id: requestDetails.requester_id,
+				new_roles: [newRole.title],
+				current_roles: _.map(_.find(user.organizations, { code: orgCode })?.roles || [], 'title'),
+				tenant_code: tenantCode,
+				organization_code: orgCode,
+			},
+		})
+
+		const eventBody = eventBodyDTO({
+			entity: 'user',
+			eventType: 'update',
+			entityId: requestDetails.requester_id,
+			oldValues: user,
+			newValues: newValues,
+			args: {
+				created_at: updatedUser.created_at,
+				updated_at: updatedUser.updated_at,
+			},
+		})
+
+		broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
+		const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${requestDetails.requester_id.toString()}`
+		await utils.redisDel(redisUserKey)
+
+		return { success: true }
+	} catch (error) {
+		console.log(error, 'error')
+		throw error
+	}
 }
 
 async function sendRoleRequestStatusEmail(userDetails, status, organizationCode, tenantCode) {

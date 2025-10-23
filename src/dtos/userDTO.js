@@ -77,7 +77,8 @@ class UserDTO {
 		]
 		return input.filter((key) => !restrictedKeys.includes(key))
 	}
-	static eventBodyDTO({ entity, eventType, entityId, changedValues = [], args = {} }) {
+
+	static eventBodyDTO({ entity, eventType, entityId, oldValues = {}, newValues = {}, args = {} }) {
 		try {
 			if (!entity || !eventType || !entityId)
 				throw new Error('Entity, EventType & EntityId values are mandatory for an Event')
@@ -91,23 +92,20 @@ class UserDTO {
 				'custom_entity_text',
 			]
 
-			disallowedArgs.forEach((key) => {
-				delete args[key]
-			})
+			const sanitize = (obj) => {
+				if (obj && typeof obj === 'object') {
+					disallowedArgs.forEach((key) => delete obj[key])
+				}
+				return obj
+			}
 
-			const changes = changedValues.reduce((result, obj) => {
-				const { fieldName, oldValue, newValue } = obj
-				if (!result[fieldName]) result[fieldName] = {}
-				if (oldValue) result[fieldName].oldValue = oldValue
-				if (newValue) result[fieldName].newValue = newValue
-				return result
-			}, {})
 			return {
 				entity,
 				eventType,
 				entityId,
-				changes,
-				...args,
+				...(Object.keys(sanitize(oldValues)).length ? { oldValues } : {}),
+				...(Object.keys(sanitize(newValues)).length ? { newValues } : {}),
+				...sanitize(args),
 			}
 		} catch (error) {
 			console.error(error)

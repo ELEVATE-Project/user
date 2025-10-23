@@ -15,6 +15,7 @@ const bcryptJs = require('bcryptjs')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const utils = require('@generics/utils')
+const rawQueryUtils = require('@utils/rawQueryUtils')
 
 // Database queries
 const organizationQueries = require('@database/queries/organization')
@@ -31,7 +32,7 @@ const adminService = require('../generics/materializedViews')
 const userSessionsService = require('@services/user-sessions')
 
 // Helpers and utilities
-const { broadcastUserEvent } = require('@helpers/eventBroadcasterMain')
+const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
 const { generateUniqueUsername } = require('@utils/usernameGenerator')
@@ -40,6 +41,7 @@ const userHelper = require('@helpers/userHelper')
 
 // DTOs
 const UserTransformDTO = require('@dtos/userDTO')
+const organizationDTO = require('@dtos/organizationDTO')
 
 module.exports = class AdminHelper {
 	/**
@@ -79,7 +81,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -217,7 +219,7 @@ module.exports = class AdminHelper {
 				},
 			})
 
-			broadcastUserEvent('userEvents', { requestBody: eventBody, isInternal: true })
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
@@ -651,8 +653,28 @@ module.exports = class AdminHelper {
 
 	static async deactivateOrg(organizationCode, tenantCode, loggedInUserId) {
 		try {
+			const org = await organizationQueries.findOne({ code: organizationCode, tenant_code: tenantCode })
+
+			if (!org) {
+				return responses.failureResponse({
+					message: 'ORG_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (org.status === common.INACTIVE_STATUS) {
+				return responses.failureResponse({
+					message: 'ORG_ALREADY_INACTIVE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// proceed with update
+
 			// 1. Deactivate org
-			const orgRowsAffected = await organizationQueries.update(
+			const orgUpdateResult = await organizationQueries.update(
 				{
 					code: organizationCode,
 					tenant_code: tenantCode,
@@ -660,12 +682,13 @@ module.exports = class AdminHelper {
 				{
 					status: common.INACTIVE_STATUS,
 					updated_by: loggedInUserId,
-				}
+				},
+				{ returning: true, raw: true }
 			)
 
-			if (orgRowsAffected === 0) {
+			if (!orgUpdateResult || orgUpdateResult.rowsAffected === 0) {
 				return responses.failureResponse({
-					message: 'STATUS_UPDATE_FAILED',
+					message: 'ORG_DEACTIVATION_FAILED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -697,6 +720,29 @@ module.exports = class AdminHelper {
 					requestBody: { user_ids: userIds },
 				})
 			}
+
+			//Event body for org update (deactivation)
+			let updatedOrgDetails = orgUpdateResult.updatedRows?.[0]
+
+			const eventBodyData = organizationDTO.eventBodyDTO({
+				entity: 'organization',
+				eventType: 'deactivate',
+				entityId: updatedOrgDetails.id,
+				args: {
+					id: updatedOrgDetails.id,
+					code: updatedOrgDetails.code,
+					name: updatedOrgDetails.name,
+					created_by: updatedOrgDetails.created_by,
+					updated_by: updatedOrgDetails.updated_by,
+					updated_at: updatedOrgDetails?.updated_at || new Date(),
+					deleted_at: updatedOrgDetails?.deleted_at,
+					status: updatedOrgDetails?.status || common.INACTIVE_STATUS,
+					tenant_code: tenantCode,
+					deactivated_users_count: userRowsAffected,
+				},
+			})
+
+			broadcastEvent('organizationEvents', { requestBody: eventBodyData, isInternal: true })
 
 			// 4. Return success
 			return responses.successResponse({
@@ -773,6 +819,76 @@ module.exports = class AdminHelper {
 		} catch (error) {
 			console.log(error)
 			throw error
+		}
+	}
+	/**
+	 * Execute raw SELECT query with pagination
+	 * @method
+	 * @name executeRawQuery
+	 * @param {String} query - Raw SQL SELECT query
+	 * @param {String} adminUserId - ID of the admin executing the query
+	 * @param {Number} pageNo - Page number
+	 * @param {Number} pageSize - Page size limit
+	 * @returns {JSON} - Paginated query results with count
+	 */
+	static async executeRawQuery(query, adminUserId, pageNo, pageSize) {
+		try {
+			// Basic input validation
+			if (!query || typeof query !== 'string') {
+				return responses.failureResponse({
+					message: 'INVALID_QUERY_INPUT',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			// Trim and strip trailing semicolon(s)
+			let sanitizedQuery = query.trim().replace(/;+\s*$/, '')
+
+			// Security validation
+			rawQueryUtils.validateQuerySecurity(sanitizedQuery)
+
+			// Log the query for auditing
+			console.log(`Admin ${adminUserId} executed query: ${sanitizedQuery} (Page: ${pageNo}, Size: ${pageSize})`)
+
+			// Get pagination parameters
+			const { limit, offset } = rawQueryUtils.getPaginationParams(pageNo, pageSize)
+
+			// Execute the paginated query with bindings
+			const paginatedQuery = `${sanitizedQuery} LIMIT :limit OFFSET :offset`
+			const data = await sequelize.query(paginatedQuery, {
+				replacements: { limit, offset },
+				type: sequelize.QueryTypes.SELECT,
+				timeout: 30000, // Prevent long-running queries
+			})
+			// Get total count (use sanitizedQuery as subquery)
+			const countQuery = `SELECT COUNT(*) AS count FROM (${sanitizedQuery}) AS subquery`
+			const [countResult] = await sequelize.query(countQuery, {
+				type: sequelize.QueryTypes.SELECT,
+				timeout: 30000,
+			})
+			const count = Number(countResult.count) // Coerce to number
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'QUERY_EXECUTED_SUCCESSFULLY',
+				result: {
+					data,
+					count,
+				},
+			})
+		} catch (error) {
+			console.error('Error executing raw query:', error)
+			const isValidationError =
+				error.message &&
+				(error.message.startsWith('QUERY_') ||
+					error.message === 'INVALID_QUERY_INPUT' ||
+					error.message === 'ONLY_SELECT_QUERIES_ALLOWED')
+			return responses.failureResponse({
+				message: isValidationError ? error.message : 'QUERY_EXECUTION_FAILED',
+				statusCode: isValidationError ? httpStatusCode.bad_request : httpStatusCode.internal_server_error,
+				responseCode: isValidationError ? 'CLIENT_ERROR' : 'SERVER_ERROR',
+			})
 		}
 	}
 

@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user-role')
+
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
@@ -18,6 +18,7 @@ const utilsHelper = require('@generics/utils')
 const { verifyCaptchaToken } = require('@utils/captcha')
 const { getDomainFromRequest } = require('@utils/domain')
 const tenantDomainQueries = require('@database/queries/tenantDomain')
+const organizationQueries = require('@database/queries/organization')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -110,18 +111,13 @@ module.exports = async function (req, res, next) {
 					})
 				}
 
-				const domain = getDomainFromRequest(req) || null
-				const tenant_code =
-					req?.headers?.tenantId ||
-					req?.headers?.tenantid ||
-					req?.headers?.tenant_Id ||
-					req?.headers?.tenant_id ||
-					req?.headers?.tenant ||
-					req?.headers?.tenant_code ||
-					req.headers.tenantCode ||
-					null
+				const tenantFilter = {}
+				const domain = getDomainFromRequest(req)
 
-				const tenantFilter = domain ? { domain } : tenant_code ? { tenant_code } : null || {}
+				const tenant_code = req?.headers?.[common.TENANT_CODE_HEADER] ?? null
+
+				if (domain) tenantFilter.domain = domain
+				else if (tenant_code) tenantFilter.tenant_code = tenant_code
 
 				if (Object.keys(tenantFilter).length > 0) {
 					const tenantDomain = await tenantDomainQueries.findOne(tenantFilter, {
@@ -159,6 +155,7 @@ module.exports = async function (req, res, next) {
 			token = extractedToken.trim()
 		} else token = authHeader.trim()
 
+		let decodedToken
 		let org
 		try {
 			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
@@ -209,11 +206,64 @@ module.exports = async function (req, res, next) {
 		//check for admin user
 		let isAdmin = false
 		if (decodedToken.data.roles) {
-			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
-			if (isAdmin) {
-				req.decodedToken = decodedToken.data
-				return next()
+			isAdmin = decodedToken.data.roles.some((role) => role.title === common.ADMIN_ROLE)
+		}
+
+		if (isAdmin) {
+			// For admin users, allow overriding tenant_code and organization_code via headers
+			// Header names are configurable via environment variables with sensible defaults
+			const orgCodeHeaderName = common.ORG_CODE_HEADER
+			const tenantCodeHeaderName = common.TENANT_CODE_HEADER
+
+			// Extract and sanitize header values (trim whitespace, case-insensitive header lookup)
+			const orgCode = (req.headers[orgCodeHeaderName.toLowerCase()] || '').trim()
+			const tenantCode = (req.headers[tenantCodeHeaderName.toLowerCase()] || '').trim()
+
+			// If any override header is provided (non-empty after trim), both must be present and non-empty
+			const hasAnyOverrideHeader = orgCode || tenantCode
+			if (hasAnyOverrideHeader) {
+				if (!orgCode || !tenantCode) {
+					throw responses.failureResponse({
+						message: {
+							key: 'ADD_ORG_HEADER',
+							interpolation: {
+								orgCodeHeader: orgCodeHeaderName,
+								tenantCodeHeader: tenantCodeHeaderName,
+							},
+						},
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				// Query the database to find the organization based on orgCode and tenantCode
+				const org = await organizationQueries.findOne({
+					code: orgCode,
+					tenant_code: tenantCode,
+					status: common.ACTIVE_STATUS,
+					deleted_at: null,
+				})
+
+				if (!org) {
+					throw responses.failureResponse({
+						message: 'INVALID_ORG_OR_TENANT_CODE',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				// Override the values from the token with sanitized header values and fetched orgId
+				decodedToken.data.tenant_code = tenantCode
+				decodedToken.data.organization_id = org.id // Use the ID from the database
+				decodedToken.data.organization_code = orgCode
 			}
+			req.decodedToken = decodedToken.data
+
+			// Admin users intentionally bypass role and permission validation below.
+			// This early return ensures admins proceed without further checks.
+			// If admin access rules change, remove or adjust this bypass accordingly.
+
+			return next()
 		}
 
 		if (roleValidation) {

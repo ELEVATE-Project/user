@@ -85,6 +85,9 @@
 	"ORG_ROLE_REQ_UPDATED": "Organisation request updated",
 	"FILE_UPLOAD_MODIFY_ERROR": "File update failed",
 	"STATUS_UPDATE_FAILED": "Failed to deactivate user",
+	"ORG_DEACTIVATION_FAILED": "Failed to deactivate organisation.",
+	"ORG_NOT_FOUND": "Organisation not found.",
+	"ORG_ALREADY_INACTIVE": "Organisation is already inactive.",
 	"USER_DEACTIVATED": "User deactivated Successfully",
 	"USER_CSV_UPLOADED_FAILED": "Failed to Uploaded User Invites CSV",
 	"ORG_DEACTIVATED": "Organization deactivated Successfully",
@@ -178,5 +181,16 @@
 	"ORG_UNIQUE_CONSTRAIN_ERROR": "Organization Creation / Updation Failed. code / registration_code not unique.",
 	"REG_CODE_ERROR": "registration_code is not valid or unique.",
 	"INVALID_REG_CODE_ERROR": "registration_codes {{errorMessage}}. Invalid Code(s) : {{errorValues}}",
-	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid."
+	"UNIQUE_CONSTRAINT_ERROR": "{{fields}} is Invalid.",
+	"USER_PROFILE_FETCHED_SUCCESSFULLY": "User profile fetched successfully!",
+	"QUERY_EXECUTED_SUCCESSFULLY": "Raw query executed successfully!",
+	"INVALID_QUERY_INPUT": "Invalid query input provided.",
+	"ONLY_SELECT_QUERIES_ALLOWED": "Only SELECT queries are allowed.",
+	"QUERY_EXECUTION_FAILED": "Failed to execute query.",
+	"QUERY_INVALID_OR_UNBALANCED_QUOTES": "Query contains unbalanced or invalid quotes.",
+	"QUERY_FORBIDDEN_INJECTION_PATTERNS": "Query contains forbidden injection patterns.",
+	"QUERY_FORBIDDEN_PATTERNS": "Query contains forbidden SQL operations.",
+	"ADD_ORG_HEADER": "Please provide all required organization headers: {{orgCodeHeader}}, and {{tenantCodeHeader}} for admin override.",
+	"INVALID_ORG_ID": "Organization ID must be a valid positive integer.",
+	"INVALID_ORG_OR_TENANT_CODE": "The provided organization or tenant code is invalid or does not match."
 }

@@ -802,7 +802,7 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 		},
 		data: {
 			query: {
-				'metaInformation.name': {
+				'metaInformation.externalId': {
 					$in: entities, // Dynamically pass the array here
 				},
 				tenantId: tenantCode,
@@ -818,7 +818,11 @@ async function fetchAndMapAllExternalEntities(entities, service, endPoint, tenan
 		})
 
 	responseBody = data.reduce((acc, { _id, entityType, metaInformation }) => {
-		const key = metaInformation?.name?.replaceAll(/\s+/g, '').toLowerCase()
+		const normalize = (s) => (s ?? '').toString().replace(/\s+/g, '').toLowerCase()
+		const namePart = normalize(metaInformation?.externalId)
+		const typePart = normalize(entityType)
+		if (!namePart || !typePart) return acc
+		const key = `${namePart}${typePart}`
 		if (key) {
 			acc[key] = { _id, name: metaInformation?.name, entityType, externalId: metaInformation.externalId }
 		}
@@ -1081,6 +1085,56 @@ function appendParamsToUrl(host, params) {
 
 	return url.toString()
 }
+
+/**
+ * Compare object and get the updated value with old value
+ * @method
+ * @name extractUpdatedValues
+ * @param {Object} oldData - Data before update
+ * @param {Object} newData - Data after update
+ * @param {Object} updateData - reqBody data
+ * @returns {Array<{fieldName:string, oldValue:any, newValue:any}>}
+ */
+
+function extractUpdatedValues(oldData = {}, newData = {}, updateData = {}) {
+	const changes = []
+
+	for (const key of Object.keys(updateData)) {
+		let oldValue = oldData[key]
+		let newValue = newData[key]
+		let fieldName = key
+		// Compare only if key exists in updateData
+		if (!_.isEqual(oldValue, newValue)) {
+			changes.push({ fieldName, oldValue, newValue })
+		}
+	}
+
+	return changes
+}
+
+function flattenLeafPaths(obj, prefix = '') {
+	const out = []
+	for (const [k, v] of Object.entries(obj || {})) {
+		const path = prefix ? `${prefix}.${k}` : k
+		if (v && typeof v === 'object' && !Array.isArray(v)) out.push(...flattenLeafPaths(v, path))
+		else out.push(path)
+	}
+	return out
+}
+
+function extractDelta(oldData = {}, newData = {}, updateData) {
+	const delta = {}
+	const paths =
+		updateData && Object.keys(updateData).length ? flattenLeafPaths(updateData) : flattenLeafPaths(newData) // fallback to full compare
+
+	for (const p of paths) {
+		const oldVal = _.get(oldData, p)
+		const newVal = _.get(newData, p)
+		if (!_.isEqual(oldVal, newVal)) _.set(delta, p, newVal)
+	}
+	return delta
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1127,4 +1181,6 @@ module.exports = {
 	isValidAction,
 	appendParamsToUrl,
 	parseMetaData,
+	extractUpdatedValues,
+	extractDelta,
 }

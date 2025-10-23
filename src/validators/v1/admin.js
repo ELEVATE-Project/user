@@ -163,4 +163,21 @@ module.exports = {
 			req.checkBody(field).isArray().notEmpty().withMessage(` ${field} must be an array and should not be empty.`)
 		}
 	},
+
+	deactivateOrg: (req) => {
+		req.checkParams('id')
+			.notEmpty()
+			.withMessage('id is required and should not be empty.')
+			.matches(/^[a-z0-9_]+$/)
+			.withMessage('id must be lowercase alphanumeric with underscores.')
+
+		req.checkHeaders('tenant-id')
+			.notEmpty()
+			.withMessage('tenant-id is required and should not be empty.')
+			.matches(/^[a-z0-9_]+$/)
+			.withMessage('tenant-id must be lowercase alphanumeric with underscores.')
+	},
+	executeRawQuery: (req) => {
+		req.checkBody('query').trim().notEmpty().withMessage('query field is empty')
+	},
 }
