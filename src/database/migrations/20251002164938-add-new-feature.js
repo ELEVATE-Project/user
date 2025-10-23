@@ -3,17 +3,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
 	async up(queryInterface, Sequelize) {
-		// Insert SCP feature
-		await queryInterface.bulkInsert('features', [
-			{
-				code: 'scp',
-				label: 'SCP',
-				display_order: 9,
-				description: 'SCP capability',
-				created_at: new Date(),
-				updated_at: new Date(),
-			},
-		])
+		// Check if SCP feature already exists
+		const scpFeature = await queryInterface.sequelize.query("SELECT code FROM features WHERE code = 'scp'", {
+			type: Sequelize.QueryTypes.SELECT,
+		})
+
+		// Insert SCP feature if it doesn't exist
+		if (scpFeature.length === 0) {
+			await queryInterface.bulkInsert('features', [
+				{
+					code: 'scp',
+					label: 'Self Creation Portal',
+					display_order: 9,
+					description: 'SCP capability',
+					created_at: new Date(),
+					updated_at: new Date(),
+				},
+			])
+		}
 
 		// Get all organizations
 		const tenants = await queryInterface.sequelize.query('SELECT code FROM tenants WHERE deleted_at IS NULL', {
@@ -35,16 +42,29 @@ module.exports = {
 			)
 
 			if (orgExist.length > 0) {
-				organizationFeatureData.push({
-					organization_code: process.env.DEFAULT_ORGANISATION_CODE || 'default_code',
-					tenant_code: tenant.code,
-					feature_code: 'scp',
-					feature_name: 'SCP',
-					enabled: true,
-					display_order: 9,
-					created_at: new Date(),
-					updated_at: new Date(),
-				})
+				const orgFeatureExist = await queryInterface.sequelize.query(
+					'SELECT organization_code FROM organization_features WHERE tenant_code = :tenantCode AND organization_code = :orgCode AND feature_code = :featureCode',
+					{
+						replacements: {
+							tenantCode: tenant.code,
+							orgCode: process.env.DEFAULT_ORGANISATION_CODE || 'default_code',
+							featureCode: 'scp',
+						},
+						type: Sequelize.QueryTypes.SELECT,
+					}
+				)
+				if (orgFeatureExist.length === 0) {
+					organizationFeatureData.push({
+						organization_code: process.env.DEFAULT_ORGANISATION_CODE || 'default_code',
+						tenant_code: tenant.code,
+						feature_code: 'scp',
+						feature_name: 'SCP',
+						enabled: true,
+						display_order: 9,
+						created_at: new Date(),
+						updated_at: new Date(),
+					})
+				}
 			}
 		}
 
@@ -53,7 +73,7 @@ module.exports = {
 		}
 	},
 
-	async down(queryInterface, Sequelize) {
+	async down(queryInterface) {
 		// Remove organization_feature records only for the SCP feature
 		await queryInterface.bulkDelete('organization_features', {
 			feature_code: 'scp',
