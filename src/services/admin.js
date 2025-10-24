@@ -171,25 +171,30 @@ module.exports = class AdminHelper {
 				throw error
 			}
 
-			const updatedUser = await userQueries.findUserWithOrganization({ id: user_id, tenant_code })
-			const newValues = utils.extractDelta(user, updatedUser)
+			// Post-assignment operations (best-effort)
+			try {
+				const updatedUser = await userQueries.findUserWithOrganization({ id: user_id, tenant_code })
+				const newValues = utils.extractDelta(user, updatedUser)
 
-			const eventBody = eventBodyDTO({
-				entity: 'user',
-				eventType: 'update',
-				entityId: user.id,
-				oldValues: user,
-				newValues,
-				args: { created_at: updatedUser.created_at, updated_at: updatedUser.updated_at },
-			})
+				const eventBody = eventBodyDTO({
+					entity: 'user',
+					eventType: 'update',
+					entityId: user.id,
+					oldValues: user,
+					newValues,
+					args: { created_at: updatedUser.created_at, updated_at: updatedUser.updated_at },
+				})
 
-			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
+				broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
-			const redisUserKey = `${common.redisUserPrefix}${tenant_code}_${user.id.toString()}`
-			await utils.redisDel(redisUserKey)
+				const redisUserKey = `${common.redisUserPrefix}${tenant_code}_${user.id.toString()}`
+				await utils.redisDel(redisUserKey)
 
-			// End all active sessions for this user in this tenant (handles Redis + ended_at)
-			await userHelper.removeAllUserSessions([user.id], tenant_code)
+				// End all active sessions for this user in this tenant (handles Redis + ended_at)
+				await userHelper.removeAllUserSessions([user.id], tenant_code)
+			} catch (auxError) {
+				console.error('Error in post-assignment operations (non-critical):', auxError)
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
