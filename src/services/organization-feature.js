@@ -101,6 +101,7 @@ module.exports = class organizationFeatureHelper {
 
 			// If roles are provided, create feature_role_mapping entries
 			if (bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
+				// Validate that all requested roles exist for this tenant
 				const validRoles = await roleQueries.findAll({
 					tenant_code: tokenInformation.tenant_code,
 					title: {
@@ -116,7 +117,7 @@ module.exports = class organizationFeatureHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-
+				// Prepare bulk insert data for feature_role_mapping
 				const featureRoleMappingData = validRoleTitles.map((role) => ({
 					feature_code: bodyData.feature_code,
 					role_title: role,
@@ -218,18 +219,16 @@ module.exports = class organizationFeatureHelper {
 				)
 
 				// Then create new mappings if roles are provided
-				if (bodyData?.roles.length > 0) {
-					const featureRoleMappingData = bodyData.roles.map((role) => ({
-						feature_code: feature_code,
-						role_title: role,
-						organization_code: tokenInformation.organization_code,
-						tenant_code: tokenInformation.tenant_code,
-						created_by: tokenInformation.id,
-						updated_by: tokenInformation.id,
-					}))
+				const featureRoleMappingData = bodyData.roles.map((role) => ({
+					feature_code: feature_code,
+					role_title: role,
+					organization_code: tokenInformation.organization_code,
+					tenant_code: tokenInformation.tenant_code,
+					created_by: tokenInformation.id,
+					updated_by: tokenInformation.id,
+				}))
 
-					await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
-				}
+				await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
 			}
 			await transaction.commit()
 			return responses.successResponse({

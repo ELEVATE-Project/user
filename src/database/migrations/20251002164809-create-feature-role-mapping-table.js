@@ -27,7 +27,7 @@ module.exports = {
 			},
 			created_by: {
 				type: Sequelize.INTEGER,
-				allowNull: true,
+				allowNull: false,
 			},
 			updated_by: {
 				type: Sequelize.INTEGER,
