@@ -18,7 +18,7 @@ const utils = require('@generics/utils')
 const rawQueryUtils = require('@utils/rawQueryUtils')
 
 // Database queries
-const { ForeignKeyConstraintError } = require('sequelize')
+const { ForeignKeyConstraintError, UniqueConstraintError } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const roleQueries = require('@database/queries/user-role')
 const tenantQueries = require('@database/queries/tenants')
@@ -157,6 +157,13 @@ module.exports = class AdminHelper {
 				if (error instanceof ForeignKeyConstraintError) {
 					return responses.failureResponse({
 						message: 'INVALID_ROLE_ID',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				if (error instanceof UniqueConstraintError) {
+					return responses.failureResponse({
+						message: 'USER_ROLE_ALREADY_EXISTS',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
