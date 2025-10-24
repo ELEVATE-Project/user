@@ -18,6 +18,7 @@ const utils = require('@generics/utils')
 const rawQueryUtils = require('@utils/rawQueryUtils')
 
 // Database queries
+const { ForeignKeyConstraintError } = require('sequelize')
 const organizationQueries = require('@database/queries/organization')
 const roleQueries = require('@database/queries/user-role')
 const tenantQueries = require('@database/queries/tenants')
@@ -35,6 +36,7 @@ const userSessionsService = require('@services/user-sessions')
 const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const emailEncryption = require('@utils/emailEncryption')
 const { eventBroadcaster } = require('@helpers/eventBroadcaster')
+
 const { generateUniqueUsername } = require('@utils/usernameGenerator')
 const responses = require('@helpers/responses')
 const userHelper = require('@helpers/userHelper')
@@ -42,7 +44,7 @@ const userHelper = require('@helpers/userHelper')
 // DTOs
 const UserTransformDTO = require('@dtos/userDTO')
 const organizationDTO = require('@dtos/organizationDTO')
-
+const { eventBodyDTO } = require('@dtos/userDTO')
 module.exports = class AdminHelper {
 	/**
 	 * Delete User
@@ -88,6 +90,119 @@ module.exports = class AdminHelper {
 				message: result.message,
 			})
 		} catch (error) {
+			throw error
+		}
+	}
+
+	/**
+	 * Assigns a role to a user within an organization.
+	 * Params come from token. Body has user_id, role_id, optional organization_id.
+	 *
+	 * @param {Object} params
+	 * @param {string} params.tenant_code
+	 * @param {string} params.organization_code
+	 * @param {Object} body
+	 * @param {number|string} body.user_id
+	 * @param {number|string} body.role_id
+	 * @param {number|string} [body.organization_id]
+	 */
+	static async assignRole(params, body) {
+		try {
+			const { tenant_code, organization_code } = params
+			const { user_id, role_id, organization_id } = body
+
+			const user = await userQueries.findUserWithOrganization({ id: user_id, tenant_code })
+			if (!user) {
+				return responses.failureResponse({
+					message: 'USER_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const orgs = Array.isArray(user.organizations) ? user.organizations : []
+			const org = orgs.find(
+				(o) => o?.code === organization_code || String(o?.id) === String(organization_id || '')
+			)
+
+			if (!org) {
+				return responses.failureResponse({
+					message: 'USER_ORGANIZATION_NOT_FOUND',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const alreadyHasRole = Array.isArray(org.roles)
+				? org.roles.some((r) => String(r.id) === String(role_id))
+				: false
+
+			if (alreadyHasRole) {
+				return responses.failureResponse({
+					message: 'USER_ROLE_ALREADY_EXISTS',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			let mapping
+			try {
+				mapping = await userOrganizationRoleQueries.create({
+					tenant_code,
+					user_id: user.id || user.user_id,
+					organization_code: org.code,
+					role_id,
+				})
+			} catch (error) {
+				if (error instanceof ForeignKeyConstraintError) {
+					return responses.failureResponse({
+						message: 'INVALID_ROLE_ID',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				throw error
+			}
+
+			const updatedUser = await userQueries.findUserWithOrganization({ id: user_id, tenant_code })
+			const newValues = utils.extractDelta(user, updatedUser)
+
+			const eventBody = eventBodyDTO({
+				entity: 'user',
+				eventType: 'update',
+				entityId: user.id,
+				oldValues: user,
+				newValues,
+				args: { created_at: updatedUser.created_at, updated_at: updatedUser.updated_at },
+			})
+
+			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
+			const redisUserKey = `${common.redisUserPrefix}${tenant_code}_${user.id.toString()}`
+			await utils.redisDel(redisUserKey)
+			const userSessionData = await userSessionsService.findUserSession(
+				{
+					user_id: userId,
+					ended_at: null,
+				},
+				{
+					attributes: ['id'],
+				}
+			)
+			const userSessionIds = userSessionData.map(({ id }) => id)
+			/**
+			 * 1: Remove redis data
+			 * 2: Update ended_at in user-sessions
+			 */
+			await userSessionsService.removeUserSessions(userSessionIds)
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: 'USER_ROLE_ASSIGNED_SUCCESSFULLY',
+				result: { mapping },
+			})
+		} catch (error) {
+			console.error('Error in assignRole:', error)
 			throw error
 		}
 	}

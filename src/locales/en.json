@@ -194,5 +194,9 @@
 	"ORG_CODE_REQUIRED_FOR_TENANT_ADMIN": "Please provide header {{orgCodeHeader}} for admin override.",
 	"INVALID_ORG_ID": "Organization ID must be a valid positive integer.",
 	"INVALID_ORG_OR_TENANT_CODE": "The provided organization or tenant code is invalid or does not match.",
-	"INVALID_ORG_CODE_FOR_TENANT": "The provided organization is invalid or does not match."
+	"INVALID_ORG_CODE_FOR_TENANT": "The provided organization is invalid or does not match.",
+	"USER_ORGANIZATION_NOT_FOUND": "The user is not associated with the specified organization.",
+	"USER_ROLE_ALREADY_EXISTS": "The user already has this role assigned.",
+	"INVALID_ROLE_ID": "The provided role ID is invalid.",
+	"USER_ROLE_ASSIGNED_SUCCESSFULLY": "The role was assigned to the user successfully."
 }
