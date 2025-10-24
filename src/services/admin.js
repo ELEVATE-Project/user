@@ -187,21 +187,9 @@ module.exports = class AdminHelper {
 
 			const redisUserKey = `${common.redisUserPrefix}${tenant_code}_${user.id.toString()}`
 			await utils.redisDel(redisUserKey)
-			const userSessionData = await userSessionsService.findUserSession(
-				{
-					user_id: userId,
-					ended_at: null,
-				},
-				{
-					attributes: ['id'],
-				}
-			)
-			const userSessionIds = userSessionData.map(({ id }) => id)
-			/**
-			 * 1: Remove redis data
-			 * 2: Update ended_at in user-sessions
-			 */
-			await userSessionsService.removeUserSessions(userSessionIds)
+
+			// End all active sessions for this user in this tenant (handles Redis + ended_at)
+			await userHelper.removeAllUserSessions([user.id], tenant_code)
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
