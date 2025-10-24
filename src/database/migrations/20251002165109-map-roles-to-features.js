@@ -32,6 +32,7 @@ module.exports = {
 			district_manager: ['reports', 'learn', ...defaultFeatures],
 			admin: allFeatures.map((f) => f.code), // Admins get all features.
 			org_admin: allFeatures.map((f) => f.code), // Org admins also get all features.
+			tenant_admin: allFeatures.map((f) => f.code), // Tenant admins also get all features.
 		}
 
 		// Create a lookup map (`orgFeaturesMap`) for efficient access to enabled features per organization.
@@ -105,6 +106,8 @@ module.exports = {
 								feature_code: featureCode,
 								organization_code: org.organization_code,
 								tenant_code: org.tenant_code,
+								created_by: 0,
+								updated_by: 0,
 								created_at: new Date(),
 								updated_at: new Date(),
 							})

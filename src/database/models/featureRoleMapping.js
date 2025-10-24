@@ -25,12 +25,29 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				primaryKey: true,
 			},
+			created_by: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			},
+			updated_by: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			},
 		},
 		{
 			modelName: 'FeatureRoleMapping',
 			tableName: 'feature_role_mapping',
 			freezeTableName: true,
 			paranoid: false,
+			indexes: [
+				{
+					unique: true,
+					fields: ['feature_code', 'role_title', 'organization_code', 'tenant_code'],
+					where: {
+						deleted_at: null,
+					},
+				},
+			],
 		}
 	)
 

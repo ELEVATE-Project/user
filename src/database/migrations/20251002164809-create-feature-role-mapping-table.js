@@ -25,6 +25,14 @@ module.exports = {
 				type: Sequelize.STRING,
 				allowNull: false,
 			},
+			created_by: {
+				type: Sequelize.INTEGER,
+				allowNull: true,
+			},
+			updated_by: {
+				type: Sequelize.INTEGER,
+				allowNull: true,
+			},
 			created_at: {
 				allowNull: false,
 				type: Sequelize.DATE,
@@ -47,7 +55,7 @@ module.exports = {
 		})
 	},
 
-	async down(queryInterface, Sequelize) {
+	async down(queryInterface) {
 		await queryInterface.dropTable('feature_role_mapping')
 	},
 }

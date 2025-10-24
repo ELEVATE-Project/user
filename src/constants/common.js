@@ -42,6 +42,7 @@ module.exports = {
 	otpExpirationTime: process.env.OTP_EXP_TIME, // In Seconds,
 	ADMIN_ROLE: 'admin',
 	ORG_ADMIN_ROLE: 'org_admin',
+	TENANT_ADMIN_ROLE: 'tenant_admin',
 	USER_ROLE: 'user',
 	SESSION_MANAGER_ROLE: 'session_manager',
 	PUBLIC_ROLE: 'public',

@@ -122,6 +122,8 @@ module.exports = class organizationFeatureHelper {
 					role_title: role,
 					organization_code: tokenInformation.organization_code,
 					tenant_code: tokenInformation.tenant_code,
+					created_by: tokenInformation.id,
+					updated_by: tokenInformation.id,
 				}))
 
 				await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
@@ -192,12 +194,28 @@ module.exports = class organizationFeatureHelper {
 
 			// If roles are provided, update feature_role_mapping entries
 			if (bodyData?.roles && Array.isArray(bodyData?.roles)) {
-				// First, delete existing mappings for this feature and organization
-				await featureRoleMappingQueries.delete({
-					feature_code: feature_code,
-					organization_code: tokenInformation.organization_code,
+				// Validate that all requested roles exist for this tenant
+				const validRoles = await roleQueries.findAll({
 					tenant_code: tokenInformation.tenant_code,
+					title: { [Op.in]: bodyData.roles },
 				})
+				if (validRoles.length !== bodyData.roles.length) {
+					return responses.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				// First, delete existing mappings for this feature and organization
+				await featureRoleMappingQueries.delete(
+					{
+						feature_code: feature_code,
+						organization_code: tokenInformation.organization_code,
+						tenant_code: tokenInformation.tenant_code,
+					},
+					{ transaction }
+				)
 
 				// Then create new mappings if roles are provided
 				if (bodyData?.roles.length > 0) {
@@ -206,6 +224,8 @@ module.exports = class organizationFeatureHelper {
 						role_title: role,
 						organization_code: tokenInformation.organization_code,
 						tenant_code: tokenInformation.tenant_code,
+						created_by: tokenInformation.id,
+						updated_by: tokenInformation.id,
 					}))
 
 					await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
@@ -263,7 +283,6 @@ module.exports = class organizationFeatureHelper {
 
 			// Merge features with Map for efficiency
 			const featureMap = new Map(defaultOrgFeatures.map((feature) => [feature.feature_code, feature]))
-
 			// Override with current org features if they exist
 			if (currentOrgFeatures?.length) {
 				currentOrgFeatures.forEach((feature) => {
@@ -280,26 +299,73 @@ module.exports = class organizationFeatureHelper {
 
 				// Check if user has admin or org_admin role
 				const hasAdminAccess = roleTitles.some((role) =>
-					[common.ADMIN_ROLE, common.ORG_ADMIN_ROLE].includes(role)
+					[common.ADMIN_ROLE, common.ORG_ADMIN_ROLE, common.TENANT_ADMIN_ROLE].includes(role)
 				)
 
 				// If user is not admin or org_admin, filter based on role mappings
 				if (!hasAdminAccess) {
+					// Fetch role mappings for both current org and default org in a single query
 					const filterQuery = {
 						tenant_code: tenantCode,
 						organization_code: {
-							[Op.in]: [process.env.DEFAULT_ORGANISATION_CODE, orgCode],
+							[Op.in]: [orgCode, process.env.DEFAULT_ORGANISATION_CODE],
 						},
 						role_title: { [Op.in]: roleTitles },
 					}
 
-					let roleFeatureMappings = await featureRoleMappingQueries.findAll(filterQuery)
-					// Get unique accessible feature codes
-					const accessibleFeatureCodes = [...new Set(roleFeatureMappings.map((m) => m.feature_code))]
-					// Filter to only accessible features
-					organizationFeatures = organizationFeatures.filter((feature) =>
-						accessibleFeatureCodes.includes(feature.feature_code)
-					)
+					const roleFeatureMappings = await featureRoleMappingQueries.findAll(filterQuery)
+
+					if (roleFeatureMappings?.length > 0) {
+						// Separate mappings by organization
+						const currentOrgMappings = roleFeatureMappings.filter(
+							(featureMapping) => featureMapping.organization_code === orgCode
+						)
+						const defaultOrgMappings = roleFeatureMappings.filter(
+							(featureMapping) =>
+								featureMapping.organization_code === process.env.DEFAULT_ORGANISATION_CODE
+						)
+
+						// Create a map of roles to their accessible features per organization
+						const currentOrgRoleFeatureMap = new Map()
+						const defaultOrgRoleFeatureMap = new Map()
+
+						// Populate current org role-feature mappings
+						currentOrgMappings.forEach((orgMapping) => {
+							if (!currentOrgRoleFeatureMap.has(orgMapping.role_title)) {
+								currentOrgRoleFeatureMap.set(orgMapping.role_title, new Set())
+							}
+							currentOrgRoleFeatureMap.get(orgMapping.role_title).add(orgMapping.feature_code)
+						})
+
+						// Populate default org role-feature mappings
+						defaultOrgMappings.forEach((orgMapping) => {
+							if (!defaultOrgRoleFeatureMap.has(orgMapping.role_title)) {
+								defaultOrgRoleFeatureMap.set(orgMapping.role_title, new Set())
+							}
+							defaultOrgRoleFeatureMap.get(orgMapping.role_title).add(orgMapping.feature_code)
+						})
+
+						// For each role, determine accessible features
+						// If role has mappings in current org, use those; otherwise use default org mappings
+						const accessibleFeatureCodes = new Set()
+						roleTitles.forEach((role) => {
+							const currentOrgFeatures = currentOrgRoleFeatureMap.get(role)
+							const defaultOrgFeatures = defaultOrgRoleFeatureMap.get(role)
+
+							if (currentOrgFeatures && currentOrgFeatures.size > 0) {
+								// Current org has explicit mappings for this role - use only those
+								currentOrgFeatures.forEach((feature) => accessibleFeatureCodes.add(feature))
+							} else if (defaultOrgFeatures && defaultOrgFeatures.size > 0) {
+								// No current org mappings for this role - fall back to default org
+								defaultOrgFeatures.forEach((feature) => accessibleFeatureCodes.add(feature))
+							}
+						})
+
+						// Filter to only accessible features
+						organizationFeatures = organizationFeatures.filter((feature) =>
+							accessibleFeatureCodes.has(feature.feature_code)
+						)
+					}
 				}
 			}
 
