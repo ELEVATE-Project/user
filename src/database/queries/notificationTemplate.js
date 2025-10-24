@@ -83,14 +83,22 @@ exports.findOneEmailTemplate = async (code, orgCode = null, tenantCode) => {
 		templateData = templateData.find((template) => template.organization_code === orgCode) || templateData[0]
 
 		if (templateData && templateData.email_header) {
-			const header = await this.getEmailHeader(templateData.email_header)
+			const header = await this.getEmailHeader(
+				templateData.email_header,
+				templateData.tenant_code,
+				templateData.organization_code
+			)
 			if (header && header.body) {
 				templateData['body'] = header.body + templateData['body']
 			}
 		}
 
 		if (templateData && templateData.email_footer) {
-			const footer = await this.getEmailFooter(templateData.email_footer)
+			const footer = await this.getEmailFooter(
+				templateData.email_footer,
+				templateData.tenant_code,
+				templateData.organization_code
+			)
 			if (footer && footer.body) {
 				templateData['body'] = templateData['body'] + footer.body
 			}
@@ -101,12 +109,14 @@ exports.findOneEmailTemplate = async (code, orgCode = null, tenantCode) => {
 	}
 }
 
-exports.getEmailHeader = async (header) => {
+exports.getEmailHeader = async (header, tenantCode, organizationCode) => {
 	try {
 		const filterEmailHeader = {
 			code: header,
 			type: 'emailHeader',
 			status: common.ACTIVE_STATUS,
+			tenant_code: tenantCode,
+			organization_code: organizationCode,
 		}
 
 		const headerData = await NotificationTemplate.findOne({
@@ -119,12 +129,14 @@ exports.getEmailHeader = async (header) => {
 	}
 }
 
-exports.getEmailFooter = async (footer) => {
+exports.getEmailFooter = async (footer, tenantCode, organizationCode) => {
 	try {
 		const filterEmailFooter = {
 			code: footer,
 			type: 'emailFooter',
 			status: common.ACTIVE_STATUS,
+			tenant_code: tenantCode,
+			organization_code: organizationCode,
 		}
 
 		const headerData = await NotificationTemplate.findOne({
