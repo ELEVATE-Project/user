@@ -296,7 +296,6 @@ module.exports = class organizationFeatureHelper {
 			if (userRoles?.length > 0) {
 				// Extract role titles from user roles
 				const roleTitles = userRoles.map((role) => role.title)
-
 				// Check if user has admin or org_admin role
 				const hasAdminAccess = roleTitles.some((role) =>
 					[common.ADMIN_ROLE, common.ORG_ADMIN_ROLE, common.TENANT_ADMIN_ROLE].includes(role)
@@ -316,33 +315,20 @@ module.exports = class organizationFeatureHelper {
 					const roleFeatureMappings = await featureRoleMappingQueries.findAll(filterQuery)
 
 					if (roleFeatureMappings?.length > 0) {
-						// Separate mappings by organization
-						const currentOrgMappings = roleFeatureMappings.filter(
-							(featureMapping) => featureMapping.organization_code === orgCode
-						)
-						const defaultOrgMappings = roleFeatureMappings.filter(
-							(featureMapping) =>
-								featureMapping.organization_code === process.env.DEFAULT_ORGANISATION_CODE
-						)
-
-						// Create a map of roles to their accessible features per organization
+						// Separate mappings and build role-feature maps in single pass
 						const currentOrgRoleFeatureMap = new Map()
 						const defaultOrgRoleFeatureMap = new Map()
 
-						// Populate current org role-feature mappings
-						currentOrgMappings.forEach((orgMapping) => {
-							if (!currentOrgRoleFeatureMap.has(orgMapping.role_title)) {
-								currentOrgRoleFeatureMap.set(orgMapping.role_title, new Set())
+						// Build maps of roles to features for current and default organizations
+						roleFeatureMappings.forEach((mapping) => {
+							const targetMap =
+								mapping.organization_code === orgCode
+									? currentOrgRoleFeatureMap
+									: defaultOrgRoleFeatureMap
+							if (!targetMap.has(mapping.role_title)) {
+								targetMap.set(mapping.role_title, new Set())
 							}
-							currentOrgRoleFeatureMap.get(orgMapping.role_title).add(orgMapping.feature_code)
-						})
-
-						// Populate default org role-feature mappings
-						defaultOrgMappings.forEach((orgMapping) => {
-							if (!defaultOrgRoleFeatureMap.has(orgMapping.role_title)) {
-								defaultOrgRoleFeatureMap.set(orgMapping.role_title, new Set())
-							}
-							defaultOrgRoleFeatureMap.get(orgMapping.role_title).add(orgMapping.feature_code)
+							targetMap.get(mapping.role_title).add(mapping.feature_code)
 						})
 
 						// For each role, determine accessible features
@@ -350,14 +336,13 @@ module.exports = class organizationFeatureHelper {
 						const accessibleFeatureCodes = new Set()
 						roleTitles.forEach((role) => {
 							const currentOrgFeatures = currentOrgRoleFeatureMap.get(role)
-							const defaultOrgFeatures = defaultOrgRoleFeatureMap.get(role)
-
-							if (currentOrgFeatures && currentOrgFeatures.size > 0) {
+							if (currentOrgFeatures?.size > 0) {
 								// Current org has explicit mappings for this role - use only those
 								currentOrgFeatures.forEach((feature) => accessibleFeatureCodes.add(feature))
-							} else if (defaultOrgFeatures && defaultOrgFeatures.size > 0) {
+							} else {
 								// No current org mappings for this role - fall back to default org
-								defaultOrgFeatures.forEach((feature) => accessibleFeatureCodes.add(feature))
+								const defaultOrgFeatures = defaultOrgRoleFeatureMap.get(role)
+								defaultOrgFeatures?.forEach((feature) => accessibleFeatureCodes.add(feature))
 							}
 						})
 
