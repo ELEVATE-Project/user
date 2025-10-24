@@ -149,7 +149,7 @@ module.exports = class AdminHelper {
 			try {
 				mapping = await userOrganizationRoleQueries.create({
 					tenant_code,
-					user_id: user.id || user.user_id,
+					user_id: user.id,
 					organization_code: org.code,
 					role_id,
 				})
