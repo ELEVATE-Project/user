@@ -180,4 +180,21 @@ module.exports = {
 	executeRawQuery: (req) => {
 		req.checkBody('query').trim().notEmpty().withMessage('query field is empty')
 	},
+
+	assignRole: (req) => {
+		req.body = filterRequestBody(req.body, admin.assignRole)
+
+		// Validate organization_id
+		req.checkBody('user_id')
+			.notEmpty()
+			.withMessage('user_id field is empty')
+			.isNumeric()
+			.withMessage('user_id must be a number')
+
+		req.checkBody('role_id')
+			.notEmpty()
+			.withMessage('role_id field is empty')
+			.isNumeric()
+			.withMessage('role_id must be a number')
+	},
 }
