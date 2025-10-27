@@ -8,10 +8,14 @@
 const httpStatusCode = require('@generics/http-status')
 const organizationFeatureQueries = require('@database/queries/organization-feature')
 const organizationQueries = require('@database/queries/organization')
+const featureRoleMappingQueries = require('@database/queries/featureRoleMapping')
 const responses = require('@helpers/responses')
 const utilsHelper = require('@generics/utils')
 const { UniqueConstraintError } = require('sequelize')
 const common = require('@constants/common')
+const { Op } = require('sequelize')
+const roleQueries = require('@database/queries/user-role')
+const { sequelize } = require('@database/models/index')
 
 module.exports = class organizationFeatureHelper {
 	/**
@@ -63,6 +67,7 @@ module.exports = class organizationFeatureHelper {
 	 */
 
 	static async create(bodyData, tokenInformation, isAdmin = false) {
+		const transaction = await sequelize.transaction()
 		try {
 			// validate that the feature exists in the default organization
 			if (!isAdmin && tokenInformation.organization_code != process.env.DEFAULT_TENANT_ORG_CODE) {
@@ -92,13 +97,47 @@ module.exports = class organizationFeatureHelper {
 			bodyData.created_by = tokenInformation.id
 
 			// Create the new organization feature
-			const createdOrgFeature = await organizationFeatureQueries.create(bodyData)
+			const createdOrgFeature = await organizationFeatureQueries.create(bodyData, { transaction })
+
+			// If roles are provided, create feature_role_mapping entries
+			if (bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
+				// Validate that all requested roles exist for this tenant
+				const validRoles = await roleQueries.findAll({
+					tenant_code: tokenInformation.tenant_code,
+					title: {
+						[Op.in]: bodyData.roles,
+					},
+				})
+
+				const validRoleTitles = validRoles.map((role) => role.title)
+				if (validRoleTitles.length === 0 || validRoleTitles.length !== bodyData?.roles?.length) {
+					await transaction.rollback()
+					return responses.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				// Prepare bulk insert data for feature_role_mapping
+				const featureRoleMappingData = validRoleTitles.map((role) => ({
+					feature_code: bodyData.feature_code,
+					role_title: role,
+					organization_code: tokenInformation.organization_code,
+					tenant_code: tokenInformation.tenant_code,
+					created_by: tokenInformation.id,
+					updated_by: tokenInformation.id,
+				}))
+
+				await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
+			}
+			await transaction.commit()
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ORG_FEATURE_CREATED_SUCCESSFULLY',
 				result: createdOrgFeature,
 			})
 		} catch (error) {
+			if (transaction) await transaction.rollback()
 			if (error.name === common.SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR) {
 				return responses.failureResponse({
 					message: 'FEATURE_NOT_FOUND',
@@ -112,7 +151,11 @@ module.exports = class organizationFeatureHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			throw error
+			return responses.failureResponse({
+				message: error.message || error,
+				statusCode: httpStatusCode.bad_request,
+				responseCode: 'CLIENT_ERROR',
+			})
 		}
 	}
 
@@ -125,6 +168,7 @@ module.exports = class organizationFeatureHelper {
 	 * @returns {JSON} - Org feature update response.
 	 */
 	static async update(feature_code, bodyData, tokenInformation) {
+		const transaction = await sequelize.transaction()
 		try {
 			// Prepare filter query to identify the organization feature to update
 			let filterQuery = {
@@ -137,7 +181,8 @@ module.exports = class organizationFeatureHelper {
 
 			const [updatedCount, updatedOrgFeature] = await organizationFeatureQueries.updateOrganizationFeature(
 				filterQuery,
-				bodyData
+				bodyData,
+				{ transaction }
 			)
 
 			// Return error if no record was updated
@@ -149,12 +194,51 @@ module.exports = class organizationFeatureHelper {
 				})
 			}
 
+			// If roles are provided, update feature_role_mapping entries
+			if (bodyData?.roles && Array.isArray(bodyData?.roles)) {
+				// Validate that all requested roles exist for this tenant
+				const validRoles = await roleQueries.findAll({
+					tenant_code: tokenInformation.tenant_code,
+					title: { [Op.in]: bodyData.roles },
+				})
+				if (validRoles.length !== bodyData.roles.length) {
+					return responses.failureResponse({
+						message: 'ROLE_NOT_FOUND',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
+				// First, delete existing mappings for this feature and organization
+				await featureRoleMappingQueries.delete(
+					{
+						feature_code: feature_code,
+						organization_code: tokenInformation.organization_code,
+						tenant_code: tokenInformation.tenant_code,
+					},
+					{ transaction }
+				)
+
+				// Then create new mappings if roles are provided
+				const featureRoleMappingData = bodyData.roles.map((role) => ({
+					feature_code: feature_code,
+					role_title: role,
+					organization_code: tokenInformation.organization_code,
+					tenant_code: tokenInformation.tenant_code,
+					created_by: tokenInformation.id,
+					updated_by: tokenInformation.id,
+				}))
+
+				await featureRoleMappingQueries.bulkCreate(featureRoleMappingData, { transaction })
+			}
+			await transaction.commit()
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
 				message: 'ORG_FEATURE_UPDATED_SUCCESSFULLY',
 				result: updatedOrgFeature?.[0],
 			})
 		} catch (error) {
+			if (transaction) await transaction.rollback()
 			if (error.name === common.SEQUELIZE_FOREIGN_KEY_CONSTRAINT_ERROR) {
 				return responses.failureResponse({
 					message: 'FEATURE_NOT_FOUND',
@@ -167,14 +251,16 @@ module.exports = class organizationFeatureHelper {
 	}
 
 	/**
-	 * List organization features.
+	 * List organization features based on user roles.
 	 * @method
 	 * @name list
-	 * @param {Object} tokenInformation - Token Information
+	 * @param {String} tenantCode - Tenant Code
+	 * @param {String} orgCode - Organization Code
+	 * @param {Array} userRoles - User roles from token
 	 * @returns {JSON} - Organization feature list.
 	 */
 
-	static async list(tenantCode, orgCode) {
+	static async list(tenantCode, orgCode, userRoles = []) {
 		try {
 			let filter = {
 				organization_code: orgCode,
@@ -197,7 +283,6 @@ module.exports = class organizationFeatureHelper {
 
 			// Merge features with Map for efficiency
 			const featureMap = new Map(defaultOrgFeatures.map((feature) => [feature.feature_code, feature]))
-
 			// Override with current org features if they exist
 			if (currentOrgFeatures?.length) {
 				currentOrgFeatures.forEach((feature) => {
@@ -205,7 +290,72 @@ module.exports = class organizationFeatureHelper {
 				})
 			}
 
-			const organizationFeatures = Array.from(featureMap.values())
+			let organizationFeatures = Array.from(featureMap.values())
+
+			// Filter features based on user roles
+			if (userRoles?.length > 0) {
+				// Extract role titles from user roles
+				const roleTitles = userRoles.map((role) => role.title)
+				// Check if user has admin or org_admin role
+				const hasAdminAccess = roleTitles.some((role) =>
+					[common.ADMIN_ROLE, common.ORG_ADMIN_ROLE, common.TENANT_ADMIN_ROLE].includes(role)
+				)
+
+				// If user is not admin or org_admin, filter based on role mappings
+				if (!hasAdminAccess) {
+					// Fetch role mappings for both current org and default org in a single query
+					const filterQuery = {
+						tenant_code: tenantCode,
+						organization_code: {
+							[Op.in]: [orgCode, process.env.DEFAULT_ORGANISATION_CODE],
+						},
+						role_title: { [Op.in]: roleTitles },
+					}
+
+					const roleFeatureMappings = await featureRoleMappingQueries.findAll(filterQuery)
+
+					if (roleFeatureMappings?.length > 0) {
+						// Separate mappings and build role-feature maps in single pass
+						const currentOrgRoleFeatureMap = new Map()
+						const defaultOrgRoleFeatureMap = new Map()
+
+						// Build maps of roles to features for current and default organizations
+						roleFeatureMappings.forEach((mapping) => {
+							const targetMap =
+								mapping.organization_code === orgCode
+									? currentOrgRoleFeatureMap
+									: defaultOrgRoleFeatureMap
+							if (!targetMap.has(mapping.role_title)) {
+								targetMap.set(mapping.role_title, new Set())
+							}
+							targetMap.get(mapping.role_title).add(mapping.feature_code)
+						})
+
+						// For each role, determine accessible features
+						// If role has mappings in current org, use those; otherwise use default org mappings
+						const accessibleFeatureCodes = new Set()
+						roleTitles.forEach((role) => {
+							const currentOrgFeatures = currentOrgRoleFeatureMap.get(role)
+							if (currentOrgFeatures?.size > 0) {
+								// Current org has explicit mappings for this role - use only those
+								currentOrgFeatures.forEach((feature) => accessibleFeatureCodes.add(feature))
+							} else {
+								// No current org mappings for this role - fall back to default org
+								const defaultOrgFeatures = defaultOrgRoleFeatureMap.get(role)
+								defaultOrgFeatures?.forEach((feature) => accessibleFeatureCodes.add(feature))
+							}
+						})
+
+						// Filter to only accessible features
+						organizationFeatures = organizationFeatures.filter((feature) =>
+							accessibleFeatureCodes.has(feature.feature_code)
+						)
+					} else {
+						// No role mappings found - restrict to empty set for security
+						organizationFeatures = []
+					}
+				}
+			}
 
 			// Sort the organization features based on the display_order in ascending order
 			const sortedFeatures = organizationFeatures.sort((a, b) => a.display_order - b.display_order)

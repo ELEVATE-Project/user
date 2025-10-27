@@ -1608,7 +1608,7 @@ module.exports = class AccountHelper {
 				})
 			} else {
 				let role = await roleQueries.findOne(
-					{ title: params.query.type.toLowerCase() },
+					{ title: params.query.type.toLowerCase(), tenant_code: tenantCode },
 					{
 						attributes: ['id'],
 					}

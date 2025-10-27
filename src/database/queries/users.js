@@ -98,7 +98,10 @@ exports.listUsers = async (roleId, organization_id, page, limit, search, tenant_
 
 		// Final query using the updated schema
 		let { count, rows: users } = await database.User.findAndCountAll({
-			where: userWhereClause,
+			where: {
+				...userWhereClause,
+				tenant_code, // Ensure this is in the main where clause
+			},
 			attributes: ['id', 'name', 'about', 'image'],
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
