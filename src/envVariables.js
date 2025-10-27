@@ -2,6 +2,43 @@ let table = require('cli-table')
 
 let tableData = new table()
 
+const databaseEnvironmentVariables = {
+	DB_POOL_MAX: {
+		message: 'Max connections per Sequelize pool',
+		optional: true,
+		default: 20,
+	},
+	DB_POOL_MIN: {
+		message: 'Min connections per Sequelize pool',
+		optional: true,
+		default: 4,
+	},
+	DB_POOL_ACQUIRE_MS: {
+		message: 'Pool acquire timeout (ms)',
+		optional: true,
+		default: 30000,
+	},
+	DB_POOL_IDLE_MS: {
+		message: 'Connection idle timeout (ms)',
+		optional: true,
+		default: 10000,
+	},
+	DB_POOL_EVICT_MS: {
+		message: 'Pool eviction interval (ms)',
+		optional: true,
+		default: 1000,
+	},
+	PG_STATEMENT_TIMEOUT_MS: {
+		message: 'Max query execution time (ms)',
+		optional: true,
+		default: 30000,
+	},
+	PG_IDLE_TX_TIMEOUT_MS: {
+		message: 'Idle transaction timeout (ms)',
+		optional: true,
+		default: 15000,
+	},
+}
 let enviromentVariables = {
 	APPLICATION_PORT: {
 		message: 'Required port no',
@@ -27,8 +64,9 @@ let enviromentVariables = {
 	APP_NAME: {
 		message: 'Application Name',
 		optional: true,
-		default: 'MentorED',
+		default: 'MentorED-User-Service',
 	},
+	...databaseEnvironmentVariables,
 	REGISTRATION_EMAIL_TEMPLATE_CODE: {
 		message: 'Required registration email template code',
 		optional: true,
