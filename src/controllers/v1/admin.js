@@ -39,6 +39,49 @@ module.exports = class Admin {
 	}
 
 	/**
+	 * Assigns a role to a user.
+	 *
+	 * Extracts `organization_code` and `tenant_code` from `req.decodedToken`
+	 * instead of the request body and delegates the actual role assignment
+	 * to the service layer. Performs only an admin-access check.
+	 *
+	 * @async
+	 * @function assignRole
+	 * @param {import('express').Request} req - Express request object
+	 * @param {Object} req.decodedToken - Decoded JWT payload
+	 * @param {string} req.decodedToken.organization_code - Organization code from token
+	 * @param {string} req.decodedToken.tenant_code - Tenant code from token
+	 * @param {Object} req.body - Request body containing assignment data
+	 * @param {number|string} req.body.user_id - Target user ID
+	 * @param {number|string} req.body.role_id - Role ID to assign
+	 * @param {number|string} [req.body.organization_id] - Optional organization ID
+	 * @returns {Promise<Object>} Service response object
+	 */
+
+	async assignRole(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const params = {
+				organization_code: req.decodedToken.organization_code,
+				tenant_code: req.decodedToken.tenant_code,
+			}
+
+			// Pass token-derived params separately per new service pattern
+			const user = await adminService.assignRole(params, req.body)
+			return user
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
 	 * create admin users
 	 * @method
 	 * @name create

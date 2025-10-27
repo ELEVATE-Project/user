@@ -31,7 +31,7 @@ module.exports = class Organization {
 			let isAdmin = false
 			const roles = req.decodedToken.roles
 			if (roles && roles.length > 0) {
-				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
+				isAdmin = utilsHelper.validateRoleAccess(roles, [common.ADMIN_ROLE, common.TENANT_ADMIN_ROLE])
 			}
 
 			if (!isAdmin) {
@@ -68,7 +68,7 @@ module.exports = class Organization {
 
 			if (roles && roles.length > 0) {
 				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
-				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, [common.ORG_ADMIN_ROLE, common.TENANT_ADMIN_ROLE])
 			}
 
 			if (req.params.id != req.decodedToken.organization_id && isOrgAdmin) {
@@ -170,6 +170,7 @@ module.exports = class Organization {
 				isAdmin =
 					utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE) ||
 					utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE) ||
+					utilsHelper.validateRoleAccess(roles, common.TENANT_ADMIN_ROLE) ||
 					false
 			}
 			const result = await orgService.details(
@@ -215,7 +216,7 @@ module.exports = class Organization {
 
 			if (roles && roles.length > 0) {
 				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
-				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, [common.ORG_ADMIN_ROLE, common.TENANT_ADMIN_ROLE])
 			}
 			if (!isAdmin && !isOrgAdmin) {
 				throw responses.failureResponse({
@@ -260,7 +261,7 @@ module.exports = class Organization {
 
 			if (roles && roles.length > 0) {
 				isAdmin = utilsHelper.validateRoleAccess(roles, common.ADMIN_ROLE)
-				isOrgAdmin = utilsHelper.validateRoleAccess(roles, common.ORG_ADMIN_ROLE)
+				isOrgAdmin = utilsHelper.validateRoleAccess(roles, [common.ORG_ADMIN_ROLE, common.TENANT_ADMIN_ROLE])
 			}
 			if (!isAdmin && !isOrgAdmin) {
 				throw responses.failureResponse({
