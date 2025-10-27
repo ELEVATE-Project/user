@@ -861,10 +861,10 @@ module.exports = class UserInviteHelper {
 										  )
 										: {} // fetch the user with organization and roles if any of the critical fields are updated
 							userFetch = userFetch?.[0] || {}
+							oldValues.organizations = existingUser.organizations
 
 							// if org or role is updated assign the old and new values
 							if (isOrgUpdate || isRoleUpdated) {
-								oldValues.organizations = existingUser.organizations
 								newValues.organizations = userFetch?.organizations
 							}
 							// if any keys are modified in user table or additional csv headers are present prepare the new values
@@ -915,7 +915,7 @@ module.exports = class UserInviteHelper {
 							if (oldValues?.phone) {
 								oldValues.phone = emailEncryption.decrypt(oldValues.phone)
 							}
-							if (Object.keys(oldValues).length > 0 || Object.keys(newValues).length > 0) {
+							if (Object.keys(newValues).length > 0) {
 								const eventBody = eventBodyDTO({
 									entity: 'user',
 									eventType: 'bulk-update',
