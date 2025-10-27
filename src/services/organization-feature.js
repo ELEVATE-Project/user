@@ -111,6 +111,7 @@ module.exports = class organizationFeatureHelper {
 
 				const validRoleTitles = validRoles.map((role) => role.title)
 				if (validRoleTitles.length === 0 || validRoleTitles.length !== bodyData?.roles?.length) {
+					await transaction.rollback()
 					return responses.failureResponse({
 						message: 'ROLE_NOT_FOUND',
 						statusCode: httpStatusCode.bad_request,
@@ -349,6 +350,9 @@ module.exports = class organizationFeatureHelper {
 						organizationFeatures = organizationFeatures.filter((feature) =>
 							accessibleFeatureCodes.has(feature.feature_code)
 						)
+					} else {
+						// No role mappings found - restrict to empty set for security
+						organizationFeatures = []
 					}
 				}
 			}
