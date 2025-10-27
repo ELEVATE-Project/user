@@ -64,7 +64,7 @@ let enviromentVariables = {
 	APP_NAME: {
 		message: 'Application Name',
 		optional: true,
-		default: 'MentorED-User-Service',
+		default: 'MentorED',
 	},
 	...databaseEnvironmentVariables,
 	REGISTRATION_EMAIL_TEMPLATE_CODE: {
