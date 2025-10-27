@@ -6,17 +6,17 @@ const databaseEnvironmentVariables = {
 	DB_POOL_MAX: {
 		message: 'Max connections per Sequelize pool',
 		optional: true,
-		default: 20,
+		default: 10,
 	},
 	DB_POOL_MIN: {
 		message: 'Min connections per Sequelize pool',
 		optional: true,
-		default: 4,
+		default: 2,
 	},
 	DB_POOL_ACQUIRE_MS: {
 		message: 'Pool acquire timeout (ms)',
 		optional: true,
-		default: 30000,
+		default: 60000,
 	},
 	DB_POOL_IDLE_MS: {
 		message: 'Connection idle timeout (ms)',
@@ -31,12 +31,12 @@ const databaseEnvironmentVariables = {
 	PG_STATEMENT_TIMEOUT_MS: {
 		message: 'Max query execution time (ms)',
 		optional: true,
-		default: 30000,
+		default: 0,
 	},
 	PG_IDLE_TX_TIMEOUT_MS: {
 		message: 'Idle transaction timeout (ms)',
 		optional: true,
-		default: 15000,
+		default: 0,
 	},
 }
 let enviromentVariables = {
