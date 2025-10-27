@@ -43,6 +43,7 @@ module.exports = {
 	ADMIN_ROLE: 'admin',
 	TENANT_ADMIN_ROLE: 'tenant_admin',
 	ORG_ADMIN_ROLE: 'org_admin',
+	TENANT_ADMIN_ROLE: 'tenant_admin',
 	USER_ROLE: 'user',
 	SESSION_MANAGER_ROLE: 'session_manager',
 	PUBLIC_ROLE: 'public',

@@ -1,5 +1,7 @@
 'use strict'
 const OrganizationFeature = require('@database/models/index').OrganizationFeature
+const FeatureRoleMapping = require('@database/models/index').FeatureRoleMapping
+const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
@@ -43,6 +45,30 @@ exports.findAllOrganizationFeature = async (filter, options = {}) => {
 			where: filter,
 			...options,
 			raw: true,
+		})
+		return organizationFeature
+	} catch (error) {
+		return error
+	}
+}
+
+exports.findAllFeatureWithRoleMappings = async (filter, options = {}, roleTitles = []) => {
+	try {
+		const organizationFeature = await OrganizationFeature.findAll({
+			where: filter,
+			...options,
+			include: [
+				{
+					model: FeatureRoleMapping,
+					as: 'roleMappings',
+					...(roleTitles?.length > 0 && {
+						where: { role_title: { [Op.in]: roleTitles } },
+					}),
+					required: false,
+				},
+			],
+			raw: false,
+			nest: true,
 		})
 		return organizationFeature
 	} catch (error) {
