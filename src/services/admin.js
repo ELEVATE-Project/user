@@ -174,21 +174,26 @@ module.exports = class AdminHelper {
 			// Post-assignment operations (best-effort)
 			try {
 				const updatedUser = await userQueries.findUserWithOrganization({ id: user_id, tenant_code })
-				const newValues = utils.extractDelta(user, updatedUser)
 
-				if (user?.email) {
-					user.email = emailEncryption.decrypt(user?.email)
+				// Decrypt email/phone for event payload
+				const decryptedOldUser = {
+					...(user.toJSON?.() || user),
+					email: user?.email ? emailEncryption.decrypt(user.email) : user?.email,
+					phone: user?.phone ? emailEncryption.decrypt(user.phone) : user?.phone,
+				}
+				const decryptedNewUser = {
+					...(updatedUser.toJSON?.() || updatedUser),
+					email: updatedUser?.email ? emailEncryption.decrypt(updatedUser.email) : updatedUser?.email,
+					phone: updatedUser?.phone ? emailEncryption.decrypt(updatedUser.phone) : updatedUser?.phone,
 				}
 
-				if (user?.phone) {
-					user.phone = emailEncryption.decrypt(user?.phone)
-				}
+				const newValues = utils.extractDelta(decryptedOldUser, decryptedNewUser)
 
 				const eventBody = eventBodyDTO({
 					entity: 'user',
 					eventType: 'update',
 					entityId: user.id,
-					oldValues: user,
+					oldValues: decryptedOldUser,
 					newValues,
 					args: { created_at: updatedUser.created_at, updated_at: updatedUser.updated_at },
 				})
