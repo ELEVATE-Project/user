@@ -176,6 +176,14 @@ module.exports = class AdminHelper {
 				const updatedUser = await userQueries.findUserWithOrganization({ id: user_id, tenant_code })
 				const newValues = utils.extractDelta(user, updatedUser)
 
+				if (user?.email) {
+					user.email = emailEncryption.decrypt(user?.email)
+				}
+
+				if (user?.phone) {
+					user.phone = emailEncryption.decrypt(user?.phone)
+				}
+
 				const eventBody = eventBodyDTO({
 					entity: 'user',
 					eventType: 'update',
