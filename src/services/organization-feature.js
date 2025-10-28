@@ -334,17 +334,13 @@ module.exports = class organizationFeatureHelper {
 						// For each role, determine accessible features
 						// If role has mappings in current org, use those; otherwise use default org mappings
 						const accessibleFeatureCodes = new Set()
-						roleTitles.forEach((role) => {
-							const currentOrgFeatures = currentOrgRoleFeatureMap.get(role)
-							if (currentOrgFeatures?.size > 0) {
-								// Current org has explicit mappings for this role - use only those
-								currentOrgFeatures.forEach((feature) => accessibleFeatureCodes.add(feature))
-							} else {
-								// No current org mappings for this role - fall back to default org
-								const defaultOrgFeatures = defaultOrgRoleFeatureMap.get(role)
-								defaultOrgFeatures?.forEach((feature) => accessibleFeatureCodes.add(feature))
-							}
-						})
+
+						for (const role of roleTitles) {
+							const defSet = defaultOrgRoleFeatureMap.get(role)
+							const curSet = currentOrgRoleFeatureMap.get(role)
+							defSet?.forEach((code) => accessibleFeatureCodes.add(code))
+							curSet?.forEach((code) => accessibleFeatureCodes.add(code))
+						}
 
 						// Filter to only accessible features
 						organizationFeatures = organizationFeatures.filter((feature) =>
