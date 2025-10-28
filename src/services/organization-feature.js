@@ -332,7 +332,7 @@ module.exports = class organizationFeatureHelper {
 						})
 
 						// For each role, determine accessible features
-						// If role has mappings in current org, use those; otherwise use default org mappings
+						// Union features from both default org and current org role mappings
 						const accessibleFeatureCodes = new Set()
 
 						for (const role of roleTitles) {
