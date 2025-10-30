@@ -511,6 +511,11 @@ let enviromentVariables = {
 		optional: true,
 		default: 'x-tenant-code',
 	},
+	SERVICE_NAME: {
+		message: 'Required SERVICE_NAME',
+		optional: true,
+		default: 'UserService',
+	},
 }
 let success = true
 
