@@ -38,15 +38,20 @@ jobs:
 
     - name: Get Docker tag version
       id: get-version
+      shell: bash
       run: |
-        # Safely assign without evaluating input
-        echo "version=${{ github.event.inputs.tag_version }}" | tr -d '\r' > safe_output.txt
-        VERSION=$(cat safe_output.txt)
+        VERSION="${{ github.event.inputs.tag_version }}"
         if [ -z "$VERSION" ]; then
           echo "Error: tag_version input required"
           exit 1
         fi
-        # Write to GITHUB_OUTPUT securely
+        # Strip leading "v" if present
+        VERSION="${VERSION#v}"
+        # Optional: enforce x.y.z
+        if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
+          echo "Error: tag_version must look like 3.3.23"
+          exit 1
+        fi
         printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
 
 
