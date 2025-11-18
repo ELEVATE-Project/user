@@ -31,7 +31,50 @@ module.exports = class Admin {
 				})
 			}
 
-			const user = await adminService.deleteUser(req.params.id)
+			const user = await adminService.deleteUser(req.params.id, req.decodedToken.id)
+			return user
+		} catch (error) {
+			return error
+		}
+	}
+
+	/**
+	 * Assigns a role to a user.
+	 *
+	 * Extracts `organization_code` and `tenant_code` from `req.decodedToken`
+	 * instead of the request body and delegates the actual role assignment
+	 * to the service layer. Performs only an admin-access check.
+	 *
+	 * @async
+	 * @function assignRole
+	 * @param {import('express').Request} req - Express request object
+	 * @param {Object} req.decodedToken - Decoded JWT payload
+	 * @param {string} req.decodedToken.organization_code - Organization code from token
+	 * @param {string} req.decodedToken.tenant_code - Tenant code from token
+	 * @param {Object} req.body - Request body containing assignment data
+	 * @param {number|string} req.body.user_id - Target user ID
+	 * @param {number|string} req.body.role_id - Role ID to assign
+	 * @param {number|string} [req.body.organization_id] - Optional organization ID
+	 * @returns {Promise<Object>} Service response object
+	 */
+
+	async assignRole(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const params = {
+				organization_code: req.decodedToken.organization_code,
+				tenant_code: req.decodedToken.tenant_code,
+			}
+
+			// Pass token-derived params separately per new service pattern
+			const user = await adminService.assignRole(params, req.body)
 			return user
 		} catch (error) {
 			return error
@@ -105,12 +148,13 @@ module.exports = class Admin {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-
 			const orgAdminCreation = await adminService.addOrgAdmin(
 				req.body?.user_id,
 				req.body.organization_id,
 				req.decodedToken.id,
-				req.body?.email
+				req.body?.identifier,
+				req.headers?.[common.TENANT_CODE_HEADER],
+				req.body?.phone_code
 			)
 			return orgAdminCreation
 		} catch (error) {
@@ -119,12 +163,28 @@ module.exports = class Admin {
 	}
 
 	/**
-	 * Deactivate Org
-	 * @method
-	 * @name deactivateOrg
-	 * @param {String} req.params.id - org Id.
-	 * @returns {JSON} - deactivated org response
+	 * Deactivate an organization by its ID.
+	 *
+	 * Validates that the requesting user has admin access before deactivating
+	 * the specified organization and all associated users.
+	 *
+	 * @async
+	 * @method deactivateOrg
+	 * @param {Object} req - Express request object.
+	 * @param {string} req.params.id - The unique identifier (ID or code) of the organization to deactivate.
+	 * @param {Object} req.decodedToken - Decoded JWT token of the authenticated user.
+	 * @param {string[]} req.decodedToken.roles - Roles assigned to the logged-in user.
+	 * @param {number} req.decodedToken.id - ID of the logged-in user.
+	 * @param {Object} req.headers - HTTP request headers.
+	 * @param {string} req.headers.tenant-id - Tenant code associated with the request.
+	 * @returns {Promise<Object>} Response object from `adminService.deactivateOrg`,
+	 * containing status, message, and deactivated user count.
+	 *
+	 * @throws {Object} Failure response if:
+	 *  - The user is not an admin.
+	 *  - The organization cannot be deactivated.
 	 */
+
 	async deactivateOrg(req) {
 		try {
 			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
@@ -135,7 +195,11 @@ module.exports = class Admin {
 				})
 			}
 
-			const result = await adminService.deactivateOrg(req.params.id, req.decodedToken.id)
+			const result = await adminService.deactivateOrg(
+				req.params.id,
+				req.headers?.[common.TENANT_CODE_HEADER],
+				req.decodedToken.id
+			)
 			return result
 		} catch (error) {
 			return error
@@ -175,6 +239,36 @@ module.exports = class Admin {
 		}
 	}
 
+	/**
+	 * Execute raw SELECT query with pagination
+	 * @method
+	 * @name executeRawQuery
+	 * @param {Object} req - Request object containing query in body and pagination params
+	 * @param {String} req.body.query - Raw SQL SELECT query
+	 * @param {Number} req.pageNo - Page number
+	 * @param {Number} req.pageSize - Page size limit
+	 * @returns {JSON} - Paginated query results
+	 */
+	async executeRawQuery(req) {
+		try {
+			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ADMIN_ROLE)) {
+				throw responses.failureResponse({
+					message: 'USER_IS_NOT_A_ADMIN',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			const { query } = req.body
+
+			const pageNo = req.pageNo
+			const pageSize = req.pageSize
+
+			return await adminService.executeRawQuery(query, req.decodedToken.id, pageNo, pageSize)
+		} catch (error) {
+			return error
+		}
+	}
 	async triggerViewRebuild(req) {
 		try {
 			if (!req.decodedToken.roles.some((role) => role.title === common.ADMIN_ROLE)) {

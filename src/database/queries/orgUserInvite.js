@@ -1,10 +1,12 @@
 'use strict'
-const organizationUserInvite = require('../models/index').OrganizationUserInvite
+const OrganizationUserInvite = require('../models/index').OrganizationUserInvite
 const { ValidationError } = require('sequelize')
+const Invitation = require('../models/index').Invitation
+const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
-		const createData = await organizationUserInvite.create(data)
+		const createData = await OrganizationUserInvite.create(data)
 		const result = createData.get({ plain: true })
 		return result
 	} catch (error) {
@@ -22,7 +24,7 @@ exports.create = async (data) => {
 
 exports.update = async (filter, update, options) => {
 	try {
-		const [res] = await organizationUserInvite.update(update, {
+		const [res] = await OrganizationUserInvite.update(update, {
 			where: filter,
 			...options,
 			individualHooks: true,
@@ -35,19 +37,44 @@ exports.update = async (filter, update, options) => {
 
 exports.findOne = async (filter, options = {}) => {
 	try {
-		return await organizationUserInvite.findOne({
-			where: filter,
+		const include = [
+			{
+				model: Invitation,
+				as: 'invitation',
+				where: {
+					tenant_code: filter.tenant_code, // Ensure JOIN respects distribution key
+					...(options.isValid && {
+						valid_till: {
+							[Op.gte]: new Date(),
+						},
+					}),
+					deleted_at: null, // Explicitly filter out soft-deleted records
+				},
+				required: true,
+			},
+		]
+
+		delete options.isValid
+
+		return await OrganizationUserInvite.findOne({
+			where: {
+				...filter,
+				deleted_at: null, // Ensure soft-deleted records are excluded
+			},
 			...options,
+			include,
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		// Log the error for debugging (use your preferred logging library)
+		console.error('Error in findOne query:', error.message)
+		throw error // Re-throw to let the service handle it
 	}
 }
 
 exports.deleteOne = async (id, options = {}) => {
 	try {
-		const result = await organizationUserInvite.destroy({
+		const result = await OrganizationUserInvite.destroy({
 			where: { id: id },
 			...options,
 		})
@@ -59,9 +86,27 @@ exports.deleteOne = async (id, options = {}) => {
 
 exports.findAll = async (filter, options = {}) => {
 	try {
-		return await organizationUserInvite.findAll({
+		const include = [
+			{
+				model: Invitation,
+				as: 'invitation',
+				where: {
+					tenant_code: filter.tenant_code, // Ensure JOIN respects distribution key
+					...(options.isValid && {
+						valid_till: {
+							[Op.gte]: new Date(),
+						},
+					}),
+					deleted_at: null, // Explicitly filter out soft-deleted records
+				},
+				required: true,
+			},
+		]
+		delete options.isValid
+		return await OrganizationUserInvite.findAll({
 			where: filter,
 			...options,
+			include,
 			raw: true,
 		})
 	} catch (error) {

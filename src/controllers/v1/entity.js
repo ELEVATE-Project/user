@@ -19,7 +19,12 @@ module.exports = class Entity {
 
 	async create(req) {
 		try {
-			const createdEntity = await entityService.create(req.body, req.decodedToken.id, req.decodedToken.roles)
+			const createdEntity = await entityService.create(
+				req.body,
+				req.decodedToken.id,
+				req.decodedToken.tenant_code,
+				req.decodedToken.organization_code
+			)
 			return createdEntity
 		} catch (error) {
 			return error
@@ -40,7 +45,8 @@ module.exports = class Entity {
 				req.body,
 				req.params.id,
 				req.decodedToken.id,
-				req.decodedToken.roles
+				req.decodedToken.organization_code,
+				req.decodedToken.tenant_code
 			)
 			return updatedEntity
 		} catch (error) {
@@ -59,9 +65,8 @@ module.exports = class Entity {
 	async read(req) {
 		try {
 			if (req.query.id || req.query.value) {
-				return await entityService.read(req.query, req.decodedToken.id)
+				return await entityService.read(req.query, req.decodedToken.tenant_code)
 			}
-			return await entityService.readAll(req.query, null)
 		} catch (error) {
 			return error
 		}
@@ -77,7 +82,11 @@ module.exports = class Entity {
 
 	async delete(req) {
 		try {
-			const updatedEntity = await entityService.delete(req.params.id, req.decodedToken.id)
+			const updatedEntity = await entityService.delete(
+				req.params.id,
+				req.decodedToken.organization_code,
+				req.decodedToken.tenant_code
+			)
 			return updatedEntity
 		} catch (error) {
 			return error

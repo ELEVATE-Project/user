@@ -14,19 +14,30 @@ module.exports = (sequelize, DataTypes) => {
 			label: { type: DataTypes.STRING, allowNull: false },
 			status: { type: DataTypes.STRING, allowNull: false, defaultValue: 'ACTIVE' },
 			type: { type: DataTypes.STRING },
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			organization_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
 			created_by: { type: DataTypes.INTEGER, allowNull: true },
 			updated_by: { type: DataTypes.INTEGER, allowNull: true },
 		},
 		{ sequelize, modelName: 'Entity', tableName: 'entities', freezeTableName: true, paranoid: true }
 	)
-	/* 	Entity.associate = (models) => {
+
+	Entity.associate = (models) => {
 		Entity.belongsTo(models.EntityType, {
 			foreignKey: 'entity_type_id',
 			as: 'entity_type',
+			targetKey: 'id',
 			scope: {
 				deleted_at: null, // Only associate with active EntityType records
 			},
 		})
-	} */
+	}
+
 	return Entity
 }

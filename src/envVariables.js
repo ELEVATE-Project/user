@@ -2,6 +2,43 @@ let table = require('cli-table')
 
 let tableData = new table()
 
+const databaseEnvironmentVariables = {
+	DB_POOL_MAX: {
+		message: 'Max connections per Sequelize pool',
+		optional: true,
+		default: 10,
+	},
+	DB_POOL_MIN: {
+		message: 'Min connections per Sequelize pool',
+		optional: true,
+		default: 2,
+	},
+	DB_POOL_ACQUIRE_MS: {
+		message: 'Pool acquire timeout (ms)',
+		optional: true,
+		default: 60000,
+	},
+	DB_POOL_IDLE_MS: {
+		message: 'Connection idle timeout (ms)',
+		optional: true,
+		default: 10000,
+	},
+	DB_POOL_EVICT_MS: {
+		message: 'Pool eviction interval (ms)',
+		optional: true,
+		default: 1000,
+	},
+	PG_STATEMENT_TIMEOUT_MS: {
+		message: 'Max query execution time (ms)',
+		optional: true,
+		default: 0,
+	},
+	PG_IDLE_TX_TIMEOUT_MS: {
+		message: 'Idle transaction timeout (ms)',
+		optional: true,
+		default: 0,
+	},
+}
 let enviromentVariables = {
 	APPLICATION_PORT: {
 		message: 'Required port no',
@@ -29,6 +66,7 @@ let enviromentVariables = {
 		optional: true,
 		default: 'MentorED',
 	},
+	...databaseEnvironmentVariables,
 	REGISTRATION_EMAIL_TEMPLATE_CODE: {
 		message: 'Required registration email template code',
 		optional: true,
@@ -99,7 +137,7 @@ let enviromentVariables = {
 	DEFAULT_ORGANISATION_CODE: {
 		message: 'Required default organisation code',
 		optional: true,
-		default: 'default_code',
+		default: 'default',
 	},
 	MENTORING_SERVICE_URL: {
 		message: 'Required Mentoring Service Url',
@@ -109,6 +147,11 @@ let enviromentVariables = {
 		message: 'Required admin upload invitee email template code',
 		optional: true,
 		default: 'invitee_upload_status',
+	},
+	ADMIN_INVITEE_UPLOAD_ERROR_EMAIL_TEMPLATE_CODE: {
+		message: 'Required admin upload invitee error email template code',
+		optional: true,
+		default: 'invitee_upload_error',
 	},
 	DEFAULT_QUEUE: {
 		message: 'Required default queue',
@@ -198,13 +241,13 @@ let enviromentVariables = {
 	PASSWORD_POLICY_REGEX: {
 		message: 'Required password policy',
 		optional: true,
-		default: '^(?=(?:.*[A-Z]){2})(?=(?:.*[0-9]){2})(?=(?:.*[!@#%$&()\\-`.+,]){3}).{11,}$',
+		default: '^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[~!@#$%^&*()_+`\\-={}"\';<>?,./\\\\]).{8,}$',
 	},
 	PASSWORD_POLICY_MESSAGE: {
 		message: 'Required password policy message',
 		optional: true,
 		default:
-			'Password must have at least one uppercase letter, one number, one special character, and be at least 10 characters long',
+			'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character',
 	},
 	DOWNLOAD_URL_EXPIRATION_DURATION: {
 		message: 'Required downloadable url expiration time',
@@ -220,6 +263,11 @@ let enviromentVariables = {
 		message: 'Required change password email template code',
 		optional: true,
 		default: 'change_password',
+	},
+	BULK_CREATE_TEMPLATE_CODE: {
+		message: 'Required bulk create email template code',
+		optional: true,
+		default: 'bulk_user_create',
 	},
 	CAPTCHA_ENABLE: {
 		message: 'Required CAPTCHA ENABLE true or false',
@@ -332,9 +380,9 @@ let enviromentVariables = {
 		default: 'emailotp',
 	},
 	OTP_EXP_TIME: {
-		message: 'Require otp expire time',
+		message: 'Require otp expire time in seconds',
 		optional: true,
-		default: 86400,
+		default: 300,
 	},
 	RATING_KAFKA_TOPIC: {
 		message: 'Require kafka topic for rating',
@@ -346,8 +394,124 @@ let enviromentVariables = {
 		optional: true,
 		default: 120000,
 	},
+	DEFAULT_TENANT_CODE: {
+		message: 'Require default tenant code',
+		optional: true,
+		default: 'default',
+	},
+	ENTITY_MANAGEMENT_SERVICE_BASE_URL: {
+		message: 'Require entity management base url',
+		optional: false,
+	},
+	IS_AUTH_TOKEN_BEARER: {
+		message: 'Required specification: If auth token is bearer or not',
+		optional: true,
+		default: true,
+	},
+	NOTIFICATION_MODE: {
+		message: 'If its kafka or API',
+		optional: true,
+		default: 'kafka',
+	},
+	NOTIFICATION_API_URL: {
+		message: 'URL for notification service',
+		optional: process.env.NOTIFICATION_MODE === 'API' ? false : true,
+	},
+	EVENT_ENABLE_USER_EVENTS: {
+		message: 'Key to toggle user creation API event',
+		optional: true,
+	},
+	EVENT_USER_LISTENER_API: {
+		message: 'URL for User creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_USER_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_ENABLE_KAFKA_PUSH: {
+		message: 'Key to toggle user creation kafka event',
+		optional: true,
+	},
+	EVENT_ENABLE_USER_KAFKA_EVENTS: {
+		message: 'Key to toggle user creation kafka event',
+		optional: true,
+	},
+	EVENT_USER_KAFKA_TOPIC: {
+		message: 'Kafka topic for User creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_USER_KAFKA_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	DEFAULT_PHONE_CODE: {
+		message: 'Set Default Phone Code',
+		optional: true,
+		default: '+91',
+	},
+	KAFKA_HEALTH_CHECK_TOPIC: {
+		message: 'Required KAFKA_HEALTH_CHECK_TOPIC',
+		optional: true,
+		default: 'user-health-check-topic-check',
+	},
+	EVENT_ENABLE_TENANT_EVENTS: {
+		message: 'Key to toggle tenant creation api event',
+		optional: true,
+	},
+	EVENT_ENABLE_TENANT_KAFKA_EVENTS: {
+		message: 'Key to toggle tenant creation kafka event',
+		optional: true,
+	},
+	EVENT_TENANT_KAFKA_TOPIC: {
+		message: 'Kafka topic for Tenant creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_TENANT_KAFKA_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_TENANT_LISTENER_API: {
+		message: 'URL for Tenant creation Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_TENANT_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	EVENT_ENABLE_ORG_KAFKA_EVENTS: {
+		message: 'Key to toggle organization creation kafka event',
+		optional: true,
+	},
+	EVENT_ORGANIZATION_KAFKA_TOPIC: {
+		message: 'Kafka topic for organization create/update Event',
+		optional: true,
+		requiredIf: {
+			key: 'EVENT_ENABLE_ORG_KAFKA_EVENTS',
+			operator: 'EQUALS',
+			value: 'true',
+		},
+	},
+	ORG_ID_HEADER_NAME: {
+		message: 'Required ORG_ID_HEADER_NAME',
+		optional: true,
+		default: 'x-org-id',
+	},
+	ORG_CODE_HEADER_NAME: {
+		message: 'Required ORG_CODE_HEADER_NAME',
+		optional: true,
+		default: 'x-org-code',
+	},
+	TENANT_CODE_HEADER_NAME: {
+		message: 'Required TENANT_CODE_HEADER_NAME',
+		optional: true,
+		default: 'x-tenant-code',
+	},
 }
-
 let success = true
 
 module.exports = function () {
@@ -357,6 +521,7 @@ module.exports = function () {
 		}
 
 		let keyCheckPass = true
+		let validRequiredIfOperators = ['EQUALS', 'NOT_EQUALS']
 
 		if (
 			enviromentVariables[eachEnvironmentVariable].optional === true &&

@@ -27,7 +27,7 @@ module.exports = class UserSessionsHelper {
 	 * @throws {Error} - Throws an error if any issue occurs during the process.
 	 */
 
-	static async createUserSession(userId, refreshToken = '', accessToken = '', deviceInfo) {
+	static async createUserSession(userId, refreshToken = '', accessToken = '', deviceInfo, tenantCode) {
 		try {
 			/**
 			 * data for user-session creation
@@ -36,11 +36,12 @@ module.exports = class UserSessionsHelper {
 				user_id: userId,
 				device_info: deviceInfo,
 				started_at: Math.floor(new Date().getTime() / 1000),
+				tenant_code: tenantCode,
 			}
 			if (accessToken !== '') {
 				userSessionDetails.token = accessToken
 			}
-			if (accessToken !== '') {
+			if (refreshToken !== '') {
 				userSessionDetails.refresh_token = refreshToken
 			}
 
@@ -246,20 +247,27 @@ module.exports = class UserSessionsHelper {
 			responseCode: 'UNAUTHORIZED',
 		})
 
-		const tokenArray = token.split(' ')
+		let tokenExtracted
+		if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+			const [authType, extractedToken] = token.split(' ')
+			if (authType.toLowerCase() !== 'bearer') throw unAuthorizedResponse()
+			tokenExtracted = extractedToken.trim()
+		} else tokenExtracted = token.trim()
 
-		// If not bearer throw error
-		if (tokenArray[0] !== 'bearer') {
-			throw unAuthorizedResponse
-		}
+		// const tokenArray = token.split(' ')
+
+		// // If not bearer throw error
+		// if (tokenArray[0] !== 'bearer') {
+		// 	throw unAuthorizedResponse
+		// }
 		try {
-			const decodedToken = jwt.verify(tokenArray[1], process.env.ACCESS_TOKEN_SECRET)
+			const decodedToken = jwt.verify(tokenExtracted, process.env.ACCESS_TOKEN_SECRET)
 			const sessionId = decodedToken.data.session_id.toString()
 
 			const redisData = await utilsHelper.redisGet(sessionId)
 
 			// If data is not in redis, token is invalid
-			if (!redisData || redisData.accessToken !== tokenArray[1]) {
+			if (!redisData || redisData.accessToken !== tokenExtracted) {
 				throw unAuthorizedResponse
 			}
 

@@ -26,10 +26,30 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: 'ACTIVE',
 			},
-			org_admin: DataTypes.ARRAY(DataTypes.INTEGER),
-			parent_id: DataTypes.INTEGER,
-			related_orgs: DataTypes.ARRAY(DataTypes.INTEGER),
-			in_domain_visibility: DataTypes.STRING,
+			org_admin: {
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
+			},
+			parent_id: {
+				type: DataTypes.INTEGER,
+			},
+			related_orgs: {
+				type: DataTypes.ARRAY(DataTypes.INTEGER),
+			},
+			in_domain_visibility: {
+				type: DataTypes.STRING,
+			},
+			theming: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
+			meta: {
+				type: DataTypes.JSON,
+				allowNull: true,
+			},
 			created_by: {
 				type: DataTypes.INTEGER,
 			},
@@ -37,10 +57,37 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.INTEGER,
 			},
 		},
-		{ sequelize, modelName: 'Organization', tableName: 'organizations', freezeTableName: true, paranoid: true }
+		{
+			sequelize,
+			modelName: 'Organization',
+			tableName: 'organizations',
+			freezeTableName: true,
+			paranoid: true,
+		}
 	)
-	Organization.associate = (models) => {
-		Organization.hasMany(models.User, { foreignKey: 'organization_id' }, { as: 'users' })
+
+	Organization.associate = function (models) {
+		// Existing association with UserOrganization
+		Organization.hasMany(models.UserOrganization, {
+			foreignKey: 'organization_code',
+			sourceKey: 'code',
+			as: 'user_organizations',
+		})
+
+		// New association with Tenant
+		Organization.belongsTo(models.Tenant, {
+			foreignKey: 'tenant_code',
+			targetKey: 'code',
+			as: 'tenant',
+		})
+
+		// Association with OrganizationRegistrationCode
+		Organization.hasMany(models.OrganizationRegistrationCode, {
+			foreignKey: 'organization_code',
+			sourceKey: 'code',
+			as: 'organizationRegistrationCodes',
+		})
 	}
+
 	return Organization
 }

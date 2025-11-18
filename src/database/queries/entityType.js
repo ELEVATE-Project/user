@@ -1,8 +1,5 @@
 const EntityType = require('../models/index').EntityType
 const Entity = require('../models/index').Entity
-const { Op } = require('sequelize')
-const Sequelize = require('../models/index').sequelize
-
 module.exports = class UserEntityData {
 	static async createEntityType(data) {
 		try {
@@ -24,11 +21,11 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async findAllEntityTypes(orgId, attributes, filter = {}) {
+	static async findAllEntityTypes(organizationCode, attributes, filter = {}) {
 		try {
 			const entityData = await EntityType.findAll({
 				where: {
-					organization_id: orgId,
+					organization_code: organizationCode,
 					...filter,
 				},
 				attributes,
@@ -43,29 +40,28 @@ module.exports = class UserEntityData {
 		try {
 			const entityTypes = await EntityType.findAll({
 				where: filter,
-				raw: true,
-			})
-
-			const entityTypeIds = entityTypes.map((entityType) => entityType.id)
-
-			const entities = await Entity.findAll({
-				where: { entity_type_id: entityTypeIds, status: 'ACTIVE' },
-				raw: true,
-				//attributes: { exclude: ['entity_type_id'] },
+				include: [
+					{
+						model: Entity,
+						as: 'entities',
+						where: { status: filter.status, tenant_code: filter.tenant_code }, // Ensure tenant isolation and citus compatibility
+						required: false, // LEFT JOIN to include entity types with no entities
+					},
+				],
 			})
 
 			const result = entityTypes.map((entityType) => {
-				const matchingEntities = entities.filter((entity) => entity.entity_type_id === entityType.id)
+				const plainEntityType = entityType.get({ plain: true })
 				return {
-					...entityType,
-					entities: matchingEntities,
+					...plainEntityType,
+					entities: plainEntityType.entities || [], // alias is 'entities'
 				}
 			})
 
 			return result
 		} catch (error) {
-			console.error('Error fetching data:', error)
-			throw error
+			console.error('Error fetching entity types and entities:', error)
+			throw new Error(`Failed to fetch data: ${error.message}`)
 		}
 	}
 
@@ -95,12 +91,13 @@ module.exports = class UserEntityData {
 		}
 	} */
 
-	static async updateOneEntityType(id, organizationId, update, options = {}) {
+	static async updateOneEntityType(id, organizationCode, tenantCode, update, options = {}) {
 		try {
 			return await EntityType.update(update, {
 				where: {
 					id: id,
-					organization_id: organizationId,
+					organization_code: organizationCode,
+					tenant_code: tenantCode,
 				},
 				...options,
 			})
@@ -109,12 +106,12 @@ module.exports = class UserEntityData {
 		}
 	}
 
-	static async deleteOneEntityType(id, orgId) {
+	static async deleteOneEntityType(id, organizationCode) {
 		try {
 			return await EntityType.destroy({
 				where: {
 					id: id,
-					organization_id: orgId,
+					organization_code: organizationCode,
 				},
 				individualHooks: true,
 			})
@@ -158,5 +155,20 @@ module.exports = class UserEntityData {
 		} catch (error) {
 			return error
 		}
+	}
+}
+
+exports.hardDelete = async (id) => {
+	try {
+		await EntityType.destroy({
+			where: {
+				id,
+			},
+			force: true,
+		})
+		return { success: true }
+	} catch (error) {
+		console.error(error)
+		return error
 	}
 }

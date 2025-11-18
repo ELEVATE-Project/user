@@ -7,6 +7,7 @@
 
 // Dependencies
 const formsService = require('@services/form')
+const common = require('@constants/common')
 
 module.exports = class Form {
 	/**
@@ -25,7 +26,11 @@ module.exports = class Form {
 	async create(req) {
 		const params = req.body
 		try {
-			const createdForm = await formsService.create(params, req.decodedToken.organization_id)
+			const createdForm = await formsService.create(
+				params,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return createdForm
 		} catch (error) {
 			return error
@@ -48,7 +53,12 @@ module.exports = class Form {
 	async update(req) {
 		const params = req.body
 		try {
-			const updatedForm = await formsService.update(req.params.id, params, req.decodedToken.organization_id)
+			const updatedForm = await formsService.update(
+				req.params.id,
+				params,
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
+			)
 			return updatedForm
 		} catch (error) {
 			return error
@@ -75,7 +85,25 @@ module.exports = class Form {
 				const form = await formsService.readAllFormsVersion()
 				return form
 			} else {
-				const form = await formsService.read(req.params.id, params, req.decodedToken.organization_id)
+				const host = req.headers.origin || '' // e.g., 'http://localhost:3000' or undefined
+				let domain = ''
+
+				if (host) {
+					try {
+						const url = new URL(host)
+						domain = url.hostname // e.g., 'localhost' or 'dev.elevate-mentoring.shikshalokam.org'
+					} catch (error) {
+						domain = host.split(':')[0] // Fallback: remove port if present
+					}
+				}
+
+				const form = await formsService.read(
+					req.params.id,
+					params,
+					req?.decodedToken?.organization_id || null,
+					req?.decodedToken?.tenant_code || req?.headers?.[common.TENANT_CODE_HEADER] || null,
+					domain
+				)
 				return form
 			}
 		} catch (error) {

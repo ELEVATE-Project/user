@@ -21,7 +21,12 @@ module.exports = class OrgAdmin {
 	 */
 	async bulkUserCreate(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -48,7 +53,12 @@ module.exports = class OrgAdmin {
 	 */
 	async getBulkInvitesFilesList(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -72,7 +82,12 @@ module.exports = class OrgAdmin {
 	 */
 	async getRequestDetails(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -82,7 +97,8 @@ module.exports = class OrgAdmin {
 
 			const requestDetails = await orgAdminService.getRequestDetails(
 				req.params.id,
-				req.decodedToken.organization_id
+				req.decodedToken.organization_id,
+				req.decodedToken.tenant_code
 			)
 			return requestDetails
 		} catch (error) {
@@ -101,7 +117,12 @@ module.exports = class OrgAdmin {
 	 */
 	async getRequests(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -128,7 +149,12 @@ module.exports = class OrgAdmin {
 	 */
 	async updateRequestStatus(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
@@ -152,17 +178,14 @@ module.exports = class OrgAdmin {
 	 */
 	async deactivateUser(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
-			if (!req.body.id && !req.body.email) {
-				throw responses.failureResponse({
-					message: 'EMAIL_OR_ID_REQUIRED',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
@@ -185,16 +208,22 @@ module.exports = class OrgAdmin {
 
 	async inheritEntityType(req) {
 		try {
-			if (!utilsHelper.validateRoleAccess(req.decodedToken.roles, common.ORG_ADMIN_ROLE)) {
+			if (
+				!utilsHelper.validateRoleAccess(req.decodedToken.roles, [
+					common.ORG_ADMIN_ROLE,
+					common.TENANT_ADMIN_ROLE,
+				])
+			) {
 				throw responses.failureResponse({
 					message: 'USER_IS_NOT_A_ADMIN',
 					statusCode: httpStatusCode.bad_request,
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			let entityTypeDetails = orgAdminService.inheritEntityType(
+			let entityTypeDetails = await orgAdminService.inheritEntityType(
 				req.body.entity_type_value,
 				req.body.target_entity_type_label,
+				req.decodedToken.organization_code,
 				req.decodedToken.organization_id,
 				req.decodedToken.id
 			)
@@ -230,7 +259,12 @@ module.exports = class OrgAdmin {
 				})
 			}
  */
-			const userUploadRes = await orgAdminService.bulkCreate(req.body.file_path, req.decodedToken)
+			const userUploadRes = await orgAdminService.bulkCreate(
+				req.body.file_path,
+				req.decodedToken,
+				req?.body?.editable_fields,
+				req?.body?.upload_type.toUpperCase()
+			)
 			return userUploadRes
 		} catch (error) {
 			return error

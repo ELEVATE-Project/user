@@ -1,4 +1,4 @@
-name,email,roles
-Sarah,sarah@tunerlabs.com,mentee
-John,john@tunerlabs.com,mentor
-Pradeep,pradeep@tunerlabs.com,"mentor,session_manager"
+"name","email","phone_code","phone","username","password","roles","state","district","block","cluster","school","professional_role","professional_subroles"
+"SarahB","sarahB@tunerlabs.com","+91","7012345499","sarahB_tunerlabs","Password@123","mentee",16,1603,160301,1603010007,16030100406,student,"student-preschool-class-2,student-class-1-5"
+"JohnB","johnB@tunerlabs.com","+91","7012345599","johnB_honai","Password@123","mentor",16,1603,160301,1603010007,16030100406,student,"student-preschool-class-2,student-class-1-5"
+"PradeepB","pradeepB@tunerlabs.com","+91","7012345699","pradeepB_tl","Password@123","mentor,session_manager",16,1603,160301,1603010007,16030100406,student,"student-preschool-class-2,student-class-1-5"

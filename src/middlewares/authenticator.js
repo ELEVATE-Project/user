@@ -10,12 +10,15 @@ const jwt = require('jsonwebtoken')
 const httpStatusCode = require('@generics/http-status')
 const common = require('@constants/common')
 const userQueries = require('@database/queries/users')
-const roleQueries = require('@database/queries/user-role')
+
 const rolePermissionMappingQueries = require('@database/queries/role-permission-mapping')
 const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 const utilsHelper = require('@generics/utils')
 const { verifyCaptchaToken } = require('@utils/captcha')
+const { getDomainFromRequest } = require('@utils/domain')
+const tenantDomainQueries = require('@database/queries/tenantDomain')
+const organizationQueries = require('@database/queries/organization')
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	const parts = requestPath.match(/[^/]+/g)
@@ -41,6 +44,13 @@ async function checkPermissions(roleTitle, requestPath, requestMethod) {
 	})
 	return isPermissionValid
 }
+
+const notFoundResponse = (message) =>
+	responses.failureResponse({
+		message,
+		statusCode: httpStatusCode.not_acceptable,
+		responseCode: 'CLIENT_ERROR',
+	})
 
 module.exports = async function (req, res, next) {
 	const unAuthorizedResponse = responses.failureResponse({
@@ -100,9 +110,32 @@ module.exports = async function (req, res, next) {
 						responseCode: 'UNAUTHORIZED',
 					})
 				}
+
+				const tenantFilter = {}
+				const domain = getDomainFromRequest(req)
+
+				const tenant_code = req?.headers?.[common.TENANT_CODE_HEADER] ?? null
+
+				if (domain) tenantFilter.domain = domain
+				else if (tenant_code) tenantFilter.tenant_code = tenant_code
+
+				if (Object.keys(tenantFilter).length > 0) {
+					const tenantDomain = await tenantDomainQueries.findOne(tenantFilter, {
+						attributes: ['tenant_code'],
+					})
+					if (!tenantDomain) {
+						throw notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+					}
+
+					req.body.tenant_code = tenantDomain.tenant_code
+				} else {
+					throw notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+				}
+
 				return next()
 			} catch (error) {
-				throw unAuthorizedResponse
+				if (error.message == 'UNAUTHORIZED_REQUEST') throw unAuthorizedResponse
+				throw error
 			}
 		}
 
@@ -112,17 +145,42 @@ module.exports = async function (req, res, next) {
 		//         throw responses.failureResponse({ message: apiResponses.INCORRECT_INTERNAL_ACCESS_TOKEN, statusCode: httpStatusCode.unauthorized, responseCode: 'UNAUTHORIZED' });
 		//     }
 		// }
-		const authHeaderArray = authHeader.split(' ')
-		if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+		// const authHeaderArray = authHeader.split(' ')
+		// if (authHeaderArray[0] !== 'bearer') throw unAuthorizedResponse
+
+		let token
+		if (process.env.IS_AUTH_TOKEN_BEARER === 'true') {
+			const [authType, extractedToken] = authHeader.split(' ')
+			if (authType.toLowerCase() !== 'bearer') throw unAuthorizedResponse
+			token = extractedToken.trim()
+		} else token = authHeader.trim()
+
+		let decodedToken
+		let org
 		try {
-			decodedToken = jwt.verify(authHeaderArray[1], process.env.ACCESS_TOKEN_SECRET)
+			decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
+
+			org = decodedToken.data.organizations?.[0]
+
+			const organization_id = org?.id
+			const organization_code = org?.code
+
+			decodedToken.data = {
+				id: decodedToken.data.id,
+				name: decodedToken.data.name,
+				session_id: decodedToken.data.session_id,
+				tenant_code: decodedToken.data.tenant_code,
+				organization_id,
+				organization_code,
+				roles: org.roles,
+			}
 			// Get redis key for session
 			const sessionId = decodedToken.data.session_id.toString()
 			// Get data from redis
 			const redisData = await utilsHelper.redisGet(sessionId)
 
 			// If data is not in redis, token is invalid
-			if (!redisData || redisData.accessToken !== authHeaderArray[1]) {
+			if (!redisData || redisData.accessToken !== token) {
 				throw responses.failureResponse({
 					message: 'USER_SESSION_NOT_FOUND',
 					statusCode: httpStatusCode.unauthorized,
@@ -145,12 +203,106 @@ module.exports = async function (req, res, next) {
 		}
 		if (!decodedToken) throw unAuthorizedResponse
 
-		//check for admin user
+		// Check for admin and tenant admin roles
 		let isAdmin = false
+		let isTenantAdmin = false
 		if (decodedToken.data.roles) {
-			isAdmin = decodedToken.data.roles.some((role) => role.title == common.ADMIN_ROLE)
+			isAdmin = decodedToken.data.roles.some((role) => role.title === common.ADMIN_ROLE)
+			isTenantAdmin = decodedToken.data.roles.some((role) => role.title === common.TENANT_ADMIN_ROLE)
+		}
+
+		// Handle organization override for admin and tenant admin
+		if (isAdmin || isTenantAdmin) {
+			const orgCodeHeaderName = common.ORG_CODE_HEADER
+			const tenantCodeHeaderName = common.TENANT_CODE_HEADER
+
+			const orgCode = (req.headers[orgCodeHeaderName.toLowerCase()] || '').trim()
+			const tenantCode = (req.headers[tenantCodeHeaderName.toLowerCase()] || '').trim()
+
+			const hasAnyOverrideHeader = orgCode || tenantCode
+
+			if (hasAnyOverrideHeader) {
+				// For tenant admin, always use their token's tenant_code (ignore any header value)
+				if (isTenantAdmin && !isAdmin) {
+					// Always use tenant_code from token, ignoring any header value for security
+					const effectiveTenantCode = decodedToken.data.tenant_code
+
+					if (!orgCode) {
+						throw responses.failureResponse({
+							message: {
+								key: 'ORG_CODE_REQUIRED_FOR_TENANT_ADMIN',
+								interpolation: {
+									orgCodeHeader: orgCodeHeaderName,
+								},
+							},
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					// Query the database to find the organization within tenant admin's tenant
+					const overrideOrg = await organizationQueries.findOne({
+						code: orgCode,
+						tenant_code: effectiveTenantCode,
+						status: common.ACTIVE_STATUS,
+						deleted_at: null,
+					})
+
+					if (!overrideOrg) {
+						throw responses.failureResponse({
+							message: 'INVALID_ORG_CODE_FOR_TENANT',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					// Override organization details
+					decodedToken.data.organization_id = overrideOrg.id
+					decodedToken.data.organization_code = orgCode
+					// tenant_code remains unchanged for tenant admin
+				} else if (isAdmin) {
+					// Admin logic - can override both tenant and org
+					if (!orgCode || !tenantCode) {
+						throw responses.failureResponse({
+							message: {
+								key: 'ADD_ORG_HEADER',
+								interpolation: {
+									orgCodeHeader: orgCodeHeaderName,
+									tenantCodeHeader: tenantCodeHeaderName,
+								},
+							},
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					const overrideOrg = await organizationQueries.findOne({
+						code: orgCode,
+						tenant_code: tenantCode,
+						status: common.ACTIVE_STATUS,
+						deleted_at: null,
+					})
+
+					if (!overrideOrg) {
+						throw responses.failureResponse({
+							message: 'INVALID_ORG_OR_TENANT_CODE',
+							statusCode: httpStatusCode.bad_request,
+							responseCode: 'CLIENT_ERROR',
+						})
+					}
+
+					// Override both tenant and organization details
+					decodedToken.data.tenant_code = tenantCode
+					decodedToken.data.organization_id = overrideOrg.id
+					decodedToken.data.organization_code = orgCode
+				}
+			}
+
+			req.decodedToken = decodedToken.data
+
+			// Only admin users bypass role and permission validation
+			// Tenant admins must go through permission checks
 			if (isAdmin) {
-				req.decodedToken = decodedToken.data
 				return next()
 			}
 		}
@@ -166,14 +318,11 @@ module.exports = async function (req, res, next) {
 				})
 			}
 
-			const roles = await roleQueries.findAll(
-				{ id: user.roles, status: common.ACTIVE_STATUS },
-				{ attributes: ['id', 'title', 'user_type', 'status'] }
-			)
+			const roles = org.roles
 
 			//update the token role as same as current user role
-			decodedToken.data.roles = roles
-			decodedToken.data.organization_id = user.organization_id
+			decodedToken.data.roles = roles //TODO: Update this to get roles from the user org roles table
+			//decodedToken.data.organization_id = user.organization_id
 		}
 
 		const isPermissionValid = await checkPermissions(

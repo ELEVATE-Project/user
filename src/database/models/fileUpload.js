@@ -41,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
 			updated_by: {
 				type: DataTypes.INTEGER,
 			},
+			tenant_code: {
+				type: DataTypes.STRING,
+				allowNull: false,
+			},
 		},
 		{ sequelize, modelName: 'FileUpload', tableName: 'file_uploads', freezeTableName: true, paranoid: true }
 	)

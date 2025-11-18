@@ -64,9 +64,9 @@ exports.findAllRoles = async (filter, attributes, options) => {
 	}
 }
 
-exports.updateRole = async (filter, updatedata) => {
+exports.updateRole = async (filter, updateData) => {
 	try {
-		return await UserRole.update(updatedata, {
+		return await UserRole.update(updateData, {
 			where: filter,
 			returning: true,
 		})
@@ -79,6 +79,19 @@ exports.deleteRole = async (filter) => {
 	try {
 		return await UserRole.destroy({
 			where: filter,
+			individualHooks: true,
+		})
+	} catch (error) {
+		throw error
+	}
+}
+exports.hardDelete = async (id) => {
+	try {
+		return await UserRole.destroy({
+			where: {
+				id,
+			},
+			force: true,
 			individualHooks: true,
 		})
 	} catch (error) {

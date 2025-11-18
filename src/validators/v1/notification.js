@@ -6,6 +6,7 @@
  */
 const filterRequestBody = require('../common')
 const { notification } = require('@constants/blacklistConfig')
+const common = require('@constants/common')
 module.exports = {
 	create: (req) => {
 		req.body = filterRequestBody(req.body, notification.create)
@@ -36,6 +37,14 @@ module.exports = {
 			} else {
 				req.checkQuery('code').notEmpty().withMessage('code field is empty')
 			}
+		}
+	},
+	template: (req) => {
+		if (req.method == common.GET_METHOD) {
+			req.checkQuery('type')
+				.optional({ checkFalsy: true })
+				.isIn(['sms', 'email', 'emailHeader', 'emailFooter'])
+				.withMessage('type must be either sms, email, emailHeader or emailFooter')
 		}
 	},
 }

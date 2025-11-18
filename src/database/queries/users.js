@@ -5,27 +5,29 @@ const { Op, QueryTypes } = require('sequelize')
 const Sequelize = require('@database/models/index').sequelize
 const emailEncryption = require('@utils/emailEncryption')
 const _ = require('lodash')
+const UserTransformDTO = require('@dtos/userDTO') // Path to your DTO file
 
 exports.getColumns = async () => {
 	try {
 		return await Object.keys(database.User.rawAttributes)
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 exports.getModelName = async () => {
 	try {
 		return await database.User.name
 	} catch (error) {
-		return error
+		throw error
 	}
 }
-exports.create = async (data) => {
+
+exports.create = async (data, options = {}) => {
 	try {
-		return await database.User.create(data)
+		return await database.User.create(data, options)
 	} catch (error) {
-		console.log(error)
-		return error
+		console.error(error)
+		throw error
 	}
 }
 
@@ -37,7 +39,7 @@ exports.findOne = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -49,7 +51,7 @@ exports.updateUser = async (filter, update, options = {}) => {
 			individualHooks: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -57,7 +59,7 @@ exports.findByPk = async (id) => {
 	try {
 		return await database.User.findByPk(id, { raw: true })
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -69,103 +71,219 @@ exports.findAll = async (filter, options = {}) => {
 			raw: true,
 		})
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
-exports.listUsers = async (roleId, organization_id, page, limit, search) => {
+exports.listUsers = async (roleId, organization_id, page, limit, search, tenant_code, raw = false) => {
 	try {
 		const offset = (page - 1) * limit
-		const whereClause = {}
 
+		// Build the search clause for user name
+		const userWhereClause = {}
 		if (search) {
-			whereClause.name = { [Op.iLike]: search + '%' }
+			userWhereClause.name = { [Op.iLike]: search + '%' }
 		}
 
-		if (roleId) {
-			whereClause.roles = { [Op.contains]: [roleId] }
-		}
+		// Include filters within the nested include
+		const userOrgWhereClause = {}
+		const userOrgRoleWhereClause = {}
 
 		if (organization_id) {
-			whereClause.organization_id = organization_id
+			userOrgWhereClause.organization_id = organization_id
+		}
+		if (roleId) {
+			userOrgRoleWhereClause.role_id = roleId
 		}
 
-		const filterQuery = {
-			where: whereClause,
+		// Final query using the updated schema
+		let { count, rows: users } = await database.User.findAndCountAll({
+			where: {
+				...userWhereClause,
+				tenant_code, // Ensure this is in the main where clause
+			},
 			attributes: ['id', 'name', 'about', 'image'],
 			offset: parseInt(offset, 10),
 			limit: parseInt(limit, 10),
 			order: [['name', 'ASC']],
 			include: [
 				{
-					model: Organization,
-					required: false,
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
 					where: {
-						status: 'ACTIVE',
+						...userOrgWhereClause,
+						tenant_code,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code,
+							},
+							attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							where: {
+								...userOrgRoleWhereClause,
+								tenant_code,
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									where: {
+										tenant_code,
+									},
+									attributes: ['id', 'title', 'label'],
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
+			raw: false,
+			nested: false,
+		})
+
+		if (!raw) {
+			users = UserTransformDTO.transform(users)
 		}
-
-		const { count, rows: users } = await database.User.findAndCountAll(filterQuery)
-
 		return { count, data: users }
 	} catch (error) {
+		console.error('Error in listUsers:', error)
 		throw error
 	}
 }
 
-exports.findAllUserWithOrganization = async (filter, options = {}) => {
+exports.findAllUserWithOrganization = async (filter, options = {}, tenantCode, raw = false) => {
 	try {
-		return await database.User.findAll({
+		let users = await database.User.findAll({
 			where: filter,
 			...options,
 			include: [
 				{
-					model: Organization,
-					required: false,
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
 					where: {
-						status: 'ACTIVE',
+						tenant_code: tenantCode,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code: tenantCode,
+							},
+							attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							where: {
+								tenant_code: tenantCode,
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									where: {
+										tenant_code: tenantCode,
+									},
+									attributes: ['id', 'title', 'label'],
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
+			raw: false,
+			nested: false,
 		})
+
+		if (!raw) {
+			users = UserTransformDTO.transform(users)
+		}
+		return users
 	} catch (error) {
-		return error
+		console.error('Error in findAllUserWithOrganization:', error)
+		throw error
 	}
 }
 
-exports.findUserWithOrganization = async (filter, options = {}) => {
+exports.findUserWithOrganization = async (filter, options = {}, raw = false) => {
 	try {
-		return await database.User.findOne({
-			where: filter,
+		let user = await database.User.findOne({
+			where: filter, // e.g., { id: 19, tenant_code: 'default' }
 			...options,
 			include: [
 				{
-					model: Organization,
+					model: database.UserOrganization,
+					as: 'user_organizations',
 					required: false,
+					//attributes: ['organization_code', 'tenant_code'],
 					where: {
-						status: 'ACTIVE',
+						tenant_code: filter.tenant_code,
 					},
-					attributes: ['id', 'name', 'code'],
-					as: 'organization',
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							where: {
+								status: 'ACTIVE',
+								tenant_code: filter.tenant_code,
+							},
+							//attributes: ['id', 'name', 'code'],
+							required: false,
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							attributes: ['role_id'],
+							where: {
+								tenant_code: filter.tenant_code,
+							},
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									//attributes: ['id', 'title', 'label'],
+									where: {
+										tenant_code: filter.tenant_code, // manually enforce composite FK
+									},
+									required: false,
+								},
+							],
+						},
+					],
 				},
 			],
-			raw: true,
-			nest: true,
 		})
+		if (!user) return null
+		if (!raw) {
+			user = user ? user.toJSON() : null
+			user = UserTransformDTO.transform(user) // Transform the data
+		}
+
+		return user
 	} catch (error) {
-		return error
+		console.error('Error in findUserWithOrganization:', error)
+		throw error
 	}
 }
+
 exports.listUsersFromView = async (
 	roleId,
 	organization_id,
@@ -273,6 +391,102 @@ exports.listUsersFromView = async (
 		throw error
 	}
 }
+exports.searchUsersWithOrganization = async ({
+	roleIds,
+	organization_id,
+	page,
+	limit,
+	search,
+	userIds,
+	emailIds,
+	excluded_user_ids,
+	tenantCode,
+}) => {
+	try {
+		const offset = (page - 1) * limit
+
+		// Base filter for user
+		const userWhere = {}
+
+		// Filter by userIds / exclude
+		if (userIds && Array.isArray(userIds)) {
+			userWhere.id = { [Op.in]: userIds }
+			if (excluded_user_ids && excluded_user_ids.length > 0) {
+				userWhere.id = {
+					[Op.and]: [{ [Op.in]: userIds }, { [Op.notIn]: excluded_user_ids }],
+				}
+			}
+		} else if (excluded_user_ids && excluded_user_ids.length > 0) {
+			userWhere.id = { [Op.notIn]: excluded_user_ids }
+		}
+
+		// Filter by search text or email
+		if (emailIds && emailIds.length > 0) {
+			userWhere.email = { [Op.in]: emailIds }
+		} else if (search) {
+			userWhere.name = { [Op.iLike]: `%${search}%` }
+		}
+
+		const users = await database.User.findAndCountAll({
+			where: userWhere,
+			limit: limit,
+			offset: offset,
+			order: [['name', 'ASC']],
+			include: [
+				{
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
+					where: {
+						tenant_code: tenantCode,
+						...(organization_id && { organization_id }),
+					},
+					include: [
+						{
+							model: database.Organization,
+							as: 'organization',
+							required: false,
+							where: {
+								status: 'ACTIVE',
+								tenant_code: tenantCode,
+							},
+							attributes: ['id', 'name', 'code'],
+						},
+						{
+							model: database.UserOrganizationRole,
+							as: 'roles',
+							required: roleIds && roleIds.length > 0,
+							where: {
+								tenant_code: tenantCode,
+								...(roleIds && roleIds.length > 0 && { role_id: { [Op.in]: roleIds } }),
+							},
+							attributes: ['role_id'],
+							include: [
+								{
+									model: database.UserRole,
+									as: 'role',
+									required: false,
+									where: { tenant_code: tenantCode },
+									attributes: ['id', 'title', 'label'],
+								},
+							],
+						},
+					],
+				},
+			],
+			raw: false,
+			distinct: true, // Needed for correct count when using include
+		})
+
+		return {
+			count: users.count,
+			data: users.rows,
+		}
+	} catch (error) {
+		console.error('Error in searchUsersWithOrganization:', error)
+		throw error
+	}
+}
 
 exports.changeOrganization = async (id, currentOrgId, newOrgId, updateBody = {}) => {
 	const transaction = await Sequelize.transaction()
@@ -305,6 +519,66 @@ exports.changeOrganization = async (id, currentOrgId, newOrgId, updateBody = {})
 		return newUserRow
 	} catch (error) {
 		await transaction.rollback()
+		throw error
+	}
+}
+
+/**
+ * Deactivates users within a specific organization and tenant based on the provided filter.
+ *
+ * This function:
+ * - First fetches all users matching the `filter` and ensures they belong to the given `organization_code` and `tenant_code`.
+ * - Updates the matched users' records with the given `updateData`.
+ * - Optionally returns the list of matched user records if `returnUpdatedUsers` is set to true.
+ *
+ * Note:
+ * - Users not associated with the given organization/tenant are excluded.
+ * - This function currently assumes each user belongs to only one organization in this context.
+ *
+ * @async
+ * @param {Object} filter - Sequelize-compatible filter criteria for selecting users.
+ * @param {string} organization_code - Code of the organization to scope user lookup.
+ * @param {string} tenant_code - Tenant code for further scoping the user lookup.
+ * @param {Object} updateData - Fields to update for the matched users (e.g., status, updated_by).
+ * @param {boolean} [returnUpdatedUsers=false] - Whether to return the list of matched user records.
+ *
+ * @returns {Promise<[number, Object[]]>} A tuple:
+ *  - First item: Number of rows affected by the update.
+ *  - Second item: Array of user records if `returnUpdatedUsers` is true, otherwise an empty array.
+ *
+ * @throws {Error} Throws if there is any issue during the query or update.
+ */
+
+exports.deactivateUserInOrg = async (filter, organizationCode, tenantCode, updateData, returnUpdatedUsers = false) => {
+	try {
+		const users = await database.User.findAll({
+			where: filter,
+			include: [
+				{
+					model: database.UserOrganization,
+					as: 'user_organizations',
+					required: true,
+					where: {
+						organization_code: organizationCode,
+						tenant_code: tenantCode,
+					},
+					attributes: [],
+				},
+			],
+			attributes: ['id'],
+		})
+
+		const userIds = users.map((u) => u.id)
+
+		if (userIds.length === 0) return [0, []]
+
+		const [rowsAffected] = await database.User.update(updateData, {
+			where: { id: { [Op.in]: userIds }, tenant_code: tenantCode },
+		})
+
+		return [rowsAffected, returnUpdatedUsers ? users : []]
+	} catch (error) {
+		console.error('Error in deactivateUserInOrg:', error)
 		throw error
 	}
 }

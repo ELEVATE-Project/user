@@ -8,7 +8,7 @@ exports.create = async (data) => {
 		let createdReq = await OrganizationRoleRequests.create(data)
 		return createdReq.get({ plain: true })
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -67,14 +67,14 @@ exports.requestDetails = async (filter, options = {}) => {
 
 		// Step 2: Fetch related data (requester and handler) using separate queries
 		const requester = await User.findOne({
-			where: { id: reqDetails.requester_id },
+			where: { id: reqDetails.requester_id, tenant_code: filter.tenant_code },
 			attributes: ['id', 'name'],
 			raw: true,
 		})
 
 		const handler = reqDetails.handled_by
 			? await User.findOne({
-					where: { id: reqDetails.handled_by },
+					where: { id: reqDetails.handled_by, tenant_code: filter.tenant_code },
 					attributes: ['id', 'name'],
 					raw: true,
 			  })
@@ -89,7 +89,7 @@ exports.requestDetails = async (filter, options = {}) => {
 
 		return result
 	} catch (error) {
-		return error
+		throw error
 	}
 }
 
@@ -147,12 +147,12 @@ exports.listAllRequests = async (filter, page, limit, options = {}, orgId) => {
 
 		const [requesters, handlers] = await Promise.all([
 			User.findAll({
-				where: { id: userIds, organization_id: orgId },
+				where: { id: userIds, tenant_code: filter.tenant_code },
 				attributes: ['id', 'name'],
 				raw: true,
 			}),
 			User.findAll({
-				where: { id: handlerIds, organization_id: orgId },
+				where: { id: handlerIds, tenant_code: filter.tenant_code },
 				attributes: ['id', 'name'],
 				raw: true,
 			}),
@@ -179,7 +179,7 @@ exports.listAllRequests = async (filter, page, limit, options = {}, orgId) => {
 		return transformedResult
 	} catch (error) {
 		console.log(error)
-		return error
+		throw error
 	}
 }
 

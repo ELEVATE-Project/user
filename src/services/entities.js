@@ -1,10 +1,8 @@
 // Dependencies
 const httpStatusCode = require('@generics/http-status')
-const common = require('@constants/common')
-
-const entityTypeQueries = require('@database/queries/entities')
+const entityQueries = require('@database/queries/entities')
+const entityTypeQueries = require('@database/queries/entityType')
 const { UniqueConstraintError, ForeignKeyConstraintError } = require('sequelize')
-const { Op } = require('sequelize')
 const responses = require('@helpers/responses')
 
 module.exports = class EntityHelper {
@@ -17,11 +15,15 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity created response.
 	 */
 
-	static async create(bodyData, id) {
-		bodyData.created_by = id
-		bodyData.updated_by = id
+	static async create(bodyData, userId, tenantCode, organizationCode) {
+		bodyData.created_by = userId
+		bodyData.updated_by = userId
+		bodyData.tenant_code = tenantCode
+		bodyData.organization_code = organizationCode
+
 		try {
-			const entity = await entityTypeQueries.createEntity(bodyData)
+			const entity = await entityQueries.createEntity(bodyData)
+
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'ENTITY_CREATED_SUCCESSFULLY',
@@ -35,6 +37,7 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			if (error instanceof ForeignKeyConstraintError) {
 				return responses.failureResponse({
 					message: 'ENTITY_TYPE_NOT_FOUND',
@@ -42,6 +45,7 @@ module.exports = class EntityHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
+
 			throw error
 		}
 	}
@@ -56,13 +60,19 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity updated response.
 	 */
 
-	static async update(bodyData, id, loggedInUserId) {
+	static async update(bodyData, id, loggedInUserId, organizationCode, tenantCode) {
 		bodyData.updated_by = loggedInUserId
 		try {
-			const [updateCount, updatedEntity] = await entityTypeQueries.updateOneEntity(id, bodyData, loggedInUserId, {
-				returning: true,
-				raw: true,
-			})
+			const [updateCount, updatedEntity] = await entityQueries.updateOneEntity(
+				id,
+				bodyData,
+				organizationCode,
+				tenantCode,
+				{
+					returning: true,
+					raw: true,
+				}
+			)
 
 			if (updateCount === 0) {
 				return responses.failureResponse({
@@ -96,71 +106,24 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity read response.
 	 */
 
-	static async read(query, userId) {
+	static async read(query, tenantCode) {
 		try {
 			let filter
 			if (query.id) {
 				filter = {
-					[Op.or]: [
-						{
-							id: query.id,
-							created_by: '0',
-							status: 'ACTIVE',
-						},
-						{ id: query.id, created_by: userId, status: 'ACTIVE' },
-					],
+					id: query.id,
+					status: 'ACTIVE',
+					tenant_code: tenantCode,
 				}
 			} else {
 				filter = {
-					[Op.or]: [
-						{
-							value: query.value,
-							created_by: '0',
-							status: 'ACTIVE',
-						},
-						{ value: query.value, created_by: userId, status: 'ACTIVE' },
-					],
+					value: query.value,
+					entity_type_id: query.entity_type_id,
+					tenant_code: tenantCode,
+					status: 'ACTIVE',
 				}
 			}
-			const entities = await entityTypeQueries.findAllEntities(filter)
-
-			if (!entities.length) {
-				return responses.failureResponse({
-					message: 'ENTITY_NOT_FOUND',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-			return responses.successResponse({
-				statusCode: httpStatusCode.ok,
-				message: 'ENTITY_FETCHED_SUCCESSFULLY',
-				result: entities,
-			})
-		} catch (error) {
-			throw error
-		}
-	}
-
-	static async readAll(query, userId) {
-		try {
-			let filter
-			if (query.read_user_entity == true) {
-				filter = {
-					[Op.or]: [
-						{
-							created_by: '0',
-						},
-						{
-							created_by: userId,
-						},
-					],
-				}
-			} else {
-				filter = {
-					created_by: '0',
-				}
-			}
-			const entities = await entityTypeQueries.findAllEntities(filter)
+			const entities = await entityQueries.findAllEntities(filter)
 
 			if (!entities.length) {
 				return responses.failureResponse({
@@ -187,10 +150,11 @@ module.exports = class EntityHelper {
 	 * @returns {JSON} - Entity deleted response.
 	 */
 
-	static async delete(id, userId) {
+	static async delete(id, organizationCode, tenantCode) {
 		try {
-			const deleteCount = await entityTypeQueries.deleteOneEntityType(id, userId)
-			if (deleteCount === '0') {
+			const deleteCount = await entityQueries.deleteOneEntity(id, organizationCode, tenantCode)
+
+			if (deleteCount === 0) {
 				return responses.failureResponse({
 					message: 'ENTITY_NOT_FOUND',
 					statusCode: httpStatusCode.bad_request,
@@ -227,7 +191,7 @@ module.exports = class EntityHelper {
 			}
 
 			const attributes = ['id', 'entity_type_id', 'value', 'label', 'status', 'type', 'created_by', 'created_at']
-			const entities = await entityTypeQueries.getAllEntities(filter, attributes, pageNo, pageSize, searchText)
+			const entities = await entityQueries.getAllEntities(filter, attributes, pageNo, pageSize, searchText)
 
 			if (entities.rows == 0 || entities.count == 0) {
 				return responses.failureResponse({
