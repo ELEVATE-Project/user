@@ -9,16 +9,21 @@
 const { healthCheckHandler } = require('elevate-services-health-check')
 const healthCheckConfig = require('./health.config')
 const { v1: uuidv1 } = require('uuid')
+const packageFile = require('../package.json')
 
 let health_check = async function (req, res) {
 	try {
-		const response = await healthCheckHandler(healthCheckConfig, req.query.basicCheck, req.query.serviceName)
+		const response = await healthCheckHandler(
+			healthCheckConfig,
+			req.query.basicCheck,
+			req.query.serviceName,
+			packageFile.version
+		)
 		res.status(200).json(response)
 	} catch (err) {
 		console.error('Health config validation failed:', err.message || err)
 		res.status(400).json({
 			id: 'userService.Health.API',
-			ver: '1.0',
 			ts: new Date(),
 			params: {
 				resmsgid: uuidv1(),
@@ -41,7 +46,6 @@ let healthCheckStatus = function (req, res) {
 let response = function (req, result) {
 	return {
 		id: 'User.service.Health.API',
-		ver: '1.0',
 		ts: new Date(),
 		params: {
 			resmsgid: uuidv1(),
