@@ -1,6 +1,6 @@
 {
 	"name": "com.shikshalokam.mentoring.userservice",
-	"version": "3.4",
+	"version": "3.3.24",
 	"description": "A user service for mentoring capability",
 	"main": "app.js",
 	"bin": {
