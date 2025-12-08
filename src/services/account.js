@@ -655,24 +655,22 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			// Validate tenant domain
-			const tenantDomain = await tenantDomainQueries.findOne({ domain })
-			if (!tenantDomain) {
+			// Validate tenant domain and tenant
+			const domainWithTenant = await tenantDomainQueries.findOneWithTenant({ domain })
+			if (!domainWithTenant) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
 
-			// Validate tenant
-			const tenantDetail = await tenantQueries.findOne({
-				code: tenantDomain.tenant_code,
-			})
-			if (!tenantDetail) {
+			// Validate tenant exists and is active
+			const tenantDetail = domainWithTenant.tenant
+			if (!tenantDetail || tenantDetail.status !== common.ACTIVE_STATUS) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
 			// Helper functions to detect identifier type
 			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
 			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
-			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+			// const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
 
 			const identifier = bodyData.identifier?.toLowerCase()
 			if (!identifier) {
@@ -1048,7 +1046,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const user = await userQueries.findUserWithOrganization(query, {}, tenantDomain.tenant_code)
+			const user = await userQueries.findUserWithOrganization(query, {}, tenantDetail.code)
 
 			if (!user) {
 				return responses.failureResponse({
