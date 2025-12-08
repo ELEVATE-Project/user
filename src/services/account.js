@@ -66,11 +66,6 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			// const tenantDomain = await tenantDomainQueries.findOne({ domain })
-			// if (!tenantDomain) {
-			// 	return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
-			// }
-
 			const domainWithTenant = await tenantDomainQueries.findOneWithTenant({ domain })
 			if (!domainWithTenant) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
@@ -176,13 +171,13 @@ module.exports = class AccountHelper {
 					}
 				}
 
-				// if (!isOtpValid) {
-				// 	return responses.failureResponse({
-				// 		message: 'OTP_INVALID',
-				// 		statusCode: httpStatusCode.bad_request,
-				// 		responseCode: 'CLIENT_ERROR',
-				// 	})
-				// }
+				if (!isOtpValid) {
+					return responses.failureResponse({
+						message: 'OTP_INVALID',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
 
 			bodyData.password = utilsHelper.hashPassword(bodyData.password)
@@ -564,36 +559,36 @@ module.exports = class AccountHelper {
 
 			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
-			// if (plaintextEmailId) {
-			// 	notificationUtils.sendEmailNotification({
-			// 		emailId: plaintextEmailId,
-			// 		templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
-			// 		variables: {
-			// 			name: bodyData.name,
-			// 			appName: tenantDetail.name,
-			// 			roles: roleToString || '',
-			// 			portalURL: domainWithTenant.domain,
-			// 		},
-			// 		tenantCode: tenantDetail.code,
-			// 		organization_code: user.organizations?.[0].code || null,
-			// 	})
-			// }
+			if (plaintextEmailId) {
+				notificationUtils.sendEmailNotification({
+					emailId: plaintextEmailId,
+					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+					variables: {
+						name: bodyData.name,
+						appName: tenantDetail.name,
+						roles: roleToString || '',
+						portalURL: domainWithTenant.domain,
+					},
+					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0].code || null,
+				})
+			}
 
-			// // Send SMS notification with OTP if phone is provided
-			// if (plaintextPhoneNumber) {
-			// 	notificationUtils.sendSMSNotification({
-			// 		phoneNumber: plaintextPhoneNumber,
-			// 		templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
-			// 		variables: {
-			// 			name: bodyData.name,
-			// 			appName: tenantDetail.name,
-			// 			roles: roleToString || '',
-			// 			portalURL: domainWithTenant.domain,
-			// 		},
-			// 		tenantCode: tenantDetail.code,
-			// 		organization_code: user.organizations?.[0].code || null,
-			// 	})
-			// }
+			// Send SMS notification with OTP if phone is provided
+			if (plaintextPhoneNumber) {
+				notificationUtils.sendSMSNotification({
+					phoneNumber: plaintextPhoneNumber,
+					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
+					variables: {
+						name: bodyData.name,
+						appName: tenantDetail.name,
+						roles: roleToString || '',
+						portalURL: domainWithTenant.domain,
+					},
+					tenantCode: tenantDetail.code,
+					organization_code: user.organizations?.[0].code || null,
+				})
+			}
 			result.user = await utils.processDbResponse(result.user, prunedEntities)
 			result.user.email = plaintextEmailId
 			result.user.phone = plaintextPhoneNumber
