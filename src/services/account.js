@@ -1268,26 +1268,26 @@ module.exports = class AccountHelper {
 		}
 
 		// Send email notification with OTP if email is provided
-		// if (plaintextEmailId) {
-		// 	notificationUtils.sendEmailNotification({
-		// 		emailId: plaintextEmailId,
-		// 		templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
-		// 		variables: { name: bodyData.name || plaintextEmailId, otp },
-		// 		tenantCode: tenantDetail.code,
-		// 		organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
-		// 	})
-		// }
+		if (plaintextEmailId) {
+			notificationUtils.sendEmailNotification({
+				emailId: plaintextEmailId,
+				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
+				variables: { name: bodyData.name || plaintextEmailId, otp },
+				tenantCode: tenantDetail.code,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
+			})
+		}
 
-		// // Send SMS notification with OTP if phone is provided
-		// if (plaintextPhoneNumber && bodyData.phone_code) {
-		// 	notificationUtils.sendSMSNotification({
-		// 		phoneNumber: plaintextPhoneNumber,
-		// 		templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
-		// 		variables: { app_name: tenantDetail.name, otp },
-		// 		tenantCode: tenantDetail.code,
-		// 		organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
-		// 	})
-		// }
+		// Send SMS notification with OTP if phone is provided
+		if (plaintextPhoneNumber && bodyData.phone_code) {
+			notificationUtils.sendSMSNotification({
+				phoneNumber: plaintextPhoneNumber,
+				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
+				variables: { app_name: tenantDetail.name, otp },
+				tenantCode: tenantDetail.code,
+				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
+			})
+		}
 
 		// Log OTP in development environment for testing
 		if (process.env.APPLICATION_ENV === 'development') {

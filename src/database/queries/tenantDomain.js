@@ -1,6 +1,5 @@
 'use strict'
 const { TenantDomain, Tenant } = require('@database/models/index')
-const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
