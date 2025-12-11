@@ -1,5 +1,6 @@
 'use strict'
-const { TenantDomain, Tenant } = require('@database/models/index')
+const { TenantDomain, sequelize } = require('@database/models/index')
+const { Op } = require('sequelize')
 
 exports.create = async (data) => {
 	try {
@@ -19,42 +20,6 @@ exports.findOne = async (filter, options = {}) => {
 			...options,
 			raw: true,
 		})
-	} catch (error) {
-		console.error(error)
-		return error
-	}
-}
-
-// Fetch tenant domain with tenant details in a single query
-exports.findOneWithTenant = async (filter, options = {}) => {
-	try {
-		const result = await TenantDomain.findOne({
-			where: filter,
-			attributes: options.attributes || undefined,
-			include: [
-				{
-					model: Tenant,
-					as: 'tenant',
-					required: false, // LEFT JOIN to allow separate validation
-					attributes: options.tenantAttributes || [
-						'code',
-						'name',
-						'status',
-						'description',
-						'logo',
-						'meta',
-						'theming',
-					],
-				},
-			],
-			raw: false, // Need nested object structure
-		})
-
-		if (!result) return null
-
-		// Convert to plain object and flatten structure for easier access
-		const plainResult = result.get({ plain: true })
-		return plainResult
 	} catch (error) {
 		console.error(error)
 		return error
