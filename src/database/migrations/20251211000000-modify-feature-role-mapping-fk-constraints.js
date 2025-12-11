@@ -7,6 +7,7 @@ module.exports = {
 			console.log('Removing existing foreign key constraints...')
 
 			// Remove the existing FK constraint: feature_code → features(code)
+			// This constraint is incompatible with Citus distributed database and is being permanently removed
 			await queryInterface.sequelize
 				.query(
 					`
