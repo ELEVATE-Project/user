@@ -79,7 +79,7 @@ module.exports = {
 
 	async down(queryInterface) {
 		try {
-			console.log('Reverting to CASCADE constraints...')
+			console.log('Removing NO ACTION constraints (manual recreation of CASCADE constraints may be needed)...')
 
 			// Remove NO ACTION constraints
 			await queryInterface.sequelize
@@ -109,7 +109,7 @@ module.exports = {
 				)
 				.catch(() => {})
 
-			console.log('Successfully reverted to CASCADE constraints')
+			console.log('Constraints removed. Run previous migration to restore CASCADE constraints.')
 		} catch (error) {
 			console.error('Rollback failed:', error)
 			throw error

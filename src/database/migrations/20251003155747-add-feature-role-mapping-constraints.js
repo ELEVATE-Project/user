@@ -47,9 +47,6 @@ module.exports = {
 	async down(queryInterface, Sequelize) {
 		// Remove constraints safely
 		await queryInterface
-			.removeConstraint('feature_role_mapping', 'fk_feature_role_mapping_tenant_code')
-			.catch(() => {})
-		await queryInterface
 			.removeConstraint('feature_role_mapping', 'fk_feature_role_mapping_organization_code')
 			.catch(() => {})
 		// await queryInterface.removeConstraint('feature_role_mapping', 'fk_feature_role_mapping_role_title')
