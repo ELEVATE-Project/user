@@ -53,7 +53,6 @@ module.exports = class AccountHelper {
 	 * @param {Object} deviceInfo - Device information
 	 * @returns {JSON} - returns account creation details.
 	 */
-
 	static async create(bodyData, deviceInfo, domain) {
 		const projection = ['password']
 		let isInvitedUserId = false
@@ -66,14 +65,16 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			const domainWithTenant = await tenantDomainQueries.findOneWithTenant({ domain })
-			if (!domainWithTenant) {
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			if (!tenantDomain) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
 
-			// Validate tenant exists and is active
-			const tenantDetail = domainWithTenant.tenant
-			if (!tenantDetail || tenantDetail.status !== common.ACTIVE_STATUS) {
+			const tenantDetail = await tenantQueries.findOne({
+				code: tenantDomain.tenant_code,
+				status: common.ACTIVE_STATUS,
+			})
+			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
@@ -207,7 +208,7 @@ module.exports = class AccountHelper {
 				filterCondition.phone_code = bodyData.phone_code
 			}
 
-			filterCondition.tenant_code = domainWithTenant.tenant_code
+			filterCondition.tenant_code = tenantDomain.tenant_code
 			filterCondition.status = common.INVITED_STATUS
 
 			invitedUserMatch = await userInviteQueries.findOne(filterCondition, {
@@ -567,7 +568,7 @@ module.exports = class AccountHelper {
 						name: bodyData.name,
 						appName: tenantDetail.name,
 						roles: roleToString || '',
-						portalURL: domainWithTenant.domain,
+						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
 					organization_code: user.organizations?.[0].code || null,
@@ -583,7 +584,7 @@ module.exports = class AccountHelper {
 						name: bodyData.name,
 						appName: tenantDetail.name,
 						roles: roleToString || '',
-						portalURL: domainWithTenant.domain,
+						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
 					organization_code: user.organizations?.[0].code || null,
@@ -653,22 +654,24 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
-			// Validate tenant domain and tenant
-			const domainWithTenant = await tenantDomainQueries.findOneWithTenant({ domain })
-			if (!domainWithTenant) {
+			// Validate tenant domain
+			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			if (!tenantDomain) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
 
-			// Validate tenant exists and is active
-			const tenantDetail = domainWithTenant.tenant
-			if (!tenantDetail || tenantDetail.status !== common.ACTIVE_STATUS) {
+			// Validate tenant
+			const tenantDetail = await tenantQueries.findOne({
+				code: tenantDomain.tenant_code,
+			})
+			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
 			// Helper functions to detect identifier type
 			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
 			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
-			// const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
 
 			const identifier = bodyData.identifier?.toLowerCase()
 			if (!identifier) {
