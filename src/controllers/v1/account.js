@@ -25,25 +25,56 @@ module.exports = class Account {
 	 */
 
 	async create(req) {
+		console.log('👤 [USER API] ===== ACCOUNT CREATION API STARTING =====')
+		console.log('👤 [USER API] Request headers:', JSON.stringify(req.headers, null, 2))
+		console.log('👤 [USER API] Request body keys:', Object.keys(req.body))
+		console.log('👤 [USER API] Request body:', JSON.stringify(req.body, null, 2))
+		
 		const params = req.body
 
 		const host = req.headers.origin || ''
+		console.log('👤 [USER API] Origin host:', host)
 		let domain = ''
 
 		if (host) {
 			try {
 				const url = new URL(host)
 				domain = url.hostname
+				console.log('👤 [USER API] Extracted domain via URL:', domain)
 			} catch (error) {
+				console.log('👤 [USER API] URL parsing failed, using fallback method')
 				domain = host.split(':')[0]
+				console.log('👤 [USER API] Extracted domain via split:', domain)
 			}
+		} else {
+			console.log('👤 [USER API] ⚠️ No origin header found, domain will be empty')
 		}
 
+		console.log('👤 [USER API] Final domain:', domain)
+
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
+		console.log('👤 [USER API] Device info:', JSON.stringify(device_info, null, 2))
+		
 		try {
+			console.log('👤 [USER API] Calling accountService.create with:')
+			console.log('👤 [USER API]   - params keys:', Object.keys(params))
+			console.log('👤 [USER API]   - device_info:', device_info)
+			console.log('👤 [USER API]   - domain:', domain)
+			
 			const createdAccount = await accountService.create(params, device_info, domain)
+			
+			console.log('👤 [USER API] Account creation SUCCESS')
+			console.log('👤 [USER API] Response status:', createdAccount?.statusCode || 'NO_STATUS')
+			console.log('👤 [USER API] Response message:', createdAccount?.message || 'NO_MESSAGE')
+			console.log('👤 [USER API] ===== ACCOUNT CREATION API COMPLETED =====')
+			
 			return createdAccount
 		} catch (error) {
+			console.log('👤 [USER API] ❌ ACCOUNT CREATION FAILED')
+			console.log('👤 [USER API] ❌ Error message:', error.message)
+			console.log('👤 [USER API] ❌ Error stack:', error.stack)
+			console.log('👤 [USER API] ❌ Error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
+			console.log('👤 [USER API] ===== ACCOUNT CREATION API ERROR =====')
 			return error
 		}
 	}

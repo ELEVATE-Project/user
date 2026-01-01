@@ -55,6 +55,13 @@ module.exports = class AccountHelper {
 	 */
 
 	static async create(bodyData, deviceInfo, domain) {
+		console.log('🔐 [ACCOUNT SERVICE] ===== ACCOUNT CREATION SERVICE STARTING =====')
+		console.log('🔐 [ACCOUNT SERVICE] Input parameters:')
+		console.log('🔐 [ACCOUNT SERVICE]   - bodyData keys:', Object.keys(bodyData))
+		console.log('🔐 [ACCOUNT SERVICE]   - deviceInfo:', JSON.stringify(deviceInfo, null, 2))
+		console.log('🔐 [ACCOUNT SERVICE]   - domain:', domain)
+		console.log('🔐 [ACCOUNT SERVICE] Full bodyData:', JSON.stringify(bodyData, null, 2))
+		
 		const projection = ['password']
 		let isInvitedUserId = false
 
@@ -66,20 +73,30 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
+			console.log('🔐 [ACCOUNT SERVICE] Step 1: Looking up tenant domain...')
 			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+			console.log('🔐 [ACCOUNT SERVICE] Tenant domain result:', tenantDomain ? JSON.stringify(tenantDomain, null, 2) : 'NOT_FOUND')
+			
 			if (!tenantDomain) {
+				console.log('🔐 [ACCOUNT SERVICE] ❌ TENANT_DOMAIN_NOT_FOUND for domain:', domain)
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
 
+			console.log('🔐 [ACCOUNT SERVICE] Step 2: Looking up tenant details...')
 			const tenantDetail = await tenantQueries.findOne({
 				code: tenantDomain.tenant_code,
 				status: common.ACTIVE_STATUS,
 			})
+			console.log('🔐 [ACCOUNT SERVICE] Tenant detail result:', tenantDetail ? JSON.stringify(tenantDetail, null, 2) : 'NOT_FOUND')
+			
 			if (!tenantDetail) {
+				console.log('🔐 [ACCOUNT SERVICE] ❌ TENANT_NOT_FOUND for tenant_code:', tenantDomain.tenant_code)
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
+			console.log('🔐 [ACCOUNT SERVICE] Step 3: Validating email/phone presence...')
 			if (!bodyData.email && !bodyData.phone) {
+				console.log('🔐 [ACCOUNT SERVICE] ❌ EMAIL_OR_PHONE_REQUIRED')
 				return responses.failureResponse({
 					message: 'EMAIL_OR_PHONE_REQUIRED',
 					statusCode: httpStatusCode.bad_request,
@@ -89,38 +106,59 @@ module.exports = class AccountHelper {
 
 			let domainDetails = null
 
+			console.log('🔐 [ACCOUNT SERVICE] Step 4: Processing registration code...')
 			if (bodyData.registration_code) {
+				console.log('🔐 [ACCOUNT SERVICE] Looking up organization with registration code:', bodyData.registration_code.toLowerCase())
 				domainDetails = await organizationQueries.findOrgWithRegistrationCode({
 					tenant_code: tenantDetail.code,
 					registration_code: bodyData.registration_code.toLowerCase(),
 				})
+				console.log('🔐 [ACCOUNT SERVICE] Organization lookup result:', domainDetails ? JSON.stringify(domainDetails, null, 2) : 'NOT_FOUND')
 
 				if (!domainDetails) {
+					console.log('🔐 [ACCOUNT SERVICE] ❌ INVALID_ORG_registration_code')
 					return responses.failureResponse({
 						message: 'INVALID_ORG_registration_code',
 						statusCode: httpStatusCode.bad_request,
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
+			} else {
+				console.log('🔐 [ACCOUNT SERVICE] No registration code provided')
 			}
 
+			console.log('🔐 [ACCOUNT SERVICE] Step 5: Encrypting email/phone...')
 			// Handle email encryption if provided
 			let encryptedEmailId = null
 			let plaintextEmailId = null
 			if (bodyData.email) {
+				console.log('🔐 [ACCOUNT SERVICE] Encrypting email...')
 				plaintextEmailId = bodyData.email.toLowerCase()
-				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-				bodyData.email = encryptedEmailId
+				try {
+					encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+					bodyData.email = encryptedEmailId
+					console.log('🔐 [ACCOUNT SERVICE] Email encryption successful')
+				} catch (encryptError) {
+					console.log('🔐 [ACCOUNT SERVICE] ❌ Email encryption failed:', encryptError.message)
+					throw encryptError
+				}
 			}
 
 			// Handle phone encryption if provided
 			let encryptedPhoneNumber = null
 			let plaintextPhoneNumber = null
 			if (bodyData.phone && bodyData.phone_code) {
+				console.log('🔐 [ACCOUNT SERVICE] Encrypting phone number...')
 				plaintextPhoneNumber = bodyData.phone
-				encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
-				bodyData.phone = encryptedPhoneNumber
-				bodyData.phone_code = bodyData.phone_code // Store phone_code separately
+				try {
+					encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
+					bodyData.phone = encryptedPhoneNumber
+					bodyData.phone_code = bodyData.phone_code // Store phone_code separately
+					console.log('🔐 [ACCOUNT SERVICE] Phone encryption successful')
+				} catch (encryptError) {
+					console.log('🔐 [ACCOUNT SERVICE] ❌ Phone encryption failed:', encryptError.message)
+					throw encryptError
+				}
 			}
 
 			const criteria = []
@@ -624,13 +662,23 @@ module.exports = class AccountHelper {
 
 			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
+			console.log('🔐 [ACCOUNT SERVICE] ===== ACCOUNT CREATION SUCCESS =====')
+			console.log('🔐 [ACCOUNT SERVICE] Final result keys:', Object.keys(result))
+			console.log('🔐 [ACCOUNT SERVICE] User created successfully')
+			
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
 				result,
 			})
 		} catch (error) {
-			console.log(error)
+			console.log('🔐 [ACCOUNT SERVICE] ❌ CRITICAL ERROR IN ACCOUNT CREATION')
+			console.log('🔐 [ACCOUNT SERVICE] ❌ Error message:', error.message)
+			console.log('🔐 [ACCOUNT SERVICE] ❌ Error stack:', error.stack)
+			console.log('🔐 [ACCOUNT SERVICE] ❌ Error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2))
+			console.log('🔐 [ACCOUNT SERVICE] ❌ Error name:', error.name)
+			console.log('🔐 [ACCOUNT SERVICE] ❌ Error code:', error.code)
+			console.log('🔐 [ACCOUNT SERVICE] ===== ACCOUNT SERVICE ERROR END =====')
 			throw error
 		}
 	}
