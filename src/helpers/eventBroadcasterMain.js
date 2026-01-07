@@ -27,11 +27,13 @@ const isEventEnabled = (eventGroup) => {
 		case 'organizationEvents':
 			return process.env.EVENT_ENABLE_ORG_EVENTS !== 'false'
 		case 'userEvents':
-			return process.env.EVENT_ENABLE_USER_EVENTS !== 'false'
+			const apiEnabled = process.env.EVENT_ENABLE_USER_EVENTS !== 'false'
+			return apiEnabled
 		case 'tenantEvents':
 			return process.env.EVENT_ENABLE_TENANT_EVENTS !== 'false'
 		case 'userEvents-kafka':
-			return process.env.EVENT_ENABLE_USER_KAFKA_EVENTS !== 'false'
+			const kafkaEnabled = process.env.EVENT_ENABLE_USER_KAFKA_EVENTS !== 'false'
+			return kafkaEnabled
 		case 'tenantEvents-kafka':
 			return process.env.EVENT_ENABLE_TENANT_KAFKA_EVENTS !== 'false'
 		case 'organizationEvents-kafka':
@@ -43,7 +45,6 @@ const isEventEnabled = (eventGroup) => {
 
 exports.eventBroadcasterMain = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
-		console.log('API Event ')
 		if (!requestBody) throw new Error('Event Body Generation Failed')
 		if (!isEventEnabled(eventGroup)) throw new Error(`Events Not Enabled For The Group "${eventGroup}"`)
 		if (isInternal) headers.internal_access_token = process.env.INTERNAL_ACCESS_TOKEN
@@ -52,13 +53,12 @@ exports.eventBroadcasterMain = async (eventGroup, { requestBody, headers = {}, i
 			return requester.post(endPoint, '', headers, requestBody)
 		})
 		const results = await Promise.allSettled(requestPromises)
-		console.log('PROMISE ------->>> ', results)
 		results.forEach((result, index) => {
 			if (result.status === 'rejected')
 				console.error(`Error for endpoint ${endPoints[index].url}:`, result.reason)
 		})
 	} catch (err) {
-		console.log(err)
+		console.log(`[EVENT BROADCASTER] API Event error: ${err.message}`)
 	}
 }
 exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
@@ -78,17 +78,14 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 				await kafkaCommunication.pushTenantEventsToKafka(requestBody)
 				break
 			default:
-				console.log('No Kafka Event Group Found')
 				break
 		}
 	} catch (err) {
-		console.log(err)
+		console.log(`[EVENT BROADCASTER] Kafka Event error: ${err.message}`)
 	}
 }
 exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
-		//TODO: Remove this log after testing
-		console.log(util.inspect(requestBody, { depth: null, colors: true, compact: false }))
 
 		// Fire both broadcaster functions concurrently
 		const broadcastPromises = [
@@ -102,12 +99,13 @@ exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInter
 		// Check for failed promises and throw warnings
 		results.forEach((result, index) => {
 			if (result.status === 'rejected') {
-				const broadcaster = index === 0 ? 'eventBroadcasterMain' : 'eventBroadcasterKafka'
-				console.warn(`Warning: ${broadcaster} failed for eventGroup "${eventGroup}": ${result.reason}`)
+				const broadcaster = index === 0 ? 'eventBroadcasterMain (API)' : 'eventBroadcasterKafka'
+			} else {
+				const broadcaster = index === 0 ? 'eventBroadcasterMain (API)' : 'eventBroadcasterKafka'
 			}
 		})
 	} catch (err) {
 		// Log any unexpected errors from the promise settlement
-		console.error('Error in broadcastEvent:', err)
+		console.error('[EVENT BROADCASTER] Error in broadcastEvent:', err)
 	}
 }

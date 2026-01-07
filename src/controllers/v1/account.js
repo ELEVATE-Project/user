@@ -40,6 +40,7 @@ module.exports = class Account {
 		}
 
 		const device_info = req.headers && req.headers['device-info'] ? JSON.parse(req.headers['device-info']) : {}
+		
 		try {
 			const createdAccount = await accountService.create(params, device_info, domain)
 			return createdAccount
