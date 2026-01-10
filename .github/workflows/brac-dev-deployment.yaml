@@ -1,4 +1,4 @@
-name: Dev Build & Deploy Project Service (BRAC)
+name: Dev Build & Deploy User Service (BRAC)
 
 on:
   push:
