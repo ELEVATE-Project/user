@@ -65,7 +65,9 @@ jobs:
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
             cd ${{ secrets.TARGET_DIR_DEV }}
             if [ -f .env ]; then
-              mv .env .env-bkp
+            cat << 'EOF' > .env
+            ${{ secrets.DEV_ENV }}
+            EOF
             fi
             echo '${{ secrets.DEV_ENV_BRAC }}' > .env
             aws ecr get-login-password --region "$AWS_REGION" \
