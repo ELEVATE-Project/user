@@ -60,17 +60,26 @@ jobs:
           port: ${{ secrets.PORT_DEV }}
           script: |
             set -e
-            # Export AWS variables explicitly
+
+            # Export AWS variables
             export AWS_REGION="${{ secrets.AWS_REGION }}"
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
+
             cd ${{ secrets.TARGET_DIR_DEV }}
+
+            # Backup old env if exists
             if [ -f .env ]; then
+              mv .env .env-bkp
+            fi
+
+            # Write env safely (MULTILINE SAFE)
             cat << 'EOF' > .env
             ${{ secrets.DEV_ENV }}
             EOF
-            fi
-            echo '${{ secrets.DEV_ENV_BRAC }}' > .env
+
+            # Login to ECR (non-interactive)
             aws ecr get-login-password --region "$AWS_REGION" \
               | docker login --username AWS \
                 --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
             ./deploy.sh
