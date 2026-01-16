@@ -350,16 +350,34 @@ module.exports = class UserInviteHelper {
 					]
 
 					entityFields.forEach((field) => {
-						// Skip if we already handled this field above
+						// 1. Skip if already handled in the hardcoded block
 						if (alreadyProcessed.includes(field)) return
 
-						// Only add if the field actually exists in the row
+						// 2. Only process if the row actually has data for this field
 						if (row[field]) {
-							const cleanVal = String(row[field]).replaceAll(/\s+/g, '').toLowerCase()
+							// Find the definition to check if it's an ARRAY type
+							const entityDef = validationData.find((e) => e.value === field)
 							const cleanField = field.replaceAll(/\s+/g, '').toLowerCase()
-							const lookupKey = `${cleanVal}${cleanField}`
 
-							row.meta[field] = externalEntityNameIdMap?.[lookupKey]?._id || null
+							if (
+								entityDef &&
+								(entityDef.data_type === 'ARRAY' || entityDef.data_type === 'ARRAY[STRING]')
+							) {
+								// Handle ARRAY types: split by comma, clean each value, and map to IDs
+								row.meta[field] = row[field]
+									.split(',')
+									.map((val) => {
+										const cleanVal = val.trim().replaceAll(/\s+/g, '').toLowerCase()
+										const lookupKey = `${cleanVal}${cleanField}`
+										return externalEntityNameIdMap?.[lookupKey]?._id
+									})
+									.filter(Boolean) // Removes null/undefined if an ID isn't found
+							} else {
+								// Handle Single value types (Standard logic)
+								const cleanVal = String(row[field]).replaceAll(/\s+/g, '').toLowerCase()
+								const lookupKey = `${cleanVal}${cleanField}`
+								row.meta[field] = externalEntityNameIdMap?.[lookupKey]?._id || null
+							}
 						}
 					})
 
