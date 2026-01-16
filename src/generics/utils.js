@@ -1038,7 +1038,7 @@ function parseMetaData(meta = {}, prunedEntities, feederData) {
 			// find the entity type from the entities array with the value of the entity
 			const findEntity = prunedEntities.find((entity) => entity.value == metaKey)
 			// check the data type of the entity to loop in Array type entities
-			if (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]') {
+			if (findEntity && (findEntity.data_type == 'ARRAY' || findEntity.data_type == 'ARRAY[STRING]')) {
 				metaData[metaKey] = meta?.[metaKey].map((entity) => {
 					const id = getId(entity) // get the id from the input
 					const find = Object.values(feederData).find(

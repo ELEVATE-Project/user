@@ -338,13 +338,36 @@ module.exports = class UserInviteHelper {
 							: [],
 					}
 
-					delete row.block
-					delete row.state
-					delete row.school
-					delete row.cluster
-					delete row.district
-					delete row.professional_role
-					delete row.professional_subroles
+					// 2. Handle dynamic entityFields (skipping what we already did)
+					const alreadyProcessed = [
+						'block',
+						'state',
+						'school',
+						'cluster',
+						'district',
+						'professional_role',
+						'professional_subroles',
+					]
+
+					entityFields.forEach((field) => {
+						// Skip if we already handled this field above
+						if (alreadyProcessed.includes(field)) return
+
+						// Only add if the field actually exists in the row
+						if (row[field]) {
+							const cleanVal = String(row[field]).replaceAll(/\s+/g, '').toLowerCase()
+							const cleanField = field.replaceAll(/\s+/g, '').toLowerCase()
+							const lookupKey = `${cleanVal}${cleanField}`
+
+							row.meta[field] = externalEntityNameIdMap?.[lookupKey]?._id || null
+						}
+					})
+
+					// 3. Delete all processed fields from the root row
+					const allFieldsToDelete = [...alreadyProcessed, ...entityFields]
+					allFieldsToDelete.forEach((field) => {
+						delete row[field]
+					})
 
 					// Handle password field if exists
 					if (row.password) {
