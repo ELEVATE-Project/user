@@ -64,7 +64,9 @@ jobs:
             # Export AWS variables
             export AWS_REGION="${{ secrets.AWS_REGION }}"
             export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
-
+            export AWS_SECRET_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            export AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            
             cd ${{ secrets.TARGET_DIR_DEV }}
 
             # Backup old env if exists
@@ -74,7 +76,7 @@ jobs:
 
             # Write env safely (MULTILINE SAFE)
             cat << 'EOF' > .env
-            ${{ secrets.DEV_ENV }}
+            ${{ secrets.DEV_ENV_BRAC }}
             EOF
 
             # Login to ECR (non-interactive)
