@@ -11,6 +11,8 @@ const utilsHelper = require('@generics/utils')
 const common = require('@constants/common')
 const httpStatusCode = require('@generics/http-status')
 const responses = require('@helpers/responses')
+const accountService = require('@services/account')
+
 module.exports = class Tenant {
 	/**
 	 * Updates tenant data
@@ -133,6 +135,7 @@ module.exports = class Tenant {
 			return error
 		}
 	}
+
 	/**
 	 * List tenants
 	 * @method POST
@@ -152,6 +155,28 @@ module.exports = class Tenant {
 				req?.body?.upload_type.toUpperCase()
 			)
 			return tenant
+		} catch (error) {
+			return error
+		}
+	}
+	/**
+	 * Create account user
+	 * @method POST
+	 * @name bulkUserCreate
+	 * @param {Object} req -request data.
+	 * @returns {JSON} - success or error message
+	 */
+
+	async accountCreate(req) {
+		try {
+			const usersRes = await accountService.create(
+				req.body,
+				{},
+				'',
+				true, //set onlyCreate to true, this will create only user without logging in
+				req
+			)
+			return usersRes
 		} catch (error) {
 			return error
 		}
