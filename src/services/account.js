@@ -39,6 +39,7 @@ const UserTransformDTO = require('@dtos/userDTO')
 const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
 const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
+const { use } = require('i18next')
 
 module.exports = class AccountHelper {
 	/**
@@ -54,7 +55,8 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns account creation details.
 	 */
 
-	static async create(bodyData, deviceInfo, domain) {
+	static async create(bodyData, deviceInfo, domain, onlyCreate = false, req = {}) {
+		let tenantId
 		const projection = ['password']
 		let isInvitedUserId = false
 
@@ -65,18 +67,24 @@ module.exports = class AccountHelper {
 					statusCode: httpStatusCode.not_acceptable,
 					responseCode: 'CLIENT_ERROR',
 				})
+			let tenantDomain
 
-			const tenantDomain = await tenantDomainQueries.findOne({ domain })
-			
-			if (!tenantDomain) {
-				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+			if (domain) {
+				tenantDomain = await tenantDomainQueries.findOne({ domain })
+
+				if (!tenantDomain) {
+					return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
+				}
+			} else if (req.headers?.[common.TENANT_CODE_HEADER]) {
+				tenantId = req.headers?.[common.TENANT_CODE_HEADER]
+				tenantDomain = { tenant_code: tenantId }
 			}
 
 			const tenantDetail = await tenantQueries.findOne({
 				code: tenantDomain.tenant_code,
 				status: common.ACTIVE_STATUS,
 			})
-			
+
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
@@ -314,7 +322,7 @@ module.exports = class AccountHelper {
 				role = await roleQueries.findAll(
 					{
 						title: {
-							[Op.in]: process.env.DEFAULT_ROLE.split(','),
+							[Op.in]: req.body.roles ? req.body.roles.split(',') : process.env.DEFAULT_ROLE.split(','),
 						},
 						tenant_code: tenantDetail.code,
 					},
@@ -373,6 +381,8 @@ module.exports = class AccountHelper {
 				}),
 				userQueries.getColumns(),
 			])
+			console.log('validationData', validationData)
+			console.log('userModel', userModel)
 
 			const prunedEntities = removeDefaultOrgEntityTypes(validationData, userOrgId)
 
@@ -460,6 +470,7 @@ module.exports = class AccountHelper {
 			} else {
 				userCredentials = await UserCredentialQueries.create(userCredentialsBody)
 			}
+
 			/* FLOW STARTED: user login after registration */
 			user = await userQueries.findUserWithOrganization(
 				{ id: insertedUser.id, tenant_code: tenantDetail.code },
@@ -471,43 +482,71 @@ module.exports = class AccountHelper {
 			)
 
 			const roleData = user.organizations[0].roles
+			let tokenDetail = {}
+			let result = { user }
+			if (!onlyCreate) {
+				/**
+				 * create user session entry and add session_id to token data
+				 * Entry should be created first, the session_id has to be added to token creation data
+				 */
+				const userSessionDetails = await userSessionsService.createUserSession(
+					user.id, // userid
+					'', // refresh token
+					'', // Access token
+					deviceInfo,
+					user.tenant_code
+				)
 
-			/**
-			 * create user session entry and add session_id to token data
-			 * Entry should be created first, the session_id has to be added to token creation data
-			 */
-			const userSessionDetails = await userSessionsService.createUserSession(
-				user.id, // userid
-				'', // refresh token
-				'', // Access token
-				deviceInfo,
-				user.tenant_code
-			)
+				/**
+				 * Based on user organisation id get user org parent Id value
+				 * If parent org id is present then set it to tenant of user
+				 * if not then set user organisation id to tenant
+				 */
 
-			/**
-			 * Based on user organisation id get user org parent Id value
-			 * If parent org id is present then set it to tenant of user
-			 * if not then set user organisation id to tenant
-			 */
+				/* 			let tenantDetails = await organizationQueries.findOne(
+					{ id: user.organization_id },
+					{ attributes: ['related_orgs'] }
+				)
 
-			/* 			let tenantDetails = await organizationQueries.findOne(
-				{ id: user.organization_id },
-				{ attributes: ['related_orgs'] }
-			)
+				const tenant_id =
+					tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id */
 
-			const tenant_id =
-				tenantDetails && tenantDetails.parent_id !== null ? tenantDetails.parent_id : user.organization_id */
+				tokenDetail = {
+					data: {
+						id: user.id,
+						name: user.name,
+						session_id: userSessionDetails.result.id,
+						organization_ids: user.organizations.map((org) => String(org.id)), // Convert to string
+						organization_codes: user.organizations.map((org) => String(org.code)), // Convert to string
+						tenant_code: tenantDetail.code,
+						organizations: user.organizations,
+					},
+				}
 
-			const tokenDetail = {
-				data: {
-					id: user.id,
-					name: user.name,
-					session_id: userSessionDetails.result.id,
-					organization_ids: user.organizations.map((org) => String(org.id)), // Convert to string
-					organization_codes: user.organizations.map((org) => String(org.code)), // Convert to string
-					tenant_code: tenantDetail.code,
-					organizations: user.organizations,
-				},
+				const accessToken = utilsHelper.generateToken(
+					tokenDetail,
+					process.env.ACCESS_TOKEN_SECRET,
+					common.accessTokenExpiry
+				)
+
+				const refreshToken = utilsHelper.generateToken(
+					tokenDetail,
+					process.env.REFRESH_TOKEN_SECRET,
+					common.refreshTokenExpiry
+				)
+
+				/**
+				 * This function call will do below things
+				 * 1: create redis entry for the session
+				 * 2: update user-session with token and refresh_token
+				 */
+				await userSessionsService.updateUserSessionAndsetRedisData(
+					userSessionDetails.result.id,
+					accessToken,
+					refreshToken
+				)
+
+				result = { access_token: accessToken, refresh_token: refreshToken }
 			}
 
 			//	user.user_roles = roleData
@@ -529,29 +568,6 @@ module.exports = class AccountHelper {
 							.join(' and ')
 					: ''
 
-			const accessToken = utilsHelper.generateToken(
-				tokenDetail,
-				process.env.ACCESS_TOKEN_SECRET,
-				common.accessTokenExpiry
-			)
-
-			const refreshToken = utilsHelper.generateToken(
-				tokenDetail,
-				process.env.REFRESH_TOKEN_SECRET,
-				common.refreshTokenExpiry
-			)
-
-			/**
-			 * This function call will do below things
-			 * 1: create redis entry for the session
-			 * 2: update user-session with token and refresh_token
-			 */
-			await userSessionsService.updateUserSessionAndsetRedisData(
-				userSessionDetails.result.id,
-				accessToken,
-				refreshToken
-			)
-
 			// Delete Redis OTP entries
 			if (encryptedEmailId) await utilsHelper.redisDel(encryptedEmailId)
 			if (encryptedPhoneNumber) await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
@@ -569,8 +585,6 @@ module.exports = class AccountHelper {
 					}
 				)
 			}
-
-			const result = { access_token: accessToken, refresh_token: refreshToken, user }
 
 			if (plaintextEmailId) {
 				notificationUtils.sendEmailNotification({
@@ -635,7 +649,6 @@ module.exports = class AccountHelper {
 
 			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
-			
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
@@ -1632,7 +1645,7 @@ module.exports = class AccountHelper {
 				let foundKeys = {}
 				let result = []
 
-				/* Required to resolve all promises first before preparing response object else sometime 
+				/* Required to resolve all promises first before preparing response object else sometime
 				it will push unresolved promise object if you put this logic in below for loop */
 
 				await Promise.all(
@@ -1714,8 +1727,7 @@ module.exports = class AccountHelper {
 
 			// Clear Redis cache asynchronously (fire and forget)
 			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
-			utilsHelper.redisDel(redisUserKey).catch((err) => {
-			})
+			utilsHelper.redisDel(redisUserKey).catch((err) => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1912,7 +1924,7 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			/* Required to resolve all promises first before preparing response object else sometime 
+			/* Required to resolve all promises first before preparing response object else sometime
 			it will push unresolved promise object if you put this logic in below for loop */
 			// Decrypt email and add image URL
 			await Promise.all(
@@ -1924,9 +1936,37 @@ module.exports = class AccountHelper {
 					if (user.email) {
 						user.email = emailEncryption.decrypt(user.email)
 					}
+					if (user.phone) {
+						user.phone = emailEncryption.decrypt(user.phone)
+					}
 					return user
 				})
 			)
+
+			const defaultOrganizationCode = process.env.DEFAULT_ORGANISATION_CODE
+
+			for (let i = 0; i < users.data.length; i++) {
+				let user = users.data[i]
+
+				// Convert Sequelize instance to plain object
+				if (user.toJSON) {
+					user = user.toJSON()
+					users.data[i] = user
+				}
+
+				let userOrg = user.user_organizations[0].organization_code
+				let validationData = await entityTypeQueries.findUserEntityTypesAndEntities({
+					status: 'ACTIVE',
+					organization_code: {
+						[Op.in]: [userOrg, defaultOrganizationCode],
+					},
+					tenant_code: params.query.tenant_code,
+					model_names: { [Op.contains]: [await userQueries.getModelName()] },
+				})
+				const prunedEntities = removeDefaultOrgEntityTypes(validationData, user.user_organizations[0].id)
+				const processedUser = await utils.processDbResponse(user, prunedEntities)
+				Object.assign(user, processedUser)
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
