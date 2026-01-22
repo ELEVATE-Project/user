@@ -53,7 +53,6 @@ module.exports = class AccountHelper {
 	 * @param {Object} deviceInfo - Device information
 	 * @returns {JSON} - returns account creation details.
 	 */
-
 	static async create(bodyData, deviceInfo, domain) {
 		const projection = ['password']
 		let isInvitedUserId = false
@@ -1057,7 +1056,7 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 			}
-			const user = await userQueries.findUserWithOrganization(query, {}, tenantDomain.tenant_code)
+			const user = await userQueries.findUserWithOrganization(query, {}, true)
 
 			if (!user) {
 				return responses.failureResponse({
