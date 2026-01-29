@@ -47,7 +47,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.ECR_REPOSITORY }}:${{ env.TAG }}
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ env.TAG }}
 
       # =========================
       # Deploy on QA Server
