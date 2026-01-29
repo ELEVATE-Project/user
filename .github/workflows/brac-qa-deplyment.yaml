@@ -68,11 +68,15 @@ jobs:
 
             cd ${{ secrets.TARGET_DIR_QA }}
 
+            # Backup old env if exists
             if [ -f .env ]; then
               mv .env .env-bkp
             fi
 
-            echo '${{ secrets.QA_ENV_BRAC }}' > .env
+            # Write env safely (MULTILINE SAFE)
+            cat << 'EOF' > .env
+            ${{ secrets.QA_ENV_BRAC }}
+            EOF
 
             aws ecr get-login-password --region ${AWS_REGION} \
               | docker login \
