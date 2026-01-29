@@ -162,18 +162,19 @@ module.exports = class Tenant {
 	/**
 	 * Create account user
 	 * @method POST
-	 * @name bulkUserCreate
+	 * @name AccountCreate
 	 * @param {Object} req -request data.
 	 * @returns {JSON} - success or error message
 	 */
 
 	async accountCreate(req) {
 		try {
+			let registerWithLogin = false
 			const usersRes = await accountService.create(
 				req.body,
 				{},
 				'',
-				true, //set onlyCreate to true, this will create only user without logging in
+				registerWithLogin, //set registerWithLogin to true, this will create user with login
 				req
 			)
 			return usersRes

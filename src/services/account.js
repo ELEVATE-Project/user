@@ -55,7 +55,7 @@ module.exports = class AccountHelper {
 	 * @returns {JSON} - returns account creation details.
 	 */
 
-	static async create(bodyData, deviceInfo, domain, onlyCreate = false, req = {}) {
+	static async create(bodyData, deviceInfo, domain, registerWithLogin = true, req = {}) {
 		let tenantId
 		const projection = ['password']
 		let isInvitedUserId = false
@@ -484,7 +484,7 @@ module.exports = class AccountHelper {
 			const roleData = user.organizations[0].roles
 			let tokenDetail = {}
 			let result = { user }
-			if (!onlyCreate) {
+			if (registerWithLogin) {
 				/**
 				 * create user session entry and add session_id to token data
 				 * Entry should be created first, the session_id has to be added to token creation data
@@ -1868,6 +1868,9 @@ module.exports = class AccountHelper {
 	 * @param {Object} [params.body] - POST body parameters.
 	 * @param {Array<string>} [params.body.user_ids] - Specific user IDs to include in search.
 	 * @param {Array<string>} [params.body.excluded_user_ids] - User IDs to exclude from search.
+	 * @param {Object} [params.query.meta] - Meta field filters (JSON string or object) to filter users by custom meta fields.
+	 * @param {Object} [params.body.meta] - Meta field filters (object) to filter users by custom meta fields.
+	 *                                        Example: { "province": "6952163ae83c1c00147132a8", "district": "6952163ae83c1c00147132bb" }
 	 *
 	 * @returns {Promise<Object>} JSON response with user list and count.
 	 */
@@ -1901,6 +1904,23 @@ module.exports = class AccountHelper {
 				}
 			})
 
+			// Extract meta filters from query or body (supports any meta field)
+			const metaFilters = {}
+			if (params.query?.meta) {
+				try {
+					// If meta is a JSON string, parse it
+					const meta =
+						typeof params.query.meta === 'string' ? JSON.parse(params.query.meta) : params.query.meta
+					Object.assign(metaFilters, meta)
+				} catch (e) {
+					// If parsing fails, ignore meta filter
+				}
+			}
+			// Also check body for meta filters
+			if (params.body?.meta && typeof params.body.meta === 'object') {
+				Object.assign(metaFilters, params.body.meta)
+			}
+
 			let users = await userQueries.searchUsersWithOrganization({
 				roleIds,
 				organization_id: params.query.organization_id,
@@ -1911,6 +1931,7 @@ module.exports = class AccountHelper {
 				emailIds: emailIds.length > 0 ? emailIds : false,
 				excluded_user_ids: params.body?.excluded_user_ids || false,
 				tenantCode: params.query.tenant_code,
+				metaFilters: Object.keys(metaFilters).length > 0 ? metaFilters : undefined,
 			})
 
 			if (users.count == 0) {
