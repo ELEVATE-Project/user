@@ -401,12 +401,17 @@ exports.searchUsersWithOrganization = async ({
 	emailIds,
 	excluded_user_ids,
 	tenantCode,
+	status,
 }) => {
 	try {
 		const offset = (page - 1) * limit
 
 		// Base filter for user
 		const userWhere = {}
+
+		if (status) {
+			userWhere.status = status.toUpperCase()
+		}
 
 		// Filter by userIds / exclude
 		if (userIds && Array.isArray(userIds)) {
