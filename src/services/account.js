@@ -1931,6 +1931,7 @@ module.exports = class AccountHelper {
 				emailIds: emailIds.length > 0 ? emailIds : false,
 				excluded_user_ids: params.body?.excluded_user_ids || false,
 				tenantCode: params.query.tenant_code,
+				status: params.query.status || false,
 				metaFilters: Object.keys(metaFilters).length > 0 ? metaFilters : undefined,
 			})
 
