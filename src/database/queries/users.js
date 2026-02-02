@@ -402,6 +402,7 @@ exports.searchUsersWithOrganization = async ({
 	excluded_user_ids,
 	tenantCode,
 	status,
+	metaFilters,
 }) => {
 	try {
 		const offset = (page - 1) * limit
@@ -430,6 +431,20 @@ exports.searchUsersWithOrganization = async ({
 			userWhere.email = { [Op.in]: emailIds }
 		} else if (search) {
 			userWhere.name = { [Op.iLike]: `%${search}%` }
+		}
+
+		// Filter by meta fields (generic - supports any meta field)
+		if (metaFilters && typeof metaFilters === 'object' && Object.keys(metaFilters).length > 0) {
+			userWhere[Op.and] = userWhere[Op.and] || []
+			for (const [key, value] of Object.entries(metaFilters)) {
+				if (value !== null && value !== undefined && value !== '') {
+					// Use Sequelize.where with JSONB operator for safe parameterized queries
+					// The key is validated to be alphanumeric/underscore only to prevent SQL injection
+					if (/^[a-zA-Z0-9_]+$/.test(key)) {
+						userWhere[Op.and].push(Sequelize.where(Sequelize.literal(`"User".meta->>'${key}'`), value))
+					}
+				}
+			}
 		}
 
 		const users = await database.User.findAndCountAll({
