@@ -1,0 +1,86 @@
+name: Dev Build & Deploy User Service (BRAC)
+
+on:
+  push:
+    branches:
+      - develop
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY_BRAC }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # =========================
+      # AWS Authentication
+      # =========================
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # =========================
+      # Login to Amazon ECR
+      # =========================
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # =========================
+      # Build & Push Image
+      # =========================
+      - name: Build and Push Docker Image to ECR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest-brac
+            ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      # =========================
+      # Deploy on Server
+      # =========================
+      - name: Deploy Stack
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_NAME_DEV }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            set -e
+
+            # Export AWS variables
+            export AWS_REGION="${{ secrets.AWS_REGION }}"
+            export AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
+            #export aws-access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}"
+            #export aws-secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}"            
+            cd ${{ secrets.TARGET_DIR_DEV }}
+
+            # Backup old env if exists
+            if [ -f .env ]; then
+              mv .env .env-bkp
+            fi
+
+            # Write env safely (MULTILINE SAFE)
+            cat << 'EOF' > .env
+            ${{ secrets.DEV_ENV_BRAC }}
+            EOF
+
+            # Login to ECR (non-interactive)
+            aws ecr get-login-password --region "$AWS_REGION" \
+              | docker login --username AWS \
+                --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+            ./deploy.sh
