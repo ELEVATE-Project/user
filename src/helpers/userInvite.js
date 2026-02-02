@@ -338,13 +338,54 @@ module.exports = class UserInviteHelper {
 							: [],
 					}
 
-					delete row.block
-					delete row.state
-					delete row.school
-					delete row.cluster
-					delete row.district
-					delete row.professional_role
-					delete row.professional_subroles
+					// 2. Handle dynamic entityFields (skipping what we already did)
+					const alreadyProcessed = [
+						'block',
+						'state',
+						'school',
+						'cluster',
+						'district',
+						'professional_role',
+						'professional_subroles',
+					]
+
+					entityFields.forEach((field) => {
+						// 1. Skip if already handled in the hardcoded block
+						if (alreadyProcessed.includes(field)) return
+
+						// 2. Only process if the row actually has data for this field
+						if (row[field]) {
+							// Find the definition to check if it's an ARRAY type
+							const entityDef = validationData.find((e) => e.value === field)
+							const cleanField = field.replaceAll(/\s+/g, '').toLowerCase()
+
+							if (
+								entityDef &&
+								(entityDef.data_type === 'ARRAY' || entityDef.data_type === 'ARRAY[STRING]')
+							) {
+								// Handle ARRAY types: split by comma, clean each value, and map to IDs
+								row.meta[field] = row[field]
+									.split(',')
+									.map((val) => {
+										const cleanVal = val.trim().replaceAll(/\s+/g, '').toLowerCase()
+										const lookupKey = `${cleanVal}${cleanField}`
+										return externalEntityNameIdMap?.[lookupKey]?._id
+									})
+									.filter(Boolean) // Removes null/undefined if an ID isn't found
+							} else {
+								// Handle Single value types (Standard logic)
+								const cleanVal = String(row[field]).replaceAll(/\s+/g, '').toLowerCase()
+								const lookupKey = `${cleanVal}${cleanField}`
+								row.meta[field] = externalEntityNameIdMap?.[lookupKey]?._id || null
+							}
+						}
+					})
+
+					// 3. Delete all processed fields from the root row
+					const allFieldsToDelete = [...alreadyProcessed, ...entityFields]
+					allFieldsToDelete.forEach((field) => {
+						delete row[field]
+					})
 
 					// Handle password field if exists
 					if (row.password) {
