@@ -38,6 +38,8 @@ const isEventEnabled = (eventGroup) => {
 			return process.env.EVENT_ENABLE_TENANT_KAFKA_EVENTS !== 'false'
 		case 'organizationEvents-kafka':
 			return process.env.EVENT_ENABLE_ORG_KAFKA_EVENTS !== 'false'
+		case 'submissionEvents-kafka':
+			return process.env.EVENT_ENABLE_OBSERVATION_UPDATE_KAFKA_EVENTS !== 'false'
 		default:
 			return true
 	}
@@ -77,6 +79,9 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 			case 'tenantEvents':
 				await kafkaCommunication.pushTenantEventsToKafka(requestBody)
 				break
+			case 'submissionEvents':
+				await kafkaCommunication.pushUserSubmissionToKafka(requestBody)
+				break
 			default:
 				break
 		}
@@ -86,7 +91,6 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 }
 exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
-
 		// Fire both broadcaster functions concurrently
 		const broadcastPromises = [
 			exports.eventBroadcasterMain(eventGroup, { requestBody, headers, isInternal }),

@@ -27,19 +27,19 @@ const pushUserEventsToKafka = async (message) => {
 		console.log('📤 [USER KAFKA PRODUCER]   Tenant Code:', message.tenant_code)
 		console.log('📤 [USER KAFKA PRODUCER]   Created By:', message.created_by)
 		console.log('📤 [USER KAFKA PRODUCER]   Organizations:', message.organizations?.length || 0, 'orgs')
-		
+
 		const messageString = JSON.stringify(message)
 		console.log('📤 [USER KAFKA PRODUCER] Payload Size:', messageString.length, 'bytes')
 		console.log('📤 [USER KAFKA PRODUCER] First 200 chars:', messageString.substring(0, 200) + '...')
-		
+
 		const payload = { topic: process.env.EVENT_USER_KAFKA_TOPIC, messages: [{ value: messageString }] }
 		console.log('📤 [USER KAFKA PRODUCER] Kafka Payload Prepared:')
 		console.log('📤 [USER KAFKA PRODUCER]   Topic:', payload.topic)
 		console.log('📤 [USER KAFKA PRODUCER]   Messages Count:', payload.messages.length)
-		
+
 		console.log('📤 [USER KAFKA PRODUCER] Sending to Kafka...')
 		const response = await pushPayloadToKafka(payload)
-		
+
 		console.log('📤 [USER KAFKA PRODUCER] ✅ Kafka Response Received:')
 		console.log('📤 [USER KAFKA PRODUCER]   Success:', response ? 'Yes' : 'No')
 		if (response && response[0]) {
@@ -48,7 +48,7 @@ const pushUserEventsToKafka = async (message) => {
 			console.log('📤 [USER KAFKA PRODUCER]   Offset:', response[0].baseOffset)
 		}
 		console.log('📤 [USER KAFKA PRODUCER] ===== KAFKA USER EVENT COMPLETED =====')
-		
+
 		return response
 	} catch (error) {
 		console.log('📤 [USER KAFKA PRODUCER] ❌ ERROR in pushUserEventsToKafka:', error.message)
@@ -80,6 +80,51 @@ const pushOrganizationEventsToKafka = async (message) => {
 	}
 }
 
+const pushUserSubmissionToKafka = async (message) => {
+	try {
+		console.log('📤 [OBSERVATION UPDATE KAFKA] ===== SENDING OBSERVATION UPDATE EVENT =====')
+		console.log('📤 [OBSERVATION UPDATE KAFKA] Target Topic:', process.env.EVENT_OBSERVATION_UPDATE_KAFKA_TOPIC)
+		console.log(
+			'📤 [OBSERVATION UPDATE KAFKA] Kafka Producer Status:',
+			kafkaProducer ? 'Connected' : 'Not Connected'
+		)
+		console.log(
+			'📤 [OBSERVATION UPDATE KAFKA] Event Enabled:',
+			process.env.EVENT_ENABLE_OBSERVATION_UPDATE_KAFKA_EVENTS
+		)
+
+		const messageString = JSON.stringify(message)
+		console.log('📤 [OBSERVATION UPDATE KAFKA] Payload Size:', messageString.length, 'bytes')
+		console.log('📤 [OBSERVATION UPDATE KAFKA] First 200 chars:', messageString.substring(0, 200) + '...')
+
+		const payload = {
+			topic: process.env.EVENT_OBSERVATION_UPDATE_KAFKA_TOPIC,
+			messages: [{ value: messageString }],
+		}
+		console.log('📤 [OBSERVATION UPDATE KAFKA] Kafka Payload Prepared:')
+		console.log('📤 [OBSERVATION UPDATE KAFKA]   Topic:', payload.topic)
+		console.log('📤 [OBSERVATION UPDATE KAFKA]   Messages Count:', payload.messages.length)
+
+		console.log('📤 [OBSERVATION UPDATE KAFKA] Sending to Kafka...')
+		const response = await pushPayloadToKafka(payload)
+
+		console.log('📤 [OBSERVATION UPDATE KAFKA] ✅ Kafka Response Received:')
+		console.log('📤 [OBSERVATION UPDATE KAFKA]   Success:', response ? 'Yes' : 'No')
+		if (response && response[0]) {
+			console.log('📤 [OBSERVATION UPDATE KAFKA]   Topic:', response[0].topicName)
+			console.log('📤 [OBSERVATION UPDATE KAFKA]   Partition:', response[0].partition)
+			console.log('📤 [OBSERVATION UPDATE KAFKA]   Offset:', response[0].baseOffset)
+		}
+		console.log('📤 [OBSERVATION UPDATE KAFKA] ===== OBSERVATION UPDATE EVENT COMPLETED =====')
+
+		return response
+	} catch (error) {
+		console.log('📤 [OBSERVATION UPDATE KAFKA] ❌ ERROR in pushUserSubmissionToKafka:', error.message)
+		console.log('📤 [OBSERVATION UPDATE KAFKA] ❌ Error stack:', error.stack)
+		return error
+	}
+}
+
 const pushPayloadToKafka = async (payload) => {
 	try {
 		console.log('📤 [KAFKA PRODUCER] ===== SENDING PAYLOAD TO KAFKA =====')
@@ -87,17 +132,20 @@ const pushPayloadToKafka = async (payload) => {
 		console.log('📤 [KAFKA PRODUCER] Payload Topic:', payload.topic)
 		console.log('📤 [KAFKA PRODUCER] Message Count:', payload.messages.length)
 		console.log('📤 [KAFKA PRODUCER] Kafka Brokers:', process.env.KAFKA_URL || 'Not configured')
-		
+
 		console.log('📤 [KAFKA PRODUCER] Calling kafkaProducer.send()...')
 		const startTime = Date.now()
 		let response = await kafkaProducer.send(payload)
 		const endTime = Date.now()
-		
+
 		console.log('📤 [KAFKA PRODUCER] ✅ Kafka Send Completed:')
 		console.log('📤 [KAFKA PRODUCER]   Duration:', endTime - startTime, 'ms')
 		console.log('📤 [KAFKA PRODUCER]   Response Type:', typeof response)
-		console.log('📤 [KAFKA PRODUCER]   Response Array Length:', Array.isArray(response) ? response.length : 'Not an array')
-		
+		console.log(
+			'📤 [KAFKA PRODUCER]   Response Array Length:',
+			Array.isArray(response) ? response.length : 'Not an array'
+		)
+
 		if (response && Array.isArray(response) && response.length > 0) {
 			response.forEach((result, index) => {
 				console.log(`📤 [KAFKA PRODUCER]   Result ${index}:`)
@@ -108,14 +156,14 @@ const pushPayloadToKafka = async (payload) => {
 			})
 		}
 		console.log('📤 [KAFKA PRODUCER] ===== KAFKA SEND COMPLETED =====')
-		
+
 		return response
 	} catch (error) {
 		console.log('📤 [KAFKA PRODUCER] ❌ ERROR in pushPayloadToKafka:', error.message)
 		console.log('📤 [KAFKA PRODUCER] ❌ Error details:', {
 			name: error.name,
 			code: error.code,
-			stack: error.stack?.split('\n').slice(0, 3).join('\n')
+			stack: error.stack?.split('\n').slice(0, 3).join('\n'),
 		})
 		return error
 	}
@@ -140,4 +188,5 @@ module.exports = {
 	pushUserEventsToKafka,
 	pushTenantEventsToKafka,
 	pushOrganizationEventsToKafka,
+	pushUserSubmissionToKafka,
 }

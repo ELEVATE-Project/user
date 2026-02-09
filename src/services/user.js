@@ -201,6 +201,49 @@ module.exports = class UserHelper {
 				})
 
 				broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
+
+				const newRequestBody = {
+					entity: 'user',
+					eventType: 'update',
+					entityId: processDbResponse?.id,
+					oldValues: processDbResponse,
+					newValues: processDbResponse,
+					userProfile: {
+						// newValues
+						id: '3087',
+						email_verified: 'false',
+						name: 'one farabi updated via datapipline',
+						// username: "farabi",
+						phone_code: '91',
+						about: 'One Kafka update the value via datapipline',
+						dob: '22-12-2000',
+						meta: null,
+						// share_link: null,
+						// status: "ACTIVE",
+						// email_verified: "false",
+						// name: currentName,
+						// // username: "farabi",
+						// phone_code: "91",
+						// about: "my self farabi Three",
+						// dob: "22-12-2000",
+						// share_link: null,
+						// status: "ACTIVE",
+						// image: null,
+						// has_accepted_terms_and_conditions: false,
+						// languages: null,
+						// preferred_language: "en",
+						// tenant_code: "brac",
+						// meta: {
+						// 	about: 'Kafka update the value via datapipline updated',
+						// 	dob: '22-12-2000 updated',
+						// },
+						created_at: currentUser.dataValues?.created_at || null,
+						updated_at: currentUser.dataValues?.updated_at || new Date(),
+						// deleted_at: null
+					},
+				}
+
+				broadcastEvent('submissionEvents', { requestBody: newRequestBody, isInternal: true })
 			}
 
 			return responses.successResponse({

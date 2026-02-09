@@ -452,6 +452,21 @@ let enviromentVariables = {
 		optional: true,
 		default: '+91',
 	},
+	SUBMISSION_KAFKA_TOPIC: {
+		message: 'Kafka topic for Submission Event',
+		optional: true,
+		default: 'brac.observation.submission.dev',
+	},
+	EVENT_OBSERVATION_UPDATE_KAFKA_TOPIC: {
+		message: 'Kafka topic for Observation Update Event',
+		optional: true,
+		default: 'brac.observation.submission.dev',
+	},
+	EVENT_ENABLE_SUBMISSION_KAFKA_EVENTS: {
+		message: 'Key to toggle submission kafka event',
+		optional: true,
+		default: 'true',
+	},
 	KAFKA_HEALTH_CHECK_TOPIC: {
 		message: 'Required KAFKA_HEALTH_CHECK_TOPIC',
 		optional: true,
