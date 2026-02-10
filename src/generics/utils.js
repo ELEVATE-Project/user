@@ -449,7 +449,7 @@ async function processDbResponse(responseBody, entityType) {
 					// Move the key from responseBody.meta to responseBody root level
 					responseBody[entityTypeValue] = responseBody.meta[entityTypeValue]
 					// Delete the key from responseBody.meta
-					delete responseBody.meta[entityTypeValue]
+					//delete responseBody.meta[entityTypeValue]
 				} else {
 					const externalBaseUrl =
 						process.env?.[`${entity.meta.service.toUpperCase()}_BASE_URL`] ||
@@ -589,7 +589,7 @@ async function processDbResponse(responseBody, entityType) {
 										responseBody[entityTypeValue] = {}
 									}
 								}
-								delete responseBody.meta[entityTypeValue]
+								//delete responseBody.meta[entityTypeValue]
 							}
 						}
 					})
