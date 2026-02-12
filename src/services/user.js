@@ -137,6 +137,7 @@ module.exports = class UserHelper {
 					requestBody: {
 						mentor_name: currentName,
 						mentor_id: id,
+						tenant_code: tenantCode,
 					},
 				})
 			}
