@@ -31,11 +31,13 @@ module.exports = class UserHelper {
 	 * @method
 	 * @name update
 	 * @param {Object} bodyData - it contains user infomration
-	 * @param {string} pageSize -request data.
-	 * @param {string} searchText - search text.
+	 * @param {string} id - user id
+	 * @param {string} orgCode - organization code
+	 * @param {string} tenantCode - tenant code
+	 * @param {boolean} skipRequiredValidation - skip required field validation (for PATCH operations)
 	 * @returns {JSON} - update user response
 	 */
-	static async update(bodyData, id, orgCode, tenantCode) {
+	static async update(bodyData, id, orgCode, tenantCode, skipRequiredValidation = false) {
 		try {
 			if (bodyData.hasOwnProperty('email')) {
 				return responses.failureResponse({
@@ -78,7 +80,7 @@ module.exports = class UserHelper {
 				bodyData,
 				prunedEntities,
 				await userQueries.getModelName(),
-				false,
+				skipRequiredValidation,
 				tenantCode
 			)
 			if (!res.success) {
