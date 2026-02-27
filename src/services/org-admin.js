@@ -592,142 +592,101 @@ module.exports = class OrgAdminHelper {
 
 	static async updateUser(userId, bodyData, tokenInformation) {
 		try {
-			if (
-				bodyData.organization_id == tokenInformation.organization_id ||
-				bodyData.organization_id == tokenInformation.organization_code
-			) {
-				let checkUser = await userQueries.findOne({ id: userId })
-				if (!checkUser) {
-					return responses.failureResponse({
-						responseCode: 'CLIENT_ERROR',
-						statusCode: httpStatusCode.bad_request,
-						message: 'USER_NOT_FOUND',
-					})
-				}
+			// let checkUser = await userQueries.findOne({ id: userId })
+			// if (!checkUser) {
+			// 	return responses.failureResponse({
+			// 		responseCode: 'CLIENT_ERROR',
+			// 		statusCode: httpStatusCode.bad_request,
+			// 		message: 'USER_NOT_FOUND',
+			// 	})
+			// }
 
-				// Check if user is admin
-				const isAdmin = utils.validateRoleAccess(tokenInformation.roles, [common.ADMIN_ROLE])
-				const isLC = utils.validateRoleAccess(tokenInformation.roles, [common.ORG_ADMIN_ROLE])
+			// Check if user is admin
+			const isAdmin = utils.validateRoleAccess(tokenInformation.roles, [common.ADMIN_ROLE])
 
-				// If not admin and trying to update roles, reject
-				if (!isAdmin && bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
-					return responses.failureResponse({
-						responseCode: 'CLIENT_ERROR',
-						statusCode: httpStatusCode.forbidden,
-						message: 'YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES',
-					})
-				}
-
-				const updateData = {}
-				let hasRoleUpdate = false
-				let hasProfileUpdate = false
-
-				// Handle role updates (only for admin)
-				if (isAdmin && bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
-					let roles = _.without(bodyData.roles, common.ADMIN_ROLE)
-					let getRoleIds = await roleQueries.findAll({ title: roles }, { attributes: ['id'] })
-					if (!getRoleIds || getRoleIds.length === 0) {
-						return responses.failureResponse({
-							message: 'INVALID_ROLE_ASSIGNMENTS',
-							statusCode: httpStatusCode.bad_request,
-							responseCode: 'CLIENT_ERROR',
-						})
-					}
-					let roleIds = getRoleIds.map((roleId) => roleId.id)
-					updateData.roles = roleIds
-					hasRoleUpdate = true
-				}
-
-				// Handle profile updates
-				// Extract profile fields (everything except organization_id and roles)
-				let profileFields = { ...bodyData }
-				delete profileFields.organization_id
-				delete profileFields.roles
-
-				// If LC user, only allow province, site, and address fields
-				if (isLC && !isAdmin) {
-					const allowedFields = ['province', 'site', 'location']
-					const filteredFields = {}
-					Object.keys(profileFields).forEach((key) => {
-						if (allowedFields.includes(key.toLowerCase())) {
-							filteredFields[key] = profileFields[key]
-						}
-					})
-					profileFields = filteredFields
-
-					// If LC user tries to update other fields, reject
-					if (
-						Object.keys(profileFields).length === 0 &&
-						Object.keys(bodyData).some(
-							(key) =>
-								key !== 'organization_id' &&
-								key !== 'roles' &&
-								!allowedFields.includes(key.toLowerCase())
-						)
-					) {
-						return responses.failureResponse({
-							responseCode: 'CLIENT_ERROR',
-							statusCode: httpStatusCode.forbidden,
-							message: 'LC_USERS_CAN_ONLY_UPDATE_PROVINCE_SITE_AND_ADDRESS',
-						})
-					}
-				}
-
-				if (Object.keys(profileFields).length > 0) {
-					// Use userService.update logic for profile updates
-					const userService = require('@services/user')
-
-					const orgCode = tokenInformation.organization_code
-					const tenantCode = tokenInformation.tenant_code
-
-					// For PATCH operations from org-admin, skip required field validation
-					// Only update the fields that are sent (province, site, location)
-					const skipRequiredValidation = true
-
-					// Call userService.update to handle profile validation and update
-					const profileUpdateResult = await userService.update(
-						profileFields,
-						userId,
-						orgCode,
-						tenantCode,
-						skipRequiredValidation
-					)
-
-					if (
-						profileUpdateResult.responseCode !== 'OK' &&
-						profileUpdateResult.statusCode !== httpStatusCode.ok.status
-					) {
-						return profileUpdateResult
-					}
-					hasProfileUpdate = true
-				}
-
-				// Update roles if provided (only for admin)
-				if (hasRoleUpdate) {
-					await userQueries.updateUser({ id: userId }, updateData)
-				}
-
-				// Determine success message
-				let message = 'USER_UPDATE_SUCCESSFUL'
-				if (hasRoleUpdate && hasProfileUpdate) {
-					message = 'USER_ROLE_AND_PROFILE_UPDATE_SUCCESSFUL'
-				} else if (hasRoleUpdate) {
-					message = 'USER_ROLE_UPDATE_SUCCESSFUL'
-				} else if (hasProfileUpdate) {
-					message = 'USER_PROFILE_UPDATE_SUCCESSFUL'
-				}
-
-				return responses.successResponse({
-					statusCode: httpStatusCode.ok,
-					message: message,
-				})
-			} else {
+			// If not admin and trying to update roles, reject
+			if (!isAdmin && bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
 				return responses.failureResponse({
 					responseCode: 'CLIENT_ERROR',
-					statusCode: httpStatusCode.bad_request,
+					statusCode: httpStatusCode.forbidden,
 					message: 'YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES',
 				})
 			}
+
+			const updateData = {}
+			let hasRoleUpdate = false
+			let hasProfileUpdate = false
+
+			// Handle role updates (only for admin)
+			if (isAdmin && bodyData.roles && Array.isArray(bodyData.roles) && bodyData.roles.length > 0) {
+				let roles = _.without(bodyData.roles, common.ADMIN_ROLE)
+				let getRoleIds = await roleQueries.findAll({ title: roles }, { attributes: ['id'] })
+				if (!getRoleIds || getRoleIds.length === 0) {
+					return responses.failureResponse({
+						message: 'INVALID_ROLE_ASSIGNMENTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+				let roleIds = getRoleIds.map((roleId) => roleId.id)
+				updateData.roles = roleIds
+				hasRoleUpdate = true
+			}
+
+			// Handle profile updates
+			// Extract profile fields (everything except organization_id and roles)
+			let profileFields = { ...bodyData }
+			delete profileFields.organization_id
+			delete profileFields.roles
+
+			if (Object.keys(profileFields).length > 0) {
+				// Use userService.update logic for profile updates
+				const userService = require('@services/user')
+
+				const orgCode = tokenInformation.organization_code
+				const tenantCode = tokenInformation.tenant_code
+
+				// For PATCH operations from org-admin, skip required field validation
+				// Only update the fields that are sent (province, site, location)
+				const skipRequiredValidation = true
+
+				// Call userService.update to handle profile validation and update
+				const profileUpdateResult = await userService.update(
+					profileFields,
+					userId,
+					orgCode,
+					tenantCode,
+					skipRequiredValidation
+				)
+
+				if (
+					profileUpdateResult.responseCode !== 'OK' &&
+					profileUpdateResult.statusCode !== httpStatusCode.ok.status
+				) {
+					return profileUpdateResult
+				}
+				hasProfileUpdate = true
+			}
+
+			// Update roles if provided (only for admin)
+			if (hasRoleUpdate) {
+				await userQueries.updateUser({ id: userId }, updateData)
+			}
+
+			// Determine success message
+			let message = 'USER_UPDATE_SUCCESSFUL'
+			if (hasRoleUpdate && hasProfileUpdate) {
+				message = 'USER_ROLE_AND_PROFILE_UPDATE_SUCCESSFUL'
+			} else if (hasRoleUpdate) {
+				message = 'USER_ROLE_UPDATE_SUCCESSFUL'
+			} else if (hasProfileUpdate) {
+				message = 'USER_PROFILE_UPDATE_SUCCESSFUL'
+			}
+
+			return responses.successResponse({
+				statusCode: httpStatusCode.ok,
+				message: message,
+			})
 		} catch (error) {
 			console.log(error)
 			return error
