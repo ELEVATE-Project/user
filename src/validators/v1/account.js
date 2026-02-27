@@ -70,12 +70,21 @@ module.exports = {
 			.withMessage('phone must be a valid number between 7 and 15 digits')
 
 		// Validate phone_code (required if phone is provided)
-		req.checkBody('phone_code')
-			.optional({ checkFalsy: true })
-			.trim()
-			.isLength({ min: 2, max: 4 }) // Length between 2 and 4 characters
-			.withMessage('Phone code must be between 2 and 4 characters')
-
+		req.checkBody('phone_code').custom((value) => {
+			// If phone is provided, phone_code is mandatory
+			if (req.body.phone && !value) {
+				throw new Error('phone_code is required when phone is provided')
+			}
+			// If phone_code is provided, validate its format
+			if (value) {
+				// Convert to string and trim if it's not already a string
+				const trimmed = typeof value === 'string' ? value.trim() : String(value || '').trim()
+				if (trimmed.length < 2 || trimmed.length > 4) {
+					throw new Error('Phone code must be between 2 and 4 characters')
+				}
+			}
+			return true
+		})
 		// Validate password
 		req.checkBody('password')
 			.notEmpty()
@@ -182,11 +191,21 @@ module.exports = {
 		req.checkBody('registration_code').trim().withMessage('registration_code cannot be empty.')
 
 		// Validate phone_code (required if phone is provided)
-		req.checkBody('phone_code')
-			.optional()
-			.trim()
-			.matches(/^\+[1-9][0-9]{0,3}$/)
-			.withMessage('phone_code must be a valid country code (e.g., +1, +91)')
+		req.checkBody('phone_code').custom((value) => {
+			// If phone is provided, phone_code is mandatory
+			if (req.body.phone && !value) {
+				throw new Error('phone_code is required when phone is provided')
+			}
+			// If phone_code is provided, validate its format
+			if (value) {
+				// Convert to string and trim if it's not already a string
+				const trimmed = typeof value === 'string' ? value.trim() : String(value || '').trim()
+				if (!/^\+[1-9][0-9]{0,3}$/.test(trimmed)) {
+					throw new Error('phone_code must be a valid country code (e.g., +1, +91)')
+				}
+			}
+			return true
+		})
 
 		req.checkBody(['email', 'phone', 'phone_code']).custom(() => {
 			const phone = req.body.phone
