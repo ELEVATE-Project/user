@@ -29,7 +29,7 @@ const organizationFeatureQueries = require('@database/queries/organization-featu
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
-const { Op } = require('sequelize')
+const { Op, UniqueConstraintError } = require('sequelize')
 const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const TenantDTO = require('@dtos/tenantDTO')
 
@@ -59,20 +59,14 @@ module.exports = class tenantHelper {
 			try {
 				tenantCreateResponse = await tenantQueries.create(tenantCreateBody)
 			} catch (error) {
-				// Check for unique constraint violation (duplicate code)
-				if (
-					error.code === '23505' ||
-					error.message.includes('unique constraint') ||
-					error.message.includes('duplicate key')
-				) {
+				if (error instanceof UniqueConstraintError) {
 					return responses.failureResponse({
 						statusCode: httpStatusCode.bad_request,
 						message: 'TENANT_ALREADY_EXISTS',
 						result: {},
 					})
 				}
-				console.log(error)
-				throw error // Re-throw other errors
+				throw error
 			}
 
 			// push function to rollback tenant creation into stack
