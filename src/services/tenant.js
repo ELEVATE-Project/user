@@ -356,7 +356,8 @@ module.exports = class tenantHelper {
 								visibility: userRole.visibility,
 								tenant_code: tenantCreateResponse.code,
 							},
-							defaultOrgId
+							defaultOrgId,
+							tenantCreateResponse.code
 						)
 					})
 
