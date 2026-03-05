@@ -16,10 +16,13 @@ env:
   DOCKER_REGISTRY: docker.io
   DOCKER_NAMESPACE: shikshalokamqa
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   docker-image-build-and-push:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
 
     steps:
     - name: Checkout code from target branch
@@ -41,29 +44,45 @@ jobs:
       shell: bash
       run: |
         VERSION="${{ github.event.inputs.tag_version }}"
-        if [ -z "$VERSION" ]; then
-          echo "Error: tag_version input required"
-          exit 1
-        fi
         # Strip leading "v" if present
         VERSION="${VERSION#v}"
-        # Optional: enforce x.y.z
-        if ! [[ "$VERSION" =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
-          echo "Error: tag_version must look like 3.3.23"
+        # Enforce x.y.z or x.y.z-rc.1 format
+        if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9\.]+)?$ ]]; then
+          echo "Error: tag_version must look like 3.4.0 or 3.4.0-rc.1"
           exit 1
         fi
         printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
 
+    - name: Check if Git tag already exists
+      run: |
+        VERSION="${{ steps.get-version.outputs.version }}"
+        git fetch --tags
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "Error: Git tag $VERSION already exists"
+          exit 1
+        fi
 
     - name: Check if version exists on Docker Hub
-      id: check-version
       run: |
-        VERSION=${{ steps.get-version.outputs.version }}
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$VERSION")
+        VERSION="${{ steps.get-version.outputs.version }}"
+        TOKEN=$(curl -s \
+          -u "${{ secrets.DOCKERHUB_USERNAME }}:${{ secrets.DOCKERHUB_TOKEN }}" \
+          "https://hub.docker.com/v2/users/login" | jq -r .token)
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "Authorization: Bearer $TOKEN" \
+          "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$VERSION")
         if [ "$RESPONSE" -eq 200 ]; then
           echo "Error: Tag $VERSION already exists on Docker Hub"
           exit 1
         fi
+
+    - name: Create and push Git tag
+      run: |
+        VERSION="${{ steps.get-version.outputs.version }}"
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git tag -a "$VERSION" -m "Release $VERSION"
+        git push origin "$VERSION"
 
     - name: Extract metadata
       id: meta
@@ -86,7 +105,8 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Print pushed tags
+    - name: Job summary
       run: |
-        echo "Pushed tags:"
-        echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n'
+        echo "### Docker Image Published 🚀" >> $GITHUB_STEP_SUMMARY
+        echo "**Tag:** ${{ steps.get-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Digest:** ${{ steps.build.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
