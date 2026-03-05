@@ -58,7 +58,7 @@ exports.eventBroadcasterMain = async (eventGroup, { requestBody, headers = {}, i
 				console.error(`Error for endpoint ${endPoints[index].url}:`, result.reason)
 		})
 	} catch (err) {
-		console.log(`[EVENT BROADCASTER] API Event error: ${err.message}`)
+		console.log(`[EVENT BROADCASTER] API Event error: ${err}`)
 	}
 }
 exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
@@ -81,12 +81,11 @@ exports.eventBroadcasterKafka = async (eventGroup, { requestBody }) => {
 				break
 		}
 	} catch (err) {
-		console.log(`[EVENT BROADCASTER] Kafka Event error: ${err.message}`)
+		console.log(`[EVENT BROADCASTER] Kafka Event error: ${err}`)
 	}
 }
 exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInternal = true }) => {
 	try {
-
 		// Fire both broadcaster functions concurrently
 		const broadcastPromises = [
 			exports.eventBroadcasterMain(eventGroup, { requestBody, headers, isInternal }),
@@ -99,13 +98,12 @@ exports.broadcastEvent = async (eventGroup, { requestBody, headers = {}, isInter
 		// Check for failed promises and throw warnings
 		results.forEach((result, index) => {
 			if (result.status === 'rejected') {
-				const broadcaster = index === 0 ? 'eventBroadcasterMain (API)' : 'eventBroadcasterKafka'
-			} else {
-				const broadcaster = index === 0 ? 'eventBroadcasterMain (API)' : 'eventBroadcasterKafka'
+				const broadcaster = index === 0 ? 'eventBroadcasterMain' : 'eventBroadcasterKafka'
+				console.warn(`Warning: ${broadcaster} failed for eventGroup "${eventGroup}": ${result.reason}`)
 			}
 		})
 	} catch (err) {
 		// Log any unexpected errors from the promise settlement
-		console.error('[EVENT BROADCASTER] Error in broadcastEvent:', err)
+		console.error('Error in broadcastEvent:', err)
 	}
 }
