@@ -7,7 +7,6 @@
 
 module.exports = {
 	name: process.env.SERVICE_NAME,
-	version: '1.0.0',
 	checks: {
 		kafka: {
 			enabled: true,

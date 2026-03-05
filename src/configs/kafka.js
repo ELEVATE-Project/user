@@ -15,14 +15,14 @@ const logger = elevateLog.init()
 
 module.exports = async () => {
 	const kafkaIps = process.env.KAFKA_URL.split(',')
+
 	const KafkaClient = new Kafka({
-		clientId: 'mentoring',
+		clientId: 'user-service',
 		brokers: kafkaIps,
 	})
 
 	const producer = KafkaClient.producer()
 	const consumer = KafkaClient.consumer({ groupId: process.env.KAFKA_GROUP_ID })
-
 	await producer.connect()
 	await consumer.connect()
 
@@ -36,7 +36,8 @@ module.exports = async () => {
 	})
 
 	const subscribeToConsumer = async () => {
-		await consumer.subscribe({ topics: [process.env.CLEAR_INTERNAL_CACHE] })
+		const topics = [process.env.CLEAR_INTERNAL_CACHE].filter(Boolean)
+		await consumer.subscribe({ topics })
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				try {
@@ -52,6 +53,7 @@ module.exports = async () => {
 			},
 		})
 	}
+
 	subscribeToConsumer()
 
 	global.kafkaProducer = producer

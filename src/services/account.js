@@ -67,6 +67,7 @@ module.exports = class AccountHelper {
 				})
 
 			const tenantDomain = await tenantDomainQueries.findOne({ domain })
+
 			if (!tenantDomain) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
@@ -75,6 +76,7 @@ module.exports = class AccountHelper {
 				code: tenantDomain.tenant_code,
 				status: common.ACTIVE_STATUS,
 			})
+
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
@@ -109,8 +111,12 @@ module.exports = class AccountHelper {
 			let plaintextEmailId = null
 			if (bodyData.email) {
 				plaintextEmailId = bodyData.email.toLowerCase()
-				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-				bodyData.email = encryptedEmailId
+				try {
+					encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+					bodyData.email = encryptedEmailId
+				} catch (encryptError) {
+					throw encryptError
+				}
 			}
 
 			// Handle phone encryption if provided
@@ -118,9 +124,13 @@ module.exports = class AccountHelper {
 			let plaintextPhoneNumber = null
 			if (bodyData.phone && bodyData.phone_code) {
 				plaintextPhoneNumber = bodyData.phone
-				encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
-				bodyData.phone = encryptedPhoneNumber
-				bodyData.phone_code = bodyData.phone_code // Store phone_code separately
+				try {
+					encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
+					bodyData.phone = encryptedPhoneNumber
+					bodyData.phone_code = bodyData.phone_code // Store phone_code separately
+				} catch (encryptError) {
+					throw encryptError
+				}
 			}
 
 			const criteria = []
@@ -630,7 +640,6 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -827,7 +836,6 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -870,7 +878,6 @@ module.exports = class AccountHelper {
 				message: 'LOGGED_OUT_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -1105,7 +1112,6 @@ module.exports = class AccountHelper {
 				message: 'OTP_SENT_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -1525,7 +1531,6 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -1677,7 +1682,6 @@ module.exports = class AccountHelper {
 				})
 			}
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -1708,9 +1712,7 @@ module.exports = class AccountHelper {
 
 			// Clear Redis cache asynchronously (fire and forget)
 			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
-			utilsHelper.redisDel(redisUserKey).catch((err) => {
-				console.error('Redis delete error:', err)
-			})
+			utilsHelper.redisDel(redisUserKey).catch((err) => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1829,7 +1831,6 @@ module.exports = class AccountHelper {
 				message: 'USER_ROLE_UPDATED_SUCCESSFULLY',
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -1933,7 +1934,6 @@ module.exports = class AccountHelper {
 				},
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -2032,7 +2032,6 @@ module.exports = class AccountHelper {
 				result,
 			})
 		} catch (error) {
-			console.log(error)
 			throw error
 		}
 	}
@@ -2070,7 +2069,6 @@ module.exports = class AccountHelper {
 						user.email = emailEncryption.decrypt(user.email)
 						userIdsAndInvalidEmails.push(user.id)
 					} catch (err) {
-						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
 						const originalEmail = emailEncryption.decrypt(encryptedEmail)
 						userIdsAndInvalidEmails.push(originalEmail)
 					}
@@ -2079,7 +2077,6 @@ module.exports = class AccountHelper {
 						const originalEmail = emailEncryption.decrypt(encryptedEmail)
 						userIdsAndInvalidEmails.push(originalEmail)
 					} catch (err) {
-						console.error(`Decryption failed for email: ${encryptedEmail}`, err)
 						userIdsAndInvalidEmails.push('Decryption failed')
 					}
 				}
