@@ -67,7 +67,7 @@ module.exports = class AccountHelper {
 				})
 
 			const tenantDomain = await tenantDomainQueries.findOne({ domain })
-			
+
 			if (!tenantDomain) {
 				return notFoundResponse('TENANT_DOMAIN_NOT_FOUND_PING_ADMIN')
 			}
@@ -76,7 +76,7 @@ module.exports = class AccountHelper {
 				code: tenantDomain.tenant_code,
 				status: common.ACTIVE_STATUS,
 			})
-			
+
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
@@ -104,7 +104,6 @@ module.exports = class AccountHelper {
 						responseCode: 'CLIENT_ERROR',
 					})
 				}
-			} else {
 			}
 
 			// Handle email encryption if provided
@@ -635,7 +634,6 @@ module.exports = class AccountHelper {
 
 			broadcastEvent('userEvents', { requestBody: eventBody, isInternal: true })
 
-			
 			return responses.successResponse({
 				statusCode: httpStatusCode.created,
 				message: 'USER_CREATED_SUCCESSFULLY',
@@ -1714,8 +1712,7 @@ module.exports = class AccountHelper {
 
 			// Clear Redis cache asynchronously (fire and forget)
 			const redisUserKey = `${common.redisUserPrefix}${tenantCode}_${userId}`
-			utilsHelper.redisDel(redisUserKey).catch((err) => {
-			})
+			utilsHelper.redisDel(redisUserKey).catch((err) => {})
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
