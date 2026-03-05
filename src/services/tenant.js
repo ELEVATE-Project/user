@@ -305,8 +305,10 @@ module.exports = class tenantHelper {
 				})
 
 				if (fetchAllDefaultOrgFeatures.length > 0) {
-					const orgFeatureCreationPromise = fetchAllDefaultOrgFeatures.map((feature) => {
-						return organizationFetureService.create(
+					const orgFeatureCreateResponse = []
+
+					for (const feature of fetchAllDefaultOrgFeatures) {
+						const response = await organizationFetureService.create(
 							{
 								feature_code: feature.feature_code,
 								enabled: feature.enabled,
@@ -324,9 +326,8 @@ module.exports = class tenantHelper {
 								id: userId,
 							}
 						)
-					})
-					const orgFeatureCreateResponse = await Promise.all(orgFeatureCreationPromise)
-
+						orgFeatureCreateResponse.push(response)
+					}
 					orgFeatureCreateResponse.map((feature) => {
 						rollbackStack.push(async () => {
 							await organizationFeatureQueries.hardDelete(
