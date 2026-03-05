@@ -64,9 +64,11 @@ jobs:
     - name: Check if version exists on Docker Hub
       run: |
         VERSION="${{ steps.get-version.outputs.version }}"
-
+        
         LOGIN_RESPONSE=$(curl -s -w "\n%{http_code}" \
-          -u "${{ secrets.DOCKERHUB_USERNAME }}:${{ secrets.DOCKERHUB_TOKEN }}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_TOKEN }}"}' \
           "https://hub.docker.com/v2/users/login")
         LOGIN_HTTP=$(echo "$LOGIN_RESPONSE" | tail -n1)
         LOGIN_BODY=$(echo "$LOGIN_RESPONSE" | head -n-1)
