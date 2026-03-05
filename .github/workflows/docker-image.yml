@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build, Tag, and Push Docker Image
 
 on:
   workflow_dispatch:
@@ -18,7 +18,6 @@ env:
 
 permissions:
   contents: write
-  packages: write
 
 jobs:
   docker-image-build-and-push:
@@ -47,8 +46,8 @@ jobs:
         # Strip leading "v" if present
         VERSION="${VERSION#v}"
         # Enforce x.y.z or x.y.z-rc.1 format
-        if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9\.]+)?$ ]]; then
-          echo "Error: tag_version must look like 3.4.0 or 3.4.0-rc.1"
+        if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]]; then
+          echo "Error: tag_version must look like 3.4.0 or 3.4.0-rc.1 (no other suffixes allowed)"
           exit 1
         fi
         printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
@@ -65,24 +64,37 @@ jobs:
     - name: Check if version exists on Docker Hub
       run: |
         VERSION="${{ steps.get-version.outputs.version }}"
-        TOKEN=$(curl -s \
+
+        LOGIN_RESPONSE=$(curl -s -w "\n%{http_code}" \
           -u "${{ secrets.DOCKERHUB_USERNAME }}:${{ secrets.DOCKERHUB_TOKEN }}" \
-          "https://hub.docker.com/v2/users/login" | jq -r .token)
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-          -H "Authorization: Bearer $TOKEN" \
-          "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$VERSION")
-        if [ "$RESPONSE" -eq 200 ]; then
-          echo "Error: Tag $VERSION already exists on Docker Hub"
+          "https://hub.docker.com/v2/users/login")
+        LOGIN_HTTP=$(echo "$LOGIN_RESPONSE" | tail -n1)
+        LOGIN_BODY=$(echo "$LOGIN_RESPONSE" | head -n-1)
+
+        if [ "$LOGIN_HTTP" -ne 200 ]; then
+          echo "Error: Docker Hub login failed with HTTP $LOGIN_HTTP"
           exit 1
         fi
 
-    - name: Create and push Git tag
-      run: |
-        VERSION="${{ steps.get-version.outputs.version }}"
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git tag -a "$VERSION" -m "Release $VERSION"
-        git push origin "$VERSION"
+        TOKEN=$(echo "$LOGIN_BODY" | jq -r .token)
+        if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+          echo "Error: Docker Hub login succeeded but returned no token"
+          exit 1
+        fi
+
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "Authorization: Bearer $TOKEN" \
+          "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$VERSION")
+
+        if [ "$RESPONSE" -eq 200 ]; then
+          echo "Error: Tag $VERSION already exists on Docker Hub"
+          exit 1
+        elif [ "$RESPONSE" -eq 404 ]; then
+          echo "Tag $VERSION not found on Docker Hub — safe to push"
+        else
+          echo "Error: Unexpected HTTP $RESPONSE from Docker Hub tag check; aborting to fail safe"
+          exit 1
+        fi
 
     - name: Extract metadata
       id: meta
@@ -104,6 +116,14 @@ jobs:
         platforms: linux/amd64,linux/arm64
         cache-from: type=gha
         cache-to: type=gha,mode=max
+
+    - name: Create and push Git tag
+      run: |
+        VERSION="${{ steps.get-version.outputs.version }}"
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git tag -a "$VERSION" -m "Release $VERSION"
+        git push origin "$VERSION"
 
     - name: Job summary
       run: |
