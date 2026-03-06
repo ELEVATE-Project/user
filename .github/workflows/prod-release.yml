@@ -61,11 +61,16 @@ jobs:
         RC_TAG="${{ steps.version.outputs.rc }}"
         RELEASE_TAG="${{ steps.version.outputs.release }}"
 
-        LOGIN_RESPONSE=$(curl -s -w "\n%{http_code}" \
-          -X POST \
-          -H "Content-Type: application/json" \
-          -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME }}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" \
-          "https://hub.docker.com/v2/users/login")
+        # FIX 1: Build JSON safely with jq --arg to avoid special-character injection
+        LOGIN_RESPONSE=$(jq -n \
+          --arg username "${{ secrets.DOCKERHUB_USERNAME }}" \
+          --arg password "${{ secrets.DOCKERHUB_TOKEN }}" \
+          '{"username": $username, "password": $password}' \
+          | curl -s -w "\n%{http_code}" \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -d @- \
+              "https://hub.docker.com/v2/users/login")
         LOGIN_HTTP=$(echo "$LOGIN_RESPONSE" | tail -n1)
         LOGIN_BODY=$(echo "$LOGIN_RESPONSE" | head -n-1)
 
@@ -106,21 +111,15 @@ jobs:
         fi
         echo "Production tag $RELEASE_TAG is absent — safe to promote."
 
-    - name: Pull RC image
+    # FIX 2: Replace pull/tag/push with imagetools create to preserve multi-arch manifest
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Retag RC image as production (multi-arch)
       run: |
-        docker pull \
+        docker buildx imagetools create \
+          --tag ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }} \
           ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.rc }}
-
-    - name: Retag image for production
-      run: |
-        docker tag \
-          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.rc }} \
-          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }}
-
-    - name: Push production image
-      run: |
-        docker push \
-          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }}
 
     - name: Create production Git tag
       run: |
@@ -137,9 +136,11 @@ jobs:
 
     - name: Job summary
       run: |
-        DIGEST=$(docker inspect \
-          --format='{{index .RepoDigests 0}}' \
-          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }})
+        # FIX 3: Use imagetools inspect to get digest from remote (image not pulled locally)
+        DIGEST=$(docker buildx imagetools inspect \
+          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }} \
+          --format '{{json .Manifest}}' \
+          | jq -r '.digest')
         echo "### Production Promotion Complete 🚀" >> $GITHUB_STEP_SUMMARY
         echo "**RC Image:** ${{ steps.version.outputs.rc }}" >> $GITHUB_STEP_SUMMARY
         echo "**Release Image:** ${{ steps.version.outputs.release }}" >> $GITHUB_STEP_SUMMARY
