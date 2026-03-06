@@ -1,0 +1,146 @@
+name: Promote RC to Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      rc_tag:
+        description: "Approved RC tag (example: 3.4.0-rc.2)"
+        required: true
+
+env:
+  DOCKER_IMAGE_NAME: elevate-user
+  DOCKER_REGISTRY: docker.io
+  DOCKER_NAMESPACE: shikshalokamqa
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Validate RC tag
+      id: version
+      run: |
+        RC_TAG="${{ github.event.inputs.rc_tag }}"
+        if ! [[ "$RC_TAG" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-rc\.[0-9]+$ ]]; then
+          echo "Invalid rc_tag format. Must look like 3.4.0-rc.2"
+          exit 1
+        fi
+        RELEASE_TAG=$(echo "$RC_TAG" | sed 's/-rc\.[0-9]*//')
+        echo "rc=$RC_TAG" >> $GITHUB_OUTPUT
+        echo "release=$RELEASE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Verify RC commit exists in main
+      run: |
+        RC_TAG="${{ steps.version.outputs.rc }}"
+        git fetch origin main --tags
+        RC_COMMIT=$(git rev-list -n 1 "$RC_TAG")
+        if git merge-base --is-ancestor "$RC_COMMIT" origin/main; then
+          echo "RC commit is present in main — safe to promote."
+        else
+          echo "Error: RC tag commit is NOT in main."
+          echo "Merge staging → main before promoting."
+          exit 1
+        fi
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Check RC image exists and production tag is absent on Docker Hub
+      run: |
+        RC_TAG="${{ steps.version.outputs.rc }}"
+        RELEASE_TAG="${{ steps.version.outputs.release }}"
+
+        LOGIN_RESPONSE=$(curl -s -w "\n%{http_code}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d "{\"username\": \"${{ secrets.DOCKERHUB_USERNAME }}\", \"password\": \"${{ secrets.DOCKERHUB_TOKEN }}\"}" \
+          "https://hub.docker.com/v2/users/login")
+        LOGIN_HTTP=$(echo "$LOGIN_RESPONSE" | tail -n1)
+        LOGIN_BODY=$(echo "$LOGIN_RESPONSE" | head -n-1)
+
+        if [ "$LOGIN_HTTP" -ne 200 ]; then
+          echo "Error: Docker Hub login failed with HTTP $LOGIN_HTTP"
+          exit 1
+        fi
+
+        TOKEN=$(echo "$LOGIN_BODY" | jq -r .token)
+        if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+          echo "Error: Docker Hub login succeeded but returned no token"
+          exit 1
+        fi
+
+        # Verify RC image exists
+        RC_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "Authorization: Bearer $TOKEN" \
+          "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$RC_TAG")
+        if [ "$RC_RESPONSE" -eq 404 ]; then
+          echo "Error: RC image $RC_TAG not found on Docker Hub"
+          exit 1
+        elif [ "$RC_RESPONSE" -ne 200 ]; then
+          echo "Error: Unexpected HTTP $RC_RESPONSE checking RC image — aborting to fail safe"
+          exit 1
+        fi
+        echo "RC image $RC_TAG confirmed on Docker Hub."
+
+        # Verify production tag does not already exist
+        PROD_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+          -H "Authorization: Bearer $TOKEN" \
+          "https://hub.docker.com/v2/namespaces/${{ env.DOCKER_NAMESPACE }}/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/$RELEASE_TAG")
+        if [ "$PROD_RESPONSE" -eq 200 ]; then
+          echo "Error: Production tag $RELEASE_TAG already exists on Docker Hub"
+          exit 1
+        elif [ "$PROD_RESPONSE" -ne 404 ]; then
+          echo "Error: Unexpected HTTP $PROD_RESPONSE checking production tag — aborting to fail safe"
+          exit 1
+        fi
+        echo "Production tag $RELEASE_TAG is absent — safe to promote."
+
+    - name: Pull RC image
+      run: |
+        docker pull \
+          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.rc }}
+
+    - name: Retag image for production
+      run: |
+        docker tag \
+          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.rc }} \
+          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }}
+
+    - name: Push production image
+      run: |
+        docker push \
+          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }}
+
+    - name: Create production Git tag
+      run: |
+        VERSION="${{ steps.version.outputs.release }}"
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git fetch --tags
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "Error: Git tag $VERSION already exists"
+          exit 1
+        fi
+        git tag -a "$VERSION" -m "Release $VERSION"
+        git push origin "$VERSION"
+
+    - name: Job summary
+      run: |
+        DIGEST=$(docker inspect \
+          --format='{{index .RepoDigests 0}}' \
+          ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }})
+        echo "### Production Promotion Complete 🚀" >> $GITHUB_STEP_SUMMARY
+        echo "**RC Image:** ${{ steps.version.outputs.rc }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Release Image:** ${{ steps.version.outputs.release }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Digest:** $DIGEST" >> $GITHUB_STEP_SUMMARY
