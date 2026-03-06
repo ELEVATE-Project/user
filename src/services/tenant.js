@@ -29,7 +29,7 @@ const organizationFeatureQueries = require('@database/queries/organization-featu
 const utils = require('@generics/utils')
 const _ = require('lodash')
 const responses = require('@helpers/responses')
-const { Op } = require('sequelize')
+const { Op, UniqueConstraintError } = require('sequelize')
 const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const TenantDTO = require('@dtos/tenantDTO')
 
@@ -59,20 +59,14 @@ module.exports = class tenantHelper {
 			try {
 				tenantCreateResponse = await tenantQueries.create(tenantCreateBody)
 			} catch (error) {
-				// Check for unique constraint violation (duplicate code)
-				if (
-					error.code === '23505' ||
-					error.message.includes('unique constraint') ||
-					error.message.includes('duplicate key')
-				) {
+				if (error instanceof UniqueConstraintError) {
 					return responses.failureResponse({
 						statusCode: httpStatusCode.bad_request,
 						message: 'TENANT_ALREADY_EXISTS',
 						result: {},
 					})
 				}
-				console.log(error)
-				throw error // Re-throw other errors
+				throw error
 			}
 
 			// push function to rollback tenant creation into stack
@@ -311,8 +305,10 @@ module.exports = class tenantHelper {
 				})
 
 				if (fetchAllDefaultOrgFeatures.length > 0) {
-					const orgFeatureCreationPromise = fetchAllDefaultOrgFeatures.map((feature) => {
-						return organizationFetureService.create(
+					const orgFeatureCreateResponse = []
+
+					for (const feature of fetchAllDefaultOrgFeatures) {
+						const response = await organizationFetureService.create(
 							{
 								feature_code: feature.feature_code,
 								enabled: feature.enabled,
@@ -330,9 +326,8 @@ module.exports = class tenantHelper {
 								id: userId,
 							}
 						)
-					})
-					const orgFeatureCreateResponse = await Promise.all(orgFeatureCreationPromise)
-
+						orgFeatureCreateResponse.push(response)
+					}
 					orgFeatureCreateResponse.map((feature) => {
 						rollbackStack.push(async () => {
 							await organizationFeatureQueries.hardDelete(
@@ -362,7 +357,8 @@ module.exports = class tenantHelper {
 								visibility: userRole.visibility,
 								tenant_code: tenantCreateResponse.code,
 							},
-							defaultOrgId
+							defaultOrgId,
+							tenantCreateResponse.code
 						)
 					})
 
