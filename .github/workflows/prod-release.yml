@@ -42,17 +42,17 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Verify RC commit exists in master
+    - name: Verify RC commit exists in main
       id: verify
       run: |
         RC_TAG="${{ steps.version.outputs.rc }}"
-        git fetch origin master --tags
+        git fetch origin main --tags
         RC_COMMIT=$(git rev-list -n 1 "$RC_TAG")
-        if git merge-base --is-ancestor "$RC_COMMIT" origin/master; then
-          echo "RC commit is present in master — safe to promote."
+        if git merge-base --is-ancestor "$RC_COMMIT" origin/main; then
+          echo "RC commit is present in main — safe to promote."
         else
-          echo "Error: RC tag commit is NOT in master."
-          echo "Merge staging → master before promoting."
+          echo "Error: RC tag commit is NOT in main."
+          echo "Merge staging → main before promoting."
           exit 1
         fi
         echo "rc_commit=$RC_COMMIT" >> $GITHUB_OUTPUT
@@ -143,12 +143,20 @@ jobs:
 
     - name: Job summary
       run: |
-        # FIX 3: Use imagetools inspect to get digest from remote (image not pulled locally)
         DIGEST=$(docker buildx imagetools inspect \
           ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }} \
           --format '{{json .Manifest}}' \
           | jq -r '.digest')
-        echo "### Production Promotion Complete 🚀" >> $GITHUB_STEP_SUMMARY
-        echo "**RC Image:** ${{ steps.version.outputs.rc }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Release Image:** ${{ steps.version.outputs.release }}" >> $GITHUB_STEP_SUMMARY
-        echo "**Digest:** $DIGEST" >> $GITHUB_STEP_SUMMARY
+        {
+          echo "### Production Promotion Complete 🚀"
+          echo ""
+          echo "| Field | Value |"
+          echo "| --- | --- |"
+          echo "| **RC tag** | \`${{ steps.version.outputs.rc }}\` |"
+          echo "| **Release tag** | \`${{ steps.version.outputs.release }}\` |"
+          echo "| **Validated commit** | \`${{ steps.verify.outputs.rc_commit }}\` |"
+          echo "| **Docker image** | \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_NAMESPACE }}/${{ env.DOCKER_IMAGE_NAME }}:${{ steps.version.outputs.release }}\` |"
+          echo "| **Digest** | \`$DIGEST\` |"
+          echo "| **Triggered by** | @${{ github.actor }} |"
+          echo "| **Run** | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |"
+        } >> $GITHUB_STEP_SUMMARY
