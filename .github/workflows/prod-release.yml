@@ -42,17 +42,17 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Verify RC commit exists in main
+    - name: Verify RC commit exists in master
       id: verify
       run: |
         RC_TAG="${{ steps.version.outputs.rc }}"
-        git fetch origin main --tags
+        git fetch origin master --tags
         RC_COMMIT=$(git rev-list -n 1 "$RC_TAG")
-        if git merge-base --is-ancestor "$RC_COMMIT" origin/main; then
-          echo "RC commit is present in main — safe to promote."
+        if git merge-base --is-ancestor "$RC_COMMIT" origin/master; then
+          echo "RC commit is present in master — safe to promote."
         else
-          echo "Error: RC tag commit is NOT in main."
-          echo "Merge staging → main before promoting."
+          echo "Error: RC tag commit is NOT in master."
+          echo "Merge staging → master before promoting."
           exit 1
         fi
         echo "rc_commit=$RC_COMMIT" >> $GITHUB_OUTPUT
