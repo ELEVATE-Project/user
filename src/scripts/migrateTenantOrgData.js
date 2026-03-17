@@ -1382,6 +1382,9 @@ async function ensureStrictIdCompatibility(sequelize, tx, context, options) {
 
 	let nextFreeRoleId = 0
 	if (blockingRows.length > 0) {
+		// NOTE: Assigning IDs above MAX(id) here. If this path is exercised,
+		// the backing sequence for user_roles.id must be reset after the rebase
+		// (setval to COALESCE(MAX(id),1)) to prevent future insert collisions.
 		const maxIdRows = await querySelect(
 			sequelize,
 			`SELECT COALESCE(MAX(id), 0) AS max_id
