@@ -49,9 +49,36 @@ i18next
 	})
 
 const app = express()
+const ORIGIN_HOST_OVERRIDE = {
+	source: 'dev.elevate-sandbox.shikshalokam.org',
+	target: 'https://tan90.com',
+}
 
 // Health check
 require('@health-checks')(app)
+
+app.use((req, res, next) => {
+	const incomingOrigin = req.headers.origin
+
+	if (!incomingOrigin) {
+		return next()
+	}
+
+	try {
+		const originUrl = new URL(incomingOrigin)
+
+		if (originUrl.hostname === ORIGIN_HOST_OVERRIDE.source) {
+			originUrl.hostname = ORIGIN_HOST_OVERRIDE.target
+			req.headers.origin = originUrl.origin
+		}
+	} catch (error) {
+		if (incomingOrigin === ORIGIN_HOST_OVERRIDE.source) {
+			req.headers.origin = ORIGIN_HOST_OVERRIDE.target
+		}
+	}
+
+	next()
+})
 
 app.use(cors())
 
