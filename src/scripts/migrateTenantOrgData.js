@@ -1225,6 +1225,7 @@ async function ensureStrictIdCompatibility(sequelize, tx, context, options) {
 		   ON o.id = ur.organization_id
 		  AND o.tenant_code = ur.tenant_code
 		 WHERE ur.tenant_code = $targetTenant
+		   AND ur.deleted_at IS NULL
 		   AND ur.id = ANY($requiredRoleIdArray);`,
 		{ targetTenant, requiredRoleIdArray },
 		tx
@@ -1453,6 +1454,7 @@ async function ensureStrictIdCompatibility(sequelize, tx, context, options) {
 		   ON o.id = ur.organization_id
 		  AND o.tenant_code = ur.tenant_code
 		 WHERE ur.tenant_code = $targetTenant
+		   AND ur.deleted_at IS NULL
 		   AND ur.id = ANY($requiredRoleIdArray);`,
 		{ targetTenant, requiredRoleIdArray },
 		tx
