@@ -10,7 +10,7 @@ jobs:
     steps:
       - checkout:
           path: ~/user
-          fetch-depth: 0
+          method: full
       - restore_cache:
           key: user-dependency-cache-{{ checksum "src/package.json" }}
       - run:
