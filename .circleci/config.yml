@@ -1,6 +1,6 @@
 version: 2.1 # CircleCI version
 orbs:
-  sonarcloud: sonarsource/sonarcloud@1.1.1
+  sonarcloud: sonarsource/sonarcloud@2.0.0
 jobs:
   build:
     machine: #Linux machine instead of docker environment
