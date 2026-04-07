@@ -475,9 +475,12 @@ module.exports = class AdminHelper {
 				return failure('IDENTIFIER_OR_PASSWORD_INVALID', httpStatusCode.bad_request)
 			}
 
-			// Check for admin role
+			// Check for admin role or tenant admin role
 			const hasAdminRole = user.user_organizations?.some((org) =>
-				org.roles?.some((r) => r.role?.title?.toLowerCase() === common.ADMIN_ROLE)
+				org.roles?.some((r) => {
+					const roleTitle = r.role?.title?.toLowerCase()
+					return roleTitle === common.ADMIN_ROLE || roleTitle === common.TENANT_ADMIN_ROLE
+				})
 			)
 
 			if (!hasAdminRole) {
