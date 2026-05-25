@@ -377,12 +377,10 @@ module.exports = class UserInviteHelper {
 								const cleanVal = String(row[field]).replaceAll(/\s+/g, '').toLowerCase()
 								const lookupKey = `${cleanVal}${cleanField}`
 
-								const matchedKey = Object.keys(externalEntityNameIdMap || {}).find((key) =>
-									key.includes(lookupKey)
-								)
+								const matchedId = externalEntityNameIdMap?.[lookupKey]?._id
 
-								if (matchedKey) {
-									row.meta[field] = externalEntityNameIdMap?.[matchedKey]?._id || null
+								if (matchedId !== undefined && matchedId !== null) {
+									row.meta[field] = matchedId
 								} else {
 									row.meta[field] = row[field]
 								}
