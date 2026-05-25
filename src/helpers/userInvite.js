@@ -376,7 +376,14 @@ module.exports = class UserInviteHelper {
 								// Handle Single value types (Standard logic)
 								const cleanVal = String(row[field]).replaceAll(/\s+/g, '').toLowerCase()
 								const lookupKey = `${cleanVal}${cleanField}`
-								row.meta[field] = externalEntityNameIdMap?.[lookupKey]?._id || null
+
+								const matchedId = externalEntityNameIdMap?.[lookupKey]?._id
+
+								if (matchedId !== undefined && matchedId !== null) {
+									row.meta[field] = matchedId
+								} else {
+									row.meta[field] = row[field]
+								}
 							}
 						}
 					})
