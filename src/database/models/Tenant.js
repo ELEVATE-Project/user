@@ -1,4 +1,6 @@
 'use strict'
+const common = require('@constants/common')
+
 module.exports = (sequelize, DataTypes) => {
 	const Tenant = sequelize.define(
 		'Tenant',
@@ -27,6 +29,11 @@ module.exports = (sequelize, DataTypes) => {
 			theming: {
 				type: DataTypes.JSONB,
 				allowNull: true,
+			},
+			configuration: {
+				type: DataTypes.JSONB,
+				allowNull: false,
+				defaultValue: common.DEFAULT_TENANT_CONFIGURATION,
 			},
 			meta: {
 				type: DataTypes.JSON,
