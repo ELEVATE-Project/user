@@ -30,15 +30,14 @@ const isValidObject = (value) => {
 
 const isValidTenantConfiguration = (value) => {
 	const configuration = parseObject(value)
-	const allowedAuthModes = ['otp', 'password']
+	const allowedAuthModes = common.DEFAULT_TENANT_CONFIGURATION.allowed_auth_mode
 
 	return (
 		isPlainObject(configuration) &&
-		Array.isArray(configuration.allowedAuthMode) &&
-		configuration.allowedAuthMode.length > 0 &&
-		// configuration.allowedAuthMode.every((authMode) => allowedAuthModes.includes(authMode)) &&
-		typeof configuration.isNameRequired === 'boolean' &&
-		typeof configuration.autoRegister === 'boolean'
+		Array.isArray(configuration.allowed_auth_mode) &&
+		configuration.allowed_auth_mode.length > 0 &&
+		configuration.allowed_auth_mode.every((authMode) => allowedAuthModes.includes(authMode)) &&
+		typeof configuration.auto_register === 'boolean'
 	)
 }
 
@@ -65,11 +64,6 @@ module.exports = {
 				.withMessage('code param is empty')
 				.matches(/^[a-zA-Z0-9_]+$/)
 				.withMessage('Code must contain only letters, numbers, and underscores')
-
-			req.checkBody('configuration')
-				.optional({ checkFalsy: true })
-				.custom(isValidTenantConfiguration)
-				.withMessage('Configuration must include allowedAuthMode, isNameRequired, and autoRegister')
 		} else {
 			req.body = filterRequestBody(req.body, tenant.create)
 			normalizeTenantConfiguration(req)
@@ -95,7 +89,7 @@ module.exports = {
 			req.checkBody('configuration')
 				.optional({ checkFalsy: true })
 				.custom(isValidTenantConfiguration)
-				.withMessage('Configuration must include allowedAuthMode, isNameRequired, and autoRegister')
+				.withMessage('Configuration must include allowed_auth_mode, and auto_register')
 
 			req.checkBody('meta')
 				.optional({ checkFalsy: true })

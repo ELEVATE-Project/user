@@ -39,9 +39,8 @@ module.exports = {
 
 		// Validate name
 		req.checkBody('name')
+			.optional({ checkFalsy: true })
 			.trim()
-			.notEmpty()
-			.withMessage('name field is empty')
 			.matches(/^[A-Za-z ]+$/)
 			.withMessage('This field can only contain alphabets')
 
@@ -78,12 +77,18 @@ module.exports = {
 
 		// Validate password
 		req.checkBody('password')
-			.notEmpty()
-			.withMessage('Password field is empty')
+			.optional({ checkFalsy: true })
 			.matches(process.env.PASSWORD_POLICY_REGEX)
 			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
 			.custom((value) => !/\s/.test(value))
 			.withMessage('Password cannot contain spaces')
+
+		req.checkBody('otp')
+			.optional({ checkFalsy: true })
+			.matches(/^[0-9]+$/)
+			.withMessage('Otp should be number')
+			.isLength({ min: 6, max: 6 })
+			.withMessage('Otp is invalid')
 
 		// Validate role if provided
 		if (req.body.role) {
@@ -138,7 +143,20 @@ module.exports = {
 			.withMessage('Phone code must be a valid country code (e.g., +1, +91)')
 
 		// Validate password
-		req.checkBody('password').trim().notEmpty().withMessage('Password field is empty')
+		req.checkBody('password')
+			.optional({ checkFalsy: true })
+			.trim()
+			.matches(process.env.PASSWORD_POLICY_REGEX)
+			.withMessage(process.env.PASSWORD_POLICY_MESSAGE)
+			.custom((value) => !/\s/.test(value))
+			.withMessage('Password cannot contain spaces')
+
+		req.checkBody('otp')
+			.optional({ checkFalsy: true })
+			.matches(/^[0-9]+$/)
+			.withMessage('otp should be number')
+			.isLength({ min: 6, max: 6 })
+			.withMessage('Otp is invalid')
 
 		return req
 	},
@@ -161,6 +179,8 @@ module.exports = {
 
 	registrationOtp: (req) => {
 		req.body = filterRequestBody(req.body, account.registrationOtp)
+		req.body.username = req.body.username ? req.body.username.toLowerCase() : req.body.username
+
 		// Validate email (optional)
 		req.checkBody('email')
 			.optional()
@@ -178,6 +198,13 @@ module.exports = {
 			.trim()
 			.matches(/^[0-9]{7,15}$/)
 			.withMessage('phone must be a valid number between 7 and 15 digits')
+
+		req.checkBody('username')
+			.optional()
+			.trim()
+			.matches(/^[a-zA-Z0-9_-]{3,30}$/)
+			.withMessage('username is invalid')
+
 		// Validate registration_code
 		req.checkBody('registration_code').trim().withMessage('registration_code cannot be empty.')
 
@@ -188,13 +215,14 @@ module.exports = {
 			.matches(/^\+[1-9][0-9]{0,3}$/)
 			.withMessage('phone_code must be a valid country code (e.g., +1, +91)')
 
-		req.checkBody(['email', 'phone', 'phone_code']).custom(() => {
+		req.checkBody(['email', 'phone', 'phone_code', 'username']).custom(() => {
 			const phone = req.body.phone
 			const phone_code = req.body.phone_code
 			const email = req.body.email
+			const username = req.body.username
 
-			if (!email && !phone) {
-				throw new Error('At least one of email or phone must be provided')
+			if (!email && !phone && !username) {
+				throw new Error('At least one of email, phone, or username must be provided')
 			}
 
 			if (phone && !phone_code) {
@@ -204,7 +232,7 @@ module.exports = {
 			return true
 		})
 
-		req.checkBody('name').notEmpty().withMessage('name field is empty')
+		req.checkBody('name').optional({ checkFalsy: true }).withMessage('name field is empty')
 	},
 
 	resetPassword: (req) => {

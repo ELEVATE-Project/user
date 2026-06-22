@@ -117,8 +117,15 @@ module.exports = {
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR: 'SequelizeUniqueConstraintError',
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE: 'ER_DUP_ENTRY',
 	DEFAULT_TENANT_CONFIGURATION: {
-		allowedAuthMode: ['otp', 'password'],
-		isNameRequired: true,
-		autoRegister: false,
+		allowed_auth_mode: ['otp', 'password'],
+		auto_register: false,
+	},
+	AUTH_MODES: {
+		OTP: 'otp',
+		PASSWORD: 'password',
+	},
+	OTP_PURPOSES: {
+		SIGNUP: 'signup',
+		LOGIN: 'login',
 	},
 }
