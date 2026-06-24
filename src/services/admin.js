@@ -438,10 +438,7 @@ module.exports = class AdminHelper {
 			const identifier = rawIdentifier.toLowerCase()
 			if (!identifier) return failure('IDENTIFIER_REQUIRED', httpStatusCode.bad_request)
 
-			// identifier type helpers
-			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
-			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str)
-			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+			const identifierType = utils.checkIdentifierType(identifier)
 
 			// 2) Build query (skip domain checks; use DEFAULT_TENANT_CODE)
 			const query = {
@@ -451,9 +448,9 @@ module.exports = class AdminHelper {
 				tenant_code: process.env.DEFAULT_TENANT_CODE,
 			}
 
-			if (isEmail(identifier)) {
+			if (identifierType === common.EMAIL) {
 				query[Op.or].push({ email: emailEncryption.encrypt(identifier) })
-			} else if (isPhone(identifier)) {
+			} else if (identifierType === common.PHONE) {
 				// expects bodyData.phone_code when phone login is used
 				query[Op.or].push({
 					phone: emailEncryption.encrypt(identifier),
@@ -571,11 +568,6 @@ module.exports = class AdminHelper {
 	 */
 	static async addOrgAdmin(userId, organizationId, loggedInUserId, identifier, tenantCode, phoneCode) {
 		try {
-			// Helper functions for identifier validation
-			const isEmail = (str) => /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
-			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str)
-			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
-
 			let user
 
 			// Try finding user by userId if provided
@@ -595,6 +587,7 @@ module.exports = class AdminHelper {
 			// If user not found by userId, try finding by identifier
 			if (!user?.id && identifier?.trim()) {
 				const normalizedIdentifier = identifier.trim().toLowerCase()
+				const identifierType = utils.checkIdentifierType(normalizedIdentifier)
 				const query = {
 					[Op.or]: [],
 					tenant_code: tenantCode,
@@ -602,9 +595,9 @@ module.exports = class AdminHelper {
 					password: { [Op.ne]: null },
 				}
 
-				if (isEmail(normalizedIdentifier)) {
+				if (identifierType === common.EMAIL) {
 					query[Op.or].push({ email: emailEncryption.encrypt(normalizedIdentifier) })
-				} else if (isPhone(normalizedIdentifier)) {
+				} else if (identifierType === common.PHONE) {
 					if (!phoneCode) {
 						return responses.failureResponse({
 							message: 'PHONE_CODE_REQUIRED',
@@ -613,7 +606,7 @@ module.exports = class AdminHelper {
 						})
 					}
 					query[Op.or].push({ phone: emailEncryption.encrypt(normalizedIdentifier), phone_code: phoneCode })
-				} else if (isUsername(normalizedIdentifier)) {
+				} else if (identifierType === common.USER_NAME) {
 					query[Op.or].push({ username: normalizedIdentifier })
 				} else {
 					return responses.failureResponse({

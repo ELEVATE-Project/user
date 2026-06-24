@@ -4,19 +4,25 @@ module.exports = {
 	async up(queryInterface, Sequelize) {
 		const transaction = await queryInterface.sequelize.transaction()
 		try {
-			const allOrgs = await queryInterface.sequelize.query('SELECT id, code, tenant_code FROM organizations', {
-				type: queryInterface.sequelize.QueryTypes.SELECT,
-				transaction,
-			})
+			const defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE || 'default'
 
-			if (!allOrgs.length) {
-				console.warn('No organizations found. Skipping migration.')
+			const defaultOrgsPerTenant = await queryInterface.sequelize.query(
+				'SELECT id, code, tenant_code FROM organizations WHERE code = :defaultOrgCode',
+				{
+					replacements: { defaultOrgCode },
+					type: queryInterface.sequelize.QueryTypes.SELECT,
+					transaction,
+				}
+			)
+
+			if (!defaultOrgsPerTenant.length) {
+				console.warn('No default organizations found across tenants. Skipping migration.')
 				await transaction.commit()
 				return
 			}
 
 			const now = new Date()
-			const entityTypesToInsert = allOrgs.map((org) => ({
+			const entityTypesToInsert = defaultOrgsPerTenant.map((org) => ({
 				value: 'name',
 				label: 'Name',
 				status: 'ACTIVE',

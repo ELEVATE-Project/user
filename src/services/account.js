@@ -115,11 +115,12 @@ module.exports = class AccountHelper {
 			}
 
 			const config = tenantDetail.configuration || {}
-			const allowedAuthMode = config.allowed_auth_mode || []
+			const allowedAuthMode = Array.isArray(config.allowed_auth_mode) ? config.allowed_auth_mode : []
 			const otpPurpose = bodyData._otpPurpose || OTP_PURPOSES.SIGNUP
 			delete bodyData._otpPurpose
 			const passwordAuthAllowed = allowedAuthMode.includes(AUTH_MODES.PASSWORD)
 
+			// #TODO: Below checks has to be moved to validator file
 			if (bodyData.password && !passwordAuthAllowed) {
 				return responses.failureResponse({
 					message: 'AUTH_MODE_NOT_ALLOWED',
@@ -751,7 +752,7 @@ module.exports = class AccountHelper {
 			}
 
 			const config = tenantDetail.configuration || {}
-			const allowedAuthMode = config.allowed_auth_mode || []
+			const allowedAuthMode = Array.isArray(config.allowed_auth_mode) ? config.allowed_auth_mode : []
 			const hasOtp = Boolean(bodyData.otp)
 			const hasPassword = Boolean(bodyData.password)
 			const otpAllowed = allowedAuthMode.includes(AUTH_MODES.OTP)
@@ -803,6 +804,7 @@ module.exports = class AccountHelper {
 			let user = userInstance ? userInstance.toJSON() : null
 			const purpose = user ? OTP_PURPOSES.LOGIN : OTP_PURPOSES.SIGNUP
 
+			// #TODO: Handling OTP check for users created by admin
 			if (hasOtp) {
 				const redisData = await utilsHelper.redisGet(otpRedisKey(purpose, redisIdentifier))
 				isOtpValid = Boolean(redisData && redisData.otp === bodyData.otp)
@@ -948,7 +950,8 @@ module.exports = class AccountHelper {
 				refreshToken
 			)
 
-			if (hasOtp) await utilsHelper.redisDel(otpRedisKey(OTP_PURPOSES.LOGIN, redisIdentifier))
+			// #TODO: Deleting all the OTP's from redis when user logins in with uasername flow
+			if (hasOtp) await utilsHelper.redisDel(otpRedisKey(purpose, redisIdentifier))
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1271,7 +1274,7 @@ module.exports = class AccountHelper {
 
 		// Validate that at least one contact method is provided
 		const config = tenantDetail.configuration || {}
-		const allowedAuthMode = config.allowed_auth_mode || []
+		const allowedAuthMode = Array.isArray(config.allowed_auth_mode) ? config.allowed_auth_mode : []
 		const username = bodyData.username?.toLowerCase()
 
 		if (!bodyData.email && !bodyData.phone && !username) {
@@ -1424,15 +1427,17 @@ module.exports = class AccountHelper {
 			otp,
 		}
 
-		const redisSetResults = await setOtpForPurpose(purpose, redisIdentifiers, redisData)
+		if (isNew) {
+			const redisSetResults = await setOtpForPurpose(purpose, redisIdentifiers, redisData)
 
-		// Check if storing in Redis was successful
-		if (!redisSetResults.includes('OK')) {
-			return responses.failureResponse({
-				message: 'UNABLE_TO_SEND_OTP',
-				statusCode: httpStatusCode.internal_server_error,
-				responseCode: 'SERVER_ERROR',
-			})
+			// Check if storing in Redis was successful
+			if (!redisSetResults.includes('OK')) {
+				return responses.failureResponse({
+					message: 'UNABLE_TO_SEND_OTP',
+					statusCode: httpStatusCode.internal_server_error,
+					responseCode: 'SERVER_ERROR',
+				})
+			}
 		}
 
 		// Send email notification with OTP if email is provided
