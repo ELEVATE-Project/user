@@ -1452,7 +1452,7 @@ module.exports = class AccountHelper {
 		}
 
 		// Send SMS notification with OTP if phone is provided
-		if (plaintextPhoneNumber && bodyData.phone_code) {
+		if (plaintextPhoneNumber && (bodyData.phone_code || phoneCode)) {
 			notificationUtils.sendSMSNotification({
 				phoneNumber: plaintextPhoneNumber,
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
