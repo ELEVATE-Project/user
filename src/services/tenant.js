@@ -394,7 +394,7 @@ module.exports = class tenantHelper {
 					created_at: tenantCreateResponse?.created_at || new Date(),
 					updated_at: tenantCreateResponse?.updated_at || new Date(),
 					meta: tenantCreateResponse?.meta || {},
-					configuration: tenantCreateResponse?.configuration || common.DEFAULT_TENANT_CONFIGURATION,
+					configuration: tenantCreateResponse?.configuration,
 					status: tenantCreateResponse?.status || common.ACTIVE_STATUS,
 					deleted: false,
 					org_id: tenantCreateResponse.orgId,

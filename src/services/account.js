@@ -43,28 +43,6 @@ const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 const AUTH_MODES = common.AUTH_MODES
 const OTP_PURPOSES = common.OTP_PURPOSES
 
-function tenantConfiguration(tenantDetail) {
-	return {
-		...common.DEFAULT_TENANT_CONFIGURATION,
-		...(tenantDetail?.configuration || {}),
-	}
-}
-
-function failureResponse(message, statusCode = httpStatusCode.bad_request, responseCode = 'CLIENT_ERROR') {
-	return responses.failureResponse({
-		message,
-		statusCode,
-		responseCode,
-	})
-}
-
-function identifierType(identifier) {
-	if (/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(identifier)) return 'email'
-	if (/^\+?[1-9]\d{1,14}$/.test(identifier)) return 'phone'
-	if (/^[a-zA-Z0-9_-]{3,30}$/.test(identifier)) return 'username'
-	return null
-}
-
 function otpRedisKey(purpose, encryptedIdentifier) {
 	return `${purpose}:${encryptedIdentifier}`
 }
@@ -136,18 +114,26 @@ module.exports = class AccountHelper {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
-			const config = tenantConfiguration(tenantDetail)
+			const config = tenantDetail.configuration || {}
 			const allowedAuthMode = config.allowed_auth_mode || []
 			const otpPurpose = bodyData._otpPurpose || OTP_PURPOSES.SIGNUP
 			delete bodyData._otpPurpose
 			const passwordAuthAllowed = allowedAuthMode.includes(AUTH_MODES.PASSWORD)
 
 			if (bodyData.password && !passwordAuthAllowed) {
-				return failureResponse('AUTH_MODE_NOT_ALLOWED')
+				return responses.failureResponse({
+					message: 'AUTH_MODE_NOT_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			if (passwordAuthAllowed && !bodyData.password) {
-				return failureResponse('PASSWORD_REQUIRED')
+				return responses.failureResponse({
+					message: 'PASSWORD_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			if (!bodyData.email && !bodyData.phone) {
@@ -231,7 +217,7 @@ module.exports = class AccountHelper {
 			}
 
 			// OTP validation
-			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true' && allowedAuthMode.includes(AUTH_MODES.OTP)) {
+			if (process.env.ENABLE_EMAIL_OTP_VERIFICATION === 'true') {
 				let isOtpValid = false
 				const providedOtp = bodyData.otp
 
@@ -272,9 +258,7 @@ module.exports = class AccountHelper {
 
 			bodyData.password = bodyData.password ? utilsHelper.hashPassword(bodyData.password) : null
 			if (!bodyData.username) {
-				bodyData.username = await generateUniqueUsername(
-					bodyData.name || plaintextEmailId || plaintextPhoneNumber
-				)
+				bodyData.username = await generateUniqueUsername(bodyData.name)
 			}
 			// Check user in invitee list
 			let role,
@@ -745,6 +729,13 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
+			const badRequestResponse = (message) =>
+				responses.failureResponse({
+					message,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
 			// Validate tenant domain
 			const tenantDomain = await tenantDomainQueries.findOne({ domain })
 			if (!tenantDomain) {
@@ -759,7 +750,7 @@ module.exports = class AccountHelper {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
-			const config = tenantConfiguration(tenantDetail)
+			const config = tenantDetail.configuration || {}
 			const allowedAuthMode = config.allowed_auth_mode || []
 			const hasOtp = Boolean(bodyData.otp)
 			const hasPassword = Boolean(bodyData.password)
@@ -767,25 +758,21 @@ module.exports = class AccountHelper {
 			const passwordAllowed = allowedAuthMode.includes(AUTH_MODES.PASSWORD)
 
 			if (!hasOtp && !hasPassword) {
-				return failureResponse('AUTH_CREDENTIAL_REQUIRED')
+				return badRequestResponse('AUTH_CREDENTIAL_REQUIRED')
 			}
 
 			if ((hasOtp && !otpAllowed) || (hasPassword && !passwordAllowed)) {
-				return failureResponse('AUTH_MODE_NOT_ALLOWED')
+				return badRequestResponse('AUTH_MODE_NOT_ALLOWED')
 			}
 
 			const identifier = bodyData.identifier?.toLowerCase()
 			if (!identifier) {
-				return responses.failureResponse({
-					message: 'IDENTIFIER_REQUIRED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				return badRequestResponse('IDENTIFIER_REQUIRED')
 			}
 
-			const type = identifierType(identifier)
+			const type = utils.checkIdentifierType(identifier)
 			if (!type) {
-				return failureResponse('INVALID_IDENTIFIER_FORMAT')
+				return badRequestResponse('INVALID_IDENTIFIER_FORMAT')
 			}
 
 			// Prepare query based on identifier type
@@ -796,10 +783,10 @@ module.exports = class AccountHelper {
 			}
 
 			let encryptedIdentifier = null
-			if (type === 'email') {
+			if (type === common.EMAIL) {
 				encryptedIdentifier = emailEncryption.encrypt(identifier)
 				query[Op.or].push({ email: encryptedIdentifier })
-			} else if (type === 'phone') {
+			} else if (type === common.PHONE) {
 				encryptedIdentifier = emailEncryption.encrypt(identifier)
 				query[Op.or].push({ phone: encryptedIdentifier, phone_code: bodyData.phone_code })
 			} else {
@@ -808,7 +795,7 @@ module.exports = class AccountHelper {
 			}
 
 			const redisIdentifier =
-				type === 'phone' ? `${bodyData.phone_code}${encryptedIdentifier}` : encryptedIdentifier
+				type === common.PHONE ? `${bodyData.phone_code}${encryptedIdentifier}` : encryptedIdentifier
 			let isOtpValid = false
 
 			// Find user
@@ -820,18 +807,18 @@ module.exports = class AccountHelper {
 				const redisData = await utilsHelper.redisGet(otpRedisKey(purpose, redisIdentifier))
 				isOtpValid = Boolean(redisData && redisData.otp === bodyData.otp)
 				if (!isOtpValid) {
-					return failureResponse('OTP_INVALID')
+					return badRequestResponse('OTP_INVALID')
 				}
 			}
 
 			if (!user) {
 				if (config.auto_register && hasOtp && isOtpValid && allowedAuthMode.includes(AUTH_MODES.OTP)) {
 					if (allowedAuthMode.includes(AUTH_MODES.PASSWORD) && !hasPassword) {
-						return failureResponse('PASSWORD_REQUIRED')
+						return badRequestResponse('PASSWORD_REQUIRED')
 					}
 
-					if (type === 'username') {
-						return failureResponse('EMAIL_OR_PHONE_REQUIRED')
+					if (type === common.USER_NAME) {
+						return badRequestResponse('EMAIL_OR_PHONE_REQUIRED')
 					}
 
 					const registrationBody = {
@@ -841,7 +828,7 @@ module.exports = class AccountHelper {
 						_otpPurpose: OTP_PURPOSES.SIGNUP,
 					}
 
-					if (type === 'email') {
+					if (type === common.EMAIL) {
 						registrationBody.email = identifier
 					} else {
 						registrationBody.phone = identifier
@@ -851,22 +838,14 @@ module.exports = class AccountHelper {
 					return await AccountHelper.create(registrationBody, deviceInformation, domain)
 				}
 
-				return responses.failureResponse({
-					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				return badRequestResponse('IDENTIFIER_OR_PASSWORD_INVALID')
 			}
 
 			// Check active session limit
 			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
 				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
 				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
-					return responses.failureResponse({
-						message: 'ACTIVE_SESSION_LIMIT_EXCEEDED',
-						statusCode: httpStatusCode.not_acceptable,
-						responseCode: 'CLIENT_ERROR',
-					})
+					return badRequestResponse('ACTIVE_SESSION_LIMIT_EXCEEDED')
 				}
 			}
 
@@ -877,11 +856,7 @@ module.exports = class AccountHelper {
 			}
 
 			if (!isOtpValid && !isPasswordCorrect) {
-				return responses.failureResponse({
-					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				return badRequestResponse('IDENTIFIER_OR_PASSWORD_INVALID')
 			}
 
 			// Create user session
@@ -1295,7 +1270,7 @@ module.exports = class AccountHelper {
 		}
 
 		// Validate that at least one contact method is provided
-		const config = tenantConfiguration(tenantDetail)
+		const config = tenantDetail.configuration || {}
 		const allowedAuthMode = config.allowed_auth_mode || []
 		const username = bodyData.username?.toLowerCase()
 
@@ -1360,7 +1335,11 @@ module.exports = class AccountHelper {
 			purpose = OTP_PURPOSES.LOGIN
 
 			if (!allowedAuthMode.includes(AUTH_MODES.OTP)) {
-				return failureResponse('AUTH_MODE_NOT_ALLOWED')
+				return responses.failureResponse({
+					message: 'AUTH_MODE_NOT_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			encryptedEmailId = user.email || null
@@ -1371,7 +1350,11 @@ module.exports = class AccountHelper {
 			notificationName = bodyData.name || user.name || 'User'
 
 			if (!plaintextEmailId && !plaintextPhoneNumber) {
-				return failureResponse('USER_CONTACT_NOT_AVAILABLE')
+				return responses.failureResponse({
+					message: 'USER_CONTACT_NOT_AVAILABLE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			redisIdentifiers = [username]
@@ -1419,7 +1402,11 @@ module.exports = class AccountHelper {
 			}
 
 			if (purpose === OTP_PURPOSES.LOGIN && !allowedAuthMode.includes(AUTH_MODES.OTP)) {
-				return failureResponse('AUTH_MODE_NOT_ALLOWED')
+				return responses.failureResponse({
+					message: 'AUTH_MODE_NOT_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			if (encryptedEmailId) redisIdentifiers.push(encryptedEmailId)
