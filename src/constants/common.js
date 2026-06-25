@@ -131,4 +131,5 @@ module.exports = {
 	EMAIL: 'email',
 	PHONE: 'phone',
 	USER_NAME: 'username',
+	USER: 'User',
 }

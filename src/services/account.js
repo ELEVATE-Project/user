@@ -642,7 +642,7 @@ module.exports = class AccountHelper {
 					emailId: plaintextEmailId,
 					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
 					variables: {
-						name: bodyData.name,
+						name: bodyData.name || common.USER,
 						appName: tenantDetail.name,
 						roles: roleToString || '',
 						portalURL: tenantDomain.domain,
@@ -658,7 +658,7 @@ module.exports = class AccountHelper {
 					phoneNumber: plaintextPhoneNumber,
 					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
 					variables: {
-						name: bodyData.name,
+						name: bodyData.name || common.USER,
 						appName: tenantDetail.name,
 						roles: roleToString || '',
 						portalURL: tenantDomain.domain,
@@ -824,7 +824,7 @@ module.exports = class AccountHelper {
 					}
 
 					const registrationBody = {
-						name: bodyData.name || null,
+						// name: bodyData.name || '',
 						password: bodyData.password,
 						otp: bodyData.otp,
 						_otpPurpose: OTP_PURPOSES.SIGNUP,
