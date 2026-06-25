@@ -4,7 +4,7 @@ module.exports = {
 	async up(queryInterface, Sequelize) {
 		const transaction = await queryInterface.sequelize.transaction()
 		try {
-			const defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE || 'default'
+			const defaultOrgCode = process.env.DEFAULT_ORGANISATION_CODE
 
 			const defaultOrgsPerTenant = await queryInterface.sequelize.query(
 				'SELECT id, code, tenant_code FROM organizations WHERE code = :defaultOrgCode',
