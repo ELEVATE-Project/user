@@ -116,4 +116,20 @@ module.exports = {
 	SIGNEDUP_STATUS: 'SIGNEDUP',
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR: 'SequelizeUniqueConstraintError',
 	SEQUELIZE_UNIQUE_CONSTRAINT_ERROR_CODE: 'ER_DUP_ENTRY',
+	DEFAULT_TENANT_CONFIGURATION: {
+		allowed_auth_mode: process.env.DEFAULT_ALLOWED_AUTH_MODES.split(','),
+		auto_register: process.env.DEFAULT_AUTO_REGISTER === 'true',
+	},
+	AUTH_MODES: {
+		OTP: 'otp',
+		PASSWORD: 'password',
+	},
+	OTP_PURPOSES: {
+		SIGNUP: 'signup',
+		LOGIN: 'login',
+	},
+	EMAIL: 'email',
+	PHONE: 'phone',
+	USER_NAME: 'username',
+	USER: 'User',
 }

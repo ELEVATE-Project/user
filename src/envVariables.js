@@ -516,6 +516,16 @@ let enviromentVariables = {
 		optional: true,
 		default: 'UserService',
 	},
+	DEFAULT_ALLOWED_AUTH_MODES: {
+		message: 'Required DEFAULT_ALLOWED_AUTH_MODES',
+		optional: true,
+		default: ['otp', 'password'],
+	},
+	DEFAULT_AUTO_REGISTER: {
+		message: 'Required DEFAULT_AUTO_REGISTER',
+		optional: true,
+		default: true,
+	},
 }
 let success = true
 

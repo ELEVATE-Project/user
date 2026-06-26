@@ -1135,6 +1135,13 @@ function extractDelta(oldData = {}, newData = {}, updateData) {
 	return delta
 }
 
+function checkIdentifierType(identifier) {
+	if (/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(identifier)) return common.EMAIL
+	if (/^\+?[1-9]\d{1,14}$/.test(identifier)) return common.PHONE
+	if (/^[a-zA-Z0-9_-]{3,30}$/.test(identifier)) return common.USER_NAME
+	return null
+}
+
 module.exports = {
 	generateToken,
 	hashPassword,
@@ -1183,4 +1190,5 @@ module.exports = {
 	parseMetaData,
 	extractUpdatedValues,
 	extractDelta,
+	checkIdentifierType,
 }
