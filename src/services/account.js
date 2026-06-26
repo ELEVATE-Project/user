@@ -951,10 +951,16 @@ module.exports = class AccountHelper {
 			)
 
 			if (hasOtp) {
-				await utilsHelper.redisDel(otpRedisKey(purpose, redisIdentifier))
-				await utilsHelper.redisDel(otpRedisKey(purpose, user.email))
-				await utilsHelper.redisDel(otpRedisKey(purpose, `${bodyData.phone_code}${user.phone}`))
-				await utilsHelper.redisDel(otpRedisKey(purpose, user.username))
+				const identifiers = [
+					redisIdentifier,
+					user.email,
+					user.username,
+					user.phone && `${bodyData.phone_code}${user.phone}`,
+				].filter(Boolean)
+
+				await Promise.allSettled(
+					identifiers.map((identifier) => utilsHelper.redisDel(otpRedisKey(purpose, identifier)))
+				)
 			}
 
 			return responses.successResponse({
