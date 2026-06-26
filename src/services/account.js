@@ -950,8 +950,12 @@ module.exports = class AccountHelper {
 				refreshToken
 			)
 
-			// #TODO: Deleting all the OTP's from redis when user logins in with uasername flow
-			if (hasOtp) await utilsHelper.redisDel(otpRedisKey(purpose, redisIdentifier))
+			if (hasOtp) {
+				await utilsHelper.redisDel(otpRedisKey(purpose, redisIdentifier))
+				await utilsHelper.redisDel(otpRedisKey(purpose, user.email))
+				await utilsHelper.redisDel(otpRedisKey(purpose, `${bodyData.phone_code}${user.phone}`))
+				await utilsHelper.redisDel(otpRedisKey(purpose, user.username))
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1149,6 +1153,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Helper functions to detect identifier type
+			// #TODO: Making this check from using the helper function
 			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
 			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
 			const isUsername = (str) => /^[a-zA-Z0-9_-]{3,30}$/.test(str)
@@ -1518,6 +1523,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Helper functions to detect identifier type
+			// #TODO: Making this check from using the helper function
 			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
 			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
 			const isUsername = (str) => /^[a-zA-Z0-9_-]{3,30}$/.test(str)

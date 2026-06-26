@@ -64,6 +64,11 @@ module.exports = {
 				.withMessage('code param is empty')
 				.matches(/^[a-zA-Z0-9_]+$/)
 				.withMessage('Code must contain only letters, numbers, and underscores')
+
+			req.checkBody('configuration')
+				.optional({ checkFalsy: true })
+				.custom(isValidTenantConfiguration)
+				.withMessage('Configuration must include allowed_auth_mode, and auto_register')
 		} else {
 			req.body = filterRequestBody(req.body, tenant.create)
 			normalizeTenantConfiguration(req)
