@@ -524,7 +524,7 @@ let enviromentVariables = {
 	DEFAULT_AUTO_REGISTER: {
 		message: 'Required DEFAULT_AUTO_REGISTER',
 		optional: true,
-		default: true,
+		default: false,
 	},
 }
 let success = true
