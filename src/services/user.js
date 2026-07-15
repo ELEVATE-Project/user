@@ -96,7 +96,7 @@ module.exports = class UserHelper {
 			// raw phone format) and before restructureBody/updateUser write it to the DB, otherwise
 			// this column is stored as plaintext and later crashes any read path that decrypts it.
 			if (bodyData.phone) {
-				bodyData.phone = emailEncryption.encrypt(bodyData.phone)
+				bodyData.phone = emailEncryption.encrypt(String(bodyData.phone))
 			}
 
 			let userModel = await userQueries.getColumns()

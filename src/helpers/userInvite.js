@@ -1076,7 +1076,7 @@ module.exports = class UserInviteHelper {
 					}
 
 					inviteeData.email = encryptedEmail
-					inviteeData.phone = inviteeData?.phone ? encryptedPhoneNumber : null
+					inviteeData.phone = encryptedPhoneNumber || null
 					if (
 						!inviteeData?.username ||
 						alreadyTakenUserNames.includes(inviteeData?.username) ||
@@ -1297,7 +1297,7 @@ module.exports = class UserInviteHelper {
 						invitation_code,
 					}
 					inviteeData.email = encryptedEmail
-					inviteeData.phone = raw_phone ? encryptedPhoneNumber : null
+					inviteeData.phone = encryptedPhoneNumber || null
 					inviteeData.username = inviteeData?.username
 						? inviteeData?.username
 						: await generateUniqueUsername(inviteeData?.name)
