@@ -129,14 +129,17 @@ module.exports = class AccountHelper {
 			}
 
 			// Handle phone encryption if provided
+			// Encryption must not be gated on phone_code - phone_code only matters for the
+			// redis/OTP key composition below. Gating it here previously left bodyData.phone as
+			// plaintext (and persisted as such via userQueries.create) whenever phone_code was
+			// omitted, which then crashed decrypt() on every later read of that user.
 			let encryptedPhoneNumber = null
 			let plaintextPhoneNumber = null
-			if (bodyData.phone && bodyData.phone_code) {
+			if (bodyData.phone) {
 				plaintextPhoneNumber = bodyData.phone
 				try {
 					encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
 					bodyData.phone = encryptedPhoneNumber
-					bodyData.phone_code = bodyData.phone_code // Store phone_code separately
 				} catch (encryptError) {
 					throw encryptError
 				}
@@ -185,7 +188,7 @@ module.exports = class AccountHelper {
 				}
 
 				// Check phone OTP if phone is provided
-				if (encryptedPhoneNumber) {
+				if (encryptedPhoneNumber && bodyData.phone_code) {
 					const phoneRedisData = await utilsHelper.redisGet(bodyData.phone_code + encryptedPhoneNumber)
 					if (phoneRedisData && phoneRedisData.otp === providedOtp) {
 						isOtpValid = true
@@ -223,7 +226,12 @@ module.exports = class AccountHelper {
 			if (bodyData?.username && !bodyData?.invitation_key && !bodyData?.invitation_code)
 				filterCondition.username = bodyData?.username
 
-			if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
+			if (
+				encryptedPhoneNumber &&
+				bodyData.phone_code &&
+				!bodyData?.invitation_key &&
+				!bodyData?.invitation_code
+			) {
 				filterCondition.phone = encryptedPhoneNumber
 				filterCondition.phone_code = bodyData.phone_code
 			}
@@ -570,7 +578,8 @@ module.exports = class AccountHelper {
 
 			// Delete Redis OTP entries
 			if (encryptedEmailId) await utilsHelper.redisDel(encryptedEmailId)
-			if (encryptedPhoneNumber) await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
+			if (encryptedPhoneNumber && bodyData.phone_code)
+				await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
 
 			if (isOrgAdmin) {
 				let organization = await organizationQueries.findByPk(user.organization_id)

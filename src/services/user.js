@@ -92,6 +92,13 @@ module.exports = class UserHelper {
 				})
 			}
 
+			// Encrypt phone before it is persisted. Must run after validateInput (which checks the
+			// raw phone format) and before restructureBody/updateUser write it to the DB, otherwise
+			// this column is stored as plaintext and later crashes any read path that decrypts it.
+			if (bodyData.phone) {
+				bodyData.phone = emailEncryption.encrypt(bodyData.phone)
+			}
+
 			let userModel = await userQueries.getColumns()
 			bodyData.updated_at = new Date().getTime()
 			bodyData = utils.restructureBody(bodyData, validationData, userModel)

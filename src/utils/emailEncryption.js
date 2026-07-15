@@ -20,6 +20,13 @@ const decrypt = (encryptedEmail) => {
 		const decipher = crypto.createDecipheriv(algorithm, secretKey, fixedIV)
 		return decipher.update(encryptedEmail, 'hex', 'utf-8') + decipher.final('utf-8')
 	} catch (err) {
+		// Legacy rows written before encryption was enforced on every write path are stored as
+		// plaintext. aes-256-cbc requires block-aligned ciphertext, so decrypting plaintext throws
+		// ERR_OSSL_WRONG_FINAL_BLOCK_LENGTH/ERR_OSSL_BAD_DECRYPT instead of returning garbage - treat
+		// that as "already plaintext" rather than crashing the caller.
+		if (err.code === 'ERR_OSSL_WRONG_FINAL_BLOCK_LENGTH' || err.code === 'ERR_OSSL_BAD_DECRYPT') {
+			return encryptedEmail
+		}
 		console.log(err)
 		throw err
 	}
