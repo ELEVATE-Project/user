@@ -7,12 +7,15 @@ module.exports = {
 		await queryInterface.changeColumn('tenants', 'configuration', {
 			type: Sequelize.JSONB,
 			allowNull: false,
-			defaultValue: common.DEFAULT_TENANT_CONFIGURATION,
+			defaultValue: null,
 		})
 
 		await queryInterface.sequelize.query(
 			`UPDATE tenants
-			 SET configuration = jsonb_set(configuration, '{auto_register}', 'false'::jsonb)`
+			 SET configuration = jsonb_set(
+        jsonb_set(configuration, '{auto_register}', 'false'::jsonb),
+        '{allowed_auth_mode}', '["password"]'::jsonb
+      )`
 		)
 	},
 
@@ -20,15 +23,14 @@ module.exports = {
 		await queryInterface.changeColumn('tenants', 'configuration', {
 			type: Sequelize.JSONB,
 			allowNull: false,
-			defaultValue: {
-				allowed_auth_mode: ['otp', 'password'],
-				auto_register: true,
-			},
+			defaultValue: common.DEFAULT_TENANT_CONFIGURATION,
 		})
 
 		await queryInterface.sequelize.query(
 			`UPDATE tenants
-			 SET configuration = jsonb_set(configuration, '{auto_register}', 'true'::jsonb)`
+			 SET configuration = jsonb_set(
+        jsonb_set(configuration, '{auto_register}', 'true'::jsonb),
+        '{allowed_auth_mode}', '["otp","password"]'::jsonb)`
 		)
 	},
 }
