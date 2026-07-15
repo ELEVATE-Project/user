@@ -519,12 +519,12 @@ let enviromentVariables = {
 	DEFAULT_ALLOWED_AUTH_MODES: {
 		message: 'Required DEFAULT_ALLOWED_AUTH_MODES',
 		optional: true,
-		default: ['otp', 'password'],
+		default: ['password'],
 	},
 	DEFAULT_AUTO_REGISTER: {
 		message: 'Required DEFAULT_AUTO_REGISTER',
 		optional: true,
-		default: true,
+		default: false,
 	},
 }
 let success = true
