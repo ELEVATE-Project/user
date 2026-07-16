@@ -8,6 +8,34 @@ const common = require('@constants/common')
 const filterRequestBody = require('../common')
 const { account } = require('@constants/blacklistConfig')
 
+// Shared across account/tenant/org-admin/user validators - see create()/update() below and
+// v1/user.js, v1/org-admin.js, v1/tenant.js, which all reuse these instead of duplicating them.
+const validateName = (req) => {
+	req.checkBody('name')
+		.trim()
+		.notEmpty()
+		.withMessage('name field is empty')
+		.matches(/^[A-Za-z ]+$/)
+		.withMessage('This field can only contain alphabets')
+}
+
+const validatePhoneWithCode = (req) => {
+	// Numbers only, no length restriction (digit-count enforcement left to the UI)
+	req.checkBody('phone')
+		.optional()
+		.trim()
+		.matches(/^[0-9]+$/)
+		.withMessage('phone must contain only numbers')
+
+	// phone is only ever encrypted/stored together with phone_code
+	req.checkBody(['phone', 'phone_code']).custom(() => {
+		if (req.body.phone && !req.body.phone_code) {
+			throw new Error('phone_code is required when phone is provided')
+		}
+		return true
+	})
+}
+
 const emailArrayValidation = (emailIds) => {
 	if (!Array.isArray(emailIds)) {
 		throw new Error('Email must be an array')
@@ -37,13 +65,7 @@ module.exports = {
 		req.body = filterRequestBody(req.body, account.create)
 		req.body.username = req?.body?.username ? req?.body?.username.toLowerCase() : req?.body?.username
 
-		// Validate name
-		req.checkBody('name')
-			.trim()
-			.notEmpty()
-			.withMessage('name field is empty')
-			.matches(/^[A-Za-z ]+$/)
-			.withMessage('This field can only contain alphabets')
+		validateName(req)
 
 		// Validate email (optional)
 		req.checkBody('email')
@@ -105,6 +127,22 @@ module.exports = {
 
 			return true
 		})
+	},
+
+	// Shared "update a user's profile" validation - used here, and reused as-is by
+	// v1/user.js (update), v1/org-admin.js (updateUser), and v1/tenant.js (accountCreate,
+	// since that route funnels into the same accountService.create() but can't safely reuse
+	// create()'s email/username/password rules - see PR discussion).
+	update: (req) => {
+		validateName(req)
+		validatePhoneWithCode(req)
+
+		req.checkBody('has_accepted_terms_and_conditions')
+			.optional()
+			.isBoolean()
+			.withMessage('has_accepted_terms_and_conditions field is invalid')
+		req.checkBody('languages').optional().isArray().withMessage('languages is invalid')
+		req.checkBody('image').optional().isString().withMessage('image field must be string only')
 	},
 
 	login: (req) => {

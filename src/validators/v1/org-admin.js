@@ -5,7 +5,7 @@
  * Description : Validations of admin controller
  */
 const filterRequestBody = require('../common')
-const validatePhoneWithCode = require('../phoneValidation')
+const accountValidators = require('./account')
 const common = require('@constants/common')
 const { orgAdmin } = require('@constants/blacklistConfig')
 
@@ -60,6 +60,6 @@ module.exports = {
 		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
 	},
 	updateUser: (req) => {
-		validatePhoneWithCode(req)
+		accountValidators.update(req)
 	},
 }

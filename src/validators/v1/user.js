@@ -5,20 +5,17 @@
  * Description : Validations of user controller
  */
 const filterRequestBody = require('../common')
-const validatePhoneWithCode = require('../phoneValidation')
-const userCreateCommonValidation = require('../userCreateCommonValidation')
+const accountValidators = require('./account')
 const { user } = require('@constants/blacklistConfig')
 module.exports = {
 	update: (req) => {
-		userCreateCommonValidation(req)
+		accountValidators.update(req)
 		req.checkBody('about')
 			.trim()
 			.notEmpty()
 			.withMessage('about field is empty')
 			.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 			.withMessage('invalid about')
-
-		validatePhoneWithCode(req)
 	},
 	share: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
