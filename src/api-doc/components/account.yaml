@@ -898,7 +898,6 @@ search200Response:
         - id: 22
           email: mentee_3t7m88mkgp@tunerlabs.com
           email_verified: 'false'
-          password: $2a$10$dSGsyZDLYnC2UKv3sni.HOp52VCOwWGajXkRSF.C40dJDZy6YL4rK
           name: Nevil Mathew
           username: mentee_3t7m88mvl5
           phone: null

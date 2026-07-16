@@ -45,13 +45,10 @@ reviews:
 
   #Exclude non-source code directories from reviews.
   path_filters:
-    - '!deployment/**'
-    - '!dev-ops/**'
     - '!release-notes/**'
     - '!src/assets/**'
     - '!src/public/**'
     - '!src/temp/**'
-    - '!**/*.md'
 
   # Add specific review instructions for critical paths.
   path_instructions:
