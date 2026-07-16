@@ -12,8 +12,13 @@ const { account } = require('@constants/blacklistConfig')
 // v1/user.js, v1/org-admin.js, v1/tenant.js, which all reuse these instead of duplicating them.
 // create() requires name; update() is a partial update, so name is only validated if sent.
 const validateName = (req, { optional = false } = {}) => {
-	const validator = req.checkBody('name')
-	;(optional ? validator.optional() : validator)
+	let validator = req.checkBody('name')
+
+	if (optional) {
+		validator = validator.optional()
+	}
+
+	validator
 		.trim()
 		.notEmpty()
 		.withMessage('name field is empty')
