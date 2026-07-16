@@ -154,6 +154,7 @@
 	"EMAIL_OR_PHONE_REQUIRED": "Either an email address or phone number is required.",
 	"PHONE_CODE_REQUIRED": "Phone code is required when a phone number is provided.",
 	"PHONE_ALREADY_EXISTS": "This phone number is already registered with another user.",
+	"EMAIL_ALREADY_EXISTS": "This email address is already registered with another user.",
 	"INVALID_ORG_REGISTRATION_CODE": "The organization registration code you entered is invalid. Please check and try again.",
 	"IDENTIFIER_OR_PASSWORD_INVALID": "Invalid identifier or password. Please check your login credentials.",
 	"IDENTIFIER_REQUIRED": "An identifier (email or phone) is required to proceed.",

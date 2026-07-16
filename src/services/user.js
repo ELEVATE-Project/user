@@ -39,14 +39,6 @@ module.exports = class UserHelper {
 	 */
 	static async update(bodyData, id, orgCode, tenantCode, skipRequiredValidation = false) {
 		try {
-			if (bodyData.hasOwnProperty('email')) {
-				return responses.failureResponse({
-					message: 'EMAIL_UPDATE_FAILED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			// Phone is always encrypted/stored together with phone_code, so reject the request
 			// upfront instead of silently persisting a phone with no phone_code.
 			if (bodyData.phone && !bodyData.phone_code) {
@@ -100,6 +92,29 @@ module.exports = class UserHelper {
 					responseCode: 'CLIENT_ERROR',
 					result: res.errors,
 				})
+			}
+
+			// Encrypt email before it is persisted, same treatment as phone below. Unlike phone,
+			// users.email has no DB-level unique constraint, so this pre-check is the only thing
+			// preventing two users in the same tenant ending up with the same email.
+			if (bodyData.email) {
+				bodyData.email = emailEncryption.encrypt(String(bodyData.email).toLowerCase())
+
+				const existingEmailUser = await userQueries.findOne(
+					{
+						email: bodyData.email,
+						tenant_code: tenantCode,
+						id: { [Op.ne]: id },
+					},
+					{ attributes: ['id'] }
+				)
+				if (existingEmailUser) {
+					return responses.failureResponse({
+						message: 'EMAIL_ALREADY_EXISTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
 
 			// Encrypt phone before it is persisted. Must run after validateInput (which checks the
