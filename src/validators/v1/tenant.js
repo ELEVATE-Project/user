@@ -7,6 +7,7 @@
 const common = require('@constants/common')
 const filterRequestBody = require('../common')
 const validatePhoneWithCode = require('../phoneValidation')
+const userCreateCommonValidation = require('../userCreateCommonValidation')
 const { tenant } = require('@constants/blacklistConfig')
 
 module.exports = {
@@ -141,6 +142,8 @@ module.exports = {
 	},
 
 	accountCreate: (req) => {
+		userCreateCommonValidation(req)
+
 		// This route calls the same accountService.create() as account.js's create(), which
 		// requires phone_code whenever phone is provided - validate it here too since this
 		// controller/route previously had no validator entry at all.

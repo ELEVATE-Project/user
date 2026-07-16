@@ -6,27 +6,17 @@
  */
 const filterRequestBody = require('../common')
 const validatePhoneWithCode = require('../phoneValidation')
+const userCreateCommonValidation = require('../userCreateCommonValidation')
 const { user } = require('@constants/blacklistConfig')
 module.exports = {
 	update: (req) => {
-		req.checkBody('name')
-			.trim()
-			.notEmpty()
-			.withMessage('name field is empty')
-			.matches(/^[A-Za-z ]+$/)
-			.withMessage('This field can only contain alphabets')
+		userCreateCommonValidation(req)
 		req.checkBody('about')
 			.trim()
 			.notEmpty()
 			.withMessage('about field is empty')
 			.matches(/^[a-zA-Z0-9\-.,\s]+$/)
 			.withMessage('invalid about')
-		req.checkBody('has_accepted_terms_and_conditions')
-			.optional()
-			.isBoolean()
-			.withMessage('has_accepted_terms_and_conditions field is invalid')
-		req.checkBody('languages').optional().isArray().withMessage('languages is invalid')
-		req.checkBody('image').optional().isString().withMessage('image field must be string only')
 
 		validatePhoneWithCode(req)
 	},
