@@ -27,13 +27,6 @@ module.exports = {
 		req.checkBody('languages').optional().isArray().withMessage('languages is invalid')
 		req.checkBody('image').optional().isString().withMessage('image field must be string only')
 
-		// Validate phone (optional)
-		req.checkBody('phone')
-			.optional()
-			.trim()
-			.matches(/^[0-9]{9,11}$/)
-			.withMessage('phone must be a valid number between 9 and 11 digits')
-
 		// phone is only ever encrypted/stored together with phone_code
 		req.checkBody(['phone', 'phone_code']).custom(() => {
 			if (req.body.phone && !req.body.phone_code) {

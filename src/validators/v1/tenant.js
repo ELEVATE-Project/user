@@ -143,12 +143,6 @@ module.exports = {
 		// This route calls the same accountService.create() as account.js's create(), which
 		// requires phone_code whenever phone is provided - validate it here too since this
 		// controller/route previously had no validator entry at all.
-		req.checkBody('phone')
-			.optional()
-			.trim()
-			.matches(/^[0-9]{7,15}$/)
-			.withMessage('phone must be a valid number between 7 and 15 digits')
-
 		req.checkBody(['phone', 'phone_code']).custom(() => {
 			if (req.body.phone && !req.body.phone_code) {
 				throw new Error('phone_code is required when phone is provided')
