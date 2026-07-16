@@ -149,6 +149,7 @@ module.exports = class AccountHelper {
 				try {
 					encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
 					bodyData.phone = encryptedPhoneNumber
+					bodyData.phone_code = bodyData.phone_code // Store phone_code separately
 				} catch (encryptError) {
 					throw encryptError
 				}
