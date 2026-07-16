@@ -1,0 +1,773 @@
+# NOTE on gaps: several response schemas below are "shape-only" (types only,
+# no example values) because src/scripts/api-doc/captured-responses.json has
+# no captured example for that status code/message on this endpoint. Per the
+# task rules for this pass, no response body is fabricated for those cases —
+# see src/scripts/api-doc/gaps.jsonl (domain: org-admin) for the full list.
+# Where the literal message text is quoted in a schema description below, it
+# is copied verbatim from src/locales/en.json (the actual i18n string the
+# code will emit for that message key) purely as documentation of the key;
+# it is NOT presented as a captured/verified example body.
+
+# ---------------------------------------------------------------------------
+# Shared: authorization failure, common to every org-admin endpoint that
+# performs the ORG_ADMIN_ROLE / TENANT_ADMIN_ROLE check (all except
+# updateUser and createUsers, see paths file notes). No captured example
+# exists anywhere in captured-responses.json for this message. GAP.
+# ---------------------------------------------------------------------------
+orgAdminNotAdminResponse:
+  type: object
+  description: >-
+    Returned when the caller's roles do not include org_admin or tenant_admin
+    (utilsHelper.validateRoleAccess check in controllers/v1/org-admin.js).
+    Message key: USER_IS_NOT_A_ADMIN. GAP: no captured example for this
+    status/message on any org-admin endpoint; shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+    message:
+      type: string
+
+# ---------------------------------------------------------------------------
+# bulkUserCreate
+# ---------------------------------------------------------------------------
+bulkUserCreateRequest:
+  type: object
+  description: Bulk-create mentor/mentee users via an uploaded CSV.
+  required:
+    - file_path
+    - upload_type
+  properties:
+    file_path:
+      type: string
+      description: The path to the uploaded CSV file containing user data.
+      example: path/to/uploaded-csv-file
+    upload_type:
+      type: string
+      description: Type of bulk upload.
+      enum:
+        - INVITE
+        - UPLOAD
+      example: INVITE
+bulkUserCreate200Response:
+  type: object
+  description: >-
+    GAP: no captured example for the 200 success case (message key
+    USER_CSV_UPLOADED); shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        id:
+          type: integer
+        input_path:
+          type: string
+        status:
+          type: string
+        created_by:
+          type: integer
+        type:
+          type: string
+        tenant_code:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    meta:
+      type: object
+bulkUserCreate400Response:
+  type: object
+  description: >-
+    Returned when the file-upload record could not be created (message key
+    USER_CSV_UPLOADED_FAILED). Note: the service builds this via
+    responses.successResponse() but overrides responseCode to CLIENT_ERROR
+    and statusCode to 400 -- an inconsistency in services/org-admin.js, not
+    a doc error. GAP: no captured example for this status/message.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items: {}
+    meta:
+      type: object
+bulkUserCreate500Response:
+  type: object
+  description: >-
+    Real captured example. The service does not catch DB/queue errors from
+    file-upload creation (e.g. missing/nonexistent file_path); they propagate
+    to the global error handler as a generic 500.
+  properties:
+    responseCode:
+      type: string
+      example: SERVER_ERROR
+    message:
+      type: string
+      example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 904457e7-e82d-4a97-be83-83df3aaa336a
+
+# ---------------------------------------------------------------------------
+# getBulkInvitesFilesList
+# ---------------------------------------------------------------------------
+getBulkInvitesFilesList200Response:
+  type: object
+  description: Real captured example (message key FILE_UPLOAD_FETCHED).
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Bulk Invites CSV List Fetched Successfully
+    result:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 0
+        data:
+          type: array
+          items:
+            type: object
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              type:
+                type: string
+              version:
+                type: integer
+        correlation:
+          type: string
+          example: 194003ae-d4a6-4af7-8348-508118249403
+
+# ---------------------------------------------------------------------------
+# getRequestDetails
+# ---------------------------------------------------------------------------
+getRequestDetails200Response:
+  type: object
+  description: >-
+    GAP: no captured example for the 200 success case (message key
+    ORG_ROLE_REQ_FETCHED); shape-only, informed only by orgRoleReqQueries
+    field exclusions (created_at/updated_at/deleted_at excluded) which is
+    query-layer shaping, not a fabricated example.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+getRequestDetails400Response:
+  type: object
+  description: >-
+    Real captured example. Message key REQUEST_NOT_FOUND, returned when no
+    matching org role request exists for id/organization_id/tenant_code.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items: {}
+      example: []
+    message:
+      type: string
+      example: Role Change Request not found.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 7c447951-c904-40ef-b0ac-8b8e15777b6c
+
+# ---------------------------------------------------------------------------
+# getRequests
+# ---------------------------------------------------------------------------
+getRequestsRequest:
+  type: object
+  description: >-
+    Optional filters, merged verbatim (key by key, no whitelist) into the
+    org_id/tenant_code-scoped query filter in services/org-admin.js
+    getRequests(). No express-validator entry exists for this operation, so
+    field names/required-ness below are not enforced ground truth -- they
+    reflect only how the values are consumed if present.
+  properties:
+    filters:
+      type: object
+      description: >-
+        Arbitrary key/value filters merged directly into the DB query
+        filter (no field allowlist in code).
+      properties:
+        role:
+          type: array
+          items:
+            type: integer
+        status:
+          type: array
+          items:
+            type: string
+        handled_by:
+          type: array
+          items:
+            type: integer
+getRequests200Response:
+  type: object
+  description: Real captured example (message key ORG_ROLE_REQ_LIST_FETCHED).
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Organization requests fetched successfully
+    result:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 4
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 4
+              requester_id:
+                type: integer
+                example: 22
+              role:
+                type: integer
+                example: 5
+              status:
+                type: string
+                example: REQUESTED
+              organization_id:
+                type: integer
+                example: 1
+              handled_by:
+                type: integer
+                nullable: true
+                example: null
+              meta:
+                type: object
+              comments:
+                type: array
+                nullable: true
+                items:
+                  type: string
+                example: null
+              tenant_code:
+                type: string
+                example: default
+              requester:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 22
+                  name:
+                    type: string
+                    example: Nevil Mathew
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+        correlation:
+          type: string
+          example: fa379358-ee6b-4625-9038-aa4e3131b1e4
+
+# ---------------------------------------------------------------------------
+# updateRequestStatus
+# ---------------------------------------------------------------------------
+updateRequestStatusRequest:
+  type: object
+  description: Update the status of an organization role-change request.
+  required:
+    - request_id
+    - status
+  properties:
+    request_id:
+      type: integer
+      example: 12
+    status:
+      type: string
+      description: >-
+        No enum/isIn validator constrains this field in
+        validators/v1/org-admin.js -- only notEmpty(). Values actually acted
+        on by services/org-admin.js are common.ACCEPTED_STATUS ("APPROVED")
+        and common.REJECTED_STATUS ("REJECTED"); any other non-empty string
+        passes validation but takes the "else" (ORG_ROLE_REQ_UPDATED, no
+        email) branch.
+      example: APPROVED
+    comments:
+      type: string
+      description: >-
+        Optional; not required by the validator. Stored as-is on the
+        request record.
+updateRequestStatus200Response:
+  type: object
+  description: >-
+    GAP: no captured example for the 200 success case (message key is
+    either ORG_ROLE_REQ_APPROVED or ORG_ROLE_REQ_UPDATED depending on
+    status); shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+updateRequestStatus400InvalidResponse:
+  type: object
+  description: >-
+    GAP: no captured example. Message key INAVLID_ORG_ROLE_REQ (sic),
+    returned when the existing request's status is not REQUESTED (i.e. it
+    was already handled). Shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+    meta:
+      type: object
+updateRequestStatus400FailedResponse:
+  type: object
+  description: >-
+    GAP: no captured example. Message key ORG_ROLE_REQ_FAILED, returned
+    when the update query affects 0 rows. Shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+    meta:
+      type: object
+updateRequestStatus400NotFoundResponse:
+  type: object
+  description: >-
+    Real captured example. CORRECTION (post-hoc review): an earlier pass on
+    this file claimed request_id not matching any request causes an uncaught
+    TypeError (requestDetail.status on null) surfacing as a generic 500, with
+    a fabricated 500 example body invented to support that claim. Re-checked
+    against current services/org-admin.js: there IS a proper
+    `if (!requestDetail)` guard that returns responses.failureResponse({
+    message: 'REQUEST_NOT_FOUND', statusCode: 400 }) before requestDetail.status
+    is ever read. The real captured example below (message "Role Change
+    Request not found.") is this 400 REQUEST_NOT_FOUND branch, not a 500.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+      example: Role Change Request not found.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 2b79fd8a-95e2-419c-86a0-96f8ae529118
+
+# ---------------------------------------------------------------------------
+# deactivateUser (org-admin bulk variant: POST body { ids[], emails[] },
+# NOT the /admin/deactivateUser/{id} single-user variant from another
+# domain -- see paths file note.)
+# ---------------------------------------------------------------------------
+deactivateUserRequest:
+  type: object
+  description: >-
+    Deactivate one or more users in the org admin's organization. Provide at
+    least one non-empty `emails` array OR one non-empty `ids` array (at-least-one-of).
+    Both may be supplied together; if both are absent/empty the request fails.
+  properties:
+    ids:
+      type: array
+      description: Array of user IDs to deactivate.
+      items:
+        type: integer
+        example: 12
+    emails:
+      type: array
+      description: Array of user email addresses to deactivate.
+      items:
+        type: string
+        format: email
+        example: user@example.com
+  anyOf:
+    - required:
+        - ids
+    - required:
+        - emails
+deactivateUser200Response:
+  type: object
+  description: >-
+    GAP: no captured example for the 200 success case (message key
+    USER_DEACTIVATED); shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        updated_by_ids:
+          type: array
+          items:
+            type: integer
+        updated_by_emails:
+          type: array
+          items:
+            type: integer
+    meta:
+      type: object
+deactivateUser400Response:
+  type: object
+  description: >-
+    GAP: no captured example. Message key STATUS_UPDATE_FAILED, returned
+    when neither the ids-branch nor the emails-branch updated any rows
+    (e.g. ids/emails reference no existing users). Shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+    meta:
+      type: object
+deactivateUser422Response:
+  type: object
+  description: >-
+    Real captured example. Produced by the express-validator custom check
+    in validators/v1/org-admin.js (deactivateUser) when both `ids` and
+    `emails` are absent/empty -- this is the request-shape validation
+    failure, distinct from the 400 STATUS_UPDATE_FAILED business-logic
+    failure above.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+      example: []
+    meta:
+      type: object
+    message:
+      type: string
+      example: Provide at least one non-empty "emails" or "ids" array.
+
+# ---------------------------------------------------------------------------
+# inheritEntityType
+# ---------------------------------------------------------------------------
+inheritEntityTypeRequest:
+  type: object
+  description: Inherit entity type
+  required:
+    - entity_type_value
+    - target_entity_type_label
+  properties:
+    entity_type_value:
+      type: string
+      example: categories
+    target_entity_type_label:
+      type: string
+      example: training
+inheritEntityType201Response:
+  type: object
+  description: >-
+    GAP: previous draft of this file documented this as a 202 response with
+    fabricated example values (id, value, label, status, etc.) with NO
+    matching captured-responses.json entry. That fabricated example has been
+    removed. The actual code
+    (services/org-admin.js inheritEntityType, httpStatusCode.created) returns
+    HTTP 201, not 202 -- the path file has been corrected accordingly. No
+    captured example exists for the success case; shape-only, types only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: string
+        label:
+          type: string
+        status:
+          type: string
+        created_by:
+          type: integer
+        updated_by:
+          type: integer
+        allow_filtering:
+          type: boolean
+        data_type:
+          type: string
+        organization_id:
+          type: integer
+        organization_code:
+          type: string
+        parent_id:
+          type: integer
+        allow_custom_entities:
+          type: boolean
+        has_entities:
+          type: boolean
+        model_names:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        deleted_at:
+          type: string
+          nullable: true
+    meta:
+      type: object
+inheritEntityType400DefaultOrgResponse:
+  type: object
+  description: >-
+    Real captured example. Message key USER_IS_FROM_DEFAULT_ORG, returned
+    when the caller's organization_code equals process.env.DEFAULT_ORGANISATION_CODE
+    (a runtime config value -- see path-level prose note; not modeled as a
+    schema constraint since it depends on env config, not a request field).
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items: {}
+      example: []
+    message:
+      type: string
+      example: Users from the default organization are not permitted to proceed with this action.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 281c1bf5-0f52-4058-a0e9-4e6066fed5b3
+inheritEntityType400NotFoundResponse:
+  type: object
+  description: >-
+    GAP: no captured example. Message key ENTITY_TYPE_NOT_FOUND, returned
+    when no entity type matching entity_type_value exists under the default
+    organization. Shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+    meta:
+      type: object
+
+# ---------------------------------------------------------------------------
+# updateUser
+# ---------------------------------------------------------------------------
+updateUserRequest:
+  type: object
+  description: >-
+    Update a user's roles. The service only proceeds when `organization_id`
+    matches the requesting org admin's organization; `roles` are the role titles
+    to assign. NOTE: no request-body validator exists for this operation, so
+    required/optional constraints are not enforced by ground truth.
+  properties:
+    organization_id:
+      type: integer
+      example: 2
+    roles:
+      type: array
+      items:
+        type: string
+        example: mentor
+updateUser200Response:
+  type: object
+  description: >-
+    GAP: no captured example for the 200 success case (message key
+    USER_ROLE_UPDATE_SUCCESSFUL); shape-only. Note the service response has
+    no `result` field (successResponse() default result: []).
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items: {}
+    meta:
+      type: object
+updateUser400NotFoundResponse:
+  type: object
+  description: >-
+    Real captured example. Message key USER_NOT_FOUND, returned when no
+    user matches the {id} path param.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items: {}
+      example: []
+    message:
+      type: string
+      example: User not found.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 8564f9de-7b4f-4746-a63a-43193ff08c13
+updateUser400InvalidRoleResponse:
+  type: object
+  description: >-
+    GAP: no captured example. Message key INVALID_ROLE_ASSIGNMENTS. Code
+    note: this branch (`if (!getRoleIds)`) is only reachable if
+    roleQueries.findAll() itself returns a falsy value; a real "no matching
+    roles" result would be an empty array (truthy), so this branch may be
+    dead code in practice -- flagged, not fixed, since this is a docs-only
+    pass. Shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+    meta:
+      type: object
+updateUser400NoAccessResponse:
+  type: object
+  description: >-
+    GAP: no captured example. Message key YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES,
+    returned when body.organization_id does not match the caller's own
+    organization_id. Shape-only.
+  properties:
+    responseCode:
+      type: string
+    error:
+      type: array
+      items: {}
+    message:
+      type: string
+    meta:
+      type: object
+
+# ---------------------------------------------------------------------------
+# createUsers -- see paths file note: no validator entry, and the
+# ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check is commented out in
+# the controller. GAP, documented at the path level.
+# ---------------------------------------------------------------------------
+createUsersRequest:
+  type: object
+  description: >-
+    GAP: no express-validator entry exists for this operation
+    (validators/v1/org-admin.js has no createUsers export), so field
+    presence/required-ness below is NOT enforced ground truth -- it is
+    inferred only from controller destructuring
+    (req.body.file_path, req.body.editable_fields, req.body.upload_type)
+    and is included for shape purposes only. Also note:
+    req.body.upload_type.toUpperCase() is called unconditionally in the
+    controller with no prior null-check, so an absent upload_type throws
+    an uncaught TypeError (surfaces as a generic 500), which is itself a gap.
+  properties:
+    file_path:
+      type: string
+      example: path/to/uploaded-csv-file
+    editable_fields:
+      description: Accepted as an array, or a comma-separated string (split in the service).
+      oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
+    upload_type:
+      type: string
+      description: Passed through .toUpperCase() before being handed to the service.
+createUsers200Response:
+  type: object
+  description: >-
+    GAP: no captured example exists for this endpoint at all (it does not
+    appear in captured-responses.json). Same underlying service call shape
+    as bulkUserCreate (message key USER_CSV_UPLOADED). Shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+    meta:
+      type: object
+createUsers400Response:
+  type: object
+  description: >-
+    GAP: no captured example. Message key USER_CSV_UPLOADED_FAILED (same
+    inconsistency as bulkUserCreate400Response: built via successResponse()
+    but overridden to CLIENT_ERROR/400). Shape-only.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items: {}
+    meta:
+      type: object

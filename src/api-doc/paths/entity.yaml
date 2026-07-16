@@ -1,0 +1,254 @@
+# -----------------------------------------------------------------------------
+# Entity domain paths. Response bodies are copied verbatim from
+# scripts/api-doc/captured-responses.json wherever an example is present.
+# Status codes the code can emit for which no captured example exists are
+# NOT documented with a fabricated body here - see the NOTE in the
+# corresponding component response description in userentity.yaml, and
+# scripts/api-doc/gaps.jsonl for the full list.
+# -----------------------------------------------------------------------------
+create:
+  post:
+    summary: Create Entity
+    tags:
+      - Entity APIs
+    description: 'This API is associated with entity creation.
+
+      - Endpoint for creating an entity: `/user/v1/entity/create`.
+
+      - It is mandatory to provide values for parameters marked with `required`.
+
+      - Mandatory parameters cannot be empty or null.
+
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: To make use of the API, you require X-auth-token. This is Available in login API Response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components/userentity.yaml#/createUserEntityRequest
+    responses:
+      '201':
+        description: OK. Created. (No captured example for the 400 ENTITY_ALREADY_EXISTS
+          / ENTITY_TYPE_NOT_FOUND paths - see gaps.jsonl.)
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/createUserEntity201Response
+      '422':
+        description: Unprocessable Entity. Request validation failed.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/createUserEntity422Response
+update:
+  '{id}':
+    patch:
+      summary: Update Entity
+      tags:
+        - Entity APIs
+      description: 'This API is associated with updating an entity.
+
+        - Endpoint for updating an entity: `/user/v1/entity/update/{id}`.
+
+        - The entity `id` is supplied as a path parameter.
+
+        - All request body fields are optional; provide only the fields to change.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To make use of the API, you require X-auth-token. This is Available in login API
+            Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: Please append a valid user entity ID to the request URL.
+          schema:
+            type: integer
+          example: 2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/updateUserEntityRequest
+            examples:
+              example1:
+                value:
+                  value: en
+                  label: English
+                  status: ACTIVE
+                  entity_type_id: 1
+      responses:
+        '400':
+          description: Bad Request. Entity not found. (No captured example for the
+            202 ENTITY_UPDATED_SUCCESSFULLY happy path, nor for the 400
+            ENTITY_ALREADY_EXISTS unique-constraint path - see gaps.jsonl.)
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userentity.yaml#/updateUserEntity400Response
+read?id={id}:
+  get:
+    summary: Read User Entity
+    tags:
+      - Entity APIs
+    description: 'This API retrieves a user entity by identifier.
+
+      - Endpoint for retrieving a user entity: `/user/v1/entity/read`.
+
+      - At least one identifier form must be supplied as a query parameter: either
+      `id`, or the pair (`value` + `entity_type_id`). If neither is provided the
+      request is rejected (cross-field rule, controllers/v1/entity.js:67 and the
+      custom validator in validators/v1/entity.js `read`).
+
+      - Example A (lookup by id): `?id=1`.
+
+      - Example B (lookup by value + entity_type_id): `?value=AP&entity_type_id=4`.
+
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: To use the API, include X-auth-token. This is available in the login API response.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: id
+        required: false
+        description: The entity ID. Provide either `id` on its own, or `value` together
+          with `entity_type_id`.
+        schema:
+          type: integer
+        examples:
+          byId:
+            summary: Example A - lookup by id
+            value: 1
+      - in: query
+        name: value
+        required: false
+        description: The entity value. Must be accompanied by `entity_type_id`. Used
+          when `id` is not supplied.
+        schema:
+          type: string
+        examples:
+          byValueAndType:
+            summary: Example B - lookup by value + entity_type_id
+            value: AP
+      - in: query
+        name: entity_type_id
+        required: false
+        description: The entity type ID. Used together with `value` when `id` is not
+          supplied.
+        schema:
+          type: integer
+        examples:
+          byValueAndType:
+            summary: Example B - lookup by value + entity_type_id
+            value: 4
+    responses:
+      '422':
+        description: Unprocessable Entity. Neither `id` nor (`value` + `entity_type_id`)
+          was provided. (No captured example for the 200 ENTITY_FETCHED_SUCCESSFULLY
+          happy path, nor for the 400 ENTITY_NOT_FOUND no-match path - see gaps.jsonl.)
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/readUserEntity422Response
+list:
+  post:
+    summary: Get entity list with pagination and search
+    tags:
+      - Entity APIs
+    description: "Use this API to get the list of a user entities.   \n - The API Endpoint for reading\
+      \ the list of the user entities is `/user/v1/entity/list` \n - It is mandatory to provide values\
+      \ for parameters which are marked as `required` \n - This is a mandatory parameter and cannot be\
+      \ empty or null."
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: To use this API, you require an X-auth-token, which is available in the login API Response.
+        required: true
+        schema:
+          type: string
+      - in: query
+        name: page
+        description: Please add page number
+        schema:
+          type: number
+        example: 1
+      - in: query
+        name: limit
+        description: Number of records to limit
+        schema:
+          type: number
+        example: 10
+      - in: query
+        name: search
+        description: search text
+        schema:
+          type: string
+        example: teacher
+      - in: query
+        name: entity_type_id
+        description: entity_type_id
+        required: true
+        schema:
+          type: number
+        example: 1
+    responses:
+      '401':
+        description: Unauthorized. Caller lacks the required permission. (No captured
+          example for the 200 ENTITY_FETCHED_SUCCESSFULLY happy path, nor for the
+          400 ENTITY_NOT_FOUND empty-result path - see gaps.jsonl.)
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/entityList401Response
+delete:
+  '{id}':
+    delete:
+      summary: Delete Entity
+      tags:
+        - Entity APIs
+      description: 'This API is associated with deleting an entity.
+
+        - Endpoint for deleting a user entity: `/user/v1/entity/delete/{id}`.
+
+        - It is mandatory to provide values for parameters marked with `required`.
+
+        - Mandatory parameters cannot be empty or null.
+
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: To use the API, include X-auth-token. This is available in the login API response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: Please append a valid user entity ID to the request URL.
+          schema:
+            type: integer
+          example: 31
+      responses:
+        '202':
+          description: OK. Accepted. Entity deleted successfully. (No captured example
+            for the 400 ENTITY_NOT_FOUND path - see gaps.jsonl.)
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userentity.yaml#/deleteUserEntity202Response

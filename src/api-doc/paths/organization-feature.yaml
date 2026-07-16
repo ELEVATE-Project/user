@@ -1,0 +1,765 @@
+create:
+  post:
+    summary: Create Organization Feature
+    tags:
+      - Organization Feature APIs
+    description: >-
+      Use this API to create a new organization feature.
+
+      - Endpoint: `/user/v1/organization-feature/create` (POST).
+
+      - Caller must have the `admin` or `org_admin` role
+        (services/organization-feature.js#validateAndUpdateToken); otherwise
+        the request fails with USER_IS_NOT_ADMIN.
+
+      - `feature_code`, `feature_name` and `display_order` are mandatory and
+        cannot be empty (validators/v1/organization-feature.js#create).
+        `display_order` must be a non-empty string of digits.
+
+      - If the caller has the full `admin` role, the `organizationcode` and
+        `tenantcode` headers (when present) override the organization/tenant
+        resolved from the auth token. For an `org_admin` caller these headers
+        are ignored and the token's own organization_code/tenant_code are
+        used. Either way, if organization_code or tenant_code cannot be
+        resolved, the request fails with
+        ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND.
+
+      - Runtime-config-dependent rule (not modeled in the schema): if the
+        caller is NOT a full admin AND the resolved organization_code is not
+        equal to the `DEFAULT_TENANT_ORG_CODE` env var, the service looks up
+        an enabled copy of `feature_code` under the tenant's default
+        organization (`process.env.DEFAULT_TENANT_ORG_CODE`). If none exists,
+        the request fails with FEATURE_NOT_FOUND. If one exists, the
+        client-supplied `display_order` is silently overridden by the
+        default organization's `display_order` value. Full admins and
+        default-organization callers skip this check entirely.
+
+      - If `roles` is supplied, every title must already exist for the
+        tenant (checked via the user-role table) — otherwise the request
+        fails with ROLE_NOT_FOUND. On success, one feature_role_mapping row
+        is created per role title.
+
+      - A duplicate (feature_code, organization_code, tenant_code) triggers
+        a Sequelize UniqueConstraintError, returned as
+        ORGANIZATION_FEATURE_EXISTS. A feature_code with no matching row in
+        the features table triggers a foreign-key constraint error, also
+        returned as FEATURE_NOT_FOUND (same message as the default-org
+        check above, but a distinct cause).
+
+      - The request body is passed through `filterRequestBody` with the
+        `organizationFeatures.create` blacklist (constants/blacklistConfig.js),
+        which strips any client-supplied `organization_code`, `tenant_code`,
+        `created_by`, `updated_by`, `created_at`, `updated_at` and
+        `deleted_at` — these are always server-set and cannot be provided by
+        the caller.
+
+      - The X-auth-token is mandatory and cannot be empty or null.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the logged-in user.
+        required: true
+        schema:
+          type: string
+      - name: organizationcode
+        in: header
+        required: false
+        description: >-
+          Organization code override. Only honored when the caller has the
+          full `admin` role; ignored for `org_admin` callers.
+        schema:
+          type: string
+        example: shikshagraha
+      - name: tenantcode
+        in: header
+        required: false
+        description: >-
+          Tenant code override. Only honored when the caller has the full
+          `admin` role; ignored for `org_admin` callers.
+        schema:
+          type: string
+        example: default
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/organization-feature.yaml#/createOrganizationFeatureRequest
+          examples:
+            createOrganizationFeature:
+              summary: Create a new organization feature
+              value:
+                feature_code: feat3t7os9otwv
+                feature_name: Replay Feature
+                display_order: 1
+    responses:
+      '201':
+        description: Created. Organization feature created successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/organization-feature.yaml#/createOrganizationFeature201Response
+            examples:
+              happyPath:
+                summary: Organization feature created
+                value:
+                  responseCode: OK
+                  message: Organization feature created successfully
+                  result:
+                    enabled: false
+                    feature_code: feat3t7os9otwv
+                    feature_name: Replay Feature
+                    display_order: 1
+                    organization_code: default_code
+                    tenant_code: default
+                    created_by: 23
+                    updated_at: '2026-07-15T10:56:26.052Z'
+                    created_at: '2026-07-15T10:56:26.052Z'
+                    icon: null
+                    redirect_url: null
+                    translations: null
+                    meta: null
+                    updated_by: null
+                    deleted_at: null
+                  meta:
+                    formsVersion:
+                      - id: 1
+                        type: formsrggjf
+                        version: 0
+                      - id: 2
+                        type: formsrggjf
+                        version: 0
+                      - id: 3
+                        type: formcsfgof
+                        version: 0
+                      - id: 4
+                        type: formcsfgof
+                        version: 0
+                      - id: 5
+                        type: formsrggjf
+                        version: 0
+                      - id: 6
+                        type: formhvedht
+                        version: 0
+                      - id: 7
+                        type: formsrggjf
+                        version: 0
+                      - id: 8
+                        type: formcsfgof
+                        version: 0
+                      - id: 9
+                        type: formhvedht
+                        version: 0
+                    correlation: 5ac13e0f-8926-4ee9-ae00-3a3c2fd4373d
+      '400':
+        description: >-
+          Bad Request. One of: USER_IS_NOT_ADMIN (caller lacks admin/org_admin
+          role), ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND (org/tenant code
+          unresolved), FEATURE_NOT_FOUND (no enabled default-org counterpart,
+          or feature_code FK violation), ROLE_NOT_FOUND (invalid role
+          title(s)), ORGANIZATION_FEATURE_EXISTS (duplicate feature for this
+          org/tenant), or a generic fallback carrying the raw error message.
+          GAP - none of these branches have a matching captured example; see
+          gaps.jsonl.
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: ../components/organization-feature.yaml#/organizationFeatureUserNotAdmin400Response
+                - $ref: ../components/organization-feature.yaml#/organizationFeatureOrgOrTenantCodeNotFound400Response
+                - $ref: ../components/organization-feature.yaml#/organizationFeatureNotFound400Response
+                - $ref: ../components/organization-feature.yaml#/organizationFeatureRoleNotFound400Response
+                - $ref: ../components/organization-feature.yaml#/organizationFeatureAlreadyExists400Response
+                - $ref: ../components/organization-feature.yaml#/organizationFeatureGenericError400Response
+      '422':
+        description: Unprocessable Entity. Request body failed validation.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/organization-feature.yaml#/createOrganizationFeature422Response
+            examples:
+              missingRequiredField:
+                summary: Missing required feature_code
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: body
+                      param: feature_code
+                      msg: feature_code field is empty
+                  meta:
+                    correlation: 31ee8f57-56fc-43ab-bf2a-401b62dd7cc4
+                  message: Validation failed, Entered data is incorrect!
+
+update:
+  '{id}':
+    patch:
+      summary: Update Organization Feature
+      tags:
+        - Organization Feature APIs
+      description: >-
+        Use this API to update an existing organization feature.
+
+        - Endpoint: `/user/v1/organization-feature/update/{id}`. The router
+          dispatches by HTTP method: PATCH (or any method other than DELETE)
+          runs the update branch documented here;
+          controllers/v1/organization-feature.js#update checks
+          `req.method === common.DELETE_METHOD` to choose between update and
+          delete. Despite the generic route param name `id`, the value is
+          matched against the feature's `feature_code` column
+          (services/organization-feature.js#update builds
+          `filterQuery.feature_code = feature_code`) — pass the feature's
+          `feature_code`, not a numeric id.
+
+        - Caller must have the `admin` or `org_admin` role, same as create;
+          otherwise USER_IS_NOT_ADMIN. Unlike create, only the full `admin`
+          role gets `organizationcode`/`tenantcode` header overrides here too
+          (validateAndUpdateToken is shared between create and update).
+
+        - Only `feature_name` is mandatory on this branch; `feature_code`,
+          `organization_code`, `tenant_code`, and the audit/timestamp fields
+          are stripped by `filterRequestBody` with the
+          `organizationFeatures.update` blacklist and cannot be changed via
+          update even if supplied in the body.
+
+        - If `roles` is supplied (as an array), ALL existing
+          feature_role_mapping rows for this feature/org/tenant are deleted
+          and replaced with the new set — every title must exist for the
+          tenant or the request fails with ROLE_NOT_FOUND, and (per the
+          source) this replacement happens without first checking whether
+          the update itself succeeded, other than by matching
+          `updatedCount > 0`.
+
+        - If the update query matches zero rows, the request fails with
+          FAILED_TO_UPDATE_ORG_FEATURE.
+
+        - GAP / caution: if `feature_code`'s foreign-key constraint is
+          violated, the service returns a normal FEATURE_NOT_FOUND failure
+          response, but for any OTHER unhandled error
+          (services/organization-feature.js#update, line 249) the function
+          does `throw error` instead of returning a `responses.failureResponse(...)`
+          envelope — the raw error is not guaranteed to carry
+          `statusCode`/`responseCode`, so it may reach the client via the
+          generic 500 "Oops! Something Went Wrong." handler in
+          routes/index.js instead of the standard error envelope used
+          elsewhere in this domain. Not modeled below; see gaps.jsonl.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the logged-in user.
+          required: true
+          schema:
+            type: string
+        - name: organizationcode
+          in: header
+          required: false
+          description: >-
+            Organization code override. Only honored when the caller has the
+            full `admin` role.
+          schema:
+            type: string
+        - name: tenantcode
+          in: header
+          required: false
+          description: >-
+            Tenant code override. Only honored when the caller has the full
+            `admin` role.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: >-
+            The organization feature's `feature_code` (string identifier),
+            e.g. `mitra`. Not a numeric id despite the generic router
+            parameter name.
+          schema:
+            type: string
+          example: mitra
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/organization-feature.yaml#/updateOrganizationFeatureRequest
+            examples:
+              updateOrganizationFeature:
+                summary: Update an organization feature
+                value:
+                  enabled: true
+                  feature_name: Mitra
+                  meta:
+                    url: https://dev.elevate-mitra.shikshalokam.org/mohini/sso?accToken=
+                    icon: /assets/images/ic_mitra.svg
+                    theme:
+                      primaryColor: '#572E91'
+                      secondaryColor: '#FF9911'
+                    title: MITRA
+                    sameOrigin: true
+      responses:
+        '200':
+          description: >-
+            OK. Organization feature updated successfully. GAP - no live
+            captured example exists for this case; see
+            updateOrganizationFeature200Response and gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/organization-feature.yaml#/updateOrganizationFeature200Response
+        '400':
+          description: >-
+            Bad Request. One of: USER_IS_NOT_ADMIN,
+            ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND,
+            FAILED_TO_UPDATE_ORG_FEATURE (zero rows matched), ROLE_NOT_FOUND
+            (invalid role title(s)), or FEATURE_NOT_FOUND (feature_code FK
+            violation). GAP - none of these branches have a matching
+            captured example; see gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureUserNotAdmin400Response
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureOrgOrTenantCodeNotFound400Response
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureUpdateFailed400Response
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureRoleNotFound400Response
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureNotFound400Response
+        '422':
+          description: >-
+            Unprocessable Entity. Request body or path failed validation
+            (missing/empty `feature_name`, non-digit `display_order`, or
+            missing `id` path param). GAP - no live captured example exists
+            for this branch; see updateOrganizationFeature422Response and
+            gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/organization-feature.yaml#/updateOrganizationFeature422Response
+    delete:
+      summary: Delete Organization Feature
+      tags:
+        - Organization Feature APIs
+      description: >-
+        Use this API to delete an organization feature.
+
+        - Endpoint: `/user/v1/organization-feature/update/{id}` (DELETE).
+          Same URL as the update operation — the router dispatches to the
+          delete branch when the HTTP method is DELETE
+          (controllers/v1/organization-feature.js#update checks
+          `req.method === common.DELETE_METHOD`). As with update, the `id`
+          path param value is matched against the feature's `feature_code`
+          column, not a numeric id.
+
+        - No request body is used by this operation
+          (validators/v1/organization-feature.js#update only validates the
+          `id` path param on the DELETE branch — `feature_name` /
+          `display_order` checks are skipped).
+
+        - Caller must have the `admin` or `org_admin` role, same as update;
+          otherwise USER_IS_NOT_ADMIN. Same org/tenant code header override
+          semantics as update.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the logged-in user.
+          required: true
+          schema:
+            type: string
+        - name: organizationcode
+          in: header
+          required: false
+          description: >-
+            Organization code override. Only honored when the caller has the
+            full `admin` role.
+          schema:
+            type: string
+        - name: tenantcode
+          in: header
+          required: false
+          description: >-
+            Tenant code override. Only honored when the caller has the full
+            `admin` role.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: >-
+            The organization feature's `feature_code` (string identifier).
+            Not a numeric id despite the generic router parameter name.
+          schema:
+            type: string
+          example: '3'
+      responses:
+        '200':
+          description: >-
+            OK. Organization feature deleted successfully. GAP - no live
+            captured example exists for this case; see
+            deleteOrganizationFeature200Response and gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/organization-feature.yaml#/deleteOrganizationFeature200Response
+        '400':
+          description: >-
+            Bad Request. One of USER_IS_NOT_ADMIN or
+            ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND. GAP - no live
+            captured example exists for this branch; see gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureUserNotAdmin400Response
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureOrgOrTenantCodeNotFound400Response
+        '404':
+          description: >-
+            Not Found. No organization feature matched feature_code for this
+            organization/tenant (0 rows deleted). GAP - no live captured
+            example exists for this case; see
+            organizationFeatureDeleteNotFound404Response and gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/organization-feature.yaml#/organizationFeatureDeleteNotFound404Response
+
+list:
+  get:
+    summary: List Organization Features
+    tags:
+      - Organization Feature APIs
+    description: >-
+      Use this API to fetch the list of organization features visible to the
+      caller.
+
+      - Endpoint: `/user/v1/organization-feature/read` (GET, no `id` path
+        param). controllers/v1/organization-feature.js#read dispatches to
+        `list()` when `req.params.id` is absent.
+
+      - If the caller has the full `admin` role, the `organizationcode` and
+        `tenantcode` headers (when present) override the organization/tenant
+        resolved from the token. For any other role, the token's own
+        organization_code/tenant_code are used. If organization_code or
+        tenant_code cannot be resolved, the request fails with
+        ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND.
+
+      - Features are fetched for both the caller's organization and the
+        default organization (`process.env.DEFAULT_ORGANISATION_CODE`,
+        runtime config — not modeled in the schema) and merged, with the
+        caller's own organization''s copy of a feature taking precedence
+        over the default organization''s copy when both exist (same
+        feature_code).
+
+      - If the caller''s roles do NOT include admin, org_admin, or
+        tenant_admin, the merged list is further filtered down to only
+        features reachable via feature_role_mapping for the caller''s
+        roles (checked against both the caller''s organization and the
+        default organization); if no matching role mappings exist at all,
+        the result is an empty list.
+
+      - Results are sorted by `display_order` ascending. Each row''s `icon`
+        (if present) is resolved to a downloadable URL.
+
+      - The X-auth-token is mandatory and cannot be empty or null.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: Access token of the logged-in user.
+        required: true
+        schema:
+          type: string
+      - name: organizationcode
+        in: header
+        required: false
+        description: >-
+          Organization code override. Only honored when the caller has the
+          full `admin` role.
+        schema:
+          type: string
+        example: default_code
+      - name: tenantcode
+        in: header
+        required: false
+        description: >-
+          Tenant code override. Only honored when the caller has the full
+          `admin` role.
+        schema:
+          type: string
+        example: shikshalokam
+    responses:
+      '200':
+        description: OK. Organization features fetched successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/organization-feature.yaml#/readOrganizationFeature200Response
+            examples:
+              happyPath:
+                summary: Non-empty organization feature list
+                value:
+                  responseCode: OK
+                  message: Organization Feature fetched successfully.
+                  result:
+                    - organization_code: default_code
+                      feature_code: programs
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Programs
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 1
+                    - organization_code: default_code
+                      feature_code: feat3t57y7bcbf
+                      tenant_code: default
+                      enabled: false
+                      feature_name: Replay Feature
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 1
+                    - organization_code: default_code
+                      feature_code: feat3t6gl4v2qo
+                      tenant_code: default
+                      enabled: false
+                      feature_name: Replay Feature
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 1
+                    - organization_code: default_code
+                      feature_code: feat3t7os9otwv
+                      tenant_code: default
+                      enabled: false
+                      feature_name: Replay Feature
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 1
+                    - organization_code: default_code
+                      feature_code: project
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Project
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 2
+                    - organization_code: default_code
+                      feature_code: survey
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Survey
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 3
+                    - organization_code: default_code
+                      feature_code: observation
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Observation
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 4
+                    - organization_code: default_code
+                      feature_code: reports
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Reports
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 5
+                    - organization_code: default_code
+                      feature_code: mentoring
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Mentoring
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 6
+                    - organization_code: default_code
+                      feature_code: mitra
+                      tenant_code: default
+                      enabled: true
+                      feature_name: MITRA
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 7
+                    - organization_code: default_code
+                      feature_code: learn
+                      tenant_code: default
+                      enabled: true
+                      feature_name: Learn
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 8
+                    - organization_code: default_code
+                      feature_code: scp
+                      tenant_code: default
+                      enabled: true
+                      feature_name: SCP
+                      icon: null
+                      redirect_url: null
+                      translations: null
+                      meta: null
+                      display_order: 9
+                  meta:
+                    formsVersion:
+                      - id: 1
+                        type: formsrggjf
+                        version: 0
+                      - id: 2
+                        type: formsrggjf
+                        version: 0
+                      - id: 3
+                        type: formcsfgof
+                        version: 0
+                      - id: 4
+                        type: formcsfgof
+                        version: 0
+                      - id: 5
+                        type: formsrggjf
+                        version: 0
+                      - id: 6
+                        type: formhvedht
+                        version: 0
+                      - id: 7
+                        type: formsrggjf
+                        version: 0
+                      - id: 8
+                        type: formcsfgof
+                        version: 0
+                      - id: 9
+                        type: formhvedht
+                        version: 0
+                    correlation: fd559cca-af5c-4c59-98df-e321eebafa7b
+              emptyResult:
+                summary: >-
+                  No features match the caller's role mappings (empty-list
+                  branch). GAP - this branch was never captured live; shape
+                  inferred directly from services/organization-feature.js#list's
+                  filtering logic (organizationFeatures = []) and is
+                  documented shape-only per gaps.jsonl.
+                value:
+                  responseCode: OK
+                  message: Organization Feature fetched successfully.
+                  result: []
+                  meta: {}
+      '400':
+        description: >-
+          Bad Request. ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND. GAP - no
+          live captured example exists for this branch; see gaps.jsonl.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/organization-feature.yaml#/organizationFeatureOrgOrTenantCodeNotFound400Response
+read:
+  '{id}':
+    get:
+      summary: Read Organization Feature
+      tags:
+        - Organization Feature APIs
+      description: >-
+        Use this API to fetch a single organization feature by feature code.
+
+        - Endpoint: `/user/v1/organization-feature/read/{id}` (GET).
+          controllers/v1/organization-feature.js#read dispatches to
+          `read(id, ...)` when `req.params.id` is present. As with update,
+          the `id` path param value is matched against the feature's
+          `feature_code` column, not a numeric id.
+
+        - Header/role semantics for resolving organization_code/tenant_code
+          are identical to the list operation above.
+
+        - services/organization-feature.js#read first looks up the feature
+          under the caller's own organization_code; if not found, it falls
+          back to looking it up under the tenant's default organization
+          (`process.env.DEFAULT_ORGANISATION_CODE`, runtime config — not
+          modeled in the schema). If still not found, the request fails with
+          ORG_FEATURE_NOT_FOUND (statusCode 400 here, unlike the delete
+          operation's use of the same message at 404 — see
+          organizationFeatureReadNotFound400Response).
+
+        - Unlike the list operation, this lookup does NOT exclude
+          created_by/updated_by/timestamp columns, so the response shape may
+          differ from a list item — GAP: never captured live, see
+          gaps.jsonl.
+
+        - The X-auth-token is mandatory and cannot be empty or null.
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: Access token of the logged-in user.
+          required: true
+          schema:
+            type: string
+        - name: organizationcode
+          in: header
+          required: false
+          description: >-
+            Organization code override. Only honored when the caller has the
+            full `admin` role.
+          schema:
+            type: string
+        - name: tenantcode
+          in: header
+          required: false
+          description: >-
+            Tenant code override. Only honored when the caller has the full
+            `admin` role.
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: >-
+            The organization feature's `feature_code` (string identifier).
+            Not a numeric id despite the generic router parameter name.
+          schema:
+            type: string
+          example: mitra
+      responses:
+        '200':
+          description: >-
+            OK. Organization feature fetched successfully. GAP - no live
+            captured example exists for this case; see
+            readOrganizationFeatureById200Response and gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/organization-feature.yaml#/readOrganizationFeatureById200Response
+        '400':
+          description: >-
+            Bad Request. One of ORGANIZATION_CODE_OR_TENANT_CODE_NOT_FOUND or
+            ORG_FEATURE_NOT_FOUND (feature not found in the caller's org or
+            the tenant's default org). GAP - no live captured example exists
+            for either branch; see gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureOrgOrTenantCodeNotFound400Response
+                  - $ref: ../components/organization-feature.yaml#/organizationFeatureReadNotFound400Response

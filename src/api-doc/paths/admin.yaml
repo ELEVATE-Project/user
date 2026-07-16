@@ -1,0 +1,390 @@
+# =============================================================================
+# Admin domain - path operations
+# Request/response schemas live in ../components/admin.yaml. Response examples
+# there are verbatim captures from scripts/api-doc/captured-responses.json.
+# Only status codes with a captured example are documented; codes the code can
+# emit without a captured body are recorded in scripts/api-doc/gaps.jsonl.
+# =============================================================================
+create:
+  post:
+    summary: Create Admin User
+    tags:
+      - Admin APIs
+    description: 'API associated with creating a new admin user.
+
+      - Endpoint: `/user/v1/admin/create`
+
+      - `secret_code`, `name` and `password` are always required.
+
+      - At least one of `email` or `phone` must be provided; `phone_code` is
+      required when `phone` is present.
+      '
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/admin.yaml#/createSystemUserRequest
+          examples:
+            emailOnly:
+              $ref: ../components/admin.yaml#/createSystemUserRequestExamples/emailOnly
+            phoneWithCode:
+              $ref: ../components/admin.yaml#/createSystemUserRequestExamples/phoneWithCode
+    responses:
+      '201':
+        description: Created. Admin user created successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/createSystemUser201Response
+      '400':
+        description: Bad Request. Incorrect secret code.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/createSystemUser400Response
+      '401':
+        description: Unauthorized. Missing internal access token.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/createSystemUser401Response
+      '422':
+        description: Unprocessable Entity. Request validation failed.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/createSystemUser422Response
+login:
+  post:
+    summary: Admin Login
+    tags:
+      - Admin APIs
+    description: 'This API is associated with the login of the admin/system user.
+
+      - Endpoint: `/user/v1/admin/login`
+
+      - `identifier` and `password` are required; `phone_code` is required only
+      when the identifier is a phone number.
+      '
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/admin.yaml#/loginSystemUserRequest
+    responses:
+      '200':
+        description: OK. Successful login.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/loginSystemUser200Response
+      '400':
+        description: Bad Request. Invalid identifier or password.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/loginSystemUser400Response
+      '422':
+        description: Unprocessable Entity. Request validation failed.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/loginSystemUser422Response
+      '500':
+        description: Server Error (captured when password was omitted).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/loginSystemUser500Response
+deleteUser:
+  '{id}':
+    delete:
+      summary: Delete User
+      tags:
+        - Admin APIs
+      description: 'Delete a user.
+
+        - Endpoint: `/user/v1/admin/deleteUser/{id}`
+
+        - `id` path parameter is required.
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: X-auth-token required for API access. Available in login API Response.
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: User ID to be deleted. Please append a valid user ID to the request URL.
+          schema:
+            type: string
+          example: 1
+      responses:
+        '200':
+          description: OK. User deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/admin.yaml#/deleteUser200Response
+        '400':
+          description: Bad Request. User not found.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/admin.yaml#/deleteUser400Response
+        '401':
+          description: Unauthorized. Non-admin or expired session.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/admin.yaml#/deleteUser401Response
+assignRole:
+  post:
+    summary: Assign Role to User
+    tags:
+      - Admin APIs
+    description: 'Assigns a role to a user within an organization. Organization
+      and tenant are derived from the auth token.
+
+      - Endpoint: `/user/v1/admin/assignRole`
+
+      - `user_id` and `role_id` are required.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token required for API access. Available in login API Response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/admin.yaml#/assignRoleRequest
+    responses:
+      '200':
+        description: OK. Role assigned successfully.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/assignRole200Response
+      '400':
+        description: >-
+          Bad Request. Captured messages include "The user already has this role
+          assigned." and "User not found."
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/assignRole400Response
+            examples:
+              duplicateRole:
+                summary: Role already assigned
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: 9c70df9b-e3dd-4518-8f5a-748339fbd5b8
+                  message: The user already has this role assigned.
+              userNotFound:
+                summary: User not found
+                value:
+                  responseCode: CLIENT_ERROR
+                  error: []
+                  meta:
+                    correlation: b947b2f3-d082-45be-a146-85112206b143
+                  message: User not found.
+      '401':
+        description: Unauthorized. Non-admin or expired session.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/assignRole401Response
+      '422':
+        description: Unprocessable Entity. Request validation failed.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/assignRole422Response
+addOrgAdmin:
+  post:
+    summary: Add Organization Admin
+    description: 'Assigns a user as an Org-Admin.
+
+      - Endpoint: `/user/v1/admin/addOrgAdmin`
+
+      - `organization_id` is required; exactly one of `identifier` or `user_id`
+      must be provided. `phone_code` is required when the identifier is a
+      phone number.
+      '
+    tags:
+      - Admin APIs
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token required for API access. Available in login API Response.
+        required: true
+        schema:
+          type: string
+      - name: tenant-id
+        in: header
+        description: Tenant code header (required).
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/admin.yaml#/addOrgAdminRequest
+          examples:
+            byUserId:
+              $ref: ../components/admin.yaml#/addOrgAdminRequestExamples/byUserId
+            byIdentifierEmail:
+              $ref: ../components/admin.yaml#/addOrgAdminRequestExamples/byIdentifierEmail
+            byIdentifierPhone:
+              $ref: ../components/admin.yaml#/addOrgAdminRequestExamples/byIdentifierPhone
+    responses:
+      '400':
+        description: Bad Request. Phone identifier supplied without phone_code.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/addOrgAdmin400Response
+      '422':
+        description: Unprocessable Entity. Neither identifier nor user_id provided.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/addOrgAdmin422Response
+      '500':
+        description: Server Error (captured on happy-path attempt).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/addOrgAdmin500Response
+deactivateOrg:
+  '{id}':
+    post:
+      summary: Deactivate Organization
+      tags:
+        - Admin APIs
+      description: 'Deactivates an organization and all its users.
+
+        - Endpoint: `/user/v1/admin/deactivateOrg/{id}`
+
+        - `id` path parameter is required (lowercase alphanumeric with underscores).
+        '
+      parameters:
+        - name: X-auth-token
+          in: header
+          description: X-auth-token required for API access. Available in login API Response.
+          required: true
+          schema:
+            type: string
+        - name: tenant-id
+          in: header
+          description: Tenant code header (required).
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id
+          required: true
+          description: Organization code to deactivate (lowercase alphanumeric with underscores).
+          schema:
+            type: string
+          example: default_code
+      responses:
+        '422':
+          description: Unprocessable Entity. Path param id failed format validation.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/admin.yaml#/deactivateOrg422Response
+        '500':
+          description: Server Error (captured on happy-path attempt).
+          content:
+            application/json:
+              schema:
+                $ref: ../components/admin.yaml#/deactivateOrg500Response
+deactivateUser:
+  post:
+    summary: Deactivate User
+    tags:
+      - Admin APIs
+    description: 'Deactivates one or more users.
+
+      - Endpoint: `/user/v1/admin/deactivateUser`
+
+      - At least one of `id` or `email` (each a non-empty array) must be provided.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token required for API access. Available in login API Response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/admin.yaml#/deactivateUserRequest
+          examples:
+            byId:
+              $ref: ../components/admin.yaml#/deactivateUserRequestExamples/byId
+            byEmail:
+              $ref: ../components/admin.yaml#/deactivateUserRequestExamples/byEmail
+    responses:
+      '400':
+        description: Bad Request. Neither id nor email provided.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/deactivateUser400Response
+executeRawQuery:
+  post:
+    summary: Execute Raw Query
+    tags:
+      - Admin APIs
+    description: 'Executes a raw read-only (SELECT) SQL query with pagination.
+
+      - Endpoint: `/user/v1/admin/executeRawQuery`
+
+      - `query` is required and must be a SELECT statement.
+      '
+    parameters:
+      - name: X-auth-token
+        in: header
+        description: X-auth-token required for API access. Available in login API Response.
+        required: true
+        schema:
+          type: string
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/admin.yaml#/executeRawQueryRequest
+    responses:
+      '400':
+        description: Bad Request. Non-SELECT query rejected.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/executeRawQuery400Response
+      '500':
+        description: Server Error. Query execution failed.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/executeRawQuery500Response
