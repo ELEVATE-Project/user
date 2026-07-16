@@ -59,6 +59,13 @@ module.exports = {
 		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
 	},
 	updateUser: (req) => {
+		// Numbers only, no length restriction (digit-count enforcement left to the UI)
+		req.checkBody('phone')
+			.optional()
+			.trim()
+			.matches(/^[0-9]+$/)
+			.withMessage('phone must contain only numbers')
+
 		// phone is only ever encrypted/stored together with phone_code
 		req.checkBody(['phone', 'phone_code']).custom(() => {
 			if (req.body.phone && !req.body.phone_code) {
