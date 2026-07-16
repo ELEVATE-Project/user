@@ -10,8 +10,10 @@ const { account } = require('@constants/blacklistConfig')
 
 // Shared across account/tenant/org-admin/user validators - see create()/update() below and
 // v1/user.js, v1/org-admin.js, v1/tenant.js, which all reuse these instead of duplicating them.
-const validateName = (req) => {
-	req.checkBody('name')
+// create() requires name; update() is a partial update, so name is only validated if sent.
+const validateName = (req, { optional = false } = {}) => {
+	const validator = req.checkBody('name')
+	;(optional ? validator.optional() : validator)
 		.trim()
 		.notEmpty()
 		.withMessage('name field is empty')
@@ -84,19 +86,7 @@ module.exports = {
 			.matches(/^(?:[a-z0-9_-]{3,40}|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})$/) //accept random string (min 3 max 40) of smaller case letters _ - and numbers OR email in lowercase as username
 			.withMessage('username is invalid')
 
-		// Validate phone (optional)
-		req.checkBody('phone')
-			.optional()
-			.trim()
-			.matches(/^[0-9]{7,15}$/)
-			.withMessage('phone must be a valid number between 7 and 15 digits')
-
-		// Validate phone_code (required if phone is provided)
-		req.checkBody('phone_code')
-			.optional({ checkFalsy: true })
-			.trim()
-			.isLength({ min: 2, max: 4 }) // Length between 2 and 4 characters
-			.withMessage('Phone code must be between 2 and 4 characters')
+		validatePhoneWithCode(req)
 
 		// Validate password
 		req.checkBody('password')
@@ -112,19 +102,12 @@ module.exports = {
 			req.checkBody('role').trim().not().isIn([common.ADMIN_ROLE]).withMessage("User doesn't have admin access")
 		}
 
-		req.checkBody(['email', 'phone', 'phone_code']).custom(() => {
-			const phone = req.body.phone
-			const phone_code = req.body.phone_code
-			const email = req.body.email
-
-			if (!email && !phone) {
+		// phone_code-required-when-phone is already enforced by validatePhoneWithCode above -
+		// this only needs to check the create()-specific "at least one identifier" rule.
+		req.checkBody(['email', 'phone']).custom(() => {
+			if (!req.body.email && !req.body.phone) {
 				throw new Error('At least one of email or phone must be provided')
 			}
-
-			if (phone && !phone_code) {
-				throw new Error('phone_code is required when phone is provided')
-			}
-
 			return true
 		})
 	},
@@ -134,7 +117,7 @@ module.exports = {
 	// since that route funnels into the same accountService.create() but can't safely reuse
 	// create()'s email/username/password rules - see PR discussion).
 	update: (req) => {
-		validateName(req)
+		validateName(req, { optional: true })
 		validatePhoneWithCode(req)
 
 		req.checkBody('has_accepted_terms_and_conditions')
