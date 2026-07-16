@@ -30,7 +30,7 @@ const isValidObject = (value) => {
 
 const isValidTenantConfiguration = (value) => {
 	const configuration = parseObject(value)
-	const allowedAuthModes = common.DEFAULT_TENANT_CONFIGURATION.allowed_auth_mode
+	const allowedAuthModes = Object.values(common.AUTH_MODES)
 
 	return (
 		isPlainObject(configuration) &&
