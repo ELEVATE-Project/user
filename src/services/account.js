@@ -139,9 +139,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			// Handle phone encryption if provided. The PHONE_CODE_REQUIRED check above guarantees
-			// phone_code is always present whenever phone is, so it's safe to encrypt unconditionally
-			// here without re-checking phone_code.
+			// Handle phone encryption if provided
 			let encryptedPhoneNumber = null
 			let plaintextPhoneNumber = null
 			if (bodyData.phone && bodyData.phone_code) {
