@@ -6,6 +6,7 @@
  */
 const common = require('@constants/common')
 const filterRequestBody = require('../common')
+const validatePhoneWithCode = require('../phoneValidation')
 const { tenant } = require('@constants/blacklistConfig')
 
 module.exports = {
@@ -143,18 +144,6 @@ module.exports = {
 		// This route calls the same accountService.create() as account.js's create(), which
 		// requires phone_code whenever phone is provided - validate it here too since this
 		// controller/route previously had no validator entry at all.
-		// Numbers only, no length restriction (digit-count enforcement left to the UI)
-		req.checkBody('phone')
-			.optional()
-			.trim()
-			.matches(/^[0-9]+$/)
-			.withMessage('phone must contain only numbers')
-
-		req.checkBody(['phone', 'phone_code']).custom(() => {
-			if (req.body.phone && !req.body.phone_code) {
-				throw new Error('phone_code is required when phone is provided')
-			}
-			return true
-		})
+		validatePhoneWithCode(req)
 	},
 }

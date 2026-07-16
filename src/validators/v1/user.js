@@ -5,6 +5,7 @@
  * Description : Validations of user controller
  */
 const filterRequestBody = require('../common')
+const validatePhoneWithCode = require('../phoneValidation')
 const { user } = require('@constants/blacklistConfig')
 module.exports = {
 	update: (req) => {
@@ -27,20 +28,7 @@ module.exports = {
 		req.checkBody('languages').optional().isArray().withMessage('languages is invalid')
 		req.checkBody('image').optional().isString().withMessage('image field must be string only')
 
-		// Numbers only, no length restriction (digit-count enforcement left to the UI)
-		req.checkBody('phone')
-			.optional()
-			.trim()
-			.matches(/^[0-9]+$/)
-			.withMessage('phone must contain only numbers')
-
-		// phone is only ever encrypted/stored together with phone_code
-		req.checkBody(['phone', 'phone_code']).custom(() => {
-			if (req.body.phone && !req.body.phone_code) {
-				throw new Error('phone_code is required when phone is provided')
-			}
-			return true
-		})
+		validatePhoneWithCode(req)
 	},
 	share: (req) => {
 		req.checkParams('id').notEmpty().withMessage('id param is empty')
