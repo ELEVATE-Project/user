@@ -144,7 +144,7 @@ module.exports = class AccountHelper {
 			// here without re-checking phone_code.
 			let encryptedPhoneNumber = null
 			let plaintextPhoneNumber = null
-			if (bodyData.phone) {
+			if (bodyData.phone && bodyData.phone_code) {
 				plaintextPhoneNumber = bodyData.phone
 				try {
 					encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
@@ -197,7 +197,7 @@ module.exports = class AccountHelper {
 				}
 
 				// Check phone OTP if phone is provided
-				if (encryptedPhoneNumber && bodyData.phone_code) {
+				if (encryptedPhoneNumber) {
 					const phoneRedisData = await utilsHelper.redisGet(bodyData.phone_code + encryptedPhoneNumber)
 					if (phoneRedisData && phoneRedisData.otp === providedOtp) {
 						isOtpValid = true
@@ -235,12 +235,7 @@ module.exports = class AccountHelper {
 			if (bodyData?.username && !bodyData?.invitation_key && !bodyData?.invitation_code)
 				filterCondition.username = bodyData?.username
 
-			if (
-				encryptedPhoneNumber &&
-				bodyData.phone_code &&
-				!bodyData?.invitation_key &&
-				!bodyData?.invitation_code
-			) {
+			if (encryptedPhoneNumber && !bodyData?.invitation_key && !bodyData?.invitation_code) {
 				filterCondition.phone = encryptedPhoneNumber
 				filterCondition.phone_code = bodyData.phone_code
 			}
@@ -587,8 +582,7 @@ module.exports = class AccountHelper {
 
 			// Delete Redis OTP entries
 			if (encryptedEmailId) await utilsHelper.redisDel(encryptedEmailId)
-			if (encryptedPhoneNumber && bodyData.phone_code)
-				await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
+			if (encryptedPhoneNumber) await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
 
 			if (isOrgAdmin) {
 				let organization = await organizationQueries.findByPk(user.organization_id)
