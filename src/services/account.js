@@ -97,6 +97,17 @@ module.exports = class AccountHelper {
 				})
 			}
 
+			// Phone is only ever encrypted/stored together with phone_code (used to compose the
+			// redis OTP key and duplicate-user lookup below), so reject the request upfront instead
+			// of silently accepting a phone with no phone_code.
+			if (bodyData.phone && !bodyData.phone_code) {
+				return responses.failureResponse({
+					message: 'PHONE_CODE_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			let domainDetails = null
 
 			if (bodyData.registration_code) {
@@ -128,11 +139,9 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			// Handle phone encryption if provided
-			// Encryption must not be gated on phone_code - phone_code only matters for the
-			// redis/OTP key composition below. Gating it here previously left bodyData.phone as
-			// plaintext (and persisted as such via userQueries.create) whenever phone_code was
-			// omitted, which then crashed decrypt() on every later read of that user.
+			// Handle phone encryption if provided. The PHONE_CODE_REQUIRED check above guarantees
+			// phone_code is always present whenever phone is, so it's safe to encrypt unconditionally
+			// here without re-checking phone_code.
 			let encryptedPhoneNumber = null
 			let plaintextPhoneNumber = null
 			if (bodyData.phone) {

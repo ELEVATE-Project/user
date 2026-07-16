@@ -28,6 +28,12 @@ const decrypt = (encryptedEmail) => {
 		// ERR_OSSL_WRONG_FINAL_BLOCK_LENGTH/ERR_OSSL_BAD_DECRYPT instead of returning garbage - treat
 		// that as "already plaintext" rather than crashing the caller.
 		if (err.code === 'ERR_OSSL_WRONG_FINAL_BLOCK_LENGTH' || err.code === 'ERR_OSSL_BAD_DECRYPT') {
+			// Do not log the value itself - it is either plaintext PII or corrupted ciphertext.
+			// Flagging that this happened (without the value) keeps the fallback from silently
+			// masking rows that still need to be re-encrypted/cleaned up.
+			console.warn(
+				`[emailEncryption] decrypt() received a non-decryptable value (code: ${err.code}). Returning it unchanged - this row is likely legacy plaintext and should be re-encrypted.`
+			)
 			return encryptedEmail
 		}
 		console.log(err)

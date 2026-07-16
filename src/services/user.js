@@ -47,6 +47,16 @@ module.exports = class UserHelper {
 				})
 			}
 
+			// Phone is always encrypted/stored together with phone_code, so reject the request
+			// upfront instead of silently persisting a phone with no phone_code.
+			if (bodyData.phone && !bodyData.phone_code) {
+				return responses.failureResponse({
+					message: 'PHONE_CODE_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
 			const user = await userQueries.findOne({
 				id: id,
 				tenant_code: tenantCode,
@@ -97,6 +107,26 @@ module.exports = class UserHelper {
 			// this column is stored as plaintext and later crashes any read path that decrypts it.
 			if (bodyData.phone) {
 				bodyData.phone = emailEncryption.encrypt(String(bodyData.phone))
+
+				// users.phone has a unique_phone_per_tenant DB constraint. Since encryption uses a
+				// fixed key/IV, the same plaintext phone always produces the same ciphertext, so a
+				// pre-check here catches collisions with a clean error instead of an unhandled
+				// Sequelize UniqueConstraintError.
+				const existingPhoneUser = await userQueries.findOne(
+					{
+						phone: bodyData.phone,
+						tenant_code: tenantCode,
+						id: { [Op.ne]: id },
+					},
+					{ attributes: ['id'] }
+				)
+				if (existingPhoneUser) {
+					return responses.failureResponse({
+						message: 'PHONE_ALREADY_EXISTS',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
 			}
 
 			let userModel = await userQueries.getColumns()
