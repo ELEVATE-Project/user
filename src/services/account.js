@@ -97,17 +97,6 @@ module.exports = class AccountHelper {
 				})
 			}
 
-			// Phone is only ever encrypted/stored together with phone_code (used to compose the
-			// redis OTP key and duplicate-user lookup below), so reject the request upfront instead
-			// of silently accepting a phone with no phone_code.
-			if (bodyData.phone && !bodyData.phone_code) {
-				return responses.failureResponse({
-					message: 'PHONE_CODE_REQUIRED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			let domainDetails = null
 
 			if (bodyData.registration_code) {

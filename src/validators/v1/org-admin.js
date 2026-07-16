@@ -58,4 +58,20 @@ module.exports = {
 		req.checkBody('entity_type_value').notEmpty().withMessage('entity_type_value field is empty')
 		req.checkBody('target_entity_type_label').notEmpty().withMessage('target_entity_type_label field is empty')
 	},
+	updateUser: (req) => {
+		// Validate phone (optional)
+		req.checkBody('phone')
+			.optional()
+			.trim()
+			.matches(/^[0-9]{9,11}$/)
+			.withMessage('phone must be a valid number between 9 and 11 digits')
+
+		// phone is only ever encrypted/stored together with phone_code
+		req.checkBody(['phone', 'phone_code']).custom(() => {
+			if (req.body.phone && !req.body.phone_code) {
+				throw new Error('phone_code is required when phone is provided')
+			}
+			return true
+		})
+	},
 }

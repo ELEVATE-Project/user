@@ -39,16 +39,6 @@ module.exports = class UserHelper {
 	 */
 	static async update(bodyData, id, orgCode, tenantCode, skipRequiredValidation = false) {
 		try {
-			// Phone is always encrypted/stored together with phone_code, so reject the request
-			// upfront instead of silently persisting a phone with no phone_code.
-			if (bodyData.phone && !bodyData.phone_code) {
-				return responses.failureResponse({
-					message: 'PHONE_CODE_REQUIRED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
-			}
-
 			const user = await userQueries.findOne({
 				id: id,
 				tenant_code: tenantCode,
