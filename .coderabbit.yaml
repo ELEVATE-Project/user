@@ -6,15 +6,17 @@ early_access: false
 enable_free_tier: true
 reviews:
   profile: chill
-  request_changes_workflow: false
+  request_changes_workflow: true
   high_level_summary: true
+  high_level_summary_instructions: 'Summarize the PR with special attention to API contract changes, database migrations, env/config changes, auth/security behavior, background workers/queues, external integrations, risk/impact, and rollback notes. Explicitly call out when API docs, migrations, or env samples were expected but not changed.'
   high_level_summary_placeholder: '@coderabbitai summary'
   high_level_summary_in_walkthrough: false
   auto_title_placeholder: '@coderabbitai'
   auto_title_instructions: ''
   review_status: true
+  review_details: true
   commit_status: true
-  fail_commit_status: false
+  fail_commit_status: true
   collapse_walkthrough: false
   changed_files_summary: true
   sequence_diagrams: true
@@ -27,44 +29,55 @@ reviews:
   suggested_reviewers: true
   auto_assign_reviewers: false
   poem: true
-  labeling_instructions: []
+  labeling_instructions:
+    - label: 'api-contract'
+      instructions: 'Apply when changes affect endpoints, request/response schemas, validation rules, status codes, auth behavior, DTOs, or OpenAPI docs.'
+    - label: 'database'
+      instructions: 'Apply when changes affect Sequelize models, migrations, seeders, database queries, indexes, or data migration scripts.'
+    - label: 'security'
+      instructions: 'Apply when changes affect authentication, authorization, secrets, permissions, middleware, invite flows, or sensitive user/org/tenant data handling.'
+    - label: 'config'
+      instructions: 'Apply when changes affect environment variables, service configuration, Kafka, Redis, BullMQ, cloud storage, health checks, deployment, or Docker files.'
+    - label: 'docs'
+      instructions: 'Apply when changes primarily update API docs, README files, setup notes, operational docs, or generated documentation artifacts.'
+    - label: 'breaking-change'
+      instructions: 'Apply when changes may break existing clients, alter public API contracts, require data migrations, require env/config updates, or change auth/permission behavior.'
 
   #Exclude non-source code directories from reviews.
   path_filters:
-    - "!deployment/**"
-    - "!dev-ops/**"
-    - "!release-notes/**"
-    - "!src/api-doc/**"
-    - "!src/assets/**"
-    - "!src/configs/**"
-    - "!src/public/**"
-    - "!src/temp/**"
-    - "!**/*.md"
+    - '!release-notes/**'
+    - '!src/assets/**'
+    - '!src/public/**'
+    - '!src/temp/**'
 
   # Add specific review instructions for critical paths.
   path_instructions:
-    - path: "src/services/**"
-      instructions: "This is core business logic. Please check for correctness, efficiency, and potential edge cases."
-    - path: "src/controllers/**"
-      instructions: "These are API controllers. Focus on request/response handling, security (auth middleware usage), and proper status codes."
-    - path: "src/database/queries/**"
-      instructions: "Review database queries for performance. Check for N+1 problems and ensure indexes can be used."
-    - path: "src/validators/**"
-      instructions: "Validate all incoming data thoroughly. Check for missing or incomplete validation rules."
-    - path: "src/middlewares/**"
-      instructions: "This is security-sensitive middleware. Scrutinize for potential vulnerabilities."
+    - path: 'src/services/**'
+      instructions: 'This is core business logic. Please check for correctness, efficiency, and potential edge cases.'
+    - path: 'src/controllers/**'
+      instructions: 'These are API controllers. Focus on request/response handling, security (auth middleware usage), and proper status codes. If a controller method adds, removes, renames, or changes an endpoint, request body, query/path parameter, response shape, status code, auth behavior, or error behavior, verify that the matching OpenAPI docs under src/api-doc/openapi.yaml, src/api-doc/paths/**, and src/api-doc/components/** are updated in the same PR.'
+    - path: 'src/database/queries/**'
+      instructions: 'Review database queries for performance. Check for N+1 problems and ensure indexes can be used.'
+    - path: 'src/validators/**'
+      instructions: 'Validate all incoming data thoroughly. Check for missing or incomplete validation rules. If request validation changes required fields, optional fields, formats, enum values, array/object structure, cross-field rules, or validation error behavior, verify that the matching OpenAPI request schema and validation-failure documentation under src/api-doc/** are updated in the same PR.'
+    - path: 'src/middlewares/**'
+      instructions: 'This is security-sensitive middleware. Scrutinize for potential vulnerabilities.'
+    - path: 'src/configs/**'
+      instructions: 'Review configuration changes for runtime safety across Kafka, Redis, BullMQ workers, cache, cloud storage, health checks, and external service clients. Verify env variable usage is documented in src/envVariables.js and src/.env.sample when new required configuration is introduced.'
+    - path: 'src/api-doc/**'
+      instructions: 'Review these files as the public API contract. Check OpenAPI syntax, path/method accuracy, request and response schemas, examples, auth/security requirements, status codes, and consistency with src/controllers/v1/**, src/services/**, src/validators/v1/**, and src/dtos/**. Do not accept invented schemas or responses; prefer documented behavior backed by validators, controllers, DTOs, or captured responses.'
 
   abort_on_close: true
   disable_cache: false
   auto_review:
     enabled: true
     auto_incremental_review: true
-    ignore_title_keywords: ["WIP", "skip-review"]
+    ignore_title_keywords: ['WIP', 'skip-review']
     labels: []
     drafts: false
     # Target reviews to development branches.
     base_branches:
-      - "develop"
+      - 'develop'
 
   finishing_touches:
     docstrings:
@@ -76,12 +89,23 @@ reviews:
       mode: warning
       threshold: 80
     title:
-      mode: warning
-      requirements: ''
+      mode: error
+      requirements: 'PR title must follow Conventional Commit format: <type>(<scope>): <subject>. Allowed types: feat, fix, refactor, perf, test, docs, chore, build, ci. Use a concise imperative subject with no trailing period.'
     description:
       mode: warning
     issue_assessment:
       mode: warning
+    custom_checks:
+      - name: 'API docs updated'
+        mode: error
+        instructions: |
+          Fail this check when a PR changes the public API contract without updating the matching API documentation under src/api-doc/**.
+
+          Treat the public API contract as changed when any diff in src/controllers/v1/**, src/validators/v1/**, src/routes/**, src/services/**, src/dtos/**, or src/database/** changes endpoint availability, HTTP method/path behavior, request body schema, query/path parameters, required or optional fields, validation rules, response body shape, response examples, status codes, error codes/messages, pagination metadata, auth/security requirements, or tenant/org scoping behavior.
+
+          Pass this check when the PR includes matching updates in src/api-doc/openapi.yaml, src/api-doc/paths/**, or src/api-doc/components/** for every changed API contract, or when the changed code is clearly internal-only and the PR description explicitly explains why no API documentation update is required.
+
+          When failing, identify the changed function or validator and the expected API doc file or OpenAPI path that must be updated.
   tools:
     eslint:
       enabled: true
@@ -112,7 +136,7 @@ reviews:
     biome:
       enabled: true
     languagetool:
-      enabled: false  # optional
+      enabled: false # optional
     ast-grep:
       essential_rules: true
       rule_dirs: []
