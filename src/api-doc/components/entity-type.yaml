@@ -493,6 +493,12 @@ updateEntityTypeNotFound400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: 136ef0fa-786a-4341-ab71-be6c80abcaf1
     message:
       type: string
       example: Entity type not found.
@@ -552,6 +558,12 @@ deleteEntityType400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+          example: cd067758-b5c9-462a-8f64-01121aa3db8e
     message:
       type: string
       example: Entity type not found.

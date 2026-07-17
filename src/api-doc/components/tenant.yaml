@@ -136,6 +136,7 @@ tenantUpsertRequest:
         into a partial-column `UPDATE` (services/tenant.js
         `tenantQueries.update`). Stripping of `code`/`domains`/`status` is
         done by constants/blacklistConfig.js `tenant.update`.
+      additionalProperties: false
       properties:
         configuration:
           type: object

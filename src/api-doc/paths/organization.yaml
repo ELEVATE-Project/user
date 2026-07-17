@@ -228,6 +228,12 @@ list:
           application/json:
             schema:
               $ref: ../components/organization.yaml#/organizationList200Response
+      '401':
+        description: Unauthorized. Caller lacks the required permissions.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/organization.yaml#/createOrganization401Response
 requestOrgRole:
   post:
     summary: Request Org Role

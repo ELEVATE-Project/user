@@ -101,9 +101,14 @@ updateRequestStatus:
       '400':
         description: >-
           Bad Request. Three distinct failure causes share this status code:
-          request_id not found (real captured example, REQUEST_NOT_FOUND),
-          request already handled (INAVLID_ORG_ROLE_REQ, GAP), or update
-          affected 0 rows (ORG_ROLE_REQ_FAILED, GAP).
+          request_id not found, the request was already handled, or the
+          update affected 0 rows.
+        x-internal-note: >-
+          Only the requestNotFound example below is a real capture
+          (REQUEST_NOT_FOUND). invalidOrgRoleRequest (INAVLID_ORG_ROLE_REQ)
+          and orgRoleRequestFailed (ORG_ROLE_REQ_FAILED) have no captured
+          body - message values are the literal keys from
+          services/org-admin.js, shape-only otherwise.
         content:
           application/json:
             schema:
@@ -128,13 +133,13 @@ updateRequestStatus:
                 value:
                   responseCode: CLIENT_ERROR
                   error: []
-                  message: INAVLID_ORG_ROLE_REQ (GAP, no captured body)
+                  message: INAVLID_ORG_ROLE_REQ
               orgRoleRequestFailed:
                 summary: Update query affected 0 rows
                 value:
                   responseCode: CLIENT_ERROR
                   error: []
-                  message: ORG_ROLE_REQ_FAILED (GAP, no captured body)
+                  message: ORG_ROLE_REQ_FAILED
 getRequestDetails:
   '{id}':
     get:
@@ -438,9 +443,11 @@ inheritEntityType:
       '400':
         description: >-
           Bad Request. Three distinct causes share this status code: caller's
-          org is the default org (real captured example), no matching entity
-          type found under the default org (GAP, no capture), or caller is
-          not an org_admin/tenant_admin (GAP, no capture).
+          org is the default org, no matching entity type found under the
+          default org, or caller is not an org_admin/tenant_admin.
+        x-internal-note: >-
+          Only userIsFromDefaultOrg below is a real capture. entityTypeNotFound
+          (ENTITY_TYPE_NOT_FOUND) has no captured body - shape-only.
         content:
           application/json:
             schema:
@@ -458,11 +465,11 @@ inheritEntityType:
                   meta:
                     correlation: 281c1bf5-0f52-4058-a0e9-4e6066fed5b3
               entityTypeNotFound:
-                summary: No matching entity type in the default org (GAP, no captured body)
+                summary: No matching entity type in the default org (no captured body)
                 value:
                   responseCode: CLIENT_ERROR
                   error: []
-                  message: ENTITY_TYPE_NOT_FOUND (GAP, no captured body)
+                  message: ENTITY_TYPE_NOT_FOUND
 updateUser:
   '{id}':
     post:
@@ -515,10 +522,13 @@ updateUser:
         '400':
           description: >-
             Bad Request. Three distinct causes share this status code: user
-            not found (real captured example), role lookup returned falsy
-            (GAP, no capture, likely-dead-code branch -- see component
-            description), or body.organization_id does not match the
-            caller's own organization (GAP, no capture).
+            not found, role lookup returned falsy, or body.organization_id
+            does not match the caller's own organization.
+          x-internal-note: >-
+            Only userNotFound below is a real capture. invalidRoleAssignments
+            (INVALID_ROLE_ASSIGNMENTS, likely-dead-code branch - see component
+            description) and noAccessToUpdateRoles
+            (YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES) have no captured body.
           content:
             application/json:
               schema:
@@ -536,17 +546,17 @@ updateUser:
                     meta:
                       correlation: 8564f9de-7b4f-4746-a63a-43193ff08c13
                 invalidRoleAssignments:
-                  summary: Role lookup returned falsy (GAP, no captured body)
+                  summary: Role lookup returned falsy (no captured body)
                   value:
                     responseCode: CLIENT_ERROR
                     error: []
-                    message: INVALID_ROLE_ASSIGNMENTS (GAP, no captured body)
+                    message: INVALID_ROLE_ASSIGNMENTS
                 noAccessToUpdateRoles:
-                  summary: body.organization_id != caller's organization_id (GAP, no captured body)
+                  summary: body.organization_id != caller's organization_id (no captured body)
                   value:
                     responseCode: CLIENT_ERROR
                     error: []
-                    message: YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES (GAP, no captured body)
+                    message: YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES
 createUsers:
   post:
     summary: Create Users (bulk, tenant-aware variant)

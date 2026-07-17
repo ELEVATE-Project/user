@@ -108,6 +108,11 @@ Unauthorized401Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
 updateRequest:
   type: object
   description: User profile update request

@@ -205,6 +205,19 @@ file:
                       type: formhvedht
                       version: 0
                   correlation: c03cfc90-238a-401a-98b3-39d36ae80499
+        '401':
+          description: Unauthorized. Missing or invalid X-auth-token.
+          x-internal-note: Produced by the shared auth middleware; no endpoint-specific captured example.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesUnauthorizedResponse401
+              example:
+                responseCode: UNAUTHORIZED
+                error: []
+                meta:
+                  correlation: 6a8c8513-0ac8-4eda-9298-576ea4752b1a
+                message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.
   getSampleCSV:
     get:
       summary: Cloud Services - Get Sample CSV
@@ -270,3 +283,16 @@ file:
                       type: formhvedht
                       version: 0
                   correlation: 87b3b7e2-d27c-4504-b31f-110e90aef24d
+        '401':
+          description: Unauthorized. Missing or invalid X-auth-token.
+          x-internal-note: Produced by the shared auth middleware; no endpoint-specific captured example.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/cloudServices.yaml#/cloudServicesUnauthorizedResponse401
+              example:
+                responseCode: UNAUTHORIZED
+                error: []
+                meta:
+                  correlation: 6a8c8513-0ac8-4eda-9298-576ea4752b1a
+                message: You do not have the required permissions to access this resource. Please contact your administrator for assistance.

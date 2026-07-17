@@ -98,6 +98,23 @@ createUserEntity201Response:
           type: string
           nullable: true
           example: null
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              type:
+                type: string
+              version:
+                type: number
+        correlation:
+          type: string
+          example: 243b2c16-47ba-477a-9521-ef6b337c9dfe
   example:
     responseCode: OK
     message: Entity created successfully
@@ -359,6 +376,17 @@ deleteUserEntity202Response:
     meta:
       type: object
       properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              type:
+                type: string
+              version:
+                type: number
         correlation:
           type: string
           example: 60cf8ae2-9000-44a8-844d-d91cc059dd3b
@@ -435,3 +463,54 @@ entityList401Response:
       correlation: 9b8b4628-07f6-4a55-98fc-17c3ef0c969b
     message: You do not have the required permissions to access this resource. Please
       contact your administrator for assistance.
+
+updateUserEntity202Response:
+  type: object
+  description: Entity updated successfully.
+  x-internal-note: >-
+    No captured example exists for this status (services/entities.js
+    `update`) - schema is shape-only, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: array
+      items:
+        type: number
+
+entityList200Response:
+  type: object
+  description: User entities fetched successfully.
+  x-internal-note: >-
+    No captured example exists for this status (services/entities.js `list`)
+    - schema is shape-only, inferred from the entity record shape seen in
+    createUserEntity201Response, see gaps.jsonl.
+  properties:
+    responseCode:
+      type: string
+    message:
+      type: string
+    result:
+      type: object
+      properties:
+        count:
+          type: number
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              entity_type_id:
+                type: number
+              value:
+                type: string
+              label:
+                type: string
+              status:
+                type: string
+              type:
+                type: string

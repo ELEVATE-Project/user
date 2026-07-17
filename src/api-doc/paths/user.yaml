@@ -132,7 +132,7 @@ profileById:
           schema:
             type: string
             pattern: ^[0-9]+$
-          example: 22
+          example: '22'
         - in: query
           name: email
           required: false
@@ -359,7 +359,7 @@ share:
           description: Please append a valid User ID to the Request URL.
           schema:
             type: string
-          example: 22
+          example: '22'
       responses:
         '200':
           description: OK. Mentor profile shared successfully.

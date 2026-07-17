@@ -17,9 +17,10 @@
 orgAdminNotAdminResponse:
   type: object
   description: >-
-    Returned when the caller's roles do not include org_admin or tenant_admin
-    (utilsHelper.validateRoleAccess check in controllers/v1/org-admin.js).
-    Message key: USER_IS_NOT_A_ADMIN. GAP: no captured example for this
+    Returned when the caller's roles do not include org_admin or tenant_admin.
+  x-internal-note: >-
+    utilsHelper.validateRoleAccess check in controllers/v1/org-admin.js.
+    Message key: USER_IS_NOT_A_ADMIN. No captured example for this
     status/message on any org-admin endpoint; shape-only.
   properties:
     responseCode:
@@ -32,6 +33,10 @@ orgAdminNotAdminResponse:
       type: object
     message:
       type: string
+      enum:
+        - USER_IS_NOT_A_ADMIN
+  required:
+    - message
 
 # ---------------------------------------------------------------------------
 # bulkUserCreate
@@ -353,9 +358,12 @@ updateRequestStatus200Response:
 updateRequestStatus400InvalidResponse:
   type: object
   description: >-
-    GAP: no captured example. Message key INAVLID_ORG_ROLE_REQ (sic),
-    returned when the existing request's status is not REQUESTED (i.e. it
-    was already handled). Shape-only.
+    Returned when the existing request's status is not REQUESTED (i.e. it
+    was already handled).
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    INAVLID_ORG_ROLE_REQ, sic - typo preserved from services/org-admin.js).
+    Shape-only.
   properties:
     responseCode:
       type: string
@@ -364,13 +372,18 @@ updateRequestStatus400InvalidResponse:
       items: {}
     message:
       type: string
+      enum:
+        - INAVLID_ORG_ROLE_REQ
     meta:
       type: object
+  required:
+    - message
 updateRequestStatus400FailedResponse:
   type: object
-  description: >-
-    GAP: no captured example. Message key ORG_ROLE_REQ_FAILED, returned
-    when the update query affects 0 rows. Shape-only.
+  description: Returned when the update query affects 0 rows.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    ORG_ROLE_REQ_FAILED). Shape-only.
   properties:
     responseCode:
       type: string
@@ -379,8 +392,12 @@ updateRequestStatus400FailedResponse:
       items: {}
     message:
       type: string
+      enum:
+        - ORG_ROLE_REQ_FAILED
     meta:
       type: object
+  required:
+    - message
 updateRequestStatus400NotFoundResponse:
   type: object
   description: >-
@@ -402,6 +419,8 @@ updateRequestStatus400NotFoundResponse:
       items: {}
     message:
       type: string
+      enum:
+        - Role Change Request not found.
       example: Role Change Request not found.
     meta:
       type: object
@@ -409,6 +428,8 @@ updateRequestStatus400NotFoundResponse:
         correlation:
           type: string
           example: 2b79fd8a-95e2-419c-86a0-96f8ae529118
+  required:
+    - message
 
 # ---------------------------------------------------------------------------
 # deactivateUser (org-admin bulk variant: POST body { ids[], emails[] },
@@ -592,6 +613,8 @@ inheritEntityType400DefaultOrgResponse:
       example: []
     message:
       type: string
+      enum:
+        - Users from the default organization are not permitted to proceed with this action.
       example: Users from the default organization are not permitted to proceed with this action.
     meta:
       type: object
@@ -599,12 +622,16 @@ inheritEntityType400DefaultOrgResponse:
         correlation:
           type: string
           example: 281c1bf5-0f52-4058-a0e9-4e6066fed5b3
+  required:
+    - message
 inheritEntityType400NotFoundResponse:
   type: object
   description: >-
-    GAP: no captured example. Message key ENTITY_TYPE_NOT_FOUND, returned
-    when no entity type matching entity_type_value exists under the default
-    organization. Shape-only.
+    Returned when no entity type matching entity_type_value exists under
+    the default organization.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    ENTITY_TYPE_NOT_FOUND). Shape-only.
   properties:
     responseCode:
       type: string
@@ -613,8 +640,12 @@ inheritEntityType400NotFoundResponse:
       items: {}
     message:
       type: string
+      enum:
+        - ENTITY_TYPE_NOT_FOUND
     meta:
       type: object
+  required:
+    - message
 
 # ---------------------------------------------------------------------------
 # updateUser
@@ -666,6 +697,8 @@ updateUser400NotFoundResponse:
       example: []
     message:
       type: string
+      enum:
+        - User not found.
       example: User not found.
     meta:
       type: object
@@ -673,15 +706,18 @@ updateUser400NotFoundResponse:
         correlation:
           type: string
           example: 8564f9de-7b4f-4746-a63a-43193ff08c13
+  required:
+    - message
 updateUser400InvalidRoleResponse:
   type: object
-  description: >-
-    GAP: no captured example. Message key INVALID_ROLE_ASSIGNMENTS. Code
-    note: this branch (`if (!getRoleIds)`) is only reachable if
-    roleQueries.findAll() itself returns a falsy value; a real "no matching
-    roles" result would be an empty array (truthy), so this branch may be
-    dead code in practice -- flagged, not fixed, since this is a docs-only
-    pass. Shape-only.
+  description: Returned when role assignment lookup fails.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    INVALID_ROLE_ASSIGNMENTS). Code note: this branch (`if (!getRoleIds)`)
+    is only reachable if roleQueries.findAll() itself returns a falsy
+    value; a real "no matching roles" result would be an empty array
+    (truthy), so this branch may be dead code in practice - flagged, not
+    fixed, since this is a docs-only pass. Shape-only.
   properties:
     responseCode:
       type: string
@@ -690,14 +726,20 @@ updateUser400InvalidRoleResponse:
       items: {}
     message:
       type: string
+      enum:
+        - INVALID_ROLE_ASSIGNMENTS
     meta:
       type: object
+  required:
+    - message
 updateUser400NoAccessResponse:
   type: object
   description: >-
-    GAP: no captured example. Message key YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES,
-    returned when body.organization_id does not match the caller's own
-    organization_id. Shape-only.
+    Returned when body.organization_id does not match the caller's own
+    organization_id.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES). Shape-only.
   properties:
     responseCode:
       type: string
@@ -706,8 +748,12 @@ updateUser400NoAccessResponse:
       items: {}
     message:
       type: string
+      enum:
+        - YOU_DONT_HAVE_ACCESS_TO_UPDATE_ROLES
     meta:
       type: object
+  required:
+    - message
 
 # ---------------------------------------------------------------------------
 # createUsers -- see paths file note: no validator entry, and the

@@ -91,10 +91,20 @@ update:
                   status: ACTIVE
                   entity_type_id: 1
       responses:
+        '202':
+          description: OK. Accepted. Entity updated successfully.
+          x-internal-note: >-
+            No captured example exists for this status - schema is
+            shape-only, see gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userentity.yaml#/updateUserEntity202Response
         '400':
-          description: Bad Request. Entity not found. (No captured example for the
-            202 ENTITY_UPDATED_SUCCESSFULLY happy path, nor for the 400
-            ENTITY_ALREADY_EXISTS unique-constraint path - see gaps.jsonl.)
+          description: Bad Request. Entity not found.
+          x-internal-note: >-
+            A second, distinct 400 ENTITY_ALREADY_EXISTS unique-constraint
+            path also exists with no captured example - see gaps.jsonl.
           content:
             application/json:
               schema:
@@ -160,10 +170,19 @@ read:
             summary: Example B - lookup by value + entity_type_id
             value: 4
     responses:
+      '200':
+        description: OK. User entities fetched successfully.
+        x-internal-note: >-
+          No captured example exists for this status - schema is shape-only,
+          see gaps.jsonl.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/readUserEntity200Response
       '422':
         description: Unprocessable Entity. Neither `id` nor (`value` + `entity_type_id`)
-          was provided. (No captured example for the 200 ENTITY_FETCHED_SUCCESSFULLY
-          happy path, nor for the 400 ENTITY_NOT_FOUND no-match path - see gaps.jsonl.)
+          was provided. (No captured example for the 400 ENTITY_NOT_FOUND
+          no-match path - see gaps.jsonl.)
         content:
           application/json:
             schema:
@@ -211,10 +230,20 @@ list:
           type: number
         example: 1
     responses:
+      '200':
+        description: OK. User entities fetched successfully.
+        x-internal-note: >-
+          No captured example exists for this status - schema is shape-only,
+          see gaps.jsonl.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/userentity.yaml#/entityList200Response
       '401':
-        description: Unauthorized. Caller lacks the required permission. (No captured
-          example for the 200 ENTITY_FETCHED_SUCCESSFULLY happy path, nor for the
-          400 ENTITY_NOT_FOUND empty-result path - see gaps.jsonl.)
+        description: Unauthorized. Caller lacks the required permission.
+        x-internal-note: >-
+          A 400 ENTITY_NOT_FOUND empty-result path also exists with no
+          captured example - see gaps.jsonl.
         content:
           application/json:
             schema:
@@ -251,9 +280,17 @@ delete:
           example: 31
       responses:
         '202':
-          description: OK. Accepted. Entity deleted successfully. (No captured example
-            for the 400 ENTITY_NOT_FOUND path - see gaps.jsonl.)
+          description: OK. Accepted. Entity deleted successfully.
           content:
             application/json:
               schema:
                 $ref: ../components/userentity.yaml#/deleteUserEntity202Response
+        '400':
+          description: Bad Request. Entity not found.
+          x-internal-note: >-
+            No captured example exists for this status - schema is shape-only,
+            see gaps.jsonl.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/userentity.yaml#/deleteUserEntity400Response

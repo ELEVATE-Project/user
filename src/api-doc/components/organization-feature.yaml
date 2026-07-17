@@ -43,18 +43,22 @@ createOrganizationFeatureRequest:
       example: false
     icon:
       type: string
+      nullable: true
       description: Icon path/reference for the feature.
       example: null
     redirect_url:
       type: string
+      nullable: true
       description: Redirect URL associated with the feature.
       example: null
     translations:
       type: object
+      nullable: true
       description: Localized translations for the feature.
       example: null
     meta:
       type: object
+      nullable: true
       description: Additional metadata for the feature.
       example: null
 createOrganizationFeature201Response:
@@ -295,10 +299,12 @@ updateOrganizationFeatureRequest:
       example: /assets/images/ic_mitra.svg
     redirect_url:
       type: string
+      nullable: true
       description: Redirect URL associated with the feature.
       example: null
     translations:
       type: object
+      nullable: true
       description: Localized translations for the feature.
       example: null
     meta:
