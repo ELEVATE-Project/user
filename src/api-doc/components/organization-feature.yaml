@@ -249,15 +249,16 @@ readOrganizationFeature200Response:
 updateOrganizationFeatureRequest:
   type: object
   description: >-
-    Request payload for updating an existing organization feature
-    (validators/v1/organization-feature.js#update, only runs when
-    req.method != DELETE). Only `feature_name` is mandatory on this branch;
-    `display_order`, if present, must contain only digits. Server-managed
-    fields plus `feature_code` (organization_code, tenant_code, created_by,
-    updated_by, created_at, updated_at, deleted_at, feature_code) are
-    stripped by filterRequestBody with the `organizationFeatures.update`
-    blacklist (constants/blacklistConfig.js) and cannot be changed via
-    update, even if supplied.
+    Request payload for updating an existing organization feature. Only
+    `feature_name` is mandatory on this branch; `display_order`, if present,
+    must contain only digits. Server-managed fields plus `feature_code`
+    (organization_code, tenant_code, created_by, updated_by, created_at,
+    updated_at, deleted_at) cannot be changed via update, even if supplied.
+  x-internal-note: >-
+    Applies only when req.method != DELETE
+    (validators/v1/organization-feature.js#update). Stripped via
+    filterRequestBody with the `organizationFeatures.update` blacklist
+    (constants/blacklistConfig.js).
   required:
     - feature_name
   properties:
@@ -312,8 +313,8 @@ updateOrganizationFeatureRequest:
         title: MITRA
         sameOrigin: true
 
-# GAP: never captured live (captured-responses.json has no entry for the
-# update endpoint) — see gaps.jsonl. The generic envelope below
+# Never captured live (captured-responses.json has no entry for the update
+# endpoint) — see gaps.jsonl. The generic envelope below
 # (responseCode/message/result/meta) IS consistently observed across every
 # other captured success response in this domain; the specific shape of
 # `result` (services/organization-feature.js#update returns
@@ -331,23 +332,20 @@ updateOrganizationFeature200Response:
       example: ORG_FEATURE_UPDATED_SUCCESSFULLY
     result:
       type: object
-      description: >-
-        GAP: shape unconfirmed. Expected to be the updated organization
-        feature row, but never captured live.
+      description: The updated organization feature record.
+      x-internal-note: 'Shape unconfirmed; never captured live.'
     meta:
       type: object
 
-# GAP: never captured live — see gaps.jsonl. Body shape inferred only from
-# the shared failureResponse envelope (responseCode/error/meta/message)
+# Never captured live — see gaps.jsonl. Body shape inferred only from the
+# shared failureResponse envelope (responseCode/error/meta/message)
 # consistently observed elsewhere in this domain.
 updateOrganizationFeature422Response:
   type: object
   description: >-
     Validation failed on the update branch (e.g. missing/empty
-    `feature_name`, or non-digit `display_order`). Note the update
-    validator ALSO requires `id` as a path/route param
-    (validators/v1/organization-feature.js#update, checkParams('id')) —
-    a missing `id` param also surfaces here.
+    `feature_name`, non-digit `display_order`, or a missing `id` path
+    parameter).
   properties:
     responseCode:
       type: string
@@ -370,8 +368,8 @@ updateOrganizationFeature422Response:
 # --------------------------------------------------------------------------
 # delete (DELETE /user/v1/organization-feature/update/{id})
 # --------------------------------------------------------------------------
-# GAP: never captured live — see gaps.jsonl. Envelope shape inferred from
-# the shared successResponse contract; services/organization-feature.js#delete
+# Never captured live — see gaps.jsonl. Envelope shape inferred from the
+# shared successResponse contract; services/organization-feature.js#delete
 # literally returns result: {} (a hardcoded empty object), which is why
 # `result` is typed as an empty object below, but this has not been
 # confirmed against a live response.
@@ -386,9 +384,8 @@ deleteOrganizationFeature200Response:
       example: ORG_FEATURE_DELETED_SUCCESSFULLY
     result:
       type: object
-      description: >-
-        GAP: shape unconfirmed from a live capture; code hardcodes an empty
-        object.
+      description: Empty result object.
+      x-internal-note: 'Shape unconfirmed from a live capture; code hardcodes an empty object.'
       example: {}
     meta:
       type: object
@@ -396,17 +393,16 @@ deleteOrganizationFeature200Response:
 # --------------------------------------------------------------------------
 # read by id (GET /user/v1/organization-feature/read/{id})
 # --------------------------------------------------------------------------
-# GAP: never captured live — only the no-id (list) branch of GET
-# .../read was captured. services/organization-feature.js#read does NOT
-# apply the `attributes: exclude` queryOptions that #list uses, so the
-# single-record shape may include additional columns (id, created_by,
-# updated_by, created_at, updated_at, deleted_at) not present in the list
-# response — this is a structural inference, not a confirmed shape.
+# Never captured live — only the no-id (list) branch of GET .../read was
+# captured. services/organization-feature.js#read does NOT apply the
+# `attributes: exclude` queryOptions that #list uses, so the single-record
+# shape may include additional columns (id, created_by, updated_by,
+# created_at, updated_at, deleted_at) not present in the list response —
+# this is a structural inference, not a confirmed shape.
 readOrganizationFeatureById200Response:
   type: object
-  description: >-
-    Single organization feature fetched successfully by feature code (path
-    param `id`). GAP - shape unconfirmed; see gaps.jsonl.
+  description: Single organization feature fetched successfully by feature code (path param `id`).
+  x-internal-note: 'Shape unconfirmed; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -416,10 +412,11 @@ readOrganizationFeatureById200Response:
       example: ORG_FEATURE_FETCHED
     result:
       type: object
-      description: >-
-        GAP: shape unconfirmed from a live capture. Expected to resemble one
-        item of readOrganizationFeature200Response's result array, possibly
-        with additional unexcluded columns — see note above.
+      description: The organization feature record.
+      x-internal-note: >-
+        Shape unconfirmed from a live capture. Expected to resemble one item
+        of readOrganizationFeature200Response's result array, possibly with
+        additional unexcluded columns — see note above.
     meta:
       type: object
 
@@ -437,7 +434,8 @@ readOrganizationFeatureById200Response:
 # to both create and update (and, via the update controller path, delete).
 organizationFeatureUserNotAdmin400Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: Caller does not have the required admin or org_admin role (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -456,7 +454,8 @@ organizationFeatureUserNotAdmin400Response:
 # Applies to create, update, delete, list and single read.
 organizationFeatureOrgOrTenantCodeNotFound400Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: The organization or tenant code could not be resolved for the caller (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -477,13 +476,16 @@ organizationFeatureOrgOrTenantCodeNotFound400Response:
 organizationFeatureNotFound400Response:
   type: object
   description: >-
-    GAP - no live captured example; see gaps.jsonl. Returned by create when
-    either (a) a non-admin caller in a non-default organization references a
-    feature_code that has no enabled counterpart in the default
-    organization, or (b) feature_code does not exist in the features table
-    (FK constraint violation). Also returned by update when feature_code's
-    FK constraint is violated (services/organization-feature.js#update,
-    line 242-248).
+    The referenced feature could not be found (statusCode 400). Returned by
+    create when either (a) a non-admin caller in a non-default organization
+    references a feature_code that has no enabled counterpart in the default
+    organization, or (b) feature_code does not correspond to any known
+    feature. Also returned by update when the same feature_code condition
+    applies.
+  x-internal-note: >-
+    (b) is a foreign-key constraint violation. No live captured example; see
+    gaps.jsonl. Update case: services/organization-feature.js#update, line
+    242-248.
   properties:
     responseCode:
       type: string
@@ -501,7 +503,8 @@ organizationFeatureNotFound400Response:
 # request body do not exist for the tenant.
 organizationFeatureRoleNotFound400Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: One or more of the supplied role titles do not exist for the tenant (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -519,7 +522,9 @@ organizationFeatureRoleNotFound400Response:
 # feature_code/organization_code/tenant_code already exists.
 organizationFeatureAlreadyExists400Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: An organization feature with the same feature_code, organization_code and
+    tenant_code already exists (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -535,12 +540,13 @@ organizationFeatureAlreadyExists400Response:
 # services/organization-feature.js#create (lines 153-158): generic
 # catch-all fallback — any error not matching the foreign-key-constraint or
 # UniqueConstraintError branches is returned as a 400 with the raw
-# error.message (not a fixed i18n key). GAP: message text is not a stable
+# error.message (not a fixed i18n key). Message text is not a stable
 # contract and cannot be enumerated; documented shape-only.
 organizationFeatureGenericError400Response:
   type: object
-  description: >-
-    GAP - no live captured example; see gaps.jsonl. `message` is whatever
+  description: An unexpected error occurred while creating the organization feature (statusCode 400).
+  x-internal-note: >-
+    No live captured example; see gaps.jsonl. `message` is whatever
     `error.message` happens to be for the underlying failure and is NOT a
     fixed/stable i18n key.
   properties:
@@ -559,7 +565,9 @@ organizationFeatureGenericError400Response:
 # organization/tenant).
 organizationFeatureUpdateFailed400Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: The update matched zero rows - no feature was found for this organization/tenant with
+    the given feature_code (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -580,7 +588,9 @@ organizationFeatureUpdateFailed400Response:
 # endpoints.
 organizationFeatureReadNotFound400Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: The feature was not found for the given code in either the caller's organization or
+    the tenant's default organization (statusCode 400).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string
@@ -599,7 +609,9 @@ organizationFeatureReadNotFound400Response:
 # 400 (bad_request).
 organizationFeatureDeleteNotFound404Response:
   type: object
-  description: GAP - no live captured example; see gaps.jsonl.
+  description: No organization feature matched the given feature_code for this organization/tenant
+    (statusCode 404).
+  x-internal-note: 'No live captured example; see gaps.jsonl.'
   properties:
     responseCode:
       type: string

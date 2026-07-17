@@ -1,6 +1,7 @@
 create:
   post:
     summary: Create Form
+    operationId: createForm
     tags:
       - Form APIs
     description: 'This API is associated with creating a form.
@@ -29,23 +30,24 @@ create:
             $ref: ../components/form.yaml#/createFormRequest
     responses:
       '201':
-        description: Created. Form created successfully. Example captured from a
-          real response.
+        description: Created. Form created successfully.
+        x-internal-note: Example captured from a real response.
         content:
           application/json:
             schema:
               $ref: ../components/form.yaml#/createForm201Response
       '400':
-        description: 'Bad Request. A form of the same type already exists. GAP:
-          no captured example for this status/message — see
-          components/form.yaml#/createForm400Response and gaps.jsonl.'
+        description: 'Bad Request. A form of the same type already exists.'
+        x-internal-note: >-
+          No captured example for this status/message — see
+          components/form.yaml#/createForm400Response and gaps.jsonl.
         content:
           application/json:
             schema:
               $ref: ../components/form.yaml#/createForm400Response
       '422':
-        description: Unprocessable Entity. Request-body validation failed. Example
-          captured from a real response.
+        description: Unprocessable Entity. Request-body validation failed.
+        x-internal-note: Example captured from a real response.
         content:
           application/json:
             schema:
@@ -54,6 +56,7 @@ update:
   '{formId}':
     patch:
       summary: Update Form
+      operationId: updateForm
       tags:
         - Form APIs
       description: 'This API is associated with updating a form.
@@ -68,10 +71,12 @@ update:
         server-side (stripped before validation) even if supplied.
 
         - Cross-field note: `data.template_name` and `data.fields` are only valid
-        together (validators/v1/form.js custom checks) — see
-        components/form.yaml#/updateFormRequest for details.
+        together — see components/form.yaml#/updateFormRequest for details.
 
         '
+      x-internal-note: >-
+        Cross-field validation for `data.template_name`/`data.fields` is
+        enforced by validators/v1/form.js custom checks.
       parameters:
         - name: X-auth-token
           in: header
@@ -86,7 +91,7 @@ update:
           description: Please append a valid form ID to the request URL.
           schema:
             type: string
-          example: 1
+          example: '1'
       requestBody:
         content:
           application/json:
@@ -94,16 +99,17 @@ update:
               $ref: ../components/form.yaml#/updateFormRequest
       responses:
         '202':
-          description: 'Accepted. Form updated successfully. GAP: no captured
-            example for this status/message — see
-            components/form.yaml#/updateForm202Response and gaps.jsonl.'
+          description: 'Accepted. Form updated successfully.'
+          x-internal-note: >-
+            No captured example for this status/message — see
+            components/form.yaml#/updateForm202Response and gaps.jsonl.
           content:
             application/json:
               schema:
                 $ref: ../components/form.yaml#/updateForm202Response
         '400':
-          description: Bad Request. Form not found. Example captured from a real
-            response.
+          description: Bad Request. Form not found.
+          x-internal-note: Example captured from a real response.
           content:
             application/json:
               schema:
@@ -112,6 +118,7 @@ read:
   '{formId}':
     post:
       summary: Get Form Details
+      operationId: readForm
       tags:
         - Form APIs
       description: 'This API is associated with retrieving form details.
@@ -122,19 +129,23 @@ read:
 
         - Mandatory parameters cannot be empty or null.
 
-        - The controller (controllers/v1/form.js `read`) also supports being
-        called with no `formId` and an empty body, in which case it returns the
-        full list of form versions instead of a single form
-        (readAllFormVersions200Response) — this variant is not separately
-        addressable in this spec since the documented route requires `formId` in
-        the path; flagged as a gap.
+        - Calling this endpoint with no `formId` and an empty body instead
+        returns the full list of form versions (see
+        readAllFormVersions200Response).
 
-        - services/form.js `read` falls back from an org-specific form lookup to
-        a default-organization form lookup before returning FORM_NOT_FOUND
-        (cross-field-rules.json flags this fallback as an "unclear" finding,
-        since the two lookups are not independent request fields).
+        - When a form is not found for the requesting organization, the
+        lookup falls back to the default organization before returning a
+        not-found error.
 
         '
+      x-internal-note: >-
+        The controller (controllers/v1/form.js `read`) supports the
+        no-formId/empty-body variant; it is not separately addressable in
+        this spec since the documented route requires `formId` in the path
+        — flagged as a gap. The org-to-default-org fallback is in
+        services/form.js `read`; cross-field-rules.json flags this fallback
+        as an "unclear" finding, since the two lookups are not independent
+        request fields.
       parameters:
         - name: X-auth-token
           in: header
@@ -158,19 +169,35 @@ read:
           application/json:
             schema:
               $ref: ../components/form.yaml#/readFormRequest
+            examples:
+              byId:
+                summary: Lookup by formId path parameter
+                value: {}
+              byTypeAndSubType:
+                summary: Lookup by type/sub_type in body (no formId path parameter)
+                value:
+                  type: profile
+                  sub_type: profileForm
+              listAllVersions:
+                summary: No formId and no body — returns the list of all form versions instead
+                value: {}
       responses:
         '200':
-          description: 'OK. Form details retrieved successfully. GAP: no captured
-            example for this status/message — see
-            components/form.yaml#/readForm200Response and gaps.jsonl.'
+          description: 'OK. Form details retrieved successfully.'
+          x-internal-note: >-
+            No captured example for this status/message — see
+            components/form.yaml#/readForm200Response and gaps.jsonl.
           content:
             application/json:
               schema:
                 $ref: ../components/form.yaml#/readForm200Response
         '400':
-          description: 'Bad Request. Form not found (example captured from a real
-            response) or tenant not found (GAP: no captured example) — see
-            components/form.yaml#/readForm400Response and gaps.jsonl.'
+          description: 'Bad Request. Form not found, or the tenant could not be
+            resolved.'
+          x-internal-note: >-
+            Form-not-found example captured from a real response;
+            tenant-not-found has no captured example — see
+            components/form.yaml#/readForm400Response and gaps.jsonl.
           content:
             application/json:
               schema:

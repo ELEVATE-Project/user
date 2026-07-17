@@ -8,8 +8,10 @@
 create:
   post:
     summary: Create Admin User
+    operationId: createAdmin
     tags:
       - Admin APIs
+    security: []
     description: 'API associated with creating a new admin user.
 
       - Endpoint: `/user/v1/admin/create`
@@ -58,8 +60,10 @@ create:
 login:
   post:
     summary: Admin Login
+    operationId: loginAdmin
     tags:
       - Admin APIs
+    security: []
     description: 'This API is associated with the login of the admin/system user.
 
       - Endpoint: `/user/v1/admin/login`
@@ -93,7 +97,8 @@ login:
             schema:
               $ref: ../components/admin.yaml#/loginSystemUser422Response
       '500':
-        description: Server Error (captured when password was omitted).
+        description: Server Error. Returned when an unexpected server-side failure occurs.
+        x-internal-note: Captured when the password field was omitted.
         content:
           application/json:
             schema:
@@ -102,6 +107,7 @@ deleteUser:
   '{id}':
     delete:
       summary: Delete User
+      operationId: deleteUser
       tags:
         - Admin APIs
       description: 'Delete a user.
@@ -123,7 +129,7 @@ deleteUser:
           description: User ID to be deleted. Please append a valid user ID to the request URL.
           schema:
             type: string
-          example: 1
+          example: '1'
       responses:
         '200':
           description: OK. User deleted successfully.
@@ -146,6 +152,7 @@ deleteUser:
 assignRole:
   post:
     summary: Assign Role to User
+    operationId: assignRole
     tags:
       - Admin APIs
     description: 'Assigns a role to a user within an organization. Organization
@@ -177,8 +184,11 @@ assignRole:
               $ref: ../components/admin.yaml#/assignRole200Response
       '400':
         description: >-
-          Bad Request. Captured messages include "The user already has this role
-          assigned." and "User not found."
+          Bad Request. Returned when the role is already assigned to the
+          user, or when the user cannot be found.
+        x-internal-note: >-
+          Captured messages: "The user already has this role assigned." and
+          "User not found."
         content:
           application/json:
             schema:
@@ -223,6 +233,7 @@ addOrgAdmin:
       must be provided. `phone_code` is required when the identifier is a
       phone number.
       '
+    operationId: addOrgAdmin
     tags:
       - Admin APIs
     parameters:
@@ -252,6 +263,16 @@ addOrgAdmin:
             byIdentifierPhone:
               $ref: ../components/admin.yaml#/addOrgAdminRequestExamples/byIdentifierPhone
     responses:
+      '200':
+        description: OK. Org-admin role assigned successfully.
+        x-internal-note: >-
+          Message key ORG_ADMIN_MAPPED_SUCCESSFULLY. No captured example
+          exists for this status on this endpoint - shape derived directly
+          from services/admin.js `addOrgAdmin`, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/addOrgAdmin200Response
       '400':
         description: Bad Request. Phone identifier supplied without phone_code.
         content:
@@ -265,7 +286,8 @@ addOrgAdmin:
             schema:
               $ref: ../components/admin.yaml#/addOrgAdmin422Response
       '500':
-        description: Server Error (captured on happy-path attempt).
+        description: Server Error. Returned when an unexpected server-side failure occurs.
+        x-internal-note: Captured on a happy-path attempt.
         content:
           application/json:
             schema:
@@ -274,6 +296,7 @@ deactivateOrg:
   '{id}':
     post:
       summary: Deactivate Organization
+      operationId: deactivateOrg
       tags:
         - Admin APIs
       description: 'Deactivates an organization and all its users.
@@ -303,6 +326,16 @@ deactivateOrg:
             type: string
           example: default_code
       responses:
+        '200':
+          description: OK. Organization deactivated successfully.
+          x-internal-note: >-
+            Message key ORG_DEACTIVATED. No captured example exists for
+            this status on this endpoint - shape derived directly from
+            services/admin.js `deactivateOrg`, not a fabricated body.
+          content:
+            application/json:
+              schema:
+                $ref: ../components/admin.yaml#/deactivateOrg200Response
         '422':
           description: Unprocessable Entity. Path param id failed format validation.
           content:
@@ -310,7 +343,8 @@ deactivateOrg:
               schema:
                 $ref: ../components/admin.yaml#/deactivateOrg422Response
         '500':
-          description: Server Error (captured on happy-path attempt).
+          description: Server Error. Returned when an unexpected server-side failure occurs.
+          x-internal-note: Captured on a happy-path attempt.
           content:
             application/json:
               schema:
@@ -318,6 +352,7 @@ deactivateOrg:
 deactivateUser:
   post:
     summary: Deactivate User
+    operationId: deactivateUser
     tags:
       - Admin APIs
     description: 'Deactivates one or more users.
@@ -345,6 +380,13 @@ deactivateUser:
             byEmail:
               $ref: ../components/admin.yaml#/deactivateUserRequestExamples/byEmail
     responses:
+      '200':
+        description: OK. User deactivated successfully.
+        x-internal-note: Response body is a verbatim capture from a live request.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/deactivateUser200Response
       '400':
         description: Bad Request. Neither id nor email provided.
         content:
@@ -354,6 +396,7 @@ deactivateUser:
 executeRawQuery:
   post:
     summary: Execute Raw Query
+    operationId: executeRawQuery
     tags:
       - Admin APIs
     description: 'Executes a raw read-only (SELECT) SQL query with pagination.
@@ -376,6 +419,16 @@ executeRawQuery:
           schema:
             $ref: ../components/admin.yaml#/executeRawQueryRequest
     responses:
+      '200':
+        description: OK. Query executed successfully.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape derived directly from services/admin.js `executeRawQuery`,
+          not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/admin.yaml#/executeRawQuery200Response
       '400':
         description: Bad Request. Non-SELECT query rejected.
         content:

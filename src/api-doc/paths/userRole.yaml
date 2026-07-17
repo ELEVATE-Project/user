@@ -17,7 +17,7 @@
 # listed under "zero_match_files" - no cross-field (oneOf/anyOf) constraints apply to
 # this domain.
 
-list?language={language_code}:
+list:
   get:
     summary: Get User Roles
     tags:

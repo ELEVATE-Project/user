@@ -1,5 +1,5 @@
 read:
-  '{userId}?language={language_code}':
+  '{userId}':
     get:
       summary: User Details
       tags:

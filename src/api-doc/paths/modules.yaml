@@ -10,6 +10,7 @@ create:
       - Mandatory parameters cannot be empty or null.
 
       '
+    operationId: createModules
     tags:
       - Modules
     parameters:
@@ -24,7 +25,6 @@ create:
       content:
         application/json:
           schema:
-            $schema: http://json-schema.org/draft-04/schema#
             type: object
             properties:
               code:
@@ -45,7 +45,6 @@ create:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -70,12 +69,12 @@ create:
                       type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: no captured response available for this status/message; schema is types-only (no example values).'
+                summary: 'No captured response available for this status/message; schema is types-only (no example values).'
                 value:
                   responseCode: OK
                   message: MODULES_CREATED_SUCCESSFULLY
                   result:
-                    Id: '<number>'
+                    Id: 1
                     code: '<string>'
                     status: '<string>'
                   meta:
@@ -86,7 +85,6 @@ create:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -95,7 +93,7 @@ create:
                   type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: MODULES_ALREADY_EXISTS thrown on UniqueConstraintError; no captured response available. Shape only.'
+                summary: 'MODULES_ALREADY_EXISTS thrown on UniqueConstraintError; no captured response available. Shape only.'
                 value:
                   responseCode: '<string>'
                   message: MODULES_ALREADY_EXISTS
@@ -112,6 +110,7 @@ update:
         - Mandatory parameters cannot be empty or null.
 
         '
+      operationId: updateModules
       tags:
         - Modules
       parameters: &id002
@@ -131,7 +130,6 @@ update:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 code:
@@ -152,7 +150,6 @@ update:
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -177,12 +174,12 @@ update:
                         type: string
               examples:
                 gap_no_captured_example:
-                  summary: 'GAP: no captured response available for this status/message; schema is types-only (no example values).'
+                  summary: 'No captured response available for this status/message; schema is types-only (no example values).'
                   value:
                     responseCode: OK
                     message: MODULES_UPDATED_SUCCESSFULLY
                     result:
-                      id: '<number>'
+                      id: 1
                       status: '<string>'
                       code: '<string>'
                     meta:
@@ -194,7 +191,6 @@ update:
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -203,7 +199,7 @@ update:
                     type: string
               examples:
                 gap_modules_not_found:
-                  summary: 'GAP: services/modules.js update() returns MODULES_NOT_FOUND
+                  summary: 'Per services/modules.js update() returns MODULES_NOT_FOUND
                     (via responses.failureResponse(), statusCode 400) when modulesQueries.findModulesById(id)
                     returns falsy. CORRECTION: an earlier pass on this file mistakenly
                     claimed this was a bare `throw new Error(...)` with unclear
@@ -214,11 +210,11 @@ update:
                     responseCode: CLIENT_ERROR
                     message: MODULES_NOT_FOUND
                 gap_modules_not_updated:
-                  summary: 'GAP: MODULES_NOT_UPDATED returned when the update and the related permissions update both fail; no captured response available. Shape only.'
+                  summary: 'MODULES_NOT_UPDATED returned when the update and the related permissions update both fail; no captured response available. Shape only.'
                   value:
                     responseCode: CLIENT_ERROR
                     message: MODULES_NOT_UPDATED
-list?page={page}&limit={limit}&search={search}:
+list:
   get:
     summary: Modules List
     description: 'Get a list of modules.
@@ -230,6 +226,7 @@ list?page={page}&limit={limit}&search={search}:
       - Mandatory parameters cannot be empty or null.
 
       '
+    operationId: listModules
     tags:
       - Modules
     parameters:
@@ -263,7 +260,6 @@ list?page={page}&limit={limit}&search={search}:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -299,16 +295,16 @@ list?page={page}&limit={limit}&search={search}:
                       type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: no captured response available for this status/message; schema is types-only (no example values).'
+                summary: 'No captured response available for this status/message; schema is types-only (no example values).'
                 value:
                   responseCode: OK
                   message: MODULES_FETCHED_SUCCESSFULLY
                   result:
                     data:
-                      - id: '<number>'
+                      - id: 1
                         code: '<string>'
                         status: '<string>'
-                    count: '<number>'
+                    count: 1
                   meta:
                     correlation: '<string>'
                     meetingPlatform: '<string>'
@@ -317,7 +313,6 @@ list?page={page}&limit={limit}&search={search}:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -326,7 +321,7 @@ list?page={page}&limit={limit}&search={search}:
                   type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: MODULES_HAS_EMPTY_LIST returned when the query yields zero rows/count; no captured response available. Shape only.'
+                summary: 'MODULES_HAS_EMPTY_LIST returned when the query yields zero rows/count; no captured response available. Shape only.'
                 value:
                   responseCode: '<string>'
                   message: MODULES_HAS_EMPTY_LIST
@@ -343,18 +338,16 @@ delete:
         - Mandatory parameters cannot be empty or null.
 
         '
+      operationId: deleteModules
       tags:
         - Modules
       parameters: *id002
-      requestBody:
-        required: true
       responses:
         '202':
           description: Module deleted successfully.
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -373,7 +366,7 @@ delete:
                         type: string
               examples:
                 gap_no_captured_example:
-                  summary: 'GAP: no captured response available for this status/message; schema is types-only (no example values).'
+                  summary: 'No captured response available for this status/message; schema is types-only (no example values).'
                   value:
                     responseCode: OK
                     message: MODULES_DELETED_SUCCESSFULLY
@@ -386,7 +379,6 @@ delete:
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -395,12 +387,12 @@ delete:
                     type: string
               examples:
                 gap_module_not_found:
-                  summary: 'GAP: MODULES_ALREADY_DELETED_OR_MODULE_NOT_PRESENT returned when the module id does not exist; no captured response available. Shape only.'
+                  summary: 'MODULES_ALREADY_DELETED_OR_MODULE_NOT_PRESENT returned when the module id does not exist; no captured response available. Shape only.'
                   value:
                     responseCode: '<string>'
                     message: MODULES_ALREADY_DELETED_OR_MODULE_NOT_PRESENT
                 gap_module_not_deleted:
-                  summary: 'GAP: MODULES_NOT_DELETED returned when the delete query fails after the module was found; no captured response available. Shape only.'
+                  summary: 'MODULES_NOT_DELETED returned when the delete query fails after the module was found; no captured response available. Shape only.'
                   value:
                     responseCode: '<string>'
                     message: MODULES_NOT_DELETED

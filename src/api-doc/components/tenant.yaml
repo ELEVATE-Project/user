@@ -3,31 +3,37 @@ tenantUpsertRequest:
   description: >-
     Request payload for `POST /user/v1/tenant/update` (create, no `id` path
     param) or `POST /user/v1/tenant/update/{id}` (update, `id` path param
-    present). validators/v1/tenant.js branches on `req.params.id` and applies a
+    present). The accepted fields and validation rules differ between the
+    two branches, modeled below as `oneOf`. Server-managed fields (`status`
+    on both branches; `id`, `created_by`, `updated_by`, `created_at`,
+    `updated_at`, `deleted_at` on both; additionally `code` and `domains` on
+    the update branch only) are always stripped from the request body
+    server-side and cannot be set by the client, even though they appear as
+    request-body fields on the create branch.
+  x-internal-note: >-
+    validators/v1/tenant.js branches on `req.params.id` and applies a
     materially different check/blacklist set per branch (see
-    validator-fields.json's `tenant.update` operation `conditionalNotes`) -
-    modeled below as `oneOf` per branch. Server-managed fields (`status` on
-    both branches; `id`, `created_by`, `updated_by`, `created_at`, `updated_at`,
-    `deleted_at` on both; additionally `code` and `domains` on the update
-    branch only) are stripped from the request body by
-    constants/blacklistConfig.js's `filterRequestBody` before validation runs
-    and cannot be set by the client, even though they appear as request-body
-    fields on the create branch.
+    validator-fields.json's `tenant.update` operation `conditionalNotes`).
+    Stripping is done by constants/blacklistConfig.js's `filterRequestBody`
+    before validation runs.
   oneOf:
     - title: createTenant
       type: object
       description: >-
-        Used when no `id` path parameter is supplied (create branch,
-        services/tenant.js#create). `name`, `code` and `domains` are required;
-        `description` and `logo` are also checked with `.trim()` (empty string
-        after trim fails Express-validator's implicit non-empty check triggered
-        by chained `.trim()` calls, though no explicit `.notEmpty()` follows them
-        - see conditionalNotes for `description`/`logo`, both flagged
-        required:true in validator-fields.json). `theming`, `configuration` and
-        `meta` are optional and, if supplied as JSON strings, are parsed to
-        objects server-side (normalizeTenantConfiguration / isValidObject).
-        `configuration`, when supplied, must be a config-dependent shape - see
-        the `configuration` property description below.
+        Used when no `id` path parameter is supplied (create branch). `name`,
+        `code` and `domains` are required; `description` and `logo` must
+        also be non-empty after trimming whitespace. `theming`,
+        `configuration` and `meta` are optional and, if supplied as JSON
+        strings, are parsed into objects server-side. `configuration`, when
+        supplied, must match the shape described in the `configuration`
+        property below.
+      x-internal-note: >-
+        services/tenant.js#create. `description`/`logo` non-empty check comes
+        from Express-validator's implicit non-empty check triggered by
+        chained `.trim()` calls, though no explicit `.notEmpty()` follows
+        them - see conditionalNotes for `description`/`logo`, both flagged
+        required:true in validator-fields.json. JSON-string parsing is done
+        by normalizeTenantConfiguration / isValidObject.
       required:
         - name
         - code
@@ -67,18 +73,20 @@ tenantUpsertRequest:
         configuration:
           type: object
           description: >-
-            Tenant auth configuration. If omitted, defaults server-side to
-            `common.DEFAULT_TENANT_CONFIGURATION`, which is itself sourced from
+            Tenant auth configuration. If omitted, defaults server-side to the
+            deployment's configured default (typically `allowed_auth_mode` of
+            `otp`/`password` and a default `auto_register` value). When
+            supplied, `allowed_auth_mode` must be a non-empty array whose
+            every entry is one of the deployment's allowed auth modes, and
+            `auto_register` must be a boolean.
+          x-internal-note: >-
+            Defaults to `common.DEFAULT_TENANT_CONFIGURATION`, sourced from
             the `DEFAULT_ALLOWED_AUTH_MODES` / `DEFAULT_AUTO_REGISTER`
-            environment variables at process start (runtime config - not fixed
-            values, so not hard-coded into this schema). When supplied, the
-            validator (`isValidTenantConfiguration`) requires
-            `allowed_auth_mode` to be a non-empty array whose every entry is one
-            of the values in that same env-sourced default list (in this
-            checkout, `common.AUTH_MODES` documents the two conventional values
-            `otp` and `password`, but the true allow-list is whatever
-            `DEFAULT_ALLOWED_AUTH_MODES` is configured to at deploy time), and
-            `auto_register` to be a boolean.
+            environment variables at process start (runtime config, not
+            hard-coded). Validated by `isValidTenantConfiguration`;
+            `common.AUTH_MODES` documents the two conventional values
+            `otp`/`password`, but the true allow-list is whatever
+            `DEFAULT_ALLOWED_AUTH_MODES` is configured to at deploy time.
           required:
             - allowed_auth_mode
             - auto_register
@@ -106,25 +114,28 @@ tenantUpsertRequest:
           type: string
           description: >-
             One or more domains for the tenant. Accepted as a single string
-            (comma-separated for multiple domains) - services/tenant.js splits
-            on `,` server-side. Must not be empty after trimming.
+            (comma-separated for multiple domains). Must not be empty after
+            trimming.
+          x-internal-note: >-
+            services/tenant.js splits the string on `,` server-side.
           example: shikshalokam-qa.tekdinext.com
     - title: updateTenant
       type: object
       description: >-
-        Used when an `id` path parameter is supplied (update branch,
-        services/tenant.js#update, dispatched via
-        controllers/v1/tenant.js#update). Only `configuration` is checked by the
-        validator in this branch; `name`, `description`, `logo`, `theming` and
-        `meta` are NOT stripped by the update-branch blacklist and are NOT
-        validated either, so if supplied they pass through unchecked into a
-        partial-column `UPDATE` (services/tenant.js `tenantQueries.update`) -
-        documented here as accepted-but-unvalidated. `code`, `domains` and
-        `status` are silently stripped from the request body server-side
-        (constants/blacklistConfig.js `tenant.update`) even if supplied by the
-        client, so they can never actually change tenant identity/domains via
-        this endpoint (use the dedicated add/removeDomain endpoints for
-        domains).
+        Used when an `id` path parameter is supplied (update branch). Only
+        `configuration` is validated in this branch; `name`, `description`,
+        `logo`, `theming` and `meta` are accepted but not validated, so if
+        supplied they are applied as-is to the tenant record. `code`,
+        `domains` and `status` are always stripped from the request body
+        server-side even if supplied by the client, so they can never
+        actually change tenant identity/domains via this endpoint (use the
+        dedicated add/removeDomain endpoints for domains).
+      x-internal-note: >-
+        Dispatched via controllers/v1/tenant.js#update to
+        services/tenant.js#update. Unvalidated fields pass through unchecked
+        into a partial-column `UPDATE` (services/tenant.js
+        `tenantQueries.update`). Stripping of `code`/`domains`/`status` is
+        done by constants/blacklistConfig.js `tenant.update`.
       properties:
         configuration:
           type: object
@@ -160,27 +171,6 @@ tenantUpsertRequest:
           type: object
           description: Accepted but unvalidated - see description above.
           additionalProperties: true
-  examples:
-    createTenant:
-      summary: Create a new tenant (no id path param)
-      value:
-        name: Replay Test Tenant
-        code: tenant3t7o723zj5
-        description: created by replay script
-        logo: https://example.com/logo.png
-        configuration:
-          allowed_auth_mode:
-            - password
-          auto_register: true
-        domains: shikshalokam-qa.tekdinext.com
-    updateTenantConfiguration:
-      summary: Update an existing tenant's configuration (id path param present)
-      value:
-        configuration:
-          allowed_auth_mode:
-            - password
-            - otp
-          auto_register: true
 
 tenantAddDomainRequest:
   type: object
@@ -208,10 +198,11 @@ tenantRemoveDomainRequest:
   description: >-
     Request payload for `POST /user/v1/tenant/removeDomain/{id}`. `domains` is
     required and may be a non-empty array of strings or a non-empty string
-    (comma-separated for multiple domains). services/tenant.js#removeDomain
-    additionally rejects the request (see
-    tenantDomainsAtLeastOneMandatory406Response) if the given domains would
+    (comma-separated for multiple domains). The request is rejected (see
+    `tenantDomainsAtLeastOneMandatory406Response`) if the given domains would
     remove every domain the tenant has.
+  x-internal-note: >-
+    Enforced in services/tenant.js#removeDomain.
   required:
     - domains
   properties:
@@ -262,10 +253,12 @@ tenantBulkUserCreateRequest:
 
 tenantCreated202Response:
   description: >-
-    Accepted. Tenant (and its default domains/org/entity-types/forms/
-    notification-templates/org-features/user-roles) created successfully
-    (services/tenant.js#create, message key TENANT_CREATED_SUCCESSFULLY,
-    statusCode 202). Captured example below is a live capture from
+    Accepted. Tenant (and its default domains, organization, entity
+    types/entities, forms, notification templates, org features and user
+    roles) created successfully.
+  x-internal-note: >-
+    services/tenant.js#create, message key TENANT_CREATED_SUCCESSFULLY,
+    statusCode 202. Captured example below is a live capture from
     captured-responses.json.
   type: object
   properties:
@@ -366,12 +359,13 @@ tenantCreated202Response:
 
 tenantAlreadyExists400Response:
   description: >-
-    Bad Request. A tenant with the given `code` already exists
-    (services/tenant.js#create, `UniqueConstraintError` branch, message key
-    TENANT_ALREADY_EXISTS, statusCode 400). GAP: no captured example exists for
+    Bad Request. A tenant with the given `code` already exists.
+  x-internal-note: >-
+    services/tenant.js#create, `UniqueConstraintError` branch, message key
+    TENANT_ALREADY_EXISTS, statusCode 400. No captured example exists for
     this status/message in captured-responses.json - shape only below,
-    mirroring the generic failureResponse envelope seen on other captured 4xx
-    tenant responses. See gaps.jsonl (domain=tenant, endpoint=POST
+    mirroring the generic failureResponse envelope seen on other captured
+    4xx tenant responses. See gaps.jsonl (domain=tenant, endpoint=POST
     /user/v1/tenant/update, statusCode=400).
   type: object
   properties:
@@ -395,13 +389,14 @@ tenantAlreadyExists400Response:
 tenantDomainAlreadyExists400Response:
   description: >-
     Bad Request. One or more of the domains supplied at tenant-creation time
-    already belong to another tenant (services/tenant.js#create, message key
-    TENANT_DOMAIN_ALREADY_EXISTS, statusCode 400 - two call sites, line 106-111
-    and the surrounding catch at line 117-122; the tenant row and any
-    already-created domains are rolled back via RollbackStack before this
-    response is returned). GAP: no captured example exists for this
-    status/message - shape only. See gaps.jsonl (domain=tenant, endpoint=POST
-    /user/v1/tenant/update, statusCode=400).
+    already belong to another tenant. Any tenant/domain rows created so far
+    in this request are rolled back before this response is returned.
+  x-internal-note: >-
+    services/tenant.js#create, message key TENANT_DOMAIN_ALREADY_EXISTS,
+    statusCode 400 - two call sites, line 106-111 and the surrounding catch
+    at line 117-122; rollback via RollbackStack. No captured example exists
+    for this status/message - shape only. See gaps.jsonl (domain=tenant,
+    endpoint=POST /user/v1/tenant/update, statusCode=400).
   type: object
   properties:
     responseCode:
@@ -425,15 +420,17 @@ tenantDefaultOrgCreationFailed400Response:
   description: >-
     Bad Request. Something in the default-organization bootstrap for the new
     tenant (default org, entity types/entities, forms, notification
-    templates, org features, or user roles copied from
-    `process.env.DEFAULT_ORGANISATION_CODE` / `process.env.DEFAULT_TENANT_CODE`
-    / `process.env.DEFAULT_ORG_ID`, all runtime config) failed
-    (services/tenant.js#create, message key DEFAULT_ORG_CREATION_FAILED,
-    statusCode 400; the tenant row, its domains, and any partially-created
-    default-org resources are all rolled back via RollbackStack before this
-    response is returned). GAP: no captured example exists for this
-    status/message - shape only. See gaps.jsonl (domain=tenant, endpoint=POST
-    /user/v1/tenant/update, statusCode=400).
+    templates, org features, or user roles) failed. The tenant row, its
+    domains, and any partially-created default-org resources are all rolled
+    back before this response is returned.
+  x-internal-note: >-
+    Copied from process.env.DEFAULT_ORGANISATION_CODE /
+    process.env.DEFAULT_TENANT_CODE / process.env.DEFAULT_ORG_ID (runtime
+    config). services/tenant.js#create, message key
+    DEFAULT_ORG_CREATION_FAILED, statusCode 400; rollback via RollbackStack.
+    No captured example exists for this status/message - shape only. See
+    gaps.jsonl (domain=tenant, endpoint=POST /user/v1/tenant/update,
+    statusCode=400).
   type: object
   properties:
     responseCode:
@@ -455,11 +452,13 @@ tenantDefaultOrgCreationFailed400Response:
 
 tenantUpdated202Response:
   description: >-
-    Accepted. Tenant updated successfully (services/tenant.js#update, message
-    key TENANT_UPDATED_SUCCESSFULLY, statusCode 202). `result` is simply the
-    (blacklist-filtered) request body that was applied, with `updated_by`
-    added - not the full updated row. Captured example below is a live capture
-    from captured-responses.json (a configuration-only update).
+    Accepted. Tenant updated successfully. `result` is the filtered request
+    body that was applied, with `updated_by` added - not the full updated
+    tenant row.
+  x-internal-note: >-
+    services/tenant.js#update, message key TENANT_UPDATED_SUCCESSFULLY,
+    statusCode 202. Captured example below is a live capture from
+    captured-responses.json (a configuration-only update).
   type: object
   properties:
     responseCode:
@@ -499,11 +498,13 @@ tenantUpdated202Response:
 
 tenantUpdateFailed500Response:
   description: >-
-    Internal Server Error. The update query ran but returned no updated rows
-    (services/tenant.js#update, message key TENANT_UPDATE_FAILED, statusCode
-    500). GAP: no captured example exists for this status/message - shape
-    only. See gaps.jsonl (domain=tenant, endpoint=POST
-    /user/v1/tenant/update/{id}, statusCode=500).
+    Internal Server Error. The update was attempted but no rows were
+    actually updated.
+  x-internal-note: >-
+    services/tenant.js#update, message key TENANT_UPDATE_FAILED, statusCode
+    500. No captured example exists for this status/message - shape only.
+    See gaps.jsonl (domain=tenant, endpoint=POST /user/v1/tenant/update/{id},
+    statusCode=500).
   type: object
   properties:
     responseCode:
@@ -525,12 +526,14 @@ tenantUpdateFailed500Response:
 
 tenantNotFound406Response:
   description: >-
-    Not Acceptable. No tenant matches the given code
-    (services/tenant.js#update / #addDomain / #removeDomain / #read, message
-    key TENANT_NOT_FOUND, statusCode 406). Captured example below is a live
+    Not Acceptable. No tenant matches the given code.
+  x-internal-note: >-
+    services/tenant.js#update / #addDomain / #removeDomain / #read, message
+    key TENANT_NOT_FOUND, statusCode 406. Captured example below is a live
     capture from captured-responses.json (captured against the `read` and
     `addDomain` endpoints; reused here for `update` and `removeDomain`, whose
-    equivalent 406 branches were not independently captured - see gaps.jsonl).
+    equivalent 406 branches were not independently captured - see
+    gaps.jsonl).
   type: object
   properties:
     responseCode:
@@ -558,9 +561,11 @@ tenantNotFound406Response:
 
 tenantAddDomainSuccess202Response:
   description: >-
-    Accepted. New domains added to the tenant (services/tenant.js#addDomain,
-    message key TENANT_DOMAINS_ADDED_SUCCESSFULLY, statusCode 202). Captured
-    example below is a live capture from captured-responses.json.
+    Accepted. New domains added to the tenant.
+  x-internal-note: >-
+    services/tenant.js#addDomain, message key
+    TENANT_DOMAINS_ADDED_SUCCESSFULLY, statusCode 202. Captured example
+    below is a live capture from captured-responses.json.
   type: object
   properties:
     responseCode:
@@ -594,15 +599,16 @@ tenantAddDomainSuccess202Response:
 
 tenantInvalidDomains202Response:
   description: >-
-    Accepted (statusCode 202, despite representing a no-op/rejected input).
+    Accepted (statusCode 202). Returned when, after filtering out invalid
+    entries, none of the domains supplied to add/remove were valid strings,
+    so no domains were added or removed.
+  x-internal-note: >-
     Returned by both services/tenant.js#addDomain and #removeDomain
-    (message key INVALID_TENANT_DOMAINS) when, after filtering out non-string
-    or empty-string entries, the resulting `domains` list is empty. Modeled
-    as a `successResponse` because the source code calls
-    `responses.successResponse(...)` for this branch, not
-    `failureResponse(...)` - flagged as a likely inconsistency (client sent
-    garbage input, yet gets a 202/OK envelope). GAP: no captured example
-    exists for this status/message - shape only. See gaps.jsonl
+    (message key INVALID_TENANT_DOMAINS). Modeled as a `successResponse`
+    because the source code calls `responses.successResponse(...)` for this
+    branch, not `failureResponse(...)` - flagged as a likely inconsistency
+    (client sent garbage input, yet gets a 202/OK envelope). No captured
+    example exists for this status/message - shape only. See gaps.jsonl
     (domain=tenant, endpoint=POST /user/v1/tenant/addDomain/{id} and
     /user/v1/tenant/removeDomain/{id}, statusCode=202).
   type: object
@@ -625,8 +631,10 @@ tenantInvalidDomains202Response:
 tenantDomainsAlreadyPresent202Response:
   description: >-
     Accepted. Every domain supplied to `addDomain` already exists for this
-    tenant, so nothing was created (services/tenant.js#addDomain, message key
-    TENANT_DOMAINS_ALREADY_PRESENT, statusCode 202). GAP: no captured example
+    tenant, so nothing new was created.
+  x-internal-note: >-
+    services/tenant.js#addDomain, message key
+    TENANT_DOMAINS_ALREADY_PRESENT, statusCode 202. No captured example
     exists for this status/message - shape only. See gaps.jsonl
     (domain=tenant, endpoint=POST /user/v1/tenant/addDomain/{id},
     statusCode=202).
@@ -649,15 +657,18 @@ tenantDomainsAlreadyPresent202Response:
 
 tenantRemoveDomainSuccess202Response:
   description: >-
-    Accepted. Domains removed from the tenant
-    (services/tenant.js#removeDomain, statusCode 202). NOTE: the source code
-    reuses the message key `TENANT_DOMAINS_ADDED_SUCCESSFULLY` for this
-    success branch too (line 710) even though this is the remove-domain
-    operation - kept verbatim as a likely copy-paste bug in the source rather
-    than corrected, per instructions to never fabricate. GAP: no captured
-    example exists for this status/message combination on the removeDomain
-    endpoint specifically - shape only, by analogy with the equivalent
-    addDomain response. See gaps.jsonl (domain=tenant, endpoint=POST
+    Accepted. Domains removed from the tenant. Note: the `message` field
+    value below reads "added" rather than "removed" due to a known
+    message-key reuse in the current implementation.
+  x-internal-note: >-
+    services/tenant.js#removeDomain, statusCode 202. The source code reuses
+    the message key `TENANT_DOMAINS_ADDED_SUCCESSFULLY` for this success
+    branch too (line 710) even though this is the remove-domain operation -
+    kept verbatim as a likely copy-paste bug in the source rather than
+    corrected, per instructions to never fabricate. No captured example
+    exists for this status/message combination on the removeDomain endpoint
+    specifically - shape only, by analogy with the equivalent addDomain
+    response. See gaps.jsonl (domain=tenant, endpoint=POST
     /user/v1/tenant/removeDomain/{id}, statusCode=202).
   type: object
   properties:
@@ -683,8 +694,10 @@ tenantRemoveDomainSuccess202Response:
 tenantNoMatchingDomainsToRemove406Response:
   description: >-
     Not Acceptable. None of the domains supplied match the tenant's existing
-    domains (services/tenant.js#removeDomain, message key
-    NO_MATCHING_TENANT_DOMAINS_TO_REMOVE, statusCode 406). GAP: no captured
+    domains.
+  x-internal-note: >-
+    services/tenant.js#removeDomain, message key
+    NO_MATCHING_TENANT_DOMAINS_TO_REMOVE, statusCode 406. No captured
     example exists for this status/message - shape only, mirroring the
     generic 406 envelope seen elsewhere in this domain. See gaps.jsonl
     (domain=tenant, endpoint=POST /user/v1/tenant/removeDomain/{id},
@@ -711,9 +724,11 @@ tenantNoMatchingDomainsToRemove406Response:
 tenantDomainsAtLeastOneMandatory406Response:
   description: >-
     Not Acceptable. The requested removal would remove every domain the
-    tenant currently has, which is not allowed
-    (services/tenant.js#removeDomain, message key
-    TENANT_DOMAINS_ATLEAST_ONE_MANDATORY, statusCode 406). GAP: no captured
+    tenant currently has, which is not allowed. A tenant must always retain
+    at least one domain.
+  x-internal-note: >-
+    services/tenant.js#removeDomain, message key
+    TENANT_DOMAINS_ATLEAST_ONE_MANDATORY, statusCode 406. No captured
     example exists for this status/message - shape only. See gaps.jsonl
     (domain=tenant, endpoint=POST /user/v1/tenant/removeDomain/{id},
     statusCode=406).
@@ -738,14 +753,15 @@ tenantDomainsAtLeastOneMandatory406Response:
 
 tenantPermissionDenied400Response:
   description: >-
-    Bad Request. controllers/v1/tenant.js#read returns this directly (not via
-    services/tenant.js) in two cases: (1) the caller's decoded token has no
-    `roles` at all, or (2) the caller does not hold the admin role and
-    supplied an `id` path param that does not match their own
-    `decodedToken.tenant_code` (message key PERMISSION_DENIED, statusCode 400
-    in both cases). GAP: no captured example exists for this status/message -
-    shape only. See gaps.jsonl (domain=tenant, endpoint=GET
-    /user/v1/tenant/read/{id}, statusCode=400).
+    Bad Request. Returned in two cases: (1) the caller's decoded token has no
+    roles at all, or (2) the caller does not hold the admin role and
+    supplied an `id` path parameter that does not match their own tenant.
+  x-internal-note: >-
+    controllers/v1/tenant.js#read returns this directly (not via
+    services/tenant.js), message key PERMISSION_DENIED, statusCode 400 in
+    both cases (`decodedToken.tenant_code` comparison). No captured example
+    exists for this status/message - shape only. See gaps.jsonl
+    (domain=tenant, endpoint=GET /user/v1/tenant/read/{id}, statusCode=400).
   type: object
   properties:
     responseCode:
@@ -767,17 +783,18 @@ tenantPermissionDenied400Response:
 
 tenantRead202Response:
   description: >-
-    OK/Accepted. Tenant details fetched (services/tenant.js#read, message key
-    TENANT_DETAILS_FETCHED, statusCode 202). Two shapes exist depending on
-    caller role, only one of which has a captured example: (1) admin caller
-    (or `readInternal`) - `organizations` (id/name/code) and `domains`
-    (domain/verified) arrays are included, and all tenant columns except
-    `deleted_at` are returned (captured below); (2) non-admin caller - only
-    `code`, `name`, `description`, `configuration`, `meta` are selected
-    (services/tenant.js#read `options.attributes`), with no `organizations`/
-    `domains` arrays. GAP: the non-admin-caller response shape has no
-    captured example in captured-responses.json - only the admin/internal
-    shape was captured. See gaps.jsonl (domain=tenant, endpoint=GET
+    OK/Accepted. Tenant details fetched. Two shapes exist depending on
+    caller role: (1) admin caller (or `readInternal`) - `organizations`
+    (id/name/code) and `domains` (domain/verified) arrays are included, and
+    all tenant columns except `deleted_at` are returned (shown below); (2)
+    non-admin caller - only `code`, `name`, `description`, `configuration`,
+    `meta` are returned, with no `organizations`/`domains` arrays.
+  x-internal-note: >-
+    services/tenant.js#read, message key TENANT_DETAILS_FETCHED, statusCode
+    202. Non-admin selection is via services/tenant.js#read
+    `options.attributes`. Only the admin/internal shape has a captured
+    example in captured-responses.json; the non-admin-caller response shape
+    has no captured example. See gaps.jsonl (domain=tenant, endpoint=GET
     /user/v1/tenant/read/{id}, statusCode=202, non-admin shape).
   type: object
   properties:
@@ -940,22 +957,26 @@ tenantRead202Response:
 
 tenantReadInternal202Response:
   description: >-
-    OK/Accepted. Tenant details fetched for internal service-to-service calls
-    (`readInternal`, which always calls services/tenant.js#read with
-    `isAdmin=true`, so the shape is identical to the admin branch of
-    `tenantRead202Response`). Captured example below is a live capture from
+    OK/Accepted. Tenant details fetched for internal service-to-service
+    calls. Always returns the same shape as the admin branch of
+    `tenantRead202Response`.
+  x-internal-note: >-
+    `readInternal` always calls services/tenant.js#read with
+    `isAdmin=true`. Captured example below is a live capture from
     captured-responses.json.
   allOf:
     - $ref: '#/tenantRead202Response'
 
 tenantCodeRequired400Response:
   description: >-
-    Bad Request. `readInternal` was called with an empty/missing `id` path
-    param (controllers/v1/tenant.js#readInternal, message key
-    TENANT_CODE_REQUIRED, statusCode 400). In practice this branch is very
-    hard to reach through the normal dynamic router (the `id` path segment is
-    part of the route match), so it is effectively defensive/dead code. GAP:
-    no captured example exists for this status/message - shape only. See
+    Bad Request. Returned when `readInternal` is called with an empty or
+    missing `id` path parameter.
+  x-internal-note: >-
+    controllers/v1/tenant.js#readInternal, message key
+    TENANT_CODE_REQUIRED, statusCode 400. In practice this branch is very
+    hard to reach through the normal dynamic router (the `id` path segment
+    is part of the route match), so it is effectively defensive/dead code.
+    No captured example exists for this status/message - shape only. See
     gaps.jsonl (domain=tenant, endpoint=GET /user/v1/tenant/readInternal/{id},
     statusCode=400).
   type: object
@@ -979,11 +1000,13 @@ tenantCodeRequired400Response:
 
 tenantList202Response:
   description: >-
-    OK/Accepted. Tenant list fetched (services/tenant.js#list, message key
-    TENANT_LIST_FETCHED, statusCode 202). Each row only has `code`, `name`,
-    `description` (services/tenant.js#list explicitly re-maps every row down
-    to just these three fields). Captured example below is a live capture
-    from captured-responses.json.
+    OK/Accepted. Tenant list fetched. Each row only includes `code`, `name`,
+    `description`.
+  x-internal-note: >-
+    services/tenant.js#list, message key TENANT_LIST_FETCHED, statusCode
+    202; services/tenant.js#list explicitly re-maps every row down to just
+    these three fields. Captured example below is a live capture from
+    captured-responses.json.
   type: object
   properties:
     responseCode:
@@ -1030,11 +1053,12 @@ tenantList202Response:
 
 tenantBulkUserCreateOrganizationNotFound406Response:
   description: >-
-    Not Acceptable. The `organizationcode`/`tenantcode` headers do not resolve
-    to an existing organization for `bulkUserCreate`
-    (services/tenant.js#userBulkUpload, message key ORGANIZATION_NOT_FOUND,
-    statusCode 406). GAP: no captured example exists for this status/message
-    - shape only. See gaps.jsonl (domain=tenant, endpoint=POST
+    Not Acceptable. The `organizationcode`/`tenantcode` headers do not
+    resolve to an existing organization.
+  x-internal-note: >-
+    services/tenant.js#userBulkUpload, message key ORGANIZATION_NOT_FOUND,
+    statusCode 406. No captured example exists for this status/message -
+    shape only. See gaps.jsonl (domain=tenant, endpoint=POST
     /user/v1/tenant/bulkUserCreate, statusCode=406).
   type: object
   properties:
@@ -1058,11 +1082,12 @@ tenantBulkUserCreateOrganizationNotFound406Response:
 tenantBulkUserCreateInvalidOrgTenantMapping406Response:
   description: >-
     Not Acceptable. The resolved organization exists but does not belong to
-    the `tenantcode` header's tenant (services/tenant.js#userBulkUpload,
-    message key INVALID_ORG_TENANT_MAPPING, statusCode 406). GAP: no captured
-    example exists for this status/message - shape only. See gaps.jsonl
-    (domain=tenant, endpoint=POST /user/v1/tenant/bulkUserCreate,
-    statusCode=406).
+    the tenant identified by the `tenantcode` header.
+  x-internal-note: >-
+    services/tenant.js#userBulkUpload, message key
+    INVALID_ORG_TENANT_MAPPING, statusCode 406. No captured example exists
+    for this status/message - shape only. See gaps.jsonl (domain=tenant,
+    endpoint=POST /user/v1/tenant/bulkUserCreate, statusCode=406).
   type: object
   properties:
     responseCode:
@@ -1084,20 +1109,24 @@ tenantBulkUserCreateInvalidOrgTenantMapping406Response:
 
 tenantBulkUserCreate500Response:
   description: >-
-    Internal Server Error. services/tenant.js#userBulkUpload delegates the
-    actual bulk-create work to `orgAdminService.bulkCreate(...)`
-    (services/org-admin.js, out of this domain's scope) and returns whatever
-    that call returns/throws as-is. Captured example below is a live capture
-    from captured-responses.json for a case where `file_path` did not
-    resolve to a real uploaded file; the generic `Oops! Something Went Wrong.`
-    message and `SERVER_ERROR` responseCode suggest this is the app's generic
-    unhandled-error envelope rather than a message authored in
-    services/tenant.js or services/org-admin.js specifically - the true
-    success-path response shape for `bulkUserCreate` (whatever
-    `orgAdminService.bulkCreate` returns on success) is a GAP, since
-    services/org-admin.js is out of this domain's read scope. See gaps.jsonl
-    (domain=tenant, endpoint=POST /user/v1/tenant/bulkUserCreate,
-    statusCode=200, success shape unknown).
+    Internal Server Error. Returned when the underlying bulk-create/invite
+    operation fails, such as when the uploaded file cannot be resolved. This
+    is a generic unhandled-error envelope rather than a bulk-create-specific
+    error message.
+  x-internal-note: >-
+    services/tenant.js#userBulkUpload delegates the actual bulk-create work
+    to `orgAdminService.bulkCreate(...)` (services/org-admin.js, out of this
+    domain's scope) and returns whatever that call returns/throws as-is.
+    Captured example below is a live capture from captured-responses.json
+    for a case where `file_path` did not resolve to a real uploaded file;
+    the generic `Oops! Something Went Wrong.` message and `SERVER_ERROR`
+    responseCode suggest this is the app's generic unhandled-error envelope
+    rather than a message authored in services/tenant.js or
+    services/org-admin.js specifically - the true success-path response
+    shape for `bulkUserCreate` (whatever `orgAdminService.bulkCreate`
+    returns on success) is a gap, since services/org-admin.js is out of
+    this domain's read scope. See gaps.jsonl (domain=tenant, endpoint=POST
+    /user/v1/tenant/bulkUserCreate, statusCode=200, success shape unknown).
   type: object
   properties:
     responseCode:

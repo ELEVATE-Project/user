@@ -199,7 +199,7 @@ featureNotFoundResponse:
 # services/feature.js#create catches a Sequelize UniqueConstraintError (thrown
 # when a feature with the same `code` already exists) and responds 400 with
 # message FEATURE_CREATED_SUCCESSFULLY's sibling error key FEATURE_ALREADY_EXISTS.
-# GAP: never captured live — see gaps.jsonl. Body shape inferred only from the
+# Never captured live — see gaps.jsonl. Body shape inferred only from the
 # shared failureResponse envelope shape (responseCode/error/meta/message),
 # which IS consistently observed across every other captured failure response
 # in this domain; the `message` text itself is the literal i18n key since we
@@ -221,7 +221,7 @@ featureAlreadyExists400Response:
 # and result: updatedFeature (the raw Sequelize update result — an array in the
 # form [affectedCount] for a bulk `update({ code }, bodyData)` call, per
 # Sequelize's default `individualHooks: false` update return shape).
-# GAP: never captured live — see gaps.jsonl. `result` shape below is a
+# Never captured live — see gaps.jsonl. `result` shape below is a
 # best-effort structural guess and must not be treated as confirmed; do not
 # rely on it for client integration until a live example is captured.
 featureUpdate200Response:
@@ -235,7 +235,7 @@ featureUpdate200Response:
       type: array
       items: {}
       description: >-
-        GAP: shape unconfirmed. Likely the raw Sequelize bulk-update return
+        Shape unconfirmed. Likely the raw Sequelize bulk-update return
         value (e.g. [affectedCount]) rather than the updated feature record —
         see services/feature.js#update.
     meta:

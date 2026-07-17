@@ -97,7 +97,7 @@ update:
             application/json:
               schema:
                 $ref: ../components/userentity.yaml#/updateUserEntity400Response
-read?id={id}:
+read:
   get:
     summary: Read User Entity
     tags:

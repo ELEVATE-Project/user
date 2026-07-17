@@ -8,6 +8,9 @@ info:
     \ - <b>Note:</b> These resources can be used in other services"
   contact:
     email: info@sunbird.org
+  license:
+    name: MIT
+    url: https://github.com/ELEVATE-Project/user/blob/develop/LICENSE
 servers:
   - url: http://localhost:3002
     description: local dev
@@ -15,30 +18,34 @@ servers:
     description: dev server
 tags:
   - name: User Roles APIs
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
+    description: Assigning, listing, and managing roles held by users within an organization.
   - name: Permissions
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
+    description: Defining and managing the permissions available to roles.
   - name: Modules
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
+    description: Managing the functional modules that permissions and roles are scoped to.
   - name: RolePermissionMapping
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
+    description: Mapping permissions to roles for a module and request type.
   - name: Health Check
-    description: ''
-    externalDocs:
-      description: ''
-      url: ''
+    description: Service and dependency health/readiness checks.
+security:
+  - XAuthToken: []
+components:
+  securitySchemes:
+    XAuthToken:
+      type: apiKey
+      in: header
+      name: X-auth-token
+      description: >-
+        Session token issued by the login/generateToken APIs. Required on
+        every endpoint unless noted otherwise.
+    InternalAccessToken:
+      type: apiKey
+      in: header
+      name: internal_access_token
+      description: >-
+        Shared secret for internal service-to-service calls, matched against
+        `process.env.INTERNAL_ACCESS_TOKEN`. Used only on internal-only
+        endpoints.
 paths:
   /user/v1/account/create:
     $ref: ./paths/account.yaml#/create
@@ -72,8 +79,8 @@ paths:
     $ref: ./paths/account.yaml#/list
   /user/v1/account/search:
     $ref: ./paths/account.yaml#/search
-  /user/v1/user/read/{userId}?language={language_code}:
-    $ref: ./paths/user.yaml#/read/{userId}?language={language_code}
+  /user/v1/user/read/{userId}:
+    $ref: ./paths/user.yaml#/read/{userId}
   /user/v1/user/profileById/{userId}:
     $ref: ./paths/user.yaml#/profileById/{userId}
   /user/v1/user/setLanguagePreference:
@@ -82,10 +89,10 @@ paths:
     $ref: ./paths/user.yaml#/update
   /user/v1/user/share/{userId}:
     $ref: ./paths/user.yaml#/share/{userId}
-  /user/v1/cloud-services/file/getSignedUrl?fileName={file_name}:
-    $ref: ./paths/cloud-services.yaml#/file/getSignedUrl?fileName={file_name}
-  /user/v1/cloud-services/file/getDownloadableUrl?file_path={file_path}:
-    $ref: ./paths/cloud-services.yaml#/file/getDownloadableUrl?file_path={file_path}
+  /user/v1/cloud-services/file/getSignedUrl:
+    $ref: ./paths/cloud-services.yaml#/file/getSignedUrl
+  /user/v1/cloud-services/file/getDownloadableUrl:
+    $ref: ./paths/cloud-services.yaml#/file/getDownloadableUrl
   /user/v1/cloud-services/file/getSampleCSV:
     $ref: ./paths/cloud-services.yaml#/file/getSampleCSV
   /user/v1/form/create:
@@ -130,8 +137,8 @@ paths:
     $ref: ./paths/organization.yaml#/addRelatedOrg/{id}
   /user/v1/organization/removeRelatedOrg/{id}:
     $ref: ./paths/organization.yaml#/removeRelatedOrg/{id}
-  /user/v1/user-role/list?language={language_code}:
-    $ref: ./paths/userRole.yaml#/list?language={language_code}
+  /user/v1/user-role/list:
+    $ref: ./paths/userRole.yaml#/list
   /user/v1/user-role/create:
     $ref: ./paths/userRole.yaml#/Create
   /user/v1/user-role/update/{id}:
@@ -150,8 +157,8 @@ paths:
     $ref: ./paths/entity.yaml#/create
   /user/v1/entity/update/{id}:
     $ref: ./paths/entity.yaml#/update/{id}
-  /user/v1/entity/read?id={id}:
-    $ref: ./paths/entity.yaml#/read?id={id}
+  /user/v1/entity/read:
+    $ref: ./paths/entity.yaml#/read
   /user/v1/entity/list:
     $ref: ./paths/entity.yaml#/list
   /user/v1/entity/delete/{id}:
@@ -182,16 +189,16 @@ paths:
     $ref: ./paths/permissions.yaml#/create
   /user/v1/permissions/update/{id}:
     $ref: ./paths/permissions.yaml#/update/{id}
-  /user/v1/permissions/list?page={page}&limit={limit}&search={search}:
-    $ref: ./paths/permissions.yaml#/list?page={page}&limit={limit}&search={search}
+  /user/v1/permissions/list:
+    $ref: ./paths/permissions.yaml#/list
   /user/v1/permissions/delete/{id}:
     $ref: ./paths/permissions.yaml#/delete/{id}
   /user/v1/modules/create:
     $ref: ./paths/modules.yaml#/create
   /user/v1/modules/update/{id}:
     $ref: ./paths/modules.yaml#/update/{id}
-  /user/v1/modules/list?page={page}&limit={limit}&search={search}:
-    $ref: ./paths/modules.yaml#/list?page={page}&limit={limit}&search={search}
+  /user/v1/modules/list:
+    $ref: ./paths/modules.yaml#/list
   /user/v1/modules/delete/{id}:
     $ref: ./paths/modules.yaml#/delete/{id}
   /user/v1/role-permission-mapping/create:
@@ -226,8 +233,6 @@ paths:
     $ref: ./paths/tenant.yaml#/addDomain
   /user/v1/tenant/removeDomain/{id}:
     $ref: ./paths/tenant.yaml#/removeDomain
-  /user/v1/tenant/read:
-    $ref: ./paths/tenant.yaml#/read
   /user/v1/tenant/read/{id}:
     $ref: ./paths/tenant.yaml#/read
   /user/v1/tenant/readInternal/{id}:

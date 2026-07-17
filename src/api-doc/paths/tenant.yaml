@@ -1,33 +1,38 @@
 update:
   post:
     summary: Create or update a tenant
+    operationId: updateTenant
     tags:
       - Tenant APIs
     description: >-
-      Single endpoint that both creates and updates tenants, dispatched by
-      controllers/v1/tenant.js#update on whether an `id` path parameter is
-      present.
+      Single endpoint that both creates and updates tenants, depending on
+      whether an `id` path parameter is present.
 
-      - Endpoint (create): `POST /user/v1/tenant/update` (no `id`).
-        services/tenant.js#create bootstraps a brand-new tenant: the tenant
-        row, its domains, a default organization
-        (`process.env.DEFAULT_ORGANISATION_CODE` /
-        `process.env.DEFAULT_TENANT_ORG_NAME`, runtime config), and copies of
-        the default org's entity types/entities, forms, notification
-        templates, org features and user roles
-        (sourced from `process.env.DEFAULT_ORG_ID` /
-        `process.env.DEFAULT_TENANT_CODE`, also runtime config). Any failure
-        partway through rolls back everything created so far.
+      - Create: `POST /user/v1/tenant/update` (no `id`). Bootstraps a
+        brand-new tenant: the tenant row, its domains, a default
+        organization, and copies of the default organization's entity
+        types/entities, forms, notification templates, org features and
+        user roles. Any failure partway through rolls back everything
+        created so far.
 
-      - Endpoint (update): `POST /user/v1/tenant/update/{id}` (`id` = tenant
-        code). services/tenant.js#update applies a partial column update and
-        emits a `tenantEvents` change-delta event.
+      - Update: `POST /user/v1/tenant/update/{id}` (`id` = tenant code).
+        Applies a partial update to the tenant and emits a change event.
 
       - `code`, `domains` and `status` in the request body are always
         stripped server-side and cannot be changed via this endpoint (see
         `tenantUpsertRequest`).
 
       - The X-auth-token is mandatory and cannot be empty or null.
+    x-internal-note: >-
+      Dispatched by controllers/v1/tenant.js#update based on presence of the
+      `id` path parameter. Create branch: services/tenant.js#create
+      bootstraps the tenant using process.env.DEFAULT_ORGANISATION_CODE /
+      process.env.DEFAULT_TENANT_ORG_NAME for the default organization, and
+      process.env.DEFAULT_ORG_ID / process.env.DEFAULT_TENANT_CODE (runtime
+      config) for the copied entity types/entities, forms, notification
+      templates, org features and user roles. Update branch:
+      services/tenant.js#update applies the partial column update and emits
+      a `tenantEvents` change-delta event.
     parameters:
       - name: X-auth-token
         in: header
@@ -78,15 +83,18 @@ update:
 updateById:
   post:
     summary: Update an existing tenant
+    operationId: updateTenantById
     tags:
       - Tenant APIs
     description: >-
-      Update branch of the same controller method documented under `update`
-      above (`POST /user/v1/tenant/update/{id}`, `id` = tenant code). Kept as
-      a separate path entry here only so the update-branch request/response
-      schemas and the `id` path parameter can be documented explicitly; the
-      real router dispatches both branches through one controller method (see
-      `update` above).
+      Updates an existing tenant identified by the `id` path parameter
+      (tenant code). This is the update branch of tenant creation/update -
+      see `update` for details on how tenants are created.
+    x-internal-note: >-
+      Kept as a separate path entry here only so the update-branch
+      request/response schemas and the `id` path parameter can be
+      documented explicitly; the real router dispatches both branches
+      through one controller method (see `update` above).
     parameters:
       - name: X-auth-token
         in: header
@@ -142,6 +150,7 @@ updateById:
 addDomain:
   post:
     summary: Add domain(s) to a tenant
+    operationId: addDomain
     tags:
       - Tenant APIs
     description: >-
@@ -187,7 +196,7 @@ addDomain:
         content:
           application/json:
             schema:
-              oneOf:
+              anyOf:
                 - $ref: ../components/tenant.yaml#/tenantAddDomainSuccess202Response
                 - $ref: ../components/tenant.yaml#/tenantDomainsAlreadyPresent202Response
                 - $ref: ../components/tenant.yaml#/tenantInvalidDomains202Response
@@ -221,6 +230,7 @@ addDomain:
 removeDomain:
   post:
     summary: Remove domain(s) from a tenant
+    operationId: removeDomain
     tags:
       - Tenant APIs
     description: >-
@@ -286,13 +296,15 @@ removeDomain:
 read:
   get:
     summary: Read tenant details
+    operationId: readTenant
     tags:
       - Tenant APIs
     description: >-
       Fetches details for a single tenant.
 
-      - Endpoint: `GET /user/v1/tenant/read` or `GET /user/v1/tenant/read/{id}`
-        (`id` = tenant code).
+      - Endpoint: `GET /user/v1/tenant/read/{id}` (`id` = tenant code). An
+        id-less variant, `GET /user/v1/tenant/read`, is also available and
+        defaults to the caller's own tenant.
 
       - Caller must have a decoded token with at least one role, or
         `PERMISSION_DENIED` (400) is returned.
@@ -302,12 +314,17 @@ read:
         `domains` arrays are returned).
 
       - If the caller does NOT hold the full `admin` role, only their own
-        tenant (`decodedToken.tenant_code`) can be read - if `id` is supplied
-        and differs from their own tenant code, `PERMISSION_DENIED` (400) is
-        returned; only `code`, `name`, `description`, `configuration`, `meta`
-        are returned (no `organizations`/`domains` arrays).
+        tenant can be read - if `id` is supplied and differs from their own
+        tenant code, `PERMISSION_DENIED` (400) is returned; only `code`,
+        `name`, `description`, `configuration`, `meta` are returned (no
+        `organizations`/`domains` arrays).
 
       - The X-auth-token is mandatory and cannot be empty or null.
+    x-internal-note: >-
+      The id-less variant is not modeled separately in this spec since
+      OpenAPI path templates can't express an optional trailing path segment
+      as a single path item - see controllers/v1/tenant.js#read. Non-admin
+      caller's own tenant is `decodedToken.tenant_code`.
     parameters:
       - name: X-auth-token
         in: header
@@ -360,22 +377,28 @@ read:
 readInternal:
   get:
     summary: Read tenant details (internal service-to-service call)
+    operationId: readTenantInternal
     tags:
       - Tenant APIs
+    security:
+      - InternalAccessToken: []
     description: >-
-      Internal-only variant of `read`, always fetched with full/admin-level
-      detail (`isAdmin=true`) regardless of caller role - authorization is via
-      the `internal_access_token` header instead of a user's X-auth-token.
+      Internal-only variant of `read` for service-to-service calls, always
+      fetched with full/admin-level detail regardless of caller role.
+      Authorization is via the `internal_access_token` header instead of a
+      user's X-auth-token.
 
       - Endpoint: `GET /user/v1/tenant/readInternal/{id}` (`id` = tenant
-        code). `/user/v1/tenant/readInternal/` is listed in
-        `common.internalAccessUrls`, so middlewares/authenticator.js accepts
-        `internal_access_token` matching `process.env.INTERNAL_ACCESS_TOKEN`
-        in place of a normal X-auth-token for this path prefix.
+        code).
 
-      - If `id` is empty/missing, `TENANT_CODE_REQUIRED` (400) is returned -
-        in practice hard to trigger through the normal router since `id` is
-        part of the route path.
+      - If `id` is empty/missing, `TENANT_CODE_REQUIRED` (400) is returned.
+    x-internal-note: >-
+      `/user/v1/tenant/readInternal/` is listed in
+      `common.internalAccessUrls`, so middlewares/authenticator.js accepts
+      `internal_access_token` matching `process.env.INTERNAL_ACCESS_TOKEN` in
+      place of a normal X-auth-token for this path prefix. The 400 branch
+      for missing `id` is, in practice, hard to trigger through the normal
+      router since `id` is part of the route path.
     parameters:
       - name: internal_access_token
         in: header
@@ -409,6 +432,7 @@ readInternal:
 list:
   get:
     summary: List tenants
+    operationId: listTenant
     tags:
       - Tenant APIs
     description: >-
@@ -417,12 +441,14 @@ list:
 
       - Endpoint: `GET /user/v1/tenant/list`.
 
-      - Pagination/search query params (`page`, `limit`, `search`) are parsed
-        by the generic `middlewares/pagination.js` into `req.pageNo`/
-        `req.pageSize`/`req.searchText` - not tenant-specific validation.
-        `search` matches (case-insensitive) against `code` or `name`.
+      - `search` matches (case-insensitive) against `code` or `name`.
 
       - The X-auth-token is mandatory and cannot be empty or null.
+    x-internal-note: >-
+      Pagination/search query params (`page`, `limit`, `search`) are parsed
+      by the generic middlewares/pagination.js into
+      `req.pageNo`/`req.pageSize`/`req.searchText` - not tenant-specific
+      validation.
     parameters:
       - name: X-auth-token
         in: header
@@ -456,10 +482,32 @@ list:
           application/json:
             schema:
               $ref: ../components/tenant.yaml#/tenantList202Response
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
 
 bulkUserCreate:
   post:
     summary: Bulk-create/invite users for a tenant's organization
+    operationId: bulkUserCreateTenant
     tags:
       - Tenant APIs
     description: >-
@@ -469,23 +517,22 @@ bulkUserCreate:
       - Endpoint: `POST /user/v1/tenant/bulkUserCreate`.
 
       - The target organization is resolved from the `organizationcode` /
-        `tenantcode` headers (`common.ORG_CODE_HEADER` /
-        `common.TENANT_CODE_HEADER`, whose literal header names come from the
-        `ORG_CODE_HEADER_NAME` / `TENANT_CODE_HEADER_NAME` env vars - see the
-        note on the header parameters below), not from the request body.
-        `organizationcode` may be either the organization's numeric id or its
-        code.
+        `tenantcode` headers, not from the request body. `organizationcode`
+        may be either the organization's numeric id or its code.
 
       - If the organization cannot be found, or is found but does not belong
         to the given tenant, the request fails before any upload work starts
         (see the 406 responses below).
 
-      - Actual bulk-create/invite work is delegated to
-        `orgAdminService.bulkCreate` (services/org-admin.js, out of this
-        domain's scope) - its success-path response shape is a GAP (not
-        documented here, see gaps.jsonl).
-
       - The X-auth-token is mandatory and cannot be empty or null.
+    x-internal-note: >-
+      Header names come from `common.ORG_CODE_HEADER` /
+      `common.TENANT_CODE_HEADER`, whose literal values come from the
+      `ORG_CODE_HEADER_NAME` / `TENANT_CODE_HEADER_NAME` env vars - see the
+      note on the header parameters below. Actual bulk-create/invite work is
+      delegated to `orgAdminService.bulkCreate` (services/org-admin.js, out
+      of this domain's scope); its success-path response shape is
+      unconfirmed - not documented here, see gaps.jsonl.
     parameters:
       - name: X-auth-token
         in: header
@@ -497,8 +544,9 @@ bulkUserCreate:
         in: header
         description: >-
           Organization id or code the bulk upload is scoped to.
-          GAP/inconsistency: the checked-in Postman collection example for
-          this endpoint uses literal header names `organization` and
+        x-internal-note: >-
+          unconfirmed/inconsistency: the checked-in Postman collection example
+          for this endpoint uses literal header names `organization` and
           `tenant`, not `organizationcode`/`tenantcode` as used by sibling
           domains (e.g. organization-feature) - the real
           `ORG_CODE_HEADER_NAME`/`TENANT_CODE_HEADER_NAME` env vars are not
@@ -512,8 +560,10 @@ bulkUserCreate:
       - name: tenantcode
         in: header
         description: >-
-          Tenant code the bulk upload is scoped to. See the note on
-          `organizationcode` above regarding the actual header name.
+          Tenant code the bulk upload is scoped to.
+        x-internal-note: >-
+          See the x-internal-note on `organizationcode` above regarding the
+          actual header name.
         required: true
         schema:
           type: string
@@ -525,6 +575,30 @@ bulkUserCreate:
           schema:
             $ref: ../components/tenant.yaml#/tenantBulkUserCreateRequest
     responses:
+      '200':
+        description: >-
+          OK. Users uploaded/created successfully (message key
+          USER_CSV_UPLOADED).
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape derived directly from services/org-admin.js `bulkCreate`
+          (delegated to via services/tenant.js `userBulkUpload`), not a
+          fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: OK
+                message:
+                  type: string
+                  example: USER_CSV_UPLOADED
+                result:
+                  type: object
+                meta:
+                  type: object
       '406':
         description: >-
           Not Acceptable. Organization not found, or found but not mapped to
@@ -537,10 +611,13 @@ bulkUserCreate:
                 - $ref: ../components/tenant.yaml#/tenantBulkUserCreateInvalidOrgTenantMapping406Response
       '500':
         description: >-
-          Internal Server Error. Captured example is a generic
-          unhandled-error envelope from a run where `file_path` did not
-          resolve to a real uploaded file - see the component description for
-          why the true success shape is a gap.
+          Internal Server Error. Returned when the underlying bulk-create/
+          invite operation fails, such as when the uploaded file cannot be
+          resolved.
+        x-internal-note: >-
+          Captured example is a generic unhandled-error envelope from a run
+          where `file_path` did not resolve to a real uploaded file - see the
+          component description for why the true success shape is a gap.
         content:
           application/json:
             schema:

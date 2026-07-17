@@ -1,8 +1,10 @@
 create:
   post:
     summary: Create user
+    operationId: createAccount
     tags:
       - User APIs
+    security: []
     description: "This API creates a user account.\n
       - Endpoint: `/user/v1/account/create`\n
       - At least one of `email` or `phone` must be provided; `phone_code` is
@@ -72,8 +74,10 @@ create:
 login:
   post:
     summary: Login
+    operationId: login
     tags:
       - User APIs
+    security: []
     description: "This API logs a user in.\n
       - Endpoint: `/user/v1/account/login`\n
       - `identifier` is required. At least one of `password` or `otp` must be
@@ -161,6 +165,7 @@ login:
 logout:
   post:
     summary: Logout
+    operationId: logout
     tags:
       - User APIs
     description: "This API logs a user out.\n
@@ -206,6 +211,7 @@ logout:
 generateToken:
   post:
     summary: Generate Access Token
+    operationId: generateToken
     tags:
       - User APIs
     description: "This API generates an access token from a refresh token.\n
@@ -266,6 +272,7 @@ generateToken:
 generateOtp:
   post:
     summary: Generate OTP
+    operationId: generateOtp
     tags:
       - User APIs
     description: "This API generates an OTP (used in password reset).\n
@@ -311,6 +318,7 @@ generateOtp:
 resetPassword:
   post:
     summary: Reset Password
+    operationId: resetPassword
     tags:
       - User APIs
     description: "This API resets a user's password.\n
@@ -329,6 +337,19 @@ resetPassword:
           schema:
             $ref: ../components/account.yaml#/resetPasswordRequest
     responses:
+      '200':
+        description: >-
+          OK. Password reset successfully. Returns the same session tokens
+          and user object as the login response.
+        x-internal-note: >-
+          services/account.js `resetPassword`, message key
+          PASSWORD_RESET_SUCCESSFULLY. No captured example exists for this
+          status on this endpoint in captured-responses.json - shape reused
+          from the verbatim-captured login200Response, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/login200Response
       '400':
         description: Bad Request. Invalid or incorrect OTP.
         content:
@@ -371,6 +392,7 @@ resetPassword:
 registrationOtp:
   post:
     summary: Registration OTP
+    operationId: registrationOtp
     tags:
       - User APIs
     description: "This API sends a registration OTP.\n
@@ -407,6 +429,18 @@ registrationOtp:
                 username: mentee_new
                 registration_code: org-signup-code
     responses:
+      '200':
+        description: OK. Registration OTP sent successfully.
+        x-internal-note: >-
+          services/account.js `registrationOtp`, message key
+          REGISTRATION_OTP_SENT_SUCCESSFULLY. No captured example exists for
+          this status on this endpoint - schema reused from the
+          verbatim-captured generateOtp200Response (identical response
+          shape), not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/generateOtp200Response
       '400':
         description: Bad Request. Invalid organization registration code.
         content:
@@ -442,6 +476,7 @@ registrationOtp:
 delete:
   delete:
     summary: Delete Own Account
+    operationId: deleteAccount
     tags:
       - User APIs
     description: "This API deletes the authenticated user's own account.\n
@@ -487,6 +522,7 @@ delete:
 changePassword:
   post:
     summary: Change Password
+    operationId: changePassword
     tags:
       - User APIs
     description: "This API changes the authenticated user's password.\n
@@ -512,10 +548,10 @@ changePassword:
             schema:
               $ref: ../components/account.yaml#/changePassword200Response
       '401':
-        description: >-
-          Unauthorized. Session expired / invalid token (captured for both
-          missing newPassword and wrong oldPassword cases the session-layer
-          responded 401).
+        description: Unauthorized. Session expired or the auth token is invalid.
+        x-internal-note: >-
+          Captured for both missing newPassword and wrong oldPassword cases -
+          the session-layer responded 401 in both.
         content:
           application/json:
             schema:
@@ -532,13 +568,15 @@ changePassword:
 changeRole:
   post:
     summary: Change Role
+    operationId: changeRole
     tags:
       - User APIs
     description: "This API changes a user's role.\n
       - Endpoint: `/user/v1/account/changeRole`\n
-      - `email` and `role` are required.\n
-      - NOTE: no live captured response body was available for this endpoint,
-      so no response examples are provided (see gaps.jsonl)."
+      - `email` and `role` are required."
+    x-internal-note: >-
+      No live captured response body was available for this endpoint, so no
+      response examples are provided (see gaps.jsonl).
     parameters:
       - name: X-auth-token
         in: header
@@ -553,9 +591,24 @@ changeRole:
             $ref: ../components/account.yaml#/changeRoleRequest
     responses:
       '200':
+        description: OK. Role updated successfully.
+        x-internal-note: >-
+          Shape not verified against a captured response (no capture
+          available for this endpoint).
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/clientErrorResponse
+      '400':
         description: >-
-          OK. Role updated successfully. NOTE - shape not verified against a
-          captured response (no capture available for this endpoint).
+          Bad Request. Returned when the specified role does not exist for
+          the tenant, the caller's token does not resolve to a valid user, or
+          the target user does not exist.
+        x-internal-note: >-
+          services/account.js `changeRole` returns this for three distinct
+          causes: ROLE_NOT_FOUND, USER_NOT_FOUND, or USER_DOESNOT_EXISTS. No
+          captured example exists for this status on this endpoint - shape
+          only, not a fabricated body.
         content:
           application/json:
             schema:
@@ -563,13 +616,15 @@ changeRole:
 validatingEmailIds:
   post:
     summary: Validate Email IDs
+    operationId: validatingEmailIds
     tags:
       - User APIs
     description: "This API validates a list of email IDs.\n
       - Endpoint: `/user/v1/account/validatingEmailIds`\n
-      - `emailIds` (non-empty array of valid emails) is required.\n
-      - NOTE: no live captured response body was available for this endpoint
-      (see gaps.jsonl)."
+      - `emailIds` (non-empty array of valid emails) is required."
+    x-internal-note: >-
+      No live captured response body was available for this endpoint (see
+      gaps.jsonl).
     parameters:
       - name: X-auth-token
         in: header
@@ -584,16 +639,31 @@ validatingEmailIds:
             $ref: ../components/account.yaml#/validatingEmailIdsRequest
     responses:
       '200':
-        description: >-
-          OK. Emails validated. NOTE - shape not verified against a captured
-          response (no capture available for this endpoint).
+        description: OK. Emails validated successfully.
+        x-internal-note: >-
+          Shape not verified against a captured response (no capture
+          available for this endpoint).
         content:
           application/json:
             schema:
               $ref: ../components/account.yaml#/clientErrorResponse
+      '422':
+        description: >-
+          Unprocessable Entity. `emailIds` is missing, empty, or contains
+          values that are not valid email addresses.
+        x-internal-note: >-
+          Validated in validators/v1/account.js `validatingEmailIds`. No
+          captured example exists for this status on this endpoint - shape
+          reused from the standard validationErrorResponse envelope used
+          elsewhere in this domain, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/validationErrorResponse
 acceptTermsAndCondition:
   patch:
     summary: Terms & Condition
+    operationId: acceptTermsAndCondition
     tags:
       - Depreciated APIs
     description: "This API accepts terms and conditions for the authenticated user.\n
@@ -629,7 +699,8 @@ acceptTermsAndCondition:
                     correlation: 1ab51a89-98b4-4aaf-b0ff-2329c72bd827
                   message: Unauthorized request
       '500':
-        description: Internal Server Error (captured when token was missing).
+        description: Internal Server Error. Returned when an unexpected server-side failure occurs.
+        x-internal-note: Captured when the token was missing.
         content:
           application/json:
             schema:
@@ -645,11 +716,12 @@ acceptTermsAndCondition:
 sessions:
   post:
     summary: List Sessions
+    operationId: sessions
     tags:
       - User APIs
     description: "This API lists the authenticated user's sessions.\n
-      - Endpoint: `/user/v1/account/sessions`\n
-      - Served by services/user-sessions.js (out of account scope)."
+      - Endpoint: `/user/v1/account/sessions`"
+    x-internal-note: Served by services/user-sessions.js (out of account scope).
     parameters:
       - name: X-auth-token
         in: header
@@ -676,14 +748,26 @@ sessions:
           application/json:
             schema:
               $ref: ../components/account.yaml#/sessions201Response
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape reused from the standard unauthorizedResponse envelope used
+          elsewhere in this domain, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse
 validateUserSession:
   post:
     summary: Validate User Session
+    operationId: validateUserSession
     tags:
       - User APIs
+    security: []
     description: "This API validates a user session by token.\n
-      - Endpoint: `/user/v1/account/validateUserSession`\n
-      - Served by services/user-sessions.js (out of account scope)."
+      - Endpoint: `/user/v1/account/validateUserSession`"
+    x-internal-note: Served by services/user-sessions.js (out of account scope).
     requestBody:
       content:
         application/json:
@@ -714,6 +798,7 @@ validateUserSession:
 list:
   get:
     summary: List user
+    operationId: listAccount
     tags:
       - Users APIs
     description: "This API lists users.\n
@@ -779,6 +864,7 @@ list:
 search:
   get:
     summary: Search User
+    operationId: search
     tags:
       - Users APIs
     description: "This API searches users.\n
@@ -854,3 +940,13 @@ search:
           application/json:
             schema:
               $ref: ../components/account.yaml#/search200Response
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape reused from the standard unauthorizedResponse envelope used
+          elsewhere in this domain, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/account.yaml#/unauthorizedResponse

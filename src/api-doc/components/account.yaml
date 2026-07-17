@@ -13,23 +13,14 @@
 createUserRequest:
   type: object
   description: >-
-    Request payload for creating a user account.
-
-    Per the validator, every field is technically optional at the
-    express-validator layer, but two cross-field business rules apply
-    (enforced in services/account.js):
-
-    1. At least one of `email` or `phone` MUST be provided (anyOf below).
-       If neither is present the request is rejected.
-
-    2. If `phone` is provided, `phone_code` becomes required.
-
-    Additionally, at runtime the service gates `password`/`otp` against the
-    tenant's `configuration.allowed_auth_mode`: if PASSWORD auth mode is
-    allowed a password is required (`PASSWORD_REQUIRED`), and if a password is
-    supplied while PASSWORD mode is not allowed the request is rejected
-    (`AUTH_MODE_NOT_ALLOWED`). This is tenant-config-dependent and cannot be
-    expressed in the schema itself.
+    Request payload for creating a user account. At least one of `email` or
+    `phone` must be provided, and `phone_code` is required when `phone` is
+    provided. Depending on the tenant's configured authentication mode, a
+    `password` may be required or rejected.
+  x-internal-note: >-
+    Cross-field rules enforced in services/account.js: anyOf(email, phone);
+    phone_code required with phone; password/otp gated at runtime by
+    configuration.allowed_auth_mode (PASSWORD_REQUIRED / AUTH_MODE_NOT_ALLOWED).
   properties:
     name:
       type: string
@@ -79,21 +70,18 @@ createUserRequest:
 loginRequest:
   type: object
   description: >-
-    Request payload for user login.
-
-    `identifier` (email, phone, or username) and `phone_code` are required
-    (phone_code is only meaningfully enforced when the identifier is a phone
-    number). At least ONE of `password` or `otp` must be provided — this is
-    real business logic in services/account.js (login, line 761:
-    `if (!hasOtp && !hasPassword) return AUTH_CREDENTIAL_REQUIRED`).
-
-    NOTE: which of password/otp is actually accepted is additionally gated at
-    runtime by the tenant's `configuration.allowed_auth_mode`
-    (AUTH_MODES.PASSWORD / AUTH_MODES.OTP). If a credential is supplied whose
-    auth mode is not allowed for the tenant, the service responds
-    `AUTH_MODE_NOT_ALLOWED`. That tenant-config-dependent gating is intentionally
-    NOT modelled in the schema (it depends on runtime tenant configuration, not
-    on the request body alone).
+    Request payload for user login. `identifier` and `phone_code` are
+    required (phone_code applies only when the identifier is a phone
+    number), and at least one of `password` or `otp` must be provided. Which
+    credential type is actually accepted also depends on the tenant's
+    configured authentication mode.
+  x-internal-note: >-
+    password/otp requirement enforced in services/account.js login (line
+    761: if (!hasOtp && !hasPassword) return AUTH_CREDENTIAL_REQUIRED).
+    Auth-mode gating (AUTH_MODES.PASSWORD / AUTH_MODES.OTP) returns
+    AUTH_MODE_NOT_ALLOWED when a disallowed credential type is supplied;
+    intentionally not modelled in the schema since it depends on runtime
+    tenant configuration, not the request body alone.
   required:
     - identifier
     - phone_code
@@ -161,11 +149,13 @@ generateOtpRequest:
 registrationOtpRequest:
   type: object
   description: >-
-    Request payload for the registration OTP. `registration_code` is required.
-    At least ONE of `email`, `phone`, or `username` must be provided
-    (cross-field rule in services/account.js registrationOtp, line 1291;
-    validator message: "At least one of email, phone, or username must be
-    provided"). If `phone` is provided, `phone_code` is required.
+    Request payload for the registration OTP. `registration_code` is
+    required, and at least one of `email`, `phone`, or `username` must be
+    provided. If `phone` is provided, `phone_code` is also required.
+  x-internal-note: >-
+    Cross-field rule enforced in services/account.js registrationOtp (line
+    1291); validator message: "At least one of email, phone, or username
+    must be provided".
   required:
     - registration_code
   properties:
@@ -286,10 +276,11 @@ validatingEmailIdsRequest:
 searchRequest:
   type: object
   description: >-
-    Request body for the search endpoint. Per validator-fields, `user_ids` and
-    `excluded_user_ids` (both integer arrays) are required in the body, while
-    `tenant_code`, `type`, and `organization_id` are required query parameters
-    (see the path definition).
+    Request body for the search endpoint. `user_ids` and `excluded_user_ids`
+    (both integer arrays) are required in the body, while `tenant_code`,
+    `type`, and `organization_id` are required query parameters (see the
+    path definition).
+  x-internal-note: Required fields verified against validator-fields.json.
   required:
     - user_ids
     - excluded_user_ids
@@ -408,7 +399,8 @@ serverErrorResponse:
 
 createUser201Response:
   type: object
-  description: User created successfully (captured from POST /user/v1/account/create).
+  description: User account created successfully. Returned when sign-up completes and the user is automatically logged in.
+  x-internal-note: Captured from a live POST /user/v1/account/create response.
   properties:
     responseCode:
       type: string
@@ -499,7 +491,8 @@ createUser201Response:
 
 login200Response:
   type: object
-  description: User logged in successfully (captured from POST /user/v1/account/login).
+  description: User successfully logged in. Returns session tokens and the user profile.
+  x-internal-note: Captured from a live POST /user/v1/account/login response.
   properties:
     responseCode:
       type: string
@@ -592,7 +585,8 @@ login200Response:
 
 generateToken200Response:
   type: object
-  description: Access token generated successfully (captured).
+  description: A new access token was generated successfully from a valid refresh token.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string
@@ -633,7 +627,8 @@ generateToken200Response:
 
 generateOtp200Response:
   type: object
-  description: OTP generated successfully (captured).
+  description: An OTP was generated and sent to the user's registered email or phone number.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string
@@ -673,7 +668,8 @@ generateOtp200Response:
 
 changePassword200Response:
   type: object
-  description: Password changed successfully (captured).
+  description: The authenticated user's password was changed successfully.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string
@@ -709,7 +705,8 @@ changePassword200Response:
 
 acceptTermsAndCondition200Response:
   type: object
-  description: Terms and conditions accepted / user updated successfully (captured).
+  description: The terms and conditions were accepted and the user's profile was updated successfully.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string
@@ -747,10 +744,12 @@ acceptTermsAndCondition200Response:
 
 sessions201Response:
   type: object
-  description: >-
-    User sessions fetched successfully (captured). NOTE: this endpoint is
-    served by services/user-sessions.js, which is out of the account scope and
-    was not read; response shape here is taken solely from the captured body.
+  description: The authenticated user's sessions were fetched successfully.
+  x-internal-note: >-
+    Response body captured from a live request. This endpoint is served by
+    services/user-sessions.js, which is out of the account module's scope
+    and was not independently reviewed; the schema is derived solely from
+    the captured response body.
   properties:
     responseCode:
       type: string
@@ -793,10 +792,11 @@ sessions201Response:
 
 validateUserSession200Response:
   type: object
-  description: >-
-    User session validated successfully (captured). NOTE: served by
-    services/user-sessions.js (out of account scope, not read); shape from
-    captured body only.
+  description: The user session was validated successfully.
+  x-internal-note: >-
+    Response body captured from a live request. Served by
+    services/user-sessions.js (out of account scope, not reviewed); schema
+    derived solely from the captured body.
   properties:
     responseCode:
       type: string
@@ -834,7 +834,10 @@ validateUserSession200Response:
 
 list200Response:
   type: object
-  description: User list fetched successfully (captured). Empty for a non-admin caller in the capture.
+  description: The list of users was fetched successfully.
+  x-internal-note: >-
+    Response body captured from a live request; the captured example is
+    empty because the calling user was not an admin.
   properties:
     responseCode:
       type: string
@@ -879,7 +882,8 @@ list200Response:
 
 search200Response:
   type: object
-  description: User search list fetched successfully (captured).
+  description: The user search results were fetched successfully.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string
@@ -964,7 +968,8 @@ search200Response:
 
 logout200Response:
   type: object
-  description: Logout successful (captured).
+  description: The user was logged out successfully.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string
@@ -1014,7 +1019,8 @@ logout200Response:
 
 delete200Response:
   type: object
-  description: Account deleted successfully (captured).
+  description: The authenticated user's account was deleted successfully.
+  x-internal-note: Response body captured from a live request.
   properties:
     responseCode:
       type: string

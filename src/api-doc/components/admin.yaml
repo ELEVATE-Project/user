@@ -18,11 +18,11 @@
 createSystemUserRequest:
   type: object
   description: >-
-    Creates a new admin/system user. Per validator, `secret_code`, `name` and
-    `password` are always required. `email`, `username`, `phone` and
-    `phone_code` are optional at the field level, but a cross-field rule
-    (validators/v1/admin.js:64) enforces: at least one of `email` or `phone`
-    must be provided, AND `phone_code` is required whenever `phone` is present.
+    Creates a new admin/system user. `secret_code`, `name` and `password` are
+    always required. At least one of `email` or `phone` must also be
+    provided, and `phone_code` is required whenever `phone` is present.
+  x-internal-note: >-
+    Cross-field rule enforced in validators/v1/admin.js:64.
   required:
     - secret_code
     - name
@@ -86,7 +86,8 @@ createSystemUserRequestExamples:
 
 createSystemUser201Response:
   type: object
-  description: Admin user created successfully (verbatim capture, 201).
+  description: Admin user created successfully.
+  x-internal-note: Response body is a verbatim capture (201).
   properties:
     responseCode:
       type: string
@@ -96,6 +97,11 @@ createSystemUser201Response:
       example: ADMIN_USER_CREATED_SUCCESSFULLY
     result:
       type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: OK
     message: ADMIN_USER_CREATED_SUCCESSFULLY
@@ -148,7 +154,8 @@ createSystemUser201Response:
 
 createSystemUser400Response:
   type: object
-  description: Wrong / invalid secret_code (verbatim capture, 400).
+  description: Returned when the supplied secret_code is wrong or invalid.
+  x-internal-note: Response body is a verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -161,6 +168,11 @@ createSystemUser400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -170,7 +182,8 @@ createSystemUser400Response:
 
 createSystemUser401Response:
   type: object
-  description: Unauthorized - missing internal_access_token (verbatim capture, 401).
+  description: Unauthorized. Returned when the internal_access_token is missing.
+  x-internal-note: Response body is a verbatim capture (401).
   properties:
     responseCode:
       type: string
@@ -183,6 +196,11 @@ createSystemUser401Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: UNAUTHORIZED
     error: []
@@ -192,7 +210,8 @@ createSystemUser401Response:
 
 createSystemUser422Response:
   type: object
-  description: Validation failure - missing secret_code (verbatim capture, 422).
+  description: Validation failure. Returned when secret_code is missing.
+  x-internal-note: Response body is a verbatim capture (422).
   properties:
     responseCode:
       type: string
@@ -204,6 +223,11 @@ createSystemUser422Response:
       type: array
       items:
         type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error:
@@ -220,16 +244,20 @@ createSystemUser422Response:
 loginSystemUserRequest:
   type: object
   description: >-
-    Admin login. Per validator-fields.json all three of `identifier`,
-    `phone_code` and `password` are marked required; however in code
+    Request payload for admin login. `identifier` and `password` are
+    required; `phone_code` is required only when `identifier` is a phone
+    number.
+  x-internal-note: >-
+    Per validator-fields.json all three of `identifier`, `phone_code` and
+    `password` are marked required; however in code
     (validators/v1/admin.js:102) `phone_code` is only enforced when the
     `identifier` is a phone number. The service layer (services/admin.js:437)
     also accepts `email` as a fallback for `identifier` (at-least-one-of
-    identifier/email), but note that filterRequestBody strips any field outside
-    the admin.login allow-list, so in practice only `identifier` is honoured.
+    identifier/email), but note that filterRequestBody strips any field
+    outside the admin.login allow-list, so in practice only `identifier` is
+    honoured.
   required:
     - identifier
-    - phone_code
     - password
   properties:
     identifier:
@@ -238,7 +266,10 @@ loginSystemUserRequest:
       example: admin@example.com
     phone_code:
       type: string
-      description: Country calling code. Only enforced when identifier is a phone number.
+      description: >-
+        Country calling code. Required only when `identifier` is a phone
+        number.
+      x-internal-note: Conditionally enforced in validators/v1/admin.js:102.
       example: '+91'
     password:
       type: string
@@ -251,7 +282,8 @@ loginSystemUserRequest:
 
 loginSystemUser200Response:
   type: object
-  description: Successful admin login (verbatim capture, 200; JWTs truncated).
+  description: Successful admin login. Returns session tokens and the user profile.
+  x-internal-note: Response body is a verbatim capture (200; JWTs truncated).
   properties:
     responseCode:
       type: string
@@ -261,6 +293,11 @@ loginSystemUser200Response:
       example: User logged in successfully.
     result:
       type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: OK
     message: User logged in successfully.
@@ -316,7 +353,8 @@ loginSystemUser200Response:
 
 loginSystemUser400Response:
   type: object
-  description: Invalid identifier or password (verbatim capture, 400).
+  description: Returned when the identifier or password is invalid.
+  x-internal-note: Response body is a verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -329,6 +367,11 @@ loginSystemUser400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -338,7 +381,8 @@ loginSystemUser400Response:
 
 loginSystemUser422Response:
   type: object
-  description: Validation failure - missing identifier (verbatim capture, 422).
+  description: Validation failure. Returned when identifier is missing.
+  x-internal-note: Response body is a verbatim capture (422).
   properties:
     responseCode:
       type: string
@@ -350,6 +394,11 @@ loginSystemUser422Response:
       type: array
       items:
         type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error:
@@ -363,9 +412,11 @@ loginSystemUser422Response:
 loginSystemUser500Response:
   type: object
   description: >-
-    Server error captured when password was omitted (verbatim capture, 500).
-    NOTE: the login validator marks password notEmpty, yet the captured
-    response for a missing password was a 500, not a 422 - see gaps.jsonl.
+    Server error. Returned when an unexpected server-side failure occurs.
+  x-internal-note: >-
+    Captured when password was omitted (verbatim capture, 500). NOTE: the
+    login validator marks password notEmpty, yet the captured response for
+    a missing password was a 500, not a 422 - see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -373,6 +424,11 @@ loginSystemUser500Response:
     message:
       type: string
       example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: SERVER_ERROR
     message: Oops! Something Went Wrong.
@@ -384,7 +440,8 @@ loginSystemUser500Response:
 # -----------------------------------------------------------------------------
 deleteUser200Response:
   type: object
-  description: User deleted successfully (verbatim capture, 200).
+  description: User deleted successfully.
+  x-internal-note: Response body is a verbatim capture (200).
   properties:
     responseCode:
       type: string
@@ -397,6 +454,11 @@ deleteUser200Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: OK
     message: User deleted successfully
@@ -406,7 +468,8 @@ deleteUser200Response:
 
 deleteUser400Response:
   type: object
-  description: User not found (verbatim capture, 400).
+  description: Returned when the specified user cannot be found.
+  x-internal-note: Response body is a verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -419,6 +482,11 @@ deleteUser400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -429,9 +497,12 @@ deleteUser400Response:
 deleteUser401Response:
   type: object
   description: >-
-    Non-admin / expired session (verbatim capture, 401). NOTE: the controller's
-    own USER_IS_NOT_A_ADMIN guard returns 400, but the captured non-admin case
-    was rejected earlier by auth middleware with this 401 - see gaps.jsonl.
+    Unauthorized. Returned when the caller is not an admin or the session
+    has expired.
+  x-internal-note: >-
+    Verbatim capture (401). NOTE: the controller's own USER_IS_NOT_A_ADMIN
+    guard returns 400, but the captured non-admin case was rejected earlier
+    by auth middleware with this 401 - see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -444,6 +515,11 @@ deleteUser401Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: UNAUTHORIZED
     error: []
@@ -479,7 +555,8 @@ assignRoleRequest:
 
 assignRole200Response:
   type: object
-  description: Role assigned successfully (verbatim capture, 200).
+  description: Role assigned successfully.
+  x-internal-note: Response body is a verbatim capture (200).
   properties:
     responseCode:
       type: string
@@ -489,6 +566,11 @@ assignRole200Response:
       example: The role was assigned to the user successfully.
     result:
       type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: OK
     message: The role was assigned to the user successfully.
@@ -507,8 +589,11 @@ assignRole200Response:
 assignRole400Response:
   type: object
   description: >-
-    Client error (verbatim captures, 400). Two distinct captured messages:
-    duplicate role assignment and user not found.
+    Client error. Returned when the role is already assigned to the user, or
+    when the user cannot be found.
+  x-internal-note: >-
+    Verbatim captures (400). Two distinct captured messages: duplicate role
+    assignment and user not found.
   properties:
     responseCode:
       type: string
@@ -521,6 +606,11 @@ assignRole400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -530,7 +620,8 @@ assignRole400Response:
 
 assignRole400UserNotFoundResponse:
   type: object
-  description: Role assignment - user not found (verbatim capture, 400).
+  description: Returned when the user to be assigned a role cannot be found.
+  x-internal-note: Response body is a verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -552,7 +643,8 @@ assignRole400UserNotFoundResponse:
 
 assignRole401Response:
   type: object
-  description: Non-admin token / expired session (verbatim capture, 401).
+  description: Unauthorized. Returned when the token is not an admin token or the session has expired.
+  x-internal-note: Response body is a verbatim capture (401).
   properties:
     responseCode:
       type: string
@@ -565,6 +657,11 @@ assignRole401Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: UNAUTHORIZED
     error: []
@@ -574,7 +671,8 @@ assignRole401Response:
 
 assignRole422Response:
   type: object
-  description: Validation failure - missing role_id (verbatim capture, 422).
+  description: Validation failure. Returned when role_id is missing.
+  x-internal-note: Response body is a verbatim capture (422).
   properties:
     responseCode:
       type: string
@@ -586,6 +684,11 @@ assignRole422Response:
       type: array
       items:
         type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error:
@@ -605,12 +708,14 @@ assignRole422Response:
 addOrgAdminRequest:
   type: object
   description: >-
-    Assigns a user as an organization admin. `organization_id` is required.
-    Cross-field rule (validators/v1/admin.js:124): exactly ONE of `identifier`
-    or `user_id` must be present (providing both is rejected). Additionally,
-    when `identifier` resolves to a phone number, `phone_code` becomes required
-    (services/admin.js:601) - this is enforced at runtime and noted here rather
-    than expressed structurally.
+    Assigns a user as an organization admin. `organization_id` is required,
+    and exactly one of `identifier` or `user_id` must be provided (not
+    both). When `identifier` resolves to a phone number, `phone_code` is
+    also required.
+  x-internal-note: >-
+    Cross-field rule enforced in validators/v1/admin.js:124 (exactly one of
+    identifier/user_id). The phone_code requirement is enforced at runtime
+    in services/admin.js:601 rather than expressed structurally.
   required:
     - organization_id
   oneOf:
@@ -657,11 +762,40 @@ addOrgAdminRequestExamples:
       identifier: '9995554443'
       phone_code: '+91'
 
+addOrgAdmin200Response:
+  type: object
+  description: Org-admin role assigned successfully.
+  x-internal-note: >-
+    services/admin.js `addOrgAdmin`, message key
+    ORG_ADMIN_MAPPED_SUCCESSFULLY.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: ORG_ADMIN_MAPPED_SUCCESSFULLY
+    result:
+      type: object
+      properties:
+        user_id:
+          type: number
+        organization_id:
+          type: number
+        user_roles:
+          type: array
+          items:
+            type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+
 addOrgAdmin400Response:
   type: object
-  description: >-
-    Phone identifier supplied without the conditionally-required phone_code
-    (verbatim capture, 400).
+  description: Returned when a phone identifier is supplied without the required phone_code.
+  x-internal-note: Response body is a verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -674,6 +808,11 @@ addOrgAdmin400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -683,9 +822,8 @@ addOrgAdmin400Response:
 
 addOrgAdmin422Response:
   type: object
-  description: >-
-    Neither identifier nor user_id provided (at-least-one-of cross-field rule;
-    verbatim capture, 422).
+  description: Returned when neither identifier nor user_id is provided.
+  x-internal-note: At-least-one-of cross-field rule; response body is a verbatim capture (422).
   properties:
     responseCode:
       type: string
@@ -698,6 +836,11 @@ addOrgAdmin422Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -707,10 +850,11 @@ addOrgAdmin422Response:
 
 addOrgAdmin500Response:
   type: object
-  description: >-
-    Server error captured on the happy-path attempt (verbatim capture, 500).
-    NOTE: the documented success path (ORG_ADMIN_MAPPED_SUCCESSFULLY, 200) has
-    NO captured success body - see gaps.jsonl.
+  description: Server error. Returned when an unexpected server-side failure occurs.
+  x-internal-note: >-
+    Captured on the happy-path attempt (verbatim capture, 500). NOTE: the
+    documented success path (ORG_ADMIN_MAPPED_SUCCESSFULLY, 200) has NO
+    captured success body - see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -718,6 +862,11 @@ addOrgAdmin500Response:
     message:
       type: string
       example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: SERVER_ERROR
     message: Oops! Something Went Wrong.
@@ -730,10 +879,12 @@ addOrgAdmin500Response:
 deactivateUserRequest:
   type: object
   description: >-
-    Deactivates one or more users. Cross-field rule (controllers/v1/admin.js:226):
-    at least one of `id` or `email` must be provided. When present each must be
-    a non-empty array (validators/v1/admin.js:159). No field is unconditionally
-    required.
+    Deactivates one or more users. At least one of `id` or `email` must be
+    provided, and when present each must be a non-empty array.
+  x-internal-note: >-
+    Cross-field rule enforced in controllers/v1/admin.js:226; array
+    non-empty check in validators/v1/admin.js:159. No field is
+    unconditionally required.
   anyOf:
     - required: [id]
       title: By id array
@@ -765,11 +916,56 @@ deactivateUserRequestExamples:
     value:
       email: [user1@example.com, user2@example.com]
 
+deactivateUser200Response:
+  type: object
+  description: The specified user(s) were deactivated successfully.
+  x-internal-note: >-
+    Response body is a verbatim capture (200) from POST
+    /user/v1/admin/deactivateUser.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: User deactivated Successfully
+    result:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: number
+              type:
+                type: string
+              version:
+                type: number
+  example:
+    responseCode: OK
+    message: User deactivated Successfully
+    result: []
+    meta:
+      correlation: e1b296e6-b2a3-4ac4-869b-9227e2ba65c5
+      formsVersion:
+        - id: 1
+          type: formsrggjf
+          version: 0
+
 deactivateUser400Response:
   type: object
-  description: >-
-    Neither id nor email provided (at-least-one-of guard,
-    controllers/v1/admin.js:226; verbatim capture, 400).
+  description: Returned when neither id nor email is provided.
+  x-internal-note: >-
+    At-least-one-of guard in controllers/v1/admin.js:226; response body is a
+    verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -782,6 +978,11 @@ deactivateUser400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -792,11 +993,36 @@ deactivateUser400Response:
 # -----------------------------------------------------------------------------
 # deactivateOrg  (POST /user/v1/admin/deactivateOrg/{id})
 # -----------------------------------------------------------------------------
+deactivateOrg200Response:
+  type: object
+  description: >-
+    Organization deactivated successfully. Also deactivates all users in the
+    organization and ends their active sessions.
+  x-internal-note: services/admin.js `deactivateOrg`, message key ORG_DEACTIVATED.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: ORG_DEACTIVATED
+    result:
+      type: object
+      properties:
+        deactivated_users:
+          type: number
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+
 deactivateOrg422Response:
   type: object
   description: >-
-    Path param `id` failed format validation (must be lowercase alphanumeric
-    with underscores; verbatim capture, 422).
+    Returned when the `id` path parameter is not lowercase alphanumeric with
+    underscores.
+  x-internal-note: Response body is a verbatim capture (422).
   properties:
     responseCode:
       type: string
@@ -808,6 +1034,11 @@ deactivateOrg422Response:
       type: array
       items:
         type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error:
@@ -821,10 +1052,11 @@ deactivateOrg422Response:
 
 deactivateOrg500Response:
   type: object
-  description: >-
-    Server error captured on the happy-path attempt (verbatim capture, 500).
-    NOTE: the documented success path (ORG_DEACTIVATED, 200) has NO captured
-    success body - see gaps.jsonl.
+  description: Server error. Returned when an unexpected server-side failure occurs.
+  x-internal-note: >-
+    Captured on the happy-path attempt (verbatim capture, 500). NOTE: the
+    documented success path (ORG_DEACTIVATED, 200) has NO captured success
+    body - see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -832,6 +1064,11 @@ deactivateOrg500Response:
     message:
       type: string
       example: Oops! Something Went Wrong.
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: SERVER_ERROR
     message: Oops! Something Went Wrong.
@@ -854,9 +1091,36 @@ executeRawQueryRequest:
   example:
     query: SELECT id, name FROM users LIMIT 10
 
+executeRawQuery200Response:
+  type: object
+  description: Query executed successfully.
+  x-internal-note: services/admin.js `executeRawQuery`, message key QUERY_EXECUTED_SUCCESSFULLY.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: QUERY_EXECUTED_SUCCESSFULLY
+    result:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        count:
+          type: number
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+
 executeRawQuery400Response:
   type: object
-  description: Non-SELECT query rejected by the security validator (verbatim capture, 400).
+  description: Returned when the submitted query is not a SELECT statement.
+  x-internal-note: Response body is a verbatim capture (400).
   properties:
     responseCode:
       type: string
@@ -869,6 +1133,11 @@ executeRawQuery400Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: CLIENT_ERROR
     error: []
@@ -878,10 +1147,11 @@ executeRawQuery400Response:
 
 executeRawQuery500Response:
   type: object
-  description: >-
-    Query execution failed (verbatim capture, 500). NOTE: the documented
-    success path (QUERY_EXECUTED_SUCCESSFULLY, 200) has NO captured success
-    body - see gaps.jsonl.
+  description: Server error. Returned when query execution fails.
+  x-internal-note: >-
+    Verbatim capture (500). NOTE: the documented success path
+    (QUERY_EXECUTED_SUCCESSFULLY, 200) has NO captured success body - see
+    gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -894,6 +1164,11 @@ executeRawQuery500Response:
       items:
         type: string
       example: []
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
   example:
     responseCode: SERVER_ERROR
     error: []

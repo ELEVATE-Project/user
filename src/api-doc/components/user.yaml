@@ -850,7 +850,15 @@ userProfileReadResponse200:
           nullable: true
           example: null
         location:
+          type: object
           nullable: true
+          properties:
+            value:
+              type: string
+              example: ap
+            label:
+              type: string
+              example: Andhra Pradesh
           example: null
         about:
           type: string
@@ -871,7 +879,17 @@ userProfileReadResponse200:
           type: boolean
           example: true
         languages:
+          type: array
           nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
           example: null
         preferred_language:
           type: object
@@ -886,6 +904,7 @@ userProfileReadResponse200:
           type: string
           example: default
         meta:
+          type: object
           nullable: true
           example: null
         created_at:
@@ -928,9 +947,11 @@ userProfileReadResponse200:
                 type: string
                 example: default
               meta:
+                type: object
                 nullable: true
                 example: null
               created_by:
+                type: number
                 nullable: true
                 example: null
               updated_by:
@@ -1167,7 +1188,17 @@ userProfileUpdateResponse202:
           type: boolean
           example: true
         languages:
+          type: array
           nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
           example: null
         preferred_language:
           type: object
@@ -1179,6 +1210,7 @@ userProfileUpdateResponse202:
               type: string
               example: English
         configs:
+          type: object
           nullable: true
           example: null
         tenant_code:
@@ -1192,6 +1224,7 @@ userProfileUpdateResponse202:
             - 8
             - 6
         meta:
+          type: object
           nullable: true
           example: null
         created_at:
@@ -1302,7 +1335,15 @@ userProfileById200Response:
           type: string
           example: mentee_3t7m88mvl5
         location:
+          type: object
           nullable: true
+          properties:
+            value:
+              type: string
+              example: ap
+            label:
+              type: string
+              example: Andhra Pradesh
           example: null
         about:
           type: string
@@ -1323,7 +1364,17 @@ userProfileById200Response:
           type: boolean
           example: true
         languages:
+          type: array
           nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
           example: null
         preferred_language:
           type: object
@@ -1338,6 +1389,7 @@ userProfileById200Response:
           type: string
           example: default
         meta:
+          type: object
           nullable: true
           example: null
         created_at:
@@ -1380,9 +1432,11 @@ userProfileById200Response:
                 type: string
                 example: default
               meta:
+                type: object
                 nullable: true
                 example: null
               created_by:
+                type: number
                 nullable: true
                 example: null
               updated_by:
@@ -1419,6 +1473,7 @@ userProfileById200Response:
                       type: string
                       example: default
                     translations:
+                      type: object
                       nullable: true
                       example: null
         image_cloud_path:
@@ -1617,12 +1672,23 @@ userSetLanguagePreferenceResponse202:
           type: boolean
           example: true
         languages:
+          type: array
           nullable: true
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: en_in
+              label:
+                type: string
+                example: English
           example: null
         preferred_language:
           type: string
           example: en
         configs:
+          type: object
           nullable: true
           example: null
         tenant_code:
@@ -1636,6 +1702,7 @@ userSetLanguagePreferenceResponse202:
             - 8
             - 6
         meta:
+          type: object
           nullable: true
           example: null
         created_at:

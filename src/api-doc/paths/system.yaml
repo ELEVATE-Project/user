@@ -46,9 +46,13 @@ health:
                     status:
                       type: string
                     err:
-                      type: 'null'
+                      type: string
+                      nullable: true
+                      example: null
                     errMsg:
-                      type: 'null'
+                      type: string
+                      nullable: true
+                      example: null
                 status:
                   type: number
                 result:

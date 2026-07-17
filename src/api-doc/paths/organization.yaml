@@ -30,16 +30,21 @@ create:
             $ref: ../components/organization.yaml#/createOrganizationRequest
     responses:
       '201':
-        description: 'Created. Organization created successfully. GAP: no captured success body exists
-          for this endpoint - schema is shape-only, see gaps.jsonl.'
+        description: Created. Organization created successfully.
+        x-internal-note: >-
+          No captured success body exists for this endpoint - schema is
+          shape-only, see gaps.jsonl.
         content:
           application/json:
             schema:
               $ref: ../components/organization.yaml#/createOrganization201Response
       '400':
-        description: 'Bad Request. Either a Sequelize unique-constraint violation (ORG_UNIQUE_CONSTRAIN_ERROR)
-          or a registration_code processing error (REG_CODE_ERROR). GAP: no captured example for either
-          - shape-only.'
+        description: "Bad Request. Either the organization's unique code/tenant combination already
+          exists, or the supplied registration_code could not be processed."
+        x-internal-note: >-
+          Either a Sequelize unique-constraint violation (ORG_UNIQUE_CONSTRAIN_ERROR)
+          or a registration_code processing error (REG_CODE_ERROR). No captured
+          example for either - shape-only.
         content:
           application/json:
             schema:
@@ -53,9 +58,13 @@ create:
             schema:
               $ref: ../components/organization.yaml#/createOrganization401Response
       '406':
-        description: "Not Acceptable. Either the organization already exists (ORGANIZATION_ALREADY_EXISTS),
-          the org_admin role could not be resolved (ROLE_NOT_FOUND), or the invited admin's credential
-          record failed to be created. GAP: no captured example for any of these - shape-only."
+        description: "Not Acceptable. Either an organization with this code already exists, the
+          specified admin role could not be resolved, or the invited admin's credential record could
+          not be created."
+        x-internal-note: >-
+          Covers ORGANIZATION_ALREADY_EXISTS, ROLE_NOT_FOUND, and the invited
+          admin's credential-creation failure. No captured example for any of
+          these - shape-only.
         content:
           application/json:
             schema:
@@ -123,10 +132,13 @@ update:
               schema:
                 $ref: ../components/organization.yaml#/updateOrganization202Response
         '400':
-          description: 'Bad Request. Caller not authorized to make this update (USER_IS_NOT_A_ADMIN /
-            USER_DOES_NOT_HAVE_ACCESS / CONTACT_ADMIN_RELATED_ORGANIZATIONS), or a Sequelize
-            unique-constraint violation (ORG_UNIQUE_CONSTRAIN_ERROR). GAP: no captured example for any
-            of these - shape-only.'
+          description: "Bad Request. Either the caller is not authorized to update this organization,
+            or the update would violate a uniqueness constraint on the organization's code."
+          x-internal-note: >-
+            Covers USER_IS_NOT_A_ADMIN / USER_DOES_NOT_HAVE_ACCESS /
+            CONTACT_ADMIN_RELATED_ORGANIZATIONS (authorization) and
+            ORG_UNIQUE_CONSTRAIN_ERROR (Sequelize unique-constraint violation).
+            No captured example for any of these - shape-only.
           content:
             application/json:
               schema:
@@ -152,15 +164,18 @@ list:
 
       - Parameters cannot be empty or null.
 
-      - services/organization.js#list has three branches with different response shapes: (1)
-      ``tenant_code`` query param present -> filtered array of organizations for that tenant
-      (optionally further filtered by ``organization_codes``); (2) no ``tenant_code`` but
-      ``body.organizationIds`` present -> array of organizations for those ids (merged with any
-      Redis-cached entries); (3) neither present -> paginated listing using ``pageNo``/``pageSize``/
-      ``searchText``. Only branch (3) has a captured example; branches (1) and (2) are documented
-      shape-only (see organizationListArrayResult in the components file) - GAP, see gaps.jsonl.
+      - The response shape depends on which parameters are supplied: (1) when `tenant_code` is
+      present, a filtered array of organizations for that tenant is returned (optionally further
+      filtered by `organization_codes`); (2) when `organizationIds` is supplied in the request body
+      instead, an array of organizations for those ids is returned; (3) otherwise, a paginated
+      listing is returned using `pageNo`/`pageSize`/`searchText`.
 
       '
+    x-internal-note: >-
+      services/organization.js#list has three branches with different response
+      shapes as described above. Only branch (3) has a captured example;
+      branches (1) and (2) are documented shape-only (see
+      organizationListArrayResult in the components file) - see gaps.jsonl.
     parameters:
       - name: X-auth-token
         in: header
@@ -249,8 +264,9 @@ requestOrgRole:
             schema:
               $ref: ../components/organization.yaml#/requestOrgRole201Response
       '406':
-        description: 'Not Acceptable. Requested role not found (ROLE_NOT_FOUND), or a role-change
-          request is already pending (ROLE_CHANGE_PENDING). GAP: no captured example - shape-only.'
+        description: 'Not Acceptable. Either the requested role does not exist, or a role-change
+          request for this role is already pending.'
+        x-internal-note: 'ROLE_NOT_FOUND / ROLE_CHANGE_PENDING. No captured example - shape-only.'
         content:
           application/json:
             schema:
@@ -265,13 +281,16 @@ read:
 
       - Endpoint: `/user/v1/organization/read`
 
-      - At least one of `organisation_id` or `organisation_code` must be present
-      (validators/v1/organization.js#read uses ``req.checkQuery().oneOf([...])`` - this is a
-      genuine cross-field constraint between two query parameters and cannot be expressed as an
-      OpenAPI ``required``/``oneOf`` on individual query parameters, so it is documented here in prose
-      instead of forced into the parameter schema.)
+      - At least one of `organisation_id` or `organisation_code` must be present.
 
       '
+    x-internal-note: >-
+      The at-least-one-of constraint between organisation_id and
+      organisation_code is enforced via validators/v1/organization.js#read
+      (req.checkQuery().oneOf([...])) - this is a genuine cross-field
+      constraint between two query parameters and cannot be expressed as an
+      OpenAPI required/oneOf on individual query parameters, so it is
+      documented here in prose instead of forced into the parameter schema.
     parameters:
       - name: X-auth-token
         in: header
@@ -306,7 +325,8 @@ read:
             schema:
               $ref: ../components/organization.yaml#/organizationRead200Response
       '406':
-        description: 'Not Acceptable. Organization not found. GAP: no captured example - shape-only.'
+        description: 'Not Acceptable. Organization not found.'
+        x-internal-note: 'No captured example - shape-only.'
         content:
           application/json:
             schema:
@@ -348,10 +368,12 @@ details:
               schema:
                 $ref: ../components/organization.yaml#/organizationDetails200Response
         '406':
-          description: "Not Acceptable. Either the organization is not accessible to the caller
-            (ORGANIZATION_NOT_ACCESSIBLE - captured example), or no organization record matches the id
-            for the caller's tenant / the caller has no user-organization mapping at all
-            (ORGANIZATION_NOT_FOUND - GAP, no captured example)."
+          description: "Not Acceptable. Either the organization is not accessible to the caller, or
+            no organization record matches the id for the caller's tenant / the caller has no
+            organization mapping at all."
+          x-internal-note: >-
+            ORGANIZATION_NOT_ACCESSIBLE has a captured example; the
+            ORGANIZATION_NOT_FOUND case is unconfirmed, no captured example.
           content:
             application/json:
               schema:
@@ -369,8 +391,7 @@ addRegistrationCode:
 
         - Endpoint: `/user/v1/organization/addRegistrationCode/{id}`
 
-        - `id` here is the organization code (not the numeric id) - see
-        controllers/v1/organization.js#addRegistrationCode.
+        - `id` here is the organization code (not the numeric id).
 
         - Caller must be ADMIN_ROLE, ORG_ADMIN_ROLE, or TENANT_ADMIN_ROLE.
 
@@ -378,6 +399,7 @@ addRegistrationCode:
         addRegistrationCodeRequest.
 
         '
+      x-internal-note: 'Implemented in controllers/v1/organization.js#addRegistrationCode.'
       parameters:
         - name: X-auth-token
           in: header
@@ -398,23 +420,27 @@ addRegistrationCode:
               $ref: ../components/organization.yaml#/addRegistrationCodeRequest
       responses:
         '202':
-          description: 'Accepted. Registration codes added successfully. GAP: no captured example -
-            shape-only.'
+          description: Accepted. Registration codes added successfully.
+          x-internal-note: 'No captured example - shape-only.'
           content:
             application/json:
               schema:
                 $ref: ../components/organization.yaml#/addRegistrationCode202Response
         '400':
-          description: 'Bad Request. Caller not authorized (USER_IS_NOT_A_ADMIN), or an ADMIN_ROLE
-            caller omitted tenant_code (TENANT_NOT_FOUND). GAP: no captured example - shape-only.'
+          description: 'Bad Request. Either the caller is not authorized to perform this operation, or
+            an ADMIN_ROLE caller omitted the required tenant_code.'
+          x-internal-note: 'USER_IS_NOT_A_ADMIN / TENANT_NOT_FOUND. No captured example - shape-only.'
           content:
             application/json:
               schema:
                 $ref: ../components/organization.yaml#/addRegistrationCode400Response
         '406':
-          description: 'Not Acceptable. Organization not found (captured example), one or more codes
-            already exist on the organization (INVALID_REG_CODE_ERROR - GAP), or a Sequelize
-            unique-constraint violation while bulk-creating (UNIQUE_CONSTRAINT_ERROR - GAP).'
+          description: 'Not Acceptable. Either the organization was not found, one or more of the
+            supplied codes already exist on the organization, or the codes could not be added due to
+            a uniqueness conflict.'
+          x-internal-note: >-
+            Organization-not-found has a captured example; INVALID_REG_CODE_ERROR
+            and UNIQUE_CONSTRAINT_ERROR (Sequelize, bulk-create) are unconfirmed.
           content:
             application/json:
               schema:
@@ -433,8 +459,7 @@ removeRegistrationCode:
 
         - Endpoint: `/user/v1/organization/removeRegistrationCode/{id}`
 
-        - `id` here is the organization code (not the numeric id) - see
-        controllers/v1/organization.js#removeRegistrationCode.
+        - `id` here is the organization code (not the numeric id).
 
         - Caller must be ADMIN_ROLE, ORG_ADMIN_ROLE, or TENANT_ADMIN_ROLE.
 
@@ -442,6 +467,7 @@ removeRegistrationCode:
         removeRegistrationCodeRequest.
 
         '
+      x-internal-note: 'Implemented in controllers/v1/organization.js#removeRegistrationCode.'
       parameters:
         - name: X-auth-token
           in: header
@@ -462,22 +488,26 @@ removeRegistrationCode:
               $ref: ../components/organization.yaml#/removeRegistrationCodeRequest
       responses:
         '202':
-          description: 'Accepted. Registration codes removed successfully. GAP: no captured example -
-            shape-only.'
+          description: Accepted. Registration codes removed successfully.
+          x-internal-note: 'No captured example - shape-only.'
           content:
             application/json:
               schema:
                 $ref: ../components/organization.yaml#/removeRegistrationCode202Response
         '400':
-          description: 'Bad Request. Caller not authorized (USER_IS_NOT_A_ADMIN), or an ADMIN_ROLE
-            caller omitted tenant_code (TENANT_NOT_FOUND). GAP: no captured example - shape-only.'
+          description: 'Bad Request. Either the caller is not authorized to perform this operation, or
+            an ADMIN_ROLE caller omitted the required tenant_code.'
+          x-internal-note: 'USER_IS_NOT_A_ADMIN / TENANT_NOT_FOUND. No captured example - shape-only.'
           content:
             application/json:
               schema:
                 $ref: ../components/organization.yaml#/removeRegistrationCode400Response
         '406':
-          description: 'Not Acceptable. Organization not found (captured example), or one or more codes
-            are not present on the organization (INVALID_REG_CODE_ERROR - GAP).'
+          description: 'Not Acceptable. Either the organization was not found, or one or more of the
+            supplied codes are not present on the organization.'
+          x-internal-note: >-
+            Organization-not-found has a captured example; INVALID_REG_CODE_ERROR
+            (codes not present) is unconfirmed.
           content:
             application/json:
               schema:
@@ -495,10 +525,12 @@ addRelatedOrg:
 
         - Endpoint: `/user/v1/organization/addRelatedOrg/{id}`
 
-        - No entry exists for this operation in validators/v1/organization.js; ``related_orgs`` is
-        optional at the HTTP layer (defaults to ``[]``).
+        - `related_orgs` is optional; if omitted, it defaults to an empty list.
 
         '
+      x-internal-note: >-
+        No entry exists for this operation in validators/v1/organization.js;
+        related_orgs is optional at the HTTP layer (defaults to []).
       parameters:
         - name: X-auth-token
           in: header
@@ -525,7 +557,8 @@ addRelatedOrg:
               schema:
                 $ref: ../components/organization.yaml#/addRelatedOrg202Response
         '406':
-          description: 'Not Acceptable. Organization not found. GAP: no captured example - shape-only.'
+          description: 'Not Acceptable. Organization not found.'
+          x-internal-note: 'No captured example - shape-only.'
           content:
             application/json:
               schema:
@@ -541,16 +574,19 @@ removeRelatedOrg:
 
         - Endpoint: `/user/v1/organization/removeRelatedOrg/{id}`
 
-        - No entry exists for this operation in validators/v1/organization.js; ``related_orgs`` is
-        optional at the HTTP layer (defaults to ``[]``).
-
-        - GAP: this entire endpoint has no captured example in captured-responses.json (unlike its
-        addRelatedOrg counterpart) - every response below is shape-only, see gaps.jsonl. HTTP method
-        (POST) is inferred by symmetry with addRelatedOrg/addRegistrationCode/removeRegistrationCode,
-        which are all POST despite the underlying router accepting any verb (``app.all``); it has not
-        been independently verified for this specific endpoint.
+        - `related_orgs` is optional; if omitted, it defaults to an empty list.
 
         '
+      x-internal-note: >-
+        No entry exists for this operation in validators/v1/organization.js;
+        related_orgs is optional at the HTTP layer (defaults to []). This
+        entire endpoint has no captured example in captured-responses.json
+        (unlike its addRelatedOrg counterpart) - every response below is
+        shape-only, see gaps.jsonl. HTTP method (POST) is inferred by symmetry
+        with addRelatedOrg/addRegistrationCode/removeRegistrationCode, which
+        are all POST despite the underlying router accepting any verb
+        (app.all); it has not been independently verified for this specific
+        endpoint.
       parameters:
         - name: X-auth-token
           in: header
@@ -571,16 +607,17 @@ removeRelatedOrg:
               $ref: ../components/organization.yaml#/removeRelatedOrgRequest
       responses:
         '202':
-          description: 'Accepted. Related organizations removed successfully. GAP: no captured example
-            - shape-only.'
+          description: Accepted. Related organizations removed successfully.
+          x-internal-note: 'No captured example - shape-only.'
           content:
             application/json:
               schema:
                 $ref: ../components/organization.yaml#/removeRelatedOrg202Response
         '406':
-          description: 'Not Acceptable. Organization not found, or the removal is invalid (no
-            related_orgs at all, or one or more supplied ids are not currently related). GAP: no
-            captured example for either - shape-only.'
+          description: 'Not Acceptable. Either the organization was not found, or the removal request
+            is invalid (no related organizations exist, or one or more supplied ids are not currently
+            related).'
+          x-internal-note: 'No captured example for either case - shape-only.'
           content:
             application/json:
               schema:

@@ -1,8 +1,9 @@
 createFormRequest:
   type: object
-  description: 'Request body for creating a form. Note: `id`, `version`, and `organization_id`
-    are stripped from the body server-side (see constants/blacklistConfig.js `form.create`)
-    even if supplied by the client, so they are not modeled as accepted properties here.'
+  description: 'Request body for creating a form. `id`, `version`, and `organization_id`
+    are stripped from the body server-side even if supplied by the client, so
+    they are not modeled as accepted properties here.'
+  x-internal-note: 'Stripping done via constants/blacklistConfig.js `form.create`.'
   required:
     - type
     - sub_type
@@ -77,8 +78,9 @@ createFormRequest:
                         description: The minimum length allowed for the field.
                         example: 10
 createForm201Response:
-  description: Created. Form created successfully. Captured from a real 201 response
-    (services/form.js `create`, message key FORM_CREATED_SUCCESSFULLY).
+  description: Created. Form created successfully.
+  x-internal-note: Captured from a real 201 response (services/form.js `create`,
+    message key FORM_CREATED_SUCCESSFULLY).
   type: object
   properties:
     responseCode:
@@ -135,11 +137,13 @@ createForm201Response:
           version: 0
       correlation: ff2b746a-2ede-448f-b5f9-0277d643b64f
 createForm400Response:
-  description: 'Bad Request. A form of the same type already exists for the organization
-    (services/form.js `create`, message key FORM_ALREADY_EXISTS, statusCode 400).
-    GAP: no captured example exists for this status/message combination in
-    captured-responses.json, so no `message`/`error` example values are given below
-    — shape only. See gaps.jsonl (domain=form, endpoint=/user/v1/form/create, statusCode=400).'
+  description: 'Bad Request. A form of the same type already exists for the
+    organization.'
+  x-internal-note: 'services/form.js `create`, message key FORM_ALREADY_EXISTS,
+    statusCode 400. No captured example exists for this status/message
+    combination in captured-responses.json, so no `message`/`error` example
+    values are given below — shape only. See gaps.jsonl (domain=form,
+    endpoint=/user/v1/form/create, statusCode=400).'
   type: object
   properties:
     responseCode:
@@ -156,8 +160,9 @@ createForm400Response:
         correlation:
           type: string
 createForm422Response:
-  description: Unprocessable Entity. Request-body validation failed. Captured from
-    a real 422 response (express-validator layer, validators/v1/form.js `create`).
+  description: Unprocessable Entity. Request-body validation failed.
+  x-internal-note: Captured from a real 422 response (express-validator layer,
+    validators/v1/form.js `create`).
   type: object
   properties:
     responseCode:
@@ -210,19 +215,20 @@ createForm422Response:
       correlation: fc908373-29fa-4b4d-b34a-69cea780bfa0
     message: Validation failed, Entered data is incorrect!
 updateFormRequest:
-  description: "Request body for updating a form. Note: `id`, `version`, and
-    `organization_id` are stripped from the body server-side (see
-    constants/blacklistConfig.js `form.update`) even if supplied. Unlike `create`,
-    the top-level `data` object itself is not explicitly required by the update
-    validator (only `data.template_name` is checked) — see validators/v1/form.js
-    `update`. Cross-field note: the update validator's custom checks
-    (validators/v1/form.js lines 59-73) require `data.fields` to be present
-    whenever `data.template_name` is supplied, and require `data.template_name`
-    to be present whenever `data.fields` is supplied — i.e. the two are only
-    valid together, even though `data.fields` is flagged optional in
-    validator-fields.json taken in isolation. This finding comes directly from
-    the validator file, not from cross-field-rules.json (which only scans
-    services/controllers, not validators)."
+  description: 'Request body for updating a form. `id`, `version`, and
+    `organization_id` are stripped from the body server-side even if supplied.
+    Unlike `create`, the top-level `data` object itself is not required (only
+    `data.template_name` is checked when `data` is present). Cross-field note:
+    `data.fields` must be present whenever `data.template_name` is supplied,
+    and `data.template_name` must be present whenever `data.fields` is
+    supplied — the two are only valid together.'
+  x-internal-note: 'Stripping via constants/blacklistConfig.js `form.update`.
+    Requirement details come from validators/v1/form.js `update` (custom
+    checks at lines 59-73); `data.fields` is flagged optional in
+    validator-fields.json taken in isolation, but this cross-field
+    requirement is not captured there. This finding comes directly from the
+    validator file, not from cross-field-rules.json (which only scans
+    services/controllers, not validators).'
   type: object
   required:
     - type
@@ -300,10 +306,11 @@ updateFormRequest:
                         description: The minimum length allowed for the field.
                         example: 10
 updateForm202Response:
-  description: 'Accepted. Form updated successfully (services/form.js `update`,
-    message key FORM_UPDATED_SUCCESSFULLY, statusCode 202). GAP: no captured
-    example exists for this status/message combination in captured-responses.json
-    — shape only, no example values. See gaps.jsonl (domain=form,
+  description: 'Accepted. Form updated successfully.'
+  x-internal-note: 'services/form.js `update`, message key
+    FORM_UPDATED_SUCCESSFULLY, statusCode 202. No captured example exists
+    for this status/message combination in captured-responses.json — shape
+    only, no example values. See gaps.jsonl (domain=form,
     endpoint=/user/v1/form/update/{formId}, statusCode=202).'
   type: object
   properties:
@@ -316,8 +323,9 @@ updateForm202Response:
       items:
         type: string
 updateForm400Response:
-  description: 'Bad Request. Form not found (services/form.js `update`, message
-    key FORM_NOT_FOUND, statusCode 400). Captured from a real 400 response.'
+  description: 'Bad Request. Form not found.'
+  x-internal-note: 'services/form.js `update`, message key FORM_NOT_FOUND,
+    statusCode 400. Captured from a real 400 response.'
   type: object
   properties:
     responseCode:
@@ -344,19 +352,21 @@ updateForm400Response:
     message: Form not found
 readFormRequest:
   type: object
-  description: 'Request object for retrieving form details. The `read` validator
-    (validators/v1/form.js) branches on how the request arrives — modeled below as
-    `oneOf` per the branch, mirroring the conditionalNotes for this operation in
-    validator-fields.json (form.read). Branch 1: a `formId` path parameter is
-    supplied — body is ignored by the validator (only `req.params.id` is checked
-    non-empty), so the request body should be empty. Branch 2: no `formId` path
-    parameter, but a non-empty body — `type` and `sub_type` are both required
-    together. Branch 3: no `formId` and an empty body — the endpoint instead
-    returns the full list of form versions (services/form.js `readAllFormsVersion`),
-    which is a materially different response shape (see readAllFormVersions200Response).
-    Because `formId` is a path parameter, branch 1 and branch 3 both correspond to
-    an empty request body — the request body schema alone cannot distinguish them;
-    the path/param.'
+  description: 'Request object for retrieving form details. The request is
+    handled differently depending on how it arrives — modeled below as
+    `oneOf` per branch. Branch 1: a `formId` path parameter is supplied — the
+    request body should be empty. Branch 2: no `formId` path parameter, but a
+    non-empty body — `type` and `sub_type` are both required together.
+    Branch 3: no `formId` and an empty body — the endpoint instead returns
+    the full list of form versions, which is a materially different response
+    shape (see readAllFormVersions200Response). Because `formId` is a path
+    parameter, branch 1 and branch 3 both correspond to an empty request
+    body — the request body schema alone cannot distinguish them; the path
+    parameter does.'
+  x-internal-note: 'The `read` validator (validators/v1/form.js) branches on
+    how the request arrives, mirroring the conditionalNotes for this
+    operation in validator-fields.json (form.read). Branch 3 is handled by
+    services/form.js `readAllFormsVersion`.'
   oneOf:
     - title: byIdOrListAll
       type: object
@@ -382,31 +392,22 @@ readFormRequest:
           description: Subtype of the form. Letters only.
           pattern: ^[A-Za-z]+$
           example: profileForm
-  examples:
-    byId:
-      summary: Lookup by formId path parameter
-      value: {}
-    byTypeAndSubType:
-      summary: Lookup by type/sub_type in body (no formId path parameter)
-      value:
-        type: profile
-        sub_type: profileForm
-    listAllVersions:
-      summary: No formId and no body — returns the list of all form versions instead
-      value: {}
 readForm200Response:
-  description: 'OK. Form details retrieved successfully (services/form.js `read`,
-    message key FORM_FETCHED_SUCCESSFULLY, statusCode 200). GAP: no captured
-    example exists for this status/message combination in captured-responses.json
-    (only the 400 branches for `read` were captured) — shape only below, no
-    fabricated field values. See gaps.jsonl (domain=form,
-    endpoint=/user/v1/form/read/{formId}, statusCode=200). Note: services/form.js
+  description: 'OK. Form details retrieved successfully. If the form is not
+    found for the requesting organization, the lookup falls back to the
+    default organization before returning a not-found error.'
+  x-internal-note: 'services/form.js `read`, message key
+    FORM_FETCHED_SUCCESSFULLY, statusCode 200. No captured example exists
+    for this status/message combination in captured-responses.json (only the
+    400 branches for `read` were captured) — shape only below, no fabricated
+    field values. See gaps.jsonl (domain=form,
+    endpoint=/user/v1/form/read/{formId}, statusCode=200). services/form.js
     `read` (line 143) falls back from an org-specific form lookup to a
     default-organization form lookup (`defaultOrgForm`) before returning
     FORM_NOT_FOUND; cross-field-rules.json flags this as an "unclear" finding
-    since `form`/`defaultOrgForm` are two lookups of one conceptual entity, not
-    independent request fields, so it is not modeled as a schema oneOf — see
-    gaps.jsonl for this too.'
+    since `form`/`defaultOrgForm` are two lookups of one conceptual entity,
+    not independent request fields, so it is not modeled as a schema oneOf —
+    see gaps.jsonl for this too.'
   type: object
   properties:
     responseCode:
@@ -460,12 +461,12 @@ readForm200Response:
                             type: number
 readAllFormVersions200Response:
   description: 'OK. Returned instead of a single form when the `read` endpoint is
-    called with neither a `formId` path parameter nor a body (services/form.js
-    `readAllFormsVersion`, message key FORM_VERSION_FETCHED_SUCCESSFULLY, statusCode
-    200). GAP: no captured example exists for this status/message combination in
-    captured-responses.json — shape only, no fabricated field values. See
-    gaps.jsonl (domain=form, endpoint=/user/v1/form/read (no id, no body),
-    statusCode=200).'
+    called with neither a `formId` path parameter nor a body.'
+  x-internal-note: 'services/form.js `readAllFormsVersion`, message key
+    FORM_VERSION_FETCHED_SUCCESSFULLY, statusCode 200. No captured example
+    exists for this status/message combination in captured-responses.json —
+    shape only, no fabricated field values. See gaps.jsonl (domain=form,
+    endpoint=/user/v1/form/read (no id, no body), statusCode=200).'
   type: object
   properties:
     responseCode:
@@ -474,19 +475,23 @@ readAllFormVersions200Response:
       type: string
     result:
       type: object
-      description: Shape depends on generics/form.js `getAllFormsVersion()`; not
-        modeled further since that helper is outside this domain's scope (form
-        controller/service only) and no capture exists to confirm its exact shape.
+      description: Exact shape may vary; not modeled further here.
+      x-internal-note: Shape depends on generics/form.js `getAllFormsVersion()`;
+        not modeled further since that helper is outside this domain's scope
+        (form controller/service only) and no capture exists to confirm its
+        exact shape.
 readForm400Response:
-  description: 'Bad Request. Two distinct failure branches share this status code
-    in services/form.js `read`: FORM_NOT_FOUND (form not found for either the
-    requested org or the default org — captured below, real example) and
-    TENANT_NOT_FOUND (no tenant_code resolvable from token, header, or domain
-    lookup — line 114-119). GAP: no captured example exists for the
-    TENANT_NOT_FOUND branch in captured-responses.json, so its message text is
-    not asserted here beyond the generic shape already shown. See gaps.jsonl
-    (domain=form, endpoint=/user/v1/form/read/{formId}, statusCode=400,
-    message=TENANT_NOT_FOUND).'
+  description: 'Bad Request. Two distinct failure conditions share this status
+    code: the form was not found (for either the requested organization or
+    the default organization), or the tenant could not be resolved from the
+    token, header, or domain.'
+  x-internal-note: 'services/form.js `read`: FORM_NOT_FOUND (captured below,
+    real example) and TENANT_NOT_FOUND (no tenant_code resolvable from
+    token, header, or domain lookup — line 114-119). No captured example
+    exists for the TENANT_NOT_FOUND branch in captured-responses.json, so
+    its message text is not asserted here beyond the generic shape already
+    shown. See gaps.jsonl (domain=form, endpoint=/user/v1/form/read/{formId},
+    statusCode=400, message=TENANT_NOT_FOUND).'
   type: object
   properties:
     responseCode:

@@ -10,6 +10,7 @@ create:
       - Mandatory parameters cannot be empty or null.
 
       '
+    operationId: createPermissions
     tags: &id001
       - Permissions
     parameters:
@@ -24,7 +25,6 @@ create:
       content:
         application/json:
           schema:
-            $schema: http://json-schema.org/draft-04/schema#
             type: object
             properties:
               code:
@@ -74,7 +74,6 @@ create:
         content:
           application/json:
             schema: &id004
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -103,7 +102,7 @@ create:
                       type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: no captured response available for this status/message
+                summary: 'No captured response available for this status/message
                   (captured-responses.json has no matching entry for permissions
                   create); schema is types-only (no example values). Previous draft
                   example values (Id: 40, module: ssss, correlation UUID, meetingPlatform
@@ -113,7 +112,7 @@ create:
                   responseCode: OK
                   message: PERMISSION_CREATED_SUCCESSFULLY
                   result:
-                    Id: '<number>'
+                    Id: 1
                     status: '<string>'
                     module: '<string>'
                     request_type:
@@ -127,7 +126,6 @@ create:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -139,7 +137,7 @@ create:
                 - message
             examples:
               gap_no_captured_example:
-                summary: 'GAP: services/permissions.js create() throws this on Sequelize
+                summary: 'Per services/permissions.js create() throws this on Sequelize
                   UniqueConstraintError. Message is dynamically built (`` `${errorMessage.trim()}
                   should be unique.` ``) and depends on which columns violated the
                   unique constraint; the only column checked by name is `code`. No
@@ -160,6 +158,7 @@ update:
         - Mandatory parameters cannot be empty or null.
 
         '
+      operationId: updatePermissions
       tags: *id001
       parameters: &id005
         - name: X-auth-token
@@ -178,7 +177,6 @@ update:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 code:
@@ -226,7 +224,7 @@ update:
               schema: *id004
               examples:
                 gap_no_captured_example:
-                  summary: 'GAP: no captured response available for this status/message
+                  summary: 'No captured response available for this status/message
                     (captured-responses.json has no matching entry for permissions
                     update); schema is types-only (no example values). Previous draft
                     example values (Id: 40, module: ssss, correlation UUID, meetingPlatform
@@ -236,7 +234,7 @@ update:
                     responseCode: OK
                     message: PERMISSION_UPDATED_SUCCESSFULLY
                     result:
-                      Id: '<number>'
+                      Id: 1
                       status: '<string>'
                       module: '<string>'
                       request_type:
@@ -250,7 +248,6 @@ update:
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -262,7 +259,7 @@ update:
                   - message
               examples:
                 gap_permission_not_found:
-                  summary: 'GAP: services/permissions.js update() returns PERMISSION_NOT_FOUND
+                  summary: 'Per services/permissions.js update() returns PERMISSION_NOT_FOUND
                     (via responses.failureResponse(), statusCode 400) when permissionsQueries.findPermissionById(id)
                     returns falsy. CORRECTION: an earlier pass on this file mistakenly
                     claimed this was a bare `throw new Error(...)` surfacing as a
@@ -273,14 +270,14 @@ update:
                     responseCode: CLIENT_ERROR
                     message: PERMISSION_NOT_FOUND
                 gap_permission_not_updated:
-                  summary: 'GAP: services/permissions.js update() returns PERMISSION_NOT_UPDATED
+                  summary: 'Per services/permissions.js update() returns PERMISSION_NOT_UPDATED
                     when permissionsQueries.updatePermissions(...) returns falsy
                     (permission exists but update did not persist). No captured
                     response available. Shape only.'
                   value:
                     responseCode: CLIENT_ERROR
                     message: PERMISSION_NOT_UPDATED
-list?page={page}&limit={limit}&search={search}:
+list:
   get:
     summary: Permissions List
     description: 'Get a list of permissions.
@@ -292,6 +289,7 @@ list?page={page}&limit={limit}&search={search}:
       - Mandatory parameters cannot be empty or null.
 
       '
+    operationId: listPermissions
     tags:
       - Permissions
     parameters:
@@ -325,7 +323,6 @@ list?page={page}&limit={limit}&search={search}:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -368,7 +365,7 @@ list?page={page}&limit={limit}&search={search}:
                       type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: no captured response available for this status/message
+                summary: 'No captured response available for this status/message
                   (the only captured-responses.json entry keyed to a permissions
                   endpoint, "GET /mentoring/v1/permissions/list", is explicitly annotated
                   "actual response: route not under this service base path" — it
@@ -383,14 +380,14 @@ list?page={page}&limit={limit}&search={search}:
                   result:
                     results:
                       data:
-                        - id: '<number>'
+                        - id: 1
                           code: '<string>'
                           module: '<string>'
                           request_type:
                             - '<string>'
                           api_path: '<string>'
                           status: '<string>'
-                      count: '<number>'
+                      count: 1
                   meta:
                     correlation: '<string>'
                     meetingPlatform: '<string>'
@@ -399,7 +396,6 @@ list?page={page}&limit={limit}&search={search}:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -411,7 +407,7 @@ list?page={page}&limit={limit}&search={search}:
                 - message
             examples:
               gap_no_captured_example:
-                summary: 'GAP: services/permissions.js list() returns PERMISSION_HAS_EMPTY_LIST
+                summary: 'Per services/permissions.js list() returns PERMISSION_HAS_EMPTY_LIST
                   when permissions.rows == 0 || permissions.count == 0. No captured
                   response available. Shape only.'
                 value:
@@ -423,7 +419,6 @@ list?page={page}&limit={limit}&search={search}:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -468,17 +463,15 @@ delete:
         - Mandatory parameters cannot be empty or null.
 
         '
+      operationId: deletePermissions
       tags: *id001
       parameters: *id005
-      requestBody:
-        required: true
       responses:
         '202':
           description: Permission deleted successfully.
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -497,7 +490,7 @@ delete:
                         type: string
               examples:
                 gap_no_captured_example:
-                  summary: 'GAP: no captured response available for this status/message
+                  summary: 'No captured response available for this status/message
                     (captured-responses.json has no matching entry for permissions
                     delete); schema is types-only (no example values). Previous
                     draft example value (correlation UUID, meetingPlatform BBB) was
@@ -517,7 +510,6 @@ delete:
           content:
             application/json:
               schema:
-                $schema: http://json-schema.org/draft-04/schema#
                 type: object
                 properties:
                   responseCode:
@@ -529,7 +521,7 @@ delete:
                   - message
               examples:
                 gap_permission_not_found:
-                  summary: 'GAP: services/permissions.js delete() returns PERMISSION_NOT_FOUND
+                  summary: 'Per services/permissions.js delete() returns PERMISSION_NOT_FOUND
                     (via responses.failureResponse(), statusCode 400) when permissionsQueries.findPermissionById(id)
                     returns falsy. CORRECTION: an earlier pass on this file mistakenly
                     claimed this was a bare `throw new Error(...)` surfacing as a
@@ -540,7 +532,7 @@ delete:
                     responseCode: CLIENT_ERROR
                     message: PERMISSION_NOT_FOUND
                 gap_permission_not_deleted:
-                  summary: 'GAP: services/permissions.js delete() returns PERMISSION_NOT_DELETED
+                  summary: 'Per services/permissions.js delete() returns PERMISSION_NOT_DELETED
                     when permissionsQueries.deletePermissionById(id) returns falsy
                     (permission exists but delete did not persist). No captured
                     response available. Shape only.'

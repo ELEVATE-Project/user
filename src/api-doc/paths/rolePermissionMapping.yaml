@@ -18,6 +18,7 @@ create:
       The path param has been removed; see gaps.jsonl.
 
       '
+    operationId: createRolePermissionMapping
     tags:
       - RolePermissionMapping
     parameters:
@@ -32,7 +33,6 @@ create:
       content:
         application/json:
           schema:
-            $schema: http://json-schema.org/draft-04/schema#
             type: object
             properties:
               permission_id:
@@ -57,7 +57,6 @@ create:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -86,7 +85,7 @@ create:
                       type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: no captured response available for this status/message
+                summary: 'No captured response available for this status/message
                   (captured-responses.json has no entries for any role-permission-mapping
                   endpoint); schema is types-only (no example values). Previous draft
                   example values (roleId: 2, permissionId: 1, module: mentees, request_type:
@@ -100,7 +99,7 @@ create:
                   message: ROLE_PERMISSION_CREATED_SUCCESSFULLY
                   result:
                     role_title: '<string>'
-                    permission_id: '<number>'
+                    permission_id: 1
                     module: '<string>'
                     request_type:
                       - '<string>'
@@ -113,7 +112,6 @@ create:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -125,7 +123,7 @@ create:
                 - message
             examples:
               gap_permission_not_found:
-                summary: 'GAP: services/role-permission-mapping.js create() returns
+                summary: 'Per services/role-permission-mapping.js create() returns
                   PERMISSION_NOT_FOUND when permissionsQueries.findPermissionId(permissionId)
                   finds no matching permission. No captured response available. Shape
                   only, no fabricated value.'
@@ -133,7 +131,7 @@ create:
                   responseCode: CLIENT_ERROR
                   message: PERMISSION_NOT_FOUND
               gap_already_exists:
-                summary: 'GAP: services/role-permission-mapping.js create() returns
+                summary: 'Per services/role-permission-mapping.js create() returns
                   ROLE_PERMISSION_ALREADY_EXISTS on a Sequelize UniqueConstraintError
                   (role_title + permission_id mapping already exists). No captured
                   response available. Shape only, no fabricated value.'
@@ -160,6 +158,7 @@ delete:
       corrected; see gaps.jsonl.
 
       '
+    operationId: deleteRolePermissionMapping
     tags:
       - RolePermissionMapping
     parameters:
@@ -173,7 +172,6 @@ delete:
       content:
         application/json:
           schema:
-            $schema: http://json-schema.org/draft-04/schema#
             type: object
             properties:
               permission_id:
@@ -198,7 +196,6 @@ delete:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -217,7 +214,7 @@ delete:
                       type: string
             examples:
               gap_no_captured_example:
-                summary: 'GAP: no captured response available for this status/message
+                summary: 'No captured response available for this status/message
                   (captured-responses.json has no entries for any role-permission-mapping
                   endpoint); schema is types-only (no example values). Previous draft
                   claimed status code 202 and message "ROLE_PERMISSION_MAPPING_DELETED_SUCCESSFULLY"
@@ -238,7 +235,6 @@ delete:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -250,7 +246,7 @@ delete:
                 - message
             examples:
               gap_not_found:
-                summary: 'GAP: services/role-permission-mapping.js delete() returns
+                summary: 'Per services/role-permission-mapping.js delete() returns
                   ROLE_PERMISSION_NOT_FOUND when rolePermissionMappingQueries.delete(filter)
                   deletes zero rows. No captured response available. Shape only,
                   no fabricated value.'
@@ -271,6 +267,7 @@ list:
       `list()` takes no other input.
 
       "
+    operationId: listRolePermissionMapping
     tags:
       - RolePermissionMapping
     parameters:
@@ -287,7 +284,6 @@ list:
         content:
           application/json:
             schema:
-              $schema: http://json-schema.org/draft-04/schema#
               type: object
               properties:
                 responseCode:
@@ -319,7 +315,7 @@ list:
                       type: string
             examples:
               gap_permissions_found:
-                summary: 'GAP: no captured response available for this status/message
+                summary: 'No captured response available for this status/message
                   (captured-responses.json has no entries for any role-permission-mapping
                   endpoint). This is the "permissions found" branch of services/role-permission-mapping.js
                   list() (message FETCHED_ROLE_PERMISSION_SUCCESSFULLY, result.permissions
@@ -338,7 +334,7 @@ list:
                     correlation: '<string>'
                     meetingPlatform: '<string>'
               gap_permissions_empty:
-                summary: 'GAP: no captured response available. This is the "no permissions
+                summary: 'No captured response available. This is the "no permissions
                   found" branch of services/role-permission-mapping.js list() —
                   note it still responds HTTP 201 with message ROLE_PERMISSION_NOT_FOUND
                   (not an error status), and `result.permissions` is `[]`. Schema
@@ -351,3 +347,27 @@ list:
                   meta:
                     correlation: '<string>'
                     meetingPlatform: '<string>'
+      '401':
+        description: >-
+          Unauthorized. X-auth-token is either missing or invalid. (The
+          handler itself always responds 201 - see note on that response -
+          this is enforced by the auth middleware before the handler runs.)
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object

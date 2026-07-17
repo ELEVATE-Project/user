@@ -1,6 +1,7 @@
 create:
   post:
     summary: Create Feature
+    operationId: createFeature
     tags:
       - Feature APIs
     description: >-
@@ -78,7 +79,7 @@ create:
       '400':
         description: >-
           Bad Request. Feature with the same `code` already exists
-          (UniqueConstraintError). GAP - no live captured example exists for
+          (UniqueConstraintError). No live captured example exists for
           this case; see featureAlreadyExists400Response and gaps.jsonl.
         content:
           application/json:
@@ -117,6 +118,7 @@ update:
   '{id}':
     post:
       summary: Update Feature
+      operationId: updateFeature
       tags:
         - Feature APIs
       description: >-
@@ -173,7 +175,7 @@ update:
       responses:
         '200':
           description: >-
-            OK. Feature updated successfully. GAP - no live captured example
+            OK. Feature updated successfully. No live captured example
             exists for this case; see featureUpdate200Response and
             gaps.jsonl.
           content:
@@ -198,7 +200,7 @@ update:
         '422':
           description: >-
             Unprocessable Entity. Request body failed validation (e.g.
-            missing/invalid `label`). GAP - no live captured example exists
+            missing/invalid `label`). No live captured example exists
             specifically for the update branch; see
             featureValidation422Response and gaps.jsonl.
           content:
@@ -209,6 +211,7 @@ update:
 list:
   get:
     summary: List Features
+    operationId: listFeature
     tags:
       - Feature APIs
     description: >-
@@ -291,11 +294,11 @@ list:
                   meta:
                     correlation: f95a1b56-dd1d-42e6-8ebf-6a7141ca0ecd
               emptyResult:
-                summary: >-
-                  No features match (empty-list branch). GAP - this branch
-                  was never captured live; shape inferred directly from
-                  services/feature.js#list's early-return (data: [], count: 0)
-                  and is documented shape-only per gaps.jsonl.
+                summary: No features match (empty-list branch).
+                x-internal-note: >-
+                  This branch was never captured live; shape inferred
+                  directly from services/feature.js#list's early-return
+                  (data: [], count: 0).
                 value:
                   responseCode: OK
                   message: Feature fetched successfully.
@@ -303,11 +306,33 @@ list:
                     data: []
                     count: 0
                   meta: {}
+      '401':
+        description: Unauthorized. X-auth-token is either missing or invalid.
+        x-internal-note: >-
+          No captured example exists for this status on this endpoint -
+          shape only, not a fabricated body.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                responseCode:
+                  type: string
+                  example: UNAUTHORIZED
+                message:
+                  type: string
+                error:
+                  type: array
+                  items:
+                    type: object
+                meta:
+                  type: object
 
 delete:
   '{id}':
     delete:
       summary: Delete Feature
+      operationId: deleteFeature
       tags:
         - Feature APIs
       description: >-
