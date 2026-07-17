@@ -1,1 +1,1 @@
-["/healthCheckStatus", "/user/api-doc", "/user/:version/:controller/:file/:method/:id"]
+["/healthCheckStatus", "/api-doc", "/user/:version/:controller/:file/:method/:id"]
