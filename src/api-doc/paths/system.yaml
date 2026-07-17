@@ -4,7 +4,7 @@ health:
     description:
       "This API is used to verify the health status of the user Service and its dependencies (Kafka, Redis, and downstream microservices such as EntityManagementService and SchedulerService).\
       \ \n* The API Endpoint for health check is /user/health\n* Both query parameters below are optional; there is no request body and no field-level validation for this endpoint"
-    operationId: ''
+    operationId: healthCheck
     tags:
       - Health Check
     parameters:

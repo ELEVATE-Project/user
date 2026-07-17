@@ -1,6 +1,7 @@
 template:
   post:
     summary: Create a notification template
+    operationId: createNotificationTemplate
     tags:
       - Notification APIs
     description: >-
@@ -53,6 +54,7 @@ template:
               $ref: ../components/notification.yaml#/serverError500Response
   get:
     summary: List notification templates
+    operationId: listNotificationTemplates
     tags:
       - Notification APIs
     description: >-
@@ -106,6 +108,7 @@ template:
 templateById:
   get:
     summary: Read a notification template by id
+    operationId: getNotificationTemplateById
     tags:
       - Notification APIs
     description: >-
@@ -175,6 +178,7 @@ templateById:
               # See notAdmin400Response schema (shape only) in the oneOf above.
   patch:
     summary: Update a notification template
+    operationId: updateNotificationTemplate
     tags:
       - Notification APIs
     description: >-

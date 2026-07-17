@@ -2,6 +2,7 @@ file:
   getSignedUrl:
     get:
       summary: Cloud Services - Get Signed URL
+      operationId: getSignedUrl
       tags:
         - Cloud Services APIs
       description: 'This API is associated with cloud services for obtaining a signed URL.
@@ -117,6 +118,7 @@ file:
   getDownloadableUrl:
     get:
       summary: Cloud Services - Get Downloadable URL
+      operationId: getDownloadableUrl
       tags:
         - Cloud Services APIs
       description: 'This API is associated with cloud services for obtaining a downloadable URL.
@@ -206,6 +208,7 @@ file:
   getSampleCSV:
     get:
       summary: Cloud Services - Get Sample CSV
+      operationId: getSampleCSV
       tags:
         - Cloud Services APIs
       description: 'This API is associated with cloud services for obtaining a sample CSV file for bulk

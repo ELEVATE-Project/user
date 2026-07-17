@@ -154,6 +154,7 @@ update:
 list:
   get:
     summary: List Organization
+    operationId: listOrganization
     tags:
       - Organization
     description: 'This API is associated with listing organizations based on specified conditions.

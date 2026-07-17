@@ -1,6 +1,7 @@
 create:
   post:
     summary: Create Organization Feature
+    operationId: createOrganizationFeature
     tags:
       - Organization Feature APIs
     description: >-
@@ -201,6 +202,7 @@ update:
   '{id}':
     patch:
       summary: Update Organization Feature
+      operationId: updateOrganizationFeature
       tags:
         - Organization Feature APIs
       description: >-
@@ -353,6 +355,7 @@ update:
                 $ref: ../components/organization-feature.yaml#/updateOrganizationFeature422Response
     delete:
       summary: Delete Organization Feature
+      operationId: deleteOrganizationFeature
       tags:
         - Organization Feature APIs
       description: >-
@@ -448,6 +451,7 @@ update:
 list:
   get:
     summary: List Organization Features
+    operationId: listOrganizationFeatures
     tags:
       - Organization Feature APIs
     description: >-
@@ -696,6 +700,7 @@ read:
   '{id}':
     get:
       summary: Read Organization Feature
+      operationId: readOrganizationFeature
       tags:
         - Organization Feature APIs
       description: >-

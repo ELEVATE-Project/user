@@ -1,6 +1,7 @@
 create:
   post:
     summary: Create Entity Type
+    operationId: createEntityType
     tags:
       - EntityType APIs
     description: 'Use this API to create a user entity type.
@@ -50,6 +51,7 @@ update:
   '{id}':
     post:
       summary: Update Entity Type
+      operationId: updateEntityType
       tags:
         - EntityType APIs
       description: 'Use this API to update an entity type.
@@ -103,6 +105,7 @@ update:
 read:
   post:
     summary: Read Entity Type
+    operationId: readEntityType
     tags:
       - EntityType APIs
     description: 'Use this API to retrieve a list of entity types.
@@ -198,6 +201,7 @@ delete:
   '{id}':
     delete:
       summary: Delete Entity Type
+      operationId: deleteEntityType
       tags:
         - EntityType APIs
       description: 'This API is associated with deleting an entity type.

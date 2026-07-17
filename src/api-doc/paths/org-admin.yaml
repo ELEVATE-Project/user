@@ -17,6 +17,7 @@
 getRequests:
   post:
     summary: Get Requests
+    operationId: getRequests
     description: 'Get a list of organization requests based on specified filters
 
       - Endpoint: `/user/v1/org-admin/getRequests`.
@@ -63,6 +64,7 @@ getRequests:
 updateRequestStatus:
   post:
     summary: Update Request Status
+    operationId: updateRequestStatus
     description: 'Update the status of an organization request.
 
       - Endpoint: `/user/v1/org-admin/updateRequestStatus`.
@@ -137,6 +139,7 @@ getRequestDetails:
   '{id}':
     get:
       summary: Get Request Details
+      operationId: getRequestDetails
       description: "Get details of a specific organization request.
 
         - Endpoint: `/user/v1/org-admin/getRequestDetails/{id}`.
@@ -193,6 +196,7 @@ getRequestDetails:
 bulkUserCreate:
   post:
     summary: Bulk User Create
+    operationId: bulkUserCreate
     description: 'Create multiple users in bulk using a CSV file (invite/upload flow).
 
       - Endpoint: `/user/v1/org-admin/bulkUserCreate`.
@@ -251,6 +255,7 @@ bulkUserCreate:
 getBulkInvitesFilesList:
   get:
     summary: Get Bulk Invite Files List
+    operationId: getBulkInvitesFilesList
     description: 'Get a list of uploaded bulk invite CSV files.
 
       - Endpoint: `/user/v1/org-admin/getBulkInvitesFilesList`.
@@ -308,6 +313,7 @@ getBulkInvitesFilesList:
 deactivateUser:
   post:
     summary: Deactivate User(s)
+    operationId: deactivateUserOrgAdmin
     description: "Deactivate one or more users in the org admin's organization by
       ID and/or email (bulk arrays in the body -- NOT a /{id} path route).
 
@@ -383,6 +389,7 @@ deactivateUser:
 inheritEntityType:
   post:
     summary: Inherit Entity Type
+    operationId: inheritEntityType
     description: "Inherit an entity type from the default organization into the
       caller's organization.
 
@@ -460,6 +467,7 @@ updateUser:
   '{id}':
     post:
       summary: Update User Roles (org admin)
+      operationId: updateUserRolesOrgAdmin
       description: "Assign roles to a user within the caller's own organization.
 
         - Endpoint: `/user/v1/org-admin/updateUser/{id}`.
@@ -542,6 +550,7 @@ updateUser:
 createUsers:
   post:
     summary: Create Users (bulk, tenant-aware variant)
+    operationId: createUsersOrgAdmin
     description: 'Bulk-create users via an uploaded CSV, with editable-field and
       upload-type controls (tenant-code-aware variant of bulkUserCreate).
 

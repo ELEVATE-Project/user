@@ -20,6 +20,7 @@
 list:
   get:
     summary: Get User Roles
+    operationId: listUserRole
     tags:
       - User Roles APIs
     description: >-
@@ -166,6 +167,7 @@ list:
 Create:
   post:
     summary: Create User Role
+    operationId: createUserRole
     description: >-
       Create a role.
 
@@ -253,6 +255,7 @@ update:
   '{id}':
     post:
       summary: Update User Role
+      operationId: updateUserRole
       tags:
         - User Roles APIs
       description: >-
@@ -327,6 +330,7 @@ delete:
   '{id}':
     delete:
       summary: Delete User Role
+      operationId: deleteUserRole
       tags:
         - User Roles APIs
       description: >-

@@ -9,6 +9,7 @@
 create:
   post:
     summary: Create Entity
+    operationId: createEntity
     tags:
       - Entity APIs
     description: 'This API is associated with entity creation.
@@ -50,6 +51,7 @@ update:
   '{id}':
     patch:
       summary: Update Entity
+      operationId: updateEntity
       tags:
         - Entity APIs
       description: 'This API is associated with updating an entity.
@@ -100,6 +102,7 @@ update:
 read:
   get:
     summary: Read User Entity
+    operationId: readUserEntity
     tags:
       - Entity APIs
     description: 'This API retrieves a user entity by identifier.
@@ -168,6 +171,7 @@ read:
 list:
   post:
     summary: Get entity list with pagination and search
+    operationId: listEntity
     tags:
       - Entity APIs
     description: "Use this API to get the list of a user entities.   \n - The API Endpoint for reading\
@@ -219,6 +223,7 @@ delete:
   '{id}':
     delete:
       summary: Delete Entity
+      operationId: deleteEntity
       tags:
         - Entity APIs
       description: 'This API is associated with deleting an entity.

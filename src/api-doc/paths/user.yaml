@@ -2,6 +2,7 @@ read:
   '{userId}':
     get:
       summary: User Details
+      operationId: readUserProfile
       tags:
         - Users APIs
       description: >
@@ -89,6 +90,7 @@ profileById:
   '{userId}':
     get:
       summary: User Profile By Id
+      operationId: getUserProfileById
       tags:
         - Users APIs
       description: >
@@ -205,6 +207,7 @@ profileById:
 setLanguagePreference:
   patch:
     summary: Setting preferred language of user
+    operationId: setLanguagePreference
     tags:
       - Users APIs
     description: >
@@ -262,6 +265,7 @@ setLanguagePreference:
 update:
   patch:
     summary: Update User Profile
+    operationId: updateUserProfile
     tags:
       - Users APIs
     description: >
@@ -330,6 +334,7 @@ share:
   '{userId}':
     get:
       summary: Share Mentor Profile
+      operationId: shareMentorProfile
       tags:
         - Users APIs
       description: >
