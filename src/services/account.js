@@ -40,6 +40,39 @@ const notificationUtils = require('@utils/notification')
 const userHelper = require('@helpers/userHelper')
 const { broadcastEvent } = require('@helpers/eventBroadcasterMain')
 
+const AUTH_MODES = common.AUTH_MODES
+const OTP_PURPOSES = common.OTP_PURPOSES
+
+function otpRedisKey(purpose, encryptedIdentifier) {
+	return `${purpose}:${encryptedIdentifier}`
+}
+
+function resolveOtpPurpose({ username, registrationCode, userExists }) {
+	if (username) return OTP_PURPOSES.LOGIN
+	if (registrationCode) return OTP_PURPOSES.SIGNUP
+	if (userExists) return OTP_PURPOSES.LOGIN
+	return OTP_PURPOSES.SIGNUP
+}
+
+async function getExistingOtpForPurpose(purpose, identifiers) {
+	for (const identifier of identifiers) {
+		const data = await utilsHelper.redisGet(otpRedisKey(purpose, identifier))
+		if (data && data.action === purpose) {
+			return data
+		}
+	}
+	return null
+}
+
+async function setOtpForPurpose(purpose, identifiers, redisData) {
+	const redisSetResults = []
+	for (const identifier of identifiers) {
+		const result = await utilsHelper.redisSet(otpRedisKey(purpose, identifier), redisData, common.otpExpirationTime)
+		redisSetResults.push(result)
+	}
+	return redisSetResults
+}
+
 module.exports = class AccountHelper {
 	/**
 	 * create account
@@ -79,6 +112,29 @@ module.exports = class AccountHelper {
 
 			if (!tenantDetail) {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
+			}
+
+			const config = tenantDetail.configuration || {}
+			const allowedAuthMode = Array.isArray(config.allowed_auth_mode) ? config.allowed_auth_mode : []
+			const otpPurpose = bodyData._otpPurpose || OTP_PURPOSES.SIGNUP
+			delete bodyData._otpPurpose
+			const passwordAuthAllowed = allowedAuthMode.includes(AUTH_MODES.PASSWORD)
+
+			// #TODO: Below checks has to be moved to validator file
+			if (bodyData.password && !passwordAuthAllowed) {
+				return responses.failureResponse({
+					message: 'AUTH_MODE_NOT_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (passwordAuthAllowed && !bodyData.password) {
+				return responses.failureResponse({
+					message: 'PASSWORD_REQUIRED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
 
 			if (!bodyData.email && !bodyData.phone) {
@@ -146,7 +202,6 @@ module.exports = class AccountHelper {
 			let user = await userQueries.findOne(
 				{
 					[Op.or]: criteria,
-					password: { [Op.ne]: null },
 					tenant_code: tenantDetail.code,
 				},
 				{
@@ -167,9 +222,17 @@ module.exports = class AccountHelper {
 				let isOtpValid = false
 				const providedOtp = bodyData.otp
 
+				if (!providedOtp) {
+					return responses.failureResponse({
+						message: 'OTP_REQUIRED',
+						statusCode: httpStatusCode.bad_request,
+						responseCode: 'CLIENT_ERROR',
+					})
+				}
+
 				// Check email OTP if email is provided
 				if (encryptedEmailId) {
-					const emailRedisData = await utilsHelper.redisGet(encryptedEmailId)
+					const emailRedisData = await utilsHelper.redisGet(otpRedisKey(otpPurpose, encryptedEmailId))
 					if (emailRedisData && emailRedisData.otp === providedOtp) {
 						isOtpValid = true
 					}
@@ -177,7 +240,9 @@ module.exports = class AccountHelper {
 
 				// Check phone OTP if phone is provided
 				if (encryptedPhoneNumber) {
-					const phoneRedisData = await utilsHelper.redisGet(bodyData.phone_code + encryptedPhoneNumber)
+					const phoneRedisData = await utilsHelper.redisGet(
+						otpRedisKey(otpPurpose, bodyData.phone_code + encryptedPhoneNumber)
+					)
 					if (phoneRedisData && phoneRedisData.otp === providedOtp) {
 						isOtpValid = true
 					}
@@ -192,7 +257,7 @@ module.exports = class AccountHelper {
 				}
 			}
 
-			bodyData.password = utilsHelper.hashPassword(bodyData.password)
+			bodyData.password = bodyData.password ? utilsHelper.hashPassword(bodyData.password) : null
 			if (!bodyData.username) {
 				bodyData.username = await generateUniqueUsername(bodyData.name)
 			}
@@ -552,8 +617,9 @@ module.exports = class AccountHelper {
 			)
 
 			// Delete Redis OTP entries
-			if (encryptedEmailId) await utilsHelper.redisDel(encryptedEmailId)
-			if (encryptedPhoneNumber) await utilsHelper.redisDel(bodyData.phone_code + encryptedPhoneNumber)
+			if (encryptedEmailId) await utilsHelper.redisDel(otpRedisKey(otpPurpose, encryptedEmailId))
+			if (encryptedPhoneNumber)
+				await utilsHelper.redisDel(otpRedisKey(otpPurpose, bodyData.phone_code + encryptedPhoneNumber))
 
 			if (isOrgAdmin) {
 				let organization = await organizationQueries.findByPk(user.organization_id)
@@ -576,7 +642,7 @@ module.exports = class AccountHelper {
 					emailId: plaintextEmailId,
 					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
 					variables: {
-						name: bodyData.name,
+						name: bodyData.name || common.USER,
 						appName: tenantDetail.name,
 						roles: roleToString || '',
 						portalURL: tenantDomain.domain,
@@ -592,7 +658,7 @@ module.exports = class AccountHelper {
 					phoneNumber: plaintextPhoneNumber,
 					templateCode: process.env.REGISTRATION_EMAIL_TEMPLATE_CODE,
 					variables: {
-						name: bodyData.name,
+						name: bodyData.name || common.USER,
 						appName: tenantDetail.name,
 						roles: roleToString || '',
 						portalURL: tenantDomain.domain,
@@ -664,6 +730,13 @@ module.exports = class AccountHelper {
 					responseCode: 'CLIENT_ERROR',
 				})
 
+			const badRequestResponse = (message) =>
+				responses.failureResponse({
+					message,
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+
 			// Validate tenant domain
 			const tenantDomain = await tenantDomainQueries.findOne({ domain })
 			if (!tenantDomain) {
@@ -678,67 +751,114 @@ module.exports = class AccountHelper {
 				return notFoundResponse('TENANT_NOT_FOUND_PING_ADMIN')
 			}
 
-			// Helper functions to detect identifier type
-			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
-			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
-			const isUsername = (str) => /^[a-zA-Z0-9_]{3,30}$/.test(str)
+			const config = tenantDetail.configuration || {}
+			const allowedAuthMode = Array.isArray(config.allowed_auth_mode) ? config.allowed_auth_mode : []
+			const hasOtp = Boolean(bodyData.otp)
+			const hasPassword = Boolean(bodyData.password)
+			const otpAllowed = allowedAuthMode.includes(AUTH_MODES.OTP)
+			const passwordAllowed = allowedAuthMode.includes(AUTH_MODES.PASSWORD)
+
+			if (!hasOtp && !hasPassword) {
+				return badRequestResponse('AUTH_CREDENTIAL_REQUIRED')
+			}
+
+			if ((hasOtp && !otpAllowed) || (hasPassword && !passwordAllowed)) {
+				return badRequestResponse('AUTH_MODE_NOT_ALLOWED')
+			}
 
 			const identifier = bodyData.identifier?.toLowerCase()
 			if (!identifier) {
-				return responses.failureResponse({
-					message: 'IDENTIFIER_REQUIRED',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				return badRequestResponse('IDENTIFIER_REQUIRED')
+			}
+
+			const type = utils.checkIdentifierType(identifier)
+			if (!type) {
+				return badRequestResponse('INVALID_IDENTIFIER_FORMAT')
 			}
 
 			// Prepare query based on identifier type
 			const query = {
 				[Op.or]: [],
-				password: { [Op.ne]: null },
 				status: common.ACTIVE_STATUS,
 				tenant_code: tenantDetail.code,
 			}
 
-			if (isEmail(identifier)) {
-				query[Op.or].push({ email: emailEncryption.encrypt(identifier) })
-			} else if (isPhone(identifier)) {
-				query[Op.or].push({ phone: emailEncryption.encrypt(identifier), phone_code: bodyData.phone_code }) // Adjust if phone encryption differs
+			let encryptedIdentifier = null
+			if (type === common.EMAIL) {
+				encryptedIdentifier = emailEncryption.encrypt(identifier)
+				query[Op.or].push({ email: encryptedIdentifier })
+			} else if (type === common.PHONE) {
+				encryptedIdentifier = emailEncryption.encrypt(identifier)
+				query[Op.or].push({ phone: encryptedIdentifier, phone_code: bodyData.phone_code })
 			} else {
+				encryptedIdentifier = identifier
 				query[Op.or].push({ username: identifier })
 			}
+
+			const redisIdentifier =
+				type === common.PHONE ? `${bodyData.phone_code}${encryptedIdentifier}` : encryptedIdentifier
+			let isOtpValid = false
+
 			// Find user
 			const userInstance = await userQueries.findUserWithOrganization(query, {}, true)
 			let user = userInstance ? userInstance.toJSON() : null
+			const purpose = user ? OTP_PURPOSES.LOGIN : OTP_PURPOSES.SIGNUP
+
+			// #TODO: Handling OTP check for users created by admin
+			if (hasOtp) {
+				const redisData = await utilsHelper.redisGet(otpRedisKey(purpose, redisIdentifier))
+				isOtpValid = Boolean(redisData && redisData.otp === bodyData.otp)
+				if (!isOtpValid) {
+					return badRequestResponse('OTP_INVALID')
+				}
+			}
 
 			if (!user) {
-				return responses.failureResponse({
-					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+				if (config.auto_register && hasOtp && isOtpValid && allowedAuthMode.includes(AUTH_MODES.OTP)) {
+					if (allowedAuthMode.includes(AUTH_MODES.PASSWORD) && !hasPassword) {
+						return badRequestResponse('PASSWORD_REQUIRED')
+					}
+
+					if (type === common.USER_NAME) {
+						return badRequestResponse('EMAIL_OR_PHONE_REQUIRED')
+					}
+
+					const registrationBody = {
+						// name: bodyData.name || '',
+						password: bodyData.password,
+						otp: bodyData.otp,
+						_otpPurpose: OTP_PURPOSES.SIGNUP,
+					}
+
+					if (type === common.EMAIL) {
+						registrationBody.email = identifier
+					} else {
+						registrationBody.phone = identifier
+						registrationBody.phone_code = bodyData.phone_code
+					}
+
+					return await AccountHelper.create(registrationBody, deviceInformation, domain)
+				}
+
+				return badRequestResponse('IDENTIFIER_OR_PASSWORD_INVALID')
 			}
 
 			// Check active session limit
 			if (process.env.ALLOWED_ACTIVE_SESSIONS != null) {
 				const activeSessionCount = await userSessionsService.activeUserSessionCounts(user.id)
 				if (activeSessionCount >= process.env.ALLOWED_ACTIVE_SESSIONS) {
-					return responses.failureResponse({
-						message: 'ACTIVE_SESSION_LIMIT_EXCEEDED',
-						statusCode: httpStatusCode.not_acceptable,
-						responseCode: 'CLIENT_ERROR',
-					})
+					return badRequestResponse('ACTIVE_SESSION_LIMIT_EXCEEDED')
 				}
 			}
 
 			// Verify password
-			const isPasswordCorrect = await bcryptJs.compare(bodyData.password, user.password)
-			if (!isPasswordCorrect) {
-				return responses.failureResponse({
-					message: 'IDENTIFIER_OR_PASSWORD_INVALID',
-					statusCode: httpStatusCode.bad_request,
-					responseCode: 'CLIENT_ERROR',
-				})
+			let isPasswordCorrect = false
+			if (hasPassword) {
+				isPasswordCorrect = user.password ? await bcryptJs.compare(bodyData.password, user.password) : false
+			}
+
+			if (!isOtpValid && !isPasswordCorrect) {
+				return badRequestResponse('IDENTIFIER_OR_PASSWORD_INVALID')
 			}
 
 			// Create user session
@@ -829,6 +949,19 @@ module.exports = class AccountHelper {
 				accessToken,
 				refreshToken
 			)
+
+			if (hasOtp) {
+				const identifiers = [
+					redisIdentifier,
+					user.email,
+					user.username,
+					user.phone && `${bodyData.phone_code}${user.phone}`,
+				].filter(Boolean)
+
+				await Promise.allSettled(
+					identifiers.map((identifier) => utilsHelper.redisDel(otpRedisKey(purpose, identifier)))
+				)
+			}
 
 			return responses.successResponse({
 				statusCode: httpStatusCode.ok,
@@ -1026,6 +1159,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Helper functions to detect identifier type
+			// #TODO: Making this check from using the helper function
 			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
 			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
 			const isUsername = (str) => /^[a-zA-Z0-9_-]{3,30}$/.test(str)
@@ -1150,7 +1284,11 @@ module.exports = class AccountHelper {
 		}
 
 		// Validate that at least one contact method is provided
-		if (!bodyData.email && !bodyData.phone) {
+		const config = tenantDetail.configuration || {}
+		const allowedAuthMode = Array.isArray(config.allowed_auth_mode) ? config.allowed_auth_mode : []
+		const username = bodyData.username?.toLowerCase()
+
+		if (!bodyData.email && !bodyData.phone && !username) {
 			return responses.failureResponse({
 				message: 'EMAIL_OR_PHONE_REQUIRED',
 				statusCode: httpStatusCode.bad_request,
@@ -1181,91 +1319,127 @@ module.exports = class AccountHelper {
 		// Process email information
 		let encryptedEmailId = null
 		let plaintextEmailId = null
-		if (bodyData.email) {
-			plaintextEmailId = bodyData.email.toLowerCase()
-			encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
-			bodyData.email = encryptedEmailId
-		}
-
-		// Process phone information
 		let encryptedPhoneNumber = null
 		let plaintextPhoneNumber = null
-		if (bodyData.phone && bodyData.phone_code) {
-			plaintextPhoneNumber = bodyData.phone
-			encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
-			bodyData.phone = encryptedPhoneNumber
-		}
+		let phoneCode = bodyData.phone_code
+		let notificationName = bodyData.name
+		let redisIdentifiers = []
+		let purpose = OTP_PURPOSES.SIGNUP
 
-		// Check if user already exists with email or phone or username
-		const criteria = []
-		if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
-		if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
-		if (bodyData.username) criteria.push({ username: bodyData.username })
+		if (username) {
+			const user = await userQueries.findOne(
+				{
+					username,
+					tenant_code: tenantDetail.code,
+					status: common.ACTIVE_STATUS,
+				},
+				{
+					attributes: ['email', 'phone', 'phone_code', 'name', 'username'],
+				}
+			)
 
-		if (criteria.length === 0) {
-			return // Skip if no criteria
-		}
-
-		// Check if user already exists with email or phone or username
-		let user = await userQueries.findOne(
-			{
-				[Op.or]: criteria,
-				password: { [Op.ne]: null },
-				tenant_code: tenantDetail.code,
-			},
-			{
-				attributes: ['id'],
+			if (!user) {
+				return responses.failureResponse({
+					message: 'ACCOUNT_NOT_FOUND',
+					statusCode: httpStatusCode.not_found,
+					responseCode: 'CLIENT_ERROR',
+				})
 			}
-		)
 
-		// Return error if user already exists
-		if (user) {
-			return responses.failureResponse({
-				message: 'USER_ALREADY_EXISTS',
-				statusCode: httpStatusCode.not_acceptable,
-				responseCode: 'CLIENT_ERROR',
+			purpose = OTP_PURPOSES.LOGIN
+
+			if (!allowedAuthMode.includes(AUTH_MODES.OTP)) {
+				return responses.failureResponse({
+					message: 'AUTH_MODE_NOT_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			encryptedEmailId = user.email || null
+			encryptedPhoneNumber = user.phone || null
+			phoneCode = user.phone_code || null
+			plaintextEmailId = encryptedEmailId ? emailEncryption.decrypt(encryptedEmailId) : null
+			plaintextPhoneNumber = encryptedPhoneNumber ? emailEncryption.decrypt(encryptedPhoneNumber) : null
+			notificationName = bodyData.name || user.name || 'User'
+
+			if (!plaintextEmailId && !plaintextPhoneNumber) {
+				return responses.failureResponse({
+					message: 'USER_CONTACT_NOT_AVAILABLE',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			redisIdentifiers = [username]
+			if (encryptedEmailId) redisIdentifiers.push(encryptedEmailId)
+			if (encryptedPhoneNumber && phoneCode) redisIdentifiers.push(phoneCode + encryptedPhoneNumber)
+		} else {
+			if (bodyData.email) {
+				plaintextEmailId = bodyData.email.toLowerCase()
+				encryptedEmailId = emailEncryption.encrypt(plaintextEmailId)
+			}
+
+			if (bodyData.phone && bodyData.phone_code) {
+				plaintextPhoneNumber = bodyData.phone
+				encryptedPhoneNumber = emailEncryption.encrypt(plaintextPhoneNumber)
+			}
+
+			const criteria = []
+			if (encryptedEmailId) criteria.push({ email: encryptedEmailId })
+			if (encryptedPhoneNumber) criteria.push({ phone: encryptedPhoneNumber })
+
+			const existingUser =
+				criteria.length > 0
+					? await userQueries.findOne(
+							{
+								[Op.or]: criteria,
+								tenant_code: tenantDetail.code,
+							},
+							{ attributes: ['id'] }
+					  )
+					: null
+
+			const userExists = Boolean(existingUser)
+			purpose = resolveOtpPurpose({
+				username: null,
+				registrationCode: bodyData.registration_code,
+				userExists,
 			})
+
+			if (bodyData.registration_code && userExists) {
+				return responses.failureResponse({
+					message: 'USER_ALREADY_EXISTS',
+					statusCode: httpStatusCode.not_acceptable,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (purpose === OTP_PURPOSES.LOGIN && !allowedAuthMode.includes(AUTH_MODES.OTP)) {
+				return responses.failureResponse({
+					message: 'AUTH_MODE_NOT_ALLOWED',
+					statusCode: httpStatusCode.bad_request,
+					responseCode: 'CLIENT_ERROR',
+				})
+			}
+
+			if (encryptedEmailId) redisIdentifiers.push(encryptedEmailId)
+			if (encryptedPhoneNumber && phoneCode) redisIdentifiers.push(phoneCode + encryptedPhoneNumber)
 		}
 
-		// Generate or retrieve OTP
-		let emailUserData = encryptedEmailId ? await utilsHelper.redisGet(encryptedEmailId) : null
-		let phoneUserData =
-			encryptedPhoneNumber && bodyData.phone_code
-				? await utilsHelper.redisGet(bodyData.phone_code + encryptedPhoneNumber)
-				: null
+		const existingOtpData = await getExistingOtpForPurpose(purpose, redisIdentifiers)
 
-		// Use existing OTP if already in progress, otherwise generate a new one
-		const userData = emailUserData || phoneUserData
-		// Usage: [generateSecureOTP(), true]
+		const otp = existingOtpData ? existingOtpData.otp : utils.generateSecureOTP()
+		const isNew = !existingOtpData
 
-		const [otp, isNew] =
-			userData && userData.action === 'signup' ? [userData.otp, false] : [utils.generateSecureOTP(), true]
+		const redisData = {
+			verify: username || encryptedEmailId || encryptedPhoneNumber,
+			action: purpose,
+			otp,
+		}
 
-		// Store OTP data in redis if it's new
 		if (isNew) {
-			const redisData = {
-				verify: encryptedEmailId || encryptedPhoneNumber,
-				action: 'signup',
-				otp,
-			}
-
-			let redisSetResults = []
-
-			// Store OTP for email if provided
-			if (encryptedEmailId) {
-				const emailResult = await utilsHelper.redisSet(encryptedEmailId, redisData, common.otpExpirationTime)
-				redisSetResults.push(emailResult)
-			}
-
-			// Store OTP for phone if provided
-			if (encryptedPhoneNumber && bodyData.phone_code) {
-				const phoneResult = await utilsHelper.redisSet(
-					bodyData.phone_code + encryptedPhoneNumber,
-					redisData,
-					common.otpExpirationTime
-				)
-				redisSetResults.push(phoneResult)
-			}
+			const redisSetResults = await setOtpForPurpose(purpose, redisIdentifiers, redisData)
 
 			// Check if storing in Redis was successful
 			if (!redisSetResults.includes('OK')) {
@@ -1282,14 +1456,14 @@ module.exports = class AccountHelper {
 			notificationUtils.sendEmailNotification({
 				emailId: plaintextEmailId,
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
-				variables: { name: bodyData.name || plaintextEmailId, otp },
+				variables: { name: notificationName || plaintextEmailId, otp },
 				tenantCode: tenantDetail.code,
 				organization_code: process.env.DEFAULT_ORGANISATION_CODE || null,
 			})
 		}
 
 		// Send SMS notification with OTP if phone is provided
-		if (plaintextPhoneNumber && bodyData.phone_code) {
+		if (plaintextPhoneNumber && (bodyData.phone_code || phoneCode)) {
 			notificationUtils.sendSMSNotification({
 				phoneNumber: plaintextPhoneNumber,
 				templateCode: process.env.REGISTRATION_OTP_EMAIL_TEMPLATE_CODE,
@@ -1355,6 +1529,7 @@ module.exports = class AccountHelper {
 			}
 
 			// Helper functions to detect identifier type
+			// #TODO: Making this check from using the helper function
 			const isEmail = (str) => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(str)
 			const isPhone = (str) => /^\+?[1-9]\d{1,14}$/.test(str) // Adjust regex as needed
 			const isUsername = (str) => /^[a-zA-Z0-9_-]{3,30}$/.test(str)

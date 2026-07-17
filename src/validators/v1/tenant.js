@@ -8,18 +8,70 @@ const common = require('@constants/common')
 const filterRequestBody = require('../common')
 const { tenant } = require('@constants/blacklistConfig')
 
+const parseObject = (value) => {
+	if (typeof value === 'string') {
+		try {
+			return JSON.parse(value)
+		} catch (e) {
+			return false
+		}
+	}
+
+	return value
+}
+
+const isPlainObject = (value) => {
+	return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+const isValidObject = (value) => {
+	return isPlainObject(parseObject(value))
+}
+
+const isValidTenantConfiguration = (value) => {
+	const configuration = parseObject(value)
+	const allowedAuthModes = Object.values(common.AUTH_MODES)
+
+	return (
+		isPlainObject(configuration) &&
+		Array.isArray(configuration.allowed_auth_mode) &&
+		configuration.allowed_auth_mode.length > 0 &&
+		configuration.allowed_auth_mode.every((authMode) => allowedAuthModes.includes(authMode)) &&
+		typeof configuration.auto_register === 'boolean'
+	)
+}
+
+const normalizeTenantConfiguration = (req) => {
+	if (req.body.configuration === '') {
+		delete req.body.configuration
+		return
+	}
+
+	if (typeof req.body.configuration === 'string') {
+		const configuration = parseObject(req.body.configuration)
+		if (configuration) req.body.configuration = configuration
+	}
+}
+
 module.exports = {
 	update: (req) => {
 		if (req.params.id) {
 			req.body = filterRequestBody(req.body, tenant.update)
+			normalizeTenantConfiguration(req)
 			req.checkParams('id')
 				.trim()
 				.notEmpty()
 				.withMessage('code param is empty')
 				.matches(/^[a-zA-Z0-9_]+$/)
 				.withMessage('Code must contain only letters, numbers, and underscores')
+
+			req.checkBody('configuration')
+				.optional({ checkFalsy: true })
+				.custom(isValidTenantConfiguration)
+				.withMessage('Configuration must include allowed_auth_mode, and auto_register')
 		} else {
 			req.body = filterRequestBody(req.body, tenant.create)
+			normalizeTenantConfiguration(req)
 
 			req.checkBody('name').trim().notEmpty().withMessage('name field is empty')
 
@@ -36,36 +88,17 @@ module.exports = {
 
 			req.checkBody('theming')
 				.optional({ checkFalsy: true })
-				.custom((value) => {
-					// If value is a string, try parsing it as JSON
-					if (typeof value === 'string') {
-						try {
-							const parsed = JSON.parse(value)
-							return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-						} catch (e) {
-							return false
-						}
-					}
-					// If value is not a string, check if it’s a plain object
-					return typeof value === 'object' && value !== null && !Array.isArray(value)
-				})
+				.custom(isValidObject)
 				.withMessage('Theming must be a valid object or a JSON string representing an object')
+
+			req.checkBody('configuration')
+				.optional({ checkFalsy: true })
+				.custom(isValidTenantConfiguration)
+				.withMessage('Configuration must include allowed_auth_mode, and auto_register')
 
 			req.checkBody('meta')
 				.optional({ checkFalsy: true })
-				.custom((value) => {
-					// If value is a string, try parsing it as JSON
-					if (typeof value === 'string') {
-						try {
-							const parsed = JSON.parse(value)
-							return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-						} catch (e) {
-							return false
-						}
-					}
-					// If value is not a string, check if it’s a plain object
-					return typeof value === 'object' && value !== null && !Array.isArray(value)
-				})
+				.custom(isValidObject)
 				.withMessage('Meta must be a valid object or a JSON string representing an object')
 
 			req.checkBody('domains').trim().notEmpty().withMessage('domains field is empty')

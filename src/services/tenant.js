@@ -50,7 +50,8 @@ module.exports = class tenantHelper {
 
 			// pick relevant data from body data for tenant creation
 			const tenantCreateBody = {
-				..._.pick(bodyData, ['name', 'code', 'description', 'logo', 'theming', 'meta']),
+				..._.pick(bodyData, ['name', 'code', 'description', 'logo', 'theming', 'configuration', 'meta']),
+				configuration: bodyData.configuration || _.cloneDeep(common.DEFAULT_TENANT_CONFIGURATION),
 				status: common.ACTIVE_STATUS,
 				created_by: userId,
 				updated_by: userId,
@@ -393,6 +394,7 @@ module.exports = class tenantHelper {
 					created_at: tenantCreateResponse?.created_at || new Date(),
 					updated_at: tenantCreateResponse?.updated_at || new Date(),
 					meta: tenantCreateResponse?.meta || {},
+					configuration: tenantCreateResponse?.configuration,
 					status: tenantCreateResponse?.status || common.ACTIVE_STATUS,
 					deleted: false,
 					org_id: tenantCreateResponse.orgId,
@@ -729,7 +731,7 @@ module.exports = class tenantHelper {
 			if (isAdmin) {
 				options.organizationAttributes = ['id', 'name', 'code']
 			} else {
-				options.attributes = ['code', 'name', 'description', 'meta']
+				options.attributes = ['code', 'name', 'description', 'configuration', 'meta']
 			}
 
 			// fetch tenant details

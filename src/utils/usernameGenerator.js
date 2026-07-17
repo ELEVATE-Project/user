@@ -18,14 +18,13 @@ async function generateUniqueUsername(name) {
 
 	// Sanitize the name: lowercase, remove spaces, and special characters
 	const sanitizedName = name
-		.toLowerCase()
+		?.toLowerCase()
 		.replace(/[^a-z0-9]/g, '')
 		.slice(0, 10) // Trim to keep username short
-
+	const prefix = sanitizedName || cachedNanoid(10).toLowerCase()
 	// Generate a shorter random suffix (14 characters)
 	const randomSuffix = cachedNanoid(14).toLowerCase() // Ensure suffix is also lowercase
-
-	return `${sanitizedName}_${randomSuffix}`
+	return `${prefix}_${randomSuffix}`
 }
 
 async function generateUniqueCodeString(stringLength = 4) {

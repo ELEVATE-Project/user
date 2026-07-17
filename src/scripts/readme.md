@@ -28,3 +28,23 @@
     ```
     node ./encryptDecryptEmails.js decrypt
     ```
+
+## Tenant Org Data Migration Script
+
+-   Run from `src/`:
+
+    ```bash
+    node scripts/migrateTenantOrgData.js \
+      --current-tenant-code=<sourceTenant> \
+      --current-org-code=<orgCode> \
+      --new-tenant-code=<targetTenant>
+    ```
+
+-   Optional flags:
+    -   `--role-resolution=strict-id|map-by-title`
+    -   `--strict-id-rebase=if-target-tenant-empty|never`
+    -   `--delete-mode=soft|hard|none`
+    -   `--delete-scope=users-only|all-copied`
+    -   `--session-mode=invalidate|migrate`
+    -   `--lock-strategy=skip|advisory-only|advisory-table-lock`
+    -   `--dry-run=true|false`
