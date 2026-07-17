@@ -35,8 +35,10 @@ create:
             $ref: ../components/userentity.yaml#/createUserEntityRequest
     responses:
       '201':
-        description: OK. Created. (No captured example for the 400 ENTITY_ALREADY_EXISTS
-          / ENTITY_TYPE_NOT_FOUND paths - see gaps.jsonl.)
+        description: OK. Created.
+        x-internal-note: >-
+          No captured example for the 400 ENTITY_ALREADY_EXISTS /
+          ENTITY_TYPE_NOT_FOUND paths - see gaps.jsonl.
         content:
           application/json:
             schema:
@@ -121,14 +123,16 @@ read:
 
       - At least one identifier form must be supplied as a query parameter: either
       `id`, or the pair (`value` + `entity_type_id`). If neither is provided the
-      request is rejected (cross-field rule, controllers/v1/entity.js:67 and the
-      custom validator in validators/v1/entity.js `read`).
+      request is rejected.
 
       - Example A (lookup by id): `?id=1`.
 
       - Example B (lookup by value + entity_type_id): `?value=AP&entity_type_id=4`.
 
       '
+    x-internal-note: >-
+      Cross-field validation enforced in controllers/v1/entity.js:67 and the
+      custom validator in validators/v1/entity.js `read`.
     parameters:
       - name: X-auth-token
         in: header
@@ -180,9 +184,11 @@ read:
             schema:
               $ref: ../components/userentity.yaml#/readUserEntity200Response
       '422':
-        description: Unprocessable Entity. Neither `id` nor (`value` + `entity_type_id`)
-          was provided. (No captured example for the 400 ENTITY_NOT_FOUND
-          no-match path - see gaps.jsonl.)
+        description: Unprocessable Entity. Returned when neither `id` nor (`value`
+          + `entity_type_id`) was provided.
+        x-internal-note: >-
+          No captured example for the 400 ENTITY_NOT_FOUND no-match path -
+          see gaps.jsonl.
         content:
           application/json:
             schema:

@@ -813,8 +813,12 @@ logoutResponse401:
 # =============================================================================
 userProfileReadResponse200:
   description: >
-    OK. Captured example (services/user.js read()), 'happy path (self)' case.
-    Same shape is used whether the profile came from Redis cache or a fresh DB read.
+    OK. Returns the authenticated user's own profile. The same response shape
+    is used whether the profile was served from cache or read fresh.
+  x-internal-note: >-
+    Captured example (services/user.js read()), 'happy path (self)' case.
+    Same shape is used whether the profile came from Redis cache or a fresh
+    DB read.
   type: object
   properties:
     responseCode:
@@ -990,8 +994,10 @@ userProfileReadResponse200:
         permissions:
           type: array
           description: >
-            Permissions grouped by module, derived from the user's roles (see
-            services/user.js#getPermissions). The captured example contains 12
+            Permissions grouped by module, derived from the user's roles. A
+            representative subset of module entries is shown here.
+          x-internal-note: >-
+            services/user.js#getPermissions. The captured example contains 12
             module entries; only a representative subset is shown here.
           items:
             type: object
@@ -1038,8 +1044,10 @@ userProfileReadResponse200:
           example: 45157680-2a5d-45f3-bb47-88ab82201dca
 userProfileReadResponse401:
   description: >
-    Unauthorized. Captured example, 'missing token -> 401' case. Produced by the
-    auth middleware, not by services/user.js itself.
+    Unauthorized. Returned when no valid access token is provided.
+  x-internal-note: >-
+    Captured example, 'missing token -> 401' case. Produced by the auth
+    middleware, not by services/user.js itself.
   type: object
   properties:
     responseCode:
@@ -1061,13 +1069,17 @@ userProfileReadResponse401:
           example: 519851b7-2fc3-430e-81d3-7607bbe6315b
 userProfileReadResponse404Gap:
   description: >
-    GAP: services/user.js read() returns message 'USER_NOT_FOUND' with
-    statusCode httpStatusCode.not_found (404) when no user/share_link matches
-    (note: the code sets responseCode to 'UNAUTHORIZED' on this branch even
-    though the statusCode is 404 -- this looks like a copy/paste inconsistency
-    in the source, flagged rather than silently "corrected"). No captured
-    example exists for this endpoint+status in captured-responses.json, so no
-    example values are given -- shape only.
+    Not Found. Returned when no user or share link matches. Note that the
+    response body's responseCode value is 'UNAUTHORIZED' even though the
+    HTTP status code is 404.
+  x-internal-note: >-
+    services/user.js read() returns message 'USER_NOT_FOUND' with statusCode
+    httpStatusCode.not_found (404) when no user/share_link matches (the code
+    sets responseCode to 'UNAUTHORIZED' on this branch even though the
+    statusCode is 404 -- this looks like a copy/paste inconsistency in the
+    source, flagged rather than silently "corrected"). No captured example
+    exists for this endpoint+status in captured-responses.json, so no example
+    values are given -- shape only.
   type: object
   properties:
     responseCode:
@@ -1080,10 +1092,12 @@ userProfileReadResponse404Gap:
         type: string
 userProfileReadResponse406Gap:
   description: >
-    GAP: services/user.js read() returns message 'ROLE_NOT_FOUND' with
-    statusCode httpStatusCode.not_acceptable (406) when the looked-up user's
-    organization has no roles. No captured example exists for this
-    endpoint+status. Shape only, no example values.
+    Not Acceptable. Returned when the looked-up user's organization has no
+    roles.
+  x-internal-note: >-
+    services/user.js read() returns message 'ROLE_NOT_FOUND' with statusCode
+    httpStatusCode.not_acceptable (406) on this branch. No captured example
+    exists for this endpoint+status. Shape only, no example values.
   type: object
   properties:
     responseCode:
@@ -1097,11 +1111,14 @@ userProfileReadResponse406Gap:
 userProfileUpdateRequest:
   type: object
   description: >
-    Request body for updating the authenticated user's own profile
-    (controllers/v1/user.js#update -> services/user.js#update). All fields are
-    optional per validators/v1/user.js#update -- there are no cross-field rules
-    for this operation (services/user.js and controllers/v1/user.js both had
-    zero matches in cross-field-rules.json).
+    Request body for updating the authenticated user's own profile. All
+    fields are optional, and there are no cross-field validation rules for
+    this operation.
+  x-internal-note: >-
+    controllers/v1/user.js#update -> services/user.js#update. All fields are
+    optional per validators/v1/user.js#update -- there are no cross-field
+    rules for this operation (services/user.js and controllers/v1/user.js
+    both had zero matches in cross-field-rules.json).
   properties:
     name:
       type: string
@@ -1125,7 +1142,8 @@ userProfileUpdateRequest:
       description: Image path/URL string.
       example: profile-images/user22.png
 userProfileUpdateResponse202:
-  description: Accepted. Captured example (services/user.js update()), 'happy path' case.
+  description: Accepted. Returned when the profile update succeeds.
+  x-internal-note: Captured example (services/user.js update()), 'happy path' case.
   type: object
   properties:
     responseCode:
@@ -1259,7 +1277,10 @@ userProfileUpdateResponse202:
           example: 0cd1a696-e455-4390-9667-de370ef08827
 userProfileUpdateResponse400EmailUpdateGap:
   description: >
-    GAP: services/user.js update() returns message 'EMAIL_UPDATE_FAILED' with
+    Bad Request. Returned when the request body includes an 'email' field,
+    since email cannot be changed through this endpoint.
+  x-internal-note: >-
+    services/user.js update() returns message 'EMAIL_UPDATE_FAILED' with
     statusCode httpStatusCode.bad_request (400) whenever bodyData contains an
     'email' key at all (the update validator doesn't accept 'email', so this
     can only be hit by sending an undocumented field). No captured example
@@ -1276,10 +1297,12 @@ userProfileUpdateResponse400EmailUpdateGap:
         type: string
 userProfileUpdateResponse401Gap:
   description: >
-    GAP: services/user.js update() returns message 'USER_NOT_FOUND' with
-    statusCode httpStatusCode.unauthorized (401) when the decoded token's user
-    id/tenant_code doesn't resolve to a user. No captured example exists.
-    Shape only, no example values.
+    Unauthorized. Returned when the access token's user id/tenant code does
+    not resolve to a user.
+  x-internal-note: >-
+    services/user.js update() returns message 'USER_NOT_FOUND' with
+    statusCode httpStatusCode.unauthorized (401) on this branch. No captured
+    example exists. Shape only, no example values.
   type: object
   properties:
     responseCode:
@@ -1292,13 +1315,18 @@ userProfileUpdateResponse401Gap:
         type: string
 userProfileUpdateResponse400ValidationGap:
   description: >
-    GAP: services/user.js update() returns message 'VALIDATION_FAILED' with
-    statusCode httpStatusCode.bad_request (400) and a result array of entity-type
-    validation errors (utils.validateInput) when a submitted field's value
-    doesn't match the org's configured entity-type rules. No captured example
-    exists for this endpoint+status. Shape only, no example values -- the
-    'result' error item shape itself is generated by a shared utils helper
-    outside this domain's scope (utils.validateInput), so it is not modeled here.
+    Bad Request. Returned when a submitted field's value does not match the
+    organization's configured entity-type rules. The response includes a
+    result array of validation errors.
+  x-internal-note: >-
+    services/user.js update() returns message 'VALIDATION_FAILED' with
+    statusCode httpStatusCode.bad_request (400) and a result array of
+    entity-type validation errors (utils.validateInput) when a submitted
+    field's value doesn't match the org's configured entity-type rules. No
+    captured example exists for this endpoint+status. Shape only, no example
+    values -- the 'result' error item shape itself is generated by a shared
+    utils helper outside this domain's scope (utils.validateInput), so it is
+    not modeled here.
   type: object
   properties:
     responseCode:
@@ -1310,7 +1338,8 @@ userProfileUpdateResponse400ValidationGap:
       items:
         type: object
 userProfileById200Response:
-  description: OK. Captured example (services/user.js profileById()), 'happy path' case.
+  description: OK. Returned when a user profile is found by id or share link.
+  x-internal-note: Captured example (services/user.js profileById()), 'happy path' case.
   type: object
   properties:
     responseCode:
@@ -1501,7 +1530,8 @@ userProfileById200Response:
           type: string
           example: c782a6a5-5752-4fa2-9dfb-875ce4353e00
 userProfileById404Response:
-  description: Not Found. Captured example, 'not-found id -> 404' case.
+  description: Not Found. Returned when no user profile matches the given id.
+  x-internal-note: Captured example, 'not-found id -> 404' case.
   type: object
   properties:
     responseCode:
@@ -1523,12 +1553,15 @@ userProfileById404Response:
           example: 57c1ce34-3ae9-4fd7-8a88-6b5e8251f5ce
 userProfileById422Gap:
   description: >
-    GAP: services/user.js profileById() returns message 'VALIDATION_FAILED'
-    with statusCode httpStatusCode.unprocessable_entity (422) in two cases:
-    (1) no path id and no matching query field resolved to a lookup param at
-    all, and (2) a phone was given without a phone_code and no
-    process.env.DEFAULT_PHONE_CODE fallback is configured. No captured example
-    exists for this endpoint+status. Shape only, no example values.
+    Unprocessable Entity. Returned in two cases: (1) no id or other lookup
+    field was provided, or (2) a phone number was given without a phone code
+    and no default phone code is configured.
+  x-internal-note: >-
+    services/user.js profileById() returns message 'VALIDATION_FAILED' with
+    statusCode httpStatusCode.unprocessable_entity (422) in these two cases
+    (the second relies on process.env.DEFAULT_PHONE_CODE not being set). No
+    captured example exists for this endpoint+status. Shape only, no example
+    values.
   type: object
   properties:
     responseCode:
@@ -1540,7 +1573,8 @@ userProfileById422Gap:
       items:
         type: string
 userProfileShare200Response:
-  description: OK. Captured example (services/user.js share()), 'happy path' case.
+  description: OK. Returned when a profile share link is generated successfully.
+  x-internal-note: Captured example (services/user.js share()), 'happy path' case.
   type: object
   properties:
     responseCode:
@@ -1577,11 +1611,14 @@ userProfileShare200Response:
           example: 914ed5b2-e779-42a1-bec2-19a3120f6154
 userProfileShare400Response:
   description: >
-    Bad Request. Captured example, 'not-found id -> 404' case (note: the
+    Bad Request. Returned when no user is found for the given id.
+  x-internal-note: >-
+    Captured example, 'not-found id -> 404' case (note: the
     captured-responses.json case label says '404' but the actual status code
     recorded is 400 -- this matches services/user.js share(), which uses
-    httpStatusCode.bad_request (400) for USER_NOT_FOUND; the case label itself
-    appears to be a mislabel from the capture script, not a code issue).
+    httpStatusCode.bad_request (400) for USER_NOT_FOUND; the case label
+    itself appears to be a mislabel from the capture script, not a code
+    issue).
   type: object
   properties:
     responseCode:
@@ -1604,8 +1641,8 @@ userProfileShare400Response:
 userSetLanguagePreferenceRequest:
   type: object
   description: >
-    Request body for setting the authenticated user's preferred language
-    (validators/v1/user.js#setLanguagePreference).
+    Request body for setting the authenticated user's preferred language.
+  x-internal-note: validators/v1/user.js#setLanguagePreference.
   required:
     - preferred_language
   properties:
@@ -1614,9 +1651,10 @@ userSetLanguagePreferenceRequest:
       description: Preferred language value/code.
       example: en
 userSetLanguagePreferenceResponse202:
-  description: >
-    Accepted. Captured example (services/user.js setLanguagePreference()),
-    'happy path' case.
+  description: Accepted. Returned when the language preference update succeeds.
+  x-internal-note: >-
+    Captured example (services/user.js setLanguagePreference()), 'happy
+    path' case.
   type: object
   properties:
     responseCode:
@@ -1737,10 +1775,12 @@ userSetLanguagePreferenceResponse202:
           example: f8cc4552-0251-44b3-b39f-cf5f1a80ef12
 userSetLanguagePreferenceResponse401Gap:
   description: >
-    GAP: services/user.js setLanguagePreference() returns message
-    'USER_NOT_FOUND' with statusCode httpStatusCode.unauthorized (401) when the
-    decoded token's user id/tenant_code doesn't resolve to a user. No captured
-    example exists. Shape only, no example values.
+    Unauthorized. Returned when the access token's user id/tenant code does
+    not resolve to a user.
+  x-internal-note: >-
+    services/user.js setLanguagePreference() returns message 'USER_NOT_FOUND'
+    with statusCode httpStatusCode.unauthorized (401) on this branch. No
+    captured example exists. Shape only, no example values.
   type: object
   properties:
     responseCode:
@@ -1753,7 +1793,11 @@ userSetLanguagePreferenceResponse401Gap:
         type: string
 userSetLanguagePreferenceResponse400Gap:
   description: >
-    GAP: services/user.js setLanguagePreference() returns message
+    Bad Request. Returned when the submitted preferred_language value does
+    not match the organization's configured entity-type rules. The response
+    includes a result array of validation errors.
+  x-internal-note: >-
+    services/user.js setLanguagePreference() returns message
     'PROFILE_UPDATION_FAILED' with statusCode httpStatusCode.bad_request (400)
     and a result array of entity-type validation errors (utils.validateInput)
     when preferred_language fails the org's configured entity-type rules. No

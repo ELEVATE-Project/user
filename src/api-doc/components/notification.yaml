@@ -298,9 +298,12 @@ serverError500Response:
 notAdmin400Response:
   type: object
   description: >-
-    Caller does not hold ADMIN, ORG_ADMIN or TENANT_ADMIN role. Emitted by the
-    controller guard (message key USER_IS_NOT_A_ADMIN). No captured response body
-    is available for this branch - shape only, no example values.
+    Forbidden. Returned when the caller does not hold the ADMIN, ORG_ADMIN or
+    TENANT_ADMIN role required for this operation.
+  x-internal-note: >-
+    Emitted by the controller guard (message key USER_IS_NOT_A_ADMIN). No
+    captured response body is available for this branch - schema is
+    shape-only, no example values.
   properties:
     responseCode:
       type: string
@@ -314,10 +317,12 @@ notAdmin400Response:
 alreadyExists409Response:
   type: object
   description: >-
-    A notification template with the same code already exists for the
-    organization + tenant (Sequelize unique-constraint). Message key
+    Conflict. A notification template with the same code already exists for
+    the organization and tenant.
+  x-internal-note: >-
+    Unique-constraint violation (Sequelize). Message key
     NOTIFICATION_TEMPLATE_ALREADY_EXISTS. No captured response body is
-    available - shape only, no example values.
+    available - schema is shape-only, no example values.
   properties:
     responseCode:
       type: string

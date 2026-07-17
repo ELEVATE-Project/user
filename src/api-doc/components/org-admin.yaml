@@ -61,9 +61,10 @@ bulkUserCreateRequest:
       example: INVITE
 bulkUserCreate200Response:
   type: object
-  description: >-
-    GAP: no captured example for the 200 success case (message key
-    USER_CSV_UPLOADED); shape-only.
+  description: Returned when the bulk upload record is created successfully.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    USER_CSV_UPLOADED). Shape-only.
   properties:
     responseCode:
       type: string
@@ -93,11 +94,12 @@ bulkUserCreate200Response:
 bulkUserCreate400Response:
   type: object
   description: >-
-    Returned when the file-upload record could not be created (message key
-    USER_CSV_UPLOADED_FAILED). Note: the service builds this via
+    Returned when the file-upload record could not be created.
+  x-internal-note: >-
+    Message key USER_CSV_UPLOADED_FAILED. The service builds this via
     responses.successResponse() but overrides responseCode to CLIENT_ERROR
     and statusCode to 400 -- an inconsistency in services/org-admin.js, not
-    a doc error. GAP: no captured example for this status/message.
+    a doc error. No captured example exists for this status/message.
   properties:
     responseCode:
       type: string
@@ -111,9 +113,12 @@ bulkUserCreate400Response:
 bulkUserCreate500Response:
   type: object
   description: >-
+    Returned when an unexpected server error occurs while creating the
+    file-upload record, for example due to a missing or invalid file path.
+  x-internal-note: >-
     Real captured example. The service does not catch DB/queue errors from
-    file-upload creation (e.g. missing/nonexistent file_path); they propagate
-    to the global error handler as a generic 500.
+    file-upload creation; they propagate to the global error handler as a
+    generic 500.
   properties:
     responseCode:
       type: string
@@ -133,7 +138,8 @@ bulkUserCreate500Response:
 # ---------------------------------------------------------------------------
 getBulkInvitesFilesList200Response:
   type: object
-  description: Real captured example (message key FILE_UPLOAD_FETCHED).
+  description: Returned when the list of bulk invite CSV uploads is fetched successfully.
+  x-internal-note: Real captured example (message key FILE_UPLOAD_FETCHED).
   properties:
     responseCode:
       type: string
@@ -175,10 +181,13 @@ getBulkInvitesFilesList200Response:
 getRequestDetails200Response:
   type: object
   description: >-
-    GAP: no captured example for the 200 success case (message key
-    ORG_ROLE_REQ_FETCHED); shape-only, informed only by orgRoleReqQueries
-    field exclusions (created_at/updated_at/deleted_at excluded) which is
-    query-layer shaping, not a fabricated example.
+    Returned when the requested organization role-change request is fetched
+    successfully. The result excludes created_at, updated_at, and
+    deleted_at fields.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    ORG_ROLE_REQ_FETCHED); shape-only. Field exclusions are informed by
+    orgRoleReqQueries (query-layer shaping, not a fabricated example).
   properties:
     responseCode:
       type: string
@@ -191,8 +200,9 @@ getRequestDetails200Response:
 getRequestDetails400Response:
   type: object
   description: >-
-    Real captured example. Message key REQUEST_NOT_FOUND, returned when no
-    matching org role request exists for id/organization_id/tenant_code.
+    Returned when no matching organization role request exists for the
+    given id, organization, and tenant.
+  x-internal-note: Real captured example. Message key REQUEST_NOT_FOUND.
   properties:
     responseCode:
       type: string
@@ -217,11 +227,15 @@ getRequestDetails400Response:
 getRequestsRequest:
   type: object
   description: >-
-    Optional filters, merged verbatim (key by key, no whitelist) into the
-    org_id/tenant_code-scoped query filter in services/org-admin.js
-    getRequests(). No express-validator entry exists for this operation, so
-    field names/required-ness below are not enforced ground truth -- they
-    reflect only how the values are consumed if present.
+    Optional filters for the organization/tenant-scoped list of role-change
+    requests. Any of the fields below may be supplied; unrecognized filter
+    keys are passed through as-is.
+  x-internal-note: >-
+    Filters are merged verbatim (key by key, no whitelist) into the query
+    filter in services/org-admin.js getRequests(). No express-validator
+    entry exists for this operation, so field names/required-ness below are
+    not enforced ground truth -- they reflect only how the values are
+    consumed if present.
   properties:
     filters:
       type: object
@@ -243,7 +257,8 @@ getRequestsRequest:
             type: integer
 getRequests200Response:
   type: object
-  description: Real captured example (message key ORG_ROLE_REQ_LIST_FETCHED).
+  description: Returned when the list of organization role-change requests is fetched successfully.
+  x-internal-note: Real captured example (message key ORG_ROLE_REQ_LIST_FETCHED).
   properties:
     responseCode:
       type: string
@@ -328,12 +343,15 @@ updateRequestStatusRequest:
     status:
       type: string
       description: >-
+        The new status for the request. "APPROVED" and "REJECTED" are the
+        recognized values that trigger a notification email; any other
+        non-empty value updates the request status without sending an
+        email.
+      x-internal-note: >-
         No enum/isIn validator constrains this field in
         validators/v1/org-admin.js -- only notEmpty(). Values actually acted
         on by services/org-admin.js are common.ACCEPTED_STATUS ("APPROVED")
-        and common.REJECTED_STATUS ("REJECTED"); any other non-empty string
-        passes validation but takes the "else" (ORG_ROLE_REQ_UPDATED, no
-        email) branch.
+        and common.REJECTED_STATUS ("REJECTED").
       example: APPROVED
     comments:
       type: string
@@ -343,7 +361,9 @@ updateRequestStatusRequest:
 updateRequestStatus200Response:
   type: object
   description: >-
-    GAP: no captured example for the 200 success case (message key is
+    Returned when the request status is updated successfully.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key is
     either ORG_ROLE_REQ_APPROVED or ORG_ROLE_REQ_UPDATED depending on
     status); shape-only.
   properties:
@@ -463,8 +483,9 @@ deactivateUserRequest:
         - emails
 deactivateUser200Response:
   type: object
-  description: >-
-    GAP: no captured example for the 200 success case (message key
+  description: Returned when the specified users are deactivated successfully.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
     USER_DEACTIVATED); shape-only.
   properties:
     responseCode:
@@ -487,9 +508,11 @@ deactivateUser200Response:
 deactivateUser400Response:
   type: object
   description: >-
-    GAP: no captured example. Message key STATUS_UPDATE_FAILED, returned
-    when neither the ids-branch nor the emails-branch updated any rows
-    (e.g. ids/emails reference no existing users). Shape-only.
+    Returned when none of the given ids or emails match existing users, so
+    no accounts are deactivated.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    STATUS_UPDATE_FAILED). Shape-only.
   properties:
     responseCode:
       type: string
@@ -503,11 +526,13 @@ deactivateUser400Response:
 deactivateUser422Response:
   type: object
   description: >-
+    Returned when neither an `ids` nor an `emails` array is provided in the
+    request body. This is a request validation failure, distinct from the
+    400 response above which indicates the given ids/emails did not match
+    any users.
+  x-internal-note: >-
     Real captured example. Produced by the express-validator custom check
-    in validators/v1/org-admin.js (deactivateUser) when both `ids` and
-    `emails` are absent/empty -- this is the request-shape validation
-    failure, distinct from the 400 STATUS_UPDATE_FAILED business-logic
-    failure above.
+    in validators/v1/org-admin.js (deactivateUser).
   properties:
     responseCode:
       type: string
@@ -541,14 +566,15 @@ inheritEntityTypeRequest:
       example: training
 inheritEntityType201Response:
   type: object
-  description: >-
-    GAP: previous draft of this file documented this as a 202 response with
-    fabricated example values (id, value, label, status, etc.) with NO
-    matching captured-responses.json entry. That fabricated example has been
-    removed. The actual code
-    (services/org-admin.js inheritEntityType, httpStatusCode.created) returns
-    HTTP 201, not 202 -- the path file has been corrected accordingly. No
-    captured example exists for the success case; shape-only, types only.
+  description: Returned when the entity type is inherited into the organization successfully.
+  x-internal-note: >-
+    A previous draft of this file documented this as a 202 response with
+    fabricated example values (id, value, label, status, etc.) with no
+    matching captured-responses.json entry; that fabricated example has been
+    removed. The actual code (services/org-admin.js inheritEntityType,
+    httpStatusCode.created) returns HTTP 201, not 202 -- the path file has
+    been corrected accordingly. No captured example exists for the success
+    case; shape-only, types only.
   properties:
     responseCode:
       type: string
@@ -653,10 +679,11 @@ inheritEntityType400NotFoundResponse:
 updateUserRequest:
   type: object
   description: >-
-    Update a user's roles. The service only proceeds when `organization_id`
-    matches the requesting org admin's organization; `roles` are the role titles
-    to assign. NOTE: no request-body validator exists for this operation, so
-    required/optional constraints are not enforced by ground truth.
+    Update a user's roles. `organization_id` must match the requesting org
+    admin's own organization; `roles` are the role titles to assign.
+  x-internal-note: >-
+    No request-body validator exists for this operation, so
+    required/optional constraints below are not enforced by ground truth.
   properties:
     organization_id:
       type: integer
@@ -669,9 +696,12 @@ updateUserRequest:
 updateUser200Response:
   type: object
   description: >-
-    GAP: no captured example for the 200 success case (message key
-    USER_ROLE_UPDATE_SUCCESSFUL); shape-only. Note the service response has
-    no `result` field (successResponse() default result: []).
+    Returned when the user's roles are updated successfully. The result
+    field is always empty.
+  x-internal-note: >-
+    No captured example exists for this status/message (message key
+    USER_ROLE_UPDATE_SUCCESSFUL); shape-only. The service response has no
+    `result` field (successResponse() default result: []).
   properties:
     responseCode:
       type: string
@@ -763,15 +793,19 @@ updateUser400NoAccessResponse:
 createUsersRequest:
   type: object
   description: >-
-    GAP: no express-validator entry exists for this operation
+    Bulk-create mentor/mentee users via an uploaded CSV. `upload_type` is
+    required; omitting it results in a server error rather than a
+    validation error.
+  x-internal-note: >-
+    No express-validator entry exists for this operation
     (validators/v1/org-admin.js has no createUsers export), so field
-    presence/required-ness below is NOT enforced ground truth -- it is
-    inferred only from controller destructuring
-    (req.body.file_path, req.body.editable_fields, req.body.upload_type)
-    and is included for shape purposes only. Also note:
-    req.body.upload_type.toUpperCase() is called unconditionally in the
-    controller with no prior null-check, so an absent upload_type throws
-    an uncaught TypeError (surfaces as a generic 500), which is itself a gap.
+    presence/required-ness above is NOT enforced ground truth -- it is
+    inferred only from controller destructuring (req.body.file_path,
+    req.body.editable_fields, req.body.upload_type) and is included for
+    shape purposes only. req.body.upload_type.toUpperCase() is called
+    unconditionally in the controller with no prior null-check, so an
+    absent upload_type throws an uncaught TypeError (surfaces as a generic
+    500), which is itself a gap.
   properties:
     file_path:
       type: string
@@ -785,13 +819,14 @@ createUsersRequest:
         - type: string
     upload_type:
       type: string
-      description: Passed through .toUpperCase() before being handed to the service.
+      description: Case-insensitive; normalized to uppercase.
 createUsers200Response:
   type: object
-  description: >-
-    GAP: no captured example exists for this endpoint at all (it does not
-    appear in captured-responses.json). Same underlying service call shape
-    as bulkUserCreate (message key USER_CSV_UPLOADED). Shape-only.
+  description: Returned when the bulk user upload record is created successfully.
+  x-internal-note: >-
+    No captured example exists for this endpoint at all (it does not appear
+    in captured-responses.json). Same underlying service call shape as
+    bulkUserCreate (message key USER_CSV_UPLOADED). Shape-only.
   properties:
     responseCode:
       type: string
@@ -803,10 +838,12 @@ createUsers200Response:
       type: object
 createUsers400Response:
   type: object
-  description: >-
-    GAP: no captured example. Message key USER_CSV_UPLOADED_FAILED (same
-    inconsistency as bulkUserCreate400Response: built via successResponse()
-    but overridden to CLIENT_ERROR/400). Shape-only.
+  description: Returned when the file-upload record could not be created.
+  x-internal-note: >-
+    No captured example exists for this status/message. Message key
+    USER_CSV_UPLOADED_FAILED (same inconsistency as
+    bulkUserCreate400Response: built via successResponse() but overridden to
+    CLIENT_ERROR/400). Shape-only.
   properties:
     responseCode:
       type: string

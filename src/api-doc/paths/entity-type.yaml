@@ -34,9 +34,10 @@ create:
             schema:
               $ref: ../components/entity-type.yaml#/createEntityType201Response
       '400':
-        description: >-
-          Bad Request. Entity type already exists. GAP - no live captured
-          example exists for this case; see createEntityType400Response.
+        description: Bad Request. Returned when the entity type already exists.
+        x-internal-note: >-
+          No live captured example exists for this case; see
+          createEntityType400Response.
         content:
           application/json:
             schema:
@@ -85,9 +86,9 @@ update:
               $ref: ../components/entity-type.yaml#/updateEntityTypeRequest
       responses:
         '202':
-          description: >-
-            Accepted. Entity type updated successfully. GAP - no live
-            captured example exists for this case; see
+          description: Accepted. Entity type updated successfully.
+          x-internal-note: >-
+            No live captured example exists for this case; see
             updateEntityType202Response.
           content:
             application/json:
@@ -95,9 +96,12 @@ update:
                 $ref: ../components/entity-type.yaml#/updateEntityType202Response
         '400':
           description: >-
-            Bad Request. Entity type not found (captured live), or - per
-            code - already deleted (GAP, never captured). See
-            updateEntityType400Response.
+            Bad Request. Returned when the entity type is not found, or when
+            it has already been deleted.
+          x-internal-note: >-
+            The "not found" case has been captured live; the "already
+            deleted" case is inferred from code but has never been captured.
+            See updateEntityType400Response.
           content:
             application/json:
               schema:
@@ -117,21 +121,25 @@ read:
       organization are returned (flat array).
 
       - When a `value` is sent, matching user entity types (with their entities)
-      are returned under `result.entity_types`. GAP - this branch was never
-      captured live; see readEntityTypeUserResponse.
+      are returned under `result.entity_types`.
 
       - The X-auth-token is mandatory and cannot be empty or null.
 
-      - GAP: validators/v1/entity-type.js also defines optional `type`,
-      `deleted`, and `status` query parameters, but only when
-      `req.query.type` is present (see conditionalNotes in
-      validator-fields.json). The controller (controllers/v1/entity-type.js#read)
-      never reads req.query at all - it branches only on req.body.value.
-      It is unclear whether these query params have any real effect, or
-      are dead/vestigial validation left over from a prior implementation.
-      Documented below for completeness but flagged as a gap.
+      - Optional `type`, `deleted`, and `status` query parameters are also
+      accepted; see the parameter descriptions below for details.
 
       '
+    x-internal-note: >-
+      The `value`-based branch (result.entity_types) was never captured
+      live; see readEntityTypeUserResponse. The `type`, `deleted`, and
+      `status` query parameters are defined in validators/v1/entity-type.js
+      and only validated when `req.query.type` is present (see
+      conditionalNotes in validator-fields.json), but the controller
+      (controllers/v1/entity-type.js#read) never reads req.query at all -
+      it branches only on req.body.value. It is unclear whether these
+      query params have any real effect, or are dead/vestigial validation
+      left over from a prior implementation. Documented for completeness
+      but flagged as a gap.
     parameters:
       - name: X-auth-token
         in: header
@@ -142,21 +150,24 @@ read:
       - name: type
         in: query
         required: false
-        description: >-
-          GAP: validated only when present (see description above); the
-          controller does not appear to consume it. Real effect unconfirmed.
+        description: Optional. Filter by entity type name.
+        x-internal-note: >-
+          Only validated when this parameter is present; the controller
+          does not appear to consume it. Real effect unconfirmed.
         schema:
           type: string
       - name: deleted
         in: query
         required: false
-        description: 'GAP: validated only when `type` is also present; unconfirmed real effect.'
+        description: Optional. Filter by deleted status.
+        x-internal-note: 'Only validated when `type` is also present; unconfirmed real effect.'
         schema:
           type: boolean
       - name: status
         in: query
         required: false
-        description: 'GAP: validated only when `type` is also present; unconfirmed real effect.'
+        description: Optional. Filter by status.
+        x-internal-note: 'Only validated when `type` is also present; unconfirmed real effect.'
         schema:
           type: string
     requestBody:
@@ -190,9 +201,10 @@ read:
             schema:
               $ref: ../components/entity-type.yaml#/readEntityType200Response
       '400':
-        description: >-
-          Bad Request. Entity type not found. GAP - no live captured example
-          exists for this endpoint/status pairing; see readEntityType400Response.
+        description: Bad Request. Entity type not found.
+        x-internal-note: >-
+          No live captured example exists for this endpoint/status pairing;
+          see readEntityType400Response.
         content:
           application/json:
             schema:
@@ -230,9 +242,9 @@ delete:
           example: 31
       responses:
         '202':
-          description: >-
-            Accepted. Entity type deleted successfully. GAP - no live
-            captured example exists for this case; see
+          description: Accepted. Entity type deleted successfully.
+          x-internal-note: >-
+            No live captured example exists for this case; see
             deleteEntityType202Response.
           content:
             application/json:

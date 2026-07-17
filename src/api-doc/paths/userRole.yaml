@@ -244,12 +244,14 @@ Create:
         # No captured example for this status/message. Shape-only. See gaps.jsonl.
       '401':
         description: Unauthorized
+        x-internal-note: >-
+          No captured example specific to this endpoint for 401; schema reused
+          from list's confirmed 401 shape, as this is a generic
+          authenticator-middleware response. See gaps.jsonl.
         content:
           application/json:
             schema:
               $ref: ../components/profile.yaml#/Unauthorized401Response
-        # No captured example specific to this endpoint for 401; schema reused from list's
-        # confirmed 401 shape as this is a generic authenticator-middleware response. See gaps.jsonl.
 
 update:
   '{id}':
@@ -380,17 +382,20 @@ delete:
 default:
   get:
     deprecated: true
-    summary: (Deprecated / dead code) Default role list
+    summary: Default Role List (Deprecated)
     tags:
       - User Roles APIs
     description: >-
-      The `default` controller method is commented out in controllers/v1/user-role.js
-      (marked @deprecated - "Use list() instead"). Any request to
-      `/user/v1/user-role/default` falls through the generic router
-      (src/routes/index.js) to the global 404 handler because no such method exists on
-      the controller. This is confirmed by captured-responses.json, which shows a 404
-      for every observed call. Documented here for completeness; do not rely on this
-      endpoint.
+      This endpoint is deprecated and no longer available. Any request made to
+      it currently returns a 404 Not Found response. Use the list endpoint
+      instead.
+    x-internal-note: >-
+      The `default` controller method is commented out in
+      controllers/v1/user-role.js (marked @deprecated - "Use list() instead").
+      Requests fall through the generic router (src/routes/index.js) to the
+      global 404 handler because no such method exists on the controller.
+      Confirmed by captured-responses.json, which shows a 404 for every
+      observed call. Retained in the spec for completeness only.
     parameters:
       - name: X-auth-token
         in: header
@@ -399,7 +404,11 @@ default:
           type: string
     responses:
       '404':
-        description: Not Found - dead code, always returns this
+        description: Not Found. This endpoint always returns this response.
+        x-internal-note: >-
+          Reflects dead code on the backend - the underlying controller
+          method no longer exists, so every request falls through to the
+          global 404 handler.
         content:
           application/json:
             schema:

@@ -155,9 +155,13 @@ templateById:
               $ref: ../components/notification.yaml#/listNotification200Response
       '400':
         description: >-
-          Bad Request. Two distinct causes share this status code on this
-          endpoint: the template was not found (captured example available), or
-          the caller is not an admin (no captured example - gap, shape only).
+          Bad Request. Returned when either the template was not found, or
+          the caller does not have admin privileges.
+        x-internal-note: >-
+          Two distinct causes share this status code on this endpoint: the
+          template-not-found branch has a captured example available; the
+          not-admin branch (USER_IS_NOT_A_ADMIN) has no captured example -
+          schema is shape-only.
         content:
           application/json:
             schema:
@@ -173,9 +177,8 @@ templateById:
                   meta:
                     correlation: d04c2435-f127-46bc-a795-f970b45e63ca
                   message: Notification template not found
-              # "notAdmin" branch intentionally has no example here: no captured
-              # response exists for USER_IS_NOT_A_ADMIN on this endpoint (gap).
-              # See notAdmin400Response schema (shape only) in the oneOf above.
+              # "notAdmin" branch intentionally has no example here: see
+              # x-internal-note on this response's description above.
   patch:
     summary: Update a notification template
     operationId: updateNotificationTemplate
@@ -220,13 +223,16 @@ templateById:
               $ref: ../components/notification.yaml#/updateNotification202Response
       '400':
         description: >-
-          Bad Request. Two distinct causes share this status code on this
-          endpoint: the template was not found (captured example available -
-          note: captured from the sibling GET-by-id endpoint, which throws the
-          identical responses.failureResponse({message: 'NOTIFICATION_TEMPLATE_NOT_FOUND',
+          Bad Request. Returned when either the template was not found, or
+          the caller does not have admin privileges.
+        x-internal-note: >-
+          Two distinct causes share this status code on this endpoint: the
+          template-not-found branch's captured example was taken from the
+          sibling GET-by-id endpoint, which throws the identical
+          responses.failureResponse({message: 'NOTIFICATION_TEMPLATE_NOT_FOUND',
           statusCode: 400, responseCode: 'CLIENT_ERROR'}) call in
-          services/notification.js), or the caller is not an admin (no
-          captured example for this branch - gap, shape only).
+          services/notification.js, reused by update(); the not-admin branch
+          has no captured example for this branch - shape-only.
         content:
           application/json:
             schema:
@@ -235,13 +241,12 @@ templateById:
                 - $ref: ../components/notification.yaml#/notAdmin400Response
             examples:
               templateNotFound:
-                summary: Template not found (captured on GET /user/v1/notification/template/{id}; same failureResponse call reused by update())
+                summary: Template not found (captured)
                 value:
                   responseCode: CLIENT_ERROR
                   error: []
                   meta:
                     correlation: d04c2435-f127-46bc-a795-f970b45e63ca
                   message: Notification template not found
-              # "notAdmin" branch intentionally has no example here: no captured
-              # response exists for USER_IS_NOT_A_ADMIN on this endpoint (gap).
-              # See notAdmin400Response schema (shape only) in the oneOf above.
+              # "notAdmin" branch intentionally has no example here: see
+              # x-internal-note on this response's description above.

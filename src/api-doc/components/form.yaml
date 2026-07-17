@@ -475,7 +475,7 @@ readAllFormVersions200Response:
       type: string
     result:
       type: object
-      description: Exact shape may vary; not modeled further here.
+      description: The exact shape of this object may vary.
       x-internal-note: Shape depends on generics/form.js `getAllFormsVersion()`;
         not modeled further since that helper is outside this domain's scope
         (form controller/service only) and no capture exists to confirm its

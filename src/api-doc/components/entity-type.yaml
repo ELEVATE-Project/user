@@ -29,9 +29,11 @@ createEntityTypeRequest:
     allow_filtering:
       type: boolean
       description: >-
-        Not allowed on create. The validator requires this field to be empty
-        (`isEmpty()`) if present, so in practice it must be omitted entirely -
-        sending any truthy value fails validation.
+        Not allowed on create. This field must be omitted; sending any
+        truthy value fails validation.
+      x-internal-note: >-
+        The validator requires this field to be empty (`isEmpty()`) if
+        present.
       example: true
 updateEntityTypeRequest:
   type: object
@@ -60,13 +62,15 @@ updateEntityTypeRequest:
       type: array
       description: >-
         One or more model names this entity type applies to. Must be a
-        non-empty array, and each item must be one of the values in the
-        `isIn(['User'])` allow-list enforced by
-        validators/v1/entity-type.js (update). CORRECTION: an earlier pass
-        on this file claimed this validator chain was broken (`isIn` called
-        as a bare, unchained identifier) - re-checked against the current
-        source and the chain is intact (`req.checkBody('model_names.*').isIn(['User'])...`),
-        so this is a normal validation rule, not a runtime bug.
+        non-empty array, and each item must be one of the currently
+        supported model names.
+      x-internal-note: >-
+        Allow-list enforced by validators/v1/entity-type.js (update) via
+        `isIn(['User'])`. CORRECTION: an earlier pass on this file claimed
+        this validator chain was broken (`isIn` called as a bare, unchained
+        identifier) - re-checked against the current source and the chain
+        is intact (`req.checkBody('model_names.*').isIn(['User'])...`), so
+        this is a normal validation rule, not a runtime bug.
       items:
         type: string
       example:
@@ -252,27 +256,28 @@ createEntityType422Response:
     message: Validation failed, Entered data is incorrect!
 createEntityType400Response:
   type: object
-  description: >-
-    GAP: entity type already exists (raised when the DB throws a
-    UniqueConstraintError). No live captured response body exists for this
-    case in captured-responses.json - only the 201 and 422 cases for this
-    endpoint were captured. The properties below reflect the generic
-    failureResponse envelope shared by every other captured error in this
-    domain, but the exact field values for this specific case are NOT
-    confirmed and must not be treated as real. See gaps.jsonl.
+  description: Bad Request. Returned when an entity type with the given value already exists.
+  x-internal-note: >-
+    Raised when the DB throws a UniqueConstraintError. No live captured
+    response body exists for this case in captured-responses.json - only
+    the 201 and 422 cases for this endpoint were captured. The properties
+    below reflect the generic failureResponse envelope shared by every
+    other captured error in this domain, but the exact field values for
+    this specific case are NOT confirmed and must not be treated as real.
+    See gaps.jsonl.
   properties:
     responseCode:
       type: string
-      description: 'GAP: not confirmed for this case. Other captured errors use CLIENT_ERROR.'
+      x-internal-note: 'Not confirmed for this case. Other captured errors use CLIENT_ERROR.'
     error:
       type: array
       items:
         type: object
-      description: 'GAP: not confirmed for this case.'
+      x-internal-note: 'Not confirmed for this case.'
     message:
       type: string
-      description: >-
-        GAP: not confirmed for this case. The service passes the message key
+      x-internal-note: >-
+        Not confirmed for this case. The service passes the message key
         'ENTITY_TYPE_ALREADY_EXISTS' to responses.failureResponse(); the
         localized string text actually returned was never captured.
     meta:
@@ -280,23 +285,28 @@ createEntityType400Response:
       properties:
         correlation:
           type: string
-      description: 'GAP: not confirmed for this case.'
+      x-internal-note: 'Not confirmed for this case.'
 readEntityType200Response:
   description: >-
-    Entity types fetched successfully. The response shape branches on the
-    controller's `req.body.value` check (controllers/v1/entity-type.js): no
-    `value` -> readAllSystemEntityTypes (flat array under `result`); `value`
-    sent -> readUserEntityTypes (`result.entity_types`). Only the no-`value`
-    (system) branch was captured live in captured-responses.json; the
-    `entity_types`-wrapped branch is a GAP - modeled here as a second oneOf
-    member from reading services/entityType.js only, with no confirmed example.
+    Entity types fetched successfully. The response shape depends on
+    whether a `value` is included in the request body: when omitted, a flat
+    array of system entity types is returned under `result`; when a
+    `value` is sent, matching entity types are returned nested under
+    `result.entity_types`.
+  x-internal-note: >-
+    Branches on the controller's `req.body.value` check
+    (controllers/v1/entity-type.js): no `value` -> readAllSystemEntityTypes
+    (flat array under `result`); `value` sent -> readUserEntityTypes
+    (`result.entity_types`). Only the no-`value` (system) branch was
+    captured live in captured-responses.json; the `entity_types`-wrapped
+    branch was modeled here as a second oneOf member from reading
+    services/entityType.js only, with no confirmed example.
   oneOf:
     - $ref: '#/readEntityTypeSystemResponse'
     - $ref: '#/readEntityTypeUserResponse'
 readEntityTypeSystemResponse:
   type: object
-  description: >-
-    Captured live response when no `value` is sent (readAllSystemEntityTypes).
+  description: Response returned when no `value` is sent in the request body.
   properties:
     responseCode:
       type: string
@@ -378,78 +388,87 @@ readEntityTypeSystemResponse:
 readEntityTypeUserResponse:
   type: object
   description: >-
-    GAP: never captured live. Branch taken when `value` is sent in the
-    request body (readUserEntityTypes). The only fact confirmed by reading
+    Response returned when a `value` is sent in the request body. The
+    payload is nested under `result.entity_types` instead of a flat
+    `result` array.
+  x-internal-note: >-
+    Never captured live. Branch taken when `value` is sent in the request
+    body (readUserEntityTypes). The only fact confirmed by reading
     services/entityType.js is that the payload is nested under
-    `result.entity_types` instead of a flat `result` array; the shape of each
-    entity inside that array comes from entityTypeQueries.findUserEntityTypesAndEntities,
-    a database/query-layer file that is out of scope for this pass, so
-    per-item fields are NOT enumerated here. Do not treat this as verified.
+    `result.entity_types` instead of a flat `result` array; the shape of
+    each entity inside that array comes from
+    entityTypeQueries.findUserEntityTypesAndEntities, a database/query-layer
+    file that is out of scope for this pass, so per-item fields are NOT
+    enumerated here. Do not treat this as verified.
   properties:
     responseCode:
       type: string
-      description: 'GAP: not confirmed. Other captured 200s in this domain use OK.'
+      x-internal-note: 'Not confirmed. Other captured 200s in this domain use OK.'
     message:
       type: string
-      description: 'GAP: not confirmed.'
+      x-internal-note: 'Not confirmed.'
     result:
       type: object
-      description: 'GAP: not confirmed.'
+      x-internal-note: 'Not confirmed.'
       properties:
         entity_types:
           type: array
           items:
             type: object
-          description: 'GAP: item shape not confirmed (query-layer file out of scope).'
+          x-internal-note: 'Item shape not confirmed (query-layer file out of scope).'
 readEntityType400Response:
   type: object
-  description: >-
-    GAP: entity type not found (readAllSystemEntityTypes branch, when the
+  description: Bad Request. Returned when no entity types match the request.
+  x-internal-note: >-
+    Entity type not found (readAllSystemEntityTypes branch, when the
     pruned result set is empty). No live captured response exists for the
-    read endpoint's 400 case specifically - captured-responses.json only has
-    a 200 entry for `POST /user/v1/entity-type/read`. The same message key
-    (ENTITY_TYPE_NOT_FOUND) IS captured verbatim as "Entity type not found."
-    for the update and delete endpoints, so the envelope shape below is a
-    reasonable match, but this exact endpoint/status pairing was never
-    captured and must not be treated as confirmed. See gaps.jsonl.
+    read endpoint's 400 case specifically - captured-responses.json only
+    has a 200 entry for `POST /user/v1/entity-type/read`. The same message
+    key (ENTITY_TYPE_NOT_FOUND) IS captured verbatim as "Entity type not
+    found." for the update and delete endpoints, so the envelope shape
+    below is a reasonable match, but this exact endpoint/status pairing
+    was never captured and must not be treated as confirmed. See
+    gaps.jsonl.
   properties:
     responseCode:
       type: string
-      description: 'GAP for this endpoint (confirmed as CLIENT_ERROR elsewhere for the same message key).'
+      x-internal-note: 'Not confirmed for this endpoint (confirmed as CLIENT_ERROR elsewhere for the same message key).'
     error:
       type: array
       items:
         type: object
-      description: 'GAP for this endpoint (confirmed as [] elsewhere for the same message key).'
+      x-internal-note: 'Not confirmed for this endpoint (confirmed as [] elsewhere for the same message key).'
     message:
       type: string
-      description: 'GAP for this endpoint (confirmed as "Entity type not found." elsewhere for the same message key).'
+      x-internal-note: 'Not confirmed for this endpoint (confirmed as "Entity type not found." elsewhere for the same message key).'
 updateEntityType202Response:
   type: object
-  description: >-
-    GAP: entity type updated successfully. No live captured response body
-    exists for this success case in captured-responses.json - only the 400
-    (not-found) case for this endpoint was captured. The field-level examples
-    below are NOT confirmed; only the envelope (responseCode/message/result)
-    is inferred from the successResponse() call shape used consistently
-    elsewhere in this domain. See gaps.jsonl.
+  description: Entity type updated successfully.
+  x-internal-note: >-
+    No live captured response body exists for this success case in
+    captured-responses.json - only the 400 (not-found) case for this
+    endpoint was captured. The field-level examples below are NOT
+    confirmed; only the envelope (responseCode/message/result) is inferred
+    from the successResponse() call shape used consistently elsewhere in
+    this domain. See gaps.jsonl.
   properties:
     responseCode:
       type: string
-      description: 'GAP: not confirmed for this case.'
+      x-internal-note: 'Not confirmed for this case.'
     message:
       type: string
-      description: >-
-        GAP: not confirmed. Service passes message key
+      x-internal-note: >-
+        Not confirmed. Service passes message key
         'ENTITY_TYPE_UPDATED_SUCCESSFULLY' to responses.successResponse().
     result:
       type: object
-      description: >-
-        GAP: not confirmed. Service returns the raw updated row from
+      description: The updated entity type record.
+      x-internal-note: >-
+        Not confirmed. Service returns the raw updated row from
         entityTypeQueries.updateOneEntityType (a database/query-layer file
         out of scope for this pass), so per-field shape/values are not
-        enumerated here beyond what create's captured 201 result implies the
-        row generally contains.
+        enumerated here beyond what create's captured 201 result implies
+        the row generally contains.
       properties:
         id:
           type: integer
@@ -470,20 +489,23 @@ updateEntityType202Response:
       properties:
         correlation:
           type: string
-          description: 'GAP: not confirmed for this case.'
+          x-internal-note: 'Not confirmed for this case.'
 updateEntityType400Response:
   description: >-
-    Entity type not found, or (per code) already deleted. Two distinct
-    failure branches in services/entityType.js#update both return 400: the
-    updateCount===0 branch (ENTITY_TYPE_NOT_FOUND) and the UniqueConstraintError
-    catch (ENTITY_TYPE_ALREADY_DELETED). Only the not-found branch was
-    captured live.
+    Bad Request. Returned when the entity type being updated is not found,
+    or has already been deleted.
+  x-internal-note: >-
+    Two distinct failure branches in services/entityType.js#update both
+    return 400: the updateCount===0 branch (ENTITY_TYPE_NOT_FOUND) and the
+    UniqueConstraintError catch (ENTITY_TYPE_ALREADY_DELETED). Only the
+    not-found branch was captured live.
   oneOf:
     - $ref: '#/updateEntityTypeNotFound400Response'
     - $ref: '#/updateEntityTypeAlreadyDeleted400Response'
 updateEntityTypeNotFound400Response:
   type: object
-  description: Captured live. Entity type not found (updateCount === 0).
+  description: Bad Request. Returned when the entity type to update is not found.
+  x-internal-note: 'Captured live (updateCount === 0).'
   properties:
     responseCode:
       type: string
@@ -510,41 +532,44 @@ updateEntityTypeNotFound400Response:
     message: Entity type not found.
 updateEntityTypeAlreadyDeleted400Response:
   type: object
-  description: >-
-    GAP: never captured live. Raised when entityTypeQueries.updateOneEntityType
-    throws a UniqueConstraintError. Envelope shape assumed consistent with
-    other failureResponse() calls in this domain; exact message text and
-    fields are NOT confirmed. See gaps.jsonl.
+  description: Bad Request. Returned when the entity type being updated has already been deleted.
+  x-internal-note: >-
+    Never captured live. Raised when
+    entityTypeQueries.updateOneEntityType throws a UniqueConstraintError.
+    Envelope shape assumed consistent with other failureResponse() calls
+    in this domain; exact message text and fields are NOT confirmed. See
+    gaps.jsonl.
   properties:
     responseCode:
       type: string
-      description: 'GAP: not confirmed for this case.'
+      x-internal-note: 'Not confirmed for this case.'
     error:
       type: array
       items:
         type: object
-      description: 'GAP: not confirmed for this case.'
+      x-internal-note: 'Not confirmed for this case.'
     message:
       type: string
-      description: >-
-        GAP: not confirmed. Service passes message key
+      x-internal-note: >-
+        Not confirmed. Service passes message key
         'ENTITY_TYPE_ALREADY_DELETED' to responses.failureResponse().
 deleteEntityType202Response:
   type: object
-  description: >-
-    GAP: entity type deleted successfully. No live captured response body
-    exists for this success case - captured-responses.json only has a 400
-    entry for the delete endpoint. Envelope shape assumed consistent with
-    other successResponse() calls with no `result` payload in this domain;
-    exact message text is NOT confirmed. See gaps.jsonl.
+  description: Entity type deleted successfully.
+  x-internal-note: >-
+    No live captured response body exists for this success case -
+    captured-responses.json only has a 400 entry for the delete endpoint.
+    Envelope shape assumed consistent with other successResponse() calls
+    with no `result` payload in this domain; exact message text is NOT
+    confirmed. See gaps.jsonl.
   properties:
     responseCode:
       type: string
-      description: 'GAP: not confirmed for this case.'
+      x-internal-note: 'Not confirmed for this case.'
     message:
       type: string
-      description: >-
-        GAP: not confirmed. Service passes message key
+      x-internal-note: >-
+        Not confirmed. Service passes message key
         'ENTITY_TYPE_DELETED_SUCCESSFULLY' to responses.successResponse().
 deleteEntityType400Response:
   type: object

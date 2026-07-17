@@ -22,11 +22,13 @@ createUserEntityRequest:
   properties:
     value:
       type: string
-      description: Must contain letters only, no spaces (validators/v1/entity.js).
+      description: Must contain letters only, no spaces.
+      x-internal-note: Validated in validators/v1/entity.js.
       example: AP
     label:
       type: string
-      description: Alphanumeric with spaces allowed (validators/v1/entity.js).
+      description: Alphanumeric with spaces allowed.
+      x-internal-note: Validated in validators/v1/entity.js.
       example: Andhra Pradesh
     type:
       type: string
@@ -42,11 +44,12 @@ createUserEntityRequest:
 
 createUserEntity201Response:
   type: object
-  description: >-
-    User entity created (verbatim capture, 201, happy path).
-    NOTE: the code also emits 400 ENTITY_ALREADY_EXISTS (UniqueConstraintError)
-    and 400 ENTITY_TYPE_NOT_FOUND (ForeignKeyConstraintError) from
-    services/entities.js `create` - neither has a captured example - see
+  description: Entity created successfully.
+  x-internal-note: >-
+    Verbatim capture, 201, happy path. The code also emits 400
+    ENTITY_ALREADY_EXISTS (UniqueConstraintError) and 400
+    ENTITY_TYPE_NOT_FOUND (ForeignKeyConstraintError) from
+    services/entities.js `create` - neither has a captured example, see
     gaps.jsonl.
   properties:
     responseCode:
@@ -145,8 +148,9 @@ createUserEntity201Response:
 createUserEntity422Response:
   type: object
   description: >-
-    Request validation failed (express-validator, verbatim capture, 422).
-    Returned when required fields are missing or malformed.
+    Validation failed. Returned when required fields are missing or
+    malformed.
+  x-internal-note: Verbatim capture (express-validator, 422).
   properties:
     responseCode:
       type: string
@@ -196,7 +200,10 @@ createUserEntity422Response:
 createUserEntity400Response:
   type: object
   description: >-
-    GAP - NOT captured. The code (services/entities.js `create`) can return
+    Bad Request. Returned when the entity could not be created because it
+    already exists, or because the referenced entity type does not exist.
+  x-internal-note: >-
+    GAP - not captured. The code (services/entities.js `create`) can return
     400 with message ENTITY_ALREADY_EXISTS (sequelize UniqueConstraintError)
     or 400 with message ENTITY_TYPE_NOT_FOUND (sequelize
     ForeignKeyConstraintError), but scripts/api-doc/captured-responses.json
@@ -219,7 +226,8 @@ createUserEntity400Response:
 
 updateUserEntityRequest:
   type: object
-  description: All fields optional; provide only the fields to change (validators/v1/entity.js `update`).
+  description: All fields optional; provide only the fields to change.
+  x-internal-note: Validated in validators/v1/entity.js `update`.
   properties:
     value:
       type: string
@@ -245,11 +253,12 @@ updateUserEntityRequest:
 updateUserEntity400Response:
   type: object
   description: >-
-    Entity not found - update target id does not exist (verbatim capture, 400).
-    NOTE: the code also has a 202 ENTITY_UPDATED_SUCCESSFULLY success path
-    (services/entities.js `update`) and a second, distinct 400
-    ENTITY_ALREADY_EXISTS path (UniqueConstraintError on the same status code)
-    - neither has a captured example - see gaps.jsonl.
+    Not Found. Returned when the entity to update does not exist.
+  x-internal-note: >-
+    Verbatim capture, 400. The code also has a 202 ENTITY_UPDATED_SUCCESSFULLY
+    success path (services/entities.js `update`) and a second, distinct 400
+    ENTITY_ALREADY_EXISTS path (UniqueConstraintError on the same status
+    code) - neither has a captured example, see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -278,9 +287,10 @@ updateUserEntity400Response:
 readUserEntity200Response:
   type: object
   description: >-
-    GAP - NOT captured. The code (services/entities.js `read`) returns 200
-    with message ENTITY_FETCHED_SUCCESSFULLY and `result` as an array of
-    matched entities on the happy path, but
+    Entities fetched successfully. `result` is an array of matched entities.
+  x-internal-note: >-
+    GAP - not captured. The code (services/entities.js `read`) returns 200
+    with message ENTITY_FETCHED_SUCCESSFULLY on the happy path, but
     scripts/api-doc/captured-responses.json has no example for this status.
     This schema documents shape only (inferred from the entity record shape
     seen in createUserEntity201Response) - values below are illustrative
@@ -323,13 +333,16 @@ readUserEntity200Response:
 readUserEntity422Response:
   type: object
   description: >-
-    Neither `id` nor (`value` + `entity_type_id`) was supplied (verbatim
-    capture, 422). Cross-field rule at controllers/v1/entity.js:67 / the
-    custom validator in validators/v1/entity.js `read`: at least one of
-    `id` OR (`value` AND `entity_type_id`) must be provided.
-    NOTE: the code's happy-path 200 ENTITY_FETCHED_SUCCESSFULLY and its
-    separate 400 ENTITY_NOT_FOUND (no entities matched, services/entities.js
-    `read`) both have NO captured example - see gaps.jsonl.
+    Returned when neither `id` nor the combination of `value` and
+    `entity_type_id` was supplied. At least one of `id` or (`value` and
+    `entity_type_id`) must be provided.
+  x-internal-note: >-
+    Verbatim capture, 422. Cross-field rule enforced at
+    controllers/v1/entity.js:67 and the custom validator in
+    validators/v1/entity.js `read`. The endpoint's happy-path 200
+    ENTITY_FETCHED_SUCCESSFULLY and its separate 400 ENTITY_NOT_FOUND (no
+    entities matched, services/entities.js `read`) both have no captured
+    example - see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -357,10 +370,11 @@ readUserEntity422Response:
 
 deleteUserEntity202Response:
   type: object
-  description: >-
-    Entity deleted (verbatim capture, 202, happy path). NOTE: the code's
-    400 ENTITY_NOT_FOUND path (services/entities.js `delete`, deleteCount
-    === 0) has NO captured example - see gaps.jsonl.
+  description: Entity deleted successfully.
+  x-internal-note: >-
+    Verbatim capture, 202, happy path. The code's 400 ENTITY_NOT_FOUND path
+    (services/entities.js `delete`, deleteCount === 0) has no captured
+    example - see gaps.jsonl.
   properties:
     responseCode:
       type: string
@@ -407,7 +421,9 @@ deleteUserEntity202Response:
 deleteUserEntity400Response:
   type: object
   description: >-
-    GAP - NOT captured. The code (services/entities.js `delete`) returns 400
+    Not Found. Returned when the entity to delete does not exist.
+  x-internal-note: >-
+    GAP - not captured. The code (services/entities.js `delete`) returns 400
     with message ENTITY_NOT_FOUND when deleteCount === 0, but
     scripts/api-doc/captured-responses.json has no example for this status
     on the delete endpoint. This schema documents shape only (inferred from
@@ -428,15 +444,17 @@ deleteUserEntity400Response:
 entityList401Response:
   type: object
   description: >-
-    Caller lacks the permission required to access the entity list resource
-    (verbatim capture, 401). NOTE: this 401 originates from the permission /
-    auth middleware layer, not from controllers/v1/entity.js or
+    Unauthorized. Returned when the caller lacks the permission required to
+    access the entity list resource.
+  x-internal-note: >-
+    Verbatim capture, 401. This 401 originates from the permission / auth
+    middleware layer, not from controllers/v1/entity.js or
     services/entities.js, so it is not one of the enumerated
     successResponse/failureResponse call sites in this domain's own code -
     documented here because it was actually captured against this endpoint.
     The list endpoint's own 200 ENTITY_FETCHED_SUCCESSFULLY success path and
     its 400 ENTITY_NOT_FOUND path (services/entities.js `list`, empty result
-    set) both have NO captured example - see gaps.jsonl.
+    set) both have no captured example - see gaps.jsonl.
   properties:
     responseCode:
       type: string

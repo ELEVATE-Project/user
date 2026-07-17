@@ -9,20 +9,23 @@ read:
         This API retrieves details of a user's profile.
 
         - Endpoint: `/user/v1/user/read/{userId}`. There is also an id-less
-        variant, `/user/v1/user/read` (not modeled separately here since OpenAPI
-        path templates can't express an optional trailing path segment as a
-        single path item), which defaults to the authenticated caller's own id
-        (`req.decodedToken.id`) -- see controllers/v1/user.js#read.
+        variant, `/user/v1/user/read`, which defaults to the authenticated
+        caller's own id.
 
         - `language` is optional; when provided and not `en`, role labels are
         localized to it.
 
         - An optional `internal_access_token` header allows fetching a
-        soft-deleted user's details (`paranoid: false` lookup).
+        soft-deleted user's details.
 
-        - No express-validator chain exists for this operation
-        (validators/v1/user.js has no `read` entry) -- the path id and
-        `language` query param are not format-validated at the validator layer.
+        - Note: the path id and `language` query parameter are not subject to
+        additional format validation.
+      x-internal-note: >-
+        The id-less variant is not modeled separately here since OpenAPI path
+        templates can't express an optional trailing path segment as a single
+        path item; it resolves to req.decodedToken.id (see
+        controllers/v1/user.js#read). No express-validator chain exists for
+        this operation (validators/v1/user.js has no `read` entry).
       parameters:
         - name: X-auth-token
           in: header
@@ -68,19 +71,20 @@ read:
               schema:
                 $ref: ../components/user.yaml#/userProfileReadResponse401
         '404':
-          description: >
-            GAP: Not Found. services/user.js read() returns USER_NOT_FOUND (404)
-            when no user/share_link matches. No captured example exists for this
-            status on this endpoint -- schema below is shape-only, not verified.
+          description: Not Found. Returned when no user or share link matches.
+          x-internal-note: >-
+            services/user.js read() returns USER_NOT_FOUND (404). No captured
+            example exists for this status on this endpoint - schema is
+            shape-only, not verified.
           content:
             application/json:
               schema:
                 $ref: ../components/user.yaml#/userProfileReadResponse404Gap
         '406':
-          description: >
-            GAP: Not Acceptable. services/user.js read() returns ROLE_NOT_FOUND
-            (406) when the user's organization has no roles. No captured example
-            exists for this status on this endpoint -- schema below is
+          description: Not Acceptable. Returned when the user's organization has no roles.
+          x-internal-note: >-
+            services/user.js read() returns ROLE_NOT_FOUND (406). No captured
+            example exists for this status on this endpoint - schema is
             shape-only, not verified.
           content:
             application/json:
@@ -99,24 +103,24 @@ profileById:
 
         - Endpoint: `/user/v1/user/profileById/{userId}`. There is also an
         id-less variant, `/user/v1/user/profileById`, for the query-based
-        lookup (see below) -- not modeled separately for the same reason noted
-        on `read`.
-
-        - GAP: this endpoint is not currently wired into
-        src/api-doc/openapi.yaml's top-level `paths:` map (only `read`,
-        `update`, `share`, and `setLanguagePreference` are); this path item is
-        added here for completeness and correctness of this domain's docs, but
-        will not be reachable from the generated spec until the reconciliation
-        pass adds a corresponding top-level `$ref`.
+        lookup described below.
 
         - Mandatory parameters marked as `required` must have valid values.
 
         - Parameters cannot be empty or null.
 
-        - Cross-field rule (validators/v1/user.js#profileById, only enforced
-        when no path `id` is given): at least one of `email`, `username`, or
-        `phone` must be provided; if `phone` is provided, `phone_code` is then
-        also required.
+        - Cross-field rule, only enforced when no path `id` is given: at least
+        one of `email`, `username`, or `phone` must be provided; if `phone` is
+        provided, `phone_code` is then also required.
+      x-internal-note: >-
+        The id-less variant is not modeled separately for the same reason
+        noted on `read`. This endpoint is not currently wired into
+        src/api-doc/openapi.yaml's top-level `paths:` map (only `read`,
+        `update`, `share`, and `setLanguagePreference` are); this path item is
+        added here for completeness and correctness of this domain's docs, but
+        will not be reachable from the generated spec until the reconciliation
+        pass adds a corresponding top-level $ref. Cross-field rule reference:
+        validators/v1/user.js#profileById.
       parameters:
         - name: X-auth-token
           in: header
@@ -185,21 +189,25 @@ profileById:
               schema:
                 $ref: ../components/user.yaml#/userProfileById404Response
         '422':
-          description: >
-            GAP: Unprocessable Entity. VALIDATION_FAILED per services/user.js
-            profileById() (empty lookup params, or phone without a resolvable
-            phone_code). No captured example exists for this status on this
-            endpoint -- schema below is shape-only, not verified.
+          description: >-
+            Unprocessable Entity. Returned when the lookup parameters are
+            empty, or when a phone number is provided without a resolvable
+            phone_code.
+          x-internal-note: >-
+            VALIDATION_FAILED per services/user.js profileById(). No captured
+            example exists for this status on this endpoint - schema is
+            shape-only, not verified.
           content:
             application/json:
               schema:
                 $ref: ../components/user.yaml#/userProfileById422Gap
         '401':
-          description: >
-            Unauthorized. Missing/invalid X-auth-token, raised by the auth
-            middleware. Captured example reused from the sibling `read`
-            endpoint's capture (same middleware, not separately captured for
-            this endpoint, so treat with slightly lower confidence).
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            Raised by the auth middleware. Captured example reused from the
+            sibling `read` endpoint's capture (same middleware, not separately
+            captured for this endpoint, so treat with slightly lower
+            confidence).
           content:
             application/json:
               schema:
@@ -238,14 +246,16 @@ setLanguagePreference:
             schema:
               $ref: ../components/user.yaml#/userSetLanguagePreferenceResponse202
       '401':
-        description: >
-          Unauthorized. Two distinct causes share this status: (1) missing/invalid
-          X-auth-token, raised by the auth middleware -- captured example
-          reused from the sibling `read` endpoint's capture (same middleware,
-          not separately captured here, so treat with slightly lower
-          confidence); (2) GAP -- services/user.js setLanguagePreference()
-          itself returns USER_NOT_FOUND (401) when the token's user can't be
-          resolved, which has no captured example at all and is shape-only.
+        description: >-
+          Unauthorized. Two distinct causes share this status: (1)
+          missing/invalid X-auth-token, raised by the auth middleware; (2) the
+          token's user could not be resolved.
+        x-internal-note: >-
+          Cause (1): captured example reused from the sibling `read`
+          endpoint's capture (same middleware, not separately captured here,
+          so treat with slightly lower confidence). Cause (2):
+          services/user.js setLanguagePreference() returns USER_NOT_FOUND
+          (401); no captured example exists at all - schema is shape-only.
         content:
           application/json:
             schema:
@@ -253,11 +263,13 @@ setLanguagePreference:
                 - $ref: ../components/user.yaml#/userProfileReadResponse401
                 - $ref: ../components/user.yaml#/userSetLanguagePreferenceResponse401Gap
       '400':
-        description: >
-          GAP: Bad Request. services/user.js setLanguagePreference() returns
-          PROFILE_UPDATION_FAILED (400) when preferred_language fails
-          entity-type validation. No captured example exists for this status
-          on this endpoint -- schema below is shape-only, not verified.
+        description: >-
+          Bad Request. Returned when preferred_language fails entity-type
+          validation.
+        x-internal-note: >-
+          services/user.js setLanguagePreference() returns
+          PROFILE_UPDATION_FAILED (400). No captured example exists for this
+          status on this endpoint - schema is shape-only, not verified.
         content:
           application/json:
             schema:
@@ -277,10 +289,13 @@ update:
 
       - Parameters cannot be empty or null.
 
-      - All request body fields are optional per validators/v1/user.js#update.
+      - All request body fields are optional.
 
-      - No cross-field rules apply to this operation (controllers/v1/user.js
-      and services/user.js both had zero matches in cross-field-rules.json).
+      - No cross-field rules apply to this operation.
+    x-internal-note: >-
+      All request body fields are optional per validators/v1/user.js#update.
+      No cross-field rules apply to this operation (controllers/v1/user.js and
+      services/user.js both had zero matches in cross-field-rules.json).
     parameters:
       - name: X-auth-token
         in: header
@@ -301,14 +316,16 @@ update:
             schema:
               $ref: ../components/user.yaml#/userProfileUpdateResponse202
       '400':
-        description: >
-          GAP: Bad Request. Two distinct failures both return 400 here per
-          services/user.js update(): EMAIL_UPDATE_FAILED (submitting an `email`
-          field, which this operation does not accept) and VALIDATION_FAILED
-          (a submitted field fails the org's entity-type rules). Neither has a
-          captured example for this endpoint -- schemas below are shape-only,
-          not verified. `oneOf` is used since either failure body can appear
-          under this same status code.
+        description: >-
+          Bad Request. Returned in two cases: submitting an `email` field
+          (which this operation does not accept), or a submitted field failing
+          the organization's entity-type validation rules.
+        x-internal-note: >-
+          Two distinct failures both return 400 here per services/user.js
+          update(): EMAIL_UPDATE_FAILED and VALIDATION_FAILED. Neither has a
+          captured example for this endpoint - schemas are shape-only, not
+          verified. `oneOf` is used since either failure body can appear under
+          this same status code.
         content:
           application/json:
             schema:
@@ -316,14 +333,16 @@ update:
                 - $ref: ../components/user.yaml#/userProfileUpdateResponse400EmailUpdateGap
                 - $ref: ../components/user.yaml#/userProfileUpdateResponse400ValidationGap
       '401':
-        description: >
-          Unauthorized. Two distinct causes share this status: (1) missing/invalid
-          X-auth-token, raised by the auth middleware -- captured example
-          reused from the sibling `read` endpoint's capture (same middleware,
-          not separately captured here, so treat with slightly lower
-          confidence); (2) GAP -- services/user.js update() itself returns
-          USER_NOT_FOUND (401) when the token's user can't be resolved, which
-          has no captured example at all and is shape-only.
+        description: >-
+          Unauthorized. Two distinct causes share this status: (1)
+          missing/invalid X-auth-token, raised by the auth middleware; (2) the
+          token's user could not be resolved.
+        x-internal-note: >-
+          Cause (1): captured example reused from the sibling `read`
+          endpoint's capture (same middleware, not separately captured here,
+          so treat with slightly lower confidence). Cause (2):
+          services/user.js update() returns USER_NOT_FOUND (401); no captured
+          example exists at all - schema is shape-only.
         content:
           application/json:
             schema:
@@ -374,11 +393,12 @@ share:
               schema:
                 $ref: ../components/user.yaml#/userProfileShare400Response
         '401':
-          description: >
-            Unauthorized. Missing/invalid X-auth-token, raised by the auth
-            middleware. Captured example reused from the sibling `read`
-            endpoint's capture (same middleware, not separately captured for
-            this endpoint, so treat with slightly lower confidence).
+          description: Unauthorized. X-auth-token is either missing or invalid.
+          x-internal-note: >-
+            Raised by the auth middleware. Captured example reused from the
+            sibling `read` endpoint's capture (same middleware, not separately
+            captured for this endpoint, so treat with slightly lower
+            confidence).
           content:
             application/json:
               schema:

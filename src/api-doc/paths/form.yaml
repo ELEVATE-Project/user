@@ -71,12 +71,13 @@ update:
         server-side (stripped before validation) even if supplied.
 
         - Cross-field note: `data.template_name` and `data.fields` are only valid
-        together — see components/form.yaml#/updateFormRequest for details.
+        together.
 
         '
       x-internal-note: >-
         Cross-field validation for `data.template_name`/`data.fields` is
-        enforced by validators/v1/form.js custom checks.
+        enforced by validators/v1/form.js custom checks; request schema
+        details at components/form.yaml#/updateFormRequest.
       parameters:
         - name: X-auth-token
           in: header

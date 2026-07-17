@@ -27,9 +27,12 @@
 UserRoleObject:
   type: object
   description: >-
-    Shape of a role record as returned by list/create/update. Fields present vary by
-    endpoint (see captured examples on each operation) — this is the union of fields
-    observed in captured-responses.json plus fields documented in code comments.
+    A role record as returned by the list, create, and update operations.
+    Fields present may vary by endpoint - see the examples on each operation
+    for details.
+  x-internal-note: >-
+    This is the union of fields observed in captured-responses.json plus
+    fields documented in code comments.
   properties:
     id:
       type: number
@@ -62,16 +65,17 @@ UserRoleObject:
       type: object
       nullable: true
       description: >-
-        Free-form translations object keyed by language code. Shape-only: no captured
-        response shows a populated value (only `null` has been observed), so no example
-        sub-structure is asserted here. See gaps.jsonl.
+        Free-form translations object keyed by language code.
+      x-internal-note: >-
+        Shape-only: no captured response shows a populated value (only `null`
+        has been observed), so no example sub-structure is asserted here.
 
 UserRoleCreateRequest:
   type: object
   description: >-
-    organization_id and tenant_code are NOT accepted here even if sent - they are derived
-    from the authenticated user's token (req.decodedToken) and any organization_id/id sent
-    by the client is stripped server-side before validation-relevant processing.
+    organization_id and tenant_code are not accepted as request fields, even
+    if sent. They are always derived from the authenticated user's session,
+    and any organization_id or id included in the request body is ignored.
   required:
     - title
     - user_type
@@ -102,14 +106,16 @@ UserRoleCreateRequest:
       type: string
       enum: [ACTIVE, INACTIVE]
       description: >-
-        Optional. Validated against common.ACTIVE_STATUS/common.INACTIVE_STATUS.
-        'ACTIVE' is confirmed by a captured response; 'INACTIVE' is inferred from
-        codebase convention and not directly confirmed in this domain pass - see gaps.jsonl.
+        Optional. Must be one of ACTIVE or INACTIVE.
+      x-internal-note: >-
+        'ACTIVE' is confirmed by a captured response; 'INACTIVE' is inferred
+        from codebase convention and not directly confirmed in this domain pass.
       example: ACTIVE
     translations:
       type: object
       nullable: true
-      description: Optional, unvalidated by the validator. Shape not confirmed - see gaps.jsonl.
+      description: Optional. Free-form translations object.
+      x-internal-note: Unvalidated by the validator; shape not confirmed.
 
 UserRoleUpdateRequest:
   type: object
@@ -146,11 +152,14 @@ UserRoleUpdateRequest:
     translations:
       type: object
       nullable: true
-      description: Optional, unvalidated by the validator. Shape not confirmed - see gaps.jsonl.
+      description: Optional. Free-form translations object.
+      x-internal-note: Unvalidated by the validator; shape not confirmed.
 
 UserRoleListResponse200:
   type: object
   description: >-
+    Roles list response.
+  x-internal-note: >-
     Real shape captured from GET /user/v1/user-role/list (captured-responses.json).
   properties:
     responseCode:
@@ -185,9 +194,10 @@ UserRoleListUnauthorized401:
 UserRoleCreateResponse201:
   type: object
   description: >-
+    Note: responseCode is "OK" (not "CREATED") even though the HTTP status is 201.
+  x-internal-note: >-
     Real shape captured from POST /user/v1/user-role/create (captured-responses.json).
-    Note: responseCode is "OK" (not "CREATED") in the captured example even though the
-    HTTP status is 201 - this is the actual observed behavior, not an inference.
+    The responseCode value is the actual observed behavior, not an inference.
   properties:
     responseCode:
       type: string
@@ -236,9 +246,11 @@ UserRoleCreateResponse201:
 UserRoleCreateConflict409:
   type: object
   description: >-
+    Conflict. Returned when a role with the same title already exists.
+  x-internal-note: >-
     Shape-only. Emitted by services/user-role.js create() on Sequelize unique constraint
     violation (message ROLE_IS_NOT_UNIQUE). No captured example exists for this status code
-    on this endpoint - see gaps.jsonl. No example values are asserted.
+    on this endpoint. No example values are asserted.
   properties:
     responseCode:
       type: string
@@ -252,8 +264,10 @@ UserRoleCreateConflict409:
 UserRoleUpdateResponse201:
   type: object
   description: >-
+    The updated role record.
+  x-internal-note: >-
     Shape-only, derived from services/user-role.js update() success path. No captured
-    response exists for this endpoint/status - see gaps.jsonl. No example values asserted.
+    response exists for this endpoint/status. No example values asserted.
   properties:
     responseCode:
       type: string
@@ -288,8 +302,10 @@ UserRoleUpdateResponse201:
 UserRoleUpdateBadRequest400:
   type: object
   description: >-
+    Bad Request. Returned when no matching role was updated.
+  x-internal-note: >-
     Shape-only. Emitted by services/user-role.js update() when updateCount == 0
-    (message ROLE_NOT_UPDATED). No captured example exists - see gaps.jsonl.
+    (message ROLE_NOT_UPDATED). No captured example exists.
   properties:
     responseCode:
       type: string
@@ -303,8 +319,10 @@ UserRoleUpdateBadRequest400:
 UserRoleUpdateConflict409:
   type: object
   description: >-
+    Conflict. Returned when the update would result in a duplicate role title.
+  x-internal-note: >-
     Shape-only. Emitted by services/user-role.js update() on Sequelize unique constraint
-    violation (message ROLE_IS_NOT_UNIQUE). No captured example exists - see gaps.jsonl.
+    violation (message ROLE_IS_NOT_UNIQUE). No captured example exists.
   properties:
     responseCode:
       type: string
@@ -318,9 +336,11 @@ UserRoleUpdateConflict409:
 UserRoleDeleteResponse202:
   type: object
   description: >-
+    Accepted. The role was deleted successfully.
+  x-internal-note: >-
     Shape-only, derived from services/user-role.js delete() success path
     (message ROLE_DELETED_SUCCESSFULLY, result: {}). No captured response exists for this
-    endpoint/status - see gaps.jsonl. No example values asserted.
+    endpoint/status. No example values asserted.
   properties:
     responseCode:
       type: string
@@ -342,9 +362,10 @@ UserRoleDeleteResponse202:
 UserRoleDeleteBadRequest400:
   type: object
   description: >-
+    Bad Request. Returned when the role is already deleted or does not exist.
+  x-internal-note: >-
     Shape-only. Emitted by services/user-role.js delete() when deleteRole == 0
-    (message ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT). No captured example exists -
-    see gaps.jsonl.
+    (message ROLE_ALREADY_DELETED_OR_ROLE_NOT_PRESENT). No captured example exists.
   properties:
     responseCode:
       type: string
@@ -358,8 +379,10 @@ UserRoleDeleteBadRequest400:
 UserRoleListEmpty400:
   type: object
   description: >-
+    Bad Request. Returned when no roles match the list query.
+  x-internal-note: >-
     Shape-only. Emitted by services/user-role.js list() when the query returns zero rows
-    (message ROLES_HAS_EMPTY_LIST). No captured example exists - see gaps.jsonl.
+    (message ROLES_HAS_EMPTY_LIST). No captured example exists.
   properties:
     responseCode:
       type: string
@@ -373,6 +396,9 @@ UserRoleListEmpty400:
 UserRoleDeprecatedDefaultNotFound404:
   type: object
   description: >-
+    Not Found. This endpoint is deprecated and no longer implemented; any
+    request to it falls through to the generic 404 handler.
+  x-internal-note: >-
     GET /user/v1/user-role/default is dead code - the `default` controller method is
     commented out (see controllers/v1/user-role.js and its @deprecated JSDoc). Any request
     to this method name falls through the generic router to the catch-all 404 handler.

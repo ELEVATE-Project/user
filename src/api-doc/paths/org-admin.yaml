@@ -18,19 +18,18 @@ getRequests:
   post:
     summary: Get Requests
     operationId: getRequests
-    description: 'Get a list of organization requests based on specified filters
-
-      - Endpoint: `/user/v1/org-admin/getRequests`.
+    description: 'Get a list of organization requests based on specified filters.
 
       - It is mandatory to provide values for parameters marked with `required`.
 
       - Mandatory parameters cannot be empty or null.
 
-      - No express-validator entry exists for this operation (validators/v1/org-admin.js
-      has no getRequests export); the request body shape below is inferred from
-      controller/service usage only, not enforced ground truth.
-
       '
+    x-internal-note: >-
+      No express-validator entry exists for this operation
+      (validators/v1/org-admin.js has no getRequests export); the request
+      body shape below is inferred from controller/service usage only, not
+      enforced ground truth.
     tags:
       - Org Admin APIs
     parameters:
@@ -48,15 +47,16 @@ getRequests:
             $ref: ../components/org-admin.yaml#/getRequestsRequest
     responses:
       '200':
-        description: OK. Successfully fetched organization requests. (real captured example)
+        description: OK. Successfully fetched organization requests.
         content:
           application/json:
             schema:
               $ref: ../components/org-admin.yaml#/getRequests200Response
       '400':
         description: >-
-          Bad Request. Caller is not an org_admin/tenant_admin.
-          GAP: no captured example for this status/message on this endpoint.
+          Bad Request. Returned when the caller is not an org_admin or
+          tenant_admin.
+        x-internal-note: No captured example for this status/message on this endpoint.
         content:
           application/json:
             schema:
@@ -91,9 +91,8 @@ updateRequestStatus:
             $ref: ../components/org-admin.yaml#/updateRequestStatusRequest
     responses:
       '200':
-        description: >-
-          OK. Successfully updated organization request status.
-          GAP: no captured example for this status; shape-only schema.
+        description: OK. Successfully updated organization request status.
+        x-internal-note: No captured example for this status; shape-only schema.
         content:
           application/json:
             schema:
@@ -145,14 +144,9 @@ getRequestDetails:
     get:
       summary: Get Request Details
       operationId: getRequestDetails
-      description: "Get details of a specific organization request.
-
-        - Endpoint: `/user/v1/org-admin/getRequestDetails/{id}`.
-
-        - `id` is a URL path parameter (validators/v1/org-admin.js: req.checkParams('id')),
-        NOT a query parameter.
-
-        "
+      description: >-
+        Get details of a specific organization request. The `id` is supplied
+        as a URL path parameter.
       tags:
         - Org Admin APIs
       parameters:
@@ -171,18 +165,20 @@ getRequestDetails:
             example: 12
       responses:
         '200':
-          description: >-
-            OK. Successfully fetched organization request details.
-            GAP: no captured example for this status; shape-only schema.
+          description: OK. Successfully fetched organization request details.
+          x-internal-note: No captured example for this status; shape-only schema.
           content:
             application/json:
               schema:
                 $ref: ../components/org-admin.yaml#/getRequestDetails200Response
         '400':
           description: >-
-            Bad Request. Two distinct causes share this status code: request
-            not found (real captured example, REQUEST_NOT_FOUND) or caller is
-            not an org_admin/tenant_admin (GAP, no capture).
+            Bad Request. Two distinct causes share this status code: the
+            request was not found, or the caller is not an org_admin or
+            tenant_admin.
+          x-internal-note: >-
+            Only the requestNotFound example (REQUEST_NOT_FOUND) is a real
+            capture; the not-an-admin case has no captured example.
           content:
             application/json:
               schema:
@@ -228,18 +224,18 @@ bulkUserCreate:
             $ref: ../components/org-admin.yaml#/bulkUserCreateRequest
     responses:
       '200':
-        description: >-
-          OK. Successfully queued bulk user invites CSV.
-          GAP: no captured example for this status; shape-only schema.
+        description: OK. Successfully queued bulk user invites CSV.
+        x-internal-note: No captured example for this status; shape-only schema.
         content:
           application/json:
             schema:
               $ref: ../components/org-admin.yaml#/bulkUserCreate200Response
       '400':
         description: >-
-          Bad Request. Two distinct causes share this status code:
-          file-upload record creation failed (GAP, no capture) or caller is
-          not an org_admin/tenant_admin (GAP, no capture).
+          Bad Request. Two distinct causes share this status code: creation
+          of the file-upload record failed, or the caller is not an
+          org_admin or tenant_admin.
+        x-internal-note: Neither cause has a captured example for this endpoint.
         content:
           application/json:
             schema:
@@ -247,7 +243,7 @@ bulkUserCreate:
                 - $ref: ../components/org-admin.yaml#/bulkUserCreate400Response
                 - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
       '500':
-        description: Real captured example (unhandled error creating the file-upload record/queue job).
+        description: Internal Server Error. Returned when an unhandled error occurs while creating the file-upload record or queuing the job.
         content:
           application/json:
             schema:
@@ -263,16 +259,15 @@ getBulkInvitesFilesList:
     operationId: getBulkInvitesFilesList
     description: 'Get a list of uploaded bulk invite CSV files.
 
-      - Endpoint: `/user/v1/org-admin/getBulkInvitesFilesList`.
-
       - It is mandatory to provide values for parameters marked with `required`.
 
       - Mandatory parameters cannot be empty or null.
 
-      - No express-validator entry exists for this operation; pagination/status
-      query parameters below are inferred from controller/service usage only.
-
       '
+    x-internal-note: >-
+      No express-validator entry exists for this operation; the
+      pagination/status query parameters below are inferred from
+      controller/service usage only.
     tags:
       - Org Admin APIs
     parameters:
@@ -302,15 +297,16 @@ getBulkInvitesFilesList:
           type: string
     responses:
       '200':
-        description: OK. Successfully fetched bulk invite CSV list. (real captured example)
+        description: OK. Successfully fetched bulk invite CSV list.
         content:
           application/json:
             schema:
               $ref: ../components/org-admin.yaml#/getBulkInvitesFilesList200Response
       '400':
         description: >-
-          Bad Request. Caller is not an org_admin/tenant_admin.
-          GAP: no captured example for this status/message on this endpoint.
+          Bad Request. Returned when the caller is not an org_admin or
+          tenant_admin.
+        x-internal-note: No captured example for this status/message on this endpoint.
         content:
           application/json:
             schema:
@@ -320,20 +316,22 @@ deactivateUser:
     summary: Deactivate User(s)
     operationId: deactivateUserOrgAdmin
     description: "Deactivate one or more users in the org admin's organization by
-      ID and/or email (bulk arrays in the body -- NOT a /{id} path route).
-
-      - Endpoint: `/user/v1/org-admin/deactivateUser`.
+      ID and/or email, passed as arrays in the request body.
 
       - It is mandatory to provide values for parameters marked with `required`.
 
       - Mandatory parameters cannot be empty or null.
 
-      - Cross-field rule (cross-field-rules.json): ids/emails is an
-      at-least-one-of relationship, enforced by an express-validator
-      custom() check (validators/v1/org-admin.js) that runs BEFORE the
-      service is invoked -- see the 422 response.
+      - At least one of `ids` or `emails` must be provided; requests with
+      neither (or with both empty) are rejected before being processed - see
+      the 422 response.
 
       "
+    x-internal-note: >-
+      The ids/emails at-least-one-of rule is defined in
+      cross-field-rules.json and enforced by an express-validator custom()
+      check (validators/v1/org-admin.js) that runs before the service is
+      invoked.
     tags:
       - Org Admin APIs
     parameters:
@@ -360,18 +358,18 @@ deactivateUser:
                 emails: ['user@example.com']
     responses:
       '200':
-        description: >-
-          OK. Users deactivated. GAP: no captured example for this status;
-          shape-only schema.
+        description: OK. Users deactivated.
+        x-internal-note: No captured example for this status; shape-only schema.
         content:
           application/json:
             schema:
               $ref: ../components/org-admin.yaml#/deactivateUser200Response
       '400':
         description: >-
-          Bad Request. Two distinct causes share this status code: 0 rows
-          affected (GAP, no capture) or caller is not an
-          org_admin/tenant_admin (GAP, no capture).
+          Bad Request. Two distinct causes share this status code: no rows
+          were affected by the update, or the caller is not an org_admin or
+          tenant_admin.
+        x-internal-note: Neither cause has a captured example for this endpoint.
         content:
           application/json:
             schema:
@@ -380,8 +378,8 @@ deactivateUser:
                 - $ref: ../components/org-admin.yaml#/orgAdminNotAdminResponse
       '422':
         description: >-
-          Validation failed. Real captured example: neither `ids` nor
-          `emails` provided (or both empty).
+          Validation Failed. Returned when neither `ids` nor `emails` is
+          provided, or both are empty.
         content:
           application/json:
             schema:
@@ -398,21 +396,23 @@ inheritEntityType:
     description: "Inherit an entity type from the default organization into the
       caller's organization.
 
-      - Endpoint: `/user/v1/org-admin/inheritEntityType`.
-
       - It is mandatory to provide values for parameters marked with `required`.
 
       - Mandatory parameters cannot be empty or null.
 
-      - Runtime-config note: whether the caller's own organization IS the
-      default organization is determined by comparing
-      tokenInformation.organization_code against the
-      `DEFAULT_ORGANISATION_CODE` environment variable. This is a
-      deployment-config-dependent rule and is documented in prose here
-      rather than modeled as a schema constraint (it cannot be expressed
-      from the request body alone).
+      - Whether the caller's own organization is the default organization is
+      determined by comparing the caller's organization code against the
+      configured default organization code for the deployment. Because this
+      depends on deployment configuration, the caller's organization must
+      not itself be the default organization for this operation to succeed.
 
       "
+    x-internal-note: >-
+      The default-organization check compares tokenInformation.organization_code
+      against the `DEFAULT_ORGANISATION_CODE` environment variable. This is a
+      deployment-config-dependent rule and is documented in prose here rather
+      than modeled as a schema constraint (it cannot be expressed from the
+      request body alone).
     tags:
       - Org Admin APIs
     parameters:
@@ -430,12 +430,12 @@ inheritEntityType:
             $ref: ../components/org-admin.yaml#/inheritEntityTypeRequest
     responses:
       '201':
-        description: >-
-          Created. Entity type inherited successfully. GAP: previous draft
-          incorrectly documented this as 202 Accepted with a fabricated
-          example body; corrected to 201 (httpStatusCode.created in
-          services/org-admin.js) with a shape-only schema (no captured
-          example exists).
+        description: Created. Entity type inherited successfully.
+        x-internal-note: >-
+          A previous draft incorrectly documented this as 202 Accepted with
+          a fabricated example body; corrected to 201 (httpStatusCode.created
+          in services/org-admin.js). No captured example exists - schema is
+          shape-only.
         content:
           application/json:
             schema:
@@ -475,19 +475,16 @@ updateUser:
     post:
       summary: Update User Roles (org admin)
       operationId: updateUserRolesOrgAdmin
-      description: "Assign roles to a user within the caller's own organization.
-
-        - Endpoint: `/user/v1/org-admin/updateUser/{id}`.
-
-        - GAP: unlike every other org-admin endpoint, this controller method
-        performs NO ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check at
+      description: >-
+        Assign roles to a user within the caller's own organization.
+      x-internal-note: >-
+        Unlike every other org-admin endpoint, this controller method
+        performs no ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check at
         all (controllers/v1/org-admin.js updateUser has no
-        validateRoleAccess call), and NO express-validator entry exists
-        for it either (validators/v1/org-admin.js has no updateUser
-        export). Any authenticated caller can invoke it. Flagged as a gap
+        validateRoleAccess call), and no express-validator entry exists for
+        it either (validators/v1/org-admin.js has no updateUser export).
+        Any authenticated caller can invoke it. Flagged here as a known gap
         rather than silently documented as if it were access-controlled.
-
-        "
       tags:
         - Org Admin APIs
       parameters:
@@ -512,9 +509,8 @@ updateUser:
               $ref: ../components/org-admin.yaml#/updateUserRequest
       responses:
         '200':
-          description: >-
-            OK. Roles updated. GAP: no captured example for this status;
-            shape-only schema.
+          description: OK. Roles updated.
+          x-internal-note: No captured example for this status; shape-only schema.
           content:
             application/json:
               schema:
@@ -564,23 +560,20 @@ createUsers:
     description: 'Bulk-create users via an uploaded CSV, with editable-field and
       upload-type controls (tenant-code-aware variant of bulkUserCreate).
 
-      - Endpoint: `/user/v1/org-admin/createUsers`.
-
-      - GAP: the ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check is
-      present in controllers/v1/org-admin.js createUsers but commented
-      out, so it currently performs NO role check at all. GAP: no
-      express-validator entry exists for this operation either
-      (validators/v1/org-admin.js has no createUsers export), so none of
-      the fields below are enforced ground truth. GAP: no
-      captured-responses.json entry exists for this endpoint at all.
-      CORRECTION (post-hoc review): an earlier pass on this file claimed
-      `req.body.upload_type.toUpperCase()` is called unconditionally and
-      throws an uncaught TypeError when upload_type is absent. Re-checked
-      against current source: the call is actually
-      `req?.body?.upload_type?.toUpperCase()` (fully optional-chained), so
-      it safely evaluates to `undefined` rather than throwing. No bug here.
-
       '
+    x-internal-note: >-
+      The ORG_ADMIN_ROLE/TENANT_ADMIN_ROLE authorization check is present in
+      controllers/v1/org-admin.js createUsers but commented out, so it
+      currently performs no role check at all. No express-validator entry
+      exists for this operation either (validators/v1/org-admin.js has no
+      createUsers export), so none of the request fields below are enforced
+      ground truth. No captured-responses.json entry exists for this
+      endpoint at all. Post-hoc correction: an earlier pass on this file
+      claimed `req.body.upload_type.toUpperCase()` is called unconditionally
+      and throws an uncaught TypeError when upload_type is absent. Re-checked
+      against current source: the call is actually
+      `req?.body?.upload_type?.toUpperCase()` (fully optional-chained), so it
+      safely evaluates to `undefined` rather than throwing - no bug here.
     tags:
       - Org Admin APIs
     parameters:
@@ -598,18 +591,18 @@ createUsers:
             $ref: ../components/org-admin.yaml#/createUsersRequest
     responses:
       '200':
-        description: >-
-          OK. GAP: no captured example exists for this endpoint at all;
-          shape-only schema, inferred from the shared bulkCreate() service
-          call shape only.
+        description: OK. Users created successfully.
+        x-internal-note: >-
+          No captured example exists for this endpoint at all; schema is
+          shape-only, inferred from the shared bulkCreate() service call
+          shape only.
         content:
           application/json:
             schema:
               $ref: ../components/org-admin.yaml#/createUsers200Response
       '400':
-        description: >-
-          Bad Request. GAP: no captured example exists for this endpoint at
-          all; shape-only schema.
+        description: Bad Request.
+        x-internal-note: No captured example exists for this endpoint at all; shape-only schema.
         content:
           application/json:
             schema:
