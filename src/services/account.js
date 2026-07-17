@@ -644,7 +644,7 @@ module.exports = class AccountHelper {
 					variables: {
 						name: bodyData.name || common.USER,
 						appName: tenantDetail.name,
-						roles: roleToString || '',
+						roles: tenantDetail.meta?.message || roleToString,
 						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
@@ -660,7 +660,7 @@ module.exports = class AccountHelper {
 					variables: {
 						name: bodyData.name || common.USER,
 						appName: tenantDetail.name,
-						roles: roleToString || '',
+						roles: tenantDetail.meta?.message || roleToString,
 						portalURL: tenantDomain.domain,
 					},
 					tenantCode: tenantDetail.code,
