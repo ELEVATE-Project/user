@@ -1,0 +1,54 @@
+checkUsername:
+  get:
+    summary: Check username availability
+    operationId: checkUsername
+    tags:
+      - Public APIs
+    security: []
+    description: "This API checks whether a username is already taken within the
+      tenant resolved from the caller's request domain.\n
+      - Endpoint: `/user/v1/public/checkUsername`\n
+      - `username` is a required, non-empty query parameter (trimmed).\n
+      - The tenant is resolved from the request's domain (via
+      tenantDomainQueries), not from a header or body field."
+    parameters:
+      - in: query
+        name: username
+        required: true
+        schema:
+          type: string
+        description: Username to check for availability. Must not be empty after trimming.
+        example: nevil_ngrcbhcfke-k1x
+    responses:
+      '200':
+        description: OK. Username availability result for the resolved tenant.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/checkUsernameSuccessResponse
+      '406':
+        description: >-
+          Not Acceptable. The tenant could not be resolved from the caller's
+          domain.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/tenantNotFoundResponse
+      '422':
+        description: Unprocessable Entity. `username` query parameter is missing or empty.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/public.yaml#/validationErrorResponse
+            examples:
+              missingUsername:
+                summary: username query parameter empty
+                value:
+                  responseCode: CLIENT_ERROR
+                  error:
+                    - location: query
+                      param: username
+                      msg: username field is empty
+                  meta:
+                    correlation: 2f38149f-ee17-4848-a5e9-ffe62b626937
+                  message: Validation failed, Entered data is incorrect!

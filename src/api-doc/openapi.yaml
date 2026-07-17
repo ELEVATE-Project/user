@@ -129,6 +129,8 @@ paths:
     $ref: ./paths/tenant.yaml#/list
   /user/v1/tenant/bulkUserCreate:
     $ref: ./paths/tenant.yaml#/bulkUserCreate
+  /user/v1/public/checkUsername:
+    $ref: ./paths/public.yaml#/checkUsername
   /user/v1/organization/create:
     $ref: ./paths/organization.yaml#/create
   /user/v1/organization/update/{id}:

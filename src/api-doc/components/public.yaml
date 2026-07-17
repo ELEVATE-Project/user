@@ -1,0 +1,109 @@
+# Public domain components.
+# Request field required/optional flags are taken verbatim from
+# scripts/api-doc/validator-fields.json (public.operations.*).
+# Response `example` blocks are copied verbatim from
+# scripts/api-doc/captured-responses.json (live server capture) — never inferred,
+# except the 406 case noted below.
+
+checkUsernameSuccessResponse:
+  type: object
+  description: Result of a username-availability lookup for the caller's tenant.
+  properties:
+    responseCode:
+      type: string
+      example: OK
+    message:
+      type: string
+      example: Username is available
+    result:
+      type: object
+      properties:
+        available:
+          type: boolean
+          description: Whether the username is not already taken within the resolved tenant.
+    meta:
+      type: object
+      properties:
+        formsVersion:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              type:
+                type: string
+              version:
+                type: integer
+        correlation:
+          type: string
+  example:
+    responseCode: OK
+    message: Username is available
+    result:
+      available: true
+    meta:
+      correlation: abe8b9d7-de25-423d-8f30-3278b39c4355
+
+validationErrorResponse:
+  type: object
+  description: express-validator validation failure (HTTP 422).
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+        properties:
+          location:
+            type: string
+          param:
+            type: string
+          msg:
+            type: string
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+      example: Validation failed, Entered data is incorrect!
+
+tenantNotFoundResponse:
+  type: object
+  description: >-
+    Client error (responseCode CLIENT_ERROR, HTTP 406) raised when the tenant
+    cannot be resolved for the caller's domain. Message is
+    TENANT_DOMAIN_NOT_FOUND_PING_ADMIN when no tenant_domain row matches the
+    request's domain, or TENANT_NOT_FOUND_PING_ADMIN when the domain resolves
+    to a tenant_code that has no matching tenant.
+  x-internal-note: >-
+    No live capture exists for this exact path/case combination; the example
+    below reuses the TENANT_DOMAIN_NOT_FOUND_PING_ADMIN capture from
+    GET /user/v1/public/branding (scripts/api-doc/captured-responses.json),
+    which shares the same tenantDomainQueries.findOne lookup as
+    services/public.js#checkUsername.
+  properties:
+    responseCode:
+      type: string
+      example: CLIENT_ERROR
+    error:
+      type: array
+      items:
+        type: object
+    meta:
+      type: object
+      properties:
+        correlation:
+          type: string
+    message:
+      type: string
+  example:
+    responseCode: CLIENT_ERROR
+    error: []
+    meta:
+      correlation: cb11e059-fda6-475c-8e24-dd82c2fae410
+    message: Tenant domain not found. Please contact your administrator for assistance.

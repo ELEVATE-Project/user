@@ -1735,6 +1735,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/tenantBulkUserCreate500Response'
+  /user/v1/public/checkUsername:
+    get:
+      summary: Check username availability
+      operationId: checkUsername
+      tags:
+        - Public APIs
+      security: []
+      description: |-
+        This API checks whether a username is already taken within the tenant resolved from the caller's request domain.
+         - Endpoint: `/user/v1/public/checkUsername`
+         - `username` is a required, non-empty query parameter (trimmed).
+         - The tenant is resolved from the request's domain (via tenantDomainQueries), not from a header or body field.
+      parameters:
+        - in: query
+          name: username
+          required: true
+          schema:
+            type: string
+          description: Username to check for availability. Must not be empty after trimming.
+          example: nevil_ngrcbhcfke-k1x
+      responses:
+        '200':
+          description: OK. Username availability result for the resolved tenant.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/checkUsernameSuccessResponse'
+        '406':
+          description: Not Acceptable. The tenant could not be resolved from the caller's domain.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/tenantNotFoundResponse'
+        '422':
+          description: Unprocessable Entity. `username` query parameter is missing or empty.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/validationErrorResponse'
+              examples:
+                missingUsername:
+                  summary: username query parameter empty
+                  value:
+                    responseCode: CLIENT_ERROR
+                    error:
+                      - location: query
+                        param: username
+                        msg: username field is empty
+                    meta:
+                      correlation: 2f38149f-ee17-4848-a5e9-ffe62b626937
+                    message: Validation failed, Entered data is incorrect!
   /user/v1/organization/create:
     post:
       summary: Create Organization
@@ -9744,6 +9795,70 @@ components:
         message: Oops! Something Went Wrong.
         meta:
           correlation: 2550962c-5519-4d03-89f4-f8981724ebf1
+    checkUsernameSuccessResponse:
+      type: object
+      description: Result of a username-availability lookup for the caller's tenant.
+      properties:
+        responseCode:
+          type: string
+          example: OK
+        message:
+          type: string
+          example: Username is available
+        result:
+          type: object
+          properties:
+            available:
+              type: boolean
+              description: Whether the username is not already taken within the resolved tenant.
+        meta:
+          type: object
+          properties:
+            formsVersion:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  type:
+                    type: string
+                  version:
+                    type: integer
+            correlation:
+              type: string
+      example:
+        responseCode: OK
+        message: Username is available
+        result:
+          available: true
+        meta:
+          correlation: abe8b9d7-de25-423d-8f30-3278b39c4355
+    tenantNotFoundResponse:
+      type: object
+      description: Client error (responseCode CLIENT_ERROR, HTTP 406) raised when the tenant cannot be resolved for the caller's domain. Message is TENANT_DOMAIN_NOT_FOUND_PING_ADMIN when no tenant_domain row matches the request's domain, or TENANT_NOT_FOUND_PING_ADMIN when the domain resolves to a tenant_code that has no matching tenant.
+      x-internal-note: No live capture exists for this exact path/case combination; the example below reuses the TENANT_DOMAIN_NOT_FOUND_PING_ADMIN capture from GET /user/v1/public/branding (scripts/api-doc/captured-responses.json), which shares the same tenantDomainQueries.findOne lookup as services/public.js#checkUsername.
+      properties:
+        responseCode:
+          type: string
+          example: CLIENT_ERROR
+        error:
+          type: array
+          items:
+            type: object
+        meta:
+          type: object
+          properties:
+            correlation:
+              type: string
+        message:
+          type: string
+      example:
+        responseCode: CLIENT_ERROR
+        error: []
+        meta:
+          correlation: cb11e059-fda6-475c-8e24-dd82c2fae410
+        message: Tenant domain not found. Please contact your administrator for assistance.
     createOrganizationRequest:
       type: object
       description: Request payload for creating an organization.
