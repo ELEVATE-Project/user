@@ -3,9 +3,7 @@ info:
   title: Elevate User
   version: 1.0.0
   termsOfService: https://github.com/project-sunbird/sunbird-commons/blob/master/LICENSE
-  description: "- The Users Service is a centralized Service to support other services. Apis perform operations\
-    \ related to mentoring entities notification etc \n- The URL for Users API(s) is `{context}/user/v1`\
-    \ - <b>Note:</b> These resources can be used in other services"
+  description: "- The Users Service is a centralized Service to support other services. Apis perform operations related to mentoring entities notification etc \n- The URL for Users API(s) is `{context}/user/v1` - <b>Note:</b> These resources can be used in other services"
   contact:
     email: info@sunbird.org
   license:
@@ -17,6 +15,32 @@ servers:
   - url: https://dev.elevate-apis.shikshalokam.org
     description: dev server
 tags:
+  - name: User APIs
+    description: Account creation, authentication, session, and profile operations for end users.
+  - name: Users APIs
+    description: Reading and updating user profile data and preferences.
+  - name: Tenant APIs
+    description: Managing tenants, their domains, and tenant-level bulk user operations.
+  - name: Organization
+    description: Creating, updating, and looking up organizations and their registration codes.
+  - name: Org Admin APIs
+    description: Handling organization role requests, bulk user invites, and org-scoped user administration.
+  - name: Organization Feature APIs
+    description: Managing feature toggles scoped to an organization.
+  - name: Entity APIs
+    description: Managing entities used to configure and extend platform data.
+  - name: EntityType APIs
+    description: Defining and managing the entity types available on the platform.
+  - name: Form APIs
+    description: Creating and managing dynamic form configurations.
+  - name: Feature APIs
+    description: Managing platform-wide feature flags.
+  - name: Notification APIs
+    description: Managing notification templates.
+  - name: Admin APIs
+    description: Platform administrator operations for managing users and organizations.
+  - name: Cloud Services APIs
+    description: Generating signed URLs for uploading and downloading files via cloud storage.
   - name: User Roles APIs
     description: Assigning, listing, and managing roles held by users within an organization.
   - name: Permissions
@@ -27,6 +51,8 @@ tags:
     description: Mapping permissions to roles for a module and request type.
   - name: Health Check
     description: Service and dependency health/readiness checks.
+  - name: Depreciated APIs
+    description: Endpoints retained for backward compatibility; scheduled for removal.
 security:
   - XAuthToken: []
 components:
@@ -69,8 +95,6 @@ paths:
     $ref: ./paths/account.yaml#/changeRole
   /user/v1/account/validatingEmailIds:
     $ref: ./paths/account.yaml#/validatingEmailIds
-  /user/v1/account/acceptTermsAndCondition:
-    $ref: ./paths/account.yaml#/acceptTermsAndCondition
   /user/v1/account/sessions:
     $ref: ./paths/account.yaml#/sessions
   /user/v1/account/validateUserSession:
@@ -89,34 +113,22 @@ paths:
     $ref: ./paths/user.yaml#/update
   /user/v1/user/share/{userId}:
     $ref: ./paths/user.yaml#/share/{userId}
-  /user/v1/cloud-services/file/getSignedUrl:
-    $ref: ./paths/cloud-services.yaml#/file/getSignedUrl
-  /user/v1/cloud-services/file/getDownloadableUrl:
-    $ref: ./paths/cloud-services.yaml#/file/getDownloadableUrl
-  /user/v1/cloud-services/file/getSampleCSV:
-    $ref: ./paths/cloud-services.yaml#/file/getSampleCSV
-  /user/v1/form/create:
-    $ref: ./paths/form.yaml#/create
-  /user/v1/form/update/{formId}:
-    $ref: ./paths/form.yaml#/update/{formId}
-  /user/v1/form/read/{formId}:
-    $ref: ./paths/form.yaml#/read/{formId}
-  /user/v1/admin/create:
-    $ref: ./paths/admin.yaml#/create
-  /user/v1/admin/login:
-    $ref: ./paths/admin.yaml#/login
-  /user/v1/admin/deleteUser/{id}:
-    $ref: ./paths/admin.yaml#/deleteUser/{id}
-  /user/v1/admin/assignRole:
-    $ref: ./paths/admin.yaml#/assignRole
-  /user/v1/admin/addOrgAdmin:
-    $ref: ./paths/admin.yaml#/addOrgAdmin
-  /user/v1/admin/deactivateOrg/{id}:
-    $ref: ./paths/admin.yaml#/deactivateOrg/{id}
-  /user/v1/admin/deactivateUser:
-    $ref: ./paths/admin.yaml#/deactivateUser
-  /user/v1/admin/executeRawQuery:
-    $ref: ./paths/admin.yaml#/executeRawQuery
+  /user/v1/tenant/update:
+    $ref: ./paths/tenant.yaml#/update
+  /user/v1/tenant/update/{id}:
+    $ref: ./paths/tenant.yaml#/updateById
+  /user/v1/tenant/addDomain/{id}:
+    $ref: ./paths/tenant.yaml#/addDomain
+  /user/v1/tenant/removeDomain/{id}:
+    $ref: ./paths/tenant.yaml#/removeDomain
+  /user/v1/tenant/read/{id}:
+    $ref: ./paths/tenant.yaml#/read
+  /user/v1/tenant/readInternal/{id}:
+    $ref: ./paths/tenant.yaml#/readInternal
+  /user/v1/tenant/list:
+    $ref: ./paths/tenant.yaml#/list
+  /user/v1/tenant/bulkUserCreate:
+    $ref: ./paths/tenant.yaml#/bulkUserCreate
   /user/v1/organization/create:
     $ref: ./paths/organization.yaml#/create
   /user/v1/organization/update/{id}:
@@ -137,32 +149,6 @@ paths:
     $ref: ./paths/organization.yaml#/addRelatedOrg/{id}
   /user/v1/organization/removeRelatedOrg/{id}:
     $ref: ./paths/organization.yaml#/removeRelatedOrg/{id}
-  /user/v1/user-role/list:
-    $ref: ./paths/userRole.yaml#/list
-  /user/v1/user-role/create:
-    $ref: ./paths/userRole.yaml#/Create
-  /user/v1/user-role/update/{id}:
-    $ref: ./paths/userRole.yaml#/update/{id}
-  /user/v1/user-role/delete/{id}:
-    $ref: ./paths/userRole.yaml#/delete/{id}
-  /user/v1/entity-type/create:
-    $ref: ./paths/entity-type.yaml#/create
-  /user/v1/entity-type/update/{id}:
-    $ref: ./paths/entity-type.yaml#/update/{id}
-  /user/v1/entity-type/read:
-    $ref: ./paths/entity-type.yaml#/read
-  /user/v1/entity-type/delete/{id}:
-    $ref: ./paths/entity-type.yaml#/delete/{id}
-  /user/v1/entity/create:
-    $ref: ./paths/entity.yaml#/create
-  /user/v1/entity/update/{id}:
-    $ref: ./paths/entity.yaml#/update/{id}
-  /user/v1/entity/read:
-    $ref: ./paths/entity.yaml#/read
-  /user/v1/entity/list:
-    $ref: ./paths/entity.yaml#/list
-  /user/v1/entity/delete/{id}:
-    $ref: ./paths/entity.yaml#/delete/{id}
   /user/v1/org-admin/getRequests:
     $ref: ./paths/org-admin.yaml#/getRequests
   /user/v1/org-admin/updateRequestStatus:
@@ -181,10 +167,80 @@ paths:
     $ref: ./paths/org-admin.yaml#/updateUser/{id}
   /user/v1/org-admin/createUsers:
     $ref: ./paths/org-admin.yaml#/createUsers
+  /user/v1/organization-feature/create:
+    $ref: ./paths/organization-feature.yaml#/create
+  /user/v1/organization-feature/update/{id}:
+    $ref: ./paths/organization-feature.yaml#/update/{id}
+  /user/v1/organization-feature/list:
+    $ref: ./paths/organization-feature.yaml#/list
+  /user/v1/organization-feature/read/{id}:
+    $ref: ./paths/organization-feature.yaml#/read/{id}
+  /user/v1/entity/create:
+    $ref: ./paths/entity.yaml#/create
+  /user/v1/entity/update/{id}:
+    $ref: ./paths/entity.yaml#/update/{id}
+  /user/v1/entity/read:
+    $ref: ./paths/entity.yaml#/read
+  /user/v1/entity/list:
+    $ref: ./paths/entity.yaml#/list
+  /user/v1/entity/delete/{id}:
+    $ref: ./paths/entity.yaml#/delete/{id}
+  /user/v1/entity-type/create:
+    $ref: ./paths/entity-type.yaml#/create
+  /user/v1/entity-type/update/{id}:
+    $ref: ./paths/entity-type.yaml#/update/{id}
+  /user/v1/entity-type/read:
+    $ref: ./paths/entity-type.yaml#/read
+  /user/v1/entity-type/delete/{id}:
+    $ref: ./paths/entity-type.yaml#/delete/{id}
+  /user/v1/form/create:
+    $ref: ./paths/form.yaml#/create
+  /user/v1/form/update/{formId}:
+    $ref: ./paths/form.yaml#/update/{formId}
+  /user/v1/form/read/{formId}:
+    $ref: ./paths/form.yaml#/read/{formId}
+  /user/v1/feature/create:
+    $ref: ./paths/feature.yaml#/create
+  /user/v1/feature/update/{id}:
+    $ref: ./paths/feature.yaml#/update/{id}
+  /user/v1/feature/list:
+    $ref: ./paths/feature.yaml#/list
+  /user/v1/feature/delete/{id}:
+    $ref: ./paths/feature.yaml#/delete/{id}
   /user/v1/notification/template:
     $ref: ./paths/notification.yaml#/template
   /user/v1/notification/template/{id}:
     $ref: ./paths/notification.yaml#/templateById
+  /user/v1/admin/create:
+    $ref: ./paths/admin.yaml#/create
+  /user/v1/admin/login:
+    $ref: ./paths/admin.yaml#/login
+  /user/v1/admin/deleteUser/{id}:
+    $ref: ./paths/admin.yaml#/deleteUser/{id}
+  /user/v1/admin/assignRole:
+    $ref: ./paths/admin.yaml#/assignRole
+  /user/v1/admin/addOrgAdmin:
+    $ref: ./paths/admin.yaml#/addOrgAdmin
+  /user/v1/admin/deactivateOrg/{id}:
+    $ref: ./paths/admin.yaml#/deactivateOrg/{id}
+  /user/v1/admin/deactivateUser:
+    $ref: ./paths/admin.yaml#/deactivateUser
+  /user/v1/admin/executeRawQuery:
+    $ref: ./paths/admin.yaml#/executeRawQuery
+  /user/v1/cloud-services/file/getSignedUrl:
+    $ref: ./paths/cloud-services.yaml#/file/getSignedUrl
+  /user/v1/cloud-services/file/getDownloadableUrl:
+    $ref: ./paths/cloud-services.yaml#/file/getDownloadableUrl
+  /user/v1/cloud-services/file/getSampleCSV:
+    $ref: ./paths/cloud-services.yaml#/file/getSampleCSV
+  /user/v1/user-role/list:
+    $ref: ./paths/userRole.yaml#/list
+  /user/v1/user-role/create:
+    $ref: ./paths/userRole.yaml#/Create
+  /user/v1/user-role/update/{id}:
+    $ref: ./paths/userRole.yaml#/update/{id}
+  /user/v1/user-role/delete/{id}:
+    $ref: ./paths/userRole.yaml#/delete/{id}
   /user/v1/permissions/create:
     $ref: ./paths/permissions.yaml#/create
   /user/v1/permissions/update/{id}:
@@ -209,35 +265,5 @@ paths:
     $ref: ./paths/rolePermissionMapping.yaml#/list
   /user/health:
     $ref: ./paths/system.yaml#/health
-  /user/v1/feature/create:
-    $ref: ./paths/feature.yaml#/create
-  /user/v1/feature/update/{id}:
-    $ref: ./paths/feature.yaml#/update/{id}
-  /user/v1/feature/list:
-    $ref: ./paths/feature.yaml#/list
-  /user/v1/feature/delete/{id}:
-    $ref: ./paths/feature.yaml#/delete/{id}
-  /user/v1/organization-feature/create:
-    $ref: ./paths/organization-feature.yaml#/create
-  /user/v1/organization-feature/update/{id}:
-    $ref: ./paths/organization-feature.yaml#/update/{id}
-  /user/v1/organization-feature/list:
-    $ref: ./paths/organization-feature.yaml#/list
-  /user/v1/organization-feature/read/{id}:
-    $ref: ./paths/organization-feature.yaml#/read/{id}
-  /user/v1/tenant/update:
-    $ref: ./paths/tenant.yaml#/update
-  /user/v1/tenant/update/{id}:
-    $ref: ./paths/tenant.yaml#/updateById
-  /user/v1/tenant/addDomain/{id}:
-    $ref: ./paths/tenant.yaml#/addDomain
-  /user/v1/tenant/removeDomain/{id}:
-    $ref: ./paths/tenant.yaml#/removeDomain
-  /user/v1/tenant/read/{id}:
-    $ref: ./paths/tenant.yaml#/read
-  /user/v1/tenant/readInternal/{id}:
-    $ref: ./paths/tenant.yaml#/readInternal
-  /user/v1/tenant/list:
-    $ref: ./paths/tenant.yaml#/list
-  /user/v1/tenant/bulkUserCreate:
-    $ref: ./paths/tenant.yaml#/bulkUserCreate
+  /user/v1/account/acceptTermsAndCondition:
+    $ref: ./paths/account.yaml#/acceptTermsAndCondition

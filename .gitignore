@@ -82,4 +82,4 @@ src/public/invites/*
 
 # Regenerated API doc tooling outputs (not build inputs, no reason to version)
 src/scripts/api-doc/route-inventory.json
-src/redoc-static.html
+*redoc-static.html
